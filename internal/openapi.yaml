@@ -21,6 +21,19 @@ tags:
   - description: Operations about user
     name: user
 paths:
+  /openapi.yaml:
+    get:
+      summary: Returns this very OpenAPI spec.
+      responses:
+        "200":
+          description: OpenAPI YAML file.
+          content:
+            text/yaml:
+              schema:
+                type: string
+                format: binary
+      tags:
+        - docs
   /pet:
     post:
       description: ""

@@ -10,32 +10,22 @@
 package main
 
 import (
-	"embed"
 	"io/fs"
 	"log"
 	"net/http"
 
-	openapi "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/go"
-	"github.com/gin-gonic/gin"
+	gen "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 )
-
-//go:embed swagger-ui
-var content embed.FS
 
 func main() {
 	log.Printf("Server started")
 
-	router := openapi.NewRouter()
+	router := gen.NewRouter()
 
-	// TODO defining static file serving in spec
-	fsys, _ := fs.Sub(content, "swagger-ui")
+	// TODO defining static file serving in spec is not supported?
+	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
 	router.StaticFS("/v2/docs", http.FS(fsys))
 
-	oas, err := content.ReadFile("swagger-ui/openapi.yaml")
-	if err != nil {
-		panic("openapi spec not found")
-	}
-	// TODO defining static file serving in spec
-	router.GET("/v2/openapi.yaml", func(c *gin.Context) { c.String(http.StatusOK, string(oas)) })
 	log.Fatal(router.Run(":8090"))
 }

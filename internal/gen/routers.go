@@ -65,6 +65,13 @@ var routes = Routes{
 	},
 
 	{
+		"OpenapiYamlGet",
+		http.MethodGet,
+		"/v2/openapi.yaml",
+		OpenapiYamlGet,
+	},
+
+	{
 		"FakeDataFile",
 		http.MethodGet,
 		"/v2/fake/data_file",
