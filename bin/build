@@ -7,7 +7,7 @@ SPEC="openapi.yaml"
 GEN_OUT_DIR="."
 PWD="$(pwd)"
 
-x.run() {
+x.openapi() {
   docker run --rm \
     -v "${PWD}/internal:/local" \
     -e GO_POST_PROCESS_FILE="/usr/bin/env gofmt -w" \
@@ -17,11 +17,15 @@ x.run() {
 }
 
 x.validate() {
-  x.run validate -i "/local/$SPEC"
+  x.openapi validate -i "/local/$SPEC"
 }
 
 x.generate() {
-  x.run generate -g go-gin-server -i "/local/$SPEC" -o "/local/$GEN_OUT_DIR" --additional-properties=packageName=openapi #,key=val,...
+  # TODO should generate everything in separate folder, then diff what we want:
+  # models should be overriden, at least until seeing the best way to diff against sqlc generated ones
+  # api_* should all be ignored -> we get compilation errors if we dont implement a new route or the name has changed.
+
+  x.openapi generate -g go-gin-server -i "/local/$SPEC" -o "/local/$GEN_OUT_DIR" --additional-properties=packageName=openapi #,key=val,...
   local name="$(id -un)"
   sudo chown -R "$name:$name" "internal/$GEN_OUT_DIR"
   cp cmd/rest-server/swagger-override/swagger-initializer.js cmd/rest-server/swagger-ui/
@@ -31,6 +35,11 @@ x.generate() {
 x.build() {
   x.generate
   go build -o openapi-go-gin-postgres-sqlc "$PWD"/cmd/rest-server/main.go
+}
+
+x.run() {
+  x.build
+  ./openapi-go-gin-postgres-sqlc
 }
 
 x.download_swagger_ui() {
