@@ -24,6 +24,7 @@ x.generate() {
   x.run generate -g go-gin-server -i "/local/$SPEC" -o "/local/$GEN_OUT_DIR" --additional-properties=packageName=openapi #,key=val,...
   local name="$(id -un)"
   sudo chown -R "$name:$name" "internal/$GEN_OUT_DIR"
+  cp cmd/rest-server/swagger-override/swagger-initializer.js cmd/rest-server/swagger-ui/
   cp internal/"$SPEC" "$PWD"/cmd/rest-server/swagger-ui
 }
 
@@ -37,7 +38,9 @@ x.download_swagger_ui() {
   curl -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
   tar xf swagger-ui.tar.gz swagger-ui-"${name#*v}"/dist --one-top-level=swagger-ui --strip-components=2
   rm swagger-ui.tar.gz
-  # mv swagger-ui cmd/rest-server #swagger-initializer has to be changed manually
+  mkdir -p cmd/rest-server/swagger-ui
+  mv swagger-ui/* cmd/rest-server/swagger-ui/
+  rm -r swagger-ui
 }
 # --------------------- completion and delegation --------------------
 #      `complete -C foo foo` > `source <(foo bloated_completion)`
