@@ -1,2 +1,3 @@
 swagger-ui
 openapi-go-gin-postgres-sqlc
+bin/tools/*
