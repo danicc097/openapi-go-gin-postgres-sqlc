@@ -52,9 +52,9 @@ x.download_swagger_ui() {
   rm -r swagger-ui
 }
 
-x.migrate_up() {
+x.migrate() {
   # TODO read .env
-  migrate -path db/migrations/ -database postgres://postgres:postgres@localhost:5555/postgres?sslmode=disable up
+  migrate -path db/migrations/ -database postgres://postgres:postgres@localhost:5555/postgres?sslmode=disable "$*"
 }
 
 x.create_migration() {
