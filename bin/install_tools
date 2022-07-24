@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -o errexit -eo pipefail
+
+cd internal/tools
+go mod tidy
+
+# go install -v \
+#   -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate
+
+# go install -v \
+#   github.com/golangci/golangci-lint/cmd/golangci-lint \
+#   github.com/kyleconroy/sqlc/cmd/sqlc

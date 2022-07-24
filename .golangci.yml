@@ -1,0 +1,127 @@
+# https://github.com/MarioCarrion/todo-api-microservice-example/blob/main/.golangci.yml
+
+linters:
+  enable-all: true
+
+  disable:
+    - goerr113
+    - gofumpt
+    - gomnd
+    - nonamedreturns
+    # deprecated
+    - exhaustivestruct
+    - golint
+    - interfacer
+    - maligned
+    - scopelint
+    # disabled because of go1.18, added to avoid the initial warning when running
+    # https://github.com/golangci/golangci-lint/issues/2649
+    - bodyclose
+    - contextcheck
+    - nilerr
+    - noctx
+    - rowserrcheck
+    - sqlclosecheck
+    - structcheck
+    - tparallel
+    - unparam
+    - wastedassign
+
+linters-settings:
+  gofmt:
+    # Simplify code: gofmt with `-s` option.
+    simplify: true
+  lll:
+    line-length: 130
+  gci:
+    no-inline-comments: true
+    no-prefix-comments: true
+    sections:
+      - standard
+      - default
+      - prefix(github.com/danicc097/openapi-go-gin-postgres-sqlc)
+    section-separators:
+      - newLine
+    skip-generated: false
+  exhaustruct:
+    include:
+      - "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal.*Params"
+  ireturn:
+    allow:
+      - error
+      - stdlib
+      #
+      - "go.opentelemetry.io/otel/trace.Span"
+  varnamelen:
+    max-distance: 10
+    ignore-type-assert-ok: true
+    ignore-map-index-ok: true
+    ignore-chan-recv-ok: true
+    ignore-decls:
+      - b bytes.Buffer
+      - h http.Handler
+      - id string
+      - ok bool
+      - r *http.Request
+      - w http.ResponseWriter
+  wrapcheck:
+    ignoreSigs:
+      - internaldomain.WrapErrorf(
+      - internaldomain.NewErrorf(
+      - internal.NewErrorf(
+      - internal.WrapErrorf(
+    ignorePackageGlobs:
+      - github.com/danicc097/openapi-go-gin-postgres-sqlc/*
+issues:
+  exclude-rules:
+    - path: internal/gen/
+      linters:
+        - lll
+        - godot
+        - wsl
+    # All tests
+    - path: _test\.go
+      linters:
+        - cyclop
+        - errchkjson
+        - exhaustruct
+        - funlen
+        - goerr113
+        - lll
+        - nonamedreturns
+        - nosnakecase
+        - varnamelen
+        - wrapcheck
+    # Handles the C4 diagrams
+    - path: internal/doc/doc.go
+      linters:
+        - lll
+        - revive
+        - stylecheck
+    # Final binaries
+    - path: cmd/
+      linters:
+        - cyclop
+        - funlen
+        - gocognit
+        - unparam
+    - path: cmd/internal/postgresql.go
+      linters:
+        - revive # blank-imports
+    # XXX: This will be reremove in future episodes when "exhaustruct" is enabled
+    - path: internal/postgresql/task.go
+      linters:
+        - lll
+    - path: internal/memcached/task.go
+      linters:
+        - lll
+    # Because of the env var testing and using t.Setenv
+    - path: internal/envvar/envvar_test.go
+      linters:
+        - paralleltest
+        - thelper
+        - tparallel
+    # Because these are tools
+    - path: internal/tools/tools.go
+      linters:
+        - typecheck

@@ -2,5 +2,13 @@
   "yaml.schemas": {
     "https://raw.githubusercontent.com/docker/cli/master/cli/compose/schema/data/config_schema_v3.8.json": "*compose*.yml",
     ".vscode/schema.json": "openapi.yaml"
-  }
+  },
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": [
+    "-c",
+    "./.golangci.yml",
+    "--issues-exit-code=0",
+    "--fast"
+  ],
+  "go.lintOnSave": "workspace",
 }
