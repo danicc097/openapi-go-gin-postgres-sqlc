@@ -79,6 +79,7 @@ issues:
         - lll
         - godot
         - wsl
+        - gochecknoglobals
     # All tests
     - path: _test\.go
       linters:

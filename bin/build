@@ -10,7 +10,7 @@ PWD="$(pwd)"
 x.openapi() {
   docker run --rm \
     -v "${PWD}/internal:/local" \
-    -e GO_POST_PROCESS_FILE="/usr/bin/env gofmt -w" \
+    -e GO_POST_PROCESS_FILE="/usr/bin/env gofmt -w -s" \
     -e "GIT_USER_ID=$GIT_USER_ID" \
     -e "GIT_REPO_ID=$GIT_REPO_ID" \
     openapitools/openapi-generator-cli "$@"
@@ -51,6 +51,16 @@ x.download_swagger_ui() {
   mv swagger-ui/* internal/static/swagger-ui/
   rm -r swagger-ui
 }
+
+x.migrate_up() {
+  # TODO read .env
+  migrate -path db/migrations/ -database postgres://postgres:postgres@localhost:5555/postgres?sslmode=disable up
+}
+
+x.create_migration() {
+  migrate create -ext sql -dir db/migrations/ "$*"
+}
+
 # --------------------- completion and delegation --------------------
 #      `complete -C foo foo` > `source <(foo bloated_completion)`
 

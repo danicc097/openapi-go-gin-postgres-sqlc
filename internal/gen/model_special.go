@@ -18,7 +18,7 @@ type Special struct {
 
 	Super string `json:"super,omitempty"`
 
-	Var123Number string `json:"123_number,omitempty"`
+	Var123Number string `json:"123Number,omitempty"`
 
 	ArrayTest string `json:"array[test],omitempty"`
 

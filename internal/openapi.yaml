@@ -852,7 +852,7 @@ components:
           type: string
         super:
           type: string
-        "123_number":
+        "123Number":
           type: string
         array[test]:
           type: string
@@ -923,7 +923,7 @@ components:
       properties:
         size:
           type: integer
-        nested_pig:
+        nestedPig:
           $ref: "#/components/schemas/Pig"
       type: object
     updatePet_request:

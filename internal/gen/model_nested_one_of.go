@@ -13,5 +13,5 @@ type NestedOneOf struct {
 
 	Size int32 `json:"size,omitempty"`
 
-	NestedPig Pig `json:"nested_pig,omitempty"`
+	NestedPig Pig `json:"nestedPig,omitempty"`
 }
