@@ -6,18 +6,25 @@ export GIT_REPO_ID=openapi-go-gin-postgres-sqlc
 SPEC="openapi.yaml"
 GEN_OUT_DIR="."
 PWD="$(pwd)"
+export GENVERS=6.0.1
 
-x.openapi() {
-  docker run --rm \
-    -v "${PWD}/internal:/local" \
-    -e GO_POST_PROCESS_FILE="/usr/bin/env gofmt -w -s" \
-    -e "GIT_USER_ID=$GIT_USER_ID" \
-    -e "GIT_REPO_ID=$GIT_REPO_ID" \
-    openapitools/openapi-generator-cli "$@"
+x.fetch.jar() {
+  local url="https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/$GENVERS/openapi-generator-cli-$GENVERS.jar"
+  echo "$url > openapi-generator-cli.jar"
+  curl -L "$url" -o openapi-generator-cli.jar
 }
 
+# x.openapi() {
+#   docker run --rm \
+#     -v "${PWD}/internal:/local" \
+#     -e GO_POST_PROCESS_FILE="/usr/bin/env gofmt -w -s" \
+#     -e "GIT_USER_ID=$GIT_USER_ID" \
+#     -e "GIT_REPO_ID=$GIT_REPO_ID" \
+#     openapitools/openapi-generator-cli "$@"
+# }
+
 x.validate() {
-  x.openapi validate -i "/local/$SPEC"
+  java -jar openapi-generator-cli.jar validate -i "$SPEC"
 }
 
 x.generate-api() {
@@ -25,11 +32,12 @@ x.generate-api() {
   # models should be overriden, at least until seeing the best way to diff against sqlc generated ones
   # api_* should all be ignored -> we get compilation errors if we dont implement a new route or the name has changed.
 
-  x.openapi generate -g go-gin-server -i "/local/$SPEC" -o "/local/$GEN_OUT_DIR" --additional-properties=packageName=openapi,apiPath=gen
-  local name="$(id -un)"
-  sudo chown -R "$name:$name" "internal/$GEN_OUT_DIR"
+  java -jar openapi-generator-cli.jar generate -g go-gin-server -i "$SPEC" -o "internal/$GEN_OUT_DIR" --additional-properties=packageName=openapi,apiPath=gen
+  # not needed with locally generated code
+  # local name="$(id -un)"
+  # sudo chown -R "$name:$name" "internal/$GEN_OUT_DIR"
   cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
-  cp internal/"$SPEC" "$PWD"/internal/static/swagger-ui
+  cp "$SPEC" "$PWD"/internal/static/swagger-ui
 }
 
 x.generate-sqlc() {

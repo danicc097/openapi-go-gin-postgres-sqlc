@@ -9,12 +9,14 @@ if [[ $(basename "$PWD") != "$REPO_NAME" ]]; then
   exit 1
 fi
 
-QUERIES_DIR="internal/services/queries"
-pg_format \
-  --spaces 2 \
-  --wrap-limit 88 \
-  --function-case 2 \
-  --keyword-case 1 \
-  --placeholder "sqlc\\.(arg|narg)\\(:?[^)]*\\)" \
-  --inplace \
-  $(find "$QUERIES_DIR" -maxdepth 1 -name '*.sql' | tr '\n' ' ')
+SQL_DIRS="internal/services/queries db/migrations"
+for slq_dir in $SQL_DIRS; do
+  pg_format \
+    --spaces 2 \
+    --wrap-limit 88 \
+    --function-case 2 \
+    --keyword-case 1 \
+    --placeholder "sqlc\\.(arg|narg)\\(:?[^)]*\\)" \
+    --inplace \
+    $(find "$slq_dir" -maxdepth 1 -name '*.sql' | tr '\n' ' ')
+done
