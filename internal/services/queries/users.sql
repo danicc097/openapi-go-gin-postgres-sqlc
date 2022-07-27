@@ -32,17 +32,16 @@ limit 1;
 insert into users (username, email, password, salt, is_superuser, is_verified)
   values (@username, @email, @password, @salt, @is_superuser, @is_verified)
 returning
-  user_id, username, email, role, is_verified, is_active, is_superuser,
-    created_at, updated_at;
+  user_id, username, email, role, is_verified, is_active, is_superuser, created_at, updated_at;
 
 -- name: UpdateUserById :one
 update
   users
 set
   password = COALESCE(sqlc.narg('password'), password),
-  salt     = COALESCE(sqlc.narg('salt'), salt),
+  salt = COALESCE(sqlc.narg('salt'), salt),
   username = COALESCE(sqlc.narg('username'), username),
-  email    = COALESCE(LOWER(sqlc.narg('email')), email)
+  email = COALESCE(LOWER(sqlc.narg('email')), email)
 where
   user_id = @user_id
 returning
@@ -92,7 +91,7 @@ update
   users
 set
   password = @password,
-  salt     = @salt
+  salt = @salt
 where
   email = LOWER(@email);
 

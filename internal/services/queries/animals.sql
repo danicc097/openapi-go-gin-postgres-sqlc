@@ -5,8 +5,7 @@ select
   metadata
 from
   pets
-left join animals using (animal_id)
-where pet_id = @pet_id
+  left join animals using (animal_id)
+where
+  pet_id = @pet_id
 limit 1;
-
-

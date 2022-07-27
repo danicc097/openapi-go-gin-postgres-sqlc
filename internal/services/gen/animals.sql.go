@@ -16,8 +16,9 @@ select
   metadata
 from
   pets
-left join animals using (animal_id)
-where pet_id = $1
+  left join animals using (animal_id)
+where
+  pet_id = $1
 limit 1
 `
 

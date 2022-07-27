@@ -33,6 +33,7 @@ x.generate-api() {
 }
 
 x.generate-sqlc() {
+  bin/scripts/sql-format.sh
   cd internal/services && sqlc generate && cd - || exit
 }
 

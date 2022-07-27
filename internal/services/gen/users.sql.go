@@ -182,8 +182,7 @@ const RegisterNewUser = `-- name: RegisterNewUser :one
 insert into users (username, email, password, salt, is_superuser, is_verified)
   values ($1, $2, $3, $4, $5, $6)
 returning
-  user_id, username, email, role, is_verified, is_active, is_superuser,
-    created_at, updated_at
+  user_id, username, email, role, is_verified, is_active, is_superuser, created_at, updated_at
 `
 
 type RegisterNewUserParams struct {
@@ -236,7 +235,7 @@ update
   users
 set
   password = $1,
-  salt     = $2
+  salt = $2
 where
   email = LOWER($3)
 `
@@ -257,9 +256,9 @@ update
   users
 set
   password = COALESCE($1, password),
-  salt     = COALESCE($2, salt),
+  salt = COALESCE($2, salt),
   username = COALESCE($3, username),
-  email    = COALESCE(LOWER($4), email)
+  email = COALESCE(LOWER($4), email)
 where
   user_id = $5
 returning
