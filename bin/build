@@ -20,7 +20,7 @@ x.validate() {
   x.openapi validate -i "/local/$SPEC"
 }
 
-x.generate() {
+x.generate-api() {
   # TODO should generate everything in separate folder, then diff what we want:
   # models should be overriden, at least until seeing the best way to diff against sqlc generated ones
   # api_* should all be ignored -> we get compilation errors if we dont implement a new route or the name has changed.
@@ -32,12 +32,17 @@ x.generate() {
   cp internal/"$SPEC" "$PWD"/internal/static/swagger-ui
 }
 
+x.generate-sqlc() {
+  cd internal/services && sqlc generate && cd - || exit
+}
+
 x.build() {
-  x.generate
+  x.generate-api
   go build -o openapi-go-gin-postgres-sqlc "$PWD"/cmd/rest-server/main.go
 }
 
 x.run() {
+  docker-compose up -d &
   x.build
   ./openapi-go-gin-postgres-sqlc
 }

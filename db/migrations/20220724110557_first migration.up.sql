@@ -27,7 +27,8 @@ CREATE TABLE pets (
     pet_id SERIAL NOT NULL,
     color TEXT,
     metadata JSONB,
-    PRIMARY KEY (pet_id)
+    PRIMARY KEY (pet_id),
+    FOREIGN KEY(animal_id) REFERENCES animals (animal_id) ON DELETE CASCADE
 );
 
 CREATE TABLE animals (
