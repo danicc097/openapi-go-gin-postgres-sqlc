@@ -4,7 +4,7 @@ export GIT_USER_ID=danicc097
 export GIT_REPO_ID=openapi-go-gin-postgres-sqlc
 
 SPEC="openapi.yaml"
-GEN_OUT_DIR="."
+GEN_OUT_DIR="internal"
 PWD="$(pwd)"
 export GENVERS=6.0.1
 
@@ -31,11 +31,13 @@ x.generate-api() {
   # TODO should generate everything in separate folder, then diff what we want:
   # models should be overriden, at least until seeing the best way to diff against sqlc generated ones
   # api_* should all be ignored -> we get compilation errors if we dont implement a new route or the name has changed.
-
-  java -jar openapi-generator-cli.jar generate -g go-gin-server -i "$SPEC" -o "internal/$GEN_OUT_DIR" --additional-properties=packageName=openapi,apiPath=gen
+  echo $GIT_USER_ID $GIT_REPO_ID
+  java -jar openapi-generator-cli.jar generate -g go-gin-server -i "$SPEC" -o "$GEN_OUT_DIR" --additional-properties=packageName=openapi,apiPath=gen -t internal/go-gin-server-templates
+  mkdir -p "$GEN_OUT_DIR"/models
+  mv "$GEN_OUT_DIR"/gen/model_* "$GEN_OUT_DIR"/models
   # not needed with locally generated code
   # local name="$(id -un)"
-  # sudo chown -R "$name:$name" "internal/$GEN_OUT_DIR"
+  # sudo chown -R "$name:$name" "$GEN_OUT_DIR"
   cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
   cp "$SPEC" "$PWD"/internal/static/swagger-ui
 }
