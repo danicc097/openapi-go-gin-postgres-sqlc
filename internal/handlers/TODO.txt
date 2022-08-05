@@ -1,3 +1,0 @@
-generate api_*.go, move to <temp_folder> and parse handler funcs  --> get list of operation ids and delete
-parse handler funcs the same way in handlers/*.go -->  get list of operation ids
-op ids not there --> generate not_implemented.go with handler funcs that return notimplemented status, implement at dev's discretion
