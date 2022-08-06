@@ -20,10 +20,13 @@ func main() {
 			missingHandlers = append(missingHandlers, v)
 		}
 	}
+	if len(missingHandlers) == 0 {
+		fmt.Printf("All routes up to date.\n")
+		return
+	}
 	sort.Slice(missingHandlers, func(i, j int) bool {
 		return missingHandlers[i].OperationId < missingHandlers[j].OperationId
 	})
-
 	fmt.Printf("Generating non-implemented route handlers: %s\n", missingHandlers)
 	outPath := path.Join(cwd, "internal/handlers/not_implemented.gen.go")
 	f, err := os.Create(outPath)

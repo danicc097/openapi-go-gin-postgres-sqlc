@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 export GIT_USER_ID=danicc097
 export GIT_REPO_ID=openapi-go-gin-postgres-sqlc
 export GO_POST_PROCESS_FILE="/usr/bin/env gofmt -w -s"
@@ -30,7 +32,8 @@ x.validate() {
 
 x.generate-api() {
   echo $GIT_USER_ID $GIT_REPO_ID
-  java -jar openapi-generator-cli.jar generate -g go-gin-server -i "$SPEC" -o "$GEN_OUT_DIR" --additional-properties=packageName=openapi,apiPath=gen -t internal/go-gin-server-templates
+  echo Generating API from "$SPEC"
+  java -jar openapi-generator-cli.jar generate -g go-gin-server -i "$SPEC" -o "$GEN_OUT_DIR" --additional-properties=packageName=openapi,apiPath=gen -t internal/go-gin-server-templates >/dev/null
   gofmt -w -s "$GEN_OUT_DIR"
   mkdir -p "$GEN_OUT_DIR"/gen/models
   mv "$GEN_OUT_DIR"/gen/model_*.go "$GEN_OUT_DIR"/gen/models
@@ -39,7 +42,8 @@ x.generate-api() {
   # sudo chown -R "$name:$name" "$GEN_OUT_DIR"
   cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
   cp "$SPEC" "$PWD"/internal/static/swagger-ui
-  go run cmd/post-generate-api/main.go
+  go build -o post-generate-api "$PWD"/cmd/post-generate-api/main.go
+  ./post-generate-api
   find "$GEN_OUT_DIR/gen/" -name "api_*.go" -type f -delete
 }
 
