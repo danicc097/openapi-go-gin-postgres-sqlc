@@ -20,8 +20,3 @@ func GetInventory(c *gin.Context) {
 func GetOrderById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
-
-// PlaceOrder - Place an order for a pet
-func PlaceOrder(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
-}

@@ -1,5 +1,11 @@
+Dockerfile
 api/openapi.yaml
 gen/README.md
+gen/api_docs.go
+gen/api_fake.go
+gen/api_pet.go
+gen/api_store.go
+gen/api_user.go
 gen/model_allof_tag_api_response.go
 gen/model_animal.go
 gen/model_any_of_pig.go

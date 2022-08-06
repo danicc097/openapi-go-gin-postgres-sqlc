@@ -31,18 +31,3 @@ func FindPetsByTags(c *gin.Context) {
 func GetPetById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
-
-// UpdatePet - Update an existing pet
-func UpdatePet(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
-}
-
-// UpdatePetWithForm - Updates a pet in the store with form data
-func UpdatePetWithForm(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
-}
-
-// UploadFile - uploads an image
-func UploadFile(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
-}

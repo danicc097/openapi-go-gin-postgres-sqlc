@@ -4,7 +4,7 @@ import (
 	"os"
 )
 
-func ExampleGenNotImpHandlers() {
+func ExampleGenerateHandlers() {
 
 	handlers := []Handler{
 		{
@@ -16,7 +16,7 @@ func ExampleGenNotImpHandlers() {
 			Comment:     "MyGeneratedOperationId2 has this cool comment.",
 		},
 	}
-	GenNotImpHandlers(handlers, os.Stdout)
+	GenerateHandlers(handlers, os.Stdout)
 	//Output:
 	//package handlers
 	//

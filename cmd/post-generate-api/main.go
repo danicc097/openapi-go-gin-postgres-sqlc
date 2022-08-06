@@ -1,28 +1,29 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"path"
 
 	postgen "github.com/danicc097/openapi-go-gin-postgres-sqlc/postgen"
 )
 
 func main() {
-	// TODO generate api_*.go, parse them and extract handlers then delete all  --> get list of operation ids and delete
-	// parse handler funcs the same way in handlers/*.go -->  get list of operation ids
-	// op ids not there --> generate not_implemented.go if not exists with handler funcs, else parse again and append the ones that dont exist.
-	// all return notimplemented status, implement at dev's discretion
+	cwd, _ := os.Getwd()
+	genHandlers := postgen.ParseHandlers(path.Join(cwd, "internal/gen/api_*.go"))
+	localHandlers := postgen.ParseHandlers(path.Join(cwd, "internal/handlers/api_*.go"))
 
-	// handlers should contain all handlers that do not exist in api_*.go files but exist in handlers/*.go (excluding not_implemented.go)
-	handlers := []postgen.Handler{
-		{
-			OperationId: "MyGeneratedOperationId1",
-			Comment:     "MyGeneratedOperationId1 has this cool comment.",
-		},
-		{
-			OperationId: "MyGeneratedOperationId2",
-			Comment:     "MyGeneratedOperationId2 has this cool comment.",
-		},
+	missingHandlers := []postgen.Handler{}
+	for k, v := range genHandlers {
+		if _, ok := localHandlers[k]; !ok {
+			missingHandlers = append(missingHandlers, v)
+		}
 	}
-	// out to handlers/not_implemented.go and overwrite
-	postgen.GenNotImpHandlers(handlers, os.Stdout)
+	fmt.Printf("Generating non-implemented route handlers: %s\n", missingHandlers)
+	outPath := path.Join(cwd, "internal/handlers/not_implemented.go")
+	f, err := os.Create(outPath)
+	if err != nil {
+		panic(err)
+	}
+	postgen.GenerateHandlers(missingHandlers, f)
 }

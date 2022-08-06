@@ -40,6 +40,9 @@ x.generate-api() {
   # sudo chown -R "$name:$name" "$GEN_OUT_DIR"
   cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
   cp "$SPEC" "$PWD"/internal/static/swagger-ui
+  go run cmd/post-generate-api/main.go
+  # not really necessary since they're not used and dont collide
+  # find "$GEN_OUT_DIR/gen/" -name "api_*.go" -type f -delete
 }
 
 x.generate-sqlc() {
