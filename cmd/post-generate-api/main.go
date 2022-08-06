@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"sort"
 
 	postgen "github.com/danicc097/openapi-go-gin-postgres-sqlc/postgen"
 )
@@ -19,8 +20,12 @@ func main() {
 			missingHandlers = append(missingHandlers, v)
 		}
 	}
+	sort.Slice(missingHandlers, func(i, j int) bool {
+		return missingHandlers[i].OperationId < missingHandlers[j].OperationId
+	})
+
 	fmt.Printf("Generating non-implemented route handlers: %s\n", missingHandlers)
-	outPath := path.Join(cwd, "internal/handlers/not_implemented.go")
+	outPath := path.Join(cwd, "internal/handlers/not_implemented.gen.go")
 	f, err := os.Create(outPath)
 	if err != nil {
 		panic(err)

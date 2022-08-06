@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	"github.com/gin-gonic/gin"
 )
 
