@@ -1,4 +1,6 @@
-FROM golang:1.10 AS build
+# TODO adapt
+
+FROM golang:1.18 AS build
 WORKDIR /go/src
 COPY {{apiPath}} ./{{apiPath}}
 COPY main.go .
