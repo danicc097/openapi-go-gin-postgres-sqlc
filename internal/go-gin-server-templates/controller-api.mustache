@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 ){{#operation}}
 
-// {{nickname}} - {{{summary}}}.
+// {{nickname}} {{#lambda.lowercase}}{{{summary}}}{{/lambda.lowercase}}.
 {{#isDeprecated}}
 // Deprecated
 {{/isDeprecated}}

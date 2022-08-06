@@ -15,13 +15,11 @@ const (
 	{{/enumVars}}
 	{{/allowableValues}}
 ){{/isEnum}}{{^isEnum}}{{#description}}
-// {{classname}} - {{{description}}}.{{/description}}
-type {{classname}} struct {
-{{#vars}}{{#description}}
+// {{classname}} {{#lambda.lowercase}}{{{description}}}{{/lambda.lowercase}}.{{/description}}
+type {{classname}} struct { {{#vars}}{{#description}}
 	// {{{.}}}.{{/description}}
 	{{#deprecated}}
 	// Deprecated.
 	{{/deprecated}}
-	{{name}} {{#isNullable}}*{{/isNullable}}{{{dataType}}} `json:"{{baseName}}{{^required}},omitempty{{/required}}"{{#vendorExtensions.x-go-custom-tag}} {{{.}}}{{/vendorExtensions.x-go-custom-tag}}`
-{{/vars}}
+	{{name}} {{#isNullable}}*{{/isNullable}}{{{dataType}}} `json:"{{baseName}}{{^required}},omitempty{{/required}}"{{#vendorExtensions.x-go-custom-tag}} {{{.}}}{{/vendorExtensions.x-go-custom-tag}}`{{/vars}}
 }{{/isEnum}}{{/model}}{{/models}}

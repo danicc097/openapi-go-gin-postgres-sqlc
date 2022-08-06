@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -32,7 +33,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 {{range .Handlers}}
-{{.Comment}}
+// {{.Comment}}
 func {{.OperationId}}(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
@@ -65,15 +66,14 @@ func ParseHandlers(pattern string) map[string]Handler {
 		if err != nil {
 			panic(err)
 		}
-		f, err := parser.ParseFile(fset, "", string(content), 0)
+		f, err := parser.ParseFile(fset, "", string(content), parser.ParseComments)
 		if err != nil {
 			panic(err)
 		}
 
-		// TODO does not return function comments (empty str)
 		for _, d := range f.Decls {
 			if fn, isFn := d.(*ast.FuncDecl); isFn {
-				funcs[fn.Name.Name] = Handler{OperationId: fn.Name.Name, Comment: fn.Doc.Text()}
+				funcs[fn.Name.Name] = Handler{OperationId: fn.Name.Name, Comment: strings.TrimSpace(fn.Doc.Text())}
 			}
 		}
 	}

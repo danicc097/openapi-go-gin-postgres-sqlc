@@ -2,6 +2,7 @@
 
 export GIT_USER_ID=danicc097
 export GIT_REPO_ID=openapi-go-gin-postgres-sqlc
+export GO_POST_PROCESS_FILE="/usr/bin/env gofmt -w -s"
 
 SPEC="openapi.yaml"
 GEN_OUT_DIR="internal"
@@ -28,11 +29,9 @@ x.validate() {
 }
 
 x.generate-api() {
-  # TODO should generate everything in separate folder, then diff what we want:
-  # models should be overriden, at least until seeing the best way to diff against sqlc generated ones
-  # api_* should all be ignored -> we get compilation errors if we dont implement a new route or the name has changed.
   echo $GIT_USER_ID $GIT_REPO_ID
   java -jar openapi-generator-cli.jar generate -g go-gin-server -i "$SPEC" -o "$GEN_OUT_DIR" --additional-properties=packageName=openapi,apiPath=gen -t internal/go-gin-server-templates
+  gofmt -w -s "$GEN_OUT_DIR"
   mkdir -p "$GEN_OUT_DIR"/models
   mv "$GEN_OUT_DIR"/gen/model_* "$GEN_OUT_DIR"/models
   # not needed with locally generated code
