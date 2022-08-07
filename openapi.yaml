@@ -707,6 +707,7 @@ components:
         name: Order
     Category:
       description: A category for a pet
+      x-go-custom-tag: acustomtag:"category"
       example:
         name: name
         id: 6
@@ -792,21 +793,25 @@ components:
         id:
           format: int64
           type: integer
+          x-go-custom-tag: acustomtag:"id"
         category:
           $ref: "#/components/schemas/Category"
         name:
           example: doggie
           type: string
+          x-go-custom-tag: acustomtag:"name"
         photoUrls:
           items:
             type: string
           type: array
+          x-go-custom-tag: acustomtag:"photo_urls"
           xml:
             name: photoUrl
             wrapped: true
         tags:
           items:
             $ref: "#/components/schemas/Tag"
+          x-go-custom-tag: acustomtag:"tags"
           type: array
           xml:
             name: tag
@@ -814,6 +819,7 @@ components:
         status:
           deprecated: true
           description: pet status in the store
+          x-go-custom-tag: acustomtag:"status"
           enum:
             - available
             - pending

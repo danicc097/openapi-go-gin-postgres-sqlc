@@ -11,12 +11,12 @@ package models
 
 // Pet a pet for sale in the pet store.
 type Pet struct {
-	Id        int64    `json:"id,omitempty"`
-	Category  Category `json:"category,omitempty"`
-	Name      string   `json:"name"`
-	PhotoUrls []string `json:"photoUrls"`
-	Tags      []Tag    `json:"tags,omitempty"`
+	Id        int64    `json:"id,omitempty" acustomtag:"id"`
+	Category  Category `json:"category,omitempty" acustomtag:"category"`
+	Name      string   `json:"name" acustomtag:"name"`
+	PhotoUrls []string `json:"photoUrls" acustomtag:"photo_urls"`
+	Tags      []Tag    `json:"tags,omitempty" acustomtag:"tags"`
 	// pet status in the store.
 	// Deprecated.
-	Status string `json:"status,omitempty"`
+	Status string `json:"status,omitempty" acustomtag:"status"`
 }

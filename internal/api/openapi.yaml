@@ -716,6 +716,7 @@ components:
       type: object
       xml:
         name: Category
+      x-go-custom-tag: acustomtag:"category"
     User:
       description: A User who is purchasing from the pet store
       example:
@@ -787,11 +788,13 @@ components:
         id:
           format: int64
           type: integer
+          x-go-custom-tag: acustomtag:"id"
         category:
           $ref: '#/components/schemas/Category'
         name:
           example: doggie
           type: string
+          x-go-custom-tag: acustomtag:"name"
         photoUrls:
           items:
             type: string
@@ -799,6 +802,7 @@ components:
           xml:
             name: photoUrl
             wrapped: true
+          x-go-custom-tag: acustomtag:"photo_urls"
         tags:
           items:
             $ref: '#/components/schemas/Tag'
@@ -806,6 +810,7 @@ components:
           xml:
             name: tag
             wrapped: true
+          x-go-custom-tag: acustomtag:"tags"
         status:
           deprecated: true
           description: pet status in the store
@@ -814,6 +819,7 @@ components:
           - pending
           - sold
           type: string
+          x-go-custom-tag: acustomtag:"status"
       required:
       - name
       - photoUrls
