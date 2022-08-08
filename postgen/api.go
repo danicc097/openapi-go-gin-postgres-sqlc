@@ -24,7 +24,7 @@ func (h Handler) String() string {
 	return fmt.Sprintf("%v", h.OperationId)
 }
 
-// GenerateHandlers generates fills in a template with the
+// GenerateHandlers fills in a template with the
 // given route handlers to a dest.
 func GenerateHandlers(handlers []Handler, dest io.Writer) {
 	t := template.Must(template.New("").Parse(`package handlers
