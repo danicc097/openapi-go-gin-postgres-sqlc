@@ -1,12 +1,13 @@
-package postgen
+package postgen_test
 
 import (
 	"os"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/postgen"
 )
 
 func ExampleGenerateHandlers() {
-
-	handlers := []Handler{
+	handlers := []postgen.Handler{
 		{
 			OperationId: "MyGeneratedOperationId1",
 			Comment:     "MyGeneratedOperationId1 has this cool comment.",
@@ -18,7 +19,7 @@ func ExampleGenerateHandlers() {
 			Origin:      "api_2.go",
 		},
 	}
-	GenerateHandlers(handlers, os.Stdout)
+	postgen.GenerateHandlers(handlers, os.Stdout)
 	//Output:
 	//package handlers
 	//

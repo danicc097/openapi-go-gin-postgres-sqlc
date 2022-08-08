@@ -59,16 +59,19 @@ func {{.OperationId}}(c *gin.Context) {
 // found in all files matching pattern.
 func ParseHandlers(pattern string) map[string]Handler {
 	funcs := make(map[string]Handler)
+	fset := token.NewFileSet()
+
 	paths, err := filepath.Glob(pattern)
 	if err != nil {
 		panic(err)
 	}
-	fset := token.NewFileSet()
+
 	for _, p := range paths {
 		content, err := os.ReadFile(p)
 		if err != nil {
 			panic(err)
 		}
+
 		f, err := parser.ParseFile(fset, "", string(content), parser.ParseComments)
 		if err != nil {
 			panic(err)
@@ -76,9 +79,14 @@ func ParseHandlers(pattern string) map[string]Handler {
 
 		for _, d := range f.Decls {
 			if fn, isFn := d.(*ast.FuncDecl); isFn {
-				funcs[fn.Name.Name] = Handler{OperationId: fn.Name.Name, Comment: strings.TrimSpace(fn.Doc.Text()), Origin: path.Base(p)}
+				funcs[fn.Name.Name] = Handler{
+					OperationId: fn.Name.Name,
+					Comment:     strings.TrimSpace(fn.Doc.Text()),
+					Origin:      path.Base(p),
+				}
 			}
 		}
 	}
+
 	return funcs
 }

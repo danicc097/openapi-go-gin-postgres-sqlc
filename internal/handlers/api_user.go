@@ -10,6 +10,7 @@ import (
 // CreateUser - Create user
 func CreateUser(c *gin.Context) {
 	var user models.User
+
 	c.BindJSON(&user)
 	c.String(http.StatusOK, "Would have created a user for %v", user.Username)
 }
