@@ -7,7 +7,7 @@ create type role as ENUM (
 );
 
 create table users (
-  user_id serial not null,
+  user_id bigserial not null,
   username text not null,
   email text not null,
   first_name text,
@@ -15,7 +15,7 @@ create table users (
   role role default 'user' not null,
   is_verified boolean default 'False' not null,
   salt text not null,
-  password TEXT not null,
+  password text not null,
   is_active boolean default 'True' not null,
   is_superuser boolean default 'False' not null,
   created_at timestamp without time zone default current_timestamp not null,
@@ -26,7 +26,7 @@ create table users (
 );
 
 create table pets (
-  pet_id serial not null,
+  pet_id bigserial not null,
   color text,
   metadata jsonb,
   primary key (pet_id),
@@ -34,14 +34,14 @@ create table pets (
 );
 
 create table animals (
-  animal_id serial not null,
+  animal_id bigserial not null,
   name text not null,
   primary key (animal_id),
   unique (name)
 );
 
 create table pet_tags (
-  pet_tag_id serial not null,
+  pet_tag_id bigserial not null,
   name text not null,
   primary key (pet_tag_id),
   unique (name)

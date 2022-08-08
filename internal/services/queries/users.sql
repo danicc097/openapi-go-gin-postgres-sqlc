@@ -8,16 +8,18 @@ select
   is_superuser,
   created_at,
   updated_at,
-  COALESCE(
-    case when @get_db_data::boolean then
-      (user_id)
-    end, -1)::int as user_id,
-  case when @get_db_data::boolean then
-    (salt)
-  end as salt,
-  case when @get_db_data::boolean then
-    (password)
-  end as password
+  user_id,
+  salt,
+  password
+  -- case when @get_db_data::boolean then
+  --   (user_id)
+  -- end as user_id, -- TODO sqlc.yaml overrides sql.NullInt64
+  -- case when @get_db_data::boolean then
+  --   (salt)
+  -- end as salt, -- TODO sqlc.yaml overrides sql.NullString
+  -- case when @get_db_data::boolean then
+  --   (password)
+  -- end as password -- TODO sqlc.yaml overrides sql.NullString
 from
   users
 where (email = LOWER(sqlc.narg('email'))::text

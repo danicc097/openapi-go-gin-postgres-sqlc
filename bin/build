@@ -15,6 +15,14 @@ SPEC="openapi.yaml"
 GEN_OUT_DIR="internal"
 PWD="$(pwd)"
 
+x.install-tools() {
+  set -o errexit -eo pipefail
+
+  go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+  go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.15.0
+  go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
+}
+
 x.fetch-openapi-generator-jar() {
   local url="https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/$GENVERS/openapi-generator-cli-$GENVERS.jar"
   echo "$url > openapi-generator-cli.jar"
