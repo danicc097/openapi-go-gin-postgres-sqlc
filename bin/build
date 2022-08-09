@@ -97,18 +97,15 @@ x.download-swagger-ui() {
 }
 
 x.migrate() {
-  # TODO read .env
-  migrate -path db/migrations/ -database postgres://postgres:postgres@localhost:5555/postgres?sslmode=disable "$*"
+  source .env
+  migrate \
+    -path db/migrations/ \
+    -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+    "$*"
 }
 
 x.create-migration() {
   migrate create -ext sql -dir db/migrations/ "$*"
-}
-
-x.test-env() {
-  . .env
-  echo "$POSTGRES_SERVER"
-  echo "$PROJECT_PREFIX"
 }
 
 # --------------------- completion and delegation --------------------
