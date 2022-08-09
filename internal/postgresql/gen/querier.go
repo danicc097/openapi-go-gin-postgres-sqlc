@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.15.0
 
-package db
+package gen
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 type Querier interface {
-	GetPetById(ctx context.Context, petID int64) (Pets, error)
+	GetPetById(ctx context.Context, petID int64) (GetPetByIdRow, error)
 	GetUser(ctx context.Context, arg GetUserParams) (GetUserRow, error)
 	ListAllUsers(ctx context.Context, isVerified sql.NullBool) ([]ListAllUsersRow, error)
 	RegisterNewUser(ctx context.Context, arg RegisterNewUserParams) (RegisterNewUserRow, error)

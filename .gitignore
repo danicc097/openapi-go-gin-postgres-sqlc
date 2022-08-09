@@ -3,3 +3,4 @@ openapi-go-gin-postgres-sqlc
 bin/tools/*
 openapi-generator-cli.jar
 post-generate-api
+.openapi-generator

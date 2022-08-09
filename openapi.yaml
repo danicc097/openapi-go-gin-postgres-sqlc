@@ -423,7 +423,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: "#/components/schemas/CreateUserRequest"
         description: Created user object
         required: true
       responses:
@@ -431,7 +431,7 @@ paths:
           description: successful operation
       security:
         - api_key: []
-      summary: Create user
+      summary: creates a new user
       tags:
         - user
   /user/createWithArray:
@@ -603,7 +603,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: "#/components/schemas/UpdateUserRequest"
         description: Updated user object
         required: true
       responses:
@@ -750,6 +750,42 @@ components:
       type: object
       xml:
         name: Category
+    UpdateUserRequest:
+      description: represents User data to update
+      example:
+        password: password
+        email: email
+        username: username
+        firstName: John
+        lastName: Doe
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+      title: a User
+      type: object
+    CreateUserRequest:
+      description: represents a new User
+      example:
+        password: password
+        email: email
+        username: username
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      title: a User
+      type: object
     User:
       description: A User who is purchasing from the pet store
       example:

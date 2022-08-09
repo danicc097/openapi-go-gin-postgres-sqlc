@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.15.0
 
-package db
+package gen
 
 import (
 	"database/sql"
@@ -86,6 +86,7 @@ type PetTags struct {
 
 type Pets struct {
 	PetID    int64          `db:"pet_id" json:"pet_id"`
+	AnimalID sql.NullInt32  `db:"animal_id" json:"animal_id"`
 	Color    sql.NullString `db:"color" json:"color"`
 	Metadata pgtype.JSONB   `db:"metadata" json:"metadata"`
 }
