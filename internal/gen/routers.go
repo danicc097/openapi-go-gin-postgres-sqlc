@@ -66,6 +66,13 @@ var routes = Routes{
 	},
 
 	{
+		"Ping",
+		http.MethodGet,
+		"/v2/ping",
+		handlers.Ping,
+	},
+
+	{
 		"OpenapiYamlGet",
 		http.MethodGet,
 		"/v2/openapi.yaml",

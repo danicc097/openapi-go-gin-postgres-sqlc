@@ -48,12 +48,12 @@ func ExampleParseHandlers() {
 	cwd, _ := os.Getwd()
 	handlers := postgen.ParseHandlers(path.Join(cwd, "testdata/handlers.go"))
 
-	opIds := []postgen.Handler{}
+	hs := []postgen.Handler{}
 	for _, v := range handlers {
-		opIds = append(opIds, v)
+		hs = append(hs, v)
 	}
 
-	fmt.Printf("%s", opIds)
+	fmt.Printf("Operation IDs: %s", hs)
 	//Output:
-	// [CreateUsersWithArrayInput DeleteUser GetUserByName]
+	//Operation IDs: [CreateUsersWithArrayInput DeleteUser GetUserByName]
 }

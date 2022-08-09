@@ -20,6 +20,25 @@ tags:
 - description: Operations about user
   name: user
 paths:
+  /ping:
+    get:
+      description: ""
+      operationId: ping
+      responses:
+        "200":
+          content:
+            text/plain:
+              schema:
+                example: pong
+                type: string
+          description: OK
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Ping pongs
   /openapi.yaml:
     get:
       responses:
@@ -664,6 +683,15 @@ components:
       description: Pet object that needs to be added to the store
       required: true
   schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          title: Detail
+          type: array
+      title: HTTPValidationError
+      type: object
     Order:
       description: An order for a pets from the pet store
       example:
@@ -963,6 +991,25 @@ components:
       properties:
         declawed:
           type: boolean
+      type: object
+    ValidationError:
+      properties:
+        loc:
+          items:
+            type: string
+          title: Location
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
       type: object
   securitySchemes:
     petstore_auth:

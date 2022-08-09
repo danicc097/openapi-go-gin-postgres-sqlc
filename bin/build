@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC1091
 
 source "${BASH_SOURCE%/*}/.helpers.sh"
 
@@ -18,9 +19,10 @@ PWD="$(pwd)"
 x.install-tools() {
   set -o errexit -eo pipefail
 
-  go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+  go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
   go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.15.0
   go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
+  go install github.com/joho/godotenv/cmd/godotenv@latest
 }
 
 x.fetch-openapi-generator-jar() {
@@ -36,7 +38,13 @@ x.validate() {
 x.generate-api() {
   echo $GIT_USER_ID $GIT_REPO_ID
   echo Generating API from "$SPEC"
-  java -jar openapi-generator-cli.jar generate -g go-gin-server -i "$SPEC" -o "$GEN_OUT_DIR" --additional-properties=packageName=openapi,apiPath=gen -t internal/go-gin-server-templates >/dev/null
+  java -jar openapi-generator-cli.jar generate \
+    -g go-gin-server \
+    -i "$SPEC" \
+    -o "$GEN_OUT_DIR" \
+    --additional-properties=packageName=openapi,apiPath=gen \
+    -t internal/go-gin-server-templates \
+    >/dev/null
   gofmt -w -s "$GEN_OUT_DIR"
   mkdir -p "$GEN_OUT_DIR"/gen/models
   mv "$GEN_OUT_DIR"/gen/model_*.go "$GEN_OUT_DIR"/gen/models
@@ -55,14 +63,18 @@ x.generate-sqlc() {
   cd internal/services && sqlc generate && cd - || exit
 }
 
-x.build() {
-  go test ./...
+x.test() {
   x.generate-api
+  godotenv -f .env go test ./...
+}
+
+x.build() {
+  x.test
   go build -o openapi-go-gin-postgres-sqlc "$PWD"/cmd/rest-server/main.go
 }
 
 x.run() {
-  docker-compose up -d &
+  docker-compose up -d
   x.build
   ./openapi-go-gin-postgres-sqlc
 }
@@ -84,6 +96,12 @@ x.migrate() {
 
 x.create-migration() {
   migrate create -ext sql -dir db/migrations/ "$*"
+}
+
+x.test-env() {
+  . .env
+  echo "$POSTGRES_SERVER"
+  echo "$PROJECT_PREFIX"
 }
 
 # --------------------- completion and delegation --------------------

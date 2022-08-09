@@ -11,4 +11,11 @@
     "--fast"
   ],
   "go.lintOnSave": "workspace",
+  "shellcheck.customArgs": [
+    "-x",
+    // source-path doesnt work per script
+    // but it does here (checks outside source-path remain broken)
+    // "--source-path=../.",
+    "--external-sources",
+  ],
 }

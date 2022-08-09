@@ -1,6 +1,7 @@
 Dockerfile
 api/openapi.yaml
 gen/README.md
+gen/api_default.go
 gen/api_docs.go
 gen/api_fake.go
 gen/api_pet.go
@@ -17,6 +18,7 @@ gen/model_category.go
 gen/model_danish_pig.go
 gen/model_dog.go
 gen/model_dog_all_of.go
+gen/model_http_validation_error.go
 gen/model_nested_one_of.go
 gen/model_order.go
 gen/model_pet.go
@@ -25,4 +27,5 @@ gen/model_special.go
 gen/model_tag.go
 gen/model_update_pet_request.go
 gen/model_user.go
+gen/model_validation_error.go
 gen/routers.go
