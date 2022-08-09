@@ -23,6 +23,7 @@ x.install-tools() {
   go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.15.0
   go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
   go install github.com/joho/godotenv/cmd/godotenv@latest
+  GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
 }
 
 x.fetch-openapi-generator-jar() {
@@ -63,12 +64,18 @@ x.generate-sqlc() {
   cd internal/services && sqlc generate && cd - || exit
 }
 
-x.test() {
+x.generate() {
+  go generate ./...
   x.generate-api
+  x.generate-sqlc
+}
+
+x.test() {
   godotenv -f .env go test ./...
 }
 
 x.build() {
+  x.generate
   x.test
   go build -o openapi-go-gin-postgres-sqlc "$PWD"/cmd/rest-server/main.go
 }
