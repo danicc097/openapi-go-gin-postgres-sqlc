@@ -11,31 +11,6 @@ import (
 	"time"
 )
 
-const GetRoles = `-- name: GetRoles :many
-select
-  ENUM_RANGE(null::users.role)::text[]
-`
-
-func (q *Queries) GetRoles(ctx context.Context) ([][]string, error) {
-	rows, err := q.db.Query(ctx, GetRoles)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := [][]string{}
-	for rows.Next() {
-		var column_1 []string
-		if err := rows.Scan(&column_1); err != nil {
-			return nil, err
-		}
-		items = append(items, column_1)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const GetUser = `-- name: GetUser :one
 select
   username,

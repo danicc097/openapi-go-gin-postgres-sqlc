@@ -11,7 +11,6 @@ import (
 
 type Querier interface {
 	GetPetById(ctx context.Context, petID int64) (Pets, error)
-	GetRoles(ctx context.Context) ([][]string, error)
 	GetUser(ctx context.Context, arg GetUserParams) (GetUserRow, error)
 	ListAllUsers(ctx context.Context, isVerified sql.NullBool) ([]ListAllUsersRow, error)
 	RegisterNewUser(ctx context.Context, arg RegisterNewUserParams) (RegisterNewUserRow, error)

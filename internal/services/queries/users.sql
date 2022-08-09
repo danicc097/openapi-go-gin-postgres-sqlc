@@ -104,7 +104,3 @@ set
   role = @role
 where
   user_id = @user_id;
-
--- name: GetRoles :many
-select
-  ENUM_RANGE(null::users.role)::text[];
