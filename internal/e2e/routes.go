@@ -14,10 +14,10 @@ func TestPingRoute(t *testing.T) {
 	router := gen.NewRouter()
 
 	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/ping", nil)
-	res := httptest.NewRecorder()
+	resp := httptest.NewRecorder()
 
-	router.ServeHTTP(res, req)
+	router.ServeHTTP(resp, req)
 
-	assert.Equal(t, http.StatusOK, res.Code)
-	assert.Equal(t, "pong", res.Body.String())
+	assert.Equal(t, http.StatusOK, resp.Code)
+	assert.Equal(t, "pong", resp.Body.String())
 }

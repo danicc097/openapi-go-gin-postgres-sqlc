@@ -4,6 +4,7 @@ linters:
   enable-all: true
 
   disable:
+    - godox # marks TODO, FIX, ...
     - goerr113
     - gofumpt
     - gomnd
@@ -34,15 +35,15 @@ linters-settings:
   lll:
     line-length: 130
   gci:
-    # no-inline-comments: true
-    # no-prefix-comments: true
+    no-inline-comments: true
+    no-prefix-comments: true
     sections:
       - standard
       - default
       - prefix(github.com/danicc097/openapi-go-gin-postgres-sqlc)
-    # section-separators:
-    #   - newLine
-    # skip-generated: false
+    section-separators:
+      - newLine
+    skip-generated: true
   exhaustruct:
     include:
       - "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal.*Params"

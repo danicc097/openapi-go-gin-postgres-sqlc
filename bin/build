@@ -43,7 +43,7 @@ x.generate-api() {
     -g go-gin-server \
     -i "$SPEC" \
     -o "$GEN_OUT_DIR" \
-    --additional-properties=packageName=openapi,apiPath=gen \
+    --additional-properties=packageName=openapi,apiPath=gen,hideGenerationTimestamp=true \
     -t internal/go-gin-server-templates \
     >/dev/null
   gofmt -w -s "$GEN_OUT_DIR"
