@@ -55,8 +55,10 @@ x.generate-api() {
   cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
   cp "$SPEC" "$PWD"/internal/static/swagger-ui
   go build -o post-generate-api "$PWD"/cmd/post-generate-api/main.go
+  rm -rf "$GEN_OUT_DIR/gen/*"
   ./post-generate-api
   find "$GEN_OUT_DIR/gen/" -name "api_*.go" -type f -delete
+  rm -rf "$GEN_OUT_DIR/api"
 }
 
 x.generate-sqlc() {
