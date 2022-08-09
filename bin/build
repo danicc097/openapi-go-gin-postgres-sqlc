@@ -45,8 +45,8 @@ x.generate-api() {
     -o "$GEN_OUT_DIR" \
     --additional-properties=packageName=openapi,apiPath=gen,hideGenerationTimestamp=true \
     -t internal/go-gin-server-templates \
+    --enable-post-process-file \
     >/dev/null
-  gofmt -w -s "$GEN_OUT_DIR"
   mkdir -p "$GEN_OUT_DIR"/gen/models
   mv "$GEN_OUT_DIR"/gen/model_*.go "$GEN_OUT_DIR"/gen/models
   # not needed with locally generated code
