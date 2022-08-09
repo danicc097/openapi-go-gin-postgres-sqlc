@@ -35,14 +35,10 @@ linters-settings:
   lll:
     line-length: 130
   gci:
-    no-inline-comments: true
-    no-prefix-comments: true
     sections:
       - standard
       - default
       - prefix(github.com/danicc097/openapi-go-gin-postgres-sqlc)
-    section-separators:
-      - newLine
     skip-generated: true
   exhaustruct:
     include:

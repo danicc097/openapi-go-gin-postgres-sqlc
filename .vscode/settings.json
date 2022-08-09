@@ -5,8 +5,8 @@
   },
   "go.lintTool": "golangci-lint",
   "go.lintFlags": [
-    "-c",
-    "./.golangci.yml",
+    // "-c",
+    // "./.golangci.yml",
     "--issues-exit-code=0",
     "--fast"
   ],

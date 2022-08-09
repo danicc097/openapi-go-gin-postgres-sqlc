@@ -83,7 +83,7 @@ x.build() {
 x.run() {
   docker-compose up -d
   x.build
-  ./openapi-go-gin-postgres-sqlc
+  ./openapi-go-gin-postgres-sqlc -env=.env
 }
 
 x.download-swagger-ui() {

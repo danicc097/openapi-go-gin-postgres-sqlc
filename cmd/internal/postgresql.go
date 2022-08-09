@@ -28,11 +28,11 @@ func NewPostgreSQL(conf *envvar.Configuration) (*pgxpool.Pool, error) {
 	}
 
 	// XXX: We will revisit this code in future episodes replacing it with another solution
-	databaseHost := get("DATABASE_HOST")
-	databasePort := get("DATABASE_PORT")
-	databaseUsername := get("DATABASE_USERNAME")
-	databasePassword := get("DATABASE_PASSWORD")
-	databaseName := get("DATABASE_NAME")
+	databaseHost := get("POSTGRES_SERVER")
+	databasePort := get("DB_PORT")
+	databaseUsername := get("POSTGRES_USER")
+	databasePassword := get("POSTGRES_PASSWORD")
+	databaseName := get("POSTGRES_DB")
 	databaseSSLMode := get("DATABASE_SSLMODE")
 	// XXX: -
 
