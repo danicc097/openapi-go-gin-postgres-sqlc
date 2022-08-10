@@ -4,3 +4,5 @@ openapi-generator-cli.jar
 post-generate-api
 .openapi-generator
 **/swagger-ui/**/*
+tmp
+air-main

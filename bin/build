@@ -23,6 +23,8 @@ x.install-tools() {
   go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.15.0
   go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
   go install github.com/joho/godotenv/cmd/godotenv@latest
+  go install github.com/cosmtrek/air@latest
+
   GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
 }
 
@@ -79,13 +81,20 @@ x.test() {
 x.build() {
   x.generate
   x.test
-  go build -o openapi-go-gin-postgres-sqlc "$PWD"/cmd/rest-server/main.go
+  go build -o openapi-go-gin-postgres-sqlc "$PWD"/cmd/rest-server
 }
 
 x.run() {
   docker-compose up -d
   x.build
   ./openapi-go-gin-postgres-sqlc -env=.env
+}
+
+x.run-hot-reload() {
+  docker-compose up -d
+  x.generate
+  x.test
+  air -d
 }
 
 x.download-swagger-ui() {
