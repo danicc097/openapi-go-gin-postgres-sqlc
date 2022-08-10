@@ -26,6 +26,7 @@ func NewUser(d gen.DBTX) *User {
 // Create inserts a new user record.
 func (t *User) Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error) {
 	// TODO creating salt, etc. delegated to jwt.go service
+	// https://github.com/appleboy/gin-jwt
 	newID, err := t.q.RegisterNewUser(ctx, gen.RegisterNewUserParams{
 		Username: params.Username,
 		Email:    params.Email,

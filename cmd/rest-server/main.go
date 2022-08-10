@@ -23,6 +23,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/cmd/internal"
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/environment"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	gen "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
@@ -61,12 +62,12 @@ func run(env, address string) (<-chan error, error) {
 
 	conf := envvar.New(vault)
 
-	//-
-
 	pool, err := internal.NewPostgreSQL(conf)
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewPostgreSQL")
 	}
+
+	environment.Pool = pool
 
 	rdb, err := internal.NewRedis(conf)
 	if err != nil {
@@ -147,7 +148,6 @@ func newServer(conf serverConfig) (*http.Server, error) {
 	router := gen.NewRouter()
 
 	router.Use(gin.Recovery())
-
 	// Add a ginzap middleware, which:
 	//   - Logs all requests, like a combined access and error log.
 	//   - Logs to stdout.
@@ -163,8 +163,6 @@ func newServer(conf serverConfig) (*http.Server, error) {
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
 	router.StaticFS("/v2/docs", http.FS(fsys))
 
-	// TODO https://github.com/gin-contrib/sessions vs JWT
-	// https://github.com/appleboy/gin-jwt
 	conf.Logger.Info("Server started")
 	log.Fatal(router.Run(conf.Address))
 
