@@ -79,6 +79,8 @@ func run(env, address string) (<-chan error, error) {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewProduction")
 	}
 
+	environment.Logger = logger
+
 	srv, err := newServer(serverConfig{
 		Address: address,
 		DB:      pool,

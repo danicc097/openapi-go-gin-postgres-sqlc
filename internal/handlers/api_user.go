@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/environment"
@@ -28,7 +27,7 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("Res %#v\n", res)
+	environment.Logger.Sugar().Infof("Res %#v\n", res)
 	c.JSON(http.StatusOK, res)
 }
 

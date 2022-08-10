@@ -1,3 +1,6 @@
+// Code adapted from:
+// https://github.com/MarioCarrion/todo-api-microservice-example
+
 package internal
 
 import (
