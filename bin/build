@@ -15,6 +15,7 @@ export GENVERS=6.0.1
 SPEC="openapi.yaml"
 GEN_OUT_DIR="internal"
 PWD="$(pwd)"
+ENV_FILE=".env"
 
 x.install-tools() {
   set -o errexit -eo pipefail
@@ -75,11 +76,11 @@ x.generate() {
 }
 
 x.test() {
-  godotenv -f .env go test ./...
+  x.generate
+  godotenv -f $ENV_FILE go test ./...
 }
 
 x.build() {
-  x.generate
   x.test
   go build -o openapi-go-gin-postgres-sqlc "$PWD"/cmd/rest-server
 }
@@ -87,14 +88,15 @@ x.build() {
 x.run() {
   docker-compose up -d
   x.build
-  ./openapi-go-gin-postgres-sqlc -env=.env
+  ./openapi-go-gin-postgres-sqlc -env="$ENV_FILE"
 }
 
 x.run-hot-reload() {
   docker-compose up -d
-  x.generate
   x.test
-  air -d
+  air \
+    --build.cmd "go build -o ./air-main ./cmd/rest-server/" \
+    --build.bin "./air-main -env=$ENV_FILE"
 }
 
 x.download-swagger-ui() {
@@ -108,15 +110,15 @@ x.download-swagger-ui() {
 }
 
 x.migrate() {
-  source .env
+  source "$ENV_FILE"
   migrate \
     -path db/migrations/ \
     -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
-    "$*"
+    "$@"
 }
 
 x.create-migration() {
-  migrate create -ext sql -dir db/migrations/ "$*"
+  x.migrate create -ext sql -dir db/migrations/ "$@"
 }
 
 # --------------------- completion and delegation --------------------
