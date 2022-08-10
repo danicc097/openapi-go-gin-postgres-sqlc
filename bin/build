@@ -77,11 +77,11 @@ x.generate() {
 
 x.test() {
   x.generate
-  godotenv -f $ENV_FILE go test ./...
+  godotenv -f "$ENV_FILE" go test ./... "$@"
 }
 
 x.build() {
-  x.test
+  x.test ""
   go build -o openapi-go-gin-postgres-sqlc "$PWD"/cmd/rest-server
 }
 

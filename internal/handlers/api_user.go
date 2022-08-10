@@ -14,9 +14,15 @@ import (
 func CreateUser(c *gin.Context) {
 	var user models.CreateUserRequest
 
-	c.BindJSON(&user)
+	if err := c.BindJSON(&user); err != nil {
+		c.JSON(http.StatusInternalServerError, models.ValidationError{Msg: err.Error()})
+
+		return
+	}
 
 	usersService := postgresql.NewUser(environment.Pool)
+
+	environment.Logger.Sugar().Infof("%v", user)
 
 	res, err := usersService.Create(context.Background(), user)
 	if err != nil {

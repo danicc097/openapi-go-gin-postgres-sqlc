@@ -1,7 +1,7 @@
 // Code adapted from:
 // https://github.com/MarioCarrion/todo-api-microservice-example
 
-package internal
+package postgresql
 
 import (
 	"context"
@@ -16,8 +16,8 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 )
 
-// NewPostgreSQL instantiates the PostgreSQL database using configuration defined in environment variables.
-func NewPostgreSQL(conf *envvar.Configuration) (*pgxpool.Pool, error) {
+// New instantiates the PostgreSQL database using configuration defined in environment variables.
+func New(conf *envvar.Configuration) (*pgxpool.Pool, error) {
 	get := func(v string) string {
 		res, err := conf.Get(v)
 		if err != nil {

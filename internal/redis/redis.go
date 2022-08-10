@@ -1,7 +1,7 @@
 // Code adapted from:
 // https://github.com/MarioCarrion/todo-api-microservice-example
 
-package internal
+package redis
 
 import (
 	"context"
@@ -13,8 +13,8 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 )
 
-// NewRedis instantiates the Redis client using configuration defined in environment variables.
-func NewRedis(conf *envvar.Configuration) (*redis.Client, error) {
+// New instantiates the Redis client using configuration defined in environment variables.
+func New(conf *envvar.Configuration) (*redis.Client, error) {
 	host, err := conf.Get("REDIS_HOST")
 	if err != nil {
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "conf.Get REDIS_HOST")

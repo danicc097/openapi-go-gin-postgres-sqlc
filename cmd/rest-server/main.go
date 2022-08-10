@@ -21,16 +21,14 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/cmd/internal"
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/environment"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	gen "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
-	// "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql"
-	// "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/redis"
-	// "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
-	// "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/service"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 )
 
 func main() {
@@ -55,21 +53,21 @@ func run(env, address string) (<-chan error, error) {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
 	}
 
-	vault, err := internal.NewVaultProvider()
+	provider, err := vault.New()
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewVaultProvider")
 	}
 
-	conf := envvar.New(vault)
+	conf := envvar.New(provider)
 
-	pool, err := internal.NewPostgreSQL(conf)
+	pool, err := postgresql.New(conf)
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewPostgreSQL")
 	}
 
 	environment.Pool = pool
 
-	rdb, err := internal.NewRedis(conf)
+	rdb, err := redis.New(conf)
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewRedis")
 	}
