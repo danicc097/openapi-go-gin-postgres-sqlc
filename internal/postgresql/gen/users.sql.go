@@ -153,7 +153,7 @@ const RegisterNewUser = `-- name: RegisterNewUser :one
 insert into users (username, email, password, salt, is_superuser, is_verified)
   values ($1, $2, $3, $4, $5, $6)
 returning
-  user_id, username, email, role, is_verified, is_active, is_superuser, created_at, updated_at
+  user_id
 `
 
 type RegisterNewUserParams struct {
@@ -165,19 +165,7 @@ type RegisterNewUserParams struct {
 	IsVerified  bool   `db:"is_verified" json:"is_verified"`
 }
 
-type RegisterNewUserRow struct {
-	UserID      int64     `db:"user_id" json:"user_id"`
-	Username    string    `db:"username" json:"username"`
-	Email       string    `db:"email" json:"email"`
-	Role        Role      `db:"role" json:"role"`
-	IsVerified  bool      `db:"is_verified" json:"is_verified"`
-	IsActive    bool      `db:"is_active" json:"is_active"`
-	IsSuperuser bool      `db:"is_superuser" json:"is_superuser"`
-	CreatedAt   time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) RegisterNewUser(ctx context.Context, arg RegisterNewUserParams) (RegisterNewUserRow, error) {
+func (q *Queries) RegisterNewUser(ctx context.Context, arg RegisterNewUserParams) (int64, error) {
 	row := q.db.QueryRow(ctx, RegisterNewUser,
 		arg.Username,
 		arg.Email,
@@ -186,19 +174,9 @@ func (q *Queries) RegisterNewUser(ctx context.Context, arg RegisterNewUserParams
 		arg.IsSuperuser,
 		arg.IsVerified,
 	)
-	var i RegisterNewUserRow
-	err := row.Scan(
-		&i.UserID,
-		&i.Username,
-		&i.Email,
-		&i.Role,
-		&i.IsVerified,
-		&i.IsActive,
-		&i.IsSuperuser,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+	var user_id int64
+	err := row.Scan(&user_id)
+	return user_id, err
 }
 
 const ResetUserPassword = `-- name: ResetUserPassword :exec
@@ -222,7 +200,7 @@ func (q *Queries) ResetUserPassword(ctx context.Context, arg ResetUserPasswordPa
 	return err
 }
 
-const UpdateUserById = `-- name: UpdateUserById :one
+const UpdateUserById = `-- name: UpdateUserById :exec
 update
   users
 set
@@ -232,18 +210,6 @@ set
   email = COALESCE(LOWER($4), email)
 where
   user_id = $5
-returning
-  user_id,
-  username,
-  email,
-  role,
-  is_verified,
-  salt,
-  password,
-  is_active,
-  is_superuser,
-  created_at,
-  updated_at
 `
 
 type UpdateUserByIdParams struct {
@@ -254,43 +220,15 @@ type UpdateUserByIdParams struct {
 	UserID   int64          `db:"user_id" json:"user_id"`
 }
 
-type UpdateUserByIdRow struct {
-	UserID      int64     `db:"user_id" json:"user_id"`
-	Username    string    `db:"username" json:"username"`
-	Email       string    `db:"email" json:"email"`
-	Role        Role      `db:"role" json:"role"`
-	IsVerified  bool      `db:"is_verified" json:"is_verified"`
-	Salt        string    `db:"salt" json:"salt"`
-	Password    string    `db:"password" json:"password"`
-	IsActive    bool      `db:"is_active" json:"is_active"`
-	IsSuperuser bool      `db:"is_superuser" json:"is_superuser"`
-	CreatedAt   time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
-}
-
-func (q *Queries) UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) (UpdateUserByIdRow, error) {
-	row := q.db.QueryRow(ctx, UpdateUserById,
+func (q *Queries) UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) error {
+	_, err := q.db.Exec(ctx, UpdateUserById,
 		arg.Password,
 		arg.Salt,
 		arg.Username,
 		arg.Email,
 		arg.UserID,
 	)
-	var i UpdateUserByIdRow
-	err := row.Scan(
-		&i.UserID,
-		&i.Username,
-		&i.Email,
-		&i.Role,
-		&i.IsVerified,
-		&i.Salt,
-		&i.Password,
-		&i.IsActive,
-		&i.IsSuperuser,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+	return err
 }
 
 const UpdateUserRole = `-- name: UpdateUserRole :exec

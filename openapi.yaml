@@ -427,7 +427,11 @@ paths:
         description: Created user object
         required: true
       responses:
-        default:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateUserResponse"
           description: successful operation
       security:
         - api_key: []
@@ -785,6 +789,17 @@ components:
         password:
           type: string
       title: a User
+      type: object
+    CreateUserResponse:
+      description: represents the response to a User creation
+      example: id
+      properties:
+        # go with jwt for now
+        access_token:
+          type: string
+        user_id:
+          format: int64
+          type: integer
       type: object
     User:
       description: A User who is purchasing from the pet store

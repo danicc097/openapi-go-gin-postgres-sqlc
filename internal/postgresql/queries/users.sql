@@ -34,9 +34,9 @@ limit 1;
 insert into users (username, email, password, salt, is_superuser, is_verified)
   values (@username, @email, @password, @salt, @is_superuser, @is_verified)
 returning
-  user_id, username, email, role, is_verified, is_active, is_superuser, created_at, updated_at;
+  user_id;
 
--- name: UpdateUserById :one
+-- name: UpdateUserById :exec
 update
   users
 set
@@ -45,19 +45,7 @@ set
   username = COALESCE(sqlc.narg('username'), username),
   email = COALESCE(LOWER(sqlc.narg('email')), email)
 where
-  user_id = @user_id
-returning
-  user_id,
-  username,
-  email,
-  role,
-  is_verified,
-  salt,
-  password,
-  is_active,
-  is_superuser,
-  created_at,
-  updated_at;
+  user_id = @user_id;
 
 -- name: ListAllUsers :many
 select
