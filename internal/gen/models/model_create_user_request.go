@@ -4,7 +4,7 @@ package models
 
 // CreateUserRequest represents a new user.
 type CreateUserRequest struct {
-	Username string `json:"username,omitempty"`
-	Email    string `json:"email,omitempty"`
-	Password string `json:"password,omitempty"`
+	Username string `json:"username,omitempty" binding:"required"`
+	Email    string `json:"email,omitempty" binding:"required"`
+	Password string `json:"password,omitempty" binding:"required"`
 }

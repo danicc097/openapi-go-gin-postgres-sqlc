@@ -15,25 +15,24 @@ func CreateUser(c *gin.Context) {
 	var user models.CreateUserRequest
 
 	if err := c.BindJSON(&user); err != nil {
-		c.JSON(http.StatusInternalServerError, models.ValidationError{Msg: err.Error()})
+		c.JSON(http.StatusInternalServerError, err.Error())
 
 		return
 	}
 
 	usersService := postgresql.NewUser(environment.Pool)
 
-	environment.Logger.Sugar().Infof("%v", user)
+	environment.Logger.Sugar().Debugf("CreateUser.user: %v", user)
 
 	res, err := usersService.Create(context.Background(), user)
 	if err != nil {
 		// TODO  equivalent of Python exception handler context manager:
 		// https://stackoverflow.com/questions/69948784/how-to-handle-errors-in-gin-middleware
-		c.JSON(http.StatusInternalServerError, models.ValidationError{Msg: err.Error()})
+		c.JSON(http.StatusInternalServerError, err.Error())
 
 		return
 	}
 
-	environment.Logger.Sugar().Infof("Res %#v\n", res)
 	c.JSON(http.StatusOK, res)
 }
 

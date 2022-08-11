@@ -784,10 +784,13 @@ components:
       properties:
         username:
           type: string
+          x-go-custom-tag: binding:"required"
         email:
           type: string
+          x-go-custom-tag: binding:"required"
         password:
           type: string
+          x-go-custom-tag: binding:"required"
       title: a User
       type: object
     CreateUserResponse:
