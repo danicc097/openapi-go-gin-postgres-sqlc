@@ -16,6 +16,7 @@ import (
 )
 
 func TestPingRoute(t *testing.T) {
+	// TODO need helper func to create handlers and run all Register()
 	router := gen.NewRouter()
 
 	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/ping", nil)

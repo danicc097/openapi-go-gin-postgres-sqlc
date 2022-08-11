@@ -1,18 +1,54 @@
 {{>partial_header}}
-package {{packageName}}
+package handlers
 
 {{#operations}}
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-){{#operation}}
+	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	gen "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen"
+)
 
+// {{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}} handles routes with the {{{classname}}} tag.
+type {{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}} struct {
+	svc services.{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}}
+  // add your own services, etc. as required
+}
+
+// New{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}} returns a new handler for {{{classname}}}.
+// Edit as required
+// TODO rewriting handler methods based on current postgen:
+// see https://eli.thegreenplace.net/2021/rewriting-go-source-code-with-ast-tooling/
+// simpler solutions based on drawbacks (complicated, comments not attached to nodes):
+// - https://github.com/dave/dst
+// - https://github.com/uber-go/gopatch
+func New{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}}(svc services.{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}}) *{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}} {
+	return &{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}}{
+		svc: svc,
+	}
+}
+
+// Register connects the handlers to a router.
+func (t *{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}}) Register(r *gin.Engine) {
+{{#operation}}
+	gen.RegisterRoute(r, gen.Route{
+    Name: "{{operationId}}",
+    Method: http.Method{{httpMethod}},
+    Pattern: "{{{basePathWithoutHost}}}{{{path}}}",
+    HandlerFunc: t.{{nickname}},
+  })
+{{/operation}}
+}
+
+{{#operation}}
 // {{nickname}} {{#lambda.lowercase}}{{{summary}}}{{/lambda.lowercase}}.
 {{#isDeprecated}}
 // Deprecated
 {{/isDeprecated}}
-func {{nickname}}(c *gin.Context) {
+func (t *{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}}) {{nickname}}(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
-}{{/operation}}{{/operations}}
+}
+{{/operation}}
+{{/operations}}
 

@@ -6,3 +6,4 @@ post-generate-api
 **/swagger-ui/**/*
 tmp
 air-main
+go.work*

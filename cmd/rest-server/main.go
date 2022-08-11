@@ -24,9 +24,10 @@ import (
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/environment"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
-	gen "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/handlers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/redis"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 )
@@ -145,7 +146,7 @@ type serverConfig struct {
 }
 
 func newServer(conf serverConfig) (*http.Server, error) {
-	router := gen.NewRouter()
+	router := gin.Default()
 
 	router.Use(gin.Recovery())
 	// Add a ginzap middleware, which:
@@ -162,6 +163,13 @@ func newServer(conf serverConfig) (*http.Server, error) {
 	// TODO defining static file serving in spec is not supported?
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
 	router.StaticFS("/v2/docs", http.FS(fsys))
+
+	handlers.NewDefaultApi(services.DefaultApi{}).Register(router)
+	handlers.NewDocsApi(services.DocsApi{}).Register(router)
+	handlers.NewFakeApi(services.FakeApi{}).Register(router)
+	handlers.NewPetApi(services.PetApi{}).Register(router)
+	handlers.NewStoreApi(services.StoreApi{}).Register(router)
+	handlers.NewUserApi(services.UserApi{}).Register(router)
 
 	conf.Logger.Info("Server started")
 	log.Fatal(router.Run(conf.Address))
