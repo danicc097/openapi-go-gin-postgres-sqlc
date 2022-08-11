@@ -17,7 +17,13 @@ GEN_OUT_DIR="internal"
 PWD="$(pwd)"
 ENV_FILE=".env"
 
-x.install-tools() {
+x.bootstrap() {
+  x.install-tools
+  x.fetch-openapi-generator-jar
+  x.download-swagger-ui
+}
+
+x.install-go-tools() {
   set -o errexit -eo pipefail
 
   go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
@@ -42,6 +48,7 @@ x.validate() {
 x.generate-api() {
   echo $GIT_USER_ID $GIT_REPO_ID
   echo Generating API from "$SPEC"
+  rm -rf "$GEN_OUT_DIR/gen"
   java -jar openapi-generator-cli.jar generate \
     -g go-gin-server \
     -i "$SPEC" \
@@ -58,7 +65,6 @@ x.generate-api() {
   cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
   cp "$SPEC" "$PWD"/internal/static/swagger-ui
   go build -o post-generate-api "$PWD"/cmd/post-generate-api/main.go
-  rm -rf "$GEN_OUT_DIR/gen/*"
   ./post-generate-api
   find "$GEN_OUT_DIR/gen/" -name "api_*.go" -type f -delete
   rm -rf "$GEN_OUT_DIR/api"
@@ -123,25 +129,18 @@ x.create-migration() {
 }
 
 create_test_database() {
-  local project_prefix="$(get_envvar .env PROJECT_PREFIX)"
-  local app_env="$(get_envvar .env APP_ENV)"
-  local postgres_user="$(get_envvar .env POSTGRES_USER)"
-  local postgres_db="$(get_envvar .env POSTGRES_DB)"
-  local postgres_test_db="${postgres_db}_test"
+  declare -A env
+  get_envvars env .env
 
-  drop_db "$postgres_test_db"
-  echo "${BLUE}${BOLD}Creating database $postgres_test_db.${OFF}"
-  docker exec -t postgres_db_"$project_prefix"_"$app_env" \
+  local postgres_test_db="${env[POSTGRES_DB]}_test"
+
+  drop_db "$postgres_test_db" .env
+
+  echo "${BLUE}${BOLD}Stopping any running processes for database $postgres_test_db.${OFF}"
+  docker exec -t postgres_db_"${env[PROJECT_PREFIX]}"_"${env[APP_ENV]}" \
     psql --no-psqlrc \
-    -U "$postgres_user" \
-    -d "$postgres_db" \
-    -c "CREATE DATABASE $postgres_test_db OWNER $postgres_user;" ||
-    echo "${BLUE}${BOLD}Database $postgres_test_db already exists. Skipping${OFF}"
-  echo "${BLUE}${BOLD}Stopping running processes for database $postgres_test_db.${OFF}"
-  docker exec -t postgres_db_"$project_prefix"_"$app_env" \
-    psql --no-psqlrc \
-    -U "$postgres_user" \
-    -d "$postgres_db" \
+    -U "${env[POSTGRES_USER]}" \
+    -d "${env[POSTGRES_DB]}" \
     -c "select pg_terminate_backend(pid) \
         from pg_stat_activity \
         where datname='$postgres_test_db'"
