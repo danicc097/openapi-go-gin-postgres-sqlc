@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=SC1091,SC2155
+# shellcheck disable=SC1091,SC2155,SC2086
 
 set -Eeo pipefail
 
@@ -60,15 +60,54 @@ get_envvar() {
   fi
 }
 
-# Drop and recreate database `db`
+trim_string() {
+  : "${1#"${1%%[![:space:]]*}"}"
+  : "${_%"${_##*[![:space:]]}"}"
+  printf '%s\n' "$_"
+}
+
+# Retrieve all environment variables from `env_file` and
+# set the key-value pairs in the given associative array
+get_envvars() {
+  declare -n arr="$1"
+  local env_file="$2"
+  if [[ -f "$env_file" ]]; then
+    while read -r line; do
+      if [[ $line =~ ^[#]?([A-Za-z0-9_]+)[\s]?=[\s]?(.*?)$ ]]; then
+        key="$(trim_string ${BASH_REMATCH[1]})"
+        val="$(trim_string ${BASH_REMATCH[2]})"
+        arr[$key]=$val
+      fi
+
+    done <"$env_file"
+  else
+    err "$env_file does not exist"
+  fi
+}
+
+# Drop and recreate database `db` using configuration from
+# environment variables in `env_file`
 drop_db() {
   local db="$1"
-  local project_prefix="$(get_envvar .env PROJECT_PREFIX)"
-  local app_env="$(get_envvar .env APP_ENV)"
-  local postgres_user="$(get_envvar .env POSTGRES_USER)"
-  local postgres_db="$(get_envvar .env POSTGRES_DB)"
+  local env_file="$2"
 
-  docker exec -t postgres_db_"$project_prefix"_"$app_env" psql --no-psqlrc -U "$postgres_user" -d "$postgres_db" -c "CREATE DATABASE test OWNER $postgres_user;" || echo "Database test already exists. Skipping"
-  docker exec -t postgres_db_"$project_prefix"_"$app_env" dropdb --if-exists -f "$db"
-  docker exec -t postgres_db_"$project_prefix"_"$app_env" psql --no-psqlrc -U "$postgres_user" -d test -c "CREATE DATABASE $db;"
+  declare -A env
+  get_envvars env "$env_file"
+
+  docker exec -t postgres_db_"${env[PROJECT_PREFIX]}"_"${env[APP_ENV]}" \
+    psql --no-psqlrc \
+    -U "${env[POSTGRES_USER]}" \
+    -d "${env[POSTGRES_DB]}" \
+    -c "CREATE DATABASE test OWNER ${env[POSTGRES_USER]};" || true
+
+  echo "${BLUE}${BOLD}Dropping database $db.${OFF}"
+  docker exec -t postgres_db_"${env[PROJECT_PREFIX]}"_"${env[APP_ENV]}" \
+    dropdb --if-exists -f "$db"
+
+  echo "${BLUE}${BOLD}Creating database $db.${OFF}"
+  docker exec -t postgres_db_"${env[PROJECT_PREFIX]}"_"${env[APP_ENV]}" \
+    psql --no-psqlrc \
+    -U "${env[POSTGRES_USER]}" \
+    -d test \
+    -c "CREATE DATABASE $db OWNER ${env[POSTGRES_USER]};"
 }
