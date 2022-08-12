@@ -10,114 +10,117 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// PetApi handles routes with the PetApi tag.
-type PetApi struct {
-	svc services.PetApi
+// Pet handles routes with the pet tag.
+type Pet struct {
+	svc services.Pet
 	// add your own services, etc. as required
 }
 
-// NewPetApi returns a new handler for PetApi.
+// NewPet returns a new handler for pet.
 // Edit as required
 // TODO rewriting handler methods based on current postgen:
 // see https://eli.thegreenplace.net/2021/rewriting-go-source-code-with-ast-tooling/
 // simpler solutions based on drawbacks (complicated, comments not attached to nodes):
 // - https://github.com/dave/dst
 // - https://github.com/uber-go/gopatch
-func NewPetApi(svc services.PetApi) *PetApi {
-	return &PetApi{
+func NewPet(svc services.Pet) *Pet {
+	return &Pet{
 		svc: svc,
 	}
 }
 
 // Register connects the handlers to a router.
-func (t *PetApi) Register(r *gin.Engine) {
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "AddPet",
-		Method:      http.MethodPost,
-		Pattern:     "/v2/pet",
-		HandlerFunc: t.AddPet,
-	})
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "DeletePet",
-		Method:      http.MethodDelete,
-		Pattern:     "/v2/pet/:petId",
-		HandlerFunc: t.DeletePet,
-	})
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "FindPetsByStatus",
-		Method:      http.MethodGet,
-		Pattern:     "/v2/pet/findByStatus",
-		HandlerFunc: t.FindPetsByStatus,
-	})
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "FindPetsByTags",
-		Method:      http.MethodGet,
-		Pattern:     "/v2/pet/findByTags",
-		HandlerFunc: t.FindPetsByTags,
-	})
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "GetPetById",
-		Method:      http.MethodGet,
-		Pattern:     "/v2/pet/:petId",
-		HandlerFunc: t.GetPetById,
-	})
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "UpdatePet",
-		Method:      http.MethodPut,
-		Pattern:     "/v2/pet",
-		HandlerFunc: t.UpdatePet,
-	})
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "UpdatePetWithForm",
-		Method:      http.MethodPost,
-		Pattern:     "/v2/pet/:petId",
-		HandlerFunc: t.UpdatePetWithForm,
-	})
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "UploadFile",
-		Method:      http.MethodPost,
-		Pattern:     "/v2/pet/:petId/uploadImage",
-		HandlerFunc: t.UploadFile,
-	})
+func (t *Pet) Register(r *gin.RouterGroup) {
+	routes := []gen.Route{
+		{
+			Name:        "AddPet",
+			Method:      http.MethodPost,
+			Pattern:     "/pet",
+			HandlerFunc: t.AddPet,
+		},
+		{
+			Name:        "DeletePet",
+			Method:      http.MethodDelete,
+			Pattern:     "/pet/:petId",
+			HandlerFunc: t.DeletePet,
+		},
+		{
+			Name:        "FindPetsByStatus",
+			Method:      http.MethodGet,
+			Pattern:     "/pet/findByStatus",
+			HandlerFunc: t.FindPetsByStatus,
+		},
+		{
+			Name:        "FindPetsByTags",
+			Method:      http.MethodGet,
+			Pattern:     "/pet/findByTags",
+			HandlerFunc: t.FindPetsByTags,
+		},
+		{
+			Name:        "GetPetById",
+			Method:      http.MethodGet,
+			Pattern:     "/pet/:petId",
+			HandlerFunc: t.GetPetById,
+		},
+		{
+			Name:        "UpdatePet",
+			Method:      http.MethodPut,
+			Pattern:     "/pet",
+			HandlerFunc: t.UpdatePet,
+		},
+		{
+			Name:        "UpdatePetWithForm",
+			Method:      http.MethodPost,
+			Pattern:     "/pet/:petId",
+			HandlerFunc: t.UpdatePetWithForm,
+		},
+		{
+			Name:        "UploadFile",
+			Method:      http.MethodPost,
+			Pattern:     "/pet/:petId/uploadImage",
+			HandlerFunc: t.UploadFile,
+		},
+	}
+	gen.RegisterRoutes(r, routes, "/pet")
 }
 
 // AddPet add a new pet to the store.
-func (t *PetApi) AddPet(c *gin.Context) {
+func (t *Pet) AddPet(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // DeletePet deletes a pet.
-func (t *PetApi) DeletePet(c *gin.Context) {
+func (t *Pet) DeletePet(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // FindPetsByStatus finds pets by status.
-func (t *PetApi) FindPetsByStatus(c *gin.Context) {
+func (t *Pet) FindPetsByStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // FindPetsByTags finds pets by tags.
 // Deprecated
-func (t *PetApi) FindPetsByTags(c *gin.Context) {
+func (t *Pet) FindPetsByTags(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // GetPetById find pet by id.
-func (t *PetApi) GetPetById(c *gin.Context) {
+func (t *Pet) GetPetById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // UpdatePet update an existing pet.
-func (t *PetApi) UpdatePet(c *gin.Context) {
+func (t *Pet) UpdatePet(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // UpdatePetWithForm updates a pet in the store with form data.
-func (t *PetApi) UpdatePetWithForm(c *gin.Context) {
+func (t *Pet) UpdatePetWithForm(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // UploadFile uploads an image.
-func (t *PetApi) UploadFile(c *gin.Context) {
+func (t *Pet) UploadFile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }

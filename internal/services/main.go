@@ -1,14 +1,17 @@
 package services
 
-type DefaultApi struct {
+// TODO only use services, not repos. No need to deal with repos for redis, etc. for now.
+// TODO service interfaces
+
+type Default struct {
 }
-type DocsApi struct {
+type Docs struct {
 }
-type FakeApi struct {
+type Fake struct {
 }
-type PetApi struct {
+type Pet struct {
 }
-type StoreApi struct {
+type Store struct {
 }
-type UserApi struct {
+type User struct {
 }

@@ -4,19 +4,22 @@ package gen
 
 import (
 	"net/http"
+	"regexp"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-
 )
 
 // Route is the information for every URI.
 type Route struct {
 	// Name is the route name.
-	Name        string
+	Name string
 	// Method is the string for the HTTP method.
-	Method      string
-	// Pattern is URI pattern.
-	Pattern     string
+	Method string
+	// Pattern is the URI pattern.
+	Pattern string
+	// Group is the router group.
+	Group string
 	// HandlerFunc is the handler function for this route.
 	HandlerFunc gin.HandlerFunc
 }
@@ -24,18 +27,26 @@ type Route struct {
 // Routes is the list of the generated Route.
 type Routes []Route
 
-// RegisterRoute registers route in the given router.
-func RegisterRoute(r *gin.Engine, route Route) {
-  switch route.Method {
+// RegisterRoute registers routes in the given router.
+func RegisterRoutes(router *gin.RouterGroup, routes []Route, group string) {
+	if reg, _ := regexp.Compile("/([a-z]+)"); !reg.MatchString(group) {
+		panic("Invalid router group: " + group)
+	}
+	rGroup := router.Group(group)
+
+	for _, r := range routes {
+		p := strings.Replace(r.Pattern, group, "", 1)
+		switch r.Method {
 		case http.MethodGet:
-			r.GET(route.Pattern, route.HandlerFunc)
+			rGroup.GET(p, r.HandlerFunc)
 		case http.MethodPost:
-			r.POST(route.Pattern, route.HandlerFunc)
+			rGroup.POST(p, r.HandlerFunc)
 		case http.MethodPut:
-			r.PUT(route.Pattern, route.HandlerFunc)
+			rGroup.PUT(p, r.HandlerFunc)
 		case http.MethodPatch:
-			r.PATCH(route.Pattern, route.HandlerFunc)
+			rGroup.PATCH(p, r.HandlerFunc)
 		case http.MethodDelete:
-			r.DELETE(route.Pattern, route.HandlerFunc)
+			rGroup.DELETE(p, r.HandlerFunc)
+		}
 	}
 }

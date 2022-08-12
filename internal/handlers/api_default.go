@@ -10,36 +10,50 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// DefaultApi handles routes with the DefaultApi tag.
-type DefaultApi struct {
-	svc services.DefaultApi
+// Default handles routes with the default tag.
+type Default struct {
+	svc services.Default
 	// add your own services, etc. as required
 }
 
-// NewDefaultApi returns a new handler for DefaultApi.
+// NewDefault returns a new handler for default.
 // Edit as required
 // TODO rewriting handler methods based on current postgen:
 // see https://eli.thegreenplace.net/2021/rewriting-go-source-code-with-ast-tooling/
 // simpler solutions based on drawbacks (complicated, comments not attached to nodes):
 // - https://github.com/dave/dst
 // - https://github.com/uber-go/gopatch
-func NewDefaultApi(svc services.DefaultApi) *DefaultApi {
-	return &DefaultApi{
+func NewDefault(svc services.Default) *Default {
+	return &Default{
 		svc: svc,
 	}
 }
 
 // Register connects the handlers to a router.
-func (t *DefaultApi) Register(r *gin.Engine) {
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "Ping",
-		Method:      http.MethodGet,
-		Pattern:     "/v2/ping",
-		HandlerFunc: t.Ping,
-	})
+func (t *Default) Register(r *gin.RouterGroup) {
+	routes := []gen.Route{
+		{
+			Name:        "OpenapiYamlGet",
+			Method:      http.MethodGet,
+			Pattern:     "/openapi.yaml",
+			HandlerFunc: t.OpenapiYamlGet,
+		},
+		{
+			Name:        "Ping",
+			Method:      http.MethodGet,
+			Pattern:     "/ping",
+			HandlerFunc: t.Ping,
+		},
+	}
+	gen.RegisterRoutes(r, routes, "/default")
+}
+
+// OpenapiYamlGet returns this very openapi spec..
+func (t *Default) OpenapiYamlGet(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // Ping ping pongs.
-func (t *DefaultApi) Ping(c *gin.Context) {
+func (t *Default) Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }

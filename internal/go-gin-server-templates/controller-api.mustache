@@ -10,35 +10,41 @@ import (
 	gen "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen"
 )
 
-// {{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}} handles routes with the {{{classname}}} tag.
-type {{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}} struct {
-	svc services.{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}}
+{{! The things one must do to not touch Java. }}
+// {{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}} handles routes with the {{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}} tag.
+type {{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}} struct {
+	svc services.{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}}
   // add your own services, etc. as required
 }
 
-// New{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}} returns a new handler for {{{classname}}}.
+// New{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}} returns a new handler for {{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}.
 // Edit as required
 // TODO rewriting handler methods based on current postgen:
 // see https://eli.thegreenplace.net/2021/rewriting-go-source-code-with-ast-tooling/
 // simpler solutions based on drawbacks (complicated, comments not attached to nodes):
 // - https://github.com/dave/dst
 // - https://github.com/uber-go/gopatch
-func New{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}}(svc services.{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}}) *{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}} {
-	return &{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}}{
+func New{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}}(svc services.{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}}) *{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}} {
+	return &{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}}{
 		svc: svc,
 	}
 }
 
 // Register connects the handlers to a router.
-func (t *{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}}) Register(r *gin.Engine) {
+func (t *{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}}) Register(r *gin.RouterGroup) {
+  routes := []gen.Route{
 {{#operation}}
-	gen.RegisterRoute(r, gen.Route{
+	{
     Name: "{{operationId}}",
     Method: http.Method{{httpMethod}},
-    Pattern: "{{{basePathWithoutHost}}}{{{path}}}",
+    Pattern: "{{{path}}}",
     HandlerFunc: t.{{nickname}},
-  })
+  },
 {{/operation}}
+  }
+{{#operation.0}}
+  gen.RegisterRoutes(r, routes, "/{{#tags}}{{name}}{{/tags}}")
+{{/operation.0}}
 }
 
 {{#operation}}
@@ -46,7 +52,7 @@ func (t *{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}}) Register(r *
 {{#isDeprecated}}
 // Deprecated
 {{/isDeprecated}}
-func (t *{{#lambda.titlecase}}{{{classname}}}{{/lambda.titlecase}}) {{nickname}}(c *gin.Context) {
+func (t *{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}}) {{nickname}}(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 {{/operation}}

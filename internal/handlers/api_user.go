@@ -10,113 +10,116 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// UserApi handles routes with the UserApi tag.
-type UserApi struct {
-	svc services.UserApi
+// User handles routes with the user tag.
+type User struct {
+	svc services.User
 	// add your own services, etc. as required
 }
 
-// NewUserApi returns a new handler for UserApi.
+// NewUser returns a new handler for user.
 // Edit as required
 // TODO rewriting handler methods based on current postgen:
 // see https://eli.thegreenplace.net/2021/rewriting-go-source-code-with-ast-tooling/
 // simpler solutions based on drawbacks (complicated, comments not attached to nodes):
 // - https://github.com/dave/dst
 // - https://github.com/uber-go/gopatch
-func NewUserApi(svc services.UserApi) *UserApi {
-	return &UserApi{
+func NewUser(svc services.User) *User {
+	return &User{
 		svc: svc,
 	}
 }
 
 // Register connects the handlers to a router.
-func (t *UserApi) Register(r *gin.Engine) {
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "CreateUser",
-		Method:      http.MethodPost,
-		Pattern:     "/v2/user",
-		HandlerFunc: t.CreateUser,
-	})
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "CreateUsersWithArrayInput",
-		Method:      http.MethodPost,
-		Pattern:     "/v2/user/createWithArray",
-		HandlerFunc: t.CreateUsersWithArrayInput,
-	})
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "CreateUsersWithListInput",
-		Method:      http.MethodPost,
-		Pattern:     "/v2/user/createWithList",
-		HandlerFunc: t.CreateUsersWithListInput,
-	})
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "DeleteUser",
-		Method:      http.MethodDelete,
-		Pattern:     "/v2/user/:username",
-		HandlerFunc: t.DeleteUser,
-	})
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "GetUserByName",
-		Method:      http.MethodGet,
-		Pattern:     "/v2/user/:username",
-		HandlerFunc: t.GetUserByName,
-	})
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "LoginUser",
-		Method:      http.MethodGet,
-		Pattern:     "/v2/user/login",
-		HandlerFunc: t.LoginUser,
-	})
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "LogoutUser",
-		Method:      http.MethodGet,
-		Pattern:     "/v2/user/logout",
-		HandlerFunc: t.LogoutUser,
-	})
-	gen.RegisterRoute(r, gen.Route{
-		Name:        "UpdateUser",
-		Method:      http.MethodPut,
-		Pattern:     "/v2/user/:username",
-		HandlerFunc: t.UpdateUser,
-	})
+func (t *User) Register(r *gin.RouterGroup) {
+	routes := []gen.Route{
+		{
+			Name:        "CreateUser",
+			Method:      http.MethodPost,
+			Pattern:     "/user",
+			HandlerFunc: t.CreateUser,
+		},
+		{
+			Name:        "CreateUsersWithArrayInput",
+			Method:      http.MethodPost,
+			Pattern:     "/user/createWithArray",
+			HandlerFunc: t.CreateUsersWithArrayInput,
+		},
+		{
+			Name:        "CreateUsersWithListInput",
+			Method:      http.MethodPost,
+			Pattern:     "/user/createWithList",
+			HandlerFunc: t.CreateUsersWithListInput,
+		},
+		{
+			Name:        "DeleteUser",
+			Method:      http.MethodDelete,
+			Pattern:     "/user/:username",
+			HandlerFunc: t.DeleteUser,
+		},
+		{
+			Name:        "GetUserByName",
+			Method:      http.MethodGet,
+			Pattern:     "/user/:username",
+			HandlerFunc: t.GetUserByName,
+		},
+		{
+			Name:        "LoginUser",
+			Method:      http.MethodGet,
+			Pattern:     "/user/login",
+			HandlerFunc: t.LoginUser,
+		},
+		{
+			Name:        "LogoutUser",
+			Method:      http.MethodGet,
+			Pattern:     "/user/logout",
+			HandlerFunc: t.LogoutUser,
+		},
+		{
+			Name:        "UpdateUser",
+			Method:      http.MethodPut,
+			Pattern:     "/user/:username",
+			HandlerFunc: t.UpdateUser,
+		},
+	}
+	gen.RegisterRoutes(r, routes, "/user")
 }
 
 // CreateUser creates a new user.
-func (t *UserApi) CreateUser(c *gin.Context) {
+func (t *User) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // CreateUsersWithArrayInput creates list of users with given input array.
-func (t *UserApi) CreateUsersWithArrayInput(c *gin.Context) {
+func (t *User) CreateUsersWithArrayInput(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // CreateUsersWithListInput creates list of users with given input array.
-func (t *UserApi) CreateUsersWithListInput(c *gin.Context) {
+func (t *User) CreateUsersWithListInput(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // DeleteUser delete user.
-func (t *UserApi) DeleteUser(c *gin.Context) {
+func (t *User) DeleteUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // GetUserByName get user by user name.
-func (t *UserApi) GetUserByName(c *gin.Context) {
+func (t *User) GetUserByName(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // LoginUser logs user into the system.
-func (t *UserApi) LoginUser(c *gin.Context) {
+func (t *User) LoginUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // LogoutUser logs out current logged in user session.
-func (t *UserApi) LogoutUser(c *gin.Context) {
+func (t *User) LogoutUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // UpdateUser updated user.
-func (t *UserApi) UpdateUser(c *gin.Context) {
+func (t *User) UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }

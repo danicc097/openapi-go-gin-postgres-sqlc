@@ -160,16 +160,16 @@ func newServer(conf serverConfig) (*http.Server, error) {
 	}))
 	router.Use(ginzap.RecoveryWithZap(conf.Logger, true))
 
-	// TODO defining static file serving in spec is not supported?
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
-	router.StaticFS("/v2/docs", http.FS(fsys))
 
-	handlers.NewDefaultApi(services.DefaultApi{}).Register(router)
-	handlers.NewDocsApi(services.DocsApi{}).Register(router)
-	handlers.NewFakeApi(services.FakeApi{}).Register(router)
-	handlers.NewPetApi(services.PetApi{}).Register(router)
-	handlers.NewStoreApi(services.StoreApi{}).Register(router)
-	handlers.NewUserApi(services.UserApi{}).Register(router)
+	rg := router.Group(os.Getenv("API_VERSION"))
+	rg.StaticFS("/docs", http.FS(fsys))
+
+	handlers.NewDefault(services.Default{}).Register(rg)
+	handlers.NewFake(services.Fake{}).Register(rg)
+	handlers.NewPet(services.Pet{}).Register(rg)
+	handlers.NewStore(services.Store{}).Register(rg)
+	handlers.NewUser(services.User{}).Register(rg)
 
 	conf.Logger.Info("Server started")
 	log.Fatal(router.Run(conf.Address))
