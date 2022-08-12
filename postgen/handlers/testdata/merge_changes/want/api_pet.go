@@ -79,13 +79,31 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId",
 			HandlerFunc: t.updatePetWithForm,
-			Middlewares: []gin.HandlerFunc{},
+			// added middleware, would not want to lose it.
+			Middlewares: []gin.HandlerFunc{rest.AuthMiddleware()},
 		},
 		{
 			Name:        "UploadFile",
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId/uploadImage",
 			HandlerFunc: t.uploadFile,
+			Middlewares: []gin.HandlerFunc{},
+		},
+		// this is a new handler added by hand.
+		// I wouldnt care that much if this comment is deleted.
+		// Order is not important
+		{
+			Name:        "NewHandler",
+			Method:      http.MethodGet,
+			Pattern:     "/pet/:petId/newHandlerGet",
+			HandlerFunc: t.newHandlerGet,
+			Middlewares: []gin.HandlerFunc{},
+		},
+		{
+			Name:        "NewHandlerPost",
+			Method:      http.MethodPost,
+			Pattern:     "/pet/:petId/newHandlerPost",
+			HandlerFunc: t.newHandlerPost,
 			Middlewares: []gin.HandlerFunc{},
 		},
 	}
@@ -132,4 +150,20 @@ func (t *Pet) updatePetWithForm(c *gin.Context) {
 // uploadFile uploads an image.
 func (t *Pet) uploadFile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+// addPet add a new pet to the store.
+func (t *Pet) newHandlerPost(c *gin.Context) {
+	fmt.Println("this is the implementation for newHandlerPost")
+}
+
+// newHandlerGet was added by hand.
+// This shouldn't be overriden/deleted in any case.
+func (t *Pet) newHandlerGet(c *gin.Context) {
+	fmt.Println("this is the implementation for newHandlerGet")
+}
+
+// this is an unused method. order is not important.
+func (t *Pet) anUnusedHandler(c *gin.Context) {
+	fmt.Println("this is the implementation for anUnusedHandler not used by any route")
 }

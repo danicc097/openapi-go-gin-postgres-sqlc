@@ -5,6 +5,7 @@ linters:
 
   disable:
     - godox # marks TODO, FIX, ...
+    - forbidigo # fmt banned, etc.
     - goerr113
     - gofumpt
     - gomnd

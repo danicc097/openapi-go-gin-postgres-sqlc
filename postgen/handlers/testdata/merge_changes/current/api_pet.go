@@ -3,6 +3,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
@@ -79,6 +80,23 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId",
 			HandlerFunc: t.updatePetWithForm,
+			// added middleware, would not want to lose it.
+			Middlewares: []gin.HandlerFunc{rest.AuthMiddleware()},
+		},
+		// this is a new handler added by hand.
+		// I wouldnt care that much if this comment is deleted.
+		{
+			Name:        "NewHandler",
+			Method:      http.MethodGet,
+			Pattern:     "/pet/:petId/newHandlerGet",
+			HandlerFunc: t.newHandlerGet,
+			Middlewares: []gin.HandlerFunc{},
+		},
+		{
+			Name:        "NewHandler",
+			Method:      http.MethodPost,
+			Pattern:     "/pet/:petId/uploadImage",
+			HandlerFunc: t.newHandler,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
@@ -93,9 +111,19 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	rest.RegisterRoutes(r, routes, "/pet", mws)
 }
 
+// I added some important comments here
+
+/*
+and here as well */
+
 // addPet add a new pet to the store.
 func (t *Pet) addPet(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	fmt.Println("this is a new implementation of addPet")
+}
+
+// this is an unused method. order is not important.
+func (t *Pet) anUnusedHandler(c *gin.Context) {
+	fmt.Println("this is the implementation for anUnusedHandler not used by any route")
 }
 
 // deletePet deletes a pet.
@@ -132,4 +160,10 @@ func (t *Pet) updatePetWithForm(c *gin.Context) {
 // uploadFile uploads an image.
 func (t *Pet) uploadFile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+// newHandlerGet was added by hand.
+// This shouldn't be overriden/deleted in any case.
+func (t *Pet) newHandlerGet(c *gin.Context) {
+	fmt.Println("this is the implementation for newHandlerGet")
 }

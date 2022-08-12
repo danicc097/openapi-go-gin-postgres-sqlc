@@ -82,6 +82,13 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
+			Name:        "NewHandlerPost",
+			Method:      http.MethodPost,
+			Pattern:     "/pet/:petId/newHandlerPost",
+			HandlerFunc: t.newHandlerPost,
+			Middlewares: []gin.HandlerFunc{},
+		},
+		{
 			Name:        "UploadFile",
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId/uploadImage",
@@ -133,3 +140,9 @@ func (t *Pet) updatePetWithForm(c *gin.Context) {
 func (t *Pet) uploadFile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
+
+// addPet add a new pet to the store.
+func (t *Pet) newHandlerPost(c *gin.Context) {
+	fmt.Println("this is the implementation for newHandlerPost")
+}
+
