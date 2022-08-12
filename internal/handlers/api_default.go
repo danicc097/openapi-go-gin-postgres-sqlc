@@ -5,7 +5,7 @@ package handlers
 import (
 	"net/http"
 
-	gen "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -29,31 +29,34 @@ func NewDefault(svc services.Default) *Default {
 	}
 }
 
-// Register connects the handlers to a router.
-func (t *Default) Register(r *gin.RouterGroup) {
-	routes := []gen.Route{
+// Register connects the handlers to a router with the given middleware.
+func (t *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
+	routes := []rest.Route{
 		{
 			Name:        "OpenapiYamlGet",
 			Method:      http.MethodGet,
 			Pattern:     "/openapi.yaml",
-			HandlerFunc: t.OpenapiYamlGet,
+			HandlerFunc: t.openapiYamlGet,
+			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "Ping",
 			Method:      http.MethodGet,
 			Pattern:     "/ping",
-			HandlerFunc: t.Ping,
+			HandlerFunc: t.ping,
+			Middlewares: []gin.HandlerFunc{},
 		},
 	}
-	gen.RegisterRoutes(r, routes, "/default")
+
+	rest.RegisterRoutes(r, routes, "/default", mws)
 }
 
-// OpenapiYamlGet returns this very openapi spec..
-func (t *Default) OpenapiYamlGet(c *gin.Context) {
+// openapiYamlGet returns this very openapi spec..
+func (t *Default) openapiYamlGet(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// Ping ping pongs.
-func (t *Default) Ping(c *gin.Context) {
+// ping ping pongs.
+func (t *Default) ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }

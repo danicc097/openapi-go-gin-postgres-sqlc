@@ -161,15 +161,17 @@ func newServer(conf serverConfig) (*http.Server, error) {
 	router.Use(ginzap.RecoveryWithZap(conf.Logger, true))
 
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
+	// authMw := rest.NewAuthMiddleware(conf.Logger)
+	vg := router.Group(os.Getenv("API_VERSION"))
 
-	rg := router.Group(os.Getenv("API_VERSION"))
-	rg.StaticFS("/docs", http.FS(fsys))
+	handlers.NewDefault(services.Default{}).Register(vg, []gin.HandlerFunc{})
+	handlers.NewFake(services.Fake{}).Register(vg, []gin.HandlerFunc{})
+	handlers.NewPet(services.Pet{}).Register(vg, []gin.HandlerFunc{})
+	handlers.NewStore(services.Store{}).Register(vg, []gin.HandlerFunc{})
+	handlers.NewUser(services.User{}).Register(vg, []gin.HandlerFunc{})
+	// TODO /admin with authMw.EnsureAuthorized() in group
 
-	handlers.NewDefault(services.Default{}).Register(rg)
-	handlers.NewFake(services.Fake{}).Register(rg)
-	handlers.NewPet(services.Pet{}).Register(rg)
-	handlers.NewStore(services.Store{}).Register(rg)
-	handlers.NewUser(services.User{}).Register(rg)
+	vg.StaticFS("/docs", http.FS(fsys))
 
 	conf.Logger.Info("Server started")
 	log.Fatal(router.Run(conf.Address))

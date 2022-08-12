@@ -1,6 +1,6 @@
 package services
 
-// TODO only use services, not repos. No need to deal with repos for redis, etc. for now.
+// TODO only use services, not repos. No need to turn redis, etc. into repo for now.
 // TODO service interfaces
 
 type Default struct {

@@ -21,31 +21,40 @@ type Route struct {
 	Group string
 	// HandlerFunc is the handler function for this route.
 	HandlerFunc gin.HandlerFunc
+	// Middlewares represent this route's middleware chain.
+	Middlewares []gin.HandlerFunc
 }
 
 // Routes is the list of the generated Route.
 type Routes []Route
 
-// RegisterRoute registers routes in the given router.
-func RegisterRoutes(router *gin.RouterGroup, routes []Route, group string) {
+// RegisterRoute creates a router group, adds group middleware and registers routes with their own middleware.
+func RegisterRoutes(router *gin.RouterGroup, rr []Route, group string, mws []gin.HandlerFunc) {
 	if reg, _ := regexp.Compile("/([a-z]+)"); !reg.MatchString(group) {
 		panic("Invalid router group: " + group)
 	}
-	rGroup := router.Group(group)
 
-	for _, r := range routes {
+	rg := router.Group(group)
+
+	for _, mw := range mws {
+		rg.Use(mw)
+	}
+
+	for _, r := range rr {
 		p := strings.Replace(r.Pattern, group, "", 1)
+		handlers := append(r.Middlewares, r.HandlerFunc)
+
 		switch r.Method {
 		case http.MethodGet:
-			rGroup.GET(p, r.HandlerFunc)
+			rg.GET(p, handlers...)
 		case http.MethodPost:
-			rGroup.POST(p, r.HandlerFunc)
+			rg.POST(p, handlers...)
 		case http.MethodPut:
-			rGroup.PUT(p, r.HandlerFunc)
+			rg.PUT(p, handlers...)
 		case http.MethodPatch:
-			rGroup.PATCH(p, r.HandlerFunc)
+			rg.PATCH(p, handlers...)
 		case http.MethodDelete:
-			rGroup.DELETE(p, r.HandlerFunc)
+			rg.DELETE(p, handlers...)
 		}
 	}
 }

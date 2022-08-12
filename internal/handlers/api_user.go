@@ -5,7 +5,7 @@ package handlers
 import (
 	"net/http"
 
-	gen "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -29,97 +29,106 @@ func NewUser(svc services.User) *User {
 	}
 }
 
-// Register connects the handlers to a router.
-func (t *User) Register(r *gin.RouterGroup) {
-	routes := []gen.Route{
+// Register connects the handlers to a router with the given middleware.
+func (t *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
+	routes := []rest.Route{
 		{
 			Name:        "CreateUser",
 			Method:      http.MethodPost,
 			Pattern:     "/user",
-			HandlerFunc: t.CreateUser,
+			HandlerFunc: t.createUser,
+			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "CreateUsersWithArrayInput",
 			Method:      http.MethodPost,
 			Pattern:     "/user/createWithArray",
-			HandlerFunc: t.CreateUsersWithArrayInput,
+			HandlerFunc: t.createUsersWithArrayInput,
+			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "CreateUsersWithListInput",
 			Method:      http.MethodPost,
 			Pattern:     "/user/createWithList",
-			HandlerFunc: t.CreateUsersWithListInput,
+			HandlerFunc: t.createUsersWithListInput,
+			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "DeleteUser",
 			Method:      http.MethodDelete,
 			Pattern:     "/user/:username",
-			HandlerFunc: t.DeleteUser,
+			HandlerFunc: t.deleteUser,
+			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "GetUserByName",
 			Method:      http.MethodGet,
 			Pattern:     "/user/:username",
-			HandlerFunc: t.GetUserByName,
+			HandlerFunc: t.getUserByName,
+			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "LoginUser",
 			Method:      http.MethodGet,
 			Pattern:     "/user/login",
-			HandlerFunc: t.LoginUser,
+			HandlerFunc: t.loginUser,
+			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "LogoutUser",
 			Method:      http.MethodGet,
 			Pattern:     "/user/logout",
-			HandlerFunc: t.LogoutUser,
+			HandlerFunc: t.logoutUser,
+			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "UpdateUser",
 			Method:      http.MethodPut,
 			Pattern:     "/user/:username",
-			HandlerFunc: t.UpdateUser,
+			HandlerFunc: t.updateUser,
+			Middlewares: []gin.HandlerFunc{},
 		},
 	}
-	gen.RegisterRoutes(r, routes, "/user")
+
+	rest.RegisterRoutes(r, routes, "/user", mws)
 }
 
-// CreateUser creates a new user.
-func (t *User) CreateUser(c *gin.Context) {
+// createUser creates a new user.
+func (t *User) createUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// CreateUsersWithArrayInput creates list of users with given input array.
-func (t *User) CreateUsersWithArrayInput(c *gin.Context) {
+// createUsersWithArrayInput creates list of users with given input array.
+func (t *User) createUsersWithArrayInput(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// CreateUsersWithListInput creates list of users with given input array.
-func (t *User) CreateUsersWithListInput(c *gin.Context) {
+// createUsersWithListInput creates list of users with given input array.
+func (t *User) createUsersWithListInput(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// DeleteUser delete user.
-func (t *User) DeleteUser(c *gin.Context) {
+// deleteUser delete user.
+func (t *User) deleteUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// GetUserByName get user by user name.
-func (t *User) GetUserByName(c *gin.Context) {
+// getUserByName get user by user name.
+func (t *User) getUserByName(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// LoginUser logs user into the system.
-func (t *User) LoginUser(c *gin.Context) {
+// loginUser logs user into the system.
+func (t *User) loginUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// LogoutUser logs out current logged in user session.
-func (t *User) LogoutUser(c *gin.Context) {
+// logoutUser logs out current logged in user session.
+func (t *User) logoutUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// UpdateUser updated user.
-func (t *User) UpdateUser(c *gin.Context) {
+// updateUser updated user.
+func (t *User) updateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }

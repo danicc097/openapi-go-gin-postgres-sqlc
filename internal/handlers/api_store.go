@@ -5,7 +5,7 @@ package handlers
 import (
 	"net/http"
 
-	gen "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -29,53 +29,58 @@ func NewStore(svc services.Store) *Store {
 	}
 }
 
-// Register connects the handlers to a router.
-func (t *Store) Register(r *gin.RouterGroup) {
-	routes := []gen.Route{
+// Register connects the handlers to a router with the given middleware.
+func (t *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
+	routes := []rest.Route{
 		{
 			Name:        "DeleteOrder",
 			Method:      http.MethodDelete,
 			Pattern:     "/store/order/:orderId",
-			HandlerFunc: t.DeleteOrder,
+			HandlerFunc: t.deleteOrder,
+			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "GetInventory",
 			Method:      http.MethodGet,
 			Pattern:     "/store/inventory",
-			HandlerFunc: t.GetInventory,
+			HandlerFunc: t.getInventory,
+			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "GetOrderById",
 			Method:      http.MethodGet,
 			Pattern:     "/store/order/:orderId",
-			HandlerFunc: t.GetOrderById,
+			HandlerFunc: t.getOrderById,
+			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "PlaceOrder",
 			Method:      http.MethodPost,
 			Pattern:     "/store/order",
-			HandlerFunc: t.PlaceOrder,
+			HandlerFunc: t.placeOrder,
+			Middlewares: []gin.HandlerFunc{},
 		},
 	}
-	gen.RegisterRoutes(r, routes, "/store")
+
+	rest.RegisterRoutes(r, routes, "/store", mws)
 }
 
-// DeleteOrder delete purchase order by id.
-func (t *Store) DeleteOrder(c *gin.Context) {
+// deleteOrder delete purchase order by id.
+func (t *Store) deleteOrder(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// GetInventory returns pet inventories by status.
-func (t *Store) GetInventory(c *gin.Context) {
+// getInventory returns pet inventories by status.
+func (t *Store) getInventory(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// GetOrderById find purchase order by id.
-func (t *Store) GetOrderById(c *gin.Context) {
+// getOrderById find purchase order by id.
+func (t *Store) getOrderById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// PlaceOrder place an order for a pet.
-func (t *Store) PlaceOrder(c *gin.Context) {
+// placeOrder place an order for a pet.
+func (t *Store) placeOrder(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }

@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	gen "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 )
 
 {{! The things one must do to not touch Java. }}
@@ -30,29 +30,31 @@ func New{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operat
 	}
 }
 
-// Register connects the handlers to a router.
-func (t *{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}}) Register(r *gin.RouterGroup) {
-  routes := []gen.Route{
+// Register connects the handlers to a router with the given middleware.
+func (t *{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
+  routes := []rest.Route{
 {{#operation}}
 	{
     Name: "{{operationId}}",
     Method: http.Method{{httpMethod}},
     Pattern: "{{{path}}}",
-    HandlerFunc: t.{{nickname}},
+    HandlerFunc: t.{{#lambda.camelcase}}{{nickname}}{{/lambda.camelcase}},
+    Middlewares: []gin.HandlerFunc{},
   },
 {{/operation}}
   }
 {{#operation.0}}
-  gen.RegisterRoutes(r, routes, "/{{#tags}}{{name}}{{/tags}}")
+
+  rest.RegisterRoutes(r, routes, "/{{#tags}}{{name}}{{/tags}}", mws)
 {{/operation.0}}
 }
 
 {{#operation}}
-// {{nickname}} {{#lambda.lowercase}}{{{summary}}}{{/lambda.lowercase}}.
+// {{#lambda.camelcase}}{{nickname}}{{/lambda.camelcase}} {{#lambda.lowercase}}{{{summary}}}{{/lambda.lowercase}}.
 {{#isDeprecated}}
 // Deprecated
 {{/isDeprecated}}
-func (t *{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}}) {{nickname}}(c *gin.Context) {
+func (t *{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}}) {{#lambda.camelcase}}{{nickname}}{{/lambda.camelcase}}(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 {{/operation}}

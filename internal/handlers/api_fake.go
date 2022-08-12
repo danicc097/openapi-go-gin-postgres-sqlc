@@ -5,7 +5,7 @@ package handlers
 import (
 	"net/http"
 
-	gen "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -29,20 +29,22 @@ func NewFake(svc services.Fake) *Fake {
 	}
 }
 
-// Register connects the handlers to a router.
-func (t *Fake) Register(r *gin.RouterGroup) {
-	routes := []gen.Route{
+// Register connects the handlers to a router with the given middleware.
+func (t *Fake) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
+	routes := []rest.Route{
 		{
 			Name:        "FakeDataFile",
 			Method:      http.MethodGet,
 			Pattern:     "/fake/data_file",
-			HandlerFunc: t.FakeDataFile,
+			HandlerFunc: t.fakeDataFile,
+			Middlewares: []gin.HandlerFunc{},
 		},
 	}
-	gen.RegisterRoutes(r, routes, "/fake")
+
+	rest.RegisterRoutes(r, routes, "/fake", mws)
 }
 
-// FakeDataFile test data_file to ensure it's escaped correctly.
-func (t *Fake) FakeDataFile(c *gin.Context) {
+// fakeDataFile test data_file to ensure it's escaped correctly.
+func (t *Fake) fakeDataFile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }

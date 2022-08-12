@@ -9,4 +9,3 @@ handler methods if necessary (e.g. fileserver endpoints cannot generated via ``o
 
 1. Do **not** rename or create new `api_*.go` files, except for `*_test.go`. You can safely create any other file that doesn't follow this pattern.
 
-
