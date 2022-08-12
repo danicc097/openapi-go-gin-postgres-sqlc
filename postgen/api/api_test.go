@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/postgen"
+	postgen "github.com/danicc097/openapi-go-gin-postgres-sqlc/postgen/api"
 )
 
 func ExampleGenerateHandlers() {
@@ -46,7 +46,7 @@ func ExampleGenerateHandlers() {
 
 func ExampleParseHandlers() {
 	cwd, _ := os.Getwd()
-	handlers := postgen.ParseHandlers(path.Join(cwd, "testdata/handlers.go"))
+	handlers := postgen.ParseHandlers(path.Join(cwd, "testdata/api.go"))
 
 	hs := []postgen.Handler{}
 	for _, v := range handlers {
