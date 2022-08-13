@@ -3,71 +3,238 @@ package main
 import (
 	"fmt"
 	"os"
+	"path"
+	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	"github.com/dave/dst/dstutil"
 )
 
+func contains[T comparable](elems []T, v T) bool {
+	for _, s := range elems {
+		if v == s {
+			return true
+		}
+	}
+
+	return false
+}
+
+/*
+	Read:
+	https://go.dev/src/go/ast
+	https://pkg.go.dev/go/ast
+	https://github.com/dave/dst/blob/master/dstutil/rewrite_test.go
+	https://developers.mattermost.com/blog/instrumenting-go-code-via-ast-2/
+
+	Rationale:
+	We dont want users to manually add handlers and routes to handlers/*
+	If we let them, we wouldnt know at plain sight what was in the spec and what wasnt
+	and parsing will become a bigger mess.
+	Users can still add new methods, but the routes slice in Register will have
+	all items containing a route () that wasnt generated removed.
+	If we need a new route that cant be defined in the spec, e.g. fileserver,
+	we purposely want that out of the generated handler struct, so its clear that
+	its outside the spec.
+	It can still remain in handlers/* as long as its not api_*(!_test).go, e.g. fileserver.go
+	and still follow the same handlers struct pattern for all we care, it wont be touched.
+
+	flow:
+	🆗glob current/api_*(!_test).go -> currentBasenames
+	🆗glob gen/api_*(!_test).go -> genBasenames
+	For each gen basename:
+		🆗If gen basename doesnt exist in current or viceversa, cp as is to out.
+		Else:
+			1. parse gen:
+			- extract slice of routes, which contains all relevant info we will need
+			to merge -> genRoutes.
+			genRoutes is a map indexed by Route.Name (operation ids are unique).
+			TODO Can we easily load a struct ast node into the struct itself?
+			- get list of struct methods (inspectStruct) --> genHandlers
+			2. parse current:
+			- extract slice of routes in the same way --> currentRoutes
+			- get list of struct methods (inspectStruct) --> currentHandlers
+		While merging:
+				Based on assumption that users have not modified Register() (clearly indicated).
+				if key of genRoutes is not in currentRoutes:
+					- append gen slice node value to current routes slice
+					- append gen method (501 status) to current struct.
+				IMPORTANT: if a method already exists in current but has no routes item (meaning
+				its probably some handler helper method created afterwards) then panic and alert
+				the user to rename. it shouldve been unexported or a function in the first place anyway.
+
+*/
 func main() {
+	var (
+		baseDir          = "testdata/merge_changes"
+		currentDir       = path.Join(baseDir, "current")
+		genDir           = path.Join(baseDir, "gen")
+		outDir           = path.Join(baseDir, "got") // temp dir to store merged files
+		currentBasenames = getApiBasenames(currentDir)
+		genBasenames     = getApiBasenames(genDir)
+		commonBasenames  = []string{}
+	)
+
+	fmt.Println(currentBasenames)
+	fmt.Println(genBasenames)
+
+	// TODO refactor for clearness to https://stackoverflow.com/questions/52120488/what-is-the-most-efficient-way-to-get-the-intersection-and-exclusions-from-two-a
+
+	k := 0
+
+	os.MkdirAll(outDir, 0777)
+
+	for _, genBasename := range genBasenames {
+		if contains(currentBasenames, genBasename) {
+			genBasenames[k] = genBasename
+			k++
+
+			continue
+		}
+
+		genContent, err := os.ReadFile(path.Join(genDir, genBasename))
+		if err != nil {
+			panic(err)
+		}
+
+		os.WriteFile(path.Join(outDir, genBasename), genContent, 0666)
+	}
+
+	genBasenames = genBasenames[:k]
+
+	for _, currentBasename := range currentBasenames {
+		if contains(genBasenames, currentBasename) {
+			commonBasenames = append(commonBasenames, currentBasename)
+
+			continue
+		}
+
+		currentContent, err := os.ReadFile(path.Join(currentDir, currentBasename))
+		if err != nil {
+			panic(err)
+		}
+
+		os.WriteFile(path.Join(outDir, currentBasename), currentContent, 0666)
+	}
+
+	fmt.Println("\ncommonBasenames after copying over files that dont intersect:")
+	fmt.Println(commonBasenames)
+
+	// access by Dir -> tag
+	handlers := make(map[string]map[string]HandlerFile)
+
+	dirs := []string{genDir, currentDir}
+	for _, dir := range dirs {
+		handlers[dir] = make(map[string]HandlerFile)
+
+		for _, basename := range commonBasenames {
+			file := path.Join(dir, basename)
+			fmt.Printf("------\nAnalyzing %v\n", file)
+
+			c, err := os.ReadFile(file)
+			if err != nil {
+				panic(err)
+			}
+
+			f, err := decorator.Parse(c)
+			if err != nil {
+				panic(err)
+			}
+
+			reg := regexp.MustCompile("api_(.*).go")
+			tag := strings.Title(reg.FindStringSubmatch(basename)[1])
+
+			mm := inspectStruct(f, tag)
+			rr := inspectRoutes(f, tag)
+			routes := extractRoutes(rr)
+
+			// TODO Register() is in Methods, so we can clone it from gen to current
+			// then update middleware field nodes with rr from current.
+			// We will also need to append Method's not in current to the struct node
+			hf := HandlerFile{
+				F:          f,
+				Methods:    mm,
+				RoutesNode: rr.Elts,
+				Routes:     routes,
+			}
+
+			handlers[dir][tag] = hf
+		}
+	}
+
 	/*
-		Read:
-		https://go.dev/src/go/ast
-		https://pkg.go.dev/go/ast
-
-
-		Rationale:
-		We dont want users to manually add handlers and routes to handlers/*
-		If we let them, we wouldnt know at plain sight what was in the spec and what wasnt
-		and parsing will become a bigger mess.
-		Users can still add new methods, but the routes slice in Register will have
-		all items containing a route () that wasnt generated removed.
-		If we need a new route that cant be defined in the spec, e.g. fileserver,
-		we purposely want that out of the generated handler struct, so its clear that
-		its outside the spec.
-		It can still remain in handlers/* as long as its not api_*(!_test).go, e.g. fileserver.go
-		and still follow the same handlers struct pattern for all we care, it wont be touched.
-
-		flow:
-		glob current/api_*(!_test).go -> currentBasenames
-		glob gen/api_*(!_test).go -> genBasenames
-		For each gen basename:
-			If current basename doesnt exist, cp as is.
-			Else:
-				1. parse gen:
-				- extract slice of routes, which contains all relevant info we will need
-				to merge -> genRoutes.
-				genRoutes is a map indexed by Route.Name (operation ids are unique).
-				TODO Can we easily load a struct ast node into the struct itself?
-				- get list of struct methods (inspectStruct) --> genHandlers
-				2. parse current:
-				- extract slice of routes in the same way --> currentRoutes
-				- get list of struct methods (inspectStruct) --> currentHandlers
-			While merging:
-					Based on assumption that users have not modified Register() (clearly indicated).
-					if key of genRoutes is not in currentRoutes:
-						- append gen slice node value to current routes slice
-						- append gen method (501 status) to current struct.
-					IMPORTANT: if a method already exists in current but has no routes item (meaning
-					its probably some handler helper method created afterwards) then panic and alert
-					the user to rename. it shouldve been unexported or a function in the first place anyway.
-
+		once both dirs and all files are parsed, we can loop through handlers["current"], and for each tag:
+			outF will be a clone of handlers["current"][<tag>].F
+			outRoutes will be handlers["gen"][<tag>].RouteNode
+			for each operationId:
+				if operationId is not a key in current -> leave as is
+				change outRoutes Middlewares tree node to be handlers["current"][<tag>].Route[operationId].Middlewares
+				If there is no current slice element (a new route) do nothing
+				change current fn bodies for all methods
+				If there is no current fn body (a new route) do nothing
 	*/
+	for tag, hf := range handlers[currentDir] {
+		outF := dst.Clone(hf.F).(*dst.File) //nolint: forcetypeassert
 
-	currentContent, err := os.ReadFile("testdata/merge_changes/current/api_user.go")
+		fmt.Println(tag)
+		if err := decorator.Print(outF); err != nil {
+			panic(err)
+		}
+	}
+
+	// for _, r := range rr {
+	// 	//nolint: forcetypeassert
+	// 	for _, s := range r.(*dst.CompositeLit).Elts {
+	// 		if s.(*dst.KeyValueExpr).Key.(*dst.Ident).Name == "Middlewares" {
+	// 			fmt.Printf("r -> %v :: %v\n", s.(*dst.KeyValueExpr).Key, s.(*dst.KeyValueExpr).Value)
+	// 		}
+	// 	}
+	// }
+
+	// fmt.Printf("%v", handlers)
+
+	// if err := decorator.Print(f); err != nil {
+	// 	panic(err)
+	// }
+}
+
+type Method struct {
+	// Name is the method identifier.
+	Name string
+	// Body is the method body node.
+	Body *dst.BlockStmt
+}
+
+type HandlerFile struct {
+	// F is the ast node of the file.
+	F *dst.File
+	// Methods represents all methods in the generated struct for a tag.
+	Methods []Method
+	// RoutesNode represents the complete routes assignment node.
+	RoutesNode []dst.Expr
+	// Routes represents convenient extracted fields from route elements
+	// indexed by operation id.
+	Routes map[string]Route
+}
+
+func getApiBasenames(src string) []string {
+	out := []string{}
+	// glob uses https://pkg.go.dev/path#Match patterns
+	paths, err := filepath.Glob(path.Join(src, "api_*.go"))
 	if err != nil {
 		panic(err)
 	}
-	f, err := decorator.Parse(string(currentContent))
-	if err != nil {
-		panic(err)
+
+	for _, p := range paths {
+		if !strings.HasSuffix(p, "_test.go") {
+			out = append(out, path.Base(p))
+		}
 	}
 
-	// list := f.Decls[0].(*dst.FuncDecl).Body.List
-	// list[0], list[1] = list[1], list[0]
-	// dst.Inspect(f, inspectFunc)
-	// dstutil.Apply(f, applyFunc, nil)
-	inspectStruct(f)
+	return out
 }
 
 func applyFunc(c *dstutil.Cursor) bool {
@@ -123,91 +290,100 @@ func inspectFunc(node dst.Node) bool {
 	return true
 }
 
-type Handler struct {
-	OperationId string
-	Fn          *dst.BlockStmt
+type Route struct {
+	Name        string
+	Middlewares dst.Expr
 }
 
-// https://github.com/dave/dst/blob/master/dstutil/rewrite_test.go
-// for some usage patterns
-// https://developers.mattermost.com/blog/instrumenting-go-code-via-ast-2/
-// TODO inspect gen and current and save blocks.
-// if any method from gen is not in current, append the method
-// if viceversa, do nothing
-func inspectStruct(f dst.Node) {
-	structName := "User"
-	fmt.Printf("structName: %s\n", structName)
+/*
+extractRoutes returns Route elements indexed by method from a routes node.
+*/
+func extractRoutes(rr *dst.CompositeLit) map[string]Route {
+	out := make(map[string]Route)
+
+	for _, r := range rr.Elts {
+		var (
+			opId  string
+			route Route
+		)
+
+		if cl, clok := r.(*dst.CompositeLit); clok {
+			for _, s := range cl.Elts {
+				kv, kvok := s.(*dst.KeyValueExpr)
+				if !kvok {
+					continue
+				}
+
+				ident, identok := kv.Key.(*dst.Ident)
+				if !identok {
+					continue
+				}
+
+				switch ident.Name {
+				case "Name":
+					if lit, islit := kv.Value.(*dst.BasicLit); islit {
+						opId = lit.Value
+					}
+				case "Middlewares":
+					c := dst.Clone(kv.Value)
+					if exp, isexp := c.(dst.Expr); isexp {
+						route.Middlewares = exp
+					}
+				}
+
+				out[opId] = route
+			}
+		}
+	}
+
+	fmt.Printf("%v\n", out)
+
+	return out
+}
+
+// inspectRoutes returns the routes slice Rhs node for tag.
+func inspectRoutes(f dst.Node, tag string) *dst.CompositeLit {
+	routesNode := []dst.Expr{}
 
 	dst.Inspect(f, func(n dst.Node) bool {
-		if fn, isFn := n.(*dst.FuncDecl); isFn {
-			if fn.Recv != nil && len(fn.Recv.List) == 1 {
-				// Check that the receiver is actually the struct we want
-				if r, rok := fn.Recv.List[0].Type.(*dst.StarExpr); rok &&
-					r.X.(*dst.Ident).Name == structName {
-					fmt.Printf("found method %v for struct %s\n", fn.Name, structName)
-					fmt.Printf("body is %v\n", fn.Body)
+		if fn, isFn := n.(*dst.FuncDecl); isFn && fn.Recv != nil && len(fn.Recv.List) == 1 {
+			r, rok := fn.Recv.List[0].Type.(*dst.StarExpr)
+			ident, identok := r.X.(*dst.Ident)
+			if rok && identok && ident.Name == tag {
+				fnBody, _ := dst.Clone(fn.Body).(*dst.BlockStmt)
+				m := fn.Name.String()
+
+				if m == "Register" {
+					routesNode = fnBody.List[0].(*dst.AssignStmt).Rhs
 				}
 			}
 		}
 
 		return true
 	})
+
+	return routesNode[0].(*dst.CompositeLit)
 }
 
-// func newNonImplementedHandlerBody() dst.BlockStmt {
-// 	return dst.BlockStmt{
-// 		List: []dst.Stmt{
-// 			dst.ExprStmt{
-// 				X: dst.CallExpr{
-// 					Fun: dst.SelectorExpr{
-// 						X: dst.Ident{
-// 							Name: "c",
-// 						},
-// 						Sel: dst.Ident{
-// 							Name: "String",
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 	}
-// }
+func inspectStruct(f dst.Node, tag string) []Method {
+	fmt.Printf("\nstructName: %s\n", tag)
 
-// 		List: []dst.Stmt {
-// 			0: dst.ExprStmt {
-// 				X: dst.CallExpr {
-// 					Fun: dst.SelectorExpr {
-// 						X: dst.Ident {
-// 							Name: "c"
-// 						}
-// 						Sel: dst.Ident {
-// 							Name: "String"
-// 						}
-// 					}
-// 					Lparen: foo:11:10
-// 					Args: []dst.Expr (len = 2) {
-// 						0: dst.SelectorExpr {
-// 							X: dst.Ident {
-// 								NamePos: foo:11:11
-// 								Name: "http"
-// 								Obj: nil
-// 							}
-// 							Sel: dst.Ident {
-// 								NamePos: foo:11:16
-// 								Name: "StatusNotImplemented"
-// 								Obj: nil
-// 							}
-// 						}
-// 						1: dst.BasicLit {
-// 							ValuePos: foo:11:38
-// 							Kind: STRING
-// 							Value: "\"501 not implemented\""
-// 						}
-// 					}
-// 					Ellipsis: -
-// 					Rparen: foo:11:59
-// 				}
-// 			}
-// 		}
-// 	}
-// }
+	var out []Method
+
+	dst.Inspect(f, func(n dst.Node) bool {
+		if fn, isFn := n.(*dst.FuncDecl); isFn && fn.Recv != nil && len(fn.Recv.List) == 1 {
+			r, rok := fn.Recv.List[0].Type.(*dst.StarExpr)
+			ident, identok := r.X.(*dst.Ident)
+			if rok && identok && ident.Name == tag {
+				out = append(out, Method{
+					Name: fn.Name.String(),
+					Body: fn.Body,
+				})
+			}
+		}
+
+		return true
+	})
+
+	return out
+}

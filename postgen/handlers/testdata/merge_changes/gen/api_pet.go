@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
@@ -16,12 +15,7 @@ type Pet struct {
 }
 
 // NewPet returns a new handler for pet.
-// Edit as required
-// TODO rewriting handler methods based on current postgen:
-// see https://eli.thegreenplace.net/2021/rewriting-go-source-code-with-ast-tooling/
-// simpler solutions based on drawbacks (complicated, comments not attached to nodes):
-// - https://github.com/dave/dst
-// - https://github.com/uber-go/gopatch
+// Edit as required.
 func NewPet(svc services.Pet) *Pet {
 	return &Pet{
 		svc: svc,
@@ -29,7 +23,7 @@ func NewPet(svc services.Pet) *Pet {
 }
 
 // Register connects the handlers to a router with the given middleware.
-// Generated method. DO NOT EDIT.
+// GENERATED METHOD. Only Middlewares will be saved between runs.
 func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{
@@ -58,48 +52,17 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	rest.RegisterRoutes(r, routes, "/pet", mws)
 }
 
-// AddPet add a new pet to the store.
-func (t *Pet) AddPet(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
-}
-
-// DeletePet deletes a pet.
-func (t *Pet) DeletePet(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
-}
-
-// FindPetsByStatus finds pets by status.
-func (t *Pet) FindPetsByStatus(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
-}
-
-// FindPetsByTags finds pets by tags.
-// Deprecated
-func (t *Pet) FindPetsByTags(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
-}
-
-// GetPetById find pet by id.
-func (t *Pet) GetPetById(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
-}
-
-// UpdatePet update an existing pet.
-func (t *Pet) UpdatePet(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
-}
-
 // UpdatePetWithForm updates a pet in the store with form data.
 func (t *Pet) UpdatePetWithForm(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // UploadFile uploads an image.
 func (t *Pet) UploadFile(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// AddPet add a new pet to the store.
+// NewHandlerPost is a newly generated handler.
 func (t *Pet) NewHandlerPost(c *gin.Context) {
-	fmt.Println("this is the implementation for NewHandlerPost")
+	c.String(http.StatusNotImplemented, "501 not implemented")
 }
