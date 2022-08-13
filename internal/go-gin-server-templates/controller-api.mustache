@@ -38,7 +38,7 @@ func (t *{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/opera
     Name: "{{operationId}}",
     Method: http.Method{{httpMethod}},
     Pattern: "{{{path}}}",
-    HandlerFunc: t.{{#lambda.camelcase}}{{nickname}}{{/lambda.camelcase}},
+    HandlerFunc: t.{{nickname}},
     Middlewares: []gin.HandlerFunc{},
   },
 {{/operation}}
@@ -50,11 +50,11 @@ func (t *{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/opera
 }
 
 {{#operation}}
-// {{#lambda.camelcase}}{{nickname}}{{/lambda.camelcase}} {{#lambda.lowercase}}{{{summary}}}{{/lambda.lowercase}}.
+// {{nickname}} {{#lambda.lowercase}}{{{summary}}}{{/lambda.lowercase}}.
 {{#isDeprecated}}
 // Deprecated
 {{/isDeprecated}}
-func (t *{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}}) {{#lambda.camelcase}}{{nickname}}{{/lambda.camelcase}}(c *gin.Context) {
+func (t *{{#lambda.titlecase}}{{#operation.0}}{{#tags}}{{name}}{{/tags}}{{/operation.0}}{{/lambda.titlecase}}) {{nickname}}(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 {{/operation}}

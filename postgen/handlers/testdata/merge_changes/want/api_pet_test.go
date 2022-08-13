@@ -1,4 +1,6 @@
-package handlers
+package handlers_test
+
+// THIS FILE SHOULD BE COMPLETELY IGNORED.
 
 import (
 	"fmt"
@@ -37,13 +39,16 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId",
 			HandlerFunc: t.UpdatePetWithForm,
-			Middlewares: []gin.HandlerFunc{},
+			// added middleware, would not want to lose it.
+			Middlewares: []gin.HandlerFunc{rest.AuthMiddleware()},
 		},
+		// this is a new handler added by hand.
+		// I wouldnt care that much if this comment is deleted.
 		{
-			Name:        "NewHandlerPost",
-			Method:      http.MethodPost,
-			Pattern:     "/pet/:petId/NewHandlerPost",
-			HandlerFunc: t.NewHandlerPost,
+			Name:        "NewHandlerGet",
+			Method:      http.MethodGet,
+			Pattern:     "/pet/:petId/NewHandlerGet",
+			HandlerFunc: t.NewHandlerGet,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
@@ -58,9 +63,19 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	rest.RegisterRoutes(r, routes, "/pet", mws)
 }
 
+// I added some important comments here
+
+/*
+and here as well */
+
 // AddPet add a new pet to the store.
 func (t *Pet) AddPet(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	fmt.Println("this is a new implementation of addPet")
+}
+
+// This is an unused method. should not be deleted.
+func (t *Pet) AnUnusedHandler(c *gin.Context) {
+	fmt.Println("this is the implementation for anUnusedHandler not used by any route")
 }
 
 // DeletePet deletes a pet.
@@ -99,7 +114,8 @@ func (t *Pet) UploadFile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// AddPet add a new pet to the store.
-func (t *Pet) NewHandlerPost(c *gin.Context) {
-	fmt.Println("this is the implementation for NewHandlerPost")
+// NewHandlerGet was added by hand.
+// This shouldn't be overriden/deleted in any case.
+func (t *Pet) NewHandlerGet(c *gin.Context) {
+	fmt.Println("this is the implementation for NewHandlerGet")
 }

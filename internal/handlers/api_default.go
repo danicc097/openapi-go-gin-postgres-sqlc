@@ -36,14 +36,14 @@ func (t *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Name:        "OpenapiYamlGet",
 			Method:      http.MethodGet,
 			Pattern:     "/openapi.yaml",
-			HandlerFunc: t.openapiYamlGet,
+			HandlerFunc: t.OpenapiYamlGet,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "Ping",
 			Method:      http.MethodGet,
 			Pattern:     "/ping",
-			HandlerFunc: t.ping,
+			HandlerFunc: t.Ping,
 			Middlewares: []gin.HandlerFunc{},
 		},
 	}
@@ -51,12 +51,12 @@ func (t *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	rest.RegisterRoutes(r, routes, "/default", mws)
 }
 
-// openapiYamlGet returns this very openapi spec..
-func (t *Default) openapiYamlGet(c *gin.Context) {
+// OpenapiYamlGet returns this very openapi spec..
+func (t *Default) OpenapiYamlGet(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// ping ping pongs.
-func (t *Default) ping(c *gin.Context) {
+// Ping ping pongs.
+func (t *Default) Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }

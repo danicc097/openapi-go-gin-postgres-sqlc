@@ -36,28 +36,28 @@ func (t *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Name:        "DeleteOrder",
 			Method:      http.MethodDelete,
 			Pattern:     "/store/order/:orderId",
-			HandlerFunc: t.deleteOrder,
+			HandlerFunc: t.DeleteOrder,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "GetInventory",
 			Method:      http.MethodGet,
 			Pattern:     "/store/inventory",
-			HandlerFunc: t.getInventory,
+			HandlerFunc: t.GetInventory,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "GetOrderById",
 			Method:      http.MethodGet,
 			Pattern:     "/store/order/:orderId",
-			HandlerFunc: t.getOrderById,
+			HandlerFunc: t.GetOrderById,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "PlaceOrder",
 			Method:      http.MethodPost,
 			Pattern:     "/store/order",
-			HandlerFunc: t.placeOrder,
+			HandlerFunc: t.PlaceOrder,
 			Middlewares: []gin.HandlerFunc{},
 		},
 	}
@@ -65,22 +65,22 @@ func (t *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	rest.RegisterRoutes(r, routes, "/store", mws)
 }
 
-// deleteOrder delete purchase order by id.
-func (t *Store) deleteOrder(c *gin.Context) {
+// DeleteOrder delete purchase order by id.
+func (t *Store) DeleteOrder(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// getInventory returns pet inventories by status.
-func (t *Store) getInventory(c *gin.Context) {
+// GetInventory returns pet inventories by status.
+func (t *Store) GetInventory(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// getOrderById find purchase order by id.
-func (t *Store) getOrderById(c *gin.Context) {
+// GetOrderById find purchase order by id.
+func (t *Store) GetOrderById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// placeOrder place an order for a pet.
-func (t *Store) placeOrder(c *gin.Context) {
+// PlaceOrder place an order for a pet.
+func (t *Store) PlaceOrder(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }

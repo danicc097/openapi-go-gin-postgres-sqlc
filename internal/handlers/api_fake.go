@@ -36,7 +36,7 @@ func (t *Fake) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Name:        "FakeDataFile",
 			Method:      http.MethodGet,
 			Pattern:     "/fake/data_file",
-			HandlerFunc: t.fakeDataFile,
+			HandlerFunc: t.FakeDataFile,
 			Middlewares: []gin.HandlerFunc{},
 		},
 	}
@@ -44,7 +44,7 @@ func (t *Fake) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	rest.RegisterRoutes(r, routes, "/fake", mws)
 }
 
-// fakeDataFile test data_file to ensure it's escaped correctly.
-func (t *Fake) fakeDataFile(c *gin.Context) {
+// FakeDataFile test data_file to ensure it's escaped correctly.
+func (t *Fake) FakeDataFile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }

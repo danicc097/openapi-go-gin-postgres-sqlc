@@ -36,56 +36,56 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Name:        "AddPet",
 			Method:      http.MethodPost,
 			Pattern:     "/pet",
-			HandlerFunc: t.addPet,
+			HandlerFunc: t.AddPet,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "DeletePet",
 			Method:      http.MethodDelete,
 			Pattern:     "/pet/:petId",
-			HandlerFunc: t.deletePet,
+			HandlerFunc: t.DeletePet,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "FindPetsByStatus",
 			Method:      http.MethodGet,
 			Pattern:     "/pet/findByStatus",
-			HandlerFunc: t.findPetsByStatus,
+			HandlerFunc: t.FindPetsByStatus,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "FindPetsByTags",
 			Method:      http.MethodGet,
 			Pattern:     "/pet/findByTags",
-			HandlerFunc: t.findPetsByTags,
+			HandlerFunc: t.FindPetsByTags,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "GetPetById",
 			Method:      http.MethodGet,
 			Pattern:     "/pet/:petId",
-			HandlerFunc: t.getPetById,
+			HandlerFunc: t.GetPetById,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "UpdatePet",
 			Method:      http.MethodPut,
 			Pattern:     "/pet",
-			HandlerFunc: t.updatePet,
+			HandlerFunc: t.UpdatePet,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "UpdatePetWithForm",
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId",
-			HandlerFunc: t.updatePetWithForm,
+			HandlerFunc: t.UpdatePetWithForm,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "UploadFile",
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId/uploadImage",
-			HandlerFunc: t.uploadFile,
+			HandlerFunc: t.UploadFile,
 			Middlewares: []gin.HandlerFunc{},
 		},
 	}
@@ -93,43 +93,43 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	rest.RegisterRoutes(r, routes, "/pet", mws)
 }
 
-// addPet add a new pet to the store.
-func (t *Pet) addPet(c *gin.Context) {
+// AddPet add a new pet to the store.
+func (t *Pet) AddPet(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// deletePet deletes a pet.
-func (t *Pet) deletePet(c *gin.Context) {
+// DeletePet deletes a pet.
+func (t *Pet) DeletePet(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// findPetsByStatus finds pets by status.
-func (t *Pet) findPetsByStatus(c *gin.Context) {
+// FindPetsByStatus finds pets by status.
+func (t *Pet) FindPetsByStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// findPetsByTags finds pets by tags.
+// FindPetsByTags finds pets by tags.
 // Deprecated
-func (t *Pet) findPetsByTags(c *gin.Context) {
+func (t *Pet) FindPetsByTags(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// getPetById find pet by id.
-func (t *Pet) getPetById(c *gin.Context) {
+// GetPetById find pet by id.
+func (t *Pet) GetPetById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// updatePet update an existing pet.
-func (t *Pet) updatePet(c *gin.Context) {
+// UpdatePet update an existing pet.
+func (t *Pet) UpdatePet(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// updatePetWithForm updates a pet in the store with form data.
-func (t *Pet) updatePetWithForm(c *gin.Context) {
+// UpdatePetWithForm updates a pet in the store with form data.
+func (t *Pet) UpdatePetWithForm(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// uploadFile uploads an image.
-func (t *Pet) uploadFile(c *gin.Context) {
+// UploadFile uploads an image.
+func (t *Pet) UploadFile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }

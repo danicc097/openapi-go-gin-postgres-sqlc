@@ -67,7 +67,7 @@ x.generate-api() {
   # sudo chown -R "$name:$name" "$GEN_OUT_DIR"
   cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
   cp "$SPEC" "$PWD"/internal/static/swagger-ui
-  go build -o post-generate-api "$PWD"/cmd/post-generate-api/main.go
+  # go build -o post-generate-api "$PWD"/cmd/post-generate-api/main.go
   # TODO postgen now needs to create services/{tag}.go if not exists
   # and render a basic template
   # still need to adapt post-generate-api to handle methods instead of funcs as before,

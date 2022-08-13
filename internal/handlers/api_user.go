@@ -36,56 +36,56 @@ func (t *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Name:        "CreateUser",
 			Method:      http.MethodPost,
 			Pattern:     "/user",
-			HandlerFunc: t.createUser,
+			HandlerFunc: t.CreateUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "CreateUsersWithArrayInput",
 			Method:      http.MethodPost,
 			Pattern:     "/user/createWithArray",
-			HandlerFunc: t.createUsersWithArrayInput,
+			HandlerFunc: t.CreateUsersWithArrayInput,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "CreateUsersWithListInput",
 			Method:      http.MethodPost,
 			Pattern:     "/user/createWithList",
-			HandlerFunc: t.createUsersWithListInput,
+			HandlerFunc: t.CreateUsersWithListInput,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "DeleteUser",
 			Method:      http.MethodDelete,
 			Pattern:     "/user/:username",
-			HandlerFunc: t.deleteUser,
+			HandlerFunc: t.DeleteUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "GetUserByName",
 			Method:      http.MethodGet,
 			Pattern:     "/user/:username",
-			HandlerFunc: t.getUserByName,
+			HandlerFunc: t.GetUserByName,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "LoginUser",
 			Method:      http.MethodGet,
 			Pattern:     "/user/login",
-			HandlerFunc: t.loginUser,
+			HandlerFunc: t.LoginUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "LogoutUser",
 			Method:      http.MethodGet,
 			Pattern:     "/user/logout",
-			HandlerFunc: t.logoutUser,
+			HandlerFunc: t.LogoutUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "UpdateUser",
 			Method:      http.MethodPut,
 			Pattern:     "/user/:username",
-			HandlerFunc: t.updateUser,
+			HandlerFunc: t.UpdateUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 	}
@@ -93,42 +93,42 @@ func (t *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	rest.RegisterRoutes(r, routes, "/user", mws)
 }
 
-// createUser creates a new user.
-func (t *User) createUser(c *gin.Context) {
+// CreateUser creates a new user.
+func (t *User) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// createUsersWithArrayInput creates list of users with given input array.
-func (t *User) createUsersWithArrayInput(c *gin.Context) {
+// CreateUsersWithArrayInput creates list of users with given input array.
+func (t *User) CreateUsersWithArrayInput(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// createUsersWithListInput creates list of users with given input array.
-func (t *User) createUsersWithListInput(c *gin.Context) {
+// CreateUsersWithListInput creates list of users with given input array.
+func (t *User) CreateUsersWithListInput(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// deleteUser delete user.
-func (t *User) deleteUser(c *gin.Context) {
+// DeleteUser delete user.
+func (t *User) DeleteUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// getUserByName get user by user name.
-func (t *User) getUserByName(c *gin.Context) {
+// GetUserByName get user by user name.
+func (t *User) GetUserByName(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// loginUser logs user into the system.
-func (t *User) loginUser(c *gin.Context) {
+// LoginUser logs user into the system.
+func (t *User) LoginUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// logoutUser logs out current logged in user session.
-func (t *User) logoutUser(c *gin.Context) {
+// LogoutUser logs out current logged in user session.
+func (t *User) LogoutUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// updateUser updated user.
-func (t *User) updateUser(c *gin.Context) {
+// UpdateUser updated user.
+func (t *User) UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }

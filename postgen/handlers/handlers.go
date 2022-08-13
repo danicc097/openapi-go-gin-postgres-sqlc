@@ -10,11 +10,55 @@ import (
 )
 
 func main() {
-	content, err := os.ReadFile("testdata/merge_changes/current/api_user.go")
+	/*
+		Read:
+		https://go.dev/src/go/ast
+		https://pkg.go.dev/go/ast
+
+
+		Rationale:
+		We dont want users to manually add handlers and routes to handlers/*
+		If we let them, we wouldnt know at plain sight what was in the spec and what wasnt
+		and parsing will become a bigger mess.
+		Users can still add new methods, but the routes slice in Register will have
+		all items containing a route () that wasnt generated removed.
+		If we need a new route that cant be defined in the spec, e.g. fileserver,
+		we purposely want that out of the generated handler struct, so its clear that
+		its outside the spec.
+		It can still remain in handlers/* as long as its not api_*(!_test).go, e.g. fileserver.go
+		and still follow the same handlers struct pattern for all we care, it wont be touched.
+
+		flow:
+		glob current/api_*(!_test).go -> currentBasenames
+		glob gen/api_*(!_test).go -> genBasenames
+		For each gen basename:
+			If current basename doesnt exist, cp as is.
+			Else:
+				1. parse gen:
+				- extract slice of routes, which contains all relevant info we will need
+				to merge -> genRoutes.
+				genRoutes is a map indexed by Route.Name (operation ids are unique).
+				TODO Can we easily load a struct ast node into the struct itself?
+				- get list of struct methods (inspectStruct) --> genHandlers
+				2. parse current:
+				- extract slice of routes in the same way --> currentRoutes
+				- get list of struct methods (inspectStruct) --> currentHandlers
+			While merging:
+					Based on assumption that users have not modified Register() (clearly indicated).
+					if key of genRoutes is not in currentRoutes:
+						- append gen slice node value to current routes slice
+						- append gen method (501 status) to current struct.
+					IMPORTANT: if a method already exists in current but has no routes item (meaning
+					its probably some handler helper method created afterwards) then panic and alert
+					the user to rename. it shouldve been unexported or a function in the first place anyway.
+
+	*/
+
+	currentContent, err := os.ReadFile("testdata/merge_changes/current/api_user.go")
 	if err != nil {
 		panic(err)
 	}
-	f, err := decorator.Parse(string(content))
+	f, err := decorator.Parse(string(currentContent))
 	if err != nil {
 		panic(err)
 	}
@@ -28,13 +72,9 @@ func main() {
 
 func applyFunc(c *dstutil.Cursor) bool {
 	node := c.Node()
-	// Use a switch-case construct based on the node "type"
-	// This is a very useful of navigating the AST
-	//
+
 	switch n := node.(type) {
 	case (*dst.FuncDecl):
-		// Pretty print the Node AST
-		//
 		fmt.Println("\n\n---------------\n\n")
 		// dst.Print(n)
 		dst.Print(n.Body)
@@ -83,8 +123,7 @@ func inspectFunc(node dst.Node) bool {
 	return true
 }
 
-type HandlerAST struct {
-	Tag         string
+type Handler struct {
 	OperationId string
 	Fn          *dst.BlockStmt
 }
@@ -106,6 +145,7 @@ func inspectStruct(f dst.Node) {
 				if r, rok := fn.Recv.List[0].Type.(*dst.StarExpr); rok &&
 					r.X.(*dst.Ident).Name == structName {
 					fmt.Printf("found method %v for struct %s\n", fn.Name, structName)
+					fmt.Printf("body is %v\n", fn.Body)
 				}
 			}
 		}
