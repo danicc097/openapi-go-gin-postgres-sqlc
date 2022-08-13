@@ -30,6 +30,11 @@ linters:
     - wastedassign
 
 linters-settings:
+  # wsl:
+  #   allow-cuddle-declarations: true
+  #   allow-assign-and-anything: true
+  #   allow-assign-and-call: true
+  #   allow-multiline-assign: true
   gofmt:
     # Simplify code: gofmt with `-s` option.
     simplify: true

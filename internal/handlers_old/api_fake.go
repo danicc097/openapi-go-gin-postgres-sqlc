@@ -8,5 +8,5 @@ import (
 
 // FakeDataFile - test data_file to ensure it's escaped correctly
 func FakeDataFile(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	c.String(http.StatusNotImplemented, "501 not implemented")
 }

@@ -15,12 +15,7 @@ type User struct {
 }
 
 // NewUser returns a new handler for user.
-// Edit as required
-// TODO rewriting handler methods based on current postgen:
-// see https://eli.thegreenplace.net/2021/rewriting-go-source-code-with-ast-tooling/
-// simpler solutions based on drawbacks (complicated, comments not attached to nodes):
-// - https://github.com/dave/dst
-// - https://github.com/uber-go/gopatch
+// Edit as required.
 func NewUser(svc services.User) *User {
 	return &User{
 		svc: svc,
@@ -28,7 +23,7 @@ func NewUser(svc services.User) *User {
 }
 
 // Register connects the handlers to a router with the given middleware.
-// Generated method. DO NOT EDIT.
+// GENERATED METHOD. Only Middlewares will be saved between runs.
 func (t *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{
@@ -94,40 +89,40 @@ func (t *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 
 // CreateUser creates a new user.
 func (t *User) CreateUser(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // CreateUsersWithArrayInput creates list of users with given input array.
 func (t *User) CreateUsersWithArrayInput(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // CreateUsersWithListInput creates list of users with given input array.
 func (t *User) CreateUsersWithListInput(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // DeleteUser delete user.
 func (t *User) DeleteUser(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // GetUserByName get user by user name.
 func (t *User) GetUserByName(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // LoginUser logs user into the system.
 func (t *User) LoginUser(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // LogoutUser logs out current logged in user session.
 func (t *User) LogoutUser(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // UpdateUser updated user.
 func (t *User) UpdateUser(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	c.String(http.StatusNotImplemented, "501 not implemented")
 }
