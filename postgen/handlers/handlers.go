@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path"
@@ -8,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	"github.com/dave/dst/dstutil"
@@ -167,8 +169,8 @@ func main() {
 
 	/*
 		once both dirs and all files are parsed, we can loop through handlers["current"], and for each tag:
-			outF will be a clone of handlers["current"][<tag>].F
-			outRoutes will be handlers["gen"][<tag>].RouteNode
+			OKoutF will be a clone of handlers["current"][<tag>].F
+			OKoutRoutes will be handlers["gen"][<tag>].RouteNode
 			for each operationId:
 				if operationId is not a key in current -> leave as is
 				change outRoutes Middlewares tree node to be handlers["current"][<tag>].Route[operationId].Middlewares
@@ -176,36 +178,37 @@ func main() {
 				change current fn bodies for all methods
 				If there is no current fn body (a new route) do nothing
 	*/
-	for tag, hf := range handlers[currentDir] {
-		outF := dst.Clone(hf.F).(*dst.File) //nolint: forcetypeassert
-		h := handlers[genDir][tag]
+	for tag, cf := range handlers[currentDir] {
+		outF := dst.Clone(cf.F).(*dst.File) //nolint: forcetypeassert
+		gh := handlers[genDir][tag]
 		outRoutes := handlers[genDir][tag].RoutesNode
-		fmt.Println(tag)
+		fmt.Println(format.Underlined + format.Blue + tag + format.Off)
 		fmt.Println(outRoutes)
 
-		for _, r := range h.Routes {
-			fmt.Printf("r.Name: %s\n", r.Name)
+		for _, cv := range gh.Routes {
+			fmt.Printf("gen r.Name: %s\n", cv.Name)
 		}
 
-		if err := decorator.Print(outF); err != nil {
+		for gk := range handlers[genDir][tag].Routes {
+			if _, ok := cf.Routes[gk]; !ok {
+				fmt.Printf("op id %s not in current->%s\n", gk, tag)
+				// TODO append method to end of struct method list node
+			}
+		}
+
+		buf := &bytes.Buffer{}
+
+		f, err := os.Create(path.Join(outDir, "api_"+strings.ToLower(tag)+".go"))
+		if err != nil {
 			panic(err)
 		}
+
+		if err := decorator.Fprint(buf, outF); err != nil {
+			panic(err)
+		}
+
+		f.Write(buf.Bytes())
 	}
-
-	// for _, r := range rr {
-	// 	//nolint: forcetypeassert
-	// 	for _, s := range r.(*dst.CompositeLit).Elts {
-	// 		if s.(*dst.KeyValueExpr).Key.(*dst.Ident).Name == "Middlewares" {
-	// 			fmt.Printf("r -> %v :: %v\n", s.(*dst.KeyValueExpr).Key, s.(*dst.KeyValueExpr).Value)
-	// 		}
-	// 	}
-	// }
-
-	// fmt.Printf("%v", handlers)
-
-	// if err := decorator.Print(f); err != nil {
-	// 	panic(err)
-	// }
 }
 
 type Method struct {
@@ -329,7 +332,7 @@ func extractRoutes(rr *dst.CompositeLit) map[string]Route {
 				switch ident.Name {
 				case "Name":
 					if lit, islit := kv.Value.(*dst.BasicLit); islit {
-						opId = lit.Value
+						opId = strings.Trim(lit.Value, "\"")
 						route.Name = opId
 					}
 				case "Middlewares":
