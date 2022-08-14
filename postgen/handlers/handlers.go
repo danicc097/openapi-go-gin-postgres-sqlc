@@ -120,7 +120,7 @@ func main() {
 		os.WriteFile(path.Join(outDir, currentBasename), currentContent, 0666)
 	}
 
-	fmt.Println("\ncommonBasenames after copying over files that dont intersect:")
+	fmt.Println("commonBasenames after copying over files that dont intersect:")
 	fmt.Println(commonBasenames)
 
 	// access by Dir -> tag
@@ -132,7 +132,7 @@ func main() {
 
 		for _, basename := range commonBasenames {
 			file := path.Join(dir, basename)
-			fmt.Printf("------\nAnalyzing %v\n", file)
+			fmt.Printf("\n---------\nAnalyzing %v\n", file)
 
 			c, err := os.ReadFile(file)
 			if err != nil {
@@ -178,8 +178,15 @@ func main() {
 	*/
 	for tag, hf := range handlers[currentDir] {
 		outF := dst.Clone(hf.F).(*dst.File) //nolint: forcetypeassert
-
+		h := handlers[genDir][tag]
+		outRoutes := handlers[genDir][tag].RoutesNode
 		fmt.Println(tag)
+		fmt.Println(outRoutes)
+
+		for _, r := range h.Routes {
+			fmt.Printf("r.Name: %s\n", r.Name)
+		}
+
 		if err := decorator.Print(outF); err != nil {
 			panic(err)
 		}
@@ -209,7 +216,7 @@ type Method struct {
 }
 
 type HandlerFile struct {
-	// F is the ast node of the file.
+	// F is the node of the file.
 	F *dst.File
 	// Methods represents all methods in the generated struct for a tag.
 	Methods []Method
@@ -242,7 +249,7 @@ func applyFunc(c *dstutil.Cursor) bool {
 
 	switch n := node.(type) {
 	case (*dst.FuncDecl):
-		fmt.Println("\n\n---------------\n\n")
+		fmt.Printf("\n---------------\n")
 		// dst.Print(n)
 		dst.Print(n.Body)
 	}
@@ -323,6 +330,7 @@ func extractRoutes(rr *dst.CompositeLit) map[string]Route {
 				case "Name":
 					if lit, islit := kv.Value.(*dst.BasicLit); islit {
 						opId = lit.Value
+						route.Name = opId
 					}
 				case "Middlewares":
 					c := dst.Clone(kv.Value)
@@ -366,7 +374,7 @@ func inspectRoutes(f dst.Node, tag string) *dst.CompositeLit {
 }
 
 func inspectStruct(f dst.Node, tag string) []Method {
-	fmt.Printf("\nstructName: %s\n", tag)
+	fmt.Printf("struct: %s\n", tag)
 
 	var out []Method
 
