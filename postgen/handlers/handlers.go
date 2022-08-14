@@ -7,6 +7,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
@@ -23,6 +24,15 @@ func contains[T comparable](elems []T, v T) bool {
 	}
 
 	return false
+}
+
+type Conf struct {
+	// CurrentDir is the directory with edited generated files.
+	CurrentDir string
+	// GenDir is the directory with raw generated files for a given spec.
+	GenDir string
+	// OutDir is the directory to store merged files.
+	OutDir string
 }
 
 /*
@@ -71,64 +81,20 @@ func contains[T comparable](elems []T, v T) bool {
 */
 func main() {
 	var (
-		baseDir          = "testdata/merge_changes"
-		currentDir       = path.Join(baseDir, "current")
-		genDir           = path.Join(baseDir, "gen")
-		outDir           = path.Join(baseDir, "got") // temp dir to store merged files
-		currentBasenames = getApiBasenames(currentDir)
-		genBasenames     = getApiBasenames(genDir)
-		commonBasenames  = []string{}
+		baseDir = "testdata/merge_changes"
+		conf    = Conf{
+			CurrentDir: path.Join(baseDir, "current"),
+			GenDir:     path.Join(baseDir, "gen"),
+			OutDir:     path.Join(baseDir, "got")}
 	)
-
-	fmt.Println(currentBasenames)
-	fmt.Println(genBasenames)
 
 	// TODO refactor for clearness to https://stackoverflow.com/questions/52120488/what-is-the-most-efficient-way-to-get-the-intersection-and-exclusions-from-two-a
 
-	k := 0
-
-	os.MkdirAll(outDir, 0777)
-
-	for _, genBasename := range genBasenames {
-		if contains(currentBasenames, genBasename) {
-			genBasenames[k] = genBasename
-			k++
-
-			continue
-		}
-
-		genContent, err := os.ReadFile(path.Join(genDir, genBasename))
-		if err != nil {
-			panic(err)
-		}
-
-		os.WriteFile(path.Join(outDir, genBasename), genContent, 0666)
-	}
-
-	genBasenames = genBasenames[:k]
-
-	for _, currentBasename := range currentBasenames {
-		if contains(genBasenames, currentBasename) {
-			commonBasenames = append(commonBasenames, currentBasename)
-
-			continue
-		}
-
-		currentContent, err := os.ReadFile(path.Join(currentDir, currentBasename))
-		if err != nil {
-			panic(err)
-		}
-
-		os.WriteFile(path.Join(outDir, currentBasename), currentContent, 0666)
-	}
-
-	fmt.Println("commonBasenames after copying over files that dont intersect:")
-	fmt.Println(commonBasenames)
-
+	commonBasenames := getCommonBasenames(conf)
 	// access by Dir -> tag
 	handlers := make(map[string]map[string]HandlerFile)
 
-	dirs := []string{genDir, currentDir}
+	dirs := []string{conf.GenDir, conf.CurrentDir}
 	for _, dir := range dirs {
 		handlers[dir] = make(map[string]HandlerFile)
 
@@ -167,21 +133,60 @@ func main() {
 		}
 	}
 
-	/*
-		once both dirs and all files are parsed, we can loop through handlers["current"], and for each tag:
-			OKoutF will be a clone of handlers["current"][<tag>].F
-			OKoutRoutes will be handlers["gen"][<tag>].RouteNode
-			for each operationId:
-				if operationId is not a key in current -> leave as is
-				change outRoutes Middlewares tree node to be handlers["current"][<tag>].Route[operationId].Middlewares
-				If there is no current slice element (a new route) do nothing
-				change current fn bodies for all methods
-				If there is no current fn body (a new route) do nothing
-	*/
-	for tag, cf := range handlers[currentDir] {
-		outF := dst.Clone(cf.F).(*dst.File) //nolint: forcetypeassert
-		gh := handlers[genDir][tag]
-		outRoutes := handlers[genDir][tag].RoutesNode
+	generateMergedFiles(handlers, conf)
+}
+
+// getCommonBasenames returns api filename intersections in current and raw gen dirs,
+// and copies the remaining files to the out dir without further analysis.
+func getCommonBasenames(conf Conf) (out []string) {
+	k := 0
+	currentBasenames := getApiBasenames(conf.CurrentDir)
+	genBasenames := getApiBasenames(conf.GenDir)
+
+	os.MkdirAll(conf.OutDir, 0777)
+
+	for _, genBasename := range genBasenames {
+		if contains(currentBasenames, genBasename) {
+			genBasenames[k] = genBasename
+			k++
+
+			continue
+		}
+
+		genContent, err := os.ReadFile(path.Join(conf.GenDir, genBasename))
+		if err != nil {
+			panic(err)
+		}
+
+		os.WriteFile(path.Join(conf.OutDir, genBasename), genContent, 0666)
+	}
+
+	genBasenames = genBasenames[:k]
+
+	for _, currentBasename := range currentBasenames {
+		if contains(genBasenames, currentBasename) {
+			out = append(out, currentBasename)
+
+			continue
+		}
+
+		currentContent, err := os.ReadFile(path.Join(conf.CurrentDir, currentBasename))
+		if err != nil {
+			panic(err)
+		}
+
+		os.WriteFile(path.Join(conf.OutDir, currentBasename), currentContent, 0666)
+	}
+
+	return out
+}
+
+func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) {
+	for tag, cf := range handlers[conf.CurrentDir] {
+		//nolint: forcetypeassert
+		outF := dst.Clone(cf.F).(*dst.File)
+		gh := handlers[conf.GenDir][tag]
+		outRoutes := handlers[conf.GenDir][tag].RoutesNode
 		fmt.Println(format.Underlined + format.Blue + tag + format.Off)
 		fmt.Println(outRoutes)
 
@@ -189,16 +194,38 @@ func main() {
 			fmt.Printf("gen r.Name: %s\n", cv.Name)
 		}
 
-		for gk := range handlers[genDir][tag].Routes {
+		gkk := make([]string, len(handlers[conf.GenDir][tag].Routes))
+		i := 0
+		for gk := range handlers[conf.GenDir][tag].Routes {
+			gkk[i] = gk
+			i++
+		}
+
+		sort.Slice(gkk, func(i, j int) bool {
+			return gkk[i] < gkk[j]
+		})
+
+		/*
+			TODO loop gen routes RH assignment node.
+			for each operationId in gen:
+				check valid "current" map key, else continue [1] (a new route)
+				change outRoutes Middlewares tree node to be handlers["current"][<tag>].Route[operationId].Middlewares
+		*/
+		for _, gk := range gkk {
 			if _, ok := cf.Routes[gk]; !ok {
 				fmt.Printf("op id %s not in current->%s, adding method.\n", gk, tag)
-				outF.Decls = append(outF.Decls, handlers[genDir][tag].Methods[gk].Decl)
+				outF.Decls = append(outF.Decls, handlers[conf.GenDir][tag].Methods[gk].Decl)
+
+				continue // [1]
 			}
+			// if we're here, operationId is in both gen and current.
+			// find the routes RH assignment slice element node where
+			// Name is operationId
 		}
 
 		buf := &bytes.Buffer{}
 
-		f, err := os.Create(path.Join(outDir, "api_"+strings.ToLower(tag)+".go"))
+		f, err := os.Create(path.Join(conf.OutDir, "api_"+strings.ToLower(tag)+".go"))
 		if err != nil {
 			panic(err)
 		}
@@ -214,7 +241,7 @@ func main() {
 type Method struct {
 	// Name is the method identifier.
 	Name string
-	// Decl is the body node method declaration.
+	// Decl is the method declaration node.
 	Decl *dst.FuncDecl
 }
 
