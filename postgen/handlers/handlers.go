@@ -191,8 +191,8 @@ func main() {
 
 		for gk := range handlers[genDir][tag].Routes {
 			if _, ok := cf.Routes[gk]; !ok {
-				fmt.Printf("op id %s not in current->%s\n", gk, tag)
-				// TODO append method to end of struct method list node
+				fmt.Printf("op id %s not in current->%s, adding method.\n", gk, tag)
+				outF.Decls = append(outF.Decls, handlers[genDir][tag].Methods[gk].Decl)
 			}
 		}
 
@@ -214,15 +214,16 @@ func main() {
 type Method struct {
 	// Name is the method identifier.
 	Name string
-	// Body is the method body node.
-	Body *dst.BlockStmt
+	// Decl is the body node method declaration.
+	Decl *dst.FuncDecl
 }
 
 type HandlerFile struct {
 	// F is the node of the file.
 	F *dst.File
-	// Methods represents all methods in the generated struct for a tag.
-	Methods []Method
+	// Methods represents all methods in the generated struct for a tag
+	// indexed by operation id.
+	Methods map[string]Method
 	// RoutesNode represents the complete routes assignment node.
 	RoutesNode []dst.Expr
 	// Routes represents convenient extracted fields from route elements
@@ -336,10 +337,7 @@ func extractRoutes(rr *dst.CompositeLit) map[string]Route {
 						route.Name = opId
 					}
 				case "Middlewares":
-					c := dst.Clone(kv.Value)
-					if exp, isexp := c.(dst.Expr); isexp {
-						route.Middlewares = exp
-					}
+					route.Middlewares = kv.Value
 				}
 
 				out[opId] = route
@@ -357,16 +355,19 @@ func inspectRoutes(f dst.Node, tag string) *dst.CompositeLit {
 	routesNode := []dst.Expr{}
 
 	dst.Inspect(f, func(n dst.Node) bool {
-		if fn, isFn := n.(*dst.FuncDecl); isFn && fn.Recv != nil && len(fn.Recv.List) == 1 {
-			r, rok := fn.Recv.List[0].Type.(*dst.StarExpr)
-			ident, identok := r.X.(*dst.Ident)
-			if rok && identok && ident.Name == tag {
-				fnBody, _ := dst.Clone(fn.Body).(*dst.BlockStmt)
-				m := fn.Name.String()
-
-				if m == "Register" {
-					routesNode = fnBody.List[0].(*dst.AssignStmt).Rhs
-				}
+		fn, isFn := n.(*dst.FuncDecl)
+		if !isFn || fn.Recv == nil || len(fn.Recv.List) != 1 {
+			return true // keep traversing children
+		}
+		r, rok := fn.Recv.List[0].Type.(*dst.StarExpr)
+		ident, identok := r.X.(*dst.Ident)
+		if rok && identok && ident.Name == tag {
+			m := fn.Name.String()
+			if m != "Register" {
+				return false
+			}
+			if as, isas := fn.Body.List[0].(*dst.AssignStmt); isas {
+				routesNode = as.Rhs
 			}
 		}
 
@@ -376,20 +377,22 @@ func inspectRoutes(f dst.Node, tag string) *dst.CompositeLit {
 	return routesNode[0].(*dst.CompositeLit)
 }
 
-func inspectStruct(f dst.Node, tag string) []Method {
+func inspectStruct(f dst.Node, tag string) map[string]Method {
 	fmt.Printf("struct: %s\n", tag)
 
-	var out []Method
+	out := make(map[string]Method)
 
 	dst.Inspect(f, func(n dst.Node) bool {
-		if fn, isFn := n.(*dst.FuncDecl); isFn && fn.Recv != nil && len(fn.Recv.List) == 1 {
-			r, rok := fn.Recv.List[0].Type.(*dst.StarExpr)
-			ident, identok := r.X.(*dst.Ident)
-			if rok && identok && ident.Name == tag {
-				out = append(out, Method{
-					Name: fn.Name.String(),
-					Body: fn.Body,
-				})
+		fn, isFn := n.(*dst.FuncDecl)
+		if !isFn || fn.Recv == nil || len(fn.Recv.List) != 1 {
+			return true // keep traversing children
+		}
+		r, rok := fn.Recv.List[0].Type.(*dst.StarExpr)
+		ident, identok := r.X.(*dst.Ident)
+		if rok && identok && ident.Name == tag {
+			out[fn.Name.String()] = Method{
+				Name: fn.Name.String(),
+				Decl: fn,
 			}
 		}
 

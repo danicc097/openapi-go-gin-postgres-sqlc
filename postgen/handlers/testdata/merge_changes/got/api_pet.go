@@ -72,3 +72,13 @@ func (t *Pet) UpdatePetWithForm(c *gin.Context) {
 func (t *Pet) newFunction(c *gin.Context) {
 	fmt.Println("this is some random helper newFunction")
 }
+
+// NewHandlerPost is a newly generated handler.
+func (t *Pet) NewHandlerPost(c *gin.Context) {
+	c.String(http.StatusNotImplemented, "501 not implemented")
+}
+
+// UploadFile uploads an image.
+func (t *Pet) UploadFile(c *gin.Context) {
+	c.String(http.StatusNotImplemented, "501 not implemented")
+}
