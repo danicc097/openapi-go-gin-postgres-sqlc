@@ -16,6 +16,7 @@ SPEC="openapi.yaml"
 GEN_OUT_DIR="internal"
 PWD="$(pwd)"
 ENV_FILE=".env"
+SCRIPTS_DIR=$(dirname "$0")
 
 x.bootstrap() {
   x.install-tools
@@ -42,38 +43,54 @@ x.fetch-openapi-generator-jar() {
 }
 
 x.validate() {
-  java -jar openapi-generator-cli.jar validate -i "$SPEC"
+  java -jar openapi-generator-cli.jar validate -i "${1:-$SPEC}"
 }
 
-x.generate-api() {
-  echo $GIT_USER_ID $GIT_REPO_ID
-  echo Generating API from "$SPEC"
-  rm -rf "$GEN_OUT_DIR/gen"
-  java -jar openapi-generator-cli.jar generate \
+x.openapi-generator() {
+  local spec="$1"
+  local gen_out_dir="$2"
+  local template_dir="$3"
+
+  echo "Generating API from $spec"
+  echo "Generation directory: $gen_out_dir"
+  echo "Template override directory: $template_dir"
+
+  rm -rf "$gen_out_dir/gen"
+  java -jar "$SCRIPTS_DIR"/../openapi-generator-cli.jar generate \
     -g go-gin-server \
-    -i "$SPEC" \
-    -o "$GEN_OUT_DIR" \
+    -i "$spec" \
+    -o "$gen_out_dir" \
+    -t "$template_dir" \
     --additional-properties=packageName=openapi,apiPath=gen,hideGenerationTimestamp=true \
-    -t internal/go-gin-server-templates \
     --enable-post-process-file >/dev/null
   # --global-property debugModels,debugOperations
 
-  mkdir -p "$GEN_OUT_DIR"/gen/models
-  mkdir -p "$GEN_OUT_DIR"/handlers
-  mv "$GEN_OUT_DIR"/gen/model_*.go "$GEN_OUT_DIR"/gen/models
-  mv "$GEN_OUT_DIR"/gen/api_*.go "$GEN_OUT_DIR"/handlers
-  # for f in "$GEN_OUT_DIR"/gen/api_*.go; do mv "$f" "${f/.go/.tmpl}"; done
+  mkdir -p "$gen_out_dir"/gen/models
+  mkdir -p "$gen_out_dir"/handlers
+  mv "$gen_out_dir"/gen/model_*.go "$gen_out_dir"/gen/models
+  rm -rf "$gen_out_dir/api"
+}
+
+x.generate-api() {
+  local spec="$1"
+  local gen_out_dir="$2"
+  local template_dir="$3"
+  [[ -z $spec ]] && echo "generate-api: spec required" && exit 1
+  [[ -z $gen_out_dir ]] && echo "generate-api: out dir required" && exit 1
+  [[ -z $template_dir ]] && echo "generate-api: template dir required" && exit 1
+
+  x.openapi-generator "$spec" "$gen_out_dir" "$template_dir"
+  # for f in "$gen_out_dir"/gen/api_*.go; do mv "$f" "${f/.go/.tmpl}"; done
   # not needed with locally generated code
   # local name="$(id -un)"
-  # sudo chown -R "$name:$name" "$GEN_OUT_DIR"
+  # sudo chown -R "$name:$name" "$gen_out_dir"
   # go build -o post-generate-api "$PWD"/cmd/post-generate-api/main.go
   # TODO postgen now needs to create services/{tag}.go if not exists
   # and render a basic template
   # still need to adapt post-generate-api to handle methods instead of funcs as before,
   # see handlers_old README for that
   # ./post-generate-api
-  # find "$GEN_OUT_DIR/gen/" -name "api_*.go" -type f -delete
-  rm -rf "$GEN_OUT_DIR/api"
+  # find "$gen_out_dir/gen/" -name "api_*.go" -type f -delete
 }
 
 x.generate-sqlc() {
@@ -88,7 +105,7 @@ x.update-swagger-ui() {
 
 x.generate() {
   go generate ./...
-  x.generate-api
+  x.generate-api "$SPEC" "$GEN_OUT_DIR" "$GEN_OUT_DIR/go-gin-server-templates"
   x.update-swagger-ui
   x.generate-sqlc
 }
@@ -96,7 +113,7 @@ x.generate() {
 x.test() {
   x.generate
   create_test_database
-  # godotenv -f "$ENV_FILE" go test ./... "$@"
+  godotenv -f "$ENV_FILE" go test ./... "$@"
 }
 
 x.build() {

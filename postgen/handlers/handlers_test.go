@@ -1,26 +1,58 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"os"
+	"os/exec"
+	"path"
 	"testing"
-
-	"github.com/dave/dst/decorator"
 )
 
+func setupTests() {
+	os.Setenv("IS_TESTING", "1")
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(cwd)
+
+	cmd := exec.Command(
+		"mkdir",
+		"-p",
+		path.Join(cwd, "testdata/merge_changes/internal/go-gin-server-templates"),
+	)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		fmt.Printf("combined out:\n%s\n", string(out))
+		log.Fatalf("cmd.Run() failed with %s\n", err)
+	}
+
+	cmd = exec.Command(
+		"cp",
+		"-r",
+		"../../internal/go-gin-server-templates",
+		path.Join(cwd, "testdata/merge_changes/internal/go-gin-server-templates"),
+	)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		fmt.Printf("combined out:\n%s\n", string(out))
+		log.Fatalf("cmd.Run() failed with %s\n", err)
+	}
+
+	cmd = exec.Command(
+		"../../bin/build",
+		"generate-api",
+		path.Join(cwd, "testdata/openapi.yaml"),
+		path.Join(cwd, "testdata/merge_changes/internal"),
+		path.Join(cwd, "testdata/merge_changes/internal/go-gin-server-templates"),
+	)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		fmt.Printf("combined out:\n%s\n", string(out))
+		log.Fatalf("cmd.Run() failed with %s\n", err)
+	}
+}
+
 func TestHandlerPostProcessing(t *testing.T) {
-	content, err := os.ReadFile("testdata/merge_changes/current/api_user.go")
-	if err != nil {
-		panic(err)
-	}
-	f, err := decorator.Parse(string(content))
-	if err != nil {
-		panic(err)
-	}
-
-	// list := f.Decls[0].(*dst.FuncDecl).Body.List
-	// list[0], list[1] = list[1], list[0]
-
-	if err := decorator.Print(f); err != nil {
-		panic(err)
-	}
+	setupTests()
+	// run build generate-api postgen/handlers/testdata/openapi.yaml postgen/handlers/testdata/gen
 }

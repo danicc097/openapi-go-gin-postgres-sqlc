@@ -36,25 +36,33 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId",
 			HandlerFunc: t.UpdatePetWithForm,
+			// added middleware, would not want to lose it.
 			Middlewares: []gin.HandlerFunc{rest.AuthMiddleware()},
 		},
+		// this is a new handler added by hand.
+		// This will be overriden by generated routes.
 		{
-			Name:        "NewHandlerPost",
-			Method:      http.MethodPost,
-			Pattern:     "/pet/:petId/NewHandlerPost",
-			HandlerFunc: t.NewHandlerPost,
+			Name:        "NewHandlerGet",
+			Method:      http.MethodGet,
+			Pattern:     "/pet/:petId/NewHandlerGet",
+			HandlerFunc: t.NewHandlerGet,
 			Middlewares: []gin.HandlerFunc{},
 		},
-		{
-			Name:        "UploadFile",
-			Method:      http.MethodPost,
-			Pattern:     "/pet/:petId/uploadImage",
-			HandlerFunc: t.UploadFile,
-			Middlewares: []gin.HandlerFunc{},
-		},
+		// UploadFile was deleted for some reason
 	}
 
 	rest.RegisterRoutes(r, routes, "/pet", mws)
+}
+
+// middlewares returns individual route middleware per operation id.
+// Edit as required.
+func (t *Pet) middlewares(opId string) []gin.HandlerFunc {
+	switch opId {
+	case "UploadFile":
+		return []gin.HandlerFunc{rest.NewAuthMiddleware(t.svc.Logger).EnsureAuthenticated()}
+	default:
+		return []gin.HandlerFunc{}
+	}
 }
 
 // I added some important comments here
@@ -74,14 +82,4 @@ func (t *Pet) UpdatePetWithForm(c *gin.Context) {
 // This shouldn't be overriden/deleted in any case.
 func (t *Pet) newFunction(c *gin.Context) {
 	fmt.Println("this is some random helper newFunction")
-}
-
-// NewHandlerPost is a newly generated handler.
-func (t *Pet) NewHandlerPost(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "501 not implemented")
-}
-
-// UploadFile uploads an image.
-func (t *Pet) UploadFile(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "501 not implemented")
 }

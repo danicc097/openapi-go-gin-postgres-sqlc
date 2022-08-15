@@ -54,6 +54,17 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	rest.RegisterRoutes(r, routes, "/pet", mws)
 }
 
+// middlewares returns individual route middleware per operation id.
+// Edit as required.
+func (t *Pet) middlewares(opId string) []gin.HandlerFunc {
+	switch opId {
+	case "UploadFile":
+		return []gin.HandlerFunc{rest.NewAuthMiddleware(t.svc.Logger).EnsureAuthenticated()}
+	default:
+		return []gin.HandlerFunc{}
+	}
+}
+
 // I added some important comments here
 
 /*

@@ -61,11 +61,11 @@ type Conf struct {
 */
 func main() {
 	var (
-		baseDir = "testdata/merge_changes"
+		baseDir = "testdata"
 		conf    = Conf{
-			CurrentDir: path.Join(baseDir, "current"),
-			GenDir:     path.Join(baseDir, "gen"),
-			OutDir:     path.Join(baseDir, "got")}
+			CurrentDir: path.Join(baseDir, "merge_changes/current"),
+			GenDir:     path.Join(baseDir, "internal/gen"),
+			OutDir:     path.Join(baseDir, "merge_changes/got")}
 	)
 
 	// TODO refactor for clearness to https://stackoverflow.com/questions/52120488/what-is-the-most-efficient-way-to-get-the-intersection-and-exclusions-from-two-a
@@ -100,13 +100,14 @@ func analyzeHandlers(conf Conf, basenames []string) map[string]map[string]Handle
 			tag := strings.Title(reg.FindStringSubmatch(basename)[1])
 
 			mm := inspectStruct(f, tag)
-			rr := inspectRoutes(f, tag)
+			rr, mws := inspectNodes(f, tag)
 			routes := extractRoutes(rr)
 
 			hf := HandlerFile{
 				F:          f,
 				Methods:    mm,
 				RoutesNode: rr,
+				MwsNode:    mws,
 				Routes:     routes,
 			}
 
@@ -219,11 +220,14 @@ func replaceRoute(f *dst.File, hf, hfUpdate HandlerFile, tag string, opId string
 		}
 		r, rok := fn.Recv.List[0].Type.(*dst.StarExpr)
 		ident, identok := r.X.(*dst.Ident)
-		if rok && identok && ident.Name == tag {
-			m := fn.Name.String()
-			if m == "Register" {
-				fn.Body.List[0] = hf.RoutesNode
-			}
+		m := fn.Name.String()
+		fmt.Printf("fffff %s\n", m)
+		if rok && identok && ident.Name == tag && m == "Register" {
+			fn.Body.List[0] = hf.RoutesNode
+		}
+		if rok && ident.Name == tag && m == "middlewares" {
+			fmt.Println("middlewares method update")
+			fn.Body = hf.MwsNode.Body
 		}
 
 		return true
@@ -253,7 +257,7 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 			return gkk[i] < gkk[j]
 		})
 
-		outHF := handlers[conf.GenDir][tag]
+		genHF := handlers[conf.GenDir][tag]
 		currentHF := handlers[conf.CurrentDir][tag]
 
 		for _, gk := range gkk {
@@ -267,7 +271,7 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 			// IMPORTANT TODO instead of this mess of replacing a generated method,
 			// have Middlewares: t.middlewares("CreateUser") which
 			// returns them if exist..., else empty list.
-			replaceRoute(outF, outHF, currentHF, tag, gk)
+			replaceRoute(outF, genHF, currentHF, tag, gk)
 		}
 
 		buf := &bytes.Buffer{}
@@ -300,6 +304,8 @@ type HandlerFile struct {
 	Methods map[string]Method
 	// RoutesNode represents the complete routes assignment node.
 	RoutesNode *dst.AssignStmt
+	// MwsNode represents the middlewares method.
+	MwsNode *dst.FuncDecl
 	// Routes represents convenient extracted fields from route elements
 	// indexed by operation id.
 	Routes map[string]Route
@@ -386,9 +392,10 @@ func extractRoutes(rr *dst.AssignStmt) map[string]Route {
 	return out
 }
 
-// inspectRoutes returns the routes slice Rhs node for tag.
-func inspectRoutes(f dst.Node, tag string) *dst.AssignStmt {
+// inspectNodes extracts the routes slice assignment node and middlewares method body for tag.
+func inspectNodes(f dst.Node, tag string) (*dst.AssignStmt, *dst.FuncDecl) {
 	routesNode := &dst.AssignStmt{}
+	mwsNode := &dst.FuncDecl{}
 
 	dst.Inspect(f, func(n dst.Node) bool {
 		fn, isFn := n.(*dst.FuncDecl)
@@ -399,18 +406,19 @@ func inspectRoutes(f dst.Node, tag string) *dst.AssignStmt {
 		ident, identok := r.X.(*dst.Ident)
 		if rok && identok && ident.Name == tag {
 			m := fn.Name.String()
-			if m != "Register" {
-				return false
-			}
-			if as, isas := fn.Body.List[0].(*dst.AssignStmt); isas {
+
+			if as, isas := fn.Body.List[0].(*dst.AssignStmt); isas && m == "Register" {
 				routesNode, _ = dst.Clone(as).(*dst.AssignStmt)
+			}
+			if m == "middlewares" {
+				mwsNode, _ = dst.Clone(fn).(*dst.FuncDecl)
 			}
 		}
 
 		return true
 	})
 
-	return routesNode
+	return routesNode, mwsNode
 }
 
 func inspectStruct(f dst.Node, tag string) map[string]Method {

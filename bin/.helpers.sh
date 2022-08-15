@@ -33,7 +33,7 @@ ensure_pwd_is_top_level() {
     return
   fi
 
-  if [[ "$PWD" != "$TOP_LEVEL" ]]; then
+  if [[ "$PWD" != "$TOP_LEVEL" && -z "$IS_TESTING" ]]; then
     echo >&2 "
 Please run this script from the top level of the repository.
 Top level: $TOP_LEVEL
