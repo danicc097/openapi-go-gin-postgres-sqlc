@@ -36,19 +36,22 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId",
 			HandlerFunc: t.UpdatePetWithForm,
-			// added middleware, would not want to lose it.
-			Middlewares: []gin.HandlerFunc{rest.AuthMiddleware()},
-		},
-		// this is a new handler added by hand.
-		// This will be overriden by generated routes.
-		{
-			Name:        "NewHandlerGet",
-			Method:      http.MethodGet,
-			Pattern:     "/pet/:petId/NewHandlerGet",
-			HandlerFunc: t.NewHandlerGet,
 			Middlewares: []gin.HandlerFunc{},
 		},
-		// UploadFile was deleted for some reason
+		{
+			Name:        "NewHandlerPost",
+			Method:      http.MethodPost,
+			Pattern:     "/pet/:petId/NewHandlerPost",
+			HandlerFunc: t.NewHandlerPost,
+			Middlewares: []gin.HandlerFunc{},
+		},
+		{
+			Name:        "UploadFile",
+			Method:      http.MethodPost,
+			Pattern:     "/pet/:petId/uploadImage",
+			HandlerFunc: t.UploadFile,
+			Middlewares: []gin.HandlerFunc{},
+		},
 	}
 
 	rest.RegisterRoutes(r, routes, "/pet", mws)

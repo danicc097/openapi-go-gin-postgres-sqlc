@@ -106,7 +106,6 @@ func analyzeHandlers(conf Conf, basenames []string) map[string]map[string]Handle
 
 		for _, basename := range basenames {
 			file := path.Join(dir, basename)
-			fmt.Printf("\n---------\nAnalyzing %v\n", file)
 
 			c, err := os.ReadFile(file)
 			if err != nil {
@@ -128,7 +127,7 @@ func analyzeHandlers(conf Conf, basenames []string) map[string]map[string]Handle
 			hf := HandlerFile{
 				F:          f,
 				Methods:    mm,
-				RoutesNode: rr.Elts,
+				RoutesNode: rr,
 				Routes:     routes,
 			}
 
@@ -184,14 +183,36 @@ func getCommonBasenames(conf Conf) (out []string) {
 	return out
 }
 
+// replaceRoutes replaces the routes slice node in Register().
+func replaceRoutes(f *dst.File, hf, hfUpdate HandlerFile, tag string) {
+	// before replacing the node, update it with hfUpdate.Routes.Middlewares)
+	// using apply
+
+	// replace node
+	dstutil.Apply(f, nil, func(c *dstutil.Cursor) bool {
+		fn, isFn := c.Parent().(*dst.FuncDecl)
+		if !isFn || fn.Recv == nil || len(fn.Recv.List) != 1 {
+			return true // keep traversing children
+		}
+		r, rok := fn.Recv.List[0].Type.(*dst.StarExpr)
+		ident, identok := r.X.(*dst.Ident)
+		if rok && identok && ident.Name == tag {
+			m := fn.Name.String()
+			if m == "Register" {
+				fn.Body.List[0] = hf.RoutesNode
+			}
+		}
+
+		return true
+	})
+}
+
 func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) {
 	for tag, cf := range handlers[conf.CurrentDir] {
 		//nolint: forcetypeassert
 		outF := dst.Clone(cf.F).(*dst.File)
 		gh := handlers[conf.GenDir][tag]
-		outRoutes := handlers[conf.GenDir][tag].RoutesNode
 		fmt.Println(format.Underlined + format.Blue + tag + format.Off)
-		fmt.Println(outRoutes)
 
 		for _, cv := range gh.Routes {
 			fmt.Printf("gen r.Name: %s\n", cv.Name)
@@ -214,6 +235,9 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 				check valid "current" map key, else continue [1] (a new route)
 				change outRoutes Middlewares tree node to be handlers["current"][<tag>].Route[operationId].Middlewares
 		*/
+		outHF := handlers[conf.GenDir][tag]
+		currentHF := handlers[conf.CurrentDir][tag]
+
 		for _, gk := range gkk {
 			if _, ok := cf.Routes[gk]; !ok {
 				fmt.Printf("op id %s not in current->%s, adding method.\n", gk, tag)
@@ -224,6 +248,8 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 			// if we're here, operationId is in both gen and current.
 			// find the routes RH assignment slice element node where
 			// Name is operationId
+			// TODO dstutil apply here, see: https://github.com/dave/dst/blob/master/dstutil/rewrite_test.go
+			replaceRoutes(outF, outHF, currentHF, tag)
 		}
 
 		buf := &bytes.Buffer{}
@@ -255,7 +281,7 @@ type HandlerFile struct {
 	// indexed by operation id.
 	Methods map[string]Method
 	// RoutesNode represents the complete routes assignment node.
-	RoutesNode []dst.Expr
+	RoutesNode *dst.AssignStmt
 	// Routes represents convenient extracted fields from route elements
 	// indexed by operation id.
 	Routes map[string]Route
@@ -339,10 +365,14 @@ type Route struct {
 /*
 extractRoutes returns Route elements indexed by method from a routes node.
 */
-func extractRoutes(rr *dst.CompositeLit) map[string]Route {
+func extractRoutes(rr *dst.AssignStmt) map[string]Route {
 	out := make(map[string]Route)
 
-	for _, r := range rr.Elts {
+	cl, iscl := rr.Rhs[0].(*dst.CompositeLit)
+	if !iscl {
+		return out
+	}
+	for _, r := range cl.Elts {
 		var (
 			opId  string
 			route Route
@@ -375,14 +405,12 @@ func extractRoutes(rr *dst.CompositeLit) map[string]Route {
 		}
 	}
 
-	fmt.Printf("%v\n", out)
-
 	return out
 }
 
 // inspectRoutes returns the routes slice Rhs node for tag.
-func inspectRoutes(f dst.Node, tag string) *dst.CompositeLit {
-	routesNode := []dst.Expr{}
+func inspectRoutes(f dst.Node, tag string) *dst.AssignStmt {
+	routesNode := &dst.AssignStmt{}
 
 	dst.Inspect(f, func(n dst.Node) bool {
 		fn, isFn := n.(*dst.FuncDecl)
@@ -397,19 +425,17 @@ func inspectRoutes(f dst.Node, tag string) *dst.CompositeLit {
 				return false
 			}
 			if as, isas := fn.Body.List[0].(*dst.AssignStmt); isas {
-				routesNode = as.Rhs
+				routesNode, _ = dst.Clone(as).(*dst.AssignStmt)
 			}
 		}
 
 		return true
 	})
 
-	return routesNode[0].(*dst.CompositeLit)
+	return routesNode
 }
 
 func inspectStruct(f dst.Node, tag string) map[string]Method {
-	fmt.Printf("struct: %s\n", tag)
-
 	out := make(map[string]Method)
 
 	dst.Inspect(f, func(n dst.Node) bool {

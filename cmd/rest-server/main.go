@@ -145,6 +145,7 @@ type serverConfig struct {
 	Logger  *zap.Logger
 }
 
+// TODO abstract so it can easily be used for tests as well just by passing conf.
 func newServer(conf serverConfig) (*http.Server, error) {
 	router := gin.Default()
 
