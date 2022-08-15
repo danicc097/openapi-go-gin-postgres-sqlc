@@ -36,7 +36,7 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId",
 			HandlerFunc: t.UpdatePetWithForm,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: []gin.HandlerFunc{rest.AuthMiddleware()},
 		},
 		{
 			Name:        "NewHandlerPost",

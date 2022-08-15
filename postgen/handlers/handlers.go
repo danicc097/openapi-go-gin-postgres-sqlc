@@ -47,34 +47,16 @@ type Conf struct {
 	We dont want users to manually add handlers and routes to handlers/*
 	If we let them, we wouldnt know at plain sight what was in the spec and what wasnt
 	and parsing will become a bigger mess.
-	Users can still add new methods, but the routes slice in Register will have
-	all items containing a route () that wasnt generated removed.
+	Users can still add new methods to the struct, but the routes slice in
+	Register will be overridden, only retaining certain properties, currently Middlewares.
 	If we need a new route that cant be defined in the spec, e.g. fileserver,
-	we purposely want that out of the generated handler struct, so its clear that
-	its outside the spec.
+	we purposely want that out of the generated handler struct,
+	so its clear that its outside the spec.
 	It can still remain in handlers/* as long as its not api_*(!_test).go, e.g. fileserver.go
-	and still follow the same handlers struct pattern for all we care, it wont be touched.
-
-	flow:
-	🆗glob current/api_*(!_test).go -> currentBasenames
-	🆗glob gen/api_*(!_test).go -> genBasenames
-	For each gen basename:
-		🆗If gen basename doesnt exist in current or viceversa, cp as is to out.
-		Else:
-		🆗	1. parse gen:
-			- extract slice of routes, which contains all relevant info we will need
-			to merge -> genRoutes.
-			genRoutes is a map indexed by Route.Name (operation ids are unique).
-			TODO Can we easily load a struct ast node into the struct itself?
-			- get list of struct methods (inspectStruct) --> genHandlers
-		🆗	2. parse current:
-			- extract slice of routes in the same way --> currentRoutes
-			- get list of struct methods (inspectStruct) --> currentHandlers
-		While merging:
-				Based on assumption that users have not modified Register() (clearly indicated).
-				IMPORTANT: if a method already exists in current but has no routes item (meaning
-				its probably some handler helper method created afterwards) then panic and alert
-				the user to rename. it shouldve been unexported or a function in the first place anyway.
+	and it can still follow the same handlers struct pattern for all we care, it wont be touched.
+	IMPORTANT: if a method already exists in current but has no routes item (meaning
+	its probably some handler helper method created afterwards) then panic and alert
+	the user to rename. it shouldve been unexported or a function in the first place anyway.
 
 */
 func main() {
@@ -180,10 +162,12 @@ func getCommonBasenames(conf Conf) (out []string) {
 	return out
 }
 
-// replaceRoutes replaces the routes slice node in Register().
-func replaceRoutes(f *dst.File, hf, hfUpdate HandlerFile, tag string) {
+// replaceRoute replaces a routes slice element node in Register() for an operation id.
+func replaceRoute(f *dst.File, hf, hfUpdate HandlerFile, tag string, opId string) {
 	var stack []dst.Node
-	// before replacing the node, update it with hfUpdate.Routes.Middlewares)
+
+	// before replacing the node, update it with hfUpdate properties
+	seen := []string{}
 	dstutil.Apply(hf.RoutesNode, nil, func(c *dstutil.Cursor) bool {
 		cl, iscl := c.Parent().(*dst.CompositeLit)
 		if !iscl {
@@ -195,40 +179,32 @@ func replaceRoutes(f *dst.File, hf, hfUpdate HandlerFile, tag string) {
 		} else {
 			stack = append(stack, c.Parent())
 		}
-
 		for _, s := range cl.Elts {
-			kv, kvok := s.(*dst.KeyValueExpr)
-			if !kvok {
-				return true
-			}
-
-			ident, identok := kv.Key.(*dst.Ident)
+			ident, identok := s.(*dst.KeyValueExpr)
 			if !identok {
 				return true
 			}
 
-			// TODO use ancestor stack to keep track of parent so
-			// we can get other fields at the same time.
-			// ALso edit extractRoutes to use the same pattern.
-			// https://stackoverflow.com/questions/66810192/how-to-retrieve-parent-node-from-child-node-in-golang-ast-traversal
-			// turn stack into closure in a generic inspectFunc
-			switch ident.Name {
-			case "Name":
-				if lit, islit := kv.Value.(*dst.BasicLit); islit {
-					opId, _ := strconv.Unquote(lit.Value)
-					fmt.Printf("hfUpdate.Routes[%s].Name: %s\n", hfUpdate.Routes[opId].Name, opId)
-				}
-
+			k, isk := ident.Key.(*dst.Ident)
+			if !isk {
 				return true
-				// // find the operation Id for the current Route struct
-				// fmt.Println("current stack:")
-				// for _, n := range stack {
-				// 	fmt.Printf("%T\n", n)
-				// }
-				// fmt.Println("Replacing middlewares:")
-				// for _, f := range stack[len(stack)-1].(*dst.CompositeLit).Elts {
-				// 	fmt.Printf("%s: %s", f.(*dst.KeyValueExpr).Key, f.(*dst.KeyValueExpr).Value)
-				// }
+			}
+
+			switch k.Name {
+			case "Name":
+				if lit, islit := ident.Value.(*dst.BasicLit); islit {
+					foundOpId, _ := strconv.Unquote(lit.Value)
+					if !contains(seen, opId) && opId == foundOpId {
+						seen = append(seen, opId)
+						fmt.Printf("hfUpdate.Routes[%s].Name is '%s'\n", opId, hfUpdate.Routes[opId].Name)
+						// TODO include comments on middlewares current field
+						for _, f := range stack[len(stack)-1].(*dst.CompositeLit).Elts {
+							if f.(*dst.KeyValueExpr).Key.(*dst.Ident).Name == "Middlewares" {
+								f.(*dst.KeyValueExpr).Value = hfUpdate.Routes[opId].Middlewares
+							}
+						}
+					}
+				}
 			}
 		}
 
@@ -265,6 +241,7 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 			fmt.Printf("gen r.Name: %s\n", cv.Name)
 		}
 
+		// get generated operation ids as list
 		gkk := make([]string, len(handlers[conf.GenDir][tag].Routes))
 		i := 0
 		for gk := range handlers[conf.GenDir][tag].Routes {
@@ -276,12 +253,6 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 			return gkk[i] < gkk[j]
 		})
 
-		/*
-			TODO loop gen routes RH assignment node.
-			for each operationId in gen:
-				check valid "current" map key, else continue [1] (a new route)
-				change outRoutes Middlewares tree node to be handlers["current"][<tag>].Route[operationId].Middlewares
-		*/
 		outHF := handlers[conf.GenDir][tag]
 		currentHF := handlers[conf.CurrentDir][tag]
 
@@ -290,13 +261,10 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 				fmt.Printf("op id %s not in current->%s, adding method.\n", gk, tag)
 				outF.Decls = append(outF.Decls, handlers[conf.GenDir][tag].Methods[gk].Decl)
 
-				continue // [1]
+				continue
 			}
-			// if we're here, operationId is in both gen and current.
-			// find the routes RH assignment slice element node where
-			// Name is operationId
-			// TODO dstutil apply here, see: https://github.com/dave/dst/blob/master/dstutil/rewrite_test.go
-			replaceRoutes(outF, outHF, currentHF, tag)
+
+			replaceRoute(outF, outHF, currentHF, tag, gk)
 		}
 
 		buf := &bytes.Buffer{}
