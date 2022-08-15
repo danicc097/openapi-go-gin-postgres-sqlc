@@ -61,20 +61,17 @@ type Conf struct {
 	For each gen basename:
 		🆗If gen basename doesnt exist in current or viceversa, cp as is to out.
 		Else:
-			1. parse gen:
+		🆗	1. parse gen:
 			- extract slice of routes, which contains all relevant info we will need
 			to merge -> genRoutes.
 			genRoutes is a map indexed by Route.Name (operation ids are unique).
 			TODO Can we easily load a struct ast node into the struct itself?
 			- get list of struct methods (inspectStruct) --> genHandlers
-			2. parse current:
+		🆗	2. parse current:
 			- extract slice of routes in the same way --> currentRoutes
 			- get list of struct methods (inspectStruct) --> currentHandlers
 		While merging:
 				Based on assumption that users have not modified Register() (clearly indicated).
-				if key of genRoutes is not in currentRoutes:
-					- append gen slice node value to current routes slice
-					- append gen method (501 status) to current struct.
 				IMPORTANT: if a method already exists in current but has no routes item (meaning
 				its probably some handler helper method created afterwards) then panic and alert
 				the user to rename. it shouldve been unexported or a function in the first place anyway.
@@ -185,8 +182,58 @@ func getCommonBasenames(conf Conf) (out []string) {
 
 // replaceRoutes replaces the routes slice node in Register().
 func replaceRoutes(f *dst.File, hf, hfUpdate HandlerFile, tag string) {
+	var stack []dst.Node
 	// before replacing the node, update it with hfUpdate.Routes.Middlewares)
-	// using apply
+	dstutil.Apply(hf.RoutesNode, nil, func(c *dstutil.Cursor) bool {
+		cl, iscl := c.Parent().(*dst.CompositeLit)
+		if !iscl {
+			return true
+		}
+
+		if c.Parent() == nil {
+			stack = stack[:len(stack)-1]
+		} else {
+			stack = append(stack, c.Parent())
+		}
+
+		for _, s := range cl.Elts {
+			kv, kvok := s.(*dst.KeyValueExpr)
+			if !kvok {
+				return true
+			}
+
+			ident, identok := kv.Key.(*dst.Ident)
+			if !identok {
+				return true
+			}
+
+			// TODO use ancestor stack to keep track of parent so
+			// we can get other fields at the same time.
+			// ALso edit extractRoutes to use the same pattern.
+			// https://stackoverflow.com/questions/66810192/how-to-retrieve-parent-node-from-child-node-in-golang-ast-traversal
+			// turn stack into closure in a generic inspectFunc
+			switch ident.Name {
+			case "Name":
+				if lit, islit := kv.Value.(*dst.BasicLit); islit {
+					opId, _ := strconv.Unquote(lit.Value)
+					fmt.Printf("hfUpdate.Routes[%s].Name: %s\n", hfUpdate.Routes[opId].Name, opId)
+				}
+
+				return true
+				// // find the operation Id for the current Route struct
+				// fmt.Println("current stack:")
+				// for _, n := range stack {
+				// 	fmt.Printf("%T\n", n)
+				// }
+				// fmt.Println("Replacing middlewares:")
+				// for _, f := range stack[len(stack)-1].(*dst.CompositeLit).Elts {
+				// 	fmt.Printf("%s: %s", f.(*dst.KeyValueExpr).Key, f.(*dst.KeyValueExpr).Value)
+				// }
+			}
+		}
+
+		return true
+	})
 
 	// replace node
 	dstutil.Apply(f, nil, func(c *dstutil.Cursor) bool {
@@ -312,46 +359,6 @@ func applyFunc(c *dstutil.Cursor) bool {
 		fmt.Printf("\n---------------\n")
 		// dst.Print(n)
 		dst.Print(n.Body)
-	}
-
-	return true
-}
-
-func inspectFunc(node dst.Node) bool {
-	if node == nil {
-		return false
-	}
-
-	before, after, points := dstutil.Decorations(node)
-
-	var info string
-
-	if before != dst.None {
-		info += fmt.Sprintf("- Before: %s\n", before)
-	}
-
-	for _, point := range points {
-		if len(point.Decs) == 0 {
-			continue
-		}
-
-		info += fmt.Sprintf("- %s: [", point.Name)
-
-		for i, dec := range point.Decs {
-			if i > 0 {
-				info += ", "
-			}
-			info += fmt.Sprintf("%q", dec)
-		}
-		info += "]\n"
-	}
-
-	if after != dst.None {
-		info += fmt.Sprintf("- After: %s\n", after)
-	}
-
-	if info != "" {
-		fmt.Printf("%T\n%s\n", node, info)
 	}
 
 	return true
