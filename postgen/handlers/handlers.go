@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
@@ -89,16 +90,21 @@ func main() {
 	)
 
 	// TODO refactor for clearness to https://stackoverflow.com/questions/52120488/what-is-the-most-efficient-way-to-get-the-intersection-and-exclusions-from-two-a
-
 	commonBasenames := getCommonBasenames(conf)
-	// access by Dir -> tag
-	handlers := make(map[string]map[string]HandlerFile)
+	handlers := analyzeHandlers(conf, commonBasenames)
 
+	generateMergedFiles(handlers, conf)
+}
+
+// analyzeHandlers returns all necessary merging information about handlers, indexed
+// by directory and tag.
+func analyzeHandlers(conf Conf, basenames []string) map[string]map[string]HandlerFile {
+	handlers := make(map[string]map[string]HandlerFile)
 	dirs := []string{conf.GenDir, conf.CurrentDir}
 	for _, dir := range dirs {
 		handlers[dir] = make(map[string]HandlerFile)
 
-		for _, basename := range commonBasenames {
+		for _, basename := range basenames {
 			file := path.Join(dir, basename)
 			fmt.Printf("\n---------\nAnalyzing %v\n", file)
 
@@ -119,9 +125,6 @@ func main() {
 			rr := inspectRoutes(f, tag)
 			routes := extractRoutes(rr)
 
-			// TODO Register() is in Methods, so we can clone it from gen to current
-			// then update middleware field nodes with rr from current.
-			// We will also need to append Method's not in current to the struct node
 			hf := HandlerFile{
 				F:          f,
 				Methods:    mm,
@@ -133,10 +136,10 @@ func main() {
 		}
 	}
 
-	generateMergedFiles(handlers, conf)
+	return handlers
 }
 
-// getCommonBasenames returns api filename intersections in current and raw gen dirs,
+// getCommonBasenames returns api filename (tag) intersections in current and raw gen dirs,
 // and copies the remaining files to the out dir without further analysis.
 func getCommonBasenames(conf Conf) (out []string) {
 	k := 0
@@ -360,7 +363,7 @@ func extractRoutes(rr *dst.CompositeLit) map[string]Route {
 				switch ident.Name {
 				case "Name":
 					if lit, islit := kv.Value.(*dst.BasicLit); islit {
-						opId = strings.Trim(lit.Value, "\"")
+						opId, _ = strconv.Unquote(lit.Value)
 						route.Name = opId
 					}
 				case "Middlewares":
