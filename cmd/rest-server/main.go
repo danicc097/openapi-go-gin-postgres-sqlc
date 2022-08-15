@@ -165,11 +165,11 @@ func newServer(conf serverConfig) (*http.Server, error) {
 	// authMw := rest.NewAuthMiddleware(conf.Logger)
 	vg := router.Group(os.Getenv("API_VERSION"))
 
-	handlers.NewDefault(services.Default{}).Register(vg, []gin.HandlerFunc{})
-	handlers.NewFake(services.Fake{}).Register(vg, []gin.HandlerFunc{})
-	handlers.NewPet(services.Pet{}).Register(vg, []gin.HandlerFunc{})
-	handlers.NewStore(services.Store{}).Register(vg, []gin.HandlerFunc{})
-	handlers.NewUser(services.User{}).Register(vg, []gin.HandlerFunc{})
+	handlers.NewDefault(services.Default{Logger: conf.Logger}).Register(vg, []gin.HandlerFunc{})
+	handlers.NewFake(services.Fake{Logger: conf.Logger}).Register(vg, []gin.HandlerFunc{})
+	handlers.NewPet(services.Pet{Logger: conf.Logger}).Register(vg, []gin.HandlerFunc{})
+	handlers.NewStore(services.Store{Logger: conf.Logger}).Register(vg, []gin.HandlerFunc{})
+	handlers.NewUser(services.User{Logger: conf.Logger}).Register(vg, []gin.HandlerFunc{})
 	// TODO /admin with authMw.EnsureAuthorized() in group
 
 	vg.StaticFS("/docs", http.FS(fsys))

@@ -11,7 +11,7 @@ import (
 // Store handles routes with the 'store' tag.
 type Store struct {
 	svc services.Store
-	// add necessary services, etc. as required
+	// add or remove services, etc. as required
 }
 
 // NewStore returns a new handler for the 'store' route group.
@@ -23,7 +23,7 @@ func NewStore(svc services.Store) *Store {
 }
 
 // Register connects the handlers to a router with the given middleware.
-// GENERATED METHOD. Only Middlewares will be saved between runs.
+// Generated method. DO NOT EDIT.
 func (t *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{
@@ -31,32 +31,40 @@ func (t *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Method:      http.MethodDelete,
 			Pattern:     "/store/order/:orderId",
 			HandlerFunc: t.DeleteOrder,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("DeleteOrder"),
 		},
 		{
 			Name:        "GetInventory",
 			Method:      http.MethodGet,
 			Pattern:     "/store/inventory",
 			HandlerFunc: t.GetInventory,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("GetInventory"),
 		},
 		{
 			Name:        "GetOrderById",
 			Method:      http.MethodGet,
 			Pattern:     "/store/order/:orderId",
 			HandlerFunc: t.GetOrderById,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("GetOrderById"),
 		},
 		{
 			Name:        "PlaceOrder",
 			Method:      http.MethodPost,
 			Pattern:     "/store/order",
 			HandlerFunc: t.PlaceOrder,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("PlaceOrder"),
 		},
 	}
-
 	rest.RegisterRoutes(r, routes, "/store", mws)
+}
+
+// middlewares returns individual route middleware per operation id.
+// Edit as required.
+func (t *Store) middlewares(opId string) []gin.HandlerFunc {
+	switch opId {
+	default:
+		return []gin.HandlerFunc{}
+	}
 }
 
 // DeleteOrder delete purchase order by id.

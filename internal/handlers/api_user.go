@@ -11,7 +11,7 @@ import (
 // User handles routes with the 'user' tag.
 type User struct {
 	svc services.User
-	// add necessary services, etc. as required
+	// add or remove services, etc. as required
 }
 
 // NewUser returns a new handler for the 'user' route group.
@@ -23,7 +23,7 @@ func NewUser(svc services.User) *User {
 }
 
 // Register connects the handlers to a router with the given middleware.
-// GENERATED METHOD. Only Middlewares will be saved between runs.
+// Generated method. DO NOT EDIT.
 func (t *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{
@@ -31,60 +31,68 @@ func (t *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Method:      http.MethodPost,
 			Pattern:     "/user",
 			HandlerFunc: t.CreateUser,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("CreateUser"),
 		},
 		{
 			Name:        "CreateUsersWithArrayInput",
 			Method:      http.MethodPost,
 			Pattern:     "/user/createWithArray",
 			HandlerFunc: t.CreateUsersWithArrayInput,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("CreateUsersWithArrayInput"),
 		},
 		{
 			Name:        "CreateUsersWithListInput",
 			Method:      http.MethodPost,
 			Pattern:     "/user/createWithList",
 			HandlerFunc: t.CreateUsersWithListInput,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("CreateUsersWithListInput"),
 		},
 		{
 			Name:        "DeleteUser",
 			Method:      http.MethodDelete,
 			Pattern:     "/user/:username",
 			HandlerFunc: t.DeleteUser,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("DeleteUser"),
 		},
 		{
 			Name:        "GetUserByName",
 			Method:      http.MethodGet,
 			Pattern:     "/user/:username",
 			HandlerFunc: t.GetUserByName,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("GetUserByName"),
 		},
 		{
 			Name:        "LoginUser",
 			Method:      http.MethodGet,
 			Pattern:     "/user/login",
 			HandlerFunc: t.LoginUser,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("LoginUser"),
 		},
 		{
 			Name:        "LogoutUser",
 			Method:      http.MethodGet,
 			Pattern:     "/user/logout",
 			HandlerFunc: t.LogoutUser,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("LogoutUser"),
 		},
 		{
 			Name:        "UpdateUser",
 			Method:      http.MethodPut,
 			Pattern:     "/user/:username",
 			HandlerFunc: t.UpdateUser,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("UpdateUser"),
 		},
 	}
-
 	rest.RegisterRoutes(r, routes, "/user", mws)
+}
+
+// middlewares returns individual route middleware per operation id.
+// Edit as required.
+func (t *User) middlewares(opId string) []gin.HandlerFunc {
+	switch opId {
+	default:
+		return []gin.HandlerFunc{}
+	}
 }
 
 // CreateUser creates a new user.

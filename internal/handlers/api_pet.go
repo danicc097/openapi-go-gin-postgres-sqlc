@@ -11,7 +11,7 @@ import (
 // Pet handles routes with the 'pet' tag.
 type Pet struct {
 	svc services.Pet
-	// add necessary services, etc. as required
+	// add or remove services, etc. as required
 }
 
 // NewPet returns a new handler for the 'pet' route group.
@@ -23,7 +23,7 @@ func NewPet(svc services.Pet) *Pet {
 }
 
 // Register connects the handlers to a router with the given middleware.
-// GENERATED METHOD. Only Middlewares will be saved between runs.
+// Generated method. DO NOT EDIT.
 func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{
@@ -31,60 +31,68 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Method:      http.MethodPost,
 			Pattern:     "/pet",
 			HandlerFunc: t.AddPet,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("AddPet"),
 		},
 		{
 			Name:        "DeletePet",
 			Method:      http.MethodDelete,
 			Pattern:     "/pet/:petId",
 			HandlerFunc: t.DeletePet,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("DeletePet"),
 		},
 		{
 			Name:        "FindPetsByStatus",
 			Method:      http.MethodGet,
 			Pattern:     "/pet/findByStatus",
 			HandlerFunc: t.FindPetsByStatus,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("FindPetsByStatus"),
 		},
 		{
 			Name:        "FindPetsByTags",
 			Method:      http.MethodGet,
 			Pattern:     "/pet/findByTags",
 			HandlerFunc: t.FindPetsByTags,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("FindPetsByTags"),
 		},
 		{
 			Name:        "GetPetById",
 			Method:      http.MethodGet,
 			Pattern:     "/pet/:petId",
 			HandlerFunc: t.GetPetById,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("GetPetById"),
 		},
 		{
 			Name:        "UpdatePet",
 			Method:      http.MethodPut,
 			Pattern:     "/pet",
 			HandlerFunc: t.UpdatePet,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("UpdatePet"),
 		},
 		{
 			Name:        "UpdatePetWithForm",
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId",
 			HandlerFunc: t.UpdatePetWithForm,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("UpdatePetWithForm"),
 		},
 		{
 			Name:        "UploadFile",
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId/uploadImage",
 			HandlerFunc: t.UploadFile,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("UploadFile"),
 		},
 	}
-
 	rest.RegisterRoutes(r, routes, "/pet", mws)
+}
+
+// middlewares returns individual route middleware per operation id.
+// Edit as required.
+func (t *Pet) middlewares(opId string) []gin.HandlerFunc {
+	switch opId {
+	default:
+		return []gin.HandlerFunc{}
+	}
 }
 
 // AddPet add a new pet to the store.

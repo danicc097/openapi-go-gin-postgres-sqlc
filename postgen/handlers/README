@@ -1,0 +1,6 @@
+TODO:
+
+create minimal openapi.yaml for testdata and have setupTests run ``build generate-api openapi.yaml testdata``
+needs refactoring of x.generate-api to accept $SPEC and $GEN_DIR, plus dont ensure top level dir if the command is ``generate-api``
+
+

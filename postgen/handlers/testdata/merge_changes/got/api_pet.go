@@ -16,7 +16,7 @@ type PetThing struct {
 // Pet handles routes with the pet tag.
 type Pet struct {
 	svc services.Pet
-	// add necessary services, etc. as required
+	// add or remove services, etc. as required
 }
 
 // NewPet returns a new handler for pet.
@@ -28,7 +28,7 @@ func NewPet(svc services.Pet) *Pet {
 }
 
 // Register connects the handlers to a router with the given middleware.
-// GENERATED METHOD. Only Middlewares will be saved between runs.
+// Generated method. DO NOT EDIT.
 func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{

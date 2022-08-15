@@ -11,7 +11,7 @@ import (
 // User handles routes with the user tag.
 type User struct {
 	svc services.User
-	// add necessary services, etc. as required
+	// add or remove services, etc. as required
 }
 
 // NewUser returns a new handler for user.
@@ -23,7 +23,7 @@ func NewUser(svc services.User) *User {
 }
 
 // Register connects the handlers to a router with the given middleware.
-// GENERATED METHOD. Only Middlewares will be saved between runs.
+// Generated method. DO NOT EDIT.
 func (t *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{

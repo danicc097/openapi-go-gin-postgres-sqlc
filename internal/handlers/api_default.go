@@ -11,7 +11,7 @@ import (
 // Default handles routes with the 'Default_' tag.
 type Default struct {
 	svc services.Default
-	// add necessary services, etc. as required
+	// add or remove services, etc. as required
 }
 
 // NewDefault returns a new handler for the 'Default_' route group.
@@ -23,7 +23,7 @@ func NewDefault(svc services.Default) *Default {
 }
 
 // Register connects the handlers to a router with the given middleware.
-// GENERATED METHOD. Only Middlewares will be saved between runs.
+// Generated method. DO NOT EDIT.
 func (t *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{
@@ -31,18 +31,26 @@ func (t *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Method:      http.MethodGet,
 			Pattern:     "/openapi.yaml",
 			HandlerFunc: t.OpenapiYamlGet,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("OpenapiYamlGet"),
 		},
 		{
 			Name:        "Ping",
 			Method:      http.MethodGet,
 			Pattern:     "/ping",
 			HandlerFunc: t.Ping,
-			Middlewares: []gin.HandlerFunc{},
+			Middlewares: t.middlewares("Ping"),
 		},
 	}
-
 	rest.RegisterRoutes(r, routes, "/default", mws)
+}
+
+// middlewares returns individual route middleware per operation id.
+// Edit as required.
+func (t *Default) middlewares(opId string) []gin.HandlerFunc {
+	switch opId {
+	default:
+		return []gin.HandlerFunc{}
+	}
 }
 
 // OpenapiYamlGet returns this very openapi spec..

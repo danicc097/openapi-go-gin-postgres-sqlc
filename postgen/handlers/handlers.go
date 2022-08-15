@@ -264,6 +264,9 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 				continue
 			}
 
+			// IMPORTANT TODO instead of this mess of replacing a generated method,
+			// have Middlewares: t.middlewares("CreateUser") which
+			// returns them if exist..., else empty list.
 			replaceRoute(outF, outHF, currentHF, tag, gk)
 		}
 

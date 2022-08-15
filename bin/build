@@ -66,8 +66,6 @@ x.generate-api() {
   # not needed with locally generated code
   # local name="$(id -un)"
   # sudo chown -R "$name:$name" "$GEN_OUT_DIR"
-  cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
-  cp "$SPEC" "$PWD"/internal/static/swagger-ui
   # go build -o post-generate-api "$PWD"/cmd/post-generate-api/main.go
   # TODO postgen now needs to create services/{tag}.go if not exists
   # and render a basic template
@@ -83,9 +81,15 @@ x.generate-sqlc() {
   cd internal/postgresql && sqlc generate && cd - || exit
 }
 
+x.update-swagger-ui() {
+  cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
+  cp "$SPEC" "$PWD"/internal/static/swagger-ui
+}
+
 x.generate() {
   go generate ./...
   x.generate-api
+  x.update-swagger-ui
   x.generate-sqlc
 }
 

@@ -1,3 +1,4 @@
+{{! The things one must do to not touch Java. }}
 package handlers
 
 {{#operations}}
@@ -9,11 +10,10 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 )
 
-{{! The things one must do to not touch Java. }}
 // {{baseName}} handles routes with the '{{#lambda.lowercase}}{{{baseName}}}{{/lambda.lowercase}}' tag.
 type {{baseName}} struct {
 	svc services.{{baseName}}
-  // add necessary services, etc. as required
+  // add or remove services, etc. as required
 }
 
 // New{{baseName}} returns a new handler for the '{{#lambda.lowercase}}{{{baseName}}}{{/lambda.lowercase}}' route group.
@@ -25,7 +25,7 @@ func New{{baseName}}(svc services.{{baseName}}) *{{baseName}} {
 }
 
 // Register connects the handlers to a router with the given middleware.
-// GENERATED METHOD. Only Middlewares will be saved between runs.
+// Generated method. DO NOT EDIT.
 func (t *{{baseName}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
   routes := []rest.Route{
 {{#operation}}
@@ -34,14 +34,23 @@ func (t *{{baseName}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
     Method: http.Method{{httpMethod}},
     Pattern: "{{{path}}}",
     HandlerFunc: t.{{nickname}},
-    Middlewares: []gin.HandlerFunc{},
+    Middlewares: t.middlewares("{{operationId}}"),
   },
 {{/operation}}
   }
+{{! hack since baseName is broken for the default tag }}
 {{#operation.0}}
-{{! baseName doesn't work with default tag }}
   rest.RegisterRoutes(r, routes, "/{{#tags}}{{name}}{{/tags}}", mws)
 {{/operation.0}}
+}
+
+// middlewares returns individual route middleware per operation id.
+// Edit as required.
+func (t *{{baseName}}) middlewares(opId string) []gin.HandlerFunc {
+	switch opId {
+	default:
+		return []gin.HandlerFunc{}
+	}
 }
 
 {{#operation}}
