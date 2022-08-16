@@ -32,23 +32,17 @@ type Conf struct {
 	CurrentDir string
 	// GenDir is the directory with raw generated files for a given spec.
 	GenDir string
-	// OutDir is the directory to store merged files.
+	// OutDir is the directory to store merged files,
+	// which may be different than CurrentDir.
 	OutDir string
 }
 
 /*
-	Read:
-	https://go.dev/src/go/ast
-	https://pkg.go.dev/go/ast
-	https://github.com/dave/dst/blob/master/dstutil/rewrite_test.go
-	https://developers.mattermost.com/blog/instrumenting-go-code-via-ast-2/
-
 	Rationale:
 	We dont want users to manually add handlers and routes to handlers/*
 	If we let them, we wouldnt know at plain sight what was in the spec and what wasnt
 	and parsing will become a bigger mess.
-	Users can still add new methods to the struct, but the routes slice in
-	Register will be overridden, only retaining certain properties, currently Middlewares.
+	Users can still add new methods to the struct. In case of generated methods conflicting with existing ones, generation will stop.
 	If we need a new route that cant be defined in the spec, e.g. fileserver,
 	we purposely want that out of the generated handler struct,
 	so its clear that its outside the spec.
@@ -145,7 +139,7 @@ func findClashingMethodNames(basenames []string, handlers map[string]map[string]
 		fmt.Fprintf(os.Stderr, `
 Error: conflicting method names
 %s
-Please rename affected methods or new operation ids.
+Please rename either the affected method or operation id.
 `, clashes)
 		os.Exit(1)
 	}
