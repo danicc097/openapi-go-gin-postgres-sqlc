@@ -71,6 +71,7 @@ x.openapi-generator() {
 
   mkdir -p "$gen_out_dir"/gen/models
   mkdir -p "$gen_out_dir"/handlers
+  mkdir -p "$gen_out_dir"/services
   mkdir -p "$gen_out_dir"/rest
   mv "$gen_out_dir"/gen/routers.go "$gen_out_dir"/rest
   mv "$gen_out_dir"/gen/model_*.go "$gen_out_dir"/gen/models 2>/dev/null || echo "No model files found. Skipping"
@@ -96,13 +97,12 @@ x.generate-tests-api() {
 
 x.generate-api() {
   x.openapi-generator "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
-  # for f in "$GEN_OUT_DIR"/gen/api_*.go; do mv "$f" "${f/.go/.tmpl}"; done
-  # not needed with locally generated code
-  # local name="$(id -un)"
-  # sudo chown -R "$name:$name" "$GEN_OUT_DIR"
   # go build -o post-generate-api "$PWD"/cmd/post-generate-api/main.go
-  # TODO postgen now needs to create services/{tag}.go if not exists
-  # and render a basic template
+  # TODO should postgen need to create services/{tag}.go if not exists?
+  # users can follow a different pattern without services since we
+  # don't override anything in api_* except Register()
+  # when we add a new tag it fails to compile, though
+  # and render a basic template, else it wont compile for new tags
   # still need to adapt post-generate-api to handle methods instead of funcs as before,
   # see handlers_old README for that
   # ./post-generate-api

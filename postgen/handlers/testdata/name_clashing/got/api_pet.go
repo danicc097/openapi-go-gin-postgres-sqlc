@@ -76,8 +76,6 @@ func (t *Pet) AddPet(c *gin.Context) {
 // DeletePet deletes a pet.
 func (t *Pet) DeletePet(c *gin.Context) {
 	fmt.Println("new logic for DeletePet")
-	fmt.Println("new logic for DeletePet")
-	fmt.Println("new logic for DeletePet")
 	c.JSON(http.StatusOK, gin.H{})
 }
 

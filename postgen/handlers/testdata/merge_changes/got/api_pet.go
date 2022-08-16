@@ -76,8 +76,6 @@ func (t *Pet) AddPet(c *gin.Context) {
 // DeletePet deletes a pet.
 func (t *Pet) DeletePet(c *gin.Context) {
 	fmt.Println("new logic for DeletePet")
-	fmt.Println("new logic for DeletePet")
-	fmt.Println("new logic for DeletePet")
 	c.JSON(http.StatusOK, gin.H{})
 }
 
@@ -92,11 +90,6 @@ and here as well */
 // This shouldn't be overriden/deleted in any case.
 func (t *Pet) newFunction(c *gin.Context) {
 	fmt.Println("this is some random helper newFunction")
-}
-
-// ConflictEndpointPet will clash with a generated operation id.
-func (t *Pet) ConflictEndpointPet(param1 string, param2 string) {
-	fmt.Println("this method will clash with a generated operation id")
 }
 
 // ConflictEndpointPet name clashing test.

@@ -2,7 +2,10 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"html/template"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -28,13 +31,15 @@ func contains[T comparable](elems []T, v T) bool {
 }
 
 type Conf struct {
-	// CurrentDir is the directory with edited generated files.
-	CurrentDir string
-	// GenDir is the directory with raw generated files for a given spec.
-	GenDir string
-	// OutDir is the directory to store merged files,
-	// which may be different than CurrentDir.
-	OutDir string
+	// CurrentHandlersDir is the directory with edited generated files.
+	CurrentHandlersDir string
+	// GenHandlersDir is the directory with raw generated files for a given spec.
+	GenHandlersDir string
+	// OutHandlersDir is the directory to store merged files,
+	// which may be different than CurrentHandlersDir.
+	OutHandlersDir string
+	// OutServicesDir is the directory to store new default services.
+	OutServicesDir string
 }
 
 /*
@@ -54,21 +59,49 @@ type Conf struct {
 
 */
 func main() {
-	var (
-		baseDir = "testdata"
-		conf    = Conf{
-			CurrentDir: path.Join(baseDir, "merge_changes/internal/handlers"),
-			GenDir:     path.Join(baseDir, "merge_changes/internal/gen"),
-			OutDir:     path.Join(baseDir, "merge_changes/got")}
-	)
+	// TODO in tests, name_clashing will need to assert stderr output
+	// so dirs cant be dynamic
+	dirs := []string{"merge_changes"}
+	for _, dir := range dirs {
+		var (
+			baseDir = "testdata"
+			conf    = Conf{
+				CurrentHandlersDir: path.Join(baseDir, dir, "internal/handlers"),
+				GenHandlersDir:     path.Join(baseDir, dir, "internal/gen"),
+				OutHandlersDir:     path.Join(baseDir, dir, "got"),
+				OutServicesDir:     path.Join(baseDir, dir, "internal/services"),
+			}
+		)
 
-	// TODO add a method in current that is not a handler and conflicts with a new method from gen -> should panic and prompt to rename.
+		// TODO add a method in current that is not a handler and conflicts with a new method from gen -> should panic and prompt to rename.
 
-	// TODO refactor for clearness to https://stackoverflow.com/questions/52120488/what-is-the-most-efficient-way-to-get-the-intersection-and-exclusions-from-two-a
-	cb := getCommonBasenames(conf)
-	handlers := analyzeHandlers(conf, cb)
+		// TODO refactor for clearness to https://stackoverflow.com/questions/52120488/what-is-the-most-efficient-way-to-get-the-intersection-and-exclusions-from-two-a
+		cb := getCommonBasenames(conf)
+		handlers := analyzeHandlers(conf, cb)
 
-	generateMergedFiles(handlers, conf)
+		generateMergedFiles(handlers, conf)
+	}
+}
+
+// generateService fills in a template with a default service struct to a dest.
+func generateService(tag string, dest io.Writer) {
+	t := template.Must(template.New("").Parse(`package services
+
+type {{.Tag}} struct {
+}
+`))
+
+	buf := &bytes.Buffer{}
+
+	params := map[string]interface{}{
+		"Tag": strings.Title(tag),
+	}
+
+	if err := t.Execute(buf, params); err != nil {
+		panic(err)
+	}
+
+	dest.Write(buf.Bytes())
 }
 
 // analyzeHandlers returns all necessary merging information about handlers, indexed
@@ -76,7 +109,7 @@ func main() {
 func analyzeHandlers(conf Conf, basenames []string) map[string]map[string]HandlerFile {
 	handlers := make(map[string]map[string]HandlerFile)
 
-	dirs := []string{conf.GenDir, conf.CurrentDir}
+	dirs := []string{conf.GenHandlersDir, conf.CurrentHandlersDir}
 	for _, dir := range dirs {
 		handlers[dir] = make(map[string]HandlerFile)
 
@@ -124,10 +157,10 @@ func findClashingMethodNames(basenames []string, handlers map[string]map[string]
 		reg := regexp.MustCompile("api_(.*).go")
 		tag := strings.Title(reg.FindStringSubmatch(basename)[1])
 
-		for opId := range handlers[conf.GenDir][tag].Routes {
+		for opId := range handlers[conf.GenHandlersDir][tag].Routes {
 			fmt.Printf("[%s] opId: %s\n", tag, opId)
-			_, rok := handlers[conf.CurrentDir][tag].Routes[opId]
-			_, mok := handlers[conf.CurrentDir][tag].Methods[opId]
+			_, rok := handlers[conf.CurrentHandlersDir][tag].Routes[opId]
+			_, mok := handlers[conf.CurrentHandlersDir][tag].Methods[opId]
 
 			if !rok && mok {
 				clashes = append(clashes, tag+"->"+opId)
@@ -149,10 +182,10 @@ Please rename either the affected method or operation id.
 // and copies the remaining files to the out dir without further analysis.
 func getCommonBasenames(conf Conf) (out []string) {
 	k := 0
-	currentBasenames := getApiBasenames(conf.CurrentDir)
-	genBasenames := getApiBasenames(conf.GenDir)
+	currentBasenames := getApiBasenames(conf.CurrentHandlersDir)
+	genBasenames := getApiBasenames(conf.GenHandlersDir)
 
-	os.MkdirAll(conf.OutDir, 0777)
+	os.MkdirAll(conf.OutHandlersDir, 0777)
 
 	for _, genBasename := range genBasenames {
 		if contains(currentBasenames, genBasename) {
@@ -162,12 +195,12 @@ func getCommonBasenames(conf Conf) (out []string) {
 			continue
 		}
 
-		genContent, err := os.ReadFile(path.Join(conf.GenDir, genBasename))
+		genContent, err := os.ReadFile(path.Join(conf.GenHandlersDir, genBasename))
 		if err != nil {
 			panic(err)
 		}
 
-		os.WriteFile(path.Join(conf.OutDir, genBasename), genContent, 0666)
+		os.WriteFile(path.Join(conf.OutHandlersDir, genBasename), genContent, 0666)
 	}
 
 	genBasenames = genBasenames[:k]
@@ -179,12 +212,12 @@ func getCommonBasenames(conf Conf) (out []string) {
 			continue
 		}
 
-		currentContent, err := os.ReadFile(path.Join(conf.CurrentDir, currentBasename))
+		currentContent, err := os.ReadFile(path.Join(conf.CurrentHandlersDir, currentBasename))
 		if err != nil {
 			panic(err)
 		}
 
-		os.WriteFile(path.Join(conf.OutDir, currentBasename), currentContent, 0666)
+		os.WriteFile(path.Join(conf.OutHandlersDir, currentBasename), currentContent, 0666)
 	}
 
 	return out
@@ -213,10 +246,10 @@ func replaceRoute(f *dst.File, hf, hfUpdate HandlerFile, tag string, opId string
 }
 
 func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) {
-	for tag, currentHF := range handlers[conf.CurrentDir] {
+	for tag, currentHF := range handlers[conf.CurrentHandlersDir] {
 		//nolint: forcetypeassert
 		outF := dst.Clone(currentHF.F).(*dst.File)
-		gh := handlers[conf.GenDir][tag]
+		gh := handlers[conf.GenHandlersDir][tag]
 		fmt.Println(format.Underlined + format.Blue + tag + format.Off)
 
 		for _, cv := range gh.Routes {
@@ -224,10 +257,10 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 		}
 
 		// get generated operation ids as list
-		gkk := make([]string, len(handlers[conf.GenDir][tag].Routes))
+		gkk := make([]string, len(handlers[conf.GenHandlersDir][tag].Routes))
 		i := 0
 
-		for gk := range handlers[conf.GenDir][tag].Routes {
+		for gk := range handlers[conf.GenHandlersDir][tag].Routes {
 			gkk[i] = gk
 			i++
 		}
@@ -236,12 +269,12 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 			return gkk[i] < gkk[j]
 		})
 
-		genHF := handlers[conf.GenDir][tag]
+		genHF := handlers[conf.GenHandlersDir][tag]
 
 		for _, gk := range gkk {
 			if _, ok := currentHF.Routes[gk]; !ok {
 				fmt.Printf("op id %s not in current->%s, adding method.\n", gk, tag)
-				outF.Decls = append(outF.Decls, handlers[conf.GenDir][tag].Methods[gk].Decl)
+				outF.Decls = append(outF.Decls, handlers[conf.GenHandlersDir][tag].Methods[gk].Decl)
 
 				continue
 			}
@@ -251,7 +284,7 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 
 		buf := &bytes.Buffer{}
 
-		f, err := os.Create(path.Join(conf.OutDir, "api_"+strings.ToLower(tag)+".go"))
+		f, err := os.Create(path.Join(conf.OutHandlersDir, "api_"+strings.ToLower(tag)+".go"))
 		if err != nil {
 			panic(err)
 		}
@@ -261,6 +294,19 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 		}
 
 		f.Write(buf.Bytes())
+	}
+
+	// generate default service if not exists
+	for tag := range handlers[conf.GenHandlersDir] {
+		s := path.Join(conf.OutServicesDir, strings.ToLower(tag)+".go")
+		if _, err := os.Stat(s); errors.Is(err, os.ErrNotExist) {
+			f, err := os.Create(s)
+			if err != nil {
+				panic(err)
+			}
+
+			generateService(tag, f)
+		}
 	}
 }
 
