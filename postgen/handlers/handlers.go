@@ -68,9 +68,13 @@ func main() {
 			OutDir:     path.Join(baseDir, "merge_changes/got")}
 	)
 
+	// FIXME the default tag should not have a route group, else
+	// we get v2/default/... since we're creating a literal default group.
+	// this also means the openapi spec is not fulfilled.
+
 	// TODO refactor for clearness to https://stackoverflow.com/questions/52120488/what-is-the-most-efficient-way-to-get-the-intersection-and-exclusions-from-two-a
-	commonBasenames := getCommonBasenames(conf)
-	handlers := analyzeHandlers(conf, commonBasenames)
+	cb := getCommonBasenames(conf)
+	handlers := analyzeHandlers(conf, cb)
 
 	generateMergedFiles(handlers, conf)
 }
@@ -79,6 +83,7 @@ func main() {
 // by directory and tag.
 func analyzeHandlers(conf Conf, basenames []string) map[string]map[string]HandlerFile {
 	handlers := make(map[string]map[string]HandlerFile)
+
 	dirs := []string{conf.GenDir, conf.CurrentDir}
 	for _, dir := range dirs {
 		handlers[dir] = make(map[string]HandlerFile)
@@ -204,6 +209,7 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 		// get generated operation ids as list
 		gkk := make([]string, len(handlers[conf.GenDir][tag].Routes))
 		i := 0
+
 		for gk := range handlers[conf.GenDir][tag].Routes {
 			gkk[i] = gk
 			i++
@@ -329,9 +335,8 @@ func extractRoutes(rr *dst.AssignStmt) map[string]Route {
 						opId, _ = strconv.Unquote(lit.Value)
 						route.Name = opId
 					}
-					// TODO REMOVE
-				case "Middlewares":
-					route.Middlewares = kv.Value
+					// case "Middlewares":
+					// 	route.Middlewares = kv.Value
 				}
 
 				out[opId] = route

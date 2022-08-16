@@ -14,6 +14,7 @@ export GENVERS=6.0.1
 
 SPEC="openapi.yaml"
 GEN_OUT_DIR="internal"
+TEMPLATE_DIR="internal/go-gin-server-templates"
 PWD="$(pwd)"
 ENV_FILE=".env"
 SCRIPTS_DIR=$(dirname "$0")
@@ -51,6 +52,9 @@ x.openapi-generator() {
   local gen_out_dir="$2"
   local template_dir="$3"
 
+  [[ -z $spec ]] && echo "generate-api: spec required" && exit 1
+  [[ -z $gen_out_dir ]] && echo "generate-api: out dir required" && exit 1
+  [[ -z $template_dir ]] && echo "generate-api: template dir required" && exit 1
   echo "Generating API from $spec"
   echo "Generation directory: $gen_out_dir"
   echo "Template override directory: $template_dir"
@@ -71,15 +75,22 @@ x.openapi-generator() {
   rm -rf "$gen_out_dir/api"
 }
 
+x.generate-tests-api() {
+  local spec="$1"
+  local gen_out_dir="$2"
+  local template_dir="$3"
+
+  x.openapi-generator \
+    "postgen/handlers/testdata/openapi.yaml" \
+    "postgen/handlers/testdata/merge_changes/internal" \
+    "internal/go-gin-server-templates"
+}
 x.generate-api() {
   local spec="$1"
   local gen_out_dir="$2"
   local template_dir="$3"
-  [[ -z $spec ]] && echo "generate-api: spec required" && exit 1
-  [[ -z $gen_out_dir ]] && echo "generate-api: out dir required" && exit 1
-  [[ -z $template_dir ]] && echo "generate-api: template dir required" && exit 1
 
-  x.openapi-generator "$spec" "$gen_out_dir" "$template_dir"
+  x.openapi-generator "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
   # for f in "$gen_out_dir"/gen/api_*.go; do mv "$f" "${f/.go/.tmpl}"; done
   # not needed with locally generated code
   # local name="$(id -un)"
