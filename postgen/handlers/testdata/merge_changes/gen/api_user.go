@@ -8,13 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// User handles routes with the user tag.
+// User handles routes with the 'user' tag.
 type User struct {
 	svc services.User
 	// add or remove services, etc. as required
 }
 
-// NewUser returns a new handler for user.
+// NewUser returns a new handler for the 'user' route group.
 // Edit as required.
 func NewUser(svc services.User) *User {
 	return &User{
@@ -83,8 +83,16 @@ func (t *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Middlewares: t.middlewares("UpdateUser"),
 		},
 	}
-
 	rest.RegisterRoutes(r, routes, "/user", mws)
+}
+
+// middlewares returns individual route middleware per operation id.
+// Edit as required.
+func (t *User) middlewares(opId string) []gin.HandlerFunc {
+	switch opId {
+	default:
+		return []gin.HandlerFunc{}
+	}
 }
 
 // CreateUser creates a new user.

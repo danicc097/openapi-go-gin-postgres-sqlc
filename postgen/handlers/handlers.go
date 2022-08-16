@@ -64,7 +64,7 @@ func main() {
 		baseDir = "testdata"
 		conf    = Conf{
 			CurrentDir: path.Join(baseDir, "merge_changes/current"),
-			GenDir:     path.Join(baseDir, "internal/gen"),
+			GenDir:     path.Join(baseDir, "merge_changes/gen"),
 			OutDir:     path.Join(baseDir, "merge_changes/got")}
 	)
 
@@ -100,14 +100,13 @@ func analyzeHandlers(conf Conf, basenames []string) map[string]map[string]Handle
 			tag := strings.Title(reg.FindStringSubmatch(basename)[1])
 
 			mm := inspectStruct(f, tag)
-			rr, mws := inspectNodes(f, tag)
+			rr := inspectNodes(f, tag)
 			routes := extractRoutes(rr)
 
 			hf := HandlerFile{
 				F:          f,
 				Methods:    mm,
 				RoutesNode: rr,
-				MwsNode:    mws,
 				Routes:     routes,
 			}
 
@@ -115,6 +114,12 @@ func analyzeHandlers(conf Conf, basenames []string) map[string]map[string]Handle
 		}
 	}
 
+	/* TODO:
+	for opId, _ in handlers[conf.GenDir][tag].Routes:
+		if handlers[conf.CurrentDir][tag].Routes[opId] does not exist
+		and handlers[conf.CurrentDir][tag].Methods[opId] exists
+		then we have a clash in current method and should be renamed (panic)
+	*/
 	return handlers
 }
 
@@ -165,54 +170,6 @@ func getCommonBasenames(conf Conf) (out []string) {
 
 // replaceRoute replaces a routes slice element node in Register() for an operation id.
 func replaceRoute(f *dst.File, hf, hfUpdate HandlerFile, tag string, opId string) {
-	var stack []dst.Node
-
-	// before replacing the node, update it with hfUpdate properties
-	seen := []string{}
-	dstutil.Apply(hf.RoutesNode, nil, func(c *dstutil.Cursor) bool {
-		cl, iscl := c.Parent().(*dst.CompositeLit)
-		if !iscl {
-			return true
-		}
-
-		if c.Parent() == nil {
-			stack = stack[:len(stack)-1]
-		} else {
-			stack = append(stack, c.Parent())
-		}
-		for _, s := range cl.Elts {
-			ident, identok := s.(*dst.KeyValueExpr)
-			if !identok {
-				return true
-			}
-
-			k, isk := ident.Key.(*dst.Ident)
-			if !isk {
-				return true
-			}
-
-			switch k.Name {
-			case "Name":
-				if lit, islit := ident.Value.(*dst.BasicLit); islit {
-					foundOpId, _ := strconv.Unquote(lit.Value)
-					if !contains(seen, opId) && opId == foundOpId {
-						seen = append(seen, opId)
-						fmt.Printf("hfUpdate.Routes[%s].Name is '%s'\n", opId, hfUpdate.Routes[opId].Name)
-						// TODO include comments on middlewares current field
-						for _, f := range stack[len(stack)-1].(*dst.CompositeLit).Elts {
-							if f.(*dst.KeyValueExpr).Key.(*dst.Ident).Name == "Middlewares" {
-								f.(*dst.KeyValueExpr).Value = hfUpdate.Routes[opId].Middlewares
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return true
-	})
-
-	// replace node
 	dstutil.Apply(f, nil, func(c *dstutil.Cursor) bool {
 		fn, isFn := c.Parent().(*dst.FuncDecl)
 		if !isFn || fn.Recv == nil || len(fn.Recv.List) != 1 {
@@ -221,13 +178,12 @@ func replaceRoute(f *dst.File, hf, hfUpdate HandlerFile, tag string, opId string
 		r, rok := fn.Recv.List[0].Type.(*dst.StarExpr)
 		ident, identok := r.X.(*dst.Ident)
 		m := fn.Name.String()
-		fmt.Printf("fffff %s\n", m)
+		// TODO
 		if rok && identok && ident.Name == tag && m == "Register" {
 			fn.Body.List[0] = hf.RoutesNode
 		}
-		if rok && ident.Name == tag && m == "middlewares" {
-			fmt.Println("middlewares method update")
-			fn.Body = hf.MwsNode.Body
+		if rok && identok && ident.Name == tag && m == "middlewares" {
+			fn.Body = hfUpdate.Methods["middlewares"].Decl.Body
 		}
 
 		return true
@@ -235,9 +191,9 @@ func replaceRoute(f *dst.File, hf, hfUpdate HandlerFile, tag string, opId string
 }
 
 func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) {
-	for tag, cf := range handlers[conf.CurrentDir] {
+	for tag, currentHF := range handlers[conf.CurrentDir] {
 		//nolint: forcetypeassert
-		outF := dst.Clone(cf.F).(*dst.File)
+		outF := dst.Clone(currentHF.F).(*dst.File)
 		gh := handlers[conf.GenDir][tag]
 		fmt.Println(format.Underlined + format.Blue + tag + format.Off)
 
@@ -258,19 +214,15 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 		})
 
 		genHF := handlers[conf.GenDir][tag]
-		currentHF := handlers[conf.CurrentDir][tag]
 
 		for _, gk := range gkk {
-			if _, ok := cf.Routes[gk]; !ok {
+			if _, ok := currentHF.Routes[gk]; !ok {
 				fmt.Printf("op id %s not in current->%s, adding method.\n", gk, tag)
 				outF.Decls = append(outF.Decls, handlers[conf.GenDir][tag].Methods[gk].Decl)
 
 				continue
 			}
 
-			// IMPORTANT TODO instead of this mess of replacing a generated method,
-			// have Middlewares: t.middlewares("CreateUser") which
-			// returns them if exist..., else empty list.
 			replaceRoute(outF, genHF, currentHF, tag, gk)
 		}
 
@@ -299,13 +251,10 @@ type Method struct {
 type HandlerFile struct {
 	// F is the node of the file.
 	F *dst.File
-	// Methods represents all methods in the generated struct for a tag
-	// indexed by operation id.
+	// Methods represents all methods in the generated struct indexed by method name.
 	Methods map[string]Method
 	// RoutesNode represents the complete routes assignment node.
 	RoutesNode *dst.AssignStmt
-	// MwsNode represents the middlewares method.
-	MwsNode *dst.FuncDecl
 	// Routes represents convenient extracted fields from route elements
 	// indexed by operation id.
 	Routes map[string]Route
@@ -380,6 +329,7 @@ func extractRoutes(rr *dst.AssignStmt) map[string]Route {
 						opId, _ = strconv.Unquote(lit.Value)
 						route.Name = opId
 					}
+					// TODO REMOVE
 				case "Middlewares":
 					route.Middlewares = kv.Value
 				}
@@ -393,9 +343,8 @@ func extractRoutes(rr *dst.AssignStmt) map[string]Route {
 }
 
 // inspectNodes extracts the routes slice assignment node and middlewares method body for tag.
-func inspectNodes(f dst.Node, tag string) (*dst.AssignStmt, *dst.FuncDecl) {
+func inspectNodes(f dst.Node, tag string) *dst.AssignStmt {
 	routesNode := &dst.AssignStmt{}
-	mwsNode := &dst.FuncDecl{}
 
 	dst.Inspect(f, func(n dst.Node) bool {
 		fn, isFn := n.(*dst.FuncDecl)
@@ -410,15 +359,12 @@ func inspectNodes(f dst.Node, tag string) (*dst.AssignStmt, *dst.FuncDecl) {
 			if as, isas := fn.Body.List[0].(*dst.AssignStmt); isas && m == "Register" {
 				routesNode, _ = dst.Clone(as).(*dst.AssignStmt)
 			}
-			if m == "middlewares" {
-				mwsNode, _ = dst.Clone(fn).(*dst.FuncDecl)
-			}
 		}
 
 		return true
 	})
 
-	return routesNode, mwsNode
+	return routesNode
 }
 
 func inspectStruct(f dst.Node, tag string) map[string]Method {
