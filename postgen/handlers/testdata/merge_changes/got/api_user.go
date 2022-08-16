@@ -33,55 +33,6 @@ func (t *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			HandlerFunc: t.CreateUser,
 			Middlewares: t.middlewares("CreateUser"),
 		},
-		{
-			Name:        "CreateUsersWithArrayInput",
-			Method:      http.MethodPost,
-			Pattern:     "/user/createWithArray",
-			HandlerFunc: t.CreateUsersWithArrayInput,
-			Middlewares: t.middlewares("CreateUsersWithArrayInput"),
-		},
-		{
-			Name:        "CreateUsersWithListInput",
-			Method:      http.MethodPost,
-			Pattern:     "/user/createWithList",
-			HandlerFunc: t.CreateUsersWithListInput,
-			Middlewares: t.middlewares("CreateUsersWithListInput"),
-		},
-		{
-			Name:        "DeleteUser",
-			Method:      http.MethodDelete,
-			Pattern:     "/user/:username",
-			HandlerFunc: t.DeleteUser,
-			Middlewares: t.middlewares("DeleteUser"),
-		},
-		{
-			Name:        "GetUserByName",
-			Method:      http.MethodGet,
-			Pattern:     "/user/:username",
-			HandlerFunc: t.GetUserByName,
-			Middlewares: t.middlewares("GetUserByName"),
-		},
-		{
-			Name:        "LoginUser",
-			Method:      http.MethodGet,
-			Pattern:     "/user/login",
-			HandlerFunc: t.LoginUser,
-			Middlewares: t.middlewares("LoginUser"),
-		},
-		{
-			Name:        "LogoutUser",
-			Method:      http.MethodGet,
-			Pattern:     "/user/logout",
-			HandlerFunc: t.LogoutUser,
-			Middlewares: t.middlewares("LogoutUser"),
-		},
-		{
-			Name:        "UpdateUser",
-			Method:      http.MethodPut,
-			Pattern:     "/user/:username",
-			HandlerFunc: t.UpdateUser,
-			Middlewares: t.middlewares("UpdateUser"),
-		},
 	}
 
 	rest.RegisterRoutes(r, routes, "/user", mws)

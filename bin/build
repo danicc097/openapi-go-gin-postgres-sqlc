@@ -17,7 +17,7 @@ GEN_OUT_DIR="internal"
 TEMPLATE_DIR="internal/go-gin-server-templates"
 PWD="$(pwd)"
 ENV_FILE=".env"
-SCRIPTS_DIR=$(dirname "$0")
+BIN_DIR=$(dirname "$0")
 
 x.bootstrap() {
   x.install-tools
@@ -60,7 +60,7 @@ x.openapi-generator() {
   echo "Template override directory: $template_dir"
 
   rm -rf "$gen_out_dir/gen"
-  java -jar "$SCRIPTS_DIR"/../openapi-generator-cli.jar generate \
+  java -jar "$BIN_DIR"/../openapi-generator-cli.jar generate \
     -g go-gin-server \
     -i "$spec" \
     -o "$gen_out_dir" \
@@ -80,10 +80,11 @@ x.generate-tests-api() {
   local gen_out_dir="$2"
   local template_dir="$3"
 
+  mkdir -p "$BIN_DIR/../postgen/handlers/testdata/merge_changes/internal"
   x.openapi-generator \
-    "postgen/handlers/testdata/openapi.yaml" \
-    "postgen/handlers/testdata/merge_changes/internal" \
-    "internal/go-gin-server-templates"
+    "$BIN_DIR/../postgen/handlers/testdata/openapi.yaml" \
+    "$BIN_DIR/../postgen/handlers/testdata/merge_changes/internal" \
+    "$BIN_DIR/../internal/go-gin-server-templates"
 }
 x.generate-api() {
   local spec="$1"

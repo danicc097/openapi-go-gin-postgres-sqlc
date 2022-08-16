@@ -5,6 +5,11 @@
 [![GoDoc](https://pkg.go.dev/badge/github.com/danicc097/openapi-go-gin-postgres-sqlc)](https://pkg.go.dev/github.com/danicc097/openapi-go-gin-postgres-sqlc)
 
 API-first and Database-first approach with OpenAPI v3 and sqlc codegen.
+Featuring an overhaul of the [Go Gin
+server](https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/go-gin-server.md)
+generator templates and a sensible post-generation tool that allows you to use cleanly
+structured, easily extendable code by smartly merging nodes
+from your modified and generated files' abstract syntax trees.
 
 
 ## OpenAPI schema magic fields

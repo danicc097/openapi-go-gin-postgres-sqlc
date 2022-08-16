@@ -27,13 +27,6 @@ func NewDefault(svc services.Default) *Default {
 func (t *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{
-			Name:        "OpenapiYamlGet",
-			Method:      http.MethodGet,
-			Pattern:     "/openapi.yaml",
-			HandlerFunc: t.OpenapiYamlGet,
-			Middlewares: t.middlewares("OpenapiYamlGet"),
-		},
-		{
 			Name:        "Ping",
 			Method:      http.MethodGet,
 			Pattern:     "/ping",
@@ -51,11 +44,6 @@ func (t *Default) middlewares(opId string) []gin.HandlerFunc {
 	default:
 		return []gin.HandlerFunc{}
 	}
-}
-
-// OpenapiYamlGet returns this very openapi spec..
-func (t *Default) OpenapiYamlGet(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // Ping ping pongs.

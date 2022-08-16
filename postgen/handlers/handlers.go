@@ -64,13 +64,15 @@ func main() {
 		baseDir = "testdata"
 		conf    = Conf{
 			CurrentDir: path.Join(baseDir, "merge_changes/current"),
-			GenDir:     path.Join(baseDir, "merge_changes/gen"),
+			GenDir:     path.Join(baseDir, "merge_changes/internal/gen"),
 			OutDir:     path.Join(baseDir, "merge_changes/got")}
 	)
 
 	// FIXME the default tag should not have a route group, else
 	// we get v2/default/... since we're creating a literal default group.
 	// this also means the openapi spec is not fulfilled.
+
+	// TODO add a method in current that is not a handler and conflicts with a new method from gen -> should panic and prompt to rename.
 
 	// TODO refactor for clearness to https://stackoverflow.com/questions/52120488/what-is-the-most-efficient-way-to-get-the-intersection-and-exclusions-from-two-a
 	cb := getCommonBasenames(conf)
@@ -125,6 +127,7 @@ func analyzeHandlers(conf Conf, basenames []string) map[string]map[string]Handle
 		and handlers[conf.CurrentDir][tag].Methods[opId] exists
 		then we have a clash in current method and should be renamed (panic)
 	*/
+
 	return handlers
 }
 

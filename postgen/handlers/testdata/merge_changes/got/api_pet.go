@@ -36,15 +36,19 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId",
 			HandlerFunc: t.UpdatePetWithForm,
-			Middlewares: t.middlewares("UpdatePetWithForm"),
+			// added middleware, would not want to lose it.
+			Middlewares: []gin.HandlerFunc{rest.AuthMiddleware()},
 		},
+		// this is a new handler added by hand.
+		// This will be overriden by generated routes.
 		{
-			Name:        "UploadFile",
-			Method:      http.MethodPost,
-			Pattern:     "/pet/:petId/uploadImage",
-			HandlerFunc: t.UploadFile,
-			Middlewares: t.middlewares("UploadFile"),
+			Name:        "NewHandlerGet",
+			Method:      http.MethodGet,
+			Pattern:     "/pet/:petId/NewHandlerGet",
+			HandlerFunc: t.NewHandlerGet,
+			Middlewares: []gin.HandlerFunc{},
 		},
+		// UploadFile was deleted for some reason
 	}
 
 	rest.RegisterRoutes(r, routes, "/pet", mws)
@@ -80,7 +84,17 @@ func (t *Pet) newFunction(c *gin.Context) {
 	fmt.Println("this is some random helper newFunction")
 }
 
-// UploadFile uploads an image.
-func (t *Pet) UploadFile(c *gin.Context) {
+// AddPet add a new pet to the store.
+func (t *Pet) AddPet(c *gin.Context) {
+	c.String(http.StatusNotImplemented, "501 not implemented")
+}
+
+// DeletePet deletes a pet.
+func (t *Pet) DeletePet(c *gin.Context) {
+	c.String(http.StatusNotImplemented, "501 not implemented")
+}
+
+// UpdatePet update an existing pet.
+func (t *Pet) UpdatePet(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
