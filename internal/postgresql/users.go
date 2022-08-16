@@ -5,7 +5,6 @@ import (
 	"database/sql"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/environment"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql/gen"
 )
@@ -22,11 +21,10 @@ func NewUser(d gen.DBTX) *User {
 	}
 }
 
-// TODO methods change role, make admin, etc.
-
 // Create inserts a new user record.
 func (t *User) Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error) {
-	environment.Logger.Sugar().Infof("users.Create.params: %v", params)
+	// TODO handler struct logger from handler needs to be passed down to services then down to repos
+	// environment.Logger.Sugar().Infof("users.Create.params: %v", params)
 	// TODO creating salt, etc. delegated to jwt.go service
 	// https://github.com/appleboy/gin-jwt
 	newID, err := t.q.RegisterNewUser(ctx, gen.RegisterNewUserParams{

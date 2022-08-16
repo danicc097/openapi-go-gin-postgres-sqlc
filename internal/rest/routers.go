@@ -33,14 +33,19 @@ func RegisterRoutes(router *gin.RouterGroup, rr []Route, group string, mws []gin
 		panic("Invalid router group: " + group)
 	}
 
-	rg := router.Group(group)
+	gn := group
+	if group == "/default" {
+		gn = ""
+	}
+
+	rg := router.Group(gn)
 
 	for _, mw := range mws {
 		rg.Use(mw)
 	}
 
 	for _, r := range rr {
-		p := strings.Replace(r.Pattern, group, "", 1)
+		p := strings.Replace(r.Pattern, gn, "", 1)
 		handlers := append(r.Middlewares, r.HandlerFunc)
 
 		switch r.Method {

@@ -68,10 +68,6 @@ func main() {
 			OutDir:     path.Join(baseDir, "merge_changes/got")}
 	)
 
-	// FIXME the default tag should not have a route group, else
-	// we get v2/default/... since we're creating a literal default group.
-	// this also means the openapi spec is not fulfilled.
-
 	// TODO add a method in current that is not a handler and conflicts with a new method from gen -> should panic and prompt to rename.
 
 	// TODO refactor for clearness to https://stackoverflow.com/questions/52120488/what-is-the-most-efficient-way-to-get-the-intersection-and-exclusions-from-two-a
@@ -186,7 +182,7 @@ func replaceRoute(f *dst.File, hf, hfUpdate HandlerFile, tag string, opId string
 		r, rok := fn.Recv.List[0].Type.(*dst.StarExpr)
 		ident, identok := r.X.(*dst.Ident)
 		m := fn.Name.String()
-		// TODO
+
 		if rok && identok && ident.Name == tag && m == "Register" {
 			fn.Body.List[0] = hf.RoutesNode
 		}

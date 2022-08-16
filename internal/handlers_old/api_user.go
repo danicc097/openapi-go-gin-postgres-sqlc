@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/environment"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql"
 	"github.com/gin-gonic/gin"
@@ -12,6 +11,7 @@ import (
 
 // CreateUser creates a new user.
 func CreateUser(c *gin.Context) {
+	// TODO FIX for new generation templates without globals
 	var user models.CreateUserRequest
 
 	if err := c.BindJSON(&user); err != nil {

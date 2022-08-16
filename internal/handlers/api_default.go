@@ -5,6 +5,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/gin-gonic/gin"
 )
 
@@ -55,7 +56,13 @@ func (t *Default) middlewares(opId string) []gin.HandlerFunc {
 
 // OpenapiYamlGet returns this very openapi spec..
 func (t *Default) OpenapiYamlGet(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "501 not implemented")
+
+	oas, err := static.SwaggerUI.ReadFile("swagger-ui/openapi.yaml")
+	if err != nil {
+		panic("openapi spec not found")
+	}
+
+	c.Data(http.StatusOK, gin.MIMEYAML, oas)
 }
 
 // Ping ping pongs.

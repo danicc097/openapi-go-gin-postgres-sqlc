@@ -123,9 +123,9 @@ x.generate() {
 }
 
 x.test() {
-  x.generate
+  # x.generate
   create_test_database
-  godotenv -f "$ENV_FILE" go test ./... "$@"
+  # godotenv -f "$ENV_FILE" go test ./... "$@"
 }
 
 x.build() {

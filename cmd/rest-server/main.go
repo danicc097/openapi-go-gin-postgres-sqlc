@@ -22,7 +22,6 @@ import (
 	"go.uber.org/zap"
 
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/environment"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/handlers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql"
@@ -66,8 +65,6 @@ func run(env, address string) (<-chan error, error) {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewPostgreSQL")
 	}
 
-	environment.Pool = pool
-
 	rdb, err := redis.New(conf)
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewRedis")
@@ -77,8 +74,6 @@ func run(env, address string) (<-chan error, error) {
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewProduction")
 	}
-
-	environment.Logger = logger
 
 	srv, err := newServer(serverConfig{
 		Address: address,
@@ -165,11 +160,21 @@ func newServer(conf serverConfig) (*http.Server, error) {
 	// authMw := rest.NewAuthMiddleware(conf.Logger)
 	vg := router.Group(os.Getenv("API_VERSION"))
 
-	handlers.NewDefault(services.Default{Logger: conf.Logger}).Register(vg, []gin.HandlerFunc{})
-	handlers.NewFake(services.Fake{Logger: conf.Logger}).Register(vg, []gin.HandlerFunc{})
-	handlers.NewPet(services.Pet{Logger: conf.Logger}).Register(vg, []gin.HandlerFunc{})
-	handlers.NewStore(services.Store{Logger: conf.Logger}).Register(vg, []gin.HandlerFunc{})
-	handlers.NewUser(services.User{Logger: conf.Logger}).Register(vg, []gin.HandlerFunc{})
+	handlers.
+		NewDefault(services.Default{Logger: conf.Logger, Pool: conf.DB}).
+		Register(vg, []gin.HandlerFunc{})
+	handlers.
+		NewFake(services.Fake{Logger: conf.Logger, Pool: conf.DB}).
+		Register(vg, []gin.HandlerFunc{})
+	handlers.
+		NewPet(services.Pet{Logger: conf.Logger, Pool: conf.DB}).
+		Register(vg, []gin.HandlerFunc{})
+	handlers.
+		NewStore(services.Store{Logger: conf.Logger, Pool: conf.DB}).
+		Register(vg, []gin.HandlerFunc{})
+	handlers.
+		NewUser(services.User{Logger: conf.Logger, Pool: conf.DB}).
+		Register(vg, []gin.HandlerFunc{})
 	// TODO /admin with authMw.EnsureAuthorized() in group
 
 	vg.StaticFS("/docs", http.FS(fsys))
