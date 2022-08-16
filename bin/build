@@ -71,6 +71,8 @@ x.openapi-generator() {
 
   mkdir -p "$gen_out_dir"/gen/models
   mkdir -p "$gen_out_dir"/handlers
+  mkdir -p "$gen_out_dir"/rest
+  mv "$gen_out_dir"/gen/routers.go "$gen_out_dir"/rest
   mv "$gen_out_dir"/gen/model_*.go "$gen_out_dir"/gen/models
   rm -rf "$gen_out_dir/api"
 }

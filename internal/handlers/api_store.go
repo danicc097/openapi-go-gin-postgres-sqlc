@@ -22,7 +22,7 @@ func NewStore(svc services.Store) *Store {
 	}
 }
 
-// Register connects the handlers to a router with the given middleware.
+// Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
 func (t *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{

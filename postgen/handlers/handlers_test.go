@@ -11,12 +11,6 @@ import (
 func setupTests() {
 	os.Setenv("IS_TESTING", "1")
 
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.Println(err)
-	}
-	fmt.Println(cwd)
-
 	cmd := exec.Command(
 		"../../bin/build",
 		"generate-tests-api",
@@ -29,5 +23,4 @@ func setupTests() {
 
 func TestHandlerPostProcessing(t *testing.T) {
 	setupTests()
-	// run build generate-api postgen/handlers/testdata/openapi.yaml postgen/handlers/testdata/gen
 }
