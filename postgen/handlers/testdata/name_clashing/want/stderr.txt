@@ -1,0 +1,3 @@
+Error: conflicting method names
+[Pet->ConflictEndpointPet]
+Please rename either the affected method or operation id.
