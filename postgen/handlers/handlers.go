@@ -63,7 +63,7 @@ func main() {
 	var (
 		baseDir = "testdata"
 		conf    = Conf{
-			CurrentDir: path.Join(baseDir, "merge_changes/current"),
+			CurrentDir: path.Join(baseDir, "merge_changes/internal/handlers"),
 			GenDir:     path.Join(baseDir, "merge_changes/internal/gen"),
 			OutDir:     path.Join(baseDir, "merge_changes/got")}
 	)
