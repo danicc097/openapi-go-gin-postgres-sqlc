@@ -105,7 +105,6 @@ func analyzeHandlers(conf Conf, basenames []string) map[string]map[string]Handle
 			mm := inspectStruct(f, tag)
 			rr := inspectNodes(f, tag)
 			routes := extractRoutes(rr)
-
 			hf := HandlerFile{
 				F:          f,
 				Methods:    mm,
@@ -117,14 +116,39 @@ func analyzeHandlers(conf Conf, basenames []string) map[string]map[string]Handle
 		}
 	}
 
-	/* TODO:
-	for opId, _ in handlers[conf.GenDir][tag].Routes:
-		if handlers[conf.CurrentDir][tag].Routes[opId] does not exist
-		and handlers[conf.CurrentDir][tag].Methods[opId] exists
-		then we have a clash in current method and should be renamed (panic)
-	*/
+	findClashingMethodNames(basenames, handlers, conf)
 
 	return handlers
+}
+
+// findClashingMethodNames ensures no previous methods that are not
+// handlers conflict with a newly generated operation id.
+func findClashingMethodNames(basenames []string, handlers map[string]map[string]HandlerFile, conf Conf) {
+	clashes := []string{}
+
+	for _, basename := range basenames {
+		reg := regexp.MustCompile("api_(.*).go")
+		tag := strings.Title(reg.FindStringSubmatch(basename)[1])
+
+		for opId := range handlers[conf.GenDir][tag].Routes {
+			fmt.Printf("[%s] opId: %s\n", tag, opId)
+			_, rok := handlers[conf.CurrentDir][tag].Routes[opId]
+			_, mok := handlers[conf.CurrentDir][tag].Methods[opId]
+
+			if !rok && mok {
+				clashes = append(clashes, tag+"->"+opId)
+			}
+		}
+	}
+
+	if len(clashes) > 0 {
+		fmt.Fprintf(os.Stderr, `
+Error: conflicting method names
+%s
+Please rename affected methods or new operation ids.
+`, clashes)
+		os.Exit(1)
+	}
 }
 
 // getCommonBasenames returns api filename (tag) intersections in current and raw gen dirs,

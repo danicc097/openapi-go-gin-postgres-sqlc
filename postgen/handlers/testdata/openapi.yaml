@@ -139,6 +139,16 @@ paths:
       summary: Deletes a pet
       tags:
         - pet
+  /pet/ConflictEndpointPet:
+    get:
+      description: ""
+      operationId: ConflictEndpointPet
+      responses:
+        "200":
+          description: Ok
+      summary: name clashing test
+      tags:
+        - pet
   /user:
     post:
       description: This can only be done by the logged in user.
