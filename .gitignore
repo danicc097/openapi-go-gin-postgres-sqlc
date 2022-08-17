@@ -7,3 +7,4 @@ post-generate-api
 tmp
 air-main
 go.work*
+*.log

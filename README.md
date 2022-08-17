@@ -26,3 +26,7 @@ x-go-custom-tag: time_format:"2006-01-02"
 # see https://segmentfault.com/a/1190000022264001
 x-go-custom-tag: binding:"required"
 ```
+
+Any custom field with an `x-*` name pattern in the OpenAPI spec will be available in
+`vendorExtensions`.
+

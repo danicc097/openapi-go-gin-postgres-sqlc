@@ -738,6 +738,7 @@ components:
     Category:
       description: A category for a pet
       x-go-custom-tag: acustomtag:"category"
+      x-custom-comment: x-custom-comment:"test"
       example:
         name: name
         id: 6
@@ -899,6 +900,7 @@ components:
         status:
           deprecated: true
           description: pet status in the store
+          x-custom-comment: "This is a custom comment."
           x-go-custom-tag: acustomtag:"status"
           enum:
             - available

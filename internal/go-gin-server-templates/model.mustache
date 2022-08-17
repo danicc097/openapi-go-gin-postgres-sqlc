@@ -21,5 +21,8 @@ type {{classname}} struct { {{#vars}}{{#description}}
 	{{#deprecated}}
 	// Deprecated.
 	{{/deprecated}}
-	{{name}} {{#isNullable}}*{{/isNullable}}{{{dataType}}} `json:"{{baseName}}{{^required}},omitempty{{/required}}"{{#vendorExtensions.x-go-custom-tag}} {{{.}}}{{/vendorExtensions.x-go-custom-tag}}`{{/vars}}
+  {{#vendorExtensions.x-custom-comment}}
+  // {{{.}}}
+  {{/vendorExtensions.x-custom-comment}}
+  {{name}} {{#isNullable}}*{{/isNullable}}{{{dataType}}} `json:"{{baseName}}{{^required}},omitempty{{/required}}"{{#vendorExtensions.x-go-custom-tag}} {{{.}}}{{/vendorExtensions.x-go-custom-tag}}`{{/vars}}
 }{{/isEnum}}{{/model}}{{/models}}
