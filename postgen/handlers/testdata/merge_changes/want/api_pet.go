@@ -9,17 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// some struct added later. Shouldn't be removed
-type PetThing struct {
-}
-
-// Pet handles routes with the pet tag.
+// Pet handles routes with the 'pet' tag.
 type Pet struct {
 	svc services.Pet
 	// add or remove services, etc. as required
 }
 
-// NewPet returns a new handler for pet.
+// NewPet returns a new handler for the 'pet' route group.
 // Edit as required.
 func NewPet(svc services.Pet) *Pet {
 	return &Pet{
@@ -32,28 +28,34 @@ func NewPet(svc services.Pet) *Pet {
 func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{
-			Name:        "UpdatePetWithForm",
+			Name:        "AddPet",
 			Method:      http.MethodPost,
+			Pattern:     "/pet",
+			HandlerFunc: t.AddPet,
+			Middlewares: t.middlewares("AddPet"),
+		},
+		{
+			Name:        "ConflictEndpointPet",
+			Method:      http.MethodGet,
+			Pattern:     "/pet/ConflictEndpointPet",
+			HandlerFunc: t.ConflictEndpointPet,
+			Middlewares: t.middlewares("ConflictEndpointPet"),
+		},
+		{
+			Name:        "DeletePet",
+			Method:      http.MethodDelete,
 			Pattern:     "/pet/:petId",
-			HandlerFunc: t.UpdatePetWithForm,
-			Middlewares: []gin.HandlerFunc{rest.AuthMiddleware()},
+			HandlerFunc: t.DeletePet,
+			Middlewares: t.middlewares("DeletePet"),
 		},
 		{
-			Name:        "NewHandlerPost",
-			Method:      http.MethodPost,
-			Pattern:     "/pet/:petId/NewHandlerPost",
-			HandlerFunc: t.NewHandlerPost,
-			Middlewares: []gin.HandlerFunc{},
-		},
-		{
-			Name:        "UploadFile",
-			Method:      http.MethodPost,
-			Pattern:     "/pet/:petId/uploadImage",
-			HandlerFunc: t.UploadFile,
-			Middlewares: []gin.HandlerFunc{},
+			Name:        "UpdatePet",
+			Method:      http.MethodPut,
+			Pattern:     "/pet",
+			HandlerFunc: t.UpdatePet,
+			Middlewares: t.middlewares("UpdatePet"),
 		},
 	}
-
 	rest.RegisterRoutes(r, routes, "/pet", mws)
 }
 
@@ -61,11 +63,20 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 // Edit as required.
 func (t *Pet) middlewares(opId string) []gin.HandlerFunc {
 	switch opId {
-	case "UploadFile":
-		return []gin.HandlerFunc{rest.NewAuthMiddleware(t.svc.Logger).EnsureAuthenticated()}
 	default:
 		return []gin.HandlerFunc{}
 	}
+}
+
+// AddPet add a new pet to the store.
+func (t *Pet) AddPet(c *gin.Context) {
+	c.String(http.StatusNotImplemented, "501 not implemented")
+}
+
+// DeletePet deletes a pet.
+func (t *Pet) DeletePet(c *gin.Context) {
+	fmt.Println("new logic for DeletePet")
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // I added some important comments here
@@ -73,13 +84,7 @@ func (t *Pet) middlewares(opId string) []gin.HandlerFunc {
 /*
 and here as well */
 
-// UpdatePetWithForm updates a pet in the store with form data.
-func (t *Pet) UpdatePetWithForm(c *gin.Context) {
-	fmt.Println("would have run logic for UpdatePetWithForm")
-	c.JSON(http.StatusOK, gin.H{})
-}
-
-// UploadFile was deleted for some reason
+// UpdatePet was deleted for some reason
 
 // newFunction was added by hand.
 // This shouldn't be overriden/deleted in any case.
@@ -87,12 +92,7 @@ func (t *Pet) newFunction(c *gin.Context) {
 	fmt.Println("this is some random helper newFunction")
 }
 
-// NewHandlerPost is a newly generated handler.
-func (t *Pet) NewHandlerPost(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "501 not implemented")
-}
-
-// UploadFile uploads an image.
-func (t *Pet) UploadFile(c *gin.Context) {
+// ConflictEndpointPet name clashing test.
+func (t *Pet) ConflictEndpointPet(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

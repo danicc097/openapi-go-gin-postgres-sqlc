@@ -61,26 +61,26 @@ type Conf struct {
 func main() {
 	// TODO in tests, name_clashing will need to assert stderr output
 	// so dirs cant be dynamic
-	dirs := []string{"merge_changes"}
-	for _, dir := range dirs {
-		var (
-			baseDir = "testdata"
-			conf    = Conf{
-				CurrentHandlersDir: path.Join(baseDir, dir, "internal/handlers"),
-				GenHandlersDir:     path.Join(baseDir, dir, "internal/gen"),
-				OutHandlersDir:     path.Join(baseDir, dir, "got"),
-				OutServicesDir:     path.Join(baseDir, dir, "internal/services"),
-			}
-		)
+	// dirs := []string{"merge_changes"}
+	// for _, dir := range dirs {
+	// 	var (
+	// 		baseDir = "testdata"
+	// 		conf    = Conf{
+	// 			CurrentHandlersDir: path.Join(baseDir, dir, "internal/handlers"),
+	// 			GenHandlersDir:     path.Join(baseDir, dir, "internal/gen"),
+	// 			OutHandlersDir:     path.Join(baseDir, dir, "got"),
+	// 			OutServicesDir:     path.Join(baseDir, dir, "internal/services"),
+	// 		}
+	// 	)
 
-		// TODO add a method in current that is not a handler and conflicts with a new method from gen -> should panic and prompt to rename.
+	// 	// TODO add a method in current that is not a handler and conflicts with a new method from gen -> should panic and prompt to rename.
 
-		// TODO refactor for clearness to https://stackoverflow.com/questions/52120488/what-is-the-most-efficient-way-to-get-the-intersection-and-exclusions-from-two-a
-		cb := getCommonBasenames(conf)
-		handlers := analyzeHandlers(conf, cb)
+	// 	// TODO refactor for clearness to https://stackoverflow.com/questions/52120488/what-is-the-most-efficient-way-to-get-the-intersection-and-exclusions-from-two-a
+	// 	cb := getCommonBasenames(conf)
+	// 	handlers := analyzeHandlers(conf, cb)
 
-		generateMergedFiles(handlers, conf)
-	}
+	// 	generateMergedFiles(handlers, conf)
+	// }
 }
 
 // generateService fills in a template with a default service struct to a dest.
@@ -116,12 +116,12 @@ func analyzeHandlers(conf Conf, basenames []string) map[string]map[string]Handle
 		for _, basename := range basenames {
 			file := path.Join(dir, basename)
 
-			c, err := os.ReadFile(file)
+			blob, err := os.ReadFile(file)
 			if err != nil {
 				panic(err)
 			}
 
-			f, err := decorator.Parse(c)
+			f, err := decorator.Parse(blob)
 			if err != nil {
 				panic(err)
 			}
@@ -195,12 +195,12 @@ func getCommonBasenames(conf Conf) (out []string) {
 			continue
 		}
 
-		genContent, err := os.ReadFile(path.Join(conf.GenHandlersDir, genBasename))
+		genBlob, err := os.ReadFile(path.Join(conf.GenHandlersDir, genBasename))
 		if err != nil {
 			panic(err)
 		}
 
-		os.WriteFile(path.Join(conf.OutHandlersDir, genBasename), genContent, 0666)
+		os.WriteFile(path.Join(conf.OutHandlersDir, genBasename), genBlob, 0666)
 	}
 
 	genBasenames = genBasenames[:k]
@@ -212,12 +212,12 @@ func getCommonBasenames(conf Conf) (out []string) {
 			continue
 		}
 
-		currentContent, err := os.ReadFile(path.Join(conf.CurrentHandlersDir, currentBasename))
+		currentBlob, err := os.ReadFile(path.Join(conf.CurrentHandlersDir, currentBasename))
 		if err != nil {
 			panic(err)
 		}
 
-		os.WriteFile(path.Join(conf.OutHandlersDir, currentBasename), currentContent, 0666)
+		os.WriteFile(path.Join(conf.OutHandlersDir, currentBasename), currentBlob, 0666)
 	}
 
 	return out
