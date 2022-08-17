@@ -35,13 +35,6 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Middlewares: t.middlewares("AddPet"),
 		},
 		{
-			Name:        "ConflictEndpointPet",
-			Method:      http.MethodGet,
-			Pattern:     "/pet/ConflictEndpointPet",
-			HandlerFunc: t.ConflictEndpointPet,
-			Middlewares: t.middlewares("ConflictEndpointPet"),
-		},
-		{
 			Name:        "DeletePet",
 			Method:      http.MethodDelete,
 			Pattern:     "/pet/:petId",
@@ -87,12 +80,12 @@ and here as well */
 // UpdatePet was deleted for some reason
 
 // newFunction was added by hand.
-// This shouldn't be overriden/deleted in any case.
+// This shouldn't be overridden/deleted in any case.
 func (t *Pet) newFunction(c *gin.Context) {
 	fmt.Println("this is some random helper newFunction")
 }
 
-// ConflictEndpointPet name clashing test.
-func (t *Pet) ConflictEndpointPet(c *gin.Context) {
+// UpdatePet update an existing pet.
+func (t *Pet) UpdatePet(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

@@ -80,7 +80,7 @@ and here as well */
 // UpdatePet was deleted for some reason
 
 // newFunction was added by hand.
-// This shouldn't be overriden/deleted in any case.
+// This shouldn't be overridden/deleted in any case.
 func (t *Pet) newFunction(c *gin.Context) {
 	fmt.Println("this is some random helper newFunction")
 }

@@ -60,6 +60,7 @@ x.openapi-generator() {
   echo "Template override directory: $template_dir"
 
   rm -rf "$gen_out_dir/gen"
+  # debug has a very small overhead compared to the >1s required per spec
   java -jar "$BIN_DIR"/../openapi-generator-cli.jar generate \
     -g go-gin-server \
     -i "$spec" \
@@ -67,7 +68,7 @@ x.openapi-generator() {
     -t "$template_dir" \
     --additional-properties=packageName=openapi,apiPath=gen,hideGenerationTimestamp=true \
     --enable-post-process-file \
-    --global-property debugModels,debugOperations >debug-openapi.log #>/dev/null \
+    --global-property=debugModels,debugOperations >debug-openapi.log #>/dev/null \
 
   mkdir -p "$gen_out_dir"/gen/models
   mkdir -p "$gen_out_dir"/handlers

@@ -36,7 +36,7 @@ type Conf struct {
 	// GenHandlersDir is the directory with raw generated files for a given spec.
 	GenHandlersDir string
 	// OutHandlersDir is the directory to store merged files,
-	// which may be different than CurrentHandlersDir.
+	// which may differ from CurrentHandlersDir.
 	OutHandlersDir string
 	// OutServicesDir is the directory to store new default services.
 	OutServicesDir string
@@ -56,32 +56,7 @@ type Conf struct {
 	IMPORTANT: if a method already exists in current but has no routes item (meaning
 	its probably some handler helper method created afterwards) then panic and alert
 	the user to rename. it shouldve been unexported or a function in the first place anyway.
-
 */
-func main() {
-	// TODO in tests, name_clashing will need to assert stderr output
-	// so dirs cant be dynamic
-	// dirs := []string{"merge_changes"}
-	// for _, dir := range dirs {
-	// 	var (
-	// 		baseDir = "testdata"
-	// 		conf    = Conf{
-	// 			CurrentHandlersDir: path.Join(baseDir, dir, "internal/handlers"),
-	// 			GenHandlersDir:     path.Join(baseDir, dir, "internal/gen"),
-	// 			OutHandlersDir:     path.Join(baseDir, dir, "got"),
-	// 			OutServicesDir:     path.Join(baseDir, dir, "internal/services"),
-	// 		}
-	// 	)
-
-	// 	// TODO add a method in current that is not a handler and conflicts with a new method from gen -> should panic and prompt to rename.
-
-	// 	// TODO refactor for clearness to https://stackoverflow.com/questions/52120488/what-is-the-most-efficient-way-to-get-the-intersection-and-exclusions-from-two-a
-	// 	cb := getCommonBasenames(conf)
-	// 	handlers := analyzeHandlers(conf, cb)
-
-	// 	generateMergedFiles(handlers, conf)
-	// }
-}
 
 // generateService fills in a template with a default service struct to a dest.
 func generateService(tag string, dest io.Writer) {
@@ -223,8 +198,8 @@ func getCommonBasenames(conf Conf) (out []string) {
 	return out
 }
 
-// replaceRoute replaces a routes slice element node in Register() for an operation id.
-func replaceRoute(f *dst.File, hf, hfUpdate HandlerFile, tag string, opId string) {
+// replaceNodes replaces handler file nodes accordingly.
+func replaceNodes(f *dst.File, genHf, currentHf HandlerFile, tag string, opId string) {
 	dstutil.Apply(f, nil, func(c *dstutil.Cursor) bool {
 		fn, isFn := c.Parent().(*dst.FuncDecl)
 		if !isFn || fn.Recv == nil || len(fn.Recv.List) != 1 {
@@ -235,10 +210,10 @@ func replaceRoute(f *dst.File, hf, hfUpdate HandlerFile, tag string, opId string
 		m := fn.Name.String()
 
 		if rok && identok && ident.Name == tag && m == "Register" {
-			fn.Body.List[0] = hf.RoutesNode
+			fn.Body.List[0] = genHf.RoutesNode
 		}
 		if rok && identok && ident.Name == tag && m == "middlewares" {
-			fn.Body = hfUpdate.Methods["middlewares"].Decl.Body
+			fn.Body = currentHf.Methods["middlewares"].Decl.Body
 		}
 
 		return true
@@ -257,10 +232,10 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 		}
 
 		// get generated operation ids as list
-		gkk := make([]string, len(handlers[conf.GenHandlersDir][tag].Routes))
+		gkk := make([]string, len(handlers[conf.GenHandlersDir][tag].Methods))
 		i := 0
 
-		for gk := range handlers[conf.GenHandlersDir][tag].Routes {
+		for gk := range handlers[conf.GenHandlersDir][tag].Methods {
 			gkk[i] = gk
 			i++
 		}
@@ -272,14 +247,14 @@ func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 		genHF := handlers[conf.GenHandlersDir][tag]
 
 		for _, gk := range gkk {
-			if _, ok := currentHF.Routes[gk]; !ok {
-				fmt.Printf("op id %s not in current->%s, adding method.\n", gk, tag)
+			if _, ok := currentHF.Methods[gk]; !ok {
+				fmt.Printf("method %s not in current %s - appending generated method.\n", gk, tag)
 				outF.Decls = append(outF.Decls, handlers[conf.GenHandlersDir][tag].Methods[gk].Decl)
 
 				continue
 			}
 
-			replaceRoute(outF, genHF, currentHF, tag, gk)
+			replaceNodes(outF, genHF, currentHF, tag, gk)
 		}
 
 		buf := &bytes.Buffer{}

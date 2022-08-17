@@ -14,11 +14,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/go-playground/assert/v2"
+	"github.com/google/go-cmp/cmp"
 )
 
-// stderr returns the contents of stderr.txt in dir.
-func stderr(t *testing.T, dir string) string {
+// getStderr returns the contents of stderr.txt in dir.
+func getStderr(t *testing.T, dir string) string {
 	t.Helper()
 	path := filepath.Join(dir, "stderr.txt")
 
@@ -47,10 +47,18 @@ func setupTests() {
 	}
 }
 
+// TODO this is e2e testing.
+// move postgen to internal/postgen
+// create cmd/postgen/main.go (no args)
+// move this and testdata/ to tests/postgen_test.go
 func TestHandlerPostProcessing(t *testing.T) {
-	// TODO 2 seconds to use openapi-generator, can we cache it based on
-	// templates dir content and spec?
-	// setupTests()
+	// TODO 2 seconds to use openapi-generator, cache it based on:
+	// 1. internal/go-gin-server-templates
+	// 2. spec
+	// hashes. either one changes then update.
+	// store in openapi-gen.cache (each line $path>>>$checksum format)
+	// see https://github.com/golang/mod/blob/master/sumdb/dirhash/hash.go
+	setupTests()
 
 	cases := []struct {
 		Name string
@@ -69,9 +77,9 @@ func TestHandlerPostProcessing(t *testing.T) {
 	for _, test := range cases {
 		t.Run(test.Name, func(t *testing.T) {
 			// TODO assert exit != 0 and want in stderr for name_clashing
-			// if s := stderr(t, test.Dir); s != "" {
-			// 	want := s
-			// 	t.Logf("want stderr: %s", want)
+			// stderr := ""
+			// if s := getStderr(t, test.Dir); s != "" {
+			// 	stderr = s
 			// }
 
 			var (
@@ -84,38 +92,34 @@ func TestHandlerPostProcessing(t *testing.T) {
 				}
 			)
 
+			err := os.RemoveAll(conf.OutHandlersDir)
+			if err != nil {
+				log.Fatal(err)
+			}
+
 			cb := getCommonBasenames(conf)
 			handlers := analyzeHandlers(conf, cb)
 
 			generateMergedFiles(handlers, conf)
 
 			pconf := &printer.Config{Mode: printer.TabIndent | printer.UseSpaces, Tabwidth: 8}
-			ff, _ := filepath.Glob(conf.OutHandlersDir + "/*")
+			ff, _ := filepath.Glob(path.Join(conf.OutHandlersDir, "/*"))
 			for _, f := range ff {
 				basename := path.Base(f)
 				wp := path.Join(baseDir, string(test.Dir), "want", basename)
 				gp := path.Join(conf.OutHandlersDir, basename)
 				wantBlob, _ := os.ReadFile(wp)
 				gotBlob, _ := os.ReadFile(gp)
-
 				want := &bytes.Buffer{}
 				got := &bytes.Buffer{}
-				t.Logf("file: %s\n", string(basename))
-				t.Logf("want file: %s\n", wp)
-				t.Logf("got file: %s\n", gp)
+
 				printContent(t, string(wantBlob), pconf, want)
 				printContent(t, string(gotBlob), pconf, got)
 
-				assert.Equal(t, want.String(), got.String())
+				if diff := cmp.Diff(want.String(), got.String()); diff != "" {
+					t.Errorf("strings differed (-want +got):\n%s", diff)
+				}
 			}
-			// var got []string
-			// walk(test.Input, func(input string) {
-			// 	got = append(got, input)
-			// })
-
-			// if !reflect.DeepEqual(got, test.ExpectedCalls) {
-			// 	t.Errorf("got %v, want %v", got, test.ExpectedCalls)
-			// }
 		})
 	}
 }

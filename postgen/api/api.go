@@ -67,12 +67,12 @@ func ParseHandlers(pattern string) map[string]Handler {
 	}
 
 	for _, p := range paths {
-		content, err := os.ReadFile(p)
+		blob, err := os.ReadFile(p)
 		if err != nil {
 			panic(err)
 		}
 
-		f, err := parser.ParseFile(fset, "", string(content), parser.ParseComments)
+		f, err := parser.ParseFile(fset, "", string(blob), parser.ParseComments)
 		if err != nil {
 			panic(err)
 		}

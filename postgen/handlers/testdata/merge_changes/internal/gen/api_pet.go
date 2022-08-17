@@ -34,13 +34,6 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Middlewares: t.middlewares("AddPet"),
 		},
 		{
-			Name:        "ConflictEndpointPet",
-			Method:      http.MethodGet,
-			Pattern:     "/pet/ConflictEndpointPet",
-			HandlerFunc: t.ConflictEndpointPet,
-			Middlewares: t.middlewares("ConflictEndpointPet"),
-		},
-		{
 			Name:        "DeletePet",
 			Method:      http.MethodDelete,
 			Pattern:     "/pet/:petId",
@@ -69,11 +62,6 @@ func (t *Pet) middlewares(opId string) []gin.HandlerFunc {
 
 // AddPet add a new pet to the store.
 func (t *Pet) AddPet(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "501 not implemented")
-}
-
-// ConflictEndpointPet name clashing test.
-func (t *Pet) ConflictEndpointPet(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 

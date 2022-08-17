@@ -8,3 +8,4 @@ tmp
 air-main
 go.work*
 *.log
+*.cache

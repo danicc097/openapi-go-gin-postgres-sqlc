@@ -77,3 +77,12 @@ func (t *User) LogoutUser(c *gin.Context) {
 func (t *User) UpdateUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
+
+// middlewares returns individual route middleware per operation id.
+// Edit as required.
+func (t *User) middlewares(opId string) []gin.HandlerFunc {
+	switch opId {
+	default:
+		return []gin.HandlerFunc{}
+	}
+}
