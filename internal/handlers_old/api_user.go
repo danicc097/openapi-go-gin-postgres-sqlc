@@ -26,8 +26,6 @@ func CreateUser(c *gin.Context) {
 
 	res, err := usersService.Create(context.Background(), user)
 	if err != nil {
-		// TODO  equivalent of Python exception handler context manager:
-		// https://stackoverflow.com/questions/69948784/how-to-handle-errors-in-gin-middleware
 		c.JSON(http.StatusInternalServerError, err.Error())
 
 		return
