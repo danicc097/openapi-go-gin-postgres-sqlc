@@ -26,15 +26,15 @@ func New{{baseName}}(svc services.{{baseName}}) *{{baseName}} {
 
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
-func (t *{{baseName}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
+func (h *{{baseName}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
   routes := []rest.Route{
 {{#operation}}
 	{
     Name: "{{operationId}}",
     Method: http.Method{{httpMethod}},
     Pattern: "{{{path}}}",
-    HandlerFunc: t.{{nickname}},
-    Middlewares: t.middlewares("{{operationId}}"),
+    HandlerFunc: h.{{nickname}},
+    Middlewares: h.middlewares("{{operationId}}"),
   },
 {{/operation}}
   }
@@ -46,7 +46,7 @@ func (t *{{baseName}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 
 // middlewares returns individual route middleware per operation id.
 // Edit as required.
-func (t *{{baseName}}) middlewares(opId string) []gin.HandlerFunc {
+func (h *{{baseName}}) middlewares(opId string) []gin.HandlerFunc {
 	switch opId {
 	default:
 		return []gin.HandlerFunc{}
@@ -58,7 +58,7 @@ func (t *{{baseName}}) middlewares(opId string) []gin.HandlerFunc {
 {{#isDeprecated}}
 // Deprecated
 {{/isDeprecated}}
-func (t *{{baseName}}) {{nickname}}(c *gin.Context) {
+func (h *{{baseName}}) {{nickname}}(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 {{/operation}}

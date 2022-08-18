@@ -24,62 +24,62 @@ func NewUser(svc services.User) *User {
 
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
-func (t *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
+func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{
 			Name:        "CreateUser",
 			Method:      http.MethodPost,
 			Pattern:     "/user",
-			HandlerFunc: t.CreateUser,
+			HandlerFunc: h.CreateUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "CreateUsersWithArrayInput",
 			Method:      http.MethodPost,
 			Pattern:     "/user/createWithArray",
-			HandlerFunc: t.CreateUsersWithArrayInput,
+			HandlerFunc: h.CreateUsersWithArrayInput,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "CreateUsersWithListInput",
 			Method:      http.MethodPost,
 			Pattern:     "/user/createWithList",
-			HandlerFunc: t.CreateUsersWithListInput,
+			HandlerFunc: h.CreateUsersWithListInput,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "DeleteUser",
 			Method:      http.MethodDelete,
 			Pattern:     "/user/:username",
-			HandlerFunc: t.DeleteUser,
+			HandlerFunc: h.DeleteUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "GetUserByName",
 			Method:      http.MethodGet,
 			Pattern:     "/user/:username",
-			HandlerFunc: t.GetUserByName,
+			HandlerFunc: h.GetUserByName,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "LoginUser",
 			Method:      http.MethodGet,
 			Pattern:     "/user/login",
-			HandlerFunc: t.LoginUser,
+			HandlerFunc: h.LoginUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "LogoutUser",
 			Method:      http.MethodGet,
 			Pattern:     "/user/logout",
-			HandlerFunc: t.LogoutUser,
+			HandlerFunc: h.LogoutUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
 			Name:        "UpdateUser",
 			Method:      http.MethodPut,
 			Pattern:     "/user/:username",
-			HandlerFunc: t.UpdateUser,
+			HandlerFunc: h.UpdateUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 	}
@@ -88,41 +88,41 @@ func (t *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // CreateUser creates a new user.
-func (t *User) CreateUser(c *gin.Context) {
+func (h *User) CreateUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // CreateUsersWithArrayInput creates list of users with given input array.
-func (t *User) CreateUsersWithArrayInput(c *gin.Context) {
+func (h *User) CreateUsersWithArrayInput(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // CreateUsersWithListInput creates list of users with given input array.
-func (t *User) CreateUsersWithListInput(c *gin.Context) {
+func (h *User) CreateUsersWithListInput(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // DeleteUser delete user.
-func (t *User) DeleteUser(c *gin.Context) {
+func (h *User) DeleteUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // GetUserByName get user by user name.
-func (t *User) GetUserByName(c *gin.Context) {
+func (h *User) GetUserByName(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // LoginUser logs user into the system.
-func (t *User) LoginUser(c *gin.Context) {
+func (h *User) LoginUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // LogoutUser logs out current logged in user session.
-func (t *User) LogoutUser(c *gin.Context) {
+func (h *User) LogoutUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // UpdateUser updated user.
-func (t *User) UpdateUser(c *gin.Context) {
+func (h *User) UpdateUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

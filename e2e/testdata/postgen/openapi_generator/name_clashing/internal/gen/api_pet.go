@@ -24,14 +24,14 @@ func NewPet(svc services.Pet) *Pet {
 
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
-func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
+func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{
 			Name:        "ConflictEndpointPet",
 			Method:      http.MethodGet,
 			Pattern:     "/pet/ConflictEndpointPet",
-			HandlerFunc: t.ConflictEndpointPet,
-			Middlewares: t.middlewares("ConflictEndpointPet"),
+			HandlerFunc: h.ConflictEndpointPet,
+			Middlewares: h.middlewares("ConflictEndpointPet"),
 		},
 	}
 	rest.RegisterRoutes(r, routes, "/pet", mws)
@@ -39,7 +39,7 @@ func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 
 // middlewares returns individual route middleware per operation id.
 // Edit as required.
-func (t *Pet) middlewares(opId string) []gin.HandlerFunc {
+func (h *Pet) middlewares(opId string) []gin.HandlerFunc {
 	switch opId {
 	default:
 		return []gin.HandlerFunc{}
@@ -47,6 +47,6 @@ func (t *Pet) middlewares(opId string) []gin.HandlerFunc {
 }
 
 // ConflictEndpointPet name clashing test.
-func (t *Pet) ConflictEndpointPet(c *gin.Context) {
+func (h *Pet) ConflictEndpointPet(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

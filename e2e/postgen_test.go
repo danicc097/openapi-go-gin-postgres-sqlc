@@ -77,7 +77,7 @@ func TestHandlerPostProcessing(t *testing.T) {
 			// }
 
 			var (
-				baseDir = "testdata"
+				baseDir = "testdata/postgen/openapi_generator"
 				conf    = postgen.Conf{
 					CurrentHandlersDir: path.Join(baseDir, string(test.Dir), "internal/handlers"),
 					GenHandlersDir:     path.Join(baseDir, string(test.Dir), "internal/gen"),

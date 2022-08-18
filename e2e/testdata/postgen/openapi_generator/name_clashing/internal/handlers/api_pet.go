@@ -24,14 +24,14 @@ func NewPet(svc services.Pet) *Pet {
 
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
-func (t *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
+func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{}
 	rest.RegisterRoutes(r, routes, "/pet", mws)
 }
 
 // middlewares returns individual route middleware per operation id.
 // Edit as required.
-func (t *Pet) middlewares(opId string) []gin.HandlerFunc {
+func (h *Pet) middlewares(opId string) []gin.HandlerFunc {
 	switch opId {
 	default:
 		return []gin.HandlerFunc{}
@@ -39,6 +39,6 @@ func (t *Pet) middlewares(opId string) []gin.HandlerFunc {
 }
 
 // ConflictEndpointPet will clash with a generated operation id.
-func (t *Pet) ConflictEndpointPet(param1 string, param2 string) {
+func (h *Pet) ConflictEndpointPet(param1 string, param2 string) {
 	fmt.Println("this method will clash with a generated operation id")
 }

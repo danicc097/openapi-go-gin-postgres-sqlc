@@ -24,14 +24,14 @@ func NewUser(svc services.User) *User {
 
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
-func (t *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
+func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{
 			Name:        "CreateUser",
 			Method:      http.MethodPost,
 			Pattern:     "/user",
-			HandlerFunc: t.CreateUser,
-			Middlewares: t.middlewares("CreateUser"),
+			HandlerFunc: h.CreateUser,
+			Middlewares: h.middlewares("CreateUser"),
 		},
 	}
 	rest.RegisterRoutes(r, routes, "/user", mws)
@@ -39,7 +39,7 @@ func (t *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 
 // middlewares returns individual route middleware per operation id.
 // Edit as required.
-func (t *User) middlewares(opId string) []gin.HandlerFunc {
+func (h *User) middlewares(opId string) []gin.HandlerFunc {
 	switch opId {
 	default:
 		return []gin.HandlerFunc{}
@@ -47,6 +47,6 @@ func (t *User) middlewares(opId string) []gin.HandlerFunc {
 }
 
 // CreateUser creates a new user.
-func (t *User) CreateUser(c *gin.Context) {
+func (h *User) CreateUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

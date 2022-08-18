@@ -24,14 +24,14 @@ func NewNewapi(svc services.Newapi) *Newapi {
 
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
-func (t *Newapi) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
+func (h *Newapi) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{
 			Name:        "NewApiEndpoint",
 			Method:      http.MethodPost,
 			Pattern:     "/newapi/endpoint",
-			HandlerFunc: t.NewApiEndpoint,
-			Middlewares: t.middlewares("NewApiEndpoint"),
+			HandlerFunc: h.NewApiEndpoint,
+			Middlewares: h.middlewares("NewApiEndpoint"),
 		},
 	}
 	rest.RegisterRoutes(r, routes, "/newapi", mws)
@@ -39,7 +39,7 @@ func (t *Newapi) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 
 // middlewares returns individual route middleware per operation id.
 // Edit as required.
-func (t *Newapi) middlewares(opId string) []gin.HandlerFunc {
+func (h *Newapi) middlewares(opId string) []gin.HandlerFunc {
 	switch opId {
 	default:
 		return []gin.HandlerFunc{}
@@ -47,6 +47,6 @@ func (t *Newapi) middlewares(opId string) []gin.HandlerFunc {
 }
 
 // NewApiEndpoint a new endpoint added to the spec.
-func (t *Newapi) NewApiEndpoint(c *gin.Context) {
+func (h *Newapi) NewApiEndpoint(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

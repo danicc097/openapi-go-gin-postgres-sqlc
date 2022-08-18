@@ -24,35 +24,35 @@ func NewStore(svc services.Store) *Store {
 
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
-func (t *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
+func (h *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{
 			Name:        "DeleteOrder",
 			Method:      http.MethodDelete,
 			Pattern:     "/store/order/:orderId",
-			HandlerFunc: t.DeleteOrder,
-			Middlewares: t.middlewares("DeleteOrder"),
+			HandlerFunc: h.DeleteOrder,
+			Middlewares: h.middlewares("DeleteOrder"),
 		},
 		{
 			Name:        "GetInventory",
 			Method:      http.MethodGet,
 			Pattern:     "/store/inventory",
-			HandlerFunc: t.GetInventory,
-			Middlewares: t.middlewares("GetInventory"),
+			HandlerFunc: h.GetInventory,
+			Middlewares: h.middlewares("GetInventory"),
 		},
 		{
 			Name:        "GetOrderById",
 			Method:      http.MethodGet,
 			Pattern:     "/store/order/:orderId",
-			HandlerFunc: t.GetOrderById,
-			Middlewares: t.middlewares("GetOrderById"),
+			HandlerFunc: h.GetOrderById,
+			Middlewares: h.middlewares("GetOrderById"),
 		},
 		{
 			Name:        "PlaceOrder",
 			Method:      http.MethodPost,
 			Pattern:     "/store/order",
-			HandlerFunc: t.PlaceOrder,
-			Middlewares: t.middlewares("PlaceOrder"),
+			HandlerFunc: h.PlaceOrder,
+			Middlewares: h.middlewares("PlaceOrder"),
 		},
 	}
 	rest.RegisterRoutes(r, routes, "/store", mws)
@@ -60,7 +60,7 @@ func (t *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 
 // middlewares returns individual route middleware per operation id.
 // Edit as required.
-func (t *Store) middlewares(opId string) []gin.HandlerFunc {
+func (h *Store) middlewares(opId string) []gin.HandlerFunc {
 	switch opId {
 	default:
 		return []gin.HandlerFunc{}
@@ -68,21 +68,21 @@ func (t *Store) middlewares(opId string) []gin.HandlerFunc {
 }
 
 // DeleteOrder delete purchase order by id.
-func (t *Store) DeleteOrder(c *gin.Context) {
+func (h *Store) DeleteOrder(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // GetInventory returns pet inventories by status.
-func (t *Store) GetInventory(c *gin.Context) {
+func (h *Store) GetInventory(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // GetOrderById find purchase order by id.
-func (t *Store) GetOrderById(c *gin.Context) {
+func (h *Store) GetOrderById(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // PlaceOrder place an order for a pet.
-func (t *Store) PlaceOrder(c *gin.Context) {
+func (h *Store) PlaceOrder(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

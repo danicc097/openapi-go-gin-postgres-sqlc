@@ -81,22 +81,24 @@ x.openapi-generator() {
 
 # NOTE: jar won't output properly if absolute paths are passed from subdir
 x.generate-tests-api() {
-  local testdata="$BIN_DIR/../e2e/testdata/postgen/openapi_generator/"
+  local testdata="$BIN_DIR/../e2e/testdata/postgen/openapi_generator"
   local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
 
   cache="generate-tests-api.cache"
   tpl_changed=false
   mkdir -p generate-tests-api.cache
-  if ! md5sum -c "$cache/go-gin-server-templates.md5"; then
-    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/go-gin-server-templates.md5"
+  if ! md5sum -c "$cache/openapi_generator-go-gin-server-templates.md5"; then
+    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/openapi_generator-go-gin-server-templates.md5"
     tpl_changed=true
   fi
 
+  echo "test_dirs $test_dirs"
   for test_dir in $test_dirs; do
-    if [[ $tpl_changed == false ]] && md5sum -c "$cache/$test_dir-openapi.md5"; then
+    echo "test_dir $test_dir"
+    if [[ $tpl_changed == false ]] && md5sum -c "$cache/openapi_generator-$test_dir-openapi.md5"; then
       continue
     fi
-    md5sum "$testdata/$test_dir/openapi.yaml" >"$cache/$test_dir-openapi.md5"
+    md5sum "$testdata/$test_dir/openapi.yaml" >"$cache/openapi_generator-$test_dir-openapi.md5"
     mkdir -p "$testdata/$test_dir/internal"
     x.openapi-generator \
       "$testdata/$test_dir/openapi.yaml" \
@@ -106,7 +108,22 @@ x.generate-tests-api() {
 }
 
 x.generate-api() {
-  x.openapi-generator "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
+  cache="generate-api.cache"
+  invalid_cache=false
+  mkdir -p generate-api.cache
+  if ! md5sum -c "$cache/go-gin-server-templates.md5" >/dev/null; then
+    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/go-gin-server-templates.md5"
+    invalid_cache=true
+  fi
+  if ! md5sum -c "$cache/openapi.md5" >/dev/null; then
+    md5sum "$BIN_DIR"/../openapi.yaml >"$cache/openapi.md5"
+    invalid_cache=true
+  fi
+
+  [[ $invalid_cache == true ]] && x.openapi-generator \
+    "$SPEC" \
+    "$GEN_OUT_DIR" \
+    "$TEMPLATE_DIR"
   go build -o postgen "$PWD"/cmd/postgen/main.go
   ./postgen
   # TODO rename to api_*.gen.go for easier debugging if theyre needed

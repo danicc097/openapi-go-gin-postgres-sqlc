@@ -25,21 +25,21 @@ func NewDefault(svc services.Default) *Default {
 
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
-func (t *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
+func (h *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{
 		{
 			Name:        "OpenapiYamlGet",
 			Method:      http.MethodGet,
 			Pattern:     "/openapi.yaml",
-			HandlerFunc: t.OpenapiYamlGet,
-			Middlewares: t.middlewares("OpenapiYamlGet"),
+			HandlerFunc: h.OpenapiYamlGet,
+			Middlewares: h.middlewares("OpenapiYamlGet"),
 		},
 		{
 			Name:        "Ping",
 			Method:      http.MethodGet,
 			Pattern:     "/ping",
-			HandlerFunc: t.Ping,
-			Middlewares: t.middlewares("Ping"),
+			HandlerFunc: h.Ping,
+			Middlewares: h.middlewares("Ping"),
 		},
 	}
 	rest.RegisterRoutes(r, routes, "/default", mws)
@@ -47,7 +47,7 @@ func (t *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 
 // middlewares returns individual route middleware per operation id.
 // Edit as required.
-func (t *Default) middlewares(opId string) []gin.HandlerFunc {
+func (h *Default) middlewares(opId string) []gin.HandlerFunc {
 	switch opId {
 	default:
 		return []gin.HandlerFunc{}
@@ -55,7 +55,7 @@ func (t *Default) middlewares(opId string) []gin.HandlerFunc {
 }
 
 // OpenapiYamlGet returns this very openapi spec..
-func (t *Default) OpenapiYamlGet(c *gin.Context) {
+func (h *Default) OpenapiYamlGet(c *gin.Context) {
 
 	oas, err := static.SwaggerUI.ReadFile("swagger-ui/openapi.yaml")
 	if err != nil {
@@ -66,6 +66,6 @@ func (t *Default) OpenapiYamlGet(c *gin.Context) {
 }
 
 // Ping ping pongs.
-func (t *Default) Ping(c *gin.Context) {
+func (h *Default) Ping(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
