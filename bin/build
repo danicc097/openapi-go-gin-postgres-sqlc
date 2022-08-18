@@ -79,15 +79,24 @@ x.openapi-generator() {
   rm -rf "$gen_out_dir/api"
 }
 
-# TODO jar won't output properly if when absolute paths are passed from subdir
+# FIXME jar won't output properly if absolute paths are passed from subdir
 x.generate-tests-api() {
-  local spec="$1"
-  local gen_out_dir="$2"
-  local template_dir="$3"
   local testdata="$BIN_DIR/../postgen/handlers/testdata"
   local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
 
+  cache="generate-tests-api.cache"
+  tpl_changed=false
+  mkdir -p generate-tests-api.cache
+  if ! md5sum -c "$cache/go-gin-server-templates.md5"; then
+    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/go-gin-server-templates.md5"
+    tpl_changed=true
+  fi
+
   for test_dir in $test_dirs; do
+    if [[ $tpl_changed == false ]] && md5sum -c "$cache/$test_dir-openapi.md5"; then
+      continue
+    fi
+    md5sum "$testdata/$test_dir/openapi.yaml" >"$cache/$test_dir-openapi.md5"
     mkdir -p "$testdata/$test_dir/internal"
     x.openapi-generator \
       "$testdata/$test_dir/openapi.yaml" \

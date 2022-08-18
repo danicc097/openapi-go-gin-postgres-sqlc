@@ -52,12 +52,6 @@ func setupTests() {
 // create cmd/postgen/main.go (no args)
 // move this and testdata/ to tests/postgen_test.go
 func TestHandlerPostProcessing(t *testing.T) {
-	// TODO 2 seconds to use openapi-generator, cache it based on:
-	// 1. internal/go-gin-server-templates
-	// 2. spec
-	// hashes. either one changes then update.
-	// store in openapi-gen.cache (each line $path>>>$checksum format)
-	// see https://github.com/golang/mod/blob/master/sumdb/dirhash/hash.go
 	setupTests()
 
 	cases := []struct {
