@@ -33,6 +33,7 @@ x.install-go-tools() {
   go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
   go install github.com/joho/godotenv/cmd/godotenv@latest
   go install github.com/cosmtrek/air@latest
+  go install github.com/xo/xo@latest
 
   GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
 }
@@ -86,7 +87,7 @@ x.generate-tests-api() {
 
   cache="generate-tests-api.cache"
   tpl_changed=false
-  mkdir -p generate-tests-api.cache
+  mkdir -p "$cache"
   if ! md5sum -c "$cache/openapi_generator-go-gin-server-templates.md5"; then
     md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/openapi_generator-go-gin-server-templates.md5"
     tpl_changed=true
@@ -110,7 +111,7 @@ x.generate-tests-api() {
 x.generate-api() {
   cache="generate-api.cache"
   invalid_cache=false
-  mkdir -p generate-api.cache
+  mkdir -p "$cache"
   if ! md5sum -c "$cache/go-gin-server-templates.md5" >/dev/null; then
     md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/go-gin-server-templates.md5"
     invalid_cache=true
@@ -135,6 +136,15 @@ x.generate-sqlc() {
   cd internal/postgresql && sqlc generate && cd - || exit
 }
 
+# automatic crud + queries based on existing indexes
+# does not work with a schema file. Must be run after x.migrate
+x.xo-generate-crud() {
+  source "$ENV_FILE"
+  mkdir -p internal/postgresql/gen/crud
+  xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+    -o internal/postgresql/gen/crud
+}
+
 x.update-swagger-ui() {
   cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
   cp "$SPEC" "$PWD"/internal/static/swagger-ui
@@ -145,6 +155,7 @@ x.generate() {
   x.generate-api "$SPEC" "$GEN_OUT_DIR" "$GEN_OUT_DIR/go-gin-server-templates"
   x.update-swagger-ui
   x.generate-sqlc
+  x.xo-generate-crud
 }
 
 x.test() {
