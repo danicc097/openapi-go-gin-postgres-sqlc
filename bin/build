@@ -107,17 +107,10 @@ x.generate-tests-api() {
 
 x.generate-api() {
   x.openapi-generator "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
-  # go build -o post-generate-api "$PWD"/cmd/post-generate-api/main.go
-  # TODO should postgen need to create services/{tag}.go if not exists?
-  # users can follow a different pattern without services since we
-  # don't override anything in api_* except Register()
-  # when we add a new tag it fails to compile, though
-  # and render a basic template, else it wont compile for new tags
-  # still need to adapt post-generate-api to handle methods instead of funcs as before,
-  # see handlers_old README for that
-  # ./post-generate-api
-  # TODO rename to api_*.gen.go for easier debugging if theyre needed instead (filenames must be the same to extract tag so it could be confusing to see 2 files named the same, even though one is in the gen/ folder and should be obvious not to edit it)
-  # find "$GEN_OUT_DIR/gen/" -name "api_*.go" -type f -delete
+  go build -o postgen "$PWD"/cmd/postgen/main.go
+  ./postgen
+  # TODO rename to api_*.gen.go for easier debugging if theyre needed
+  find "$GEN_OUT_DIR/gen/" -name "api_*.go" -type f -delete
 }
 
 x.generate-sqlc() {

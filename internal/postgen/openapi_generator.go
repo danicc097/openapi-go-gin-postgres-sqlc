@@ -154,7 +154,7 @@ Please rename either the affected method or operation id.
 }
 
 // GetCommonBasenames returns api filename (tag) intersections in current and raw gen dirs,
-// and copies the remaining files to the out dir without further analysis.
+// and copies non-intersecting files to the out dir without further analysis.
 func GetCommonBasenames(conf Conf) (out []string) {
 	k := 0
 	currentBasenames := getApiBasenames(conf.CurrentHandlersDir)
