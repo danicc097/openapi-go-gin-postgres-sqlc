@@ -1,4 +1,4 @@
-package main
+package postgen
 
 import (
 	"bytes"
@@ -79,9 +79,9 @@ type {{.Tag}} struct {
 	dest.Write(buf.Bytes())
 }
 
-// analyzeHandlers returns all necessary merging information about handlers, indexed
+// AnalyzeHandlers returns all necessary merging information about handlers, indexed
 // by directory and tag.
-func analyzeHandlers(conf Conf, basenames []string) map[string]map[string]HandlerFile {
+func AnalyzeHandlers(conf Conf, basenames []string) map[string]map[string]HandlerFile {
 	handlers := make(map[string]map[string]HandlerFile)
 
 	dirs := []string{conf.GenHandlersDir, conf.CurrentHandlersDir}
@@ -153,9 +153,9 @@ Please rename either the affected method or operation id.
 	}
 }
 
-// getCommonBasenames returns api filename (tag) intersections in current and raw gen dirs,
+// GetCommonBasenames returns api filename (tag) intersections in current and raw gen dirs,
 // and copies the remaining files to the out dir without further analysis.
-func getCommonBasenames(conf Conf) (out []string) {
+func GetCommonBasenames(conf Conf) (out []string) {
 	k := 0
 	currentBasenames := getApiBasenames(conf.CurrentHandlersDir)
 	genBasenames := getApiBasenames(conf.GenHandlersDir)
@@ -220,7 +220,7 @@ func replaceNodes(f *dst.File, genHf, currentHf HandlerFile, tag string, opId st
 	})
 }
 
-func generateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) {
+func GenerateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) {
 	for tag, currentHF := range handlers[conf.CurrentHandlersDir] {
 		//nolint: forcetypeassert
 		outF := dst.Clone(currentHF.F).(*dst.File)

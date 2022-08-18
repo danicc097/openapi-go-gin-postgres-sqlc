@@ -1,4 +1,4 @@
-package postgen_test
+package zzz_test
 
 import (
 	"fmt"

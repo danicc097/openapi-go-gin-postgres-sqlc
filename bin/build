@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=SC1091,SC2155
+# shellcheck disable=SC1091,SC2155,SC2068
 
 source "${BASH_SOURCE%/*}/.helpers.sh"
 
@@ -79,9 +79,9 @@ x.openapi-generator() {
   rm -rf "$gen_out_dir/api"
 }
 
-# FIXME jar won't output properly if absolute paths are passed from subdir
+# NOTE: jar won't output properly if absolute paths are passed from subdir
 x.generate-tests-api() {
-  local testdata="$BIN_DIR/../postgen/handlers/testdata"
+  local testdata="$BIN_DIR/../e2e/testdata/postgen/openapi_generator/"
   local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
 
   cache="generate-tests-api.cache"
@@ -138,9 +138,9 @@ x.generate() {
 }
 
 x.test() {
-  # x.generate
+  x.generate
   create_test_database
-  # godotenv -f "$ENV_FILE" go test ./... "$@"
+  godotenv -f "$ENV_FILE" go test ./... $@
 }
 
 x.build() {

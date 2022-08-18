@@ -12,6 +12,6 @@ type Pet struct {
 	Tags      []Tag    `json:"tags,omitempty" acustomtag:"tags"`
 	// pet status in the store.
 	// Deprecated.
-	// x-custom-comment:"test"
+	// This is a custom comment.
 	Status string `json:"status,omitempty" acustomtag:"status"`
 }

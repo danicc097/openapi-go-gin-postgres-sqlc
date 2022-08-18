@@ -1,4 +1,4 @@
-package postgen
+package zzz
 
 import (
 	"bytes"

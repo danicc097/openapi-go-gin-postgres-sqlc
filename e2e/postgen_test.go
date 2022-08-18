@@ -1,4 +1,4 @@
-package main
+package tests_test
 
 import (
 	"bytes"
@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -38,7 +39,7 @@ func setupTests() {
 	os.Setenv("IS_TESTING", "1")
 
 	cmd := exec.Command(
-		"../../bin/build",
+		"../bin/build",
 		"generate-tests-api",
 	)
 	if out, err := cmd.CombinedOutput(); err != nil {
@@ -47,8 +48,7 @@ func setupTests() {
 	}
 }
 
-// TODO this is e2e testing.
-// move postgen to internal/postgen
+// TODO
 // create cmd/postgen/main.go (no args)
 // move this and testdata/ to tests/postgen_test.go
 func TestHandlerPostProcessing(t *testing.T) {
@@ -78,7 +78,7 @@ func TestHandlerPostProcessing(t *testing.T) {
 
 			var (
 				baseDir = "testdata"
-				conf    = Conf{
+				conf    = postgen.Conf{
 					CurrentHandlersDir: path.Join(baseDir, string(test.Dir), "internal/handlers"),
 					GenHandlersDir:     path.Join(baseDir, string(test.Dir), "internal/gen"),
 					OutHandlersDir:     path.Join(baseDir, string(test.Dir), "got"),
@@ -91,10 +91,10 @@ func TestHandlerPostProcessing(t *testing.T) {
 				log.Fatal(err)
 			}
 
-			cb := getCommonBasenames(conf)
-			handlers := analyzeHandlers(conf, cb)
+			cb := postgen.GetCommonBasenames(conf)
+			handlers := postgen.AnalyzeHandlers(conf, cb)
 
-			generateMergedFiles(handlers, conf)
+			postgen.GenerateMergedFiles(handlers, conf)
 
 			pconf := &printer.Config{Mode: printer.TabIndent | printer.UseSpaces, Tabwidth: 8}
 			ff, _ := filepath.Glob(path.Join(conf.OutHandlersDir, "/*"))
