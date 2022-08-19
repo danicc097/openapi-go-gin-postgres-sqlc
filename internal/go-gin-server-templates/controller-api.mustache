@@ -1,18 +1,66 @@
-{{>partial_header}}
-package {{packageName}}
+{{! The things one must do to not touch Java. }}
+package handlers
 
 {{#operations}}
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-){{#operation}}
+	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
+)
 
+// {{baseName}} handles routes with the '{{#lambda.lowercase}}{{{baseName}}}{{/lambda.lowercase}}' tag.
+type {{baseName}} struct {
+	svc services.{{baseName}}
+  // add or remove services, etc. as required
+}
+
+// New{{baseName}} returns a new handler for the '{{#lambda.lowercase}}{{{baseName}}}{{/lambda.lowercase}}' route group.
+// Edit as required.
+func New{{baseName}}(svc services.{{baseName}}) *{{baseName}} {
+	return &{{baseName}}{
+		svc: svc,
+	}
+}
+
+// Register connects handlers to an existing router group with the given middlewares.
+// Generated method. DO NOT EDIT.
+func (h *{{baseName}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
+  routes := []rest.Route{
+{{#operation}}
+	{
+    Name: "{{operationId}}",
+    Method: http.Method{{httpMethod}},
+    Pattern: "{{{path}}}",
+    HandlerFunc: h.{{nickname}},
+    Middlewares: h.middlewares("{{operationId}}"),
+  },
+{{/operation}}
+  }
+{{! hack since baseName is broken for the default tag }}
+{{#operation.0}}
+  rest.RegisterRoutes(r, routes, "/{{#tags}}{{name}}{{/tags}}", mws)
+{{/operation.0}}
+}
+
+// middlewares returns individual route middleware per operation id.
+// Edit as required.
+func (h *{{baseName}}) middlewares(opID string) []gin.HandlerFunc {
+	switch opID {
+	default:
+		return []gin.HandlerFunc{}
+	}
+}
+
+{{#operation}}
 // {{nickname}} {{#lambda.lowercase}}{{{summary}}}{{/lambda.lowercase}}.
 {{#isDeprecated}}
 // Deprecated
 {{/isDeprecated}}
-func {{nickname}}(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
-}{{/operation}}{{/operations}}
+func (h *{{baseName}}) {{nickname}}(c *gin.Context) {
+	c.String(http.StatusNotImplemented, "501 not implemented")
+}
+{{/operation}}
+{{/operations}}
 

@@ -5,6 +5,7 @@ linters:
 
   disable:
     - godox # marks TODO, FIX, ...
+    - forbidigo # fmt banned, etc.
     - goerr113
     - gofumpt
     - gomnd
@@ -21,7 +22,7 @@ linters:
     - contextcheck
     - nilerr
     - noctx
-    - rowserrcheck
+    # - rowserrcheck
     - sqlclosecheck
     - structcheck
     - tparallel
@@ -29,8 +30,20 @@ linters:
     - wastedassign
 
 linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+    exclude-functions:
+      - io/ioutil.ReadFile
+      - io.Copy(*bytes.Buffer)
+      - io.Copy(os.Stdout)
+  wsl:
+    allow-cuddle-declarations: true
+    allow-assign-and-anything: true
+    allow-assign-and-call: true
+    allow-multiline-assign: true
+    allow-trailing-comment: true
   gofmt:
-    # Simplify code: gofmt with `-s` option.
     simplify: true
   lll:
     line-length: 130

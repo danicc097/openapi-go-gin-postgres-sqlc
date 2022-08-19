@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=SC1091,SC2155
+# shellcheck disable=SC1091,SC2155,SC2068
 
 source "${BASH_SOURCE%/*}/.helpers.sh"
 
@@ -14,8 +14,10 @@ export GENVERS=6.0.1
 
 SPEC="openapi.yaml"
 GEN_OUT_DIR="internal"
+TEMPLATE_DIR="internal/go-gin-server-templates"
 PWD="$(pwd)"
 ENV_FILE=".env"
+BIN_DIR=$(dirname "$0")
 
 x.bootstrap() {
   x.install-tools
@@ -31,6 +33,7 @@ x.install-go-tools() {
   go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
   go install github.com/joho/godotenv/cmd/godotenv@latest
   go install github.com/cosmtrek/air@latest
+  go install github.com/xo/xo@latest
 
   GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
 }
@@ -42,32 +45,89 @@ x.fetch-openapi-generator-jar() {
 }
 
 x.validate() {
-  java -jar openapi-generator-cli.jar validate -i "$SPEC"
+  java -jar openapi-generator-cli.jar validate -i "${1:-$SPEC}"
 }
 
-x.generate-api() {
-  echo $GIT_USER_ID $GIT_REPO_ID
-  echo Generating API from "$SPEC"
-  rm -rf "$GEN_OUT_DIR/gen"
-  java -jar openapi-generator-cli.jar generate \
+x.openapi-generator() {
+  local spec="$1"
+  local gen_out_dir="$2"
+  local template_dir="$3"
+
+  [[ -z $spec ]] && echo "generate-api: spec required" && exit 1
+  [[ -z $gen_out_dir ]] && echo "generate-api: out dir required" && exit 1
+  [[ -z $template_dir ]] && echo "generate-api: template dir required" && exit 1
+  echo "Generating API from $spec"
+  echo "Generation directory: $gen_out_dir"
+  echo "Template override directory: $template_dir"
+
+  rm -rf "$gen_out_dir/gen"
+  # debug has a very small overhead compared to the >1s required per spec
+  java -jar "$BIN_DIR"/../openapi-generator-cli.jar generate \
     -g go-gin-server \
-    -i "$SPEC" \
-    -o "$GEN_OUT_DIR" \
+    -i "$spec" \
+    -o "$gen_out_dir" \
+    -t "$template_dir" \
     --additional-properties=packageName=openapi,apiPath=gen,hideGenerationTimestamp=true \
-    -t internal/go-gin-server-templates \
     --enable-post-process-file \
-    >/dev/null
-  mkdir -p "$GEN_OUT_DIR"/gen/models
-  mv "$GEN_OUT_DIR"/gen/model_*.go "$GEN_OUT_DIR"/gen/models
-  # not needed with locally generated code
-  # local name="$(id -un)"
-  # sudo chown -R "$name:$name" "$GEN_OUT_DIR"
-  cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
-  cp "$SPEC" "$PWD"/internal/static/swagger-ui
-  go build -o post-generate-api "$PWD"/cmd/post-generate-api/main.go
-  ./post-generate-api
-  find "$GEN_OUT_DIR/gen/" -name "api_*.go" -type f -delete
-  rm -rf "$GEN_OUT_DIR/api"
+    --global-property=debugModels,debugOperations >debug-openapi.log #>/dev/null \
+
+  mkdir -p "$gen_out_dir"/gen/models
+  mkdir -p "$gen_out_dir"/handlers
+  mkdir -p "$gen_out_dir"/services
+  mkdir -p "$gen_out_dir"/rest
+  mv "$gen_out_dir"/gen/routers.go "$gen_out_dir"/rest
+  mv "$gen_out_dir"/gen/model_*.go "$gen_out_dir"/gen/models 2>/dev/null || echo "No model files found. Skipping"
+  rm -rf "$gen_out_dir/api"
+}
+
+# NOTE: jar won't output properly if absolute paths are passed from subdir
+x.generate-tests-api() {
+  local testdata="$BIN_DIR/../e2e/testdata/postgen/openapi_generator"
+  local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
+
+  cache="generate-tests-api.cache"
+  tpl_changed=false
+  mkdir -p "$cache"
+  if ! md5sum -c "$cache/openapi_generator-go-gin-server-templates.md5"; then
+    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/openapi_generator-go-gin-server-templates.md5"
+    tpl_changed=true
+  fi
+
+  echo "test_dirs $test_dirs"
+  for test_dir in $test_dirs; do
+    echo "test_dir $test_dir"
+    if [[ $tpl_changed == false ]] && md5sum -c "$cache/openapi_generator-$test_dir-openapi.md5"; then
+      continue
+    fi
+    md5sum "$testdata/$test_dir/openapi.yaml" >"$cache/openapi_generator-$test_dir-openapi.md5"
+    mkdir -p "$testdata/$test_dir/internal"
+    x.openapi-generator \
+      "$testdata/$test_dir/openapi.yaml" \
+      "$testdata/$test_dir/internal" \
+      "$BIN_DIR/../internal/go-gin-server-templates"
+  done
+}
+
+# TODO force gen flag
+x.generate-api() {
+  cache="generate-api.cache"
+  invalid_cache=false
+  mkdir -p "$cache"
+  if ! md5sum -c "$cache/go-gin-server-templates.md5" >/dev/null; then
+    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/go-gin-server-templates.md5"
+    invalid_cache=true
+  fi
+  if ! md5sum -c "$cache/openapi.md5" >/dev/null; then
+    md5sum "$BIN_DIR"/../openapi.yaml >"$cache/openapi.md5"
+    invalid_cache=true
+  fi
+  [[ $invalid_cache == true ]] && x.openapi-generator \
+    "$SPEC" \
+    "$GEN_OUT_DIR" \
+    "$TEMPLATE_DIR"
+  go build -o postgen "$PWD"/cmd/postgen/main.go
+  POSTGEN_CACHE="$cache" ./postgen
+  mv "$GEN_OUT_DIR"/gen/api_*.go "$cache/" 2>/dev/null || true
 }
 
 x.generate-sqlc() {
@@ -75,16 +135,32 @@ x.generate-sqlc() {
   cd internal/postgresql && sqlc generate && cd - || exit
 }
 
+# automatic crud + queries based on existing indexes
+# does not work with a schema file. Must be run after x.migrate
+x.xo-generate-crud() {
+  source "$ENV_FILE"
+  mkdir -p internal/postgresql/gen/crud
+  xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+    -o internal/postgresql/gen/crud
+}
+
+x.update-swagger-ui() {
+  cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
+  cp "$SPEC" "$PWD"/internal/static/swagger-ui
+}
+
 x.generate() {
   go generate ./...
-  x.generate-api
+  x.generate-api "$SPEC" "$GEN_OUT_DIR" "$GEN_OUT_DIR/go-gin-server-templates"
+  x.update-swagger-ui
   x.generate-sqlc
+  x.xo-generate-crud
 }
 
 x.test() {
   x.generate
   create_test_database
-  godotenv -f "$ENV_FILE" go test ./... "$@"
+  godotenv -f "$ENV_FILE" go test ./... $@
 }
 
 x.build() {
@@ -101,6 +177,12 @@ x.run() {
 x.run-hot-reload() {
   docker-compose up -d
   x.test
+  # TODO cant run ./bin/build generate in cmd, watch https://github.com/cosmtrek/air/pull/322
+  # alternative, have a simply file watcher that runs "build run" on file change instead of air!
+  # TODO but we would need to kill the running process in the background on every refresh
+  # (fswatch -v --exclude=".git/" ./* ; sleep 1) | xargs -I{} bash -c 'v="{}"; echo "$(basename $v) was changed"; bin/build run &'
+  # //go:generate ../../bin/build generate in cmd main is not run on refresh.
+  # and it would be an infinite loop of changes since build generate call go generate ./...
   air \
     --build.cmd "go build -o ./air-main ./cmd/rest-server/" \
     --build.bin "./air-main -env=$ENV_FILE"

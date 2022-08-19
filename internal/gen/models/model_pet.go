@@ -4,12 +4,14 @@ package models
 
 // Pet a pet for sale in the pet store.
 type Pet struct {
-	Id        int64    `json:"id,omitempty" acustomtag:"id"`
+	Id int64 `json:"id,omitempty" acustomtag:"id"`
+	// x-custom-comment:"test"
 	Category  Category `json:"category,omitempty" acustomtag:"category"`
 	Name      string   `json:"name" acustomtag:"name"`
 	PhotoUrls []string `json:"photoUrls" acustomtag:"photo_urls"`
 	Tags      []Tag    `json:"tags,omitempty" acustomtag:"tags"`
 	// pet status in the store.
 	// Deprecated.
+	// This is a custom comment.
 	Status string `json:"status,omitempty" acustomtag:"status"`
 }
