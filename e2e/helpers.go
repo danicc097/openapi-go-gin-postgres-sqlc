@@ -1,9 +1,26 @@
 package e2e_test
 
 import (
+	"context"
+	"database/sql"
+	"errors"
+	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
+
+	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/redis"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/server"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
+	"github.com/golang-migrate/migrate/v4"
+	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jackc/pgx/v4/pgxpool"
+	_ "github.com/jackc/pgx/v4/stdlib"
+	"go.uber.org/zap"
 )
 
 // getStderr returns the contents of stderr.txt in dir.
@@ -21,4 +38,99 @@ func getStderr(t *testing.T, dir string) string {
 	}
 
 	return ""
+}
+
+func Run(tb testing.TB, env, address string) (*http.Server, error) {
+	if err := envvar.Load(env); err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
+	}
+
+	provider, err := vault.New()
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewVaultProvider")
+	}
+
+	conf := envvar.New(provider)
+
+	pool := NewDB(tb)
+
+	rdb, err := redis.New(conf)
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewRedis")
+	}
+
+	var logger *zap.Logger
+
+	switch os.Getenv("APP_ENV") {
+	case "dev":
+		logger, err = zap.NewDevelopment()
+	default:
+		logger, err = zap.NewProduction()
+	}
+
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.zapNew")
+	}
+
+	srv, err := server.New(server.Config{
+		Address: address,
+		DB:      pool,
+		Redis:   rdb,
+		Logger:  logger,
+	})
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "New")
+	}
+
+	return srv, nil
+}
+
+func NewDB(tb testing.TB) *pgxpool.Pool {
+	tb.Helper()
+
+	provider, err := vault.New()
+	if err != nil {
+		tb.Fatalf("Couldn't create provider: %s", err)
+	}
+
+	conf := envvar.New(provider)
+
+	os.Setenv("POSTGRES_DB", "postgres_test")
+
+	pool, err := postgresql.New(conf)
+	if err != nil {
+		tb.Fatalf("Couldn't create pool: %s", err)
+	}
+
+	db, err := sql.Open("pgx", pool.Config().ConnString())
+	if err != nil {
+		tb.Fatalf("Couldn't open DB: %s", err)
+	}
+
+	defer db.Close()
+
+	instance, err := migratepostgres.WithInstance(db, &migratepostgres.Config{})
+	if err != nil {
+		tb.Fatalf("Couldn't migrate (1): %s", err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance("file://../db/migrations/", "postgres", instance)
+	if err != nil {
+		tb.Fatalf("Couldn't migrate (2): %s", err)
+	}
+
+	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		tb.Fatalf("Couldnt' migrate (3): %s", err)
+	}
+
+	dbpool, err := pgxpool.Connect(context.Background(), pool.Config().ConnString())
+	if err != nil {
+		tb.Fatalf("Couldn't open DB Pool: %s", err)
+	}
+
+	tb.Cleanup(func() {
+		dbpool.Close()
+	})
+
+	return dbpool
 }
