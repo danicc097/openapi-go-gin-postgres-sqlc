@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
@@ -97,7 +100,28 @@ func (h *User) middlewares(opId string) []gin.HandlerFunc {
 
 // CreateUser creates a new user.
 func (h *User) CreateUser(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "501 not implemented")
+	// TODO FIX for new generation templates without globals
+	var user models.CreateUserRequest
+
+	if err := c.BindJSON(&user); err != nil {
+		h.svc.Logger.Sugar().Debugf("CreateUser.user: %v", user)
+		c.JSON(http.StatusInternalServerError, err.Error())
+
+		return
+	}
+
+	usersService := postgresql.NewUser(h.svc.Pool)
+
+	h.svc.Logger.Sugar().Debugf("CreateUser.user: %v", user)
+
+	res, err := usersService.Create(context.Background(), user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+
+		return
+	}
+
+	c.JSON(http.StatusOK, res)
 }
 
 // CreateUsersWithArrayInput creates list of users with given input array.

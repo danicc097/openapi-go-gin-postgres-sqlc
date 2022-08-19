@@ -70,9 +70,17 @@ func run(env, address string) (<-chan error, error) {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewRedis")
 	}
 
-	logger, err := zap.NewProduction()
+	var logger *zap.Logger
+
+	switch os.Getenv("APP_ENV") {
+	case "dev":
+		logger, err = zap.NewDevelopment()
+	default:
+		logger, err = zap.NewProduction()
+	}
+
 	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewProduction")
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.zapNew")
 	}
 
 	srv, err := newServer(serverConfig{

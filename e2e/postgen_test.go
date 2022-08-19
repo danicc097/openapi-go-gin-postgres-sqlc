@@ -3,6 +3,7 @@ package tests_test
 import (
 	"bytes"
 	"fmt"
+	"go/format"
 	"go/parser"
 	"go/printer"
 	"go/token"
@@ -133,5 +134,10 @@ func printContent(t *testing.T, content string, pconf *printer.Config, dest io.W
 		panic(err)
 	}
 
-	dest.Write(buf.Bytes())
+	out, err := format.Source(buf.Bytes())
+	if err != nil {
+		panic(err)
+	}
+
+	dest.Write(out)
 }
