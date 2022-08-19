@@ -128,6 +128,7 @@ x.generate-api() {
   go build -o postgen "$PWD"/cmd/postgen/main.go
   ./postgen
   # do not delete. necessary if we're using cache, as they won't be regenerated.
+  # TODO
   # find "$GEN_OUT_DIR/gen/" -name "api_*.go" -type f -delete
 }
 
@@ -161,7 +162,7 @@ x.generate() {
 x.test() {
   x.generate
   create_test_database
-  godotenv -f "$ENV_FILE" go test ./... $@
+  godotenv -f "$ENV_FILE" go test -v ./... $@
 }
 
 x.build() {

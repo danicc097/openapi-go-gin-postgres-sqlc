@@ -39,8 +39,8 @@ func (h *Newapi) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 
 // middlewares returns individual route middleware per operation id.
 // Edit as required.
-func (h *Newapi) middlewares(opId string) []gin.HandlerFunc {
-	switch opId {
+func (h *Newapi) middlewares(opID string) []gin.HandlerFunc {
+	switch opID {
 	default:
 		return []gin.HandlerFunc{}
 	}

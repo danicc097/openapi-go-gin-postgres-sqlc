@@ -22,7 +22,7 @@ linters:
     - contextcheck
     - nilerr
     - noctx
-    - rowserrcheck
+    # - rowserrcheck
     - sqlclosecheck
     - structcheck
     - tparallel
@@ -30,6 +30,13 @@ linters:
     - wastedassign
 
 linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+    exclude-functions:
+      - io/ioutil.ReadFile
+      - io.Copy(*bytes.Buffer)
+      - io.Copy(os.Stdout)
   wsl:
     allow-cuddle-declarations: true
     allow-assign-and-anything: true

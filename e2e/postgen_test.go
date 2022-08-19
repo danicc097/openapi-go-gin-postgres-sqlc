@@ -2,13 +2,11 @@ package tests_test
 
 import (
 	"bytes"
-	"fmt"
 	"go/format"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -36,7 +34,7 @@ func getStderr(t *testing.T, dir string) string {
 	return ""
 }
 
-func setupTests() {
+func setupTests(t *testing.T) {
 	os.Setenv("IS_TESTING", "1")
 
 	cmd := exec.Command(
@@ -44,13 +42,15 @@ func setupTests() {
 		"generate-tests-api",
 	)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		fmt.Printf("combined out:\n%s\n", string(out))
-		log.Fatalf("cmd.Run() failed with %s\n", err)
+		t.Logf("combined out:\n%s\n", string(out))
+		t.Fatalf("cmd.Run() failed with %s\n", err)
 	}
 }
 
 func TestHandlerPostProcessing(t *testing.T) {
-	setupTests()
+	t.Parallel()
+
+	setupTests(t)
 
 	const baseDir = "testdata/postgen/openapi_generator"
 
@@ -58,45 +58,54 @@ func TestHandlerPostProcessing(t *testing.T) {
 		Name string
 		Dir  string
 	}{
-		{
-			"Merging",
-			"merge_changes",
-		},
 		// {
-		// 	"NameClashing",
-		// 	"name_clashing",
+		// 	"Merging",
+		// 	"merge_changes",
 		// },
+		{
+			"NameClashing",
+			"name_clashing",
+		},
 	}
 
 	for _, test := range cases {
+		test := test
 		t.Run(test.Name, func(t *testing.T) {
-			// TODO  pass stderr io.Writer to c.Generate()
-			// stderr := ""
-			// if s := getStderr(t, test.Dir); s != "" {
-			// 	stderr = s
-			// }
-			var (
-				conf = &postgen.Conf{
-					CurrentHandlersDir: path.Join(baseDir, string(test.Dir), "internal/handlers"),
-					GenHandlersDir:     path.Join(baseDir, string(test.Dir), "internal/gen"),
-					OutHandlersDir:     path.Join(baseDir, string(test.Dir), "got"),
-					OutServicesDir:     path.Join(baseDir, string(test.Dir), "internal/services"),
-				}
-			)
+			t.Parallel()
+
+			conf := &postgen.Conf{
+				CurrentHandlersDir: path.Join(baseDir, test.Dir, "internal/handlers"),
+				GenHandlersDir:     path.Join(baseDir, test.Dir, "internal/gen"),
+				OutHandlersDir:     path.Join(baseDir, test.Dir, "got"),
+				OutServicesDir:     path.Join(baseDir, test.Dir, "internal/services"),
+			}
 
 			err := os.RemoveAll(conf.OutHandlersDir)
 			if err != nil {
-				log.Fatal(err)
+				t.Fatal(err)
+			}
+			var stderr bytes.Buffer
+			og := postgen.NewOpenapiGenerator(conf, &stderr)
+
+			t.Logf("Generate\n")
+			err = og.Generate()
+			if err != nil {
+				t.Logf("error from Generate: %s\n", err)
+				s := getStderr(t, path.Join(baseDir, test.Dir, "want"))
+				if s != "" && s == stderr.String() {
+					return
+				}
+				t.Fatalf("expected stderr %s got %s\n", s, stderr.String())
 			}
 
-			og := postgen.NewOpenapiGenerator(conf)
-			og.Generate()
-
 			pconf := &printer.Config{Mode: printer.TabIndent | printer.UseSpaces, Tabwidth: 8}
-			ff, _ := filepath.Glob(path.Join(conf.OutHandlersDir, "/*"))
+			ff, err := filepath.Glob(path.Join(conf.OutHandlersDir, "/*"))
+			if err != nil {
+				t.Fatalf("OutHandlersDir glob failed")
+			}
 			for _, f := range ff {
 				basename := path.Base(f)
-				wp := path.Join(baseDir, string(test.Dir), "want", basename)
+				wp := path.Join(baseDir, test.Dir, "want", basename)
 				gp := path.Join(conf.OutHandlersDir, basename)
 				wantBlob, _ := os.ReadFile(wp)
 				gotBlob, _ := os.ReadFile(gp)

@@ -18,6 +18,8 @@ import (
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	"github.com/dave/dst/dstutil"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func contains[T comparable](elems []T, v T) bool {
@@ -46,73 +48,67 @@ func contains[T comparable](elems []T, v T) bool {
 	the user to rename. it shouldve been unexported or a function in the first place anyway.
 */
 type OpenapiGenerator struct {
-	conf *Conf
+	conf   *Conf
+	stderr io.Writer
 }
 
 // NewOpenapiGenerator returns a new postgen OpenapiGenerator.
-func NewOpenapiGenerator(conf *Conf) *OpenapiGenerator {
+func NewOpenapiGenerator(conf *Conf, stderr io.Writer) *OpenapiGenerator {
 	return &OpenapiGenerator{
-		conf: conf,
+		conf:   conf,
+		stderr: stderr,
 	}
 }
 
-func (c *OpenapiGenerator) Generate() {
-	cb := c.getCommonBasenames()
-	handlers := c.analyzeHandlers(cb)
-	c.generateMergedFiles(handlers)
-}
-
-// generateService fills in a template with a default service struct to a dest.
-func generateService(tag string, dest io.Writer) {
-	t := template.Must(template.New("").Parse(`package services
-
-type {{.Tag}} struct {
-}
-`))
-
-	buf := &bytes.Buffer{}
-
-	params := map[string]interface{}{
-		"Tag": strings.Title(tag),
+func (o *OpenapiGenerator) Generate() error {
+	cb, err := o.getCommonBasenames()
+	if err != nil {
+		return err
 	}
 
-	if err := t.Execute(buf, params); err != nil {
-		panic(err)
+	handlers, err := o.analyzeHandlers(cb)
+	if err != nil {
+		return err
 	}
 
-	dest.Write(buf.Bytes())
+	err = o.generateMergedFiles(handlers)
+	if err != nil {
+		return err
+	}
+
+	return err
 }
 
 // analyzeHandlers returns all necessary merging information about handlers, indexed
 // by directory and tag.
-func (c *OpenapiGenerator) analyzeHandlers(basenames []string) map[string]map[string]HandlerFile {
+func (o *OpenapiGenerator) analyzeHandlers(basenames []string) (map[string]map[string]HandlerFile, error) {
 	handlers := make(map[string]map[string]HandlerFile)
 
-	dirs := []string{c.conf.GenHandlersDir, c.conf.CurrentHandlersDir}
+	dirs := []string{o.conf.GenHandlersDir, o.conf.CurrentHandlersDir}
 	for _, dir := range dirs {
 		handlers[dir] = make(map[string]HandlerFile)
 
 		for _, basename := range basenames {
-			file := path.Join(dir, basename)
+			p := path.Join(dir, basename)
 
-			blob, err := os.ReadFile(file)
+			blob, err := os.ReadFile(p)
 			if err != nil {
-				panic(err)
+				return nil, err
 			}
 
-			f, err := decorator.Parse(blob)
+			file, err := decorator.Parse(blob)
 			if err != nil {
-				panic(err)
+				return nil, err
 			}
 
 			reg := regexp.MustCompile("api_(.*).go")
-			tag := strings.Title(reg.FindStringSubmatch(basename)[1])
+			tag := cases.Title(language.English).String(reg.FindStringSubmatch(basename)[1])
 
-			mm := inspectStruct(f, tag)
-			rr := inspectNodes(f, tag)
+			mm := inspectStruct(file, tag)
+			rr := inspectNodes(file, tag)
 			routes := extractRoutes(rr)
 			hf := HandlerFile{
-				F:          f,
+				F:          file,
 				Methods:    mm,
 				RoutesNode: rr,
 				Routes:     routes,
@@ -122,33 +118,33 @@ func (c *OpenapiGenerator) analyzeHandlers(basenames []string) map[string]map[st
 		}
 	}
 
-	findClashingMethodNames(basenames, handlers, c.conf)
+	o.findClashingMethodNames(basenames, handlers)
 
-	return handlers
+	return handlers, nil
 }
 
 // findClashingMethodNames ensures no previous methods that are not
 // handlers conflict with a newly generated operation id.
-func findClashingMethodNames(basenames []string, handlers map[string]map[string]HandlerFile, conf *Conf) {
+func (o *OpenapiGenerator) findClashingMethodNames(basenames []string, handlers map[string]map[string]HandlerFile) {
 	clashes := []string{}
 
 	for _, basename := range basenames {
 		reg := regexp.MustCompile("api_(.*).go")
-		tag := strings.Title(reg.FindStringSubmatch(basename)[1])
+		tag := cases.Title(language.English).String(reg.FindStringSubmatch(basename)[1])
 
-		for opId := range handlers[conf.GenHandlersDir][tag].Routes {
-			fmt.Printf("[%s] opId: %s\n", tag, opId)
-			_, rok := handlers[conf.CurrentHandlersDir][tag].Routes[opId]
-			_, mok := handlers[conf.CurrentHandlersDir][tag].Methods[opId]
+		for opID := range handlers[o.conf.GenHandlersDir][tag].Routes {
+			fmt.Printf("[%s] opID: %s\n", tag, opID)
+			_, rok := handlers[o.conf.CurrentHandlersDir][tag].Routes[opID]
+			_, mok := handlers[o.conf.CurrentHandlersDir][tag].Methods[opID]
 
 			if !rok && mok {
-				clashes = append(clashes, tag+"->"+opId)
+				clashes = append(clashes, tag+"->"+opID)
 			}
 		}
 	}
 
 	if len(clashes) > 0 {
-		fmt.Fprintf(os.Stderr, `
+		fmt.Fprintf(o.stderr, `
 Error: conflicting method names
 %s
 Please rename either the affected method or operation id.
@@ -159,30 +155,45 @@ Please rename either the affected method or operation id.
 
 // getCommonBasenames returns api filename (tag) intersections in current and raw gen dirs,
 // and copies non-intersecting files to the out dir without further analysis.
-func (c *OpenapiGenerator) getCommonBasenames() (out []string) {
-	k := 0
-	currentBasenames := getApiBasenames(c.conf.CurrentHandlersDir)
-	genBasenames := getApiBasenames(c.conf.GenHandlersDir)
+func (o *OpenapiGenerator) getCommonBasenames() ([]string, error) {
+	out := []string{}
+	idx := 0
 
-	os.MkdirAll(c.conf.OutHandlersDir, 0777)
+	currentBasenames, err := getAPIBasenames(o.conf.CurrentHandlersDir)
+	if err != nil {
+		return nil, err
+	}
+
+	genBasenames, err := getAPIBasenames(o.conf.GenHandlersDir)
+	if err != nil {
+		return nil, err
+	}
+
+	err = os.MkdirAll(o.conf.OutHandlersDir, 0777)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, genBasename := range genBasenames {
 		if contains(currentBasenames, genBasename) {
-			genBasenames[k] = genBasename
-			k++
+			genBasenames[idx] = genBasename
+			idx++
 
 			continue
 		}
 
-		genBlob, err := os.ReadFile(path.Join(c.conf.GenHandlersDir, genBasename))
+		genBlob, err := os.ReadFile(path.Join(o.conf.GenHandlersDir, genBasename))
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
-		os.WriteFile(path.Join(c.conf.OutHandlersDir, genBasename), genBlob, 0666)
+		err = os.WriteFile(path.Join(o.conf.OutHandlersDir, genBasename), genBlob, 0600)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	genBasenames = genBasenames[:k]
+	genBasenames = genBasenames[:idx]
 
 	for _, currentBasename := range currentBasenames {
 		if contains(genBasenames, currentBasename) {
@@ -191,19 +202,48 @@ func (c *OpenapiGenerator) getCommonBasenames() (out []string) {
 			continue
 		}
 
-		currentBlob, err := os.ReadFile(path.Join(c.conf.CurrentHandlersDir, currentBasename))
+		currentBlob, err := os.ReadFile(path.Join(o.conf.CurrentHandlersDir, currentBasename))
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
-		os.WriteFile(path.Join(c.conf.OutHandlersDir, currentBasename), currentBlob, 0666)
+		err = os.WriteFile(path.Join(o.conf.OutHandlersDir, currentBasename), currentBlob, 0600)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return out
+	return out, nil
+}
+
+// generateService fills in a template with a default service struct to a dest.
+func generateService(tag string, dest io.Writer) error {
+	t := template.Must(template.New("").Parse(`package services
+
+type {{.Tag}} struct {
+}
+`))
+
+	buf := &bytes.Buffer{}
+
+	params := map[string]interface{}{
+		"Tag": cases.Title(language.English).String(tag),
+	}
+
+	if err := t.Execute(buf, params); err != nil {
+		return err
+	}
+
+	_, err := dest.Write(buf.Bytes())
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // replaceNodes replaces handler file nodes accordingly.
-func replaceNodes(f *dst.File, genHf, currentHf HandlerFile, tag string, opId string) {
+func replaceNodes(f *dst.File, genHf, currentHf HandlerFile, tag string, opID string) {
 	dstutil.Apply(f, nil, func(c *dstutil.Cursor) bool {
 		fn, isFn := c.Parent().(*dst.FuncDecl)
 		if !isFn || fn.Recv == nil || len(fn.Recv.List) != 1 {
@@ -224,11 +264,13 @@ func replaceNodes(f *dst.File, genHf, currentHf HandlerFile, tag string, opId st
 	})
 }
 
-func (c *OpenapiGenerator) generateMergedFiles(handlers map[string]map[string]HandlerFile) {
-	for tag, currentHF := range handlers[c.conf.CurrentHandlersDir] {
-		//nolint: forcetypeassert
-		outF := dst.Clone(currentHF.F).(*dst.File)
-		gh := handlers[c.conf.GenHandlersDir][tag]
+func (o *OpenapiGenerator) generateMergedFiles(handlers map[string]map[string]HandlerFile) error {
+	for tag, currentHF := range handlers[o.conf.CurrentHandlersDir] {
+		outF, ok := dst.Clone(currentHF.F).(*dst.File)
+		if !ok {
+			return errors.New("clone file node fail")
+		}
+		gh := handlers[o.conf.GenHandlersDir][tag]
 		fmt.Println(format.Underlined + format.Blue + tag + format.Off)
 
 		for _, cv := range gh.Routes {
@@ -236,10 +278,10 @@ func (c *OpenapiGenerator) generateMergedFiles(handlers map[string]map[string]Ha
 		}
 
 		// get generated operation ids as list
-		gkk := make([]string, len(handlers[c.conf.GenHandlersDir][tag].Methods))
+		gkk := make([]string, len(handlers[o.conf.GenHandlersDir][tag].Methods))
 		i := 0
 
-		for gk := range handlers[c.conf.GenHandlersDir][tag].Methods {
+		for gk := range handlers[o.conf.GenHandlersDir][tag].Methods {
 			gkk[i] = gk
 			i++
 		}
@@ -248,12 +290,12 @@ func (c *OpenapiGenerator) generateMergedFiles(handlers map[string]map[string]Ha
 			return gkk[i] < gkk[j]
 		})
 
-		genHF := handlers[c.conf.GenHandlersDir][tag]
+		genHF := handlers[o.conf.GenHandlersDir][tag]
 
 		for _, gk := range gkk {
 			if _, ok := currentHF.Methods[gk]; !ok {
 				fmt.Printf("method %s not in current %s - appending generated method.\n", gk, tag)
-				outF.Decls = append(outF.Decls, handlers[c.conf.GenHandlersDir][tag].Methods[gk].Decl)
+				outF.Decls = append(outF.Decls, handlers[o.conf.GenHandlersDir][tag].Methods[gk].Decl)
 
 				continue
 			}
@@ -263,30 +305,38 @@ func (c *OpenapiGenerator) generateMergedFiles(handlers map[string]map[string]Ha
 
 		buf := &bytes.Buffer{}
 
-		f, err := os.Create(path.Join(c.conf.OutHandlersDir, "api_"+strings.ToLower(tag)+".go"))
+		f, err := os.Create(path.Join(o.conf.OutHandlersDir, "api_"+strings.ToLower(tag)+".go"))
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		if err := decorator.Fprint(buf, outF); err != nil {
-			panic(err)
+			return err
 		}
 
-		f.Write(buf.Bytes())
+		_, err = f.Write(buf.Bytes())
+		if err != nil {
+			return err
+		}
 	}
 
 	// generate default service if not exists
-	for tag := range handlers[c.conf.GenHandlersDir] {
-		s := path.Join(c.conf.OutServicesDir, strings.ToLower(tag)+".go")
+	for tag := range handlers[o.conf.GenHandlersDir] {
+		s := path.Join(o.conf.OutServicesDir, strings.ToLower(tag)+".go")
 		if _, err := os.Stat(s); errors.Is(err, os.ErrNotExist) {
 			f, err := os.Create(s)
 			if err != nil {
-				panic(err)
+				return err
 			}
 
-			generateService(tag, f)
+			err = generateService(tag, f)
+			if err != nil {
+				return err
+			}
 		}
 	}
+
+	return nil
 }
 
 type Method struct {
@@ -308,12 +358,12 @@ type HandlerFile struct {
 	Routes map[string]Route
 }
 
-func getApiBasenames(src string) []string {
+func getAPIBasenames(src string) ([]string, error) {
 	out := []string{}
 	// glob uses https://pkg.go.dev/path#Match patterns
 	paths, err := filepath.Glob(path.Join(src, "api_*.go"))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	for _, p := range paths {
@@ -322,20 +372,7 @@ func getApiBasenames(src string) []string {
 		}
 	}
 
-	return out
-}
-
-func applyFunc(c *dstutil.Cursor) bool {
-	node := c.Node()
-
-	switch n := node.(type) {
-	case (*dst.FuncDecl):
-		fmt.Printf("\n---------------\n")
-		// dst.Print(n)
-		dst.Print(n.Body)
-	}
-
-	return true
+	return out, nil
 }
 
 type Route struct {
@@ -353,9 +390,10 @@ func extractRoutes(rr *dst.AssignStmt) map[string]Route {
 	if !iscl {
 		return out
 	}
+
 	for _, r := range cl.Elts {
 		var (
-			opId  string
+			opID  string
 			route Route
 		)
 
@@ -374,14 +412,14 @@ func extractRoutes(rr *dst.AssignStmt) map[string]Route {
 				switch ident.Name {
 				case "Name":
 					if lit, islit := kv.Value.(*dst.BasicLit); islit {
-						opId, _ = strconv.Unquote(lit.Value)
-						route.Name = opId
+						opID, _ = strconv.Unquote(lit.Value)
+						route.Name = opID
 					}
 					// case "Middlewares":
 					// 	route.Middlewares = kv.Value
 				}
 
-				out[opId] = route
+				out[opID] = route
 			}
 		}
 	}
