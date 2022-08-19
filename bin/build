@@ -177,7 +177,8 @@ x.run() {
 x.run-hot-reload() {
   docker-compose up -d
   x.test
-  # TODO cant run ./bin/build generate in cmd, watch https://github.com/cosmtrek/air/pull/322
+  # cant run ./bin/build generate in cmd,
+  # FORK and add list of extensions to https://github.com/cosmtrek/air/pull/322
   # alternative, have a simply file watcher that runs "build run" on file change instead of air!
   # TODO but we would need to kill the running process in the background on every refresh
   # (fswatch -v --exclude=".git/" ./* ; sleep 1) | xargs -I{} bash -c 'v="{}"; echo "$(basename $v) was changed"; bin/build run &'
@@ -186,6 +187,8 @@ x.run-hot-reload() {
   air \
     --build.cmd "go build -o ./air-main ./cmd/rest-server/" \
     --build.bin "./air-main -env=$ENV_FILE"
+  # --build.pre_build_cmd "bin/build generate" \
+  # --build.delay 4000
 }
 
 x.download-swagger-ui() {
