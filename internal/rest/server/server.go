@@ -22,6 +22,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/handlers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/redis"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/middleware"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
@@ -52,12 +53,12 @@ func New(conf Config) (*http.Server, error) {
 	router.Use(ginzap.RecoveryWithZap(conf.Logger, true))
 
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
-	// authMw := rest.NewAuthMiddleware(conf.Logger)
+	authMw := middleware.NewAuth(conf.Logger)
 	vg := router.Group(os.Getenv("API_VERSION"))
 
 	handlers.
 		NewDefault(services.Default{Logger: conf.Logger, Pool: conf.DB}).
-		Register(vg, []gin.HandlerFunc{})
+		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated(), authMw.EnsureAuthorized()})
 	handlers.
 		NewFake(services.Fake{Logger: conf.Logger, Pool: conf.DB}).
 		Register(vg, []gin.HandlerFunc{})

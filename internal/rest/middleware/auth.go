@@ -1,22 +1,22 @@
-package rest
+package middleware
 
 import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-// AuthMiddleware handles authentication and authorization middleware.
-type AuthMiddleware struct {
+// Auth handles authentication and authorization middleware.
+type Auth struct {
 	Logger *zap.Logger
 }
 
-func NewAuthMiddleware(logger *zap.Logger) *AuthMiddleware {
-	return &AuthMiddleware{Logger: logger}
+func NewAuth(logger *zap.Logger) *Auth {
+	return &Auth{Logger: logger}
 }
 
 // EnsureAuthenticated checks whether the client is authenticated.
 // TODO check jwt.
-func (t *AuthMiddleware) EnsureAuthenticated() gin.HandlerFunc {
+func (t *Auth) EnsureAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t.Logger.Sugar().Info("Would have run EnsureAuthenticated")
 	}
@@ -24,7 +24,7 @@ func (t *AuthMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 
 // EnsureAuthorized checks whether the client is authorized.
 // TODO grab user role.
-func (t *AuthMiddleware) EnsureAuthorized() gin.HandlerFunc {
+func (t *Auth) EnsureAuthorized() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t.Logger.Sugar().Info("Would have run EnsureAuthorized")
 	}

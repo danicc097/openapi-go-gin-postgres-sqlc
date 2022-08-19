@@ -7,6 +7,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/middleware"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -93,7 +94,11 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 // middlewares returns individual route middleware per operation id.
 // Edit as required.
 func (h *User) middlewares(opID string) []gin.HandlerFunc {
+	authMw := middleware.NewAuth(h.svc.Logger)
+
 	switch opID {
+	case "CreateUser":
+		return []gin.HandlerFunc{authMw.EnsureAuthenticated()}
 	default:
 		return []gin.HandlerFunc{}
 	}
