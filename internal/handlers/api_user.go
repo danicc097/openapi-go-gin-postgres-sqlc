@@ -86,6 +86,7 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Middlewares: h.middlewares("UpdateUser"),
 		},
 	}
+
 	rest.RegisterRoutes(r, routes, "/user", mws)
 }
 

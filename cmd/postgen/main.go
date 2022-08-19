@@ -22,7 +22,8 @@ func main() {
 	og := postgen.NewOpenapiGenerator(conf, &stderr)
 
 	if err := og.Generate(); err != nil {
-		fmt.Fprint(os.Stderr, stderr.String())
+		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, stderr.String())
 		os.Exit(1)
 	}
 }

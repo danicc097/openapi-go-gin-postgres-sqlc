@@ -26,6 +26,7 @@ func NewPet(svc services.Pet) *Pet {
 // Generated method. DO NOT EDIT.
 func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []rest.Route{}
+
 	rest.RegisterRoutes(r, routes, "/pet", mws)
 }
 

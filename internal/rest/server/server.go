@@ -178,3 +178,51 @@ func Run(env, address string) (<-chan error, error) {
 
 	return errC, nil
 }
+
+func RunTest(env, address string) (*http.Server, error) {
+	if err := envvar.Load(env); err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
+	}
+
+	provider, err := vault.New()
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewVaultProvider")
+	}
+
+	conf := envvar.New(provider)
+
+	pool, err := postgresql.New(conf)
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewPostgreSQL")
+	}
+
+	rdb, err := redis.New(conf)
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewRedis")
+	}
+
+	var logger *zap.Logger
+
+	switch os.Getenv("APP_ENV") {
+	case "dev":
+		logger, err = zap.NewDevelopment()
+	default:
+		logger, err = zap.NewProduction()
+	}
+
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.zapNew")
+	}
+
+	srv, err := New(Config{
+		Address: address,
+		DB:      pool,
+		Redis:   rdb,
+		Logger:  logger,
+	})
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "New")
+	}
+
+	return srv, nil
+}

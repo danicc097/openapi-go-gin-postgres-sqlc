@@ -34,6 +34,7 @@ func (h *Newapi) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Middlewares: h.middlewares("NewApiEndpoint"),
 		},
 	}
+
 	rest.RegisterRoutes(r, routes, "/newapi", mws)
 }
 

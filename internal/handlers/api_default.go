@@ -42,6 +42,7 @@ func (h *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Middlewares: h.middlewares("Ping"),
 		},
 	}
+
 	rest.RegisterRoutes(r, routes, "/default", mws)
 }
 

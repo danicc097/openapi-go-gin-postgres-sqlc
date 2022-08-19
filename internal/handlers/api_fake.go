@@ -34,6 +34,7 @@ func (h *Fake) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Middlewares: h.middlewares("FakeDataFile"),
 		},
 	}
+
 	rest.RegisterRoutes(r, routes, "/fake", mws)
 }
 

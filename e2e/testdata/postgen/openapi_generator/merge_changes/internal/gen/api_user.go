@@ -34,6 +34,7 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Middlewares: h.middlewares("CreateUser"),
 		},
 	}
+
 	rest.RegisterRoutes(r, routes, "/user", mws)
 }
 

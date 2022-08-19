@@ -55,6 +55,7 @@ func (h *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Middlewares: h.middlewares("PlaceOrder"),
 		},
 	}
+
 	rest.RegisterRoutes(r, routes, "/store", mws)
 }
 

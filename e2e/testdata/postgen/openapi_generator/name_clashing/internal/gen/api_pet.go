@@ -34,6 +34,7 @@ func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Middlewares: h.middlewares("ConflictEndpointPet"),
 		},
 	}
+
 	rest.RegisterRoutes(r, routes, "/pet", mws)
 }
 

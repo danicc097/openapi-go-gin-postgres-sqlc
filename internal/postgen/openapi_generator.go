@@ -164,12 +164,12 @@ func (o *OpenapiGenerator) getCommonBasenames() ([]string, error) {
 	out := []string{}
 	idx := 0
 
-	currentBasenames, err := getAPIBasenames(o.conf.CurrentHandlersDir)
+	currentBasenames, err := o.getAPIBasenames(o.conf.CurrentHandlersDir)
 	if err != nil {
 		return nil, err
 	}
 
-	genBasenames, err := getAPIBasenames(o.conf.GenHandlersDir)
+	genBasenames, err := o.getAPIBasenames(o.conf.GenHandlersDir)
 	if err != nil {
 		return nil, err
 	}
@@ -357,12 +357,31 @@ type HandlerFile struct {
 	Routes map[string]Route
 }
 
-func getAPIBasenames(src string) ([]string, error) {
+func (o *OpenapiGenerator) getAPIBasenames(src string) ([]string, error) {
 	out := []string{}
 	// glob uses https://pkg.go.dev/path#Match patterns
 	paths, err := filepath.Glob(path.Join(src, "api_*.go"))
 	if err != nil {
 		return nil, err
+	}
+
+	if len(paths) == 0 && strings.HasSuffix(src, "gen") {
+		fmt.Printf("no files found for %s, trying cache\n", src)
+		cacheDir := os.Getenv("POSTGEN_CACHE")
+
+		basenames, err := o.getAPIBasenames(cacheDir)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(basenames) == 0 {
+			return nil, errors.New("no generated files found, ensure all parameters to openapi-generator are right")
+		}
+
+		fmt.Printf("Using cached files in %s\n", cacheDir)
+		o.conf.GenHandlersDir = cacheDir
+
+		return basenames, nil
 	}
 
 	for _, p := range paths {

@@ -83,6 +83,7 @@ func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Middlewares: h.middlewares("UploadFile"),
 		},
 	}
+
 	rest.RegisterRoutes(r, routes, "/pet", mws)
 }
 

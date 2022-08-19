@@ -108,6 +108,7 @@ x.generate-tests-api() {
   done
 }
 
+# TODO force gen flag
 x.generate-api() {
   cache="generate-api.cache"
   invalid_cache=false
@@ -120,16 +121,13 @@ x.generate-api() {
     md5sum "$BIN_DIR"/../openapi.yaml >"$cache/openapi.md5"
     invalid_cache=true
   fi
-
   [[ $invalid_cache == true ]] && x.openapi-generator \
     "$SPEC" \
     "$GEN_OUT_DIR" \
     "$TEMPLATE_DIR"
   go build -o postgen "$PWD"/cmd/postgen/main.go
-  ./postgen
-  # do not delete. necessary if we're using cache, as they won't be regenerated.
-  # TODO
-  # find "$GEN_OUT_DIR/gen/" -name "api_*.go" -type f -delete
+  POSTGEN_CACHE="$cache" ./postgen
+  mv "$GEN_OUT_DIR"/gen/api_*.go "$cache/" 2>/dev/null || true
 }
 
 x.generate-sqlc() {
@@ -157,6 +155,7 @@ x.generate() {
   x.update-swagger-ui
   x.generate-sqlc
   x.xo-generate-crud
+  sleep 2
 }
 
 x.test() {
@@ -179,6 +178,12 @@ x.run() {
 x.run-hot-reload() {
   docker-compose up -d
   x.test
+  # TODO cant run ./bin/build generate in cmd, watch https://github.com/cosmtrek/air/pull/322
+  # alternative, have a simply file watcher that runs "build run" on file change instead of air!
+  # TODO but we would need to kill the running process in the background on every refresh
+  # (fswatch -v --exclude=".git/" ./* ; sleep 1) | xargs -I{} bash -c 'v="{}"; echo "$(basename $v) was changed"; bin/build run &'
+  # //go:generate ../../bin/build generate in cmd main is not run on refresh.
+  # and it would be an infinite loop of changes since build generate call go generate ./...
   air \
     --build.cmd "go build -o ./air-main ./cmd/rest-server/" \
     --build.bin "./air-main -env=$ENV_FILE"

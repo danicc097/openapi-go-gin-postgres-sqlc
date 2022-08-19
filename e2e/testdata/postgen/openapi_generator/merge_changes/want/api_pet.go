@@ -49,6 +49,7 @@ func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Middlewares: h.middlewares("UpdatePet"),
 		},
 	}
+
 	rest.RegisterRoutes(r, routes, "/pet", mws)
 }
 
