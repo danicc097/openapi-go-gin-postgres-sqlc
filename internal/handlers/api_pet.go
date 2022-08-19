@@ -116,11 +116,6 @@ func (h *Pet) FindPetsByTags(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// GetPetById find pet by id.
-func (h *Pet) GetPetById(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "501 not implemented")
-}
-
 // UpdatePet update an existing pet.
 func (h *Pet) UpdatePet(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
@@ -133,5 +128,10 @@ func (h *Pet) UpdatePetWithForm(c *gin.Context) {
 
 // UploadFile uploads an image.
 func (h *Pet) UploadFile(c *gin.Context) {
+	c.String(http.StatusNotImplemented, "501 not implemented")
+}
+
+// GetPetById find pet by id.
+func (h *Pet) GetPetById(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

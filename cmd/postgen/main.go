@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"fmt"
+	"os"
 	"path"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen"
@@ -18,5 +20,9 @@ func main() {
 
 	var stderr bytes.Buffer
 	og := postgen.NewOpenapiGenerator(conf, &stderr)
-	og.Generate()
+
+	if err := og.Generate(); err != nil {
+		fmt.Fprint(os.Stderr, stderr.String())
+		os.Exit(1)
+	}
 }

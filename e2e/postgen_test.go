@@ -1,4 +1,4 @@
-package tests_test
+package e2e_test
 
 import (
 	"bytes"
@@ -16,23 +16,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen"
 	"github.com/google/go-cmp/cmp"
 )
-
-// getStderr returns the contents of stderr.txt in dir.
-func getStderr(t *testing.T, dir string) string {
-	t.Helper()
-	path := filepath.Join(dir, "stderr.txt")
-
-	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		blob, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		return string(blob)
-	}
-
-	return ""
-}
 
 func setupTests(t *testing.T) {
 	os.Setenv("IS_TESTING", "1")
@@ -58,10 +41,10 @@ func TestHandlerPostProcessing(t *testing.T) {
 		Name string
 		Dir  string
 	}{
-		// {
-		// 	"Merging",
-		// 	"merge_changes",
-		// },
+		{
+			"Merging",
+			"merge_changes",
+		},
 		{
 			"NameClashing",
 			"name_clashing",
@@ -87,15 +70,12 @@ func TestHandlerPostProcessing(t *testing.T) {
 			var stderr bytes.Buffer
 			og := postgen.NewOpenapiGenerator(conf, &stderr)
 
-			t.Logf("Generate\n")
 			err = og.Generate()
 			if err != nil {
-				t.Logf("error from Generate: %s\n", err)
 				s := getStderr(t, path.Join(baseDir, test.Dir, "want"))
-				if s != "" && s == stderr.String() {
-					return
+				if diff := cmp.Diff(s, stderr.String()); s != "" && diff != "" {
+					t.Fatalf("stderr differed (-want +got):\n%s", diff)
 				}
-				t.Fatalf("expected stderr %s got %s\n", s, stderr.String())
 			}
 
 			pconf := &printer.Config{Mode: printer.TabIndent | printer.UseSpaces, Tabwidth: 8}

@@ -1,4 +1,4 @@
-package tests_test
+package e2e_test
 
 // import (
 // 	"bytes"
@@ -8,7 +8,6 @@ package tests_test
 // 	"os"
 // 	"testing"
 
-// 	gen "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen"
 // 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 // 	"github.com/stretchr/testify/assert"
 // 	"go.uber.org/zap/zaptest"

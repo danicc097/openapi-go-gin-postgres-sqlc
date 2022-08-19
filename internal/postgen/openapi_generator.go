@@ -14,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	"github.com/dave/dst/dstutil"
@@ -118,14 +117,17 @@ func (o *OpenapiGenerator) analyzeHandlers(basenames []string) (map[string]map[s
 		}
 	}
 
-	o.findClashingMethodNames(basenames, handlers)
+	err := o.findClashingMethodNames(basenames, handlers)
+	if err != nil {
+		return nil, err
+	}
 
 	return handlers, nil
 }
 
 // findClashingMethodNames ensures no previous methods that are not
 // handlers conflict with a newly generated operation id.
-func (o *OpenapiGenerator) findClashingMethodNames(basenames []string, handlers map[string]map[string]HandlerFile) {
+func (o *OpenapiGenerator) findClashingMethodNames(basenames []string, handlers map[string]map[string]HandlerFile) error {
 	clashes := []string{}
 
 	for _, basename := range basenames {
@@ -133,7 +135,7 @@ func (o *OpenapiGenerator) findClashingMethodNames(basenames []string, handlers 
 		tag := cases.Title(language.English).String(reg.FindStringSubmatch(basename)[1])
 
 		for opID := range handlers[o.conf.GenHandlersDir][tag].Routes {
-			fmt.Printf("[%s] opID: %s\n", tag, opID)
+			// fmt.Printf("[%s] opID: %s\n", tag, opID)
 			_, rok := handlers[o.conf.CurrentHandlersDir][tag].Routes[opID]
 			_, mok := handlers[o.conf.CurrentHandlersDir][tag].Methods[opID]
 
@@ -149,8 +151,11 @@ Error: conflicting method names
 %s
 Please rename either the affected method or operation id.
 `, clashes)
-		os.Exit(1)
+
+		return errors.New("method name conflict")
 	}
+
+	return nil
 }
 
 // getCommonBasenames returns api filename (tag) intersections in current and raw gen dirs,
@@ -269,12 +274,6 @@ func (o *OpenapiGenerator) generateMergedFiles(handlers map[string]map[string]Ha
 		outF, ok := dst.Clone(currentHF.F).(*dst.File)
 		if !ok {
 			return errors.New("clone file node fail")
-		}
-		gh := handlers[o.conf.GenHandlersDir][tag]
-		fmt.Println(format.Underlined + format.Blue + tag + format.Off)
-
-		for _, cv := range gh.Routes {
-			fmt.Printf("gen r.Name: %s\n", cv.Name)
 		}
 
 		// get generated operation ids as list
