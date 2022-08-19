@@ -68,5 +68,5 @@ func (h *Default) OpenapiYamlGet(c *gin.Context) {
 
 // Ping ping pongs.
 func (h *Default) Ping(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "501 not implemented")
+	c.String(http.StatusOK, "pong")
 }

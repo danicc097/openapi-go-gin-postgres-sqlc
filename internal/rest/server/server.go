@@ -69,7 +69,7 @@ func New(conf Config) (*http.Server, error) {
 		NewStore(services.Store{Logger: conf.Logger, Pool: conf.DB}).
 		Register(vg, []gin.HandlerFunc{})
 	handlers.
-		NewUser(services.User{Logger: conf.Logger, Pool: conf.DB}).
+		NewUser(&handlers.UserConf{Logger: conf.Logger, Pool: conf.DB}).
 		Register(vg, []gin.HandlerFunc{})
 	// TODO /admin with authMw.EnsureAuthorized() in group
 
