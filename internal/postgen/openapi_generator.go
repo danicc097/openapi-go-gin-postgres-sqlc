@@ -30,18 +30,6 @@ func contains[T comparable](elems []T, v T) bool {
 	return false
 }
 
-type Conf struct {
-	// CurrentHandlersDir is the directory with edited generated files.
-	CurrentHandlersDir string
-	// GenHandlersDir is the directory with raw generated files for a given spec.
-	GenHandlersDir string
-	// OutHandlersDir is the directory to store merged files,
-	// which may differ from CurrentHandlersDir.
-	OutHandlersDir string
-	// OutServicesDir is the directory to store new default services.
-	OutServicesDir string
-}
-
 /*
 	Rationale:
 	We dont want users to manually add handlers and routes to handlers/*
@@ -57,6 +45,22 @@ type Conf struct {
 	its probably some handler helper method created afterwards) then panic and alert
 	the user to rename. it shouldve been unexported or a function in the first place anyway.
 */
+type OpenapiGenerator struct {
+	conf *Conf
+}
+
+// NewOpenapiGenerator returns a new postgen OpenapiGenerator.
+func NewOpenapiGenerator(conf *Conf) *OpenapiGenerator {
+	return &OpenapiGenerator{
+		conf: conf,
+	}
+}
+
+func (c *OpenapiGenerator) Generate() {
+	cb := c.getCommonBasenames()
+	handlers := c.analyzeHandlers(cb)
+	c.generateMergedFiles(handlers)
+}
 
 // generateService fills in a template with a default service struct to a dest.
 func generateService(tag string, dest io.Writer) {
@@ -79,12 +83,12 @@ type {{.Tag}} struct {
 	dest.Write(buf.Bytes())
 }
 
-// AnalyzeHandlers returns all necessary merging information about handlers, indexed
+// analyzeHandlers returns all necessary merging information about handlers, indexed
 // by directory and tag.
-func AnalyzeHandlers(conf Conf, basenames []string) map[string]map[string]HandlerFile {
+func (c *OpenapiGenerator) analyzeHandlers(basenames []string) map[string]map[string]HandlerFile {
 	handlers := make(map[string]map[string]HandlerFile)
 
-	dirs := []string{conf.GenHandlersDir, conf.CurrentHandlersDir}
+	dirs := []string{c.conf.GenHandlersDir, c.conf.CurrentHandlersDir}
 	for _, dir := range dirs {
 		handlers[dir] = make(map[string]HandlerFile)
 
@@ -118,14 +122,14 @@ func AnalyzeHandlers(conf Conf, basenames []string) map[string]map[string]Handle
 		}
 	}
 
-	findClashingMethodNames(basenames, handlers, conf)
+	findClashingMethodNames(basenames, handlers, c.conf)
 
 	return handlers
 }
 
 // findClashingMethodNames ensures no previous methods that are not
 // handlers conflict with a newly generated operation id.
-func findClashingMethodNames(basenames []string, handlers map[string]map[string]HandlerFile, conf Conf) {
+func findClashingMethodNames(basenames []string, handlers map[string]map[string]HandlerFile, conf *Conf) {
 	clashes := []string{}
 
 	for _, basename := range basenames {
@@ -153,14 +157,14 @@ Please rename either the affected method or operation id.
 	}
 }
 
-// GetCommonBasenames returns api filename (tag) intersections in current and raw gen dirs,
+// getCommonBasenames returns api filename (tag) intersections in current and raw gen dirs,
 // and copies non-intersecting files to the out dir without further analysis.
-func GetCommonBasenames(conf Conf) (out []string) {
+func (c *OpenapiGenerator) getCommonBasenames() (out []string) {
 	k := 0
-	currentBasenames := getApiBasenames(conf.CurrentHandlersDir)
-	genBasenames := getApiBasenames(conf.GenHandlersDir)
+	currentBasenames := getApiBasenames(c.conf.CurrentHandlersDir)
+	genBasenames := getApiBasenames(c.conf.GenHandlersDir)
 
-	os.MkdirAll(conf.OutHandlersDir, 0777)
+	os.MkdirAll(c.conf.OutHandlersDir, 0777)
 
 	for _, genBasename := range genBasenames {
 		if contains(currentBasenames, genBasename) {
@@ -170,12 +174,12 @@ func GetCommonBasenames(conf Conf) (out []string) {
 			continue
 		}
 
-		genBlob, err := os.ReadFile(path.Join(conf.GenHandlersDir, genBasename))
+		genBlob, err := os.ReadFile(path.Join(c.conf.GenHandlersDir, genBasename))
 		if err != nil {
 			panic(err)
 		}
 
-		os.WriteFile(path.Join(conf.OutHandlersDir, genBasename), genBlob, 0666)
+		os.WriteFile(path.Join(c.conf.OutHandlersDir, genBasename), genBlob, 0666)
 	}
 
 	genBasenames = genBasenames[:k]
@@ -187,12 +191,12 @@ func GetCommonBasenames(conf Conf) (out []string) {
 			continue
 		}
 
-		currentBlob, err := os.ReadFile(path.Join(conf.CurrentHandlersDir, currentBasename))
+		currentBlob, err := os.ReadFile(path.Join(c.conf.CurrentHandlersDir, currentBasename))
 		if err != nil {
 			panic(err)
 		}
 
-		os.WriteFile(path.Join(conf.OutHandlersDir, currentBasename), currentBlob, 0666)
+		os.WriteFile(path.Join(c.conf.OutHandlersDir, currentBasename), currentBlob, 0666)
 	}
 
 	return out
@@ -220,11 +224,11 @@ func replaceNodes(f *dst.File, genHf, currentHf HandlerFile, tag string, opId st
 	})
 }
 
-func GenerateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) {
-	for tag, currentHF := range handlers[conf.CurrentHandlersDir] {
+func (c *OpenapiGenerator) generateMergedFiles(handlers map[string]map[string]HandlerFile) {
+	for tag, currentHF := range handlers[c.conf.CurrentHandlersDir] {
 		//nolint: forcetypeassert
 		outF := dst.Clone(currentHF.F).(*dst.File)
-		gh := handlers[conf.GenHandlersDir][tag]
+		gh := handlers[c.conf.GenHandlersDir][tag]
 		fmt.Println(format.Underlined + format.Blue + tag + format.Off)
 
 		for _, cv := range gh.Routes {
@@ -232,10 +236,10 @@ func GenerateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 		}
 
 		// get generated operation ids as list
-		gkk := make([]string, len(handlers[conf.GenHandlersDir][tag].Methods))
+		gkk := make([]string, len(handlers[c.conf.GenHandlersDir][tag].Methods))
 		i := 0
 
-		for gk := range handlers[conf.GenHandlersDir][tag].Methods {
+		for gk := range handlers[c.conf.GenHandlersDir][tag].Methods {
 			gkk[i] = gk
 			i++
 		}
@@ -244,12 +248,12 @@ func GenerateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 			return gkk[i] < gkk[j]
 		})
 
-		genHF := handlers[conf.GenHandlersDir][tag]
+		genHF := handlers[c.conf.GenHandlersDir][tag]
 
 		for _, gk := range gkk {
 			if _, ok := currentHF.Methods[gk]; !ok {
 				fmt.Printf("method %s not in current %s - appending generated method.\n", gk, tag)
-				outF.Decls = append(outF.Decls, handlers[conf.GenHandlersDir][tag].Methods[gk].Decl)
+				outF.Decls = append(outF.Decls, handlers[c.conf.GenHandlersDir][tag].Methods[gk].Decl)
 
 				continue
 			}
@@ -259,7 +263,7 @@ func GenerateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 
 		buf := &bytes.Buffer{}
 
-		f, err := os.Create(path.Join(conf.OutHandlersDir, "api_"+strings.ToLower(tag)+".go"))
+		f, err := os.Create(path.Join(c.conf.OutHandlersDir, "api_"+strings.ToLower(tag)+".go"))
 		if err != nil {
 			panic(err)
 		}
@@ -272,8 +276,8 @@ func GenerateMergedFiles(handlers map[string]map[string]HandlerFile, conf Conf) 
 	}
 
 	// generate default service if not exists
-	for tag := range handlers[conf.GenHandlersDir] {
-		s := path.Join(conf.OutServicesDir, strings.ToLower(tag)+".go")
+	for tag := range handlers[c.conf.GenHandlersDir] {
+		s := path.Join(c.conf.OutServicesDir, strings.ToLower(tag)+".go")
 		if _, err := os.Stat(s); errors.Is(err, os.ErrNotExist) {
 			f, err := os.Create(s)
 			if err != nil {

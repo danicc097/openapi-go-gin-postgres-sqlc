@@ -127,8 +127,8 @@ x.generate-api() {
     "$TEMPLATE_DIR"
   go build -o postgen "$PWD"/cmd/postgen/main.go
   ./postgen
-  # TODO rename to api_*.gen.go for easier debugging if theyre needed
-  find "$GEN_OUT_DIR/gen/" -name "api_*.go" -type f -delete
+  # do not delete. necessary if we're using cache, as they won't be regenerated.
+  # find "$GEN_OUT_DIR/gen/" -name "api_*.go" -type f -delete
 }
 
 x.generate-sqlc() {

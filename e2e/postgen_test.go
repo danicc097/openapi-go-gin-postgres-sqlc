@@ -49,11 +49,10 @@ func setupTests() {
 	}
 }
 
-// TODO
-// create cmd/postgen/main.go (no args)
-// move this and testdata/ to tests/postgen_test.go
 func TestHandlerPostProcessing(t *testing.T) {
 	setupTests()
+
+	const baseDir = "testdata/postgen/openapi_generator"
 
 	cases := []struct {
 		Name string
@@ -64,22 +63,20 @@ func TestHandlerPostProcessing(t *testing.T) {
 			"merge_changes",
 		},
 		// {
-		// 	"Name clashing",
+		// 	"NameClashing",
 		// 	"name_clashing",
 		// },
 	}
 
 	for _, test := range cases {
 		t.Run(test.Name, func(t *testing.T) {
-			// TODO assert exit != 0 and want in stderr for name_clashing
+			// TODO  pass stderr io.Writer to c.Generate()
 			// stderr := ""
 			// if s := getStderr(t, test.Dir); s != "" {
 			// 	stderr = s
 			// }
-
 			var (
-				baseDir = "testdata/postgen/openapi_generator"
-				conf    = postgen.Conf{
+				conf = &postgen.Conf{
 					CurrentHandlersDir: path.Join(baseDir, string(test.Dir), "internal/handlers"),
 					GenHandlersDir:     path.Join(baseDir, string(test.Dir), "internal/gen"),
 					OutHandlersDir:     path.Join(baseDir, string(test.Dir), "got"),
@@ -92,10 +89,8 @@ func TestHandlerPostProcessing(t *testing.T) {
 				log.Fatal(err)
 			}
 
-			cb := postgen.GetCommonBasenames(conf)
-			handlers := postgen.AnalyzeHandlers(conf, cb)
-
-			postgen.GenerateMergedFiles(handlers, conf)
+			og := postgen.NewOpenapiGenerator(conf)
+			og.Generate()
 
 			pconf := &printer.Config{Mode: printer.TabIndent | printer.UseSpaces, Tabwidth: 8}
 			ff, _ := filepath.Glob(path.Join(conf.OutHandlersDir, "/*"))

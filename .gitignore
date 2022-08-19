@@ -1,12 +1,12 @@
 openapi-go-gin-postgres-sqlc
-bin/tools/*
+/bin/tools/*
 openapi-generator-cli.jar
-post-generate-api
-postgen
+/post-generate-api
+/postgen
 .openapi-generator
 **/swagger-ui/**/*
 tmp
-air-main
+/air-main
 go.work*
 *.log
 *.cache

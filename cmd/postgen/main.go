@@ -9,7 +9,7 @@ import (
 func main() {
 	var (
 		baseDir = "internal"
-		conf    = postgen.Conf{
+		conf    = &postgen.Conf{
 			CurrentHandlersDir: path.Join(baseDir, "handlers"),
 			GenHandlersDir:     path.Join(baseDir, "gen"),
 			OutHandlersDir:     path.Join(baseDir, "handlers"),
@@ -17,8 +17,6 @@ func main() {
 		}
 	)
 
-	cb := postgen.GetCommonBasenames(conf)
-	handlers := postgen.AnalyzeHandlers(conf, cb)
-
-	postgen.GenerateMergedFiles(handlers, conf)
+	og := postgen.NewOpenapiGenerator(conf)
+	og.Generate()
 }
