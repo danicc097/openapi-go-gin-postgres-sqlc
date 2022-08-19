@@ -34,12 +34,12 @@ package e2e_test
 // 	// teardownSuite := setupSuite(t)
 // 	// defer teardownSuite(t)
 // 	// cleanest: https://medium.com/nerd-for-tech/setup-and-teardown-unit-test-in-go-bd6fa1b785cd
+// 	// TODO log responses: add to helpers
+// 	// https://stackoverflow.com/questions/38501325/how-to-log-response-body-in-gin
+
 // 	pool := NewDB(t)
 // 	environment.Pool = pool
 // 	environment.Logger = zaptest.NewLogger(t)
-
-// 	// TODO log responses: add to helpers
-// 	// https://stackoverflow.com/questions/38501325/how-to-log-response-body-in-gin
 
 // 	router := gen.NewRouter()
 
