@@ -210,7 +210,10 @@ x.migrate() {
 }
 
 x.create-migration() {
-  x.migrate create -ext sql -dir db/migrations/ "$@"
+  name="$*"
+  tmp="${name// /_}"
+  tmp="${tmp,,}"
+  x.migrate create -ext sql -dir db/migrations/ "$tmp"
 }
 
 create_test_database() {
