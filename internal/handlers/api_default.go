@@ -4,23 +4,19 @@ import (
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
-	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/gin-gonic/gin"
 )
 
 // Default handles routes with the 'Default_' tag.
 type Default struct {
-	svc services.Default
 	// add or remove services, etc. as required
 }
 
 // NewDefault returns a new handler for the 'Default_' route group.
 // Edit as required.
-func NewDefault(svc services.Default) *Default {
-	return &Default{
-		svc: svc,
-	}
+func NewDefault() *Default {
+	return &Default{}
 }
 
 // Register connects handlers to an existing router group with the given middlewares.

@@ -321,6 +321,9 @@ func (o *OpenapiGenerator) generateMergedFiles(handlers map[string]map[string]Ha
 
 	// generate default service if not exists
 	for tag := range handlers[o.conf.GenHandlersDir] {
+		if tag == "Default" {
+			continue
+		}
 		s := path.Join(o.conf.OutServicesDir, strings.ToLower(tag)+".go")
 		if _, err := os.Stat(s); errors.Is(err, os.ErrNotExist) {
 			f, err := os.Create(s)

@@ -85,7 +85,7 @@ x.generate-tests-api() {
   local testdata="$BIN_DIR/../tests/testdata/postgen/openapi_generator"
   local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
 
-  cache="generate-tests-api.cache"
+  cache=".generate-tests-api.cache"
   tpl_changed=false
   mkdir -p "$cache"
   if ! md5sum -c "$cache/openapi_generator-go-gin-server-templates.md5"; then
@@ -110,7 +110,7 @@ x.generate-tests-api() {
 
 # TODO force gen flag
 x.generate-api() {
-  cache="generate-api.cache"
+  cache=".generate-api.cache"
   invalid_cache=false
   mkdir -p "$cache"
   if ! md5sum -c "$cache/go-gin-server-templates.md5" >/dev/null; then

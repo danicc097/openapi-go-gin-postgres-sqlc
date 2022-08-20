@@ -40,6 +40,7 @@ func (h *{{baseName}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
   }
 {{! hack since baseName is broken for the default tag }}
 {{#operation.0}}
+
   rest.RegisterRoutes(r, routes, "/{{#tags}}{{name}}{{/tags}}", mws)
 {{/operation.0}}
 }

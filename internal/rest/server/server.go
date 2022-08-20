@@ -59,7 +59,7 @@ func New(conf Config) (*http.Server, error) {
 	vg := router.Group(os.Getenv("API_VERSION"))
 
 	handlers.
-		NewDefault(services.Default{Logger: conf.Logger, Pool: conf.DB}).
+		NewDefault().
 		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated(), authMw.EnsureAuthorized()})
 	handlers.
 		NewFake(services.Fake{Logger: conf.Logger, Pool: conf.DB}).
