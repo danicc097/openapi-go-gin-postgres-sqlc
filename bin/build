@@ -82,7 +82,7 @@ x.openapi-generator() {
 
 # NOTE: jar won't output properly if absolute paths are passed from subdir
 x.generate-tests-api() {
-  local testdata="$BIN_DIR/../e2e/testdata/postgen/openapi_generator"
+  local testdata="$BIN_DIR/../tests/testdata/postgen/openapi_generator"
   local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
 
   cache="generate-tests-api.cache"

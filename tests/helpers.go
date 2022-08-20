@@ -1,4 +1,4 @@
-package e2e_test
+package tests
 
 import (
 	"context"
@@ -23,8 +23,8 @@ import (
 	"go.uber.org/zap"
 )
 
-// getStderr returns the contents of stderr.txt in dir.
-func getStderr(t *testing.T, dir string) string {
+// GetStderr returns the contents of stderr.txt in dir.
+func GetStderr(t *testing.T, dir string) string {
 	t.Helper()
 	path := filepath.Join(dir, "stderr.txt")
 

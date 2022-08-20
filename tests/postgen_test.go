@@ -1,4 +1,4 @@
-package e2e_test
+package tests_test
 
 import (
 	"bytes"
@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/tests"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -72,7 +73,7 @@ func TestHandlerPostProcessing(t *testing.T) {
 
 			err = og.Generate()
 			if err != nil {
-				s := getStderr(t, path.Join(baseDir, test.Dir, "want"))
+				s := tests.GetStderr(t, path.Join(baseDir, test.Dir, "want"))
 				// check stderr.txt is exactly as output
 				if diff := cmp.Diff(s, stderr.String()); s != "" && diff != "" {
 					t.Fatalf("stderr differed (-want +got):\n%s", diff)

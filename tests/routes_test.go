@@ -1,4 +1,4 @@
-package e2e_test
+package tests_test
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/tests"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +18,7 @@ func TestPingRoute(t *testing.T) {
 	teardownSuite := setupSuite(t)
 	defer teardownSuite(t)
 
-	srv, err := Run(t, "../.env", ":8099")
+	srv, err := tests.Run(t, "../.env", ":8099")
 	if err != nil {
 		log.Fatalf("Couldn't run: %s", err)
 	}
@@ -44,7 +45,7 @@ func TestCreateUserRoute(t *testing.T) {
 
 	var buf bytes.Buffer
 
-	srv, err := Run(t, "../.env", ":8099")
+	srv, err := tests.Run(t, "../.env", ":8099")
 	if err != nil {
 		log.Fatalf("Couldn't run: %s", err)
 	}
