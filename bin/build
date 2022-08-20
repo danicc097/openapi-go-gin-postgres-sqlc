@@ -138,10 +138,12 @@ x.generate-sqlc() {
 # automatic crud + queries based on existing indexes
 # does not work with a schema file. Must be run after x.migrate
 x.xo-generate-crud() {
-  source "$ENV_FILE"
-  mkdir -p internal/postgresql/gen/crud
-  xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
-    -o internal/postgresql/gen/crud
+  (
+    source "$ENV_FILE"
+    mkdir -p internal/postgresql/gen/crud
+    xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+      -o internal/postgresql/gen/crud
+  )
 }
 
 x.update-swagger-ui() {
@@ -158,6 +160,7 @@ x.generate() {
 }
 
 x.test() {
+  docker-compose up -d
   x.generate
   create_test_database
   godotenv -f "$ENV_FILE" go test ./... $@
@@ -202,11 +205,13 @@ x.download-swagger-ui() {
 }
 
 x.migrate() {
-  source "$ENV_FILE"
-  migrate \
-    -path db/migrations/ \
-    -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
-    "$@"
+  (
+    source "$ENV_FILE"
+    migrate \
+      -path db/migrations/ \
+      -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+      "$@"
+  )
 }
 
 x.create-migration() {
@@ -217,21 +222,22 @@ x.create-migration() {
 }
 
 create_test_database() {
-  declare -A env
-  get_envvars env .env
+  (
+    source "$ENV_FILE"
 
-  local postgres_test_db="${env[POSTGRES_DB]}_test"
+    local postgres_test_db="${POSTGRES_DB}_test"
 
-  drop_db "$postgres_test_db" .env
+    drop_db "$postgres_test_db" .env
 
-  echo "${BLUE}${BOLD}Stopping any running processes for database $postgres_test_db.${OFF}"
-  docker exec -t postgres_db_"${env[PROJECT_PREFIX]}"_"${env[APP_ENV]}" \
-    psql --no-psqlrc \
-    -U "${env[POSTGRES_USER]}" \
-    -d "${env[POSTGRES_DB]}" \
-    -c "select pg_terminate_backend(pid) \
+    echo "${BLUE}${BOLD}Stopping any running processes for database $postgres_test_db.${OFF}"
+    docker exec -t postgres_db_"$PROJECT_PREFIX"_"$APP_ENV" \
+      psql --no-psqlrc \
+      -U "$POSTGRES_USER" \
+      -d "$POSTGRES_DB" \
+      -c "select pg_terminate_backend(pid) \
         from pg_stat_activity \
         where datname='$postgres_test_db'"
+  )
 }
 
 # --------------------- completion and delegation --------------------

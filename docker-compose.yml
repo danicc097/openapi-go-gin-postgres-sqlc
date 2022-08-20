@@ -32,11 +32,13 @@ services:
       - "8300:8300"
     cap_add:
       - IPC_LOCK
+    restart: unless-stopped
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: myroot
       VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8300"
   redis:
     image: redis:6.2.3-alpine3.13
+    restart: unless-stopped
     ports:
       - "6379:6379"
 
