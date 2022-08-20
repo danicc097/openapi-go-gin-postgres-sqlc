@@ -137,7 +137,7 @@ x.generate-sqlc() {
 
 # automatic crud + queries based on existing indexes
 # does not work with a schema file. Must be run after x.migrate
-x.xo-generate-crud() {
+x.generate-xo-crud() {
   (
     source "$ENV_FILE"
     mkdir -p internal/postgresql/gen/crud
@@ -146,21 +146,30 @@ x.xo-generate-crud() {
   )
 }
 
-x.update-swagger-ui() {
+x.sync-swagger-ui() {
   cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
   cp "$SPEC" "$PWD"/internal/static/swagger-ui
 }
 
+x.generate-counterfeiter() {
+  counterfeiter -o internal/envvar/envvartesting/provider.gen.go internal/envvar/envvar.go Provider
+}
+
 x.generate() {
   go generate ./...
+  x.generate-counterfeiter
   x.generate-api "$SPEC" "$GEN_OUT_DIR" "$GEN_OUT_DIR/go-gin-server-templates"
-  x.update-swagger-ui
   x.generate-sqlc
-  x.xo-generate-crud
+  x.generate-xo-crud
+  x.sync-swagger-ui
+}
+
+x.compose-up() {
+  docker-compose up -d
 }
 
 x.test() {
-  docker-compose up -d
+  x.compose-up
   x.generate
   create_test_database
   godotenv -f "$ENV_FILE" go test ./... $@
@@ -172,14 +181,11 @@ x.build() {
 }
 
 x.run() {
-  docker-compose up -d
   x.build
   ./openapi-go-gin-postgres-sqlc -env="$ENV_FILE"
 }
 
 x.run-hot-reload() {
-  docker-compose up -d
-  x.test
   # cant run ./bin/build generate in cmd,
   # FORK and add list of extensions to https://github.com/cosmtrek/air/pull/322
   # alternative, have a simply file watcher that runs "build run" on file change instead of air!
@@ -187,11 +193,20 @@ x.run-hot-reload() {
   # (fswatch -v --exclude=".git/" ./* ; sleep 1) | xargs -I{} bash -c 'v="{}"; echo "$(basename $v) was changed"; bin/build run &'
   # //go:generate ../../bin/build generate in cmd main is not run on refresh.
   # and it would be an infinite loop of changes since build generate call go generate ./...
+  # we would need to stop looking for changes while prebuild is running, seems like events are being accumulated.
+
+  x.compose-up
+  # x.generate
   air \
     --build.cmd "go build -o ./air-main ./cmd/rest-server/" \
     --build.bin "./air-main -env=$ENV_FILE"
   # --build.pre_build_cmd "bin/build generate" \
   # --build.delay 4000
+  # fswatch internal | while read -r num; do
+  #   echo "$num fiels changed"
+  #   # fuser -k 8090/tcp || true
+  #   # bin/build run &
+  # done
 }
 
 x.download-swagger-ui() {

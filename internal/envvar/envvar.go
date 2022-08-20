@@ -12,10 +12,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 )
 
-//go:generate counterfeiter -generate
-
-//counterfeiter:generate -o envvartesting/provider.gen.go . Provider
-
 // Provider ...
 type Provider interface {
 	Get(key string) (string, error)
