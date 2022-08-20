@@ -173,7 +173,8 @@ func Run(env, address string) (<-chan error, error) {
 
 		// "ListenAndServe always returns a non-nil error. After Shutdown or Close, the returned error is
 		// ErrServerClosed."
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		err := srv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errC <- err
 		}
 	}()

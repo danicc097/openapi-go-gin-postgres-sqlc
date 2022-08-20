@@ -11,3 +11,4 @@ go.work*
 *.log
 *.cache
 /pom.xml
+/certificates/*
