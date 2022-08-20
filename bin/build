@@ -32,7 +32,7 @@ x.install-go-tools() {
   go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.15.0
   go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
   go install github.com/joho/godotenv/cmd/godotenv@latest
-  go install github.com/cosmtrek/air@latest
+  go install github.com/danicc097/air@v0.1
   go install github.com/xo/xo@latest
 
   GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
@@ -186,27 +186,13 @@ x.run() {
 }
 
 x.run-hot-reload() {
-  # cant run ./bin/build generate in cmd,
-  # FORK and add list of extensions to https://github.com/cosmtrek/air/pull/322
-  # alternative, have a simply file watcher that runs "build run" on file change instead of air!
-  # TODO but we would need to kill the running process in the background on every refresh
-  # (fswatch -v --exclude=".git/" ./* ; sleep 1) | xargs -I{} bash -c 'v="{}"; echo "$(basename $v) was changed"; bin/build run &'
-  # //go:generate ../../bin/build generate in cmd main is not run on refresh.
-  # and it would be an infinite loop of changes since build generate call go generate ./...
-  # we would need to stop looking for changes while prebuild is running, seems like events are being accumulated.
-
   x.compose-up
-  # x.generate
   air \
+    --build.pre_build_cmd "bin/build generate" \
     --build.cmd "go build -o ./air-main ./cmd/rest-server/" \
-    --build.bin "./air-main -env=$ENV_FILE"
-  # --build.pre_build_cmd "bin/build generate" \
-  # --build.delay 4000
-  # fswatch internal | while read -r num; do
-  #   echo "$num fiels changed"
-  #   # fuser -k 8090/tcp || true
-  #   # bin/build run &
-  # done
+    --build.bin "./air-main -env=$ENV_FILE" \
+    --build.exclude_regex ".gen.go,internal/gen/*,internal/postgresql/gen/*,testdata,_test.go" \
+    --build.stop_watch "internal/handlers/,internal/services/"
 }
 
 x.download-swagger-ui() {
