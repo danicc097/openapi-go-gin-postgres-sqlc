@@ -6,8 +6,10 @@ package envvar
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
+	"github.com/pkg/errors"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 )
@@ -54,4 +56,27 @@ func (c *Configuration) Get(key string) (string, error) {
 	}
 
 	return res, nil
+}
+
+var errEnvVarEmpty = errors.New("env var empty")
+
+func GetenvStr(key string) (string, error) {
+	v := os.Getenv(key)
+	if v == "" {
+		return v, errors.Wrap(errEnvVarEmpty, key)
+
+	}
+	return v, nil
+}
+
+func GetenvBool(key string) (bool, error) {
+	s, err := GetenvStr(key)
+	if err != nil {
+		return false, err
+	}
+	v, err := strconv.ParseBool(s)
+	if err != nil {
+		return false, err
+	}
+	return v, nil
 }

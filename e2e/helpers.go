@@ -40,6 +40,7 @@ func getStderr(t *testing.T, dir string) string {
 	return ""
 }
 
+// Run returns a new test server.
 func Run(tb testing.TB, env, address string) (*http.Server, error) {
 	if err := envvar.Load(env); err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
@@ -85,6 +86,7 @@ func Run(tb testing.TB, env, address string) (*http.Server, error) {
 	return srv, nil
 }
 
+// NewDB returns a new testing Postgres pool.
 func NewDB(tb testing.TB) *pgxpool.Pool {
 	tb.Helper()
 
@@ -95,7 +97,7 @@ func NewDB(tb testing.TB) *pgxpool.Pool {
 
 	conf := envvar.New(provider)
 
-	os.Setenv("POSTGRES_DB", "postgres_test")
+	tb.Setenv("POSTGRES_DB", "postgres_test")
 
 	pool, err := postgresql.New(conf)
 	if err != nil {

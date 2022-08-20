@@ -192,7 +192,8 @@ x.run-hot-reload() {
     --build.cmd "go build -o ./air-main ./cmd/rest-server/" \
     --build.bin "./air-main -env=$ENV_FILE" \
     --build.exclude_regex ".gen.go,internal/gen/*,internal/postgresql/gen/*,testdata,_test.go" \
-    --build.stop_watch "internal/handlers/,internal/services/"
+    --build.stop_watch "internal/handlers/,internal/services/" \
+    --build.delay 1000
 }
 
 x.download-swagger-ui() {
