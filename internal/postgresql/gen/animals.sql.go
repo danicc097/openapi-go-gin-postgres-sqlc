@@ -3,7 +3,7 @@
 //   sqlc v1.15.0
 // source: animals.sql
 
-package gen
+package db
 
 import (
 	"context"

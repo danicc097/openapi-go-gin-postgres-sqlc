@@ -20,7 +20,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/jackc/pgx/v4/stdlib"
-	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 // GetStderr returns the contents of stderr.txt in dir.
@@ -60,15 +60,6 @@ func Run(tb testing.TB, env, address string) (*http.Server, error) {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewRedis")
 	}
 
-	var logger *zap.Logger
-
-	switch os.Getenv("APP_ENV") {
-	case "dev":
-		logger, err = zap.NewDevelopment()
-	default:
-		logger, err = zap.NewProduction()
-	}
-
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.zapNew")
 	}
@@ -77,7 +68,7 @@ func Run(tb testing.TB, env, address string) (*http.Server, error) {
 		Address: address,
 		DB:      pool,
 		Redis:   rdb,
-		Logger:  logger,
+		Logger:  zaptest.NewLogger(tb),
 	})
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "New")
