@@ -93,9 +93,7 @@ x.generate-tests-api() {
     tpl_changed=true
   fi
 
-  echo "test_dirs $test_dirs"
   for test_dir in $test_dirs; do
-    echo "test_dir $test_dir"
     if [[ $tpl_changed == false ]] && md5sum -c "$cache/openapi_generator-$test_dir-openapi.md5"; then
       continue
     fi
