@@ -3,7 +3,6 @@ package tests_test
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -14,14 +13,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func setupSuite(t *testing.T) func(t *testing.T) {
+	t.Helper()
+
+	return func(t *testing.T) {
+		t.Helper()
+	}
+}
+
 func TestPingRoute(t *testing.T) {
 	teardownSuite := setupSuite(t)
 	defer teardownSuite(t)
 
-	srv, err := tests.Run(t, "../.env", ":8099")
-	if err != nil {
-		log.Fatalf("Couldn't run: %s", err)
-	}
+	srv := tests.NewServer(t)
+	defer srv.Close()
 
 	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/ping", nil)
 	resp := httptest.NewRecorder()
@@ -33,59 +38,50 @@ func TestPingRoute(t *testing.T) {
 }
 
 func TestCreateUserRoute(t *testing.T) {
-	// TODO move to helpers
-	// then have teardown and setup as needed per domain
 	teardownSuite := setupSuite(t)
 	defer teardownSuite(t)
-	// cleanest: https://medium.com/nerd-for-tech/setup-and-teardown-unit-test-in-go-bd6fa1b785cd
-	// TODO log responses: add to helpers
-	// https://stackoverflow.com/questions/38501325/how-to-log-response-body-in-gin
 
-	// FIXME missing programmatic migrations, etc. from removed NewDB, see old commits
+	srv := tests.NewServer(t)
+	defer srv.Close()
 
 	var buf bytes.Buffer
 
-	srv, err := tests.Run(t, "../.env", ":8099")
-	if err != nil {
-		log.Fatalf("Couldn't run: %s", err)
-	}
-
-	type Input struct {
+	type Params struct {
 		User interface{}
 	}
 
-	type Output struct {
+	type Want struct {
 		Status int
 	}
 
 	cases := []struct {
 		Name   string
-		Input  Input
-		Output Output
+		Params Params
+		Want   Want
 	}{
 		{
 			"Valid params",
-			Input{
+			Params{
 				User: models.CreateUserRequest{
 					Email:    "email",
 					Password: "password",
 					Username: "username",
 				}},
-			Output{Status: http.StatusOK},
+			Want{Status: http.StatusOK},
 		},
 		{
 			"Bad params",
-			Input{
+			Params{
 				User: struct {
 					Bad string `json:"bad,omitempty"`
 				}{"bad"}},
-			Output{Status: http.StatusBadRequest},
+			Want{Status: http.StatusBadRequest},
 		},
 	}
 
 	for _, test := range cases {
 		t.Run(test.Name, func(t *testing.T) {
-			if err := json.NewEncoder(&buf).Encode(test.Input.User); err != nil {
+			if err := json.NewEncoder(&buf).Encode(test.Params.User); err != nil {
 				t.Errorf("%v", err)
 			}
 
@@ -100,13 +96,7 @@ func TestCreateUserRoute(t *testing.T) {
 
 			srv.Handler.ServeHTTP(resp, req)
 			t.Logf("%v", resp)
-			assert.Equal(t, test.Output.Status, resp.Code)
+			assert.Equal(t, test.Want.Status, resp.Code)
 		})
-	}
-}
-
-func setupSuite(t *testing.T) func(t *testing.T) {
-
-	return func(t *testing.T) {
 	}
 }

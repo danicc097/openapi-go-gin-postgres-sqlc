@@ -28,16 +28,13 @@ type AuthorizationService interface {
 	RolePermissions() map[db.Role][]db.Role
 }
 
-// we dont want accidental edits to permissions
-// TODO memoize
+// RolePermissions returns access levels per role.
 func (a *Authorization) RolePermissions() map[db.Role][]db.Role {
-	rolePermissions := map[db.Role][]db.Role{
+	return map[db.Role][]db.Role{
 		db.RoleUser:    {db.RoleUser},
 		db.RoleManager: {db.RoleUser, db.RoleManager},
 		db.RoleAdmin:   {db.RoleUser, db.RoleManager, db.RoleAdmin},
 	}
-
-	return rolePermissions
 }
 
 func (a *Authorization) IsAuthorized(role, requiredRole db.Role) bool {
