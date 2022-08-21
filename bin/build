@@ -19,7 +19,86 @@ PWD="$(pwd)"
 ENV_FILE=".env"
 BIN_DIR=$(dirname "$0")
 
+################# prerequisites #################
+
+x.check.build-deps() {
+  local -i fails
+  x.check.bash || (echo "${RED}Failed bash check${OFF}" && ((fails++)))
+  x.check.go || (echo "${RED}Failed go check${OFF}" && ((fails++)))
+  x.check.java || (echo "${RED}Failed java check${OFF}" && ((fails++)))
+  x.check.curl || (echo "${RED}Failed curl check${OFF}" && ((fails++)))
+  x.check.docker || (echo "${RED}Failed docker check${OFF}" && ((fails++)))
+  x.check.docker-compose || (echo "${RED}Failed docker-compose check${OFF}" && ((fails++)))
+  x.check.direnv || (echo "${RED}Failed direnv check${OFF}" && ((fails++)))
+  ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met${OFF}"
+}
+
+x.check.bash() {
+  ((${BASH_VERSION:0:1} >= 4)) &&
+    printf "%-30s ✅\n" "Bash: ${BASH_VERSION:0:1}"
+}
+
+x.check.curl() {
+  local -a versa
+  mapfile versa < <(curl -V 2>&1)
+  if [[ "${versa[0]}" =~ ^[^\ ]+\ ([^\ ]+) ]]; then
+    printf "%-30s ✅\n" "Curl: ${BASH_REMATCH[1]}"
+    return 0
+  else
+    return 1
+  fi
+}
+
+x.check.go() {
+  local vers
+  vers=$(go version)
+  [[ "$vers" =~ ^[^\ ]+\ [^\ ]+\ go1\.([^\ \.]+) ]] &&
+    ((BASH_REMATCH[1] >= 18)) &&
+    printf "%-30s ✅\n" "Go: ${BASH_REMATCH[1]}"
+}
+
+x.check.docker() {
+  local vers
+  vers=$(docker --version)
+  [[ "$vers" =~ version[\ ]+([^\ \.]+) ]] &&
+    ((BASH_REMATCH[1] >= 20)) &&
+    printf "%-30s ✅\n" "Docker: ${BASH_REMATCH[1]}"
+}
+
+x.check.docker-compose() {
+  local vers
+  vers=$(docker-compose version)
+  [[ "$vers" =~ [\ ]+v([0-9]+)[\.]{1} ]] &&
+    ((BASH_REMATCH[1] >= 2)) &&
+    printf "%-30s ✅\n" "Docker Compose: ${BASH_REMATCH[1]}"
+}
+
+x.check.direnv() {
+  local vers
+  vers=$(direnv --version)
+  [[ "$vers" =~ ([0-9]+)[\.]{1} ]] &&
+    ((BASH_REMATCH[1] >= 2)) &&
+    printf "%-30s ✅\n" "Direnv: ${BASH_REMATCH[1]}"
+}
+
+x.check.java() {
+  local jvers
+  jvers=$(java -version 2>&1 | head -1)
+  jvers=${jvers#*version \"}
+  jvers=${jvers%%\"*}
+  if [[ 
+    $jvers =~ ^(1\.[89]|9\.|[1-9][0-9]+) ]]; then
+    printf "%-30s ✅\n" "Java: $jvers"
+    return 0
+  else
+    return 1
+  fi
+}
+
+#################
+
 x.bootstrap() {
+  x.check.build-deps
   x.install-tools
   x.fetch-openapi-generator-jar
   x.download-swagger-ui
