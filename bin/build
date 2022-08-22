@@ -87,11 +87,11 @@ x.generate-api() {
   invalid_cache=false
   mkdir -p "$cache"
 
-  if [[ ! $(md5sum -c "$cache/$prefix-go-gin-server-templates.md5" >/dev/null) ]]; then
+  if ! md5sum -c "$cache/$prefix-go-gin-server-templates.md5" >/dev/null; then
     md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/$prefix-go-gin-server-templates.md5"
     invalid_cache=true
   fi
-  if [[ ! $(md5sum -c "$cache/$prefix-openapi.md5" >/dev/null) ]]; then
+  if ! md5sum -c "$cache/$prefix-openapi.md5" >/dev/null; then
     md5sum "$BIN_DIR"/../openapi.yaml >"$cache/$prefix-openapi.md5"
     invalid_cache=true
   fi
