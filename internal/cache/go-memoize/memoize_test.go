@@ -91,19 +91,19 @@ func (t *F) TestBasic() {
 	cache := NewMemoizer(90*time.Second, 10*time.Minute)
 
 	// First call SHOULD NOT be cached
-	result, err, cached := cache.Memoize("key1", expensive)
+	result, err, cached := Memoize(cache, "key1", expensive)
 	t.So(err, ShouldBeNil)
 	t.So(result.(int), ShouldEqual, 1)
 	t.So(cached, ShouldBeFalse)
 
 	// Second call on same key SHOULD be cached
-	result, err, cached = cache.Memoize("key1", expensive)
+	result, err, cached = Memoize(cache, "key1", expensive)
 	t.So(err, ShouldBeNil)
 	t.So(result.(int), ShouldEqual, 1)
 	t.So(cached, ShouldBeTrue)
 
 	// First call on a new key SHOULD NOT be cached
-	result, err, cached = cache.Memoize("key2", expensive)
+	result, err, cached = Memoize(cache, "key2", expensive)
 	t.So(err, ShouldBeNil)
 	t.So(result.(int), ShouldEqual, 2)
 	t.So(cached, ShouldBeFalse)
@@ -127,19 +127,19 @@ func (t *F) TestFailure() {
 	cache := NewMemoizer(90*time.Second, 10*time.Minute)
 
 	// First call should fail, and not be cached
-	result, err, cached := cache.Memoize("key1", twoForTheMoney)
+	result, err, cached := Memoize(cache, "key1", twoForTheMoney)
 	t.So(err, ShouldNotBeNil)
 	t.So(result.(int), ShouldEqual, 1)
 	t.So(cached, ShouldBeFalse)
 
 	// Second call should succeed, and not be cached
-	result, err, cached = cache.Memoize("key1", twoForTheMoney)
+	result, err, cached = Memoize(cache, "key1", twoForTheMoney)
 	t.So(err, ShouldBeNil)
 	t.So(result.(int), ShouldEqual, 2)
 	t.So(cached, ShouldBeFalse)
 
 	// Third call should succeed, and be cached
-	result, err, cached = cache.Memoize("key1", twoForTheMoney)
+	result, err, cached = Memoize(cache, "key1", twoForTheMoney)
 	t.So(err, ShouldBeNil)
 	t.So(result.(int), ShouldEqual, 2)
 	t.So(cached, ShouldBeTrue)

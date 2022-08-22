@@ -29,14 +29,12 @@ func NewMemoizer(defaultExpiration, cleanupInterval time.Duration) *Memoizer {
 // Memoize executes and returns the results of the given function, unless there was a cached value of the same key.
 // Only one execution is in-flight for a given key at a time.
 // The boolean return value indicates whether v was previously stored.
-func (m *Memoizer) Memoize(key string, fn func() (any, error)) (any, error, bool) {
-	// Check cache
+func Memoize[T any](m *Memoizer, key string, fn func() (T, error)) (T, error, bool) {
 	value, found := m.Storage.Get(key)
 	if found {
-		return value, nil, true
+		return value.(T), nil, true
 	}
 
-	// Combine memoized function with a cache store
 	value, err, _ := m.group.Do(key, func() (any, error) {
 		data, innerErr := fn()
 
@@ -46,5 +44,5 @@ func (m *Memoizer) Memoize(key string, fn func() (any, error)) (any, error, bool
 
 		return data, innerErr
 	})
-	return value, err, false
+	return value.(T), err, false
 }

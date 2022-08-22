@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=SC1091,SC2155,SC2068
+# shellcheck disable=1091,2155,2068,2086
 
 source "${BASH_SOURCE%/*}/.helpers.sh"
 source "${BASH_SOURCE%/*}/scripts/deps-check.sh"
@@ -60,6 +60,7 @@ x.download-swagger-ui() {
 }
 
 # NOTE: jar won't output properly if absolute paths are passed from subdir
+# TODO refactor and use x.generate-api for every test dir, but without x.postgen
 x.generate-tests-api() {
   local testdata="$BIN_DIR/../tests/testdata/postgen/openapi_generator"
   local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
@@ -85,9 +86,9 @@ x.generate-tests-api() {
   done
 }
 
-# TODO force gen flag
+# TODO make it runnable anywhere inside repo and replace most of generate-tests-api
 x.generate-api() {
-  cache=".generate-api.cache"
+  cache="$1"
   invalid_cache=false
   mkdir -p "$cache"
   if ! md5sum -c "$cache/go-gin-server-templates.md5" >/dev/null; then
@@ -98,10 +99,18 @@ x.generate-api() {
     md5sum "$BIN_DIR"/../openapi.yaml >"$cache/openapi.md5"
     invalid_cache=true
   fi
-  [[ $invalid_cache == true ]] && x.openapi-generator \
-    "$SPEC" \
-    "$GEN_OUT_DIR" \
-    "$TEMPLATE_DIR"
+
+  if [[ $invalid_cache == true ]]; then
+    x.openapi-generator \
+      "$SPEC" \
+      "$GEN_OUT_DIR" \
+      "$TEMPLATE_DIR"
+  fi
+}
+
+x.postgen() {
+  cache="$1"
+  mkdir -p "$cache"
   go build -o postgen "$PWD"/cmd/postgen/main.go
   POSTGEN_CACHE="$cache" ./postgen
   mv "$GEN_OUT_DIR"/gen/api_*.go "$cache/" 2>/dev/null || true
@@ -113,8 +122,8 @@ x.generate-sqlc() {
 }
 
 # automatic crud + queries based on existing indexes
-# does not work with a schema file. Must be run after x.migrate
-x.generate-xo-crud() {
+# does not work with a schema file. Must therefore be run after migrate up
+x.generate-xo() {
   (
     source "$ENV_FILE"
     mkdir -p internal/postgresql/gen/crud
@@ -133,11 +142,14 @@ x.generate-counterfeiter() {
 }
 
 x.generate() {
+  cache=".generate-api.cache"
+
   go generate ./...
   x.generate-counterfeiter
-  x.generate-api "$SPEC" "$GEN_OUT_DIR" "$GEN_OUT_DIR/go-gin-server-templates"
+  x.generate-api "$cache"
+  x.postgen "$cache"
   x.generate-sqlc
-  x.generate-xo-crud
+  x.generate-xo
   x.sync-swagger-ui
 }
 
@@ -226,9 +238,9 @@ x.openapi-generator() {
   local gen_out_dir="$2"
   local template_dir="$3"
 
-  [[ -z $spec ]] && echo "generate-api: spec required" && exit 1
-  [[ -z $gen_out_dir ]] && echo "generate-api: out dir required" && exit 1
-  [[ -z $template_dir ]] && echo "generate-api: template dir required" && exit 1
+  [[ -z $spec ]] && echo "openapi-generator: spec required" && exit 1
+  [[ -z $gen_out_dir ]] && echo "openapi-generator: out dir required" && exit 1
+  [[ -z $template_dir ]] && echo "openapi-generator: template dir required" && exit 1
   echo "Generating API from $spec"
   echo "Generation directory: $gen_out_dir"
   echo "Template override directory: $template_dir"
@@ -253,6 +265,7 @@ x.openapi-generator() {
   rm -rf "$gen_out_dir/api"
 }
 
+# can also be used to generate changelogs when upgrading major versions
 x.diff-openapi-spec() {
   commit=2
   # use latest main commit as base if spec has not changed or in another branch
@@ -267,8 +280,8 @@ x.diff-openapi-spec() {
   base_v="${tmp%%.*}"
   tmp=$(yq .info.version "$SPEC")
   rev_v="${tmp%%.*}"
-  [[ $rev_v > $base_v ]] &&
-    echo "${GREEN}Revision major version $rev_v > $base_v, skipping diff.${OFF}" && return
+  ((rev_v != base_v)) &&
+    echo "${YELLOW}Revision mismatch $rev_v and $base_v, skipping diff.${OFF}" && return
 
   args="-format text -breaking-only -fail-on-diff"
   if oasdiff $args -base "$base_spec" -revision $SPEC; then

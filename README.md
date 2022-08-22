@@ -32,6 +32,13 @@ Any custom field with an `x-*` name pattern in the OpenAPI spec will be availabl
 
 ## TODOs
 
+  - [Oauth2 as openapi
+    spec](https://github.com/ybelenko/oauth2_as_oas3_components/tree/master/dist/components)
+    with endpoints clearly documented based on RFCs
+    Can generate a mock with e.g.
+    [openapi-mock](https://github.com/muonsoft/openapi-mock).
+
+
   - OAS 3.0 **Schema validator** for path params, query params and body. Alternative,
    roll out a simple generated one (see generator logs for available fields in
    templates. Something very similar is already being developed in
@@ -55,4 +62,13 @@ Any custom field with an `x-*` name pattern in the OpenAPI spec will be availabl
   middleware on the api version route group:
       https://stackoverflow.com/questions/69948784/how-to-handle-errors-in-gin-middleware
       in combination with internal/rest/rest.go renderErrorResponse
+
+  - frontend miscellanea:
+    1. codegen from oas:
+      - ts client (openapitools)
+      - react-query components (fabien0102/openapi-codegen)
+      - React Query hooks, Axios requests and Typescript types (rametta/rapini)
+      - Redux toolkit has its [own
+        generator](https://github.com/reduxjs/redux-toolkit/tree/master/packages/rtk-query-codegen-openapi)
+        and can generate hooks. Uses rtk-query.
 
