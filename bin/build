@@ -2,6 +2,7 @@
 # shellcheck disable=SC1091,SC2155,SC2068
 
 source "${BASH_SOURCE%/*}/.helpers.sh"
+source "${BASH_SOURCE%/*}/scripts/deps-check.sh"
 
 set -e
 
@@ -19,87 +20,11 @@ PWD="$(pwd)"
 ENV_FILE=".env"
 BIN_DIR=$(dirname "$0")
 
-################# prerequisites #################
-
-x.check.build-deps() {
-  local -i fails
-  x.check.bash || (echo "${RED}Failed bash check${OFF}" && ((fails++)))
-  x.check.go || (echo "${RED}Failed go check${OFF}" && ((fails++)))
-  x.check.java || (echo "${RED}Failed java check${OFF}" && ((fails++)))
-  x.check.curl || (echo "${RED}Failed curl check${OFF}" && ((fails++)))
-  x.check.docker || (echo "${RED}Failed docker check${OFF}" && ((fails++)))
-  x.check.docker-compose || (echo "${RED}Failed docker-compose check${OFF}" && ((fails++)))
-  x.check.direnv || (echo "${RED}Failed direnv check${OFF}" && ((fails++)))
-  ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met${OFF}"
-}
-
-x.check.bash() {
-  ((${BASH_VERSION:0:1} >= 4)) &&
-    printf "%-30s ✅\n" "Bash: ${BASH_VERSION:0:1}"
-}
-
-x.check.curl() {
-  local -a versa
-  mapfile versa < <(curl -V 2>&1)
-  if [[ "${versa[0]}" =~ ^[^\ ]+\ ([^\ ]+) ]]; then
-    printf "%-30s ✅\n" "Curl: ${BASH_REMATCH[1]}"
-    return 0
-  else
-    return 1
-  fi
-}
-
-x.check.go() {
-  local vers
-  vers=$(go version)
-  [[ "$vers" =~ ^[^\ ]+\ [^\ ]+\ go1\.([^\ \.]+) ]] &&
-    ((BASH_REMATCH[1] >= 18)) &&
-    printf "%-30s ✅\n" "Go: ${BASH_REMATCH[1]}"
-}
-
-x.check.docker() {
-  local vers
-  vers=$(docker --version)
-  [[ "$vers" =~ version[\ ]+([^\ \.]+) ]] &&
-    ((BASH_REMATCH[1] >= 20)) &&
-    printf "%-30s ✅\n" "Docker: ${BASH_REMATCH[1]}"
-}
-
-x.check.docker-compose() {
-  local vers
-  vers=$(docker-compose version)
-  [[ "$vers" =~ [\ ]+v([0-9]+)[\.]{1} ]] &&
-    ((BASH_REMATCH[1] >= 2)) &&
-    printf "%-30s ✅\n" "Docker Compose: ${BASH_REMATCH[1]}"
-}
-
-x.check.direnv() {
-  local vers
-  vers=$(direnv --version)
-  [[ "$vers" =~ ([0-9]+)[\.]{1} ]] &&
-    ((BASH_REMATCH[1] >= 2)) &&
-    printf "%-30s ✅\n" "Direnv: ${BASH_REMATCH[1]}"
-}
-
-x.check.java() {
-  local jvers
-  jvers=$(java -version 2>&1 | head -1)
-  jvers=${jvers#*version \"}
-  jvers=${jvers%%\"*}
-  if [[ 
-    $jvers =~ ^(1\.[89]|9\.|[1-9][0-9]+) ]]; then
-    printf "%-30s ✅\n" "Java: $jvers"
-    return 0
-  else
-    return 1
-  fi
-}
-
-#################
+############## tools and dependencies ##############
 
 x.bootstrap() {
-  x.check.build-deps
-  x.install-tools
+  check.build-deps
+  x.install-go-tools
   x.fetch-openapi-generator-jar
   x.download-swagger-ui
 }
@@ -113,6 +38,7 @@ x.install-go-tools() {
   go install github.com/joho/godotenv/cmd/godotenv@latest
   go install github.com/danicc097/air@v0.1
   go install github.com/xo/xo@latest
+  go install github.com/tufin/oasdiff@latest
 
   GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
 }
@@ -123,40 +49,14 @@ x.fetch-openapi-generator-jar() {
   curl -L "$url" -o openapi-generator-cli.jar
 }
 
-x.validate() {
-  java -jar openapi-generator-cli.jar validate -i "${1:-$SPEC}"
-}
-
-x.openapi-generator() {
-  local spec="$1"
-  local gen_out_dir="$2"
-  local template_dir="$3"
-
-  [[ -z $spec ]] && echo "generate-api: spec required" && exit 1
-  [[ -z $gen_out_dir ]] && echo "generate-api: out dir required" && exit 1
-  [[ -z $template_dir ]] && echo "generate-api: template dir required" && exit 1
-  echo "Generating API from $spec"
-  echo "Generation directory: $gen_out_dir"
-  echo "Template override directory: $template_dir"
-
-  rm -rf "$gen_out_dir/gen"
-  # debug has a very small overhead compared to the >1s required per spec
-  java -jar "$BIN_DIR"/../openapi-generator-cli.jar generate \
-    -g go-gin-server \
-    -i "$spec" \
-    -o "$gen_out_dir" \
-    -t "$template_dir" \
-    --additional-properties=packageName=openapi,apiPath=gen,hideGenerationTimestamp=true \
-    --enable-post-process-file \
-    --global-property=debugModels,debugOperations >debug-openapi.log #>/dev/null \
-
-  mkdir -p "$gen_out_dir"/gen/models
-  mkdir -p "$gen_out_dir"/handlers
-  mkdir -p "$gen_out_dir"/services
-  mkdir -p "$gen_out_dir"/rest
-  mv "$gen_out_dir"/gen/routers.go "$gen_out_dir"/rest
-  mv "$gen_out_dir"/gen/model_*.go "$gen_out_dir"/gen/models 2>/dev/null || echo "No model files found. Skipping"
-  rm -rf "$gen_out_dir/api"
+x.download-swagger-ui() {
+  name="$(curl --silent "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
+  curl -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
+  tar xf swagger-ui.tar.gz swagger-ui-"${name#*v}"/dist --one-top-level=swagger-ui --strip-components=2
+  rm swagger-ui.tar.gz
+  mkdir -p internal/static/swagger-ui
+  mv swagger-ui/* internal/static/swagger-ui/
+  rm -r swagger-ui
 }
 
 # NOTE: jar won't output properly if absolute paths are passed from subdir
@@ -249,7 +149,7 @@ x.test() {
   x.compose-up
   x.generate
   create_test_database
-  godotenv -f "$ENV_FILE" go test ./... "$@"
+  godotenv -f "$ENV_FILE" go test $@ ./...
 }
 
 x.build() {
@@ -273,15 +173,11 @@ x.run-hot-reload() {
     --build.delay 1000
 }
 
-x.download-swagger-ui() {
-  name="$(curl --silent "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
-  curl -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
-  tar xf swagger-ui.tar.gz swagger-ui-"${name#*v}"/dist --one-top-level=swagger-ui --strip-components=2
-  rm swagger-ui.tar.gz
-  mkdir -p internal/static/swagger-ui
-  mv swagger-ui/* internal/static/swagger-ui/
-  rm -r swagger-ui
+x.release() {
+  x.diff-openapi-spec
 }
+
+############## migrations ##############
 
 x.migrate() {
   (
@@ -294,10 +190,10 @@ x.migrate() {
 }
 
 x.create-migration() {
-  name="$*"
-  tmp="${name// /_}"
-  tmp="${tmp,,}"
-  x.migrate create -ext sql -dir db/migrations/ "$tmp"
+  tmp="$*"
+  tmp="${tmp// /_}"
+  name="${tmp,,}"
+  x.migrate create -ext sql -dir db/migrations/ "$name"
 }
 
 create_test_database() {
@@ -317,6 +213,69 @@ create_test_database() {
         from pg_stat_activity \
         where datname='$postgres_test_db'"
   )
+}
+
+############## openapi ##############
+
+x.validate() {
+  java -jar openapi-generator-cli.jar validate -i "${1:-$SPEC}"
+}
+
+x.openapi-generator() {
+  local spec="$1"
+  local gen_out_dir="$2"
+  local template_dir="$3"
+
+  [[ -z $spec ]] && echo "generate-api: spec required" && exit 1
+  [[ -z $gen_out_dir ]] && echo "generate-api: out dir required" && exit 1
+  [[ -z $template_dir ]] && echo "generate-api: template dir required" && exit 1
+  echo "Generating API from $spec"
+  echo "Generation directory: $gen_out_dir"
+  echo "Template override directory: $template_dir"
+
+  rm -rf "$gen_out_dir/gen"
+  # debug has a very small overhead compared to the >1s required per spec
+  java -jar "$BIN_DIR"/../openapi-generator-cli.jar generate \
+    -g go-gin-server \
+    -i "$spec" \
+    -o "$gen_out_dir" \
+    -t "$template_dir" \
+    --additional-properties=packageName=openapi,apiPath=gen,hideGenerationTimestamp=true \
+    --enable-post-process-file \
+    --global-property=debugModels,debugOperations >debug-openapi.log #>/dev/null \
+
+  mkdir -p "$gen_out_dir"/gen/models
+  mkdir -p "$gen_out_dir"/handlers
+  mkdir -p "$gen_out_dir"/services
+  mkdir -p "$gen_out_dir"/rest
+  mv "$gen_out_dir"/gen/routers.go "$gen_out_dir"/rest
+  mv "$gen_out_dir"/gen/model_*.go "$gen_out_dir"/gen/models 2>/dev/null || echo "No model files found. Skipping"
+  rm -rf "$gen_out_dir/api"
+}
+
+x.diff-openapi-spec() {
+  commit=2
+  # use latest main commit as base if spec has not changed or in another branch
+  git diff --exit-code "$SPEC" &>/dev/null && commit=1
+  [[ $(git branch --show-current) != "main" ]] && commit=1
+
+  commit_name="$(git log --oneline -- $SPEC | sed -n ${commit}p | awk '{print $1}')"
+  base_spec="/tmp/openapi.yaml"
+  git show "main@{$commit_name}:$SPEC" >"$base_spec"
+
+  tmp="$(yq .info.version "$base_spec")"
+  base_v="${tmp%%.*}"
+  tmp=$(yq .info.version "$SPEC")
+  rev_v="${tmp%%.*}"
+  [[ $rev_v > $base_v ]] &&
+    echo "${GREEN}Revision major version $rev_v > $base_v, skipping diff.${OFF}" && return
+
+  args="-format text -breaking-only -fail-on-diff"
+  if oasdiff $args -base "$base_spec" -revision $SPEC; then
+    echo "${GREEN}No breaking changes found in $SPEC.${OFF}"
+  else
+    echo "${RED}Breaking changes found in $SPEC.${OFF}"
+  fi
 }
 
 # --------------------- completion and delegation --------------------

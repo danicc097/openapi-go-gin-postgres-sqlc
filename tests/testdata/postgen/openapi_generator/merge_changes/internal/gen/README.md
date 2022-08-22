@@ -12,7 +12,7 @@ To see how to make this your own, look here:
 
 [README](https://openapi-generator.tech)
 
-- API version: 1.0.0
+- API version: 2.0.0
 
 ### Running the server
 
