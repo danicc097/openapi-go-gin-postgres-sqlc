@@ -66,20 +66,10 @@ x.generate-tests-api() {
   local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
 
   cache=".generate-tests-api.cache"
-  tpl_changed=false
-  mkdir -p "$cache"
-  if ! md5sum -c "$cache/openapi_generator-go-gin-server-templates.md5"; then
-    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/openapi_generator-go-gin-server-templates.md5"
-    tpl_changed=true
-  fi
-
   for test_dir in $test_dirs; do
-    if [[ $tpl_changed == false ]] && md5sum -c "$cache/openapi_generator-$test_dir-openapi.md5"; then
-      continue
-    fi
-    md5sum "$testdata/$test_dir/openapi.yaml" >"$cache/openapi_generator-$test_dir-openapi.md5"
-    mkdir -p "$testdata/$test_dir/internal"
-    x.openapi-generator \
+    x.generate-api \
+      "$cache" \
+      "$test_dir" \
       "$testdata/$test_dir/openapi.yaml" \
       "$testdata/$test_dir/internal" \
       "$BIN_DIR/../internal/go-gin-server-templates"
@@ -89,22 +79,28 @@ x.generate-tests-api() {
 # TODO make it runnable anywhere inside repo and replace most of generate-tests-api
 x.generate-api() {
   cache="$1"
+  prefix="$2"
+  spec="$3"
+  gen_out_dir="$4"
+  template_dir="$5"
+
   invalid_cache=false
   mkdir -p "$cache"
-  if ! md5sum -c "$cache/go-gin-server-templates.md5" >/dev/null; then
-    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/go-gin-server-templates.md5"
+
+  if [[ ! $(md5sum -c "$cache/$prefix-go-gin-server-templates.md5" >/dev/null) ]]; then
+    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/$prefix-go-gin-server-templates.md5"
     invalid_cache=true
   fi
-  if ! md5sum -c "$cache/openapi.md5" >/dev/null; then
-    md5sum "$BIN_DIR"/../openapi.yaml >"$cache/openapi.md5"
+  if [[ ! $(md5sum -c "$cache/$prefix-openapi.md5" >/dev/null) ]]; then
+    md5sum "$BIN_DIR"/../openapi.yaml >"$cache/$prefix-openapi.md5"
     invalid_cache=true
   fi
 
   if [[ $invalid_cache == true ]]; then
     x.openapi-generator \
-      "$SPEC" \
-      "$GEN_OUT_DIR" \
-      "$TEMPLATE_DIR"
+      "$spec" \
+      "$gen_out_dir" \
+      "$template_dir"
   fi
 }
 
@@ -146,7 +142,7 @@ x.generate() {
 
   go generate ./...
   x.generate-counterfeiter
-  x.generate-api "$cache"
+  x.generate-api "$cache" "internal" "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
   x.postgen "$cache"
   x.generate-sqlc
   x.generate-xo
