@@ -7,10 +7,7 @@ info:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   title: OpenAPI Petstore
-  version: 1.0.0
-externalDocs:
-  description: Find out more about Swagger
-  url: http://swagger.io
+  version: 2.0.0
 servers:
   - url: https://localhost:8090/v2
 tags:
