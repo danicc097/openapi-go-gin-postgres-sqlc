@@ -22,8 +22,22 @@ BIN_DIR=$(dirname "$0")
 
 ############## tools and dependencies ##############
 
+x.check-build-deps() {
+  local -i fails
+  check.bash || { ((fails++)) && true; }
+  check.go || { ((fails++)) && true; }
+  check.java || { ((fails++)) && true; }
+  check.curl || { ((fails++)) && true; }
+  check.docker || { ((fails++)) && true; }
+  check.docker-compose || { ((fails++)) && true; }
+  check.direnv || { ((fails++)) && true; }
+  check.yq || { ((fails++)) && true; }
+
+  { ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met${OFF}"; } || exit 1
+}
+
 x.bootstrap() {
-  check.build-deps
+  x.check-build-deps
   x.install-go-tools
   x.fetch-openapi-generator-jar
   x.download-swagger-ui
