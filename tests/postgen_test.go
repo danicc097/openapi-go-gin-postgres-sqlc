@@ -71,20 +71,22 @@ func TestHandlerPostProcessing(t *testing.T) {
 			var stderr bytes.Buffer
 			og := postgen.NewOpenapiGenerator(conf, &stderr)
 
+			s := tests.GetStderr(t, path.Join(baseDir, test.Dir, "want"))
+
 			err = og.Generate()
-			if err != nil {
-				s := tests.GetStderr(t, path.Join(baseDir, test.Dir, "want"))
+			if err != nil && s != "" {
 				// check stderr.txt is exactly as output
-				if diff := cmp.Diff(s, stderr.String()); s != "" && diff != "" {
+				if diff := cmp.Diff(s, stderr.String()); diff != "" {
 					t.Fatalf("stderr differed (-want +got):\n%s", diff)
 				}
+
+				return
+			} else if err != nil {
+				t.Fatalf("err: %s\nstderr: %s\n", err, &stderr)
 			}
 
 			pconf := &printer.Config{Mode: printer.TabIndent | printer.UseSpaces, Tabwidth: 8}
-			ff, err := filepath.Glob(path.Join(conf.OutHandlersDir, "/*"))
-			if err != nil {
-				t.Fatalf("OutHandlersDir glob failed")
-			}
+			ff, _ := filepath.Glob(path.Join(baseDir, test.Dir, "want", "/*"))
 			for _, f := range ff {
 				basename := path.Base(f)
 				wp := path.Join(baseDir, test.Dir, "want", basename)
@@ -94,9 +96,14 @@ func TestHandlerPostProcessing(t *testing.T) {
 				want := &bytes.Buffer{}
 				got := &bytes.Buffer{}
 
-				printContent(t, string(wantBlob), pconf, want)
-				printContent(t, string(gotBlob), pconf, got)
-
+				err := printContent(t, string(wantBlob), pconf, want)
+				if err != nil {
+					t.Fatal(err)
+				}
+				err = printContent(t, string(gotBlob), pconf, got)
+				if err != nil {
+					t.Fatal(err)
+				}
 				if diff := cmp.Diff(want.String(), got.String()); diff != "" {
 					t.Errorf("strings differed (-want +got):\n%s", diff)
 				}
@@ -106,24 +113,26 @@ func TestHandlerPostProcessing(t *testing.T) {
 }
 
 // printContent normalizes source code and prints to a dest.
-func printContent(t *testing.T, content string, pconf *printer.Config, dest io.Writer) {
+func printContent(t *testing.T, content string, pconf *printer.Config, dest io.Writer) error {
 	t.Helper()
 	fset := token.NewFileSet()
 
 	r, err := parser.ParseFile(fset, "", content, parser.ParseComments)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	buf := &bytes.Buffer{}
 	if err := pconf.Fprint(buf, fset, r); err != nil {
-		panic(err)
+		return err
 	}
 
 	out, err := format.Source(buf.Bytes())
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	dest.Write(out)
+
+	return nil
 }

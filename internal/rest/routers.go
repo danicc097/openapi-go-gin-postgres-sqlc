@@ -32,7 +32,7 @@ type Routes []Route
 // RegisterRoute creates a router group, adds group middleware and registers routes with their own middleware.
 func RegisterRoutes(router *gin.RouterGroup, rr []Route, group string, mws []gin.HandlerFunc) {
 	if reg, _ := regexp.Compile("/([a-z]+)"); !reg.MatchString(group) {
-		panic("Invalid router group: " + group)
+		panic("invalid router group: " + group)
 	}
 
 	gn := group

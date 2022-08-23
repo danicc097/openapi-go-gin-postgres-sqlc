@@ -60,7 +60,6 @@ x.download-swagger-ui() {
 }
 
 # NOTE: jar won't output properly if absolute paths are passed from subdir
-# TODO refactor and use x.generate-api for every test dir, but without x.postgen
 x.generate-tests-api() {
   local testdata="$BIN_DIR/../tests/testdata/postgen/openapi_generator"
   local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
@@ -76,7 +75,6 @@ x.generate-tests-api() {
   done
 }
 
-# TODO make it runnable anywhere inside repo and replace most of generate-tests-api
 x.generate-api() {
   cache="$1"
   prefix="$2"
@@ -294,24 +292,20 @@ while IFS= read -r line; do
   [[ $line =~ ^declare\ -f\ x\. ]] || continue
   COMMANDS+=("${line##declare -f x.}")
 done < <(declare -F)
+# sort the array. Mimic file input to sort
 mapfile -t COMMANDS < \
   <(LC_COLLATE=C sort < <(printf "%s\n" "${COMMANDS[@]}"))
 
 if [[ -n $COMP_LINE ]]; then
   line=${COMP_LINE#* }
   for c in "${COMMANDS[@]}"; do
+    # check if input matches c up to input length
     [[ ${c:0:${#line}} == "${line,,}" ]] && echo "$c"
   done
   exit
 fi
 
-for c in "${COMMANDS[@]}"; do
-  if [[ $c == "$EXE" ]]; then
-    "x.$EXE" "$@"
-    exit $?
-  fi
-done
-
+# handle executing x functions
 if [[ -n "$1" ]]; then
   declare CMD="$1"
   shift
