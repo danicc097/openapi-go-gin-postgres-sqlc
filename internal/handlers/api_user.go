@@ -6,8 +6,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/middleware"
-	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -15,18 +13,18 @@ import (
 // User handles routes with the 'user' tag.
 type User struct {
 	logger   *zap.Logger
-	userSvc  services.UserService
-	authnSvc services.AuthenticationService
-	authzSvc services.AuthorizationService
+	userSvc  UserService
+	authnSvc AuthenticationService
+	authzSvc AuthorizationService
 	// add or remove services, etc. as required
 }
 
 // NewUser returns a new handler for the 'user' route group.
 func NewUser(
 	logger *zap.Logger,
-	userSvc services.UserService,
-	authnSvc services.AuthenticationService,
-	authzSvc services.AuthorizationService,
+	userSvc UserService,
+	authnSvc AuthenticationService,
+	authzSvc AuthorizationService,
 ) *User {
 	return &User{
 		logger:  logger,
@@ -102,7 +100,7 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 // middlewares returns individual route middleware per operation id.
 // Edit as required.
 func (h *User) middlewares(opID string) []gin.HandlerFunc {
-	authMw := middleware.NewAuth(h.logger, h.authnSvc, h.authzSvc, h.userSvc)
+	authMw := NewAuthMw(h.logger, h.authnSvc, h.authzSvc, h.userSvc)
 
 	switch opID {
 	case "CreateUser":

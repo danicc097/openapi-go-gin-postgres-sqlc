@@ -18,23 +18,25 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func setupTests(t *testing.T) {
-	os.Setenv("IS_TESTING", "1")
+func setupTests(tb testing.TB) {
+	tb.Helper()
 
 	cmd := exec.Command(
 		"../bin/build",
 		"generate-tests-api",
 	)
+
+	cmd.Env = append(os.Environ(), "IS_TESTING=1")
+
 	if out, err := cmd.CombinedOutput(); err != nil {
-		t.Logf("combined out:\n%s\n", string(out))
-		t.Fatalf("cmd.Run() failed with %s\n", err)
+		tb.Logf("combined out:\n%s\n", string(out))
+		tb.Fatalf("cmd.Run() failed with %s\n", err)
 	}
 }
 
 func TestHandlerPostProcessing(t *testing.T) {
-	t.Parallel()
-
 	setupTests(t)
+	t.Parallel()
 
 	const baseDir = "testdata/postgen/openapi_generator"
 

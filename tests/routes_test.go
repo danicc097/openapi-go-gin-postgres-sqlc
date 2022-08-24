@@ -80,7 +80,9 @@ func TestCreateUserRoute(t *testing.T) {
 	}
 
 	for _, test := range cases {
+		test := test
 		t.Run(test.Name, func(t *testing.T) {
+			t.Parallel()
 			if err := json.NewEncoder(&buf).Encode(test.Params.User); err != nil {
 				t.Errorf("%v", err)
 			}

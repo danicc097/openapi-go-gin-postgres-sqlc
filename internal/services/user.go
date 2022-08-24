@@ -5,24 +5,25 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
 )
 
+// User defines the datastore/repository handling persisting User records.
+// TODO just crud (for impl see if xo for repo and sqlc for services can be used alongside easily
+// or need to have some postgen)
+type UserRepo interface {
+	Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error)
+}
+
 type User struct {
-	urepo  repos.User
+	urepo  UserRepo
 	logger *zap.Logger
 	pool   *pgxpool.Pool
 }
 
-// use case: mock for handler unit test
-type UserService interface {
-	Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error)
-}
-
 // NewUser returns a new User service.
-func NewUser(urepo repos.User, logger *zap.Logger, pool *pgxpool.Pool) *User {
+func NewUser(urepo UserRepo, logger *zap.Logger, pool *pgxpool.Pool) *User {
 	return &User{
 		urepo:  urepo,
 		logger: logger,

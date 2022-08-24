@@ -229,6 +229,12 @@ func generateService(tag string, dest io.Writer) error {
 
 type {{.Tag}} struct {
 }
+
+// New{{.Tag}} returns a new {{.Tag}} service.
+func New{{.Tag}}() *{{.Tag}} {
+	return &{{.Tag}}{}
+}
+
 `))
 
 	buf := &bytes.Buffer{}
@@ -380,7 +386,10 @@ func (o *OpenapiGenerator) getAPIBasenames(src string) ([]string, error) {
 		}
 
 		if len(basenames) == 0 {
-			return nil, errors.New("no generated files found, ensure all parameters to openapi-generator are right")
+			fmt.Fprint(o.stderr, `
+No generated files found.
+Please remove the postgen *.cache directory.`)
+			return nil, errors.New("no generated files")
 		}
 
 		fmt.Printf("Using cached files in %s\n", cacheDir)

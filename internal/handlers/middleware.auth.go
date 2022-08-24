@@ -1,8 +1,7 @@
-package middleware
+package handlers
 
 import (
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -10,20 +9,20 @@ import (
 // Auth handles authentication and authorization middleware.
 type Auth struct {
 	Logger   *zap.Logger
-	authnSvc services.AuthenticationService
-	authzSvc services.AuthorizationService
-	userSvc  services.UserService
+	authnSvc AuthenticationService
+	authzSvc AuthorizationService
+	userSvc  UserService
 }
 
 // AuthConf represents the required configuration for auth middleware.
 type AuthConf struct {
 }
 
-func NewAuth(
+func NewAuthMw(
 	logger *zap.Logger,
-	authnSvc services.AuthenticationService,
-	authzSvc services.AuthorizationService,
-	userSvc services.UserService,
+	authnSvc AuthenticationService,
+	authzSvc AuthorizationService,
+	userSvc UserService,
 ) *Auth {
 	return &Auth{
 		Logger:   logger,

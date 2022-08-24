@@ -145,21 +145,16 @@ x.sync-swagger-ui() {
   cp "$SPEC" "$PWD"/internal/static/swagger-ui
 }
 
-x.generate-counterfeiter() {
-  counterfeiter -o internal/envvar/envvartesting/provider.gen.go internal/envvar/envvar.go Provider
-  counterfeiter -o internal/repos/repostesting/user.gen.go internal/repos/repos.go User
-}
-
 x.generate() {
   cache=".generate-api.cache"
 
-  go generate ./...
-  x.generate-counterfeiter
   x.generate-api "$cache" "internal" "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
+  go generate ./... &
+  x.generate-sqlc &
+  x.generate-xo &
+  x.sync-swagger-ui &
+  wait
   x.postgen "$cache"
-  x.generate-sqlc
-  x.generate-xo
-  x.sync-swagger-ui
 }
 
 x.compose-up() {

@@ -4,19 +4,18 @@ import (
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
-	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
 // Admin handles routes with the 'admin' tag.
 type Admin struct {
-	svc services.UserService
+	svc UserService
 	// add or remove services, etc. as required
 }
 
 // NewAdmin returns a new handler for the 'admin' route group.
 // Edit as required.
-func NewAdmin(svc services.UserService) *Admin {
+func NewAdmin(svc UserService) *Admin {
 	return &Admin{
 		svc: svc,
 	}

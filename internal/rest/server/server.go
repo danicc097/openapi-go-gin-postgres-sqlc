@@ -22,7 +22,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/middleware"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
@@ -64,7 +63,7 @@ func New(conf Config) (*http.Server, error) {
 	storeSvc := services.Store{Logger: conf.Logger, Pool: conf.Pool}
 	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool)
 
-	authMw := middleware.NewAuth(conf.Logger, authnSvc, authzSvc, userSvc)
+	authMw := handlers.NewAuthMw(conf.Logger, authnSvc, authzSvc, userSvc)
 	handlers.
 		NewAdmin(userSvc).
 		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthorized(db.RoleAdmin)})

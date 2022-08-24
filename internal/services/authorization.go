@@ -7,15 +7,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-// authentication/authorization based on specific requirements
-// and out of scope of this app.
-//  -- delegated to auth server
-//  -- oauth2 where resource and auth servers are the same
-//  -- sessions and cookies
-type AuthorizationService interface {
-	IsAuthorized(role, requiredRole db.Role) bool
-}
-
 // Authorization represents a service for authorization.
 type Authorization struct {
 	Logger *zap.Logger
