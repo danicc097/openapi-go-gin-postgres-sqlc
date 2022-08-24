@@ -6,7 +6,7 @@ set -e
 
 ensure_pwd_is_top_level
 
-SQL_DIRS="internal/postgresql/queries db/migrations"
+SQL_DIRS="internal/repos/postgresql/queries db/migrations"
 for slq_dir in $SQL_DIRS; do
   pg_format \
     --spaces 2 \

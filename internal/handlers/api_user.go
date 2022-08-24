@@ -5,33 +5,32 @@ import (
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/middleware"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
 )
 
 // User handles routes with the 'user' tag.
 type User struct {
-	usvc *services.User
-	conf *UserConf
+	logger   *zap.Logger
+	userSvc  services.UserService
+	authnSvc services.AuthenticationService
+	authzSvc services.AuthorizationService
 	// add or remove services, etc. as required
 }
 
-// UserConf represents the required configuration for user handlers.
-type UserConf struct {
-	Logger *zap.Logger
-	Pool   *pgxpool.Pool
-}
-
 // NewUser returns a new handler for the 'user' route group.
-func NewUser(conf *UserConf) *User {
+func NewUser(
+	logger *zap.Logger,
+	userSvc services.UserService,
+	authnSvc services.AuthenticationService,
+	authzSvc services.AuthorizationService,
+) *User {
 	return &User{
-		conf: conf,
-		usvc: &services.User{Logger: conf.Logger, Pool: conf.Pool},
+		logger:  logger,
+		userSvc: userSvc,
 	}
 }
 
@@ -103,7 +102,7 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 // middlewares returns individual route middleware per operation id.
 // Edit as required.
 func (h *User) middlewares(opID string) []gin.HandlerFunc {
-	authMw := middleware.NewAuth(&middleware.AuthConf{Logger: h.conf.Logger, Pool: h.conf.Pool})
+	authMw := middleware.NewAuth(h.logger, h.authnSvc, h.authzSvc, h.userSvc)
 
 	switch opID {
 	case "CreateUser":
@@ -118,18 +117,13 @@ func (h *User) CreateUser(c *gin.Context) {
 	var user models.CreateUserRequest
 
 	if err := c.BindJSON(&user); err != nil {
-		h.usvc.Logger.Sugar().Debugf("CreateUser.user: %v", user)
+		h.logger.Sugar().Debugf("CreateUser.user: %v", user)
 		c.JSON(http.StatusInternalServerError, err.Error())
 
 		return
 	}
 
-	// TODO usvc.Create, not repo
-	urepo := postgresql.NewUser(h.usvc.Pool)
-
-	h.usvc.Logger.Sugar().Debugf("CreateUser.user: %v", user)
-
-	res, err := urepo.Create(context.Background(), user)
+	res, err := h.userSvc.Create(context.Background(), user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 

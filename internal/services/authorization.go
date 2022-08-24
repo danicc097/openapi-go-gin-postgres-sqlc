@@ -1,19 +1,25 @@
 package services
 
 import (
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql/gen"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
 
-// Authorization represents a service for authorization.
 // authentication/authorization based on specific requirements
 // and out of scope of this app.
 //  -- delegated to auth server
 //  -- oauth2 where resource and auth servers are the same
 //  -- sessions and cookies
+type AuthorizationService interface {
+	IsAuthorized(role, requiredRole db.Role) bool
+}
+
+// Authorization represents a service for authorization.
 type Authorization struct {
 	Logger *zap.Logger
+	Pool   *pgxpool.Pool
 }
 
 func NewAuthorization(logger *zap.Logger) *Authorization {
@@ -23,7 +29,7 @@ func NewAuthorization(logger *zap.Logger) *Authorization {
 }
 
 // RolePermissions returns access levels per role.
-func (a *Authorization) RolePermissions() map[db.Role][]db.Role {
+func (a Authorization) RolePermissions() map[db.Role][]db.Role {
 	return map[db.Role][]db.Role{
 		db.RoleUser:    {db.RoleUser},
 		db.RoleManager: {db.RoleUser, db.RoleManager},
@@ -31,7 +37,7 @@ func (a *Authorization) RolePermissions() map[db.Role][]db.Role {
 	}
 }
 
-func (a *Authorization) IsAuthorized(role, requiredRole db.Role) bool {
+func (a Authorization) IsAuthorized(role, requiredRole db.Role) bool {
 	roles := a.RolePermissions()[role]
 
 	return slices.Contains(roles, requiredRole)

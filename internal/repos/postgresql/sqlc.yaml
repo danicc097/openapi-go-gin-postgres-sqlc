@@ -1,7 +1,7 @@
 # https://docs.sqlc.dev/en/stable/reference/config.html
 version: "2"
 sql:
-  - schema: "../../db/migrations/"
+  - schema: "../../../db/migrations/"
     queries: "./queries/"
     engine: "postgresql"
     gen:

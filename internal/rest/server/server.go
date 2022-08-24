@@ -19,8 +19,9 @@ import (
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/handlers"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/redis"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/middleware"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
@@ -32,7 +33,7 @@ import (
 
 type Config struct {
 	Address string
-	DB      *pgxpool.Pool
+	Pool    *pgxpool.Pool
 	Redis   *rv8.Client
 	Metrics http.Handler
 	Logger  *zap.Logger
@@ -55,15 +56,21 @@ func New(conf Config) (*http.Server, error) {
 	router.Use(ginzap.RecoveryWithZap(conf.Logger, true))
 
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
-	authMw := middleware.NewAuth(&middleware.AuthConf{Logger: conf.Logger, Pool: conf.DB})
 	vg := router.Group(os.Getenv("API_VERSION"))
+	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
+	authzSvc := services.Authorization{Logger: conf.Logger}
+	fakeSvc := services.Fake{Logger: conf.Logger, Pool: conf.Pool}
+	petSvc := services.Pet{Logger: conf.Logger, Pool: conf.Pool}
+	storeSvc := services.Store{Logger: conf.Logger, Pool: conf.Pool}
+	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool)
 
-	fakeSvc := services.Fake{Logger: conf.Logger, Pool: conf.DB}
-	petSvc := services.Pet{Logger: conf.Logger, Pool: conf.DB}
-	storeSvc := services.Store{Logger: conf.Logger, Pool: conf.DB}
+	authMw := middleware.NewAuth(conf.Logger, authnSvc, authzSvc, userSvc)
+	handlers.
+		NewAdmin(userSvc).
+		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthorized(db.RoleAdmin)})
 	handlers.
 		NewDefault().
-		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated(), authMw.EnsureAuthorized()})
+		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated(), authMw.EnsureVerified()})
 	handlers.
 		NewFake(fakeSvc).
 		Register(vg, []gin.HandlerFunc{})
@@ -74,7 +81,7 @@ func New(conf Config) (*http.Server, error) {
 		NewStore(storeSvc).
 		Register(vg, []gin.HandlerFunc{})
 	handlers.
-		NewUser(&handlers.UserConf{Logger: conf.Logger, Pool: conf.DB}).
+		NewUser(conf.Logger, userSvc, authnSvc, authzSvc).
 		Register(vg, []gin.HandlerFunc{})
 	// TODO /admin with authMw.EnsureAuthorized() in group
 
@@ -130,7 +137,7 @@ func Run(env, address string) (<-chan error, error) {
 
 	srv, err := New(Config{
 		Address: address,
-		DB:      pool,
+		Pool:    pool,
 		Redis:   rdb,
 		Logger:  logger,
 	})

@@ -6,7 +6,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql/gen"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 )
 
 // User represents the repository used for interacting with User records.
@@ -23,7 +23,7 @@ func NewUser(d db.DBTX) *User {
 
 // Create inserts a new user record.
 func (u *User) Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error) {
-	// TODO handler struct logger from handler needs to be passed down to services then down to repos
+	// TODO logger needs to be passed down to repo as well
 	// environment.Logger.Sugar().Infof("users.Create.params: %v", params)
 	// TODO creating salt, etc. delegated to jwt.go service
 	// https://github.com/appleboy/gin-jwt

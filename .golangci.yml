@@ -116,11 +116,11 @@ issues:
         - funlen
         - gocognit
         - unparam
-    - path: cmd/internal/postgresql.go
+    - path: cmd/internal/repos/postgresql.go
       linters:
         - revive # blank-imports
     # XXX: This will be reremove in future episodes when "exhaustruct" is enabled
-    - path: internal/postgresql/task.go
+    - path: internal/repos/postgresql/task.go
       linters:
         - lll
     - path: internal/memcached/task.go

@@ -223,6 +223,8 @@ func (o *OpenapiGenerator) getCommonBasenames() ([]string, error) {
 
 // generateService fills in a template with a default service struct to a dest.
 func generateService(tag string, dest io.Writer) error {
+	fmt.Printf("Creating service for tag: %s", tag)
+
 	t := template.Must(template.New("").Parse(`package services
 
 type {{.Tag}} struct {
@@ -369,7 +371,7 @@ func (o *OpenapiGenerator) getAPIBasenames(src string) ([]string, error) {
 	}
 
 	if len(paths) == 0 && strings.HasSuffix(src, "gen") {
-		fmt.Printf("no files found for %s, trying cache\n", src)
+		fmt.Printf("No files found for %s, trying cache\n", src)
 		cacheDir := os.Getenv("POSTGEN_CACHE")
 
 		basenames, err := o.getAPIBasenames(cacheDir)

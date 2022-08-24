@@ -48,6 +48,27 @@ paths:
               schema:
                 type: string
                 format: binary
+  /admin/ping:
+    get:
+      description: ""
+      summary: Ping pongs
+      operationId: adminPing
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: pong
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+      tags:
+        - admin
   /pet:
     post:
       description: ""

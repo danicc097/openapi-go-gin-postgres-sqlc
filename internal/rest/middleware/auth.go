@@ -1,39 +1,62 @@
 package middleware
 
 import (
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
 )
 
 // Auth handles authentication and authorization middleware.
 type Auth struct {
-	conf *AuthConf
+	Logger   *zap.Logger
+	authnSvc services.AuthenticationService
+	authzSvc services.AuthorizationService
+	userSvc  services.UserService
 }
 
 // AuthConf represents the required configuration for auth middleware.
 type AuthConf struct {
-	Logger *zap.Logger
-	Pool   *pgxpool.Pool
 }
 
-func NewAuth(conf *AuthConf) *Auth {
-	return &Auth{conf: conf}
+func NewAuth(
+	logger *zap.Logger,
+	authnSvc services.AuthenticationService,
+	authzSvc services.AuthorizationService,
+	userSvc services.UserService,
+) *Auth {
+	return &Auth{
+		Logger:   logger,
+		authnSvc: authnSvc,
+		authzSvc: authzSvc,
+		userSvc:  userSvc,
+	}
 }
 
 // EnsureAuthenticated checks whether the client is authenticated.
 // TODO check jwt.
 func (t *Auth) EnsureAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		t.conf.Logger.Sugar().Info("Would have run EnsureAuthenticated")
+		t.Logger.Sugar().Info("Would have run EnsureAuthenticated")
 	}
 }
 
 // EnsureAuthorized checks whether the client is authorized.
 // TODO use authorization service, which in turn uses the user service to check role
 // based on token -> email -> GetUserByEmail
-func (t *Auth) EnsureAuthorized() gin.HandlerFunc {
+func (t *Auth) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		t.conf.Logger.Sugar().Info("Would have run EnsureAuthorized")
+		t.Logger.Sugar().Info("Would have run EnsureAuthorized")
+		// u := userSvc.getUserByToken...
+		// t.authzSvc.IsAuthorized(u.Role, requiredRole)
+	}
+}
+
+// EnsureVerified checks whether the client is verified.
+func (t *Auth) EnsureVerified() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		t.Logger.Sugar().Info("Would have run EnsureAuthorized")
+		// u := userSvc.getUserByToken...
+		// ... u.isVerified
 	}
 }

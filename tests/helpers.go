@@ -11,8 +11,8 @@ import (
 
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/redis"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/server"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/golang-migrate/migrate/v4"
@@ -66,7 +66,7 @@ func Run(tb testing.TB, env, address string) (*http.Server, error) {
 
 	srv, err := server.New(server.Config{
 		Address: address,
-		DB:      pool,
+		Pool:    pool,
 		Redis:   rdb,
 		Logger:  zaptest.NewLogger(tb),
 	})
@@ -109,7 +109,7 @@ func NewDB(tb testing.TB) *pgxpool.Pool {
 
 	db, err := sql.Open("pgx", pool.Config().ConnString())
 	if err != nil {
-		tb.Fatalf("Couldn't open DB: %s", err)
+		tb.Fatalf("Couldn't open Pool: %s", err)
 	}
 
 	defer db.Close()
@@ -130,7 +130,7 @@ func NewDB(tb testing.TB) *pgxpool.Pool {
 
 	dbpool, err := pgxpool.Connect(context.Background(), pool.Config().ConnString())
 	if err != nil {
-		tb.Fatalf("Couldn't open DB Pool: %s", err)
+		tb.Fatalf("Couldn't open Pool Pool: %s", err)
 	}
 
 	tb.Cleanup(func() {

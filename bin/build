@@ -100,12 +100,12 @@ x.generate-api() {
   mkdir -p "$cache"
 
   if ! md5sum -c "$cache/$prefix-go-gin-server-templates.md5" >/dev/null; then
-    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/$prefix-go-gin-server-templates.md5"
     invalid_cache=true
+    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/$prefix-go-gin-server-templates.md5"
   fi
   if ! md5sum -c "$cache/$prefix-openapi.md5" >/dev/null; then
-    md5sum "$BIN_DIR"/../openapi.yaml >"$cache/$prefix-openapi.md5"
     invalid_cache=true
+    md5sum "$BIN_DIR"/../openapi.yaml >"$cache/$prefix-openapi.md5"
   fi
 
   if [[ $invalid_cache == true ]]; then
@@ -126,7 +126,7 @@ x.postgen() {
 
 x.generate-sqlc() {
   bin/scripts/sql-format.sh
-  cd internal/postgresql && sqlc generate && cd - || exit
+  cd internal/repos/postgresql && sqlc generate && cd - || exit
 }
 
 # automatic crud + queries based on existing indexes
@@ -134,9 +134,9 @@ x.generate-sqlc() {
 x.generate-xo() {
   (
     source "$ENV_FILE"
-    mkdir -p internal/postgresql/gen/crud
+    mkdir -p internal/repos/postgresql/gen/crud
     xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
-      -o internal/postgresql/gen/crud
+      -o internal/repos/postgresql/gen/crud
   )
 }
 
@@ -147,6 +147,7 @@ x.sync-swagger-ui() {
 
 x.generate-counterfeiter() {
   counterfeiter -o internal/envvar/envvartesting/provider.gen.go internal/envvar/envvar.go Provider
+  counterfeiter -o internal/repos/repostesting/user.gen.go internal/repos/repos.go User
 }
 
 x.generate() {
@@ -188,7 +189,7 @@ x.run-hot-reload() {
     --build.pre_build_cmd "bin/build generate" \
     --build.cmd "go build -o ./air-main ./cmd/rest-server/" \
     --build.bin "./air-main -env=$ENV_FILE" \
-    --build.exclude_regex ".gen.go,internal/gen/*,internal/postgresql/gen/*,testdata,_test.go" \
+    --build.exclude_regex ".gen.go,internal/gen/*,internal/repos/postgresql/gen/*,testdata,_test.go" \
     --build.stop_watch "internal/handlers/,internal/services/" \
     --build.delay 1000
 }
