@@ -12,3 +12,5 @@ go.work*
 *.cache
 /pom.xml
 /certificates/*.pem
+
+whiteboard.excalidraw

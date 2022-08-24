@@ -7,6 +7,11 @@ import (
 )
 
 // Authorization represents a service for authorization.
+// authentication/authorization based on specific requirements
+// and out of scope of this app.
+//  -- delegated to auth server
+//  -- oauth2 where resource and auth servers are the same
+//  -- sessions and cookies
 type Authorization struct {
 	Logger *zap.Logger
 }
@@ -15,17 +20,6 @@ func NewAuthorization(logger *zap.Logger) *Authorization {
 	return &Authorization{
 		Logger: logger,
 	}
-}
-
-// AuthorizationService
-// authentication/authorization based on specific requirements
-// and out of scope of this app.
-//  -- delegated to auth server
-//  -- oauth2 where resource and auth servers are the same
-//  -- sessions and cookies
-type AuthorizationService interface {
-	IsAuthorized(role, requiredRole db.Role) bool
-	RolePermissions() map[db.Role][]db.Role
 }
 
 // RolePermissions returns access levels per role.

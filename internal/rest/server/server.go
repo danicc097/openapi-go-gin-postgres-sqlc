@@ -38,7 +38,7 @@ type Config struct {
 	Logger  *zap.Logger
 }
 
-// TODO abstract so it can easily be used for tests as well just by passing conf.
+// New returns a new http server.
 func New(conf Config) (*http.Server, error) {
 	router := gin.Default()
 
@@ -55,20 +55,23 @@ func New(conf Config) (*http.Server, error) {
 	router.Use(ginzap.RecoveryWithZap(conf.Logger, true))
 
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
-	authMw := middleware.NewAuth(conf.Logger)
+	authMw := middleware.NewAuth(&middleware.AuthConf{Logger: conf.Logger, Pool: conf.DB})
 	vg := router.Group(os.Getenv("API_VERSION"))
 
+	fakeSvc := services.Fake{Logger: conf.Logger, Pool: conf.DB}
+	petSvc := services.Pet{Logger: conf.Logger, Pool: conf.DB}
+	storeSvc := services.Store{Logger: conf.Logger, Pool: conf.DB}
 	handlers.
 		NewDefault().
 		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated(), authMw.EnsureAuthorized()})
 	handlers.
-		NewFake(services.Fake{Logger: conf.Logger, Pool: conf.DB}).
+		NewFake(fakeSvc).
 		Register(vg, []gin.HandlerFunc{})
 	handlers.
-		NewPet(services.Pet{Logger: conf.Logger, Pool: conf.DB}).
+		NewPet(petSvc).
 		Register(vg, []gin.HandlerFunc{})
 	handlers.
-		NewStore(services.Store{Logger: conf.Logger, Pool: conf.DB}).
+		NewStore(storeSvc).
 		Register(vg, []gin.HandlerFunc{})
 	handlers.
 		NewUser(&handlers.UserConf{Logger: conf.Logger, Pool: conf.DB}).
@@ -89,6 +92,7 @@ func New(conf Config) (*http.Server, error) {
 	}, nil
 }
 
+// Run configures a server and underlying services with the given configuration.
 func Run(env, address string) (<-chan error, error) {
 	if err := envvar.Load(env); err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")

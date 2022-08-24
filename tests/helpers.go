@@ -40,8 +40,7 @@ func GetStderr(t *testing.T, dir string) string {
 	return ""
 }
 
-// Run configures a test server and underlying services with the given
-// configuration.
+// Run configures a test server and underlying services with the given configuration.
 func Run(tb testing.TB, env, address string) (*http.Server, error) {
 	if err := envvar.Load(env); err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")

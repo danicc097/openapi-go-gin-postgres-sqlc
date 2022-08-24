@@ -17,10 +17,11 @@ import (
 // User handles routes with the 'user' tag.
 type User struct {
 	usvc *services.User
+	conf *UserConf
 	// add or remove services, etc. as required
 }
 
-// UserConf represents the required configuration to create a handler.
+// UserConf represents the required configuration for user handlers.
 type UserConf struct {
 	Logger *zap.Logger
 	Pool   *pgxpool.Pool
@@ -29,6 +30,7 @@ type UserConf struct {
 // NewUser returns a new handler for the 'user' route group.
 func NewUser(conf *UserConf) *User {
 	return &User{
+		conf: conf,
 		usvc: &services.User{Logger: conf.Logger, Pool: conf.Pool},
 	}
 }
@@ -101,7 +103,7 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 // middlewares returns individual route middleware per operation id.
 // Edit as required.
 func (h *User) middlewares(opID string) []gin.HandlerFunc {
-	authMw := middleware.NewAuth(h.usvc.Logger)
+	authMw := middleware.NewAuth(&middleware.AuthConf{Logger: h.conf.Logger, Pool: h.conf.Pool})
 
 	switch opID {
 	case "CreateUser":
@@ -122,11 +124,11 @@ func (h *User) CreateUser(c *gin.Context) {
 		return
 	}
 
+	// TODO usvc.Create, not repo
 	urepo := postgresql.NewUser(h.usvc.Pool)
 
 	h.usvc.Logger.Sugar().Debugf("CreateUser.user: %v", user)
 
-	// TODO usvc.Create, not repo
 	res, err := urepo.Create(context.Background(), user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
