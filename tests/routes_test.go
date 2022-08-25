@@ -41,46 +41,46 @@ func TestCreateUserRoute(t *testing.T) {
 	teardownSuite := setupSuite(t)
 	defer teardownSuite(t)
 
-	type Params struct {
-		User interface{}
+	type params struct {
+		user any
 	}
 
-	type Want struct {
-		Status int
+	type want struct {
+		status int
 	}
 
 	cases := []struct {
-		Name   string
-		Params Params
-		Want   Want
+		name   string
+		params params
+		want   want
 	}{
 		{
 			"ValidParams",
-			Params{
-				User: models.CreateUserRequest{
+			params{
+				user: models.CreateUserRequest{
 					Email:    "email",
 					Password: "password",
 					Username: "username",
 				}},
-			Want{Status: http.StatusOK},
+			want{status: http.StatusOK},
 		},
 		{
 			"BadParams",
-			Params{
-				User: struct {
+			params{
+				user: struct {
 					Bad string `json:"bad,omitempty"`
 				}{"bad"}},
-			Want{Status: http.StatusBadRequest},
+			want{status: http.StatusBadRequest},
 		},
 	}
 
 	for _, test := range cases {
 		test := test
-		t.Run(test.Name, func(t *testing.T) {
+		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			var buf bytes.Buffer
 
-			if err := json.NewEncoder(&buf).Encode(test.Params.User); err != nil {
+			if err := json.NewEncoder(&buf).Encode(test.params.user); err != nil {
 				t.Errorf("%v", err)
 			}
 
@@ -95,7 +95,7 @@ func TestCreateUserRoute(t *testing.T) {
 
 			srv.Handler.ServeHTTP(resp, req)
 			t.Logf("%v", resp)
-			assert.Equal(t, test.Want.Status, resp.Code)
+			assert.Equal(t, test.want.status, resp.Code)
 		})
 	}
 }

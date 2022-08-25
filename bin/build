@@ -161,6 +161,7 @@ x.generate-counterfeiter() {
   fi
 }
 
+# TODO --force-regen to any x fn removes all cache dirs
 x.generate() {
   cache=".generate.cache"
 
@@ -311,8 +312,27 @@ x.diff-openapi-spec() {
   fi
 }
 
+usage() {
+  printf "Usage: %s [x.function] [--x-options] [args] \n" "$(basename $0)"
+  {
+    # TODO dynamic doc for functions reading above comment
+    printf "x.function: [not implemented] \n"
+    printf -- "--x-options: \n"
+    for i in "${!x_opts[@]}"; do
+      printf -- "  %-20s \t %-20s \n" "$i" "${x_opts[$i]}"
+    done
+    printf "\n"
+
+  } | column -et -s $'\t'
+}
+
 # --------------------- completion and delegation --------------------
 #      `complete -C foo foo` > `source <(foo bloated_completion)`
+
+declare -A x_opts=(
+  ["--x-force-regen"]="Removes generation cache, forcing a new run."
+  ["--x-no-confirmation"]="Bypasses confirmation messages."
+)
 
 while IFS= read -r line; do
   [[ $line =~ ^declare\ -f\ x\. ]] || continue
@@ -323,13 +343,53 @@ mapfile -t COMMANDS < \
   <(LC_COLLATE=C sort < <(printf "%s\n" "${COMMANDS[@]}"))
 
 if [[ -n $COMP_LINE ]]; then
-  line=${COMP_LINE#* }
+  x_fn=${COMP_LINE#* }
+  pre="${COMP_LINE##* }" # the part after the last space in the current command
+  cur_commands=(${COMP_LINE%"$pre"})
+
   for c in "${COMMANDS[@]}"; do
     # check if input matches c up to input length
-    [[ ${c:0:${#line}} == "${line,,}" ]] && echo "$c"
+    [[ ${c:0:${#x_fn}} == "${x_fn,,}" ]] && echo "$c"
+
+    [[ "${c}" == "$x_fn" ]] && xfn_specified=1
   done
+
+  [[ -n "$xfn_specified" ]] && exit
+
+  declare -A x_opts_specified
+  for cmd in "${cur_commands[@]}"; do
+    for opt in ${!x_opts[*]}; do
+      if [[ "$opt" == *"$cmd"* ]]; then
+        x_opts_specified["$opt"]=1
+        break
+      fi
+    done
+    # if [[ "${x_opts[$cmd]+1}" ]]; then
+    #   x_opts_specified["${cmd}"]=1
+    #   break
+    # fi
+  done
+
+  for opt in ${!x_opts[*]}; do
+    [[ "${x_opts_specified[$opt]+1}" ]] && continue
+    [[ ${opt:0:${#pre}} == "${pre,,}" ]] && echo "${opt}"
+  done
+
   exit
 fi
+
+for arg in "$@"; do
+  shift
+  case $arg in
+  --x-force-regen)
+    force_regen=1
+    ;;
+  --x-no-confirmation)
+    force=1
+    ;;
+  *) set -- "$@" "$arg" ;;
+  esac
+done
 
 # handle executing x functions
 if [[ -n "$1" ]]; then
@@ -343,3 +403,5 @@ if [[ -n "$1" ]]; then
     fi
   done
 fi
+
+usage
