@@ -14,7 +14,6 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/tests"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -67,7 +66,7 @@ func TestHandlerPostProcessing(t *testing.T) {
 			var stderr bytes.Buffer
 			og := postgen.NewOpenapiGenerator(conf, &stderr)
 
-			s := tests.GetStderr(t, path.Join(baseDir, tc.Dir, "want"))
+			s := getStderr(t, path.Join(baseDir, tc.Dir, "want"))
 
 			err = og.Generate()
 			if err != nil && s != "" {

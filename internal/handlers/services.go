@@ -7,12 +7,6 @@ import (
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 )
 
-// one per package
-//go:generate counterfeiter -generate
-
-//counterfeiter:generate -o handlerstesting/authorization.gen.go . AuthorizationService
-//counterfeiter:generate -o handlerstesting/authentication.gen.go . AuthenticationService
-
 type UserService interface {
 	Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error)
 }

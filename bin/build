@@ -127,7 +127,7 @@ x.postgen() {
 
 x.generate-sqlc() {
   bin/scripts/sql-format.sh
-  cd $PG_REPO && sqlc generate && cd - || exit
+  { cd $PG_REPO && sqlc generate && cd -; } || { echo "Failed sqlc generation" && exit 1; }
 }
 
 # automatic crud + queries based on existing indexes
@@ -146,11 +146,26 @@ x.sync-swagger-ui() {
   cp "$SPEC" "$PWD"/internal/static/swagger-ui
 }
 
+x.generate-counterfeiter() {
+  cache="$1"
+
+  envvar="internal/envvar/envvar.go"
+  services="internal/handlers/services.go"
+
+  if ! md5sum -c "$cache/counterfeiter.md5" >/dev/null; then
+    counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
+    counterfeiter -o internal/handlers/handlerstesting/authorization.gen.go $services AuthorizationService &
+    counterfeiter -o internal/handlers/handlerstesting/authentication.gen.go $services AuthenticationService &
+    md5sum $envvar $services >"$cache/counterfeiter.md5" &
+    wait
+  fi
+}
+
 x.generate() {
-  cache=".generate-api.cache"
+  cache=".generate.cache"
 
   x.generate-api "$cache" "internal" "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
-  go generate ./... &
+  x.generate-counterfeiter "$cache" &
   x.generate-sqlc &
   x.generate-xo &
   x.sync-swagger-ui &

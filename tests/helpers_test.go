@@ -1,4 +1,4 @@
-package tests
+package tests_test
 
 import (
 	"context"
@@ -24,8 +24,8 @@ import (
 	"go.uber.org/zap"
 )
 
-// GetStderr returns the contents of stderr.txt in dir.
-func GetStderr(t *testing.T, dir string) string {
+// getStderr returns the contents of stderr.txt in dir.
+func getStderr(t *testing.T, dir string) string {
 	t.Helper()
 	path := filepath.Join(dir, "stderr.txt")
 
@@ -41,8 +41,8 @@ func GetStderr(t *testing.T, dir string) string {
 	return ""
 }
 
-// Run configures a test server and underlying services with the given configuration.
-func Run(env, address string, pool *pgxpool.Pool) (*http.Server, error) {
+// run configures a test server and underlying services with the given configuration.
+func run(env, address string, pool *pgxpool.Pool) (*http.Server, error) {
 
 	if err := envvar.Load(env); err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
@@ -79,8 +79,8 @@ func Run(env, address string, pool *pgxpool.Pool) (*http.Server, error) {
 	return srv, nil
 }
 
-// NewDB returns a new testing Postgres pool.
-func NewDB() (*pgxpool.Pool, error) {
+// newDB returns a new testing Postgres pool.
+func newDB() (*pgxpool.Pool, error) {
 	provider, err := vault.New()
 	if err != nil {
 		fmt.Printf("Couldn't create provider: %s", err)
