@@ -7,7 +7,7 @@ mkcert --cert-file localhost.pem --key-file localhost-key.pem  localhost 127.0.0
 mkcert -install
 ```
 
-to work outside the guest machine, do the following in host, .e.g. Windows:
+to work outside the guest machine, do the following in host, e.g. in Windows:
 
 ```powershell
 mkcert.exe -install

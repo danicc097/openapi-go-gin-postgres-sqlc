@@ -19,6 +19,7 @@ TEMPLATE_DIR="internal/go-gin-server-templates"
 PWD="$(pwd)"
 ENV_FILE=".env"
 BIN_DIR=$(dirname "$0")
+PG_REPO="internal/repos/postgresql"
 
 ############## tools and dependencies ##############
 
@@ -126,7 +127,7 @@ x.postgen() {
 
 x.generate-sqlc() {
   bin/scripts/sql-format.sh
-  cd internal/repos/postgresql && sqlc generate && cd - || exit
+  cd $PG_REPO && sqlc generate && cd - || exit
 }
 
 # automatic crud + queries based on existing indexes
@@ -134,9 +135,9 @@ x.generate-sqlc() {
 x.generate-xo() {
   (
     source "$ENV_FILE"
-    mkdir -p internal/repos/postgresql/gen/crud
+    mkdir -p $PG_REPO/gen/crud
     xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
-      -o internal/repos/postgresql/gen/crud
+      -o $PG_REPO/gen/crud
   )
 }
 
@@ -184,7 +185,7 @@ x.run-hot-reload() {
     --build.pre_build_cmd "bin/build generate" \
     --build.cmd "go build -o ./air-main ./cmd/rest-server/" \
     --build.bin "./air-main -env=$ENV_FILE" \
-    --build.exclude_regex ".gen.go,internal/gen/*,internal/repos/postgresql/gen/*,testdata,_test.go" \
+    --build.exclude_regex ".gen.go,internal/gen/*,$PG_REPO/gen/*,testdata,_test.go" \
     --build.stop_watch "internal/handlers/,internal/services/" \
     --build.delay 1000
 }

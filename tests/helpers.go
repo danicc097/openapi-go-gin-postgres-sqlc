@@ -40,6 +40,18 @@ func GetStderr(t *testing.T, dir string) string {
 	return ""
 }
 
+// NewServer returns a new test server.
+func NewServer(tb testing.TB) *http.Server {
+	tb.Helper()
+
+	srv, err := Run(tb, "../.env", ":8099")
+	if err != nil {
+		tb.Fatalf("Couldn't run test server: %s", err)
+	}
+
+	return srv
+}
+
 // Run configures a test server and underlying services with the given configuration.
 func Run(tb testing.TB, env, address string) (*http.Server, error) {
 	tb.Helper()
@@ -79,18 +91,6 @@ func Run(tb testing.TB, env, address string) (*http.Server, error) {
 	return srv, nil
 }
 
-// NewServer returns a new test server.
-func NewServer(tb testing.TB) *http.Server {
-	tb.Helper()
-
-	srv, err := Run(tb, "../.env", ":8099")
-	if err != nil {
-		tb.Fatalf("Couldn't run test server: %s", err)
-	}
-
-	return srv
-}
-
 // NewDB returns a new testing Postgres pool.
 func NewDB(tb testing.TB) *pgxpool.Pool {
 	tb.Helper()
@@ -101,9 +101,6 @@ func NewDB(tb testing.TB) *pgxpool.Pool {
 	}
 
 	conf := envvar.New(provider)
-
-	tb.Setenv("POSTGRES_DB", "postgres_test")
-
 	pool, err := postgresql.New(conf)
 	if err != nil {
 		tb.Fatalf("Couldn't create pool: %s", err)
@@ -130,14 +127,14 @@ func NewDB(tb testing.TB) *pgxpool.Pool {
 		tb.Fatalf("Couldnt' migrate (3): %s", err)
 	}
 
-	dbpool, err := pgxpool.Connect(context.Background(), pool.Config().ConnString())
+	testpool, err := pgxpool.Connect(context.Background(), pool.Config().ConnString())
 	if err != nil {
-		tb.Fatalf("Couldn't open Pool Pool: %s", err)
+		tb.Fatalf("Couldn't open Pool: %s", err)
 	}
 
 	tb.Cleanup(func() {
-		dbpool.Close()
+		testpool.Close()
 	})
 
-	return dbpool
+	return testpool
 }

@@ -22,6 +22,8 @@ func setupSuite(t *testing.T) func(t *testing.T) {
 }
 
 func TestPingRoute(t *testing.T) {
+	t.Parallel()
+
 	teardownSuite := setupSuite(t)
 	defer teardownSuite(t)
 
@@ -38,6 +40,8 @@ func TestPingRoute(t *testing.T) {
 }
 
 func TestCreateUserRoute(t *testing.T) {
+	t.Parallel()
+
 	teardownSuite := setupSuite(t)
 	defer teardownSuite(t)
 
@@ -60,7 +64,7 @@ func TestCreateUserRoute(t *testing.T) {
 		Want   Want
 	}{
 		{
-			"Valid params",
+			"ValidParams",
 			Params{
 				User: models.CreateUserRequest{
 					Email:    "email",
@@ -70,7 +74,7 @@ func TestCreateUserRoute(t *testing.T) {
 			Want{Status: http.StatusOK},
 		},
 		{
-			"Bad params",
+			"BadParams",
 			Params{
 				User: struct {
 					Bad string `json:"bad,omitempty"`
@@ -80,9 +84,7 @@ func TestCreateUserRoute(t *testing.T) {
 	}
 
 	for _, test := range cases {
-		test := test
 		t.Run(test.Name, func(t *testing.T) {
-			t.Parallel()
 			if err := json.NewEncoder(&buf).Encode(test.Params.User); err != nil {
 				t.Errorf("%v", err)
 			}

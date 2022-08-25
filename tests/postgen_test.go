@@ -25,9 +25,6 @@ func setupTests(tb testing.TB) {
 		"../bin/build",
 		"generate-tests-api",
 	)
-
-	cmd.Env = append(os.Environ(), "IS_TESTING=1")
-
 	if out, err := cmd.CombinedOutput(); err != nil {
 		tb.Logf("combined out:\n%s\n", string(out))
 		tb.Fatalf("cmd.Run() failed with %s\n", err)
@@ -54,16 +51,13 @@ func TestHandlerPostProcessing(t *testing.T) {
 		},
 	}
 
-	for _, test := range cases {
-		test := test
-		t.Run(test.Name, func(t *testing.T) {
-			t.Parallel()
-
+	for _, tc := range cases {
+		t.Run(tc.Name, func(t *testing.T) {
 			conf := &postgen.Conf{
-				CurrentHandlersDir: path.Join(baseDir, test.Dir, "internal/handlers"),
-				GenHandlersDir:     path.Join(baseDir, test.Dir, "internal/gen"),
-				OutHandlersDir:     path.Join(baseDir, test.Dir, "got"),
-				OutServicesDir:     path.Join(baseDir, test.Dir, "internal/services"),
+				CurrentHandlersDir: path.Join(baseDir, tc.Dir, "internal/handlers"),
+				GenHandlersDir:     path.Join(baseDir, tc.Dir, "internal/gen"),
+				OutHandlersDir:     path.Join(baseDir, tc.Dir, "got"),
+				OutServicesDir:     path.Join(baseDir, tc.Dir, "internal/services"),
 			}
 
 			err := os.RemoveAll(conf.OutHandlersDir)
@@ -73,7 +67,7 @@ func TestHandlerPostProcessing(t *testing.T) {
 			var stderr bytes.Buffer
 			og := postgen.NewOpenapiGenerator(conf, &stderr)
 
-			s := tests.GetStderr(t, path.Join(baseDir, test.Dir, "want"))
+			s := tests.GetStderr(t, path.Join(baseDir, tc.Dir, "want"))
 
 			err = og.Generate()
 			if err != nil && s != "" {
@@ -88,10 +82,10 @@ func TestHandlerPostProcessing(t *testing.T) {
 			}
 
 			pconf := &printer.Config{Mode: printer.TabIndent | printer.UseSpaces, Tabwidth: 8}
-			ff, _ := filepath.Glob(path.Join(baseDir, test.Dir, "want", "/*"))
+			ff, _ := filepath.Glob(path.Join(baseDir, tc.Dir, "want", "/*"))
 			for _, f := range ff {
 				basename := path.Base(f)
-				wp := path.Join(baseDir, test.Dir, "want", basename)
+				wp := path.Join(baseDir, tc.Dir, "want", basename)
 				gp := path.Join(conf.OutHandlersDir, basename)
 				wantBlob, _ := os.ReadFile(wp)
 				gotBlob, _ := os.ReadFile(gp)

@@ -84,15 +84,18 @@ linters-settings:
       - github.com/danicc097/openapi-go-gin-postgres-sqlc/*
 issues:
   exclude-rules:
+    - path: /**/*
+      linters:
+        - gci
     - path: internal/gen/
       linters:
         - lll
         - godot
         - wsl
-        - gochecknoglobals
     # All tests
     - path: _test\.go
       linters:
+        - errcheck
         - cyclop
         - errchkjson
         - exhaustruct
