@@ -16,7 +16,6 @@ type User struct {
 	userSvc  UserService
 	authnSvc AuthenticationService
 	authzSvc AuthorizationService
-	// add or remove services, etc. as required
 }
 
 // NewUser returns a new handler for the 'user' route group.
@@ -27,8 +26,10 @@ func NewUser(
 	authzSvc AuthorizationService,
 ) *User {
 	return &User{
-		logger:  logger,
-		userSvc: userSvc,
+		logger:   logger,
+		userSvc:  userSvc,
+		authnSvc: authnSvc,
+		authzSvc: authzSvc,
 	}
 }
 

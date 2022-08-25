@@ -14,10 +14,6 @@ type Auth struct {
 	userSvc  UserService
 }
 
-// AuthConf represents the required configuration for auth middleware.
-type AuthConf struct {
-}
-
 func NewAuthMw(
 	logger *zap.Logger,
 	authnSvc AuthenticationService,

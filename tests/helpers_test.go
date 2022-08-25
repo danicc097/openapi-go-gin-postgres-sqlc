@@ -16,6 +16,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/server"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -65,6 +66,12 @@ func run(env, address string, pool *pgxpool.Pool) (*http.Server, error) {
 	}
 
 	logger, _ := zap.NewDevelopment()
+
+	// TODO validation middleware
+	_, err = openapi3.NewLoader().LoadFromFile("../openapi.yaml")
+	if err != nil {
+		panic(err)
+	}
 
 	srv, err := server.New(server.Config{
 		Address: address,

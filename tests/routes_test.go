@@ -8,6 +8,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -58,9 +59,9 @@ func TestCreateUserRoute(t *testing.T) {
 			"ValidParams",
 			params{
 				user: models.CreateUserRequest{
-					Email:    "email",
+					Email:    format.RandomEmail(),
 					Password: "password",
-					Username: "username",
+					Username: format.RandomName(),
 				}},
 			want{status: http.StatusOK},
 		},
