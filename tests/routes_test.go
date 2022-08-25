@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/tests"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,9 +26,6 @@ func TestPingRoute(t *testing.T) {
 	teardownSuite := setupSuite(t)
 	defer teardownSuite(t)
 
-	srv := tests.NewServer(t)
-	defer srv.Close()
-
 	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/ping", nil)
 	resp := httptest.NewRecorder()
 
@@ -44,11 +40,6 @@ func TestCreateUserRoute(t *testing.T) {
 
 	teardownSuite := setupSuite(t)
 	defer teardownSuite(t)
-
-	srv := tests.NewServer(t)
-	defer srv.Close()
-
-	var buf bytes.Buffer
 
 	type Params struct {
 		User interface{}
@@ -84,7 +75,11 @@ func TestCreateUserRoute(t *testing.T) {
 	}
 
 	for _, test := range cases {
+		test := test
 		t.Run(test.Name, func(t *testing.T) {
+			t.Parallel()
+			var buf bytes.Buffer
+
 			if err := json.NewEncoder(&buf).Encode(test.Params.User); err != nil {
 				t.Errorf("%v", err)
 			}

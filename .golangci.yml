@@ -25,7 +25,6 @@ linters:
     # - rowserrcheck
     - sqlclosecheck
     - structcheck
-    - tparallel
     - unparam
     - wastedassign
 

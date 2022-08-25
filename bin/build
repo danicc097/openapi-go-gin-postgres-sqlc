@@ -154,8 +154,8 @@ x.generate() {
   x.generate-sqlc &
   x.generate-xo &
   x.sync-swagger-ui &
+  x.postgen "$cache" &
   wait
-  x.postgen "$cache"
 }
 
 x.compose-up() {

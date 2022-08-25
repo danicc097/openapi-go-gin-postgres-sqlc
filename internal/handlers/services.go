@@ -10,7 +10,6 @@ import (
 // one per package
 //go:generate counterfeiter -generate
 
-//counterfeiter:generate -o handlerstesting/user.gen.go . UserService
 //counterfeiter:generate -o handlerstesting/authorization.gen.go . AuthorizationService
 //counterfeiter:generate -o handlerstesting/authentication.gen.go . AuthenticationService
 
