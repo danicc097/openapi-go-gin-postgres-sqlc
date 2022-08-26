@@ -56,3 +56,18 @@ func (e *Error) Unwrap() error {
 func (e *Error) Code() ErrorCode {
 	return e.code
 }
+
+// Cause returns the root error cause in the chain.
+func (e *Error) Cause() error {
+	var err error
+	root := e
+	for {
+		if err = root.Unwrap(); err == nil {
+			return root
+		}
+
+		if r, ok := err.(*Error); ok {
+			root = r
+		}
+	}
+}

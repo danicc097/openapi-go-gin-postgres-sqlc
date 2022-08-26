@@ -166,6 +166,7 @@ x.generate() {
   cache=".generate.cache"
 
   x.generate-api "$cache" "internal" "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
+  go generate ./... &
   x.generate-counterfeiter "$cache" &
   x.generate-sqlc &
   x.generate-xo &
@@ -385,7 +386,7 @@ for arg in "$@"; do
     force_regen=1
     ;;
   --x-no-confirmation)
-    force=1
+    no_confirmation=1
     ;;
   *) set -- "$@" "$arg" ;;
   esac
