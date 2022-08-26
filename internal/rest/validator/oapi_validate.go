@@ -142,7 +142,7 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 	return nil
 }
 
-// Helper function to get the echo context from within requests. It returns
+// Helper function to get the gin context from within requests. It returns
 // nil if not found or wrong type.
 func GetGinContext(c context.Context) *gin.Context {
 	iface := c.Value(GinContextKey)

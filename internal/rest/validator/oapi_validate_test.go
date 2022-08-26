@@ -47,7 +47,6 @@ func TestOapiRequestValidator(t *testing.T) {
 	swagger, err := openapi3.NewLoader().LoadFromData(testSchema)
 	require.NoError(t, err, "Error initializing swagger")
 
-	// Create a new echo router
 	g := gin.New()
 
 	// Set up an authenticator to check authenticated function. It will allow

@@ -4,7 +4,7 @@ package memoize
 import (
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/cache/go-cache"
+	"github.com/patrickmn/go-cache"
 	"golang.org/x/sync/singleflight"
 )
 
