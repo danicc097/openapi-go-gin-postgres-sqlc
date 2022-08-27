@@ -312,8 +312,9 @@ x.openapi-generator() {
   rm -rf "$gen_out_dir/api"
 }
 
-# can also be used to generate changelogs when upgrading major versions
-function x.diff-openapi-spec { # some comment here
+# Run a diff against the previous OpenAPI spec in the main branch.
+# Can also be used to generate changelogs when upgrading major versions.
+function x.diff-openapi-spec {
   commit=2
   # use latest main commit as base if spec has not changed or in another branch
   git diff --exit-code "$SPEC" &>/dev/null && commit=1
@@ -339,18 +340,16 @@ function x.diff-openapi-spec { # some comment here
 }
 
 usage() {
-
   declare -A x_funcs
 
   # does not match if braces start below func name
-  # TODO broken with dot, e.g. x.migrate.create-migration
-  while IFS= read -r line; do
-    fns+=("${line}")
-  done < <(sed -nr 's/.*x\.([[:alnum:][_-]+)(\(\)?|\s)?[[:space:]]+\{.*/\1/p' $0)
+  while IFS= read -r fn; do
+    fns+=("${fn%%()*}")
+  done < <(sed -nr 's/.*x\.(.*)\{.*/\1/p' $0)
 
-  while IFS= read -r line; do
-    lns+=("${line}")
-  done < <(sed -nr '/.*(x\.[[:alnum:][_-]+)(\(\)?|\s)?[[:space:]]+\{.*/=' $0)
+  while IFS= read -r ln; do
+    lns+=("${ln}")
+  done < <(sed -nr '/.*x\.(.*)\{.*/=' $0)
 
   for i in ${!lns[@]}; do
     ln=${lns[$i]}
@@ -373,7 +372,8 @@ usage() {
       spacing=$(echo $'\t' | pr -Te$((padding - 10)))
       ((${#comment} > maxch)) && comment="${comment:0:maxch}..."
       # x_fns_docs+=("$(printf -- "  %-40s \t %-80s \n" "$i" "${comment}")")
-      printf -- "    %-${padding}s %-${padding}s \n" "$BLUE$BOLD$i$OFF" "$(echo $comment | fold -s -$wrap | sed -e "2,\$s/^/$spacing/")"
+      printf -- "    %-${padding}s %-${padding}s \n" "$BLUE$BOLD$i$OFF" \
+        "$(echo $comment | fold -s -$wrap | sed -e "2,\$s/^/$spacing/")"
     done
 
     # perl -lpe ' s/(.{130,}?)\s/$1\n\t   /g ' < <(printf "%s\n" "${x_fns_docs[@]}")
@@ -383,11 +383,11 @@ usage() {
     echo
     echo "${BOLD}--x-options: $OFF"
     for i in "${!x_opts[@]}"; do
-      printf -- "    %-40s %-40s \n" "$GREEN$BOLD$i$OFF" "${x_opts[$i]}"
+      printf -- "    %-${padding}s %-${padding}s \n" "$GREEN$BOLD$i$OFF" \
+        "$(echo ${x_opts[$i]} | fold -s -$wrap | sed -e "2,\$s/^/$spacing/")"
     done
     printf "\n"
-
-  } | column -et -s $'\t'
+  }
 }
 
 # --------------------- completion and delegation --------------------
