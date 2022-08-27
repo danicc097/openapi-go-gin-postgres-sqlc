@@ -16,5 +16,5 @@ func TestErrorCause(t *testing.T) {
 	err = internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "wrapped 2")
 	errors.As(err, &ierr)
 
-	assert.Equal(t, "root", ierr.Cause().Error() )
+	assert.Equal(t, "root", ierr.Cause().Error())
 }

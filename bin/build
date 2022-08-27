@@ -23,6 +23,7 @@ PG_REPO="internal/repos/postgresql"
 
 ############## tools and dependencies ##############
 
+# Check build dependencies are met.
 x.check-build-deps() {
   local -i fails
   check.bash || { ((fails++)) && true; }
@@ -37,14 +38,16 @@ x.check-build-deps() {
   { ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met${OFF}"; } || exit 1
 }
 
+# Check dependencies and fetch required tools.
 x.bootstrap() {
   x.check-build-deps
-  x.install-go-tools
-  x.fetch-openapi-generator-jar
-  x.download-swagger-ui
+  x.install-tools
+  x.fetch-openapi-generator
+  x.fetch-swagger-ui
 }
 
-x.install-go-tools() {
+# Install go libraries as runnable programs.
+x.install-tools() {
   set -o errexit -eo pipefail
 
   go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
@@ -58,13 +61,15 @@ x.install-go-tools() {
   GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
 }
 
-x.fetch-openapi-generator-jar() {
+# Fetch openapi-generator jar file.
+x.fetch-openapi-generator() {
   local url="https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/$GENVERS/openapi-generator-cli-$GENVERS.jar"
   echo "$url > openapi-generator-cli.jar"
   curl -L "$url" -o openapi-generator-cli.jar
 }
 
-x.download-swagger-ui() {
+# Fetch latest swagger ui bundle.
+x.fetch-swagger-ui() {
   name="$(curl --silent "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
   curl -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
   tar xf swagger-ui.tar.gz swagger-ui-"${name#*v}"/dist --one-top-level=swagger-ui --strip-components=2
@@ -74,7 +79,8 @@ x.download-swagger-ui() {
   rm -r swagger-ui
 }
 
-# NOTE: jar won't output properly if absolute paths are passed from subdir
+# Run openapi generator for testdata.
+# jar won't output properly if absolute paths are passed from subdir.
 x.generate-tests-api() {
   local testdata="$BIN_DIR/../tests/testdata/postgen/openapi_generator"
   local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
@@ -90,6 +96,7 @@ x.generate-tests-api() {
   done
 }
 
+# Run openapi generator for the internal package.
 x.generate-api() {
   cache="$1"
   prefix="$2"
@@ -117,6 +124,7 @@ x.generate-api() {
   fi
 }
 
+# Run post-generation scripts on the internal package.
 x.postgen() {
   cache="$1"
   mkdir -p "$cache"
@@ -125,13 +133,14 @@ x.postgen() {
   mv "$GEN_OUT_DIR"/gen/api_*.go "$cache/" 2>/dev/null || true
 }
 
+# Generate type-safe Go code from SQL.
 x.generate-sqlc() {
   bin/scripts/sql-format.sh
   { cd $PG_REPO && sqlc generate && cd -; } || { echo "Failed sqlc generation" && exit 1; }
 }
 
-# automatic crud + queries based on existing indexes
-# does not work with a schema file. Must therefore be run after migrate up
+# Automatically generate CRUD and By queries based on existing indexes from
+# a Postgres schema. Does not work with a schema file, database must be up to date.
 x.generate-xo() {
   (
     source "$ENV_FILE"
@@ -141,12 +150,15 @@ x.generate-xo() {
   )
 }
 
+# Apply bundle overrides on Swagger UI.
 x.sync-swagger-ui() {
   cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
   cp "$SPEC" "$PWD"/internal/static/swagger-ui
 }
 
+# Generate mocks for specified interfaces.
 x.generate-counterfeiter() {
+  # This shouldn't pose any problems, the interface is the only input to counterfeiter.
   cache="$1"
 
   envvar="internal/envvar/envvar.go"
@@ -161,8 +173,10 @@ x.generate-counterfeiter() {
   fi
 }
 
-# TODO --force-regen to any x fn removes all cache dirs
+# Run all codegen and postgen commands for the project.
 x.generate() {
+  # TODO --force-regen to any x fn removes all cache dirs
+  echo "${MAGENTA}${BOLD}Running codegen and postgen...${OFF}"
   cache=".generate.cache"
 
   x.generate-api "$cache" "internal" "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
@@ -175,10 +189,12 @@ x.generate() {
   wait
 }
 
+# Bring docker compose services up.
 x.compose-up() {
   docker-compose up -d
 }
 
+# Test the entire project.
 x.test() {
   x.compose-up
   x.generate
@@ -186,16 +202,19 @@ x.test() {
   godotenv -f "$ENV_FILE" go test $@ ./...
 }
 
+# Test and build the entire project.
 x.build() {
   x.test ""
   go build -o openapi-go-gin-postgres-sqlc "$PWD"/cmd/rest-server
 }
 
+# Test, build and run the entire project.
 x.run() {
   x.build
   ./openapi-go-gin-postgres-sqlc -env="$ENV_FILE"
 }
 
+# Test, build and run the entire project with hot-reloading.
 x.run-hot-reload() {
   x.compose-up
   air \
@@ -207,12 +226,14 @@ x.run-hot-reload() {
     --build.delay 1000
 }
 
+# Ensure no breaking changes to the OpenAPI spec in the same version are present.
 x.release() {
   x.diff-openapi-spec
 }
 
 ############## migrations ##############
 
+# Wrapper for golang-migrate with predefined configuration.
 x.migrate() {
   (
     source "$ENV_FILE"
@@ -223,10 +244,12 @@ x.migrate() {
   )
 }
 
-x.create-migration() {
+# Creates a new migration file with the given name.
+x.migrate.create-migration() {
   tmp="$*"
   tmp="${tmp// /_}"
   name="${tmp,,}"
+  [[ -z $name ]] && echo "Please provide a migration name" && exit
   x.migrate create -ext sql -dir db/migrations/ "$name"
 }
 
@@ -251,10 +274,12 @@ create_test_database() {
 
 ############## openapi ##############
 
+# Validates an OpenAPI specification.
 x.validate() {
   java -jar openapi-generator-cli.jar validate -i "${1:-$SPEC}"
 }
 
+# Wrapper for openapi-generator with sane output modifications.
 x.openapi-generator() {
   local spec="$1"
   local gen_out_dir="$2"
@@ -288,7 +313,7 @@ x.openapi-generator() {
 }
 
 # can also be used to generate changelogs when upgrading major versions
-x.diff-openapi-spec() {
+function x.diff-openapi-spec { # some comment here
   commit=2
   # use latest main commit as base if spec has not changed or in another branch
   git diff --exit-code "$SPEC" &>/dev/null && commit=1
@@ -314,13 +339,51 @@ x.diff-openapi-spec() {
 }
 
 usage() {
-  printf "Usage: %s [x.function] [--x-options] [args] \n" "$(basename $0)"
+
+  declare -A x_funcs
+
+  # does not match if braces start below func name
+  # TODO broken with dot, e.g. x.migrate.create-migration
+  while IFS= read -r line; do
+    fns+=("${line}")
+  done < <(sed -nr 's/.*x\.([[:alnum:][_-]+)(\(\)?|\s)?[[:space:]]+\{.*/\1/p' $0)
+
+  while IFS= read -r line; do
+    lns+=("${line}")
+  done < <(sed -nr '/.*(x\.[[:alnum:][_-]+)(\(\)?|\s)?[[:space:]]+\{.*/=' $0)
+
+  for i in ${!lns[@]}; do
+    ln=${lns[$i]}
+    x_funcs["${fns[$i]}"]="$(head -$((ln - 1)) $0 | tac | sed -n '/#/!q;p' | tac)"
+  done
+
+  printf "$RED${BOLD}Usage: %s [x.function] [--x-option ...] [args] \n$OFF" "$(basename $0)"
   {
-    # TODO dynamic doc for functions reading above comment
-    printf "x.function: [not implemented] \n"
-    printf -- "--x-options: \n"
+    echo
+    echo "${BOLD}x.functions: $OFF"
+    for i in "${!x_funcs[@]}"; do
+      # TODO store all output lines in regular array and sort it, then print it
+      tmp=${x_funcs[$i]//\#/}
+      tmp=${tmp#* }
+      comment=${tmp//$'\n'/ }
+      [[ -z $comment ]] && comment="-"
+      maxch=400
+      padding=45
+      wrap=80
+      spacing=$(echo $'\t' | pr -Te$((padding - 10)))
+      ((${#comment} > maxch)) && comment="${comment:0:maxch}..."
+      # x_fns_docs+=("$(printf -- "  %-40s \t %-80s \n" "$i" "${comment}")")
+      printf -- "    %-${padding}s %-${padding}s \n" "$BLUE$BOLD$i$OFF" "$(echo $comment | fold -s -$wrap | sed -e "2,\$s/^/$spacing/")"
+    done
+
+    # perl -lpe ' s/(.{130,}?)\s/$1\n\t   /g ' < <(printf "%s\n" "${x_fns_docs[@]}")
+    # for doc in "${x_fns_docs[@]}"; do
+    #   printf "%s\n" "$(echo ${doc} | fmt -t | sed -e "2,\$s/^/$spacing/")"
+    # done
+    echo
+    echo "${BOLD}--x-options: $OFF"
     for i in "${!x_opts[@]}"; do
-      printf -- "  %-20s \t %-20s \n" "$i" "${x_opts[$i]}"
+      printf -- "    %-40s %-40s \n" "$GREEN$BOLD$i$OFF" "${x_opts[$i]}"
     done
     printf "\n"
 

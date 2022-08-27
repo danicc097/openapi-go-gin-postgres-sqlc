@@ -101,7 +101,7 @@ drop_db() {
       -d "$POSTGRES_DB" \
       -c "CREATE DATABASE test OWNER $POSTGRES_USER;" || true
 
-    echo "${BLUE}${BOLD}Dropping database $db.${OFF}"
+    echo "${RED}${BOLD}Dropping database $db.${OFF}"
     docker exec -t postgres_db_"$PROJECT_PREFIX"_"$APP_ENV" \
       dropdb --if-exists -f "$db"
 
