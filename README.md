@@ -12,6 +12,11 @@ generator templates and a sensible post-generation tool that allows you to use c
 structured, easily extendable code by smartly merging nodes
 from your modified and generated files' abstract syntax trees.
 
+You also get dynamic ``x`` function help/documentation for free from your own comments
+so they're always up to date.
+
+![](.github/autodocs.png)
+
 
 ## OpenAPI schema magic fields
 

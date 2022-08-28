@@ -22,7 +22,7 @@ func setupTests(tb testing.TB) {
 
 	cmd := exec.Command(
 		"../bin/build",
-		"generate-tests-api",
+		"generate.tests-api",
 	)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		tb.Logf("combined out:\n%s\n", string(out))
