@@ -337,19 +337,15 @@ x.diff-openapi-spec() {
   fi
 }
 
-# TODO abtract printing away
 usage() {
   declare -A x_funcs
   declare x_funcs_args docs
-
-  maxch=400
-  padding=45
-  spacing=$(echo $'\t' | pr -Te$((padding + 1)))
+  local maxch=400
 
   for c in "${COMMANDS[@]}"; do
     shopt -s extdebug
     lns+=("$(declare -F x.$c | awk '{print $2}')")
-    x_funcs_args+=("nn")
+    x_funcs_args+=("-")
     shopt -u extdebug
   done
 
@@ -359,6 +355,7 @@ usage() {
       sed -n '/#/!q;p' |
       tac |
       awk '{$1=$1;print}')"
+    # TODO keep separate arrays for comments and args as with --x-options
     x_funcs["${COMMANDS[$i]}"]="$comment_line"
   done
 
@@ -367,31 +364,25 @@ usage() {
   for i in "${!COMMANDS[@]}"; do
     comment="$(merge_comments "${x_funcs[${COMMANDS[$i]}]}")"
     docs+=("$(
-      # "$BLUE$BOLD${COMMANDS[$i]}$OFF" \
-      printf -- "    %s\t%s\t%s" \
+      printf -- "%s\t%s\t%s" \
         "${COMMANDS[$i]}" \
         "${x_funcs_args[$i]}" \
         "$comment"
     )")
   done
 
-  # echo "docs:::" ${docs[@]} | sed 's/ /·/g;s/\t/￫/g;s/\r/§/g;s/$/¶/g'
-  echo
-  # --table-noheadings \
-
   column -t \
     --separator $'\t' \
     --output-width 100 \
     --table-noextreme C2 \
-    --table \
     --table-noheadings \
     --table-wrap C3 \
-    --table-columns C1,C2,C3 < <(printf "%s\n" "${docs[@]}") #| fmt --width=72
-
+    --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}") |
+    GREP_COLORS='ms=1;34' grep -E --color "^[[:blank:]]{4}[[:alnum:][:punct:]]*|$"
   printf "\n"
   echo "${BOLD}--x-options: $OFF"
   declare -A x_opts
-  declare lns x_flags
+  declare lns x_flags x_opts_args
 
   docs=()
 
@@ -412,16 +403,24 @@ usage() {
 
   for i in "${!x_opts[@]}"; do
     comment="$(merge_comments "${x_opts[$i]}")"
-    docs+=("$(printf -- "    %-${padding}s %-10s %-${padding}s \n" \
-      "$GREEN$BOLD$i$OFF" \
-      "[-]" \
-      "${comment}")")
+    x_opts_args+=("-")
+    docs+=("$(
+      printf -- "%s\t%s\t%s" \
+        "$i" \
+        "${x_opts_args[$i]}" \
+        "$comment"
+    )")
   done
   mapfile -t docs < \
     <(LC_COLLATE=C sort < <(printf "%s\n" "${docs[@]}"))
-  for i in ${!docs[@]}; do
-    printf "%s\n" "${docs[$i]}" | fold -s -120 | sed -e "2,\$s/^/$spacing/"
-  done
+  column -t \
+    --separator $'\t' \
+    --output-width 100 \
+    --table-noextreme C2 \
+    --table-noheadings \
+    --table-wrap C3 \
+    --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}") |
+    GREP_COLORS='ms=1;32' grep -E --color "^[[:blank:]]{4}[[:alnum:][:punct:]]*|$"
   printf "\n"
 
 }
