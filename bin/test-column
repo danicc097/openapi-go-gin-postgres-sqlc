@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# see https://unix.stackexchange.com/questions/622961/how-to-use-column-with-tput-colors
+# https://stackoverflow.com/questions/72669539/sed-to-add-color-to-column-for-a-specific-pattern
+
+# the only robust coloring we could get is the first string, after exactly n spaces. Wrapped columns would be colored otherwise
+
 docs=(
   "cmd1||Run cmd1."
   "cmd3||Bla bla bla long text Bla bla bla long text Bla bla bla long text Bla bla bla long text."

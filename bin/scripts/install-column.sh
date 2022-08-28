@@ -1,8 +1,8 @@
 #!/bin/bash
 
-wget https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.35/util-linux-2.35.1.tar.gz
-tar -xf util-linux-2.35.1.tar.gz
-cd util-linux-2.35.1 || exit 1
+wget https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.36/util-linux-2.36.2.tar.gz
+tar -xf util-linux-2.36.2.tar.gz
+cd util-linux-2.36.2 || exit 1
 ./configure
 make column
 mkdir -p ~/bin

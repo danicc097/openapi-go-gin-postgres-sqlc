@@ -349,7 +349,7 @@ usage() {
   for c in "${COMMANDS[@]}"; do
     shopt -s extdebug
     lns+=("$(declare -F x.$c | awk '{print $2}')")
-    x_funcs_args+=("-")
+    x_funcs_args+=("nn")
     shopt -u extdebug
   done
 
@@ -378,6 +378,7 @@ usage() {
   # echo "docs:::" ${docs[@]} | sed 's/ /·/g;s/\t/￫/g;s/\r/§/g;s/$/¶/g'
   echo
   # --table-noheadings \
+
   column -t \
     --separator $'\t' \
     --output-width 100 \
@@ -385,7 +386,7 @@ usage() {
     --table \
     --table-noheadings \
     --table-wrap C3 \
-    --table-columns C1,C2,C3 < <(printf "%s\n" "${docs[@]}")
+    --table-columns C1,C2,C3 < <(printf "%s\n" "${docs[@]}") #| fmt --width=72
 
   printf "\n"
   echo "${BOLD}--x-options: $OFF"
