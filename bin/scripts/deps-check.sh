@@ -10,6 +10,19 @@ check.bash() {
     }
 }
 
+check.column() {
+  local vers
+  vers=$(column --version)
+  minver="util-linux"
+  { [[ "$vers" = *$minver* ]] &&
+    printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: $minver"; } ||
+    {
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check.${OFF}"
+      echo "${YELLOW}Run install-column.sh to get the $minver version.${OFF}"
+      return 1
+    }
+}
+
 check.curl() {
   local -a versa
   mapfile versa < <(curl -V 2>&1)

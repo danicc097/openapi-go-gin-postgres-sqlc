@@ -24,6 +24,7 @@ PG_REPO="internal/repos/postgresql"
 # Check build dependencies are met.
 x.check-build-deps() {
   local -i fails
+  check.column || { ((fails++)) && true; }
   check.bash || { ((fails++)) && true; }
   check.go || { ((fails++)) && true; }
   check.java || { ((fails++)) && true; }
@@ -33,7 +34,8 @@ x.check-build-deps() {
   check.direnv || { ((fails++)) && true; }
   check.yq || { ((fails++)) && true; }
 
-  { ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met${OFF}"; } || exit 1
+  { ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met${OFF}"; }
+  { ((fails != 0)) && echo "${RED}❌ Missing dependencies.${OFF}"; } || exit 1
 }
 
 # Check dependencies and fetch required tools.
@@ -338,14 +340,16 @@ x.diff-openapi-spec() {
 # TODO abtract printing away
 usage() {
   declare -A x_funcs
+  declare x_funcs_args
 
   maxch=400
   padding=45
-  spacing=$(echo $'\t' | pr -Te$((padding - 10)))
+  spacing=$(echo $'\t' | pr -Te$((padding + 1)))
 
   for c in "${COMMANDS[@]}"; do
     shopt -s extdebug
     lns+=("$(declare -F x.$c | awk '{print $2}')")
+    x_funcs_args+=("test")
     shopt -u extdebug
   done
 
@@ -361,21 +365,23 @@ usage() {
   printf "$RED${BOLD}Usage: %s [x.function] [--x-option ...] [args] \n\n$OFF" "$(basename $0)"
   echo "${BOLD}x.functions: $OFF"
   for i in "${!COMMANDS[@]}"; do
-    tmp=${x_funcs[${COMMANDS[$i]}]//\#/}
-    tmp=${tmp#* }
-    comment=${tmp//$'\n'/}
-    [[ -z $comment ]] && comment="-"
-    ((${#comment} > maxch)) && comment="${comment:0:maxch}..."
+    comment="$(merge_comments "${x_funcs[${COMMANDS[$i]}]}")"
+    docs+=("$(
+      printf -- "    %s|%s|%s" \
+        "$BLUE$BOLD${COMMANDS[$i]}$OFF" \
+        ${x_funcs_args[$i]} \
+        "$comment"
+    )")
+  done
 
-    docs+=("$(printf -- "    %-${padding}s %-${padding}s \n" \
-      "$BLUE$BOLD${COMMANDS[$i]}$OFF" \
-      "$comment")")
-  done
-  mapfile -t docs < \
-    <(LC_COLLATE=C sort < <(printf "%s\n" "${docs[@]}"))
-  for i in ${!docs[@]}; do
-    printf "%s\n" "${docs[$i]}" | fold -s -120 | sed -e "2,\$s/^/$spacing/"
-  done
+  # echo "docs:::" ${docs[@]} | sed 's/ /·/g;s/\t/￫/g;s/\r/§/g;s/$/¶/g'
+  echo
+  # --table-noheadings \
+  column -t --separator $'|' \
+    --table \
+    --output-width 120 \
+    --table-columns C1,C2,C3 \
+    --table-wrap C3 < <(printf $'%s\n' "${docs[@]}")
 
   printf "\n"
   echo "${BOLD}--x-options: $OFF"
@@ -398,14 +404,10 @@ usage() {
   done
 
   for i in "${!x_opts[@]}"; do
-    tmp=${x_opts[$i]//\#/}
-    tmp=${tmp#* }
-    comment=${tmp//$'\n'/}
-    [[ -z $comment ]] && comment="-"
-    ((${#comment} > maxch)) && comment="${comment:0:maxch}..."
-
-    docs+=("$(printf -- "    %-${padding}s %-${padding}s \n" \
+    comment="$(merge_comments "${x_opts[$i]}")"
+    docs+=("$(printf -- "    %-${padding}s %-10s %-${padding}s \n" \
       "$GREEN$BOLD$i$OFF" \
+      "[-]" \
       "${comment}")")
   done
   mapfile -t docs < \
@@ -415,6 +417,16 @@ usage() {
   done
   printf "\n"
 
+}
+
+merge_comments() {
+  tmp="$1"
+  tmp=${tmp//\#/}
+  tmp=${tmp#* }
+  comment=${tmp//$'\n'/}
+  [[ -z $comment ]] && comment="-"
+  ((${#comment} > maxch)) && comment="${comment:0:maxch}..."
+  echo "$comment"
 }
 
 # --------------------- completion and delegation --------------------

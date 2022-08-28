@@ -1,0 +1,15 @@
+#!/bin/bash
+
+docs=(
+  "cmd1		Run cmd1."
+  "cmd3		Bla bla bla long text Bla bla bla long text Bla bla bla long text Bla bla bla long text Bla bla bla long text."
+  "cmd2	[N]	Do something with N."
+)
+
+column -t \
+  --separator $'\t' \
+  --output-width 60 \
+  --table \
+  --table-noheadings \
+  --table-wrap C3 \
+  --table-columns C1,C2,C3 < <(printf "%s\n" "${docs[@]}")
