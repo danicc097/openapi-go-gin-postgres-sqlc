@@ -340,7 +340,7 @@ x.diff-openapi-spec() {
 # TODO abtract printing away
 usage() {
   declare -A x_funcs
-  declare x_funcs_args
+  declare x_funcs_args docs
 
   maxch=400
   padding=45
@@ -349,7 +349,7 @@ usage() {
   for c in "${COMMANDS[@]}"; do
     shopt -s extdebug
     lns+=("$(declare -F x.$c | awk '{print $2}')")
-    x_funcs_args+=("test")
+    x_funcs_args+=("-")
     shopt -u extdebug
   done
 
@@ -367,9 +367,10 @@ usage() {
   for i in "${!COMMANDS[@]}"; do
     comment="$(merge_comments "${x_funcs[${COMMANDS[$i]}]}")"
     docs+=("$(
-      printf -- "    %s|%s|%s" \
-        "$BLUE$BOLD${COMMANDS[$i]}$OFF" \
-        ${x_funcs_args[$i]} \
+      # "$BLUE$BOLD${COMMANDS[$i]}$OFF" \
+      printf -- "    %s\t%s\t%s" \
+        "${COMMANDS[$i]}" \
+        "${x_funcs_args[$i]}" \
         "$comment"
     )")
   done
@@ -377,16 +378,21 @@ usage() {
   # echo "docs:::" ${docs[@]} | sed 's/ /·/g;s/\t/￫/g;s/\r/§/g;s/$/¶/g'
   echo
   # --table-noheadings \
-  column -t --separator $'|' \
+  column -t \
+    --separator $'\t' \
+    --output-width 100 \
+    --table-noextreme C2 \
     --table \
-    --output-width 120 \
-    --table-columns C1,C2,C3 \
-    --table-wrap C3 < <(printf $'%s\n' "${docs[@]}")
+    --table-noheadings \
+    --table-wrap C3 \
+    --table-columns C1,C2,C3 < <(printf "%s\n" "${docs[@]}")
 
   printf "\n"
   echo "${BOLD}--x-options: $OFF"
   declare -A x_opts
-  declare lns x_flags docs
+  declare lns x_flags
+
+  docs=()
 
   while IFS= read -r line; do
     x_flags+=("${line}")

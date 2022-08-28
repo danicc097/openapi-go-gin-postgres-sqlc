@@ -1,15 +1,41 @@
 #!/bin/bash
 
 docs=(
-  "cmd1		Run cmd1."
-  "cmd3		Bla bla bla long text Bla bla bla long text Bla bla bla long text Bla bla bla long text Bla bla bla long text."
-  "cmd2	[N]	Do something with N."
+  "cmd1||Run cmd1."
+  "cmd3||Bla bla bla long text Bla bla bla long text Bla bla bla long text Bla bla bla long text."
+  "cmd2|[N]|Do something with N."
 )
 
 column -t \
-  --separator $'\t' \
+  --separator "|" \
   --output-width 60 \
   --table \
   --table-noheadings \
   --table-wrap C3 \
   --table-columns C1,C2,C3 < <(printf "%s\n" "${docs[@]}")
+
+# cmd1       Run cmd1.
+# cmd3       Bla bla bla long text Bla bla bla long text Bla b
+#            la bla long text Bla bla bla long text.
+# cmd2  [N]  Do something with N.
+
+docs=(
+  "$(tput setaf 1)cmd1$(tput sgr0)||Run cmd1."
+  "cmd3||Bla bla bla long text Bla bla bla long text Bla bla bla long text Bla bla bla long text."
+  "cmd2|[N]|Do something with N."
+)
+
+column -t \
+  --separator "|" \
+  --output-width 60 \
+  --table \
+  --table-noheadings \
+  --table-wrap C3 \
+  --table-columns C1,C2,C3 < <(printf "%s\n" "${docs[@]}")
+
+# cmd1       Run cmd1.
+# cmd3                           Bla bla bla long text Bla bla
+#                                 bla long text Bla bla bla lo
+#                                ng text Bla bla bla long text
+#                                .
+# cmd2                      [N]  Do something with N.
