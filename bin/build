@@ -342,18 +342,15 @@ function x.diff-openapi-spec {
 usage() {
   declare -A x_funcs
 
-  # does not match if braces start below func name
-  while IFS= read -r fn; do
-    fns+=("${fn%%()*}")
-  done < <(sed -nr 's/.*x\.(.*)\{.*/\1/p' $0)
-
-  while IFS= read -r ln; do
-    lns+=("${ln}")
-  done < <(sed -nr '/.*x\.(.*)\{.*/=' $0)
+  for c in "${COMMANDS[@]}"; do
+    shopt -s extdebug
+    lns+=("$(declare -F x.$c | awk '{print $2}')")
+    shopt -u extdebug
+  done
 
   for i in ${!lns[@]}; do
     ln=${lns[$i]}
-    x_funcs["${fns[$i]}"]="$(head -$((ln - 1)) $0 | tac | sed -n '/#/!q;p' | tac)"
+    x_funcs["${COMMANDS[$i]}"]="$(head -$((ln - 1)) $0 | tac | sed -n '/#/!q;p' | tac)"
   done
 
   printf "$RED${BOLD}Usage: %s [x.function] [--x-option ...] [args] \n$OFF" "$(basename $0)"
