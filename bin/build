@@ -21,8 +21,6 @@ ENV_FILE=".env"
 BIN_DIR=$(dirname "$0")
 PG_REPO="internal/repos/postgresql"
 
-############## tools and dependencies ##############
-
 # Check build dependencies are met.
 x.check-build-deps() {
   local -i fails
@@ -54,7 +52,7 @@ x.install-tools() {
   go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.15.0
   go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
   go install github.com/joho/godotenv/cmd/godotenv@latest
-  go install github.com/danicc097/air@v0.1
+  go install github.com/danicc097/air@latest
   go install github.com/xo/xo@latest
   go install github.com/tufin/oasdiff@latest
 
@@ -214,7 +212,7 @@ x.run() {
   ./openapi-go-gin-postgres-sqlc -env="$ENV_FILE"
 }
 
-# Test, build and run the entire project with hot-reloading.
+# Run the entire project with hot-reloading.
 x.run-hot-reload() {
   x.compose-up
   air \
@@ -230,8 +228,6 @@ x.run-hot-reload() {
 x.release() {
   x.diff-openapi-spec
 }
-
-############## migrations ##############
 
 # Wrapper for golang-migrate with predefined configuration.
 x.migrate() {
@@ -357,26 +353,25 @@ usage() {
   {
     echo
     echo "${BOLD}x.functions: $OFF"
-    for i in "${!x_funcs[@]}"; do
-      # TODO store all output lines in regular array and sort it, then print it
-      tmp=${x_funcs[$i]//\#/}
+    for i in "${!COMMANDS[@]}"; do
+      tmp=${x_funcs[${COMMANDS[$i]}]//\#/}
       tmp=${tmp#* }
-      comment=${tmp//$'\n'/ }
+      comment=${tmp//$'\n'/}
       [[ -z $comment ]] && comment="-"
       maxch=400
       padding=45
-      wrap=80
       spacing=$(echo $'\t' | pr -Te$((padding - 10)))
       ((${#comment} > maxch)) && comment="${comment:0:maxch}..."
-      # x_fns_docs+=("$(printf -- "  %-40s \t %-80s \n" "$i" "${comment}")")
-      printf -- "    %-${padding}s %-${padding}s \n" "$BLUE$BOLD$i$OFF" \
-        "$(echo $comment | fold -s -$wrap | sed -e "2,\$s/^/$spacing/")"
+      docs+=("$(printf -- "    %-${padding}s %-${padding}s \n" \
+        "$BLUE$BOLD${COMMANDS[$i]}$OFF" \
+        "$comment")")
+    done
+    mapfile -t docs < \
+      <(LC_COLLATE=C sort < <(printf "%s\n" "${docs[@]}"))
+    for i in ${!docs[@]}; do
+      printf "%s\n" "${docs[$i]}" | fold -s -120 | sed -e "2,\$s/^/$spacing/"
     done
 
-    # perl -lpe ' s/(.{130,}?)\s/$1\n\t   /g ' < <(printf "%s\n" "${x_fns_docs[@]}")
-    # for doc in "${x_fns_docs[@]}"; do
-    #   printf "%s\n" "$(echo ${doc} | fmt -t | sed -e "2,\$s/^/$spacing/")"
-    # done
     echo
     echo "${BOLD}--x-options: $OFF"
     for i in "${!x_opts[@]}"; do
