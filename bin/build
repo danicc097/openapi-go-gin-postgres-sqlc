@@ -310,7 +310,7 @@ x.openapi-generator() {
 
 # Run a diff against the previous OpenAPI spec in the main branch.
 # Can also be used to generate changelogs when upgrading major versions.
-function x.diff-openapi-spec {
+x.diff-openapi-spec() {
   commit=2
   # use latest main commit as base if spec has not changed or in another branch
   git diff --exit-code "$SPEC" &>/dev/null && commit=1
@@ -335,8 +335,13 @@ function x.diff-openapi-spec {
   fi
 }
 
+# TODO abtract printing away
 usage() {
   declare -A x_funcs
+
+  maxch=400
+  padding=45
+  spacing=$(echo $'\t' | pr -Te$((padding - 10)))
 
   for c in "${COMMANDS[@]}"; do
     shopt -s extdebug
@@ -345,50 +350,75 @@ usage() {
   done
 
   for i in ${!lns[@]}; do
-    ln=${lns[$i]}
-    x_funcs["${COMMANDS[$i]}"]="$(head -$((ln - 1)) $0 | tac | sed -n '/#/!q;p' | tac)"
+    comment_line="$(head -$((${lns[$i]} - 1)) $0 |
+      tac |
+      sed -n '/#/!q;p' |
+      tac |
+      awk '{$1=$1;print}')"
+    x_funcs["${COMMANDS[$i]}"]="$comment_line"
   done
 
-  printf "$RED${BOLD}Usage: %s [x.function] [--x-option ...] [args] \n$OFF" "$(basename $0)"
-  {
-    echo
-    echo "${BOLD}x.functions: $OFF"
-    for i in "${!COMMANDS[@]}"; do
-      tmp=${x_funcs[${COMMANDS[$i]}]//\#/}
-      tmp=${tmp#* }
-      comment=${tmp//$'\n'/}
-      [[ -z $comment ]] && comment="-"
-      maxch=400
-      padding=45
-      spacing=$(echo $'\t' | pr -Te$((padding - 10)))
-      ((${#comment} > maxch)) && comment="${comment:0:maxch}..."
-      docs+=("$(printf -- "    %-${padding}s %-${padding}s \n" \
-        "$BLUE$BOLD${COMMANDS[$i]}$OFF" \
-        "$comment")")
-    done
-    mapfile -t docs < \
-      <(LC_COLLATE=C sort < <(printf "%s\n" "${docs[@]}"))
-    for i in ${!docs[@]}; do
-      printf "%s\n" "${docs[$i]}" | fold -s -120 | sed -e "2,\$s/^/$spacing/"
-    done
+  printf "$RED${BOLD}Usage: %s [x.function] [--x-option ...] [args] \n\n$OFF" "$(basename $0)"
+  echo "${BOLD}x.functions: $OFF"
+  for i in "${!COMMANDS[@]}"; do
+    tmp=${x_funcs[${COMMANDS[$i]}]//\#/}
+    tmp=${tmp#* }
+    comment=${tmp//$'\n'/}
+    [[ -z $comment ]] && comment="-"
+    ((${#comment} > maxch)) && comment="${comment:0:maxch}..."
 
-    echo
-    echo "${BOLD}--x-options: $OFF"
-    for i in "${!x_opts[@]}"; do
-      printf -- "    %-${padding}s %-${padding}s \n" "$GREEN$BOLD$i$OFF" \
-        "$(echo ${x_opts[$i]} | fold -s -$wrap | sed -e "2,\$s/^/$spacing/")"
-    done
-    printf "\n"
-  }
+    docs+=("$(printf -- "    %-${padding}s %-${padding}s \n" \
+      "$BLUE$BOLD${COMMANDS[$i]}$OFF" \
+      "$comment")")
+  done
+  mapfile -t docs < \
+    <(LC_COLLATE=C sort < <(printf "%s\n" "${docs[@]}"))
+  for i in ${!docs[@]}; do
+    printf "%s\n" "${docs[$i]}" | fold -s -120 | sed -e "2,\$s/^/$spacing/"
+  done
+
+  printf "\n"
+  echo "${BOLD}--x-options: $OFF"
+  declare -A x_opts
+  declare lns x_flags docs
+
+  while IFS= read -r line; do
+    x_flags+=("${line}")
+  done < <(sed -nr 's/.*(--x-[[:alnum:]_-]+)\)/\1/p' $0)
+
+  while IFS= read -r line; do
+    lns+=("${line}")
+  done < <(sed -nr '/.*(--x-[[:alnum:]_-]+)\)/=' $0)
+
+  for i in ${!lns[@]}; do
+    comment_line="$(tail -n +$((${lns[$i]} + 1)) $0 |
+      sed -n '/^[[:blank:]]*#/!q;p' |
+      awk '{$1=$1;print}')"
+    x_opts["${x_flags[$i]}"]=$comment_line
+  done
+
+  for i in "${!x_opts[@]}"; do
+    tmp=${x_opts[$i]//\#/}
+    tmp=${tmp#* }
+    comment=${tmp//$'\n'/}
+    [[ -z $comment ]] && comment="-"
+    ((${#comment} > maxch)) && comment="${comment:0:maxch}..."
+
+    docs+=("$(printf -- "    %-${padding}s %-${padding}s \n" \
+      "$GREEN$BOLD$i$OFF" \
+      "${comment}")")
+  done
+  mapfile -t docs < \
+    <(LC_COLLATE=C sort < <(printf "%s\n" "${docs[@]}"))
+  for i in ${!docs[@]}; do
+    printf "%s\n" "${docs[$i]}" | fold -s -120 | sed -e "2,\$s/^/$spacing/"
+  done
+  printf "\n"
+
 }
 
 # --------------------- completion and delegation --------------------
 #      `complete -C foo foo` > `source <(foo bloated_completion)`
-
-declare -A x_opts=(
-  ["--x-force-regen"]="Removes generation cache, forcing a new run."
-  ["--x-no-confirmation"]="Bypasses confirmation messages."
-)
 
 while IFS= read -r line; do
   [[ $line =~ ^declare\ -f\ x\. ]] || continue
@@ -434,18 +464,16 @@ if [[ -n $COMP_LINE ]]; then
   exit
 fi
 
-# TODO dynamic docs for this as well with sed approach matching --x-(:alnum:_))
-# get line number, print file starting from ln and grab everything.
+# First comment lines automatically added to usage docs.
 for arg in "$@"; do
   shift
   case $arg in
   --x-force-regen)
-    # Comment for force_regen.
-    # Second comment line.
+    # Removes generation cache, forcing a new run.
     force_regen=1
     ;;
-    # Comment for no_confirmation.
   --x-no-confirmation)
+    # Bypasses confirmation messages.
     no_confirmation=1
     ;;
   *) set -- "$@" "$arg" ;;
