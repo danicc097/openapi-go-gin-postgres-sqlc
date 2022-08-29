@@ -359,8 +359,6 @@ usage() {
     x_funcs["${COMMANDS[$i]}"]="$comment_line"
   done
 
-  printf "$RED${BOLD}Usage: %s [x.function] [--x-option ...] [args] \n\n$OFF" "$(basename $0)"
-  echo "${BOLD}x.functions: $OFF"
   for i in "${!COMMANDS[@]}"; do
     comment="$(merge_comments "${x_funcs[${COMMANDS[$i]}]}")"
     docs+=("$(
@@ -371,16 +369,13 @@ usage() {
     )")
   done
 
-  column -t \
+  x_functions="$(column -t \
     --separator $'\t' \
     --output-width 100 \
     --table-noextreme C2 \
     --table-noheadings \
     --table-wrap C3 \
-    --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}") |
-    GREP_COLORS='ms=1;34' grep -E --color "^[[:blank:]]{4}[[:alnum:][:punct:]]*|$"
-  printf "\n"
-  echo "${BOLD}--x-options: $OFF"
+    --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}"))"
   declare -A x_opts
   declare lns x_flags x_opts_args
 
@@ -413,16 +408,25 @@ usage() {
   done
   mapfile -t docs < \
     <(LC_COLLATE=C sort < <(printf "%s\n" "${docs[@]}"))
-  column -t \
+  x_options="$(column -t \
     --separator $'\t' \
     --output-width 100 \
     --table-noextreme C2 \
     --table-noheadings \
     --table-wrap C3 \
     --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}") |
-    GREP_COLORS='ms=1;32' grep -E --color "^[[:blank:]]{4}[[:alnum:][:punct:]]*|$"
+    GREP_COLORS='ms=1;32' grep -E --color "^[[:blank:]]{4}[[:alnum:][:punct:]]*|$")"
   printf "\n"
 
+  cat <<EOF
+$RED${BOLD}Usage: $(basename $0) [x.function] [--x-option ...] [args]$OFF
+
+${BOLD}x.functions:$OFF
+$(echo "${x_functions}" | sed -e 's/^\(.*\)$/'"$BLUE$BOLD"'\1'"$OFF"'/')
+
+${BOLD}--x-options:$OFF
+$(echo "${x_options}" | sed -e 's/^\(.*\)$/'"$GREEN$BOLD"'\1'"$OFF"'/')
+EOF
 }
 
 merge_comments() {
