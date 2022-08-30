@@ -87,41 +87,13 @@ x.generate.tests-api() {
 
   cache=".generate-tests-api.cache"
   for test_dir in $test_dirs; do
-    x.generate.api \
+    generate_api \
       "$cache" \
       "$test_dir" \
       "$testdata/$test_dir/openapi.yaml" \
       "$testdata/$test_dir/internal" \
       "$BIN_DIR/../internal/go-gin-server-templates"
   done
-}
-
-# Run openapi generator for the internal package.
-x.generate.api() {
-  cache="$1"
-  prefix="$2"
-  spec="$3"
-  gen_out_dir="$4"
-  template_dir="$5"
-
-  invalid_cache=false
-  mkdir -p "$cache"
-
-  if ! md5sum -c "$cache/$prefix-go-gin-server-templates.md5" >/dev/null; then
-    invalid_cache=true
-    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/$prefix-go-gin-server-templates.md5"
-  fi
-  if ! md5sum -c "$cache/$prefix-openapi.md5" >/dev/null; then
-    invalid_cache=true
-    md5sum "$BIN_DIR"/../openapi.yaml >"$cache/$prefix-openapi.md5"
-  fi
-
-  if [[ $invalid_cache == true ]]; then
-    x.openapi-generator \
-      "$spec" \
-      "$gen_out_dir" \
-      "$template_dir"
-  fi
 }
 
 # Run post-generation scripts on the internal package.
@@ -135,7 +107,6 @@ x.postgen() {
 
 # Generate type-safe Go code from SQL.
 x.generate.sqlc() {
-  bin/scripts/sql-format.sh
   { cd $PG_REPO && sqlc generate && cd -; } || { echo "Failed sqlc generation" && exit 1; }
 }
 
@@ -158,6 +129,7 @@ x.sync-swagger-ui() {
 }
 
 # Generate mocks for specified interfaces.
+# Args: cachedir
 x.generate.counterfeiter() {
   # This shouldn't pose any problems, the interface is the only input to counterfeiter.
   cache="$1"
@@ -180,7 +152,7 @@ x.generate() {
   echo "${MAGENTA}${BOLD}Running codegen and postgen...${OFF}"
   cache=".generate.cache"
 
-  x.generate.api "$cache" "internal" "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
+  generate_api "$cache" "internal" "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
   go generate ./... &
   x.generate.counterfeiter "$cache" &
   x.generate.sqlc &
@@ -190,12 +162,23 @@ x.generate() {
   wait
 }
 
+# Lints the entire project.
+x.lint() {
+  x.lint.sql
+}
+
+# Formats sql files.
+x.lint.sql() {
+  bin/scripts/sql-format.sh
+}
+
 # Bring docker compose services up.
 x.compose-up() {
   docker-compose up -d
 }
 
-# Test the entire project.
+# Test the entire project. Accepts `go test` parameters.
+# Args: [...]
 x.test() {
   x.compose-up
   x.generate
@@ -205,6 +188,7 @@ x.test() {
 
 # Test and build the entire project.
 x.build() {
+  x.lint
   x.test ""
   go build -o openapi-go-gin-postgres-sqlc "$PWD"/cmd/rest-server
 }
@@ -219,7 +203,7 @@ x.run() {
 x.run-hot-reload() {
   x.compose-up
   air \
-    --build.pre_build_cmd "bin/build generate" \
+    --build.pre_build_cmd "bin/project generate" \
     --build.cmd "go build -o ./air-main ./cmd/rest-server/" \
     --build.bin "./air-main -env=$ENV_FILE" \
     --build.exclude_regex ".gen.go,internal/gen/*,$PG_REPO/gen/*,testdata,_test.go" \
@@ -244,7 +228,7 @@ x.migrate() {
 }
 
 # Creates a new migration file with the given name.
-# Args: [name]
+# Args: name
 x.migrate.create-migration() {
   tmp="$*"
   tmp="${tmp// /_}"
@@ -275,11 +259,13 @@ create_test_database() {
 ############## openapi ##############
 
 # Validates an OpenAPI specification.
+# Args: [spec]
 x.validate() {
   java -jar openapi-generator-cli.jar validate -i "${1:-$SPEC}"
 }
 
 # Wrapper for openapi-generator with sane output modifications.
+# Args: spec out tpl
 x.openapi-generator() {
   local spec="$1"
   local gen_out_dir="$2"
@@ -339,20 +325,46 @@ x.diff-openapi-spec() {
   fi
 }
 
+generate_api() {
+  cache="$1"
+  prefix="$2"
+  spec="$3"
+  gen_out_dir="$4"
+  template_dir="$5"
+
+  invalid_cache=false
+  mkdir -p "$cache"
+
+  if ! md5sum -c "$cache/$prefix-go-gin-server-templates.md5" >/dev/null; then
+    invalid_cache=true
+    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/$prefix-go-gin-server-templates.md5"
+  fi
+  if ! md5sum -c "$cache/$prefix-openapi.md5" >/dev/null; then
+    invalid_cache=true
+    md5sum "$BIN_DIR"/../openapi.yaml >"$cache/$prefix-openapi.md5"
+  fi
+
+  if [[ $invalid_cache == true ]]; then
+    x.openapi-generator \
+      "$spec" \
+      "$gen_out_dir" \
+      "$template_dir"
+  fi
+}
+
 usage() {
-  declare -A x_funcs
-  declare x_funcs_args docs
+  declare -A x_funcs x_funcs_args
+  declare docs
   local maxch=88
 
   for c in "${COMMANDS[@]}"; do
     shopt -s extdebug
     lns+=("$(declare -F x.$c | awk '{print $2}')")
-    x_funcs_args+=("-")
     shopt -u extdebug
   done
 
   for i in ${!lns[@]}; do
-    comment_line="$(head -$((${lns[$i]} - 1)) $0 |
+    comment_paragraph="$(head -$((${lns[$i]} - 1)) $0 |
       tac |
       sed -n '/#/!q;p' |
       tac |
@@ -360,7 +372,17 @@ usage() {
     # TODO keep separate ASSOCIATIVE arrays for comments and args indexed
     # by func or flag name as with --x-options
     # so we can abstract all printing
-    x_funcs["${COMMANDS[$i]}"]="$comment_line"
+    x_funcs["${COMMANDS[$i]}"]="$comment_paragraph"
+
+    mapfile -t comments <<<"${x_funcs[${COMMANDS[$i]}]}"
+    for comment in "${comments[@]}"; do
+      comment="$(clean_comment "$comment")"
+      args="-"
+      if [[ ${comment,,} == args:* ]]; then
+        args=$(clean_args "$comment")
+      fi
+      x_funcs_args[${COMMANDS[$i]}]="$args"
+    done
   done
 
   for i in "${!COMMANDS[@]}"; do
@@ -375,7 +397,7 @@ usage() {
         docs+=("$(
           printf -- "%s\t%s\t%s" \
             "${COMMANDS[$i]}" \
-            "${x_funcs_args[$i]}" \
+            "${x_funcs_args[${COMMANDS[$i]}]}" \
             "$comment"
         )")
         continue
@@ -392,11 +414,12 @@ usage() {
 
   x_functions="$(column -t \
     --separator $'\t' \
-    --output-width 120 \
+    --output-width 150 \
     --table-noextreme C2 \
     --table-noheadings \
     --table-wrap C3 \
     --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}"))"
+
   declare -A x_opts x_opts_args
   declare lns x_flags
 
@@ -451,7 +474,7 @@ usage() {
     <(LC_COLLATE=C sort < <(printf "%s\n" "${docs[@]}"))
   x_options="$(column -t \
     --separator $'\t' \
-    --output-width 100 \
+    --output-width 150 \
     --table-noextreme C2 \
     --table-noheadings \
     --table-wrap C3 \
@@ -463,7 +486,7 @@ usage() {
 $BOLD$UNDERSCORE$(basename $0)$OFF centralizes all relevant project commands.
 
 ${BOLD}USAGE:
-    $RED$(basename $0) [x.function] [--x-option ...] [args]$OFF
+    $RED$(basename $0) x.function [--x-option ...] [args]$OFF
 
 ${BOLD}x.functions:$OFF
 $(echo "${x_functions}" |
@@ -482,6 +505,13 @@ clean_comment() {
   [[ -z $comment ]] && comment="·"
   ((${#comment} > maxch)) && comment="${comment:0:maxch}..."
   echo "$comment"
+}
+
+clean_args() {
+  tmp="$1"
+  tmp="${tmp,,##*args\:}"
+  args="${tmp#* }"
+  echo "$args"
 }
 
 # --------------------- completion and delegation --------------------
@@ -509,22 +539,27 @@ if [[ -n $COMP_LINE ]]; then
 
   [[ -n "$xfn_specified" ]] && exit
 
-  declare -A x_opts_specified
+  declare -A __x_opts_seen
+  declare __x_opts
+  while IFS= read -r line; do
+    __x_opts+=("${line}")
+  done < <(sed -nr 's/.*(--x-[[:alnum:]_-]+)\)/\1/p' $0)
+
   for cmd in "${cur_commands[@]}"; do
-    for opt in ${!x_opts[*]}; do
+    for opt in ${__x_opts[@]}; do
       if [[ "$opt" == *"$cmd"* ]]; then
-        x_opts_specified["$opt"]=1
+        __x_opts_seen["$opt"]=1
         break
       fi
     done
-    # if [[ "${x_opts[$cmd]+1}" ]]; then
-    #   x_opts_specified["${cmd}"]=1
+    # if [[ "${__x_opts[$cmd]+1}" ]]; then
+    #   __x_opts_seen["${cmd}"]=1
     #   break
     # fi
   done
 
-  for opt in ${!x_opts[*]}; do
-    [[ "${x_opts_specified[$opt]+1}" ]] && continue
+  for opt in ${__x_opts[@]}; do
+    [[ "${__x_opts_seen[$opt]+1}" ]] && continue
     [[ ${opt:0:${#pre}} == "${pre,,}" ]] && echo "${opt}"
   done
 
