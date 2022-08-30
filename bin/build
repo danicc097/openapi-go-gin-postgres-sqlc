@@ -422,10 +422,12 @@ usage() {
 $RED${BOLD}Usage: $(basename $0) [x.function] [--x-option ...] [args]$OFF
 
 ${BOLD}x.functions:$OFF
-$(echo "${x_functions}" | sed -e 's/^\(.*\)$/'"$BLUE$BOLD"'\1'"$OFF"'/')
+$(echo "${x_functions}" |
+    sed -E 's/    ([[:alnum:][:punct:]]*)(.*)/    '"$BLUE$BOLD"'\1'"$OFF"'\2''/')
 
 ${BOLD}--x-options:$OFF
-$(echo "${x_options}" | sed -e 's/^\(.*\)$/'"$GREEN$BOLD"'\1'"$OFF"'/')
+$(echo "${x_options}" |
+      sed -E 's/    ([[:alnum:][:punct:]]*)(.*)/    '"$GREEN$BOLD"'\1'"$OFF"'\2''/')
 EOF
 }
 
