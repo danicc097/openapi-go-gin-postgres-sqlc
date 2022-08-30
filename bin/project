@@ -140,7 +140,8 @@ x.generate.sqlc() {
 }
 
 # Automatically generate CRUD and By queries based on existing indexes from
-# a Postgres schema. Does not work with a schema file, database must be up to date.
+# a Postgres schema.
+# Does not work with a schema file, database must be up to date.
 x.generate.xo() {
   (
     source "$ENV_FILE"
@@ -243,6 +244,7 @@ x.migrate() {
 }
 
 # Creates a new migration file with the given name.
+# Args: [name]
 x.migrate.create-migration() {
   tmp="$*"
   tmp="${tmp// /_}"
@@ -340,7 +342,7 @@ x.diff-openapi-spec() {
 usage() {
   declare -A x_funcs
   declare x_funcs_args docs
-  local maxch=400
+  local maxch=88
 
   for c in "${COMMANDS[@]}"; do
     shopt -s extdebug
@@ -355,29 +357,48 @@ usage() {
       sed -n '/#/!q;p' |
       tac |
       awk '{$1=$1;print}')"
-    # TODO keep separate arrays for comments and args as with --x-options
+    # TODO keep separate ASSOCIATIVE arrays for comments and args indexed
+    # by func or flag name as with --x-options
+    # so we can abstract all printing
     x_funcs["${COMMANDS[$i]}"]="$comment_line"
   done
 
   for i in "${!COMMANDS[@]}"; do
-    comment="$(merge_comments "${x_funcs[${COMMANDS[$i]}]}")"
-    docs+=("$(
-      printf -- "%s\t%s\t%s" \
-        "${COMMANDS[$i]}" \
-        "${x_funcs_args[$i]}" \
-        "$comment"
-    )")
+    mapfile -t comments <<<"${x_funcs[${COMMANDS[$i]}]}"
+    for j in "${!comments[@]}"; do
+      comment="$(clean_comment "${comments[$j]}")"
+      if [[ ${comment,,} == args:* ]]; then
+        continue
+      fi
+
+      if [[ $j = 0 ]]; then
+        docs+=("$(
+          printf -- "%s\t%s\t%s" \
+            "${COMMANDS[$i]}" \
+            "${x_funcs_args[$i]}" \
+            "$comment"
+        )")
+        continue
+      fi
+
+      docs+=("$(
+        printf -- "%s\t%s\t%s" \
+          "" \
+          "" \
+          "$comment"
+      )")
+    done
   done
 
   x_functions="$(column -t \
     --separator $'\t' \
-    --output-width 100 \
+    --output-width 120 \
     --table-noextreme C2 \
     --table-noheadings \
     --table-wrap C3 \
     --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}"))"
-  declare -A x_opts
-  declare lns x_flags x_opts_args
+  declare -A x_opts x_opts_args
+  declare lns x_flags
 
   docs=()
 
@@ -394,18 +415,38 @@ usage() {
       sed -n '/^[[:blank:]]*#/!q;p' |
       awk '{$1=$1;print}')"
     x_opts["${x_flags[$i]}"]=$comment_line
+    # TODO grab special comment for args: Args: or whatever
+    # refactor commands to do the same so all can be abstracted
+    x_opts_args["${x_flags[$i]}"]="-"
   done
 
   for i in "${!x_opts[@]}"; do
-    comment="$(merge_comments "${x_opts[$i]}")"
-    x_opts_args+=("-")
-    docs+=("$(
-      printf -- "%s\t%s\t%s" \
-        "$i" \
-        "${x_opts_args[$i]}" \
-        "$comment"
-    )")
+    mapfile -t comments <<<"${x_opts[$i]}"
+    for j in "${!comments[@]}"; do
+      comment="$(clean_comment "${comments[$j]}")"
+      if [[ ${comment,,} == args:* ]]; then
+        continue
+      fi
+
+      if [[ $j = 0 ]]; then
+        docs+=("$(
+          printf -- "%s\t%s\t%s" \
+            "${i}" \
+            "${x_opts_args[$i]}" \
+            "$comment"
+        )")
+        continue
+      fi
+
+      docs+=("$(
+        printf -- "%s\t%s\t%s" \
+          "" \
+          "" \
+          "$comment"
+      )")
+    done
   done
+
   mapfile -t docs < \
     <(LC_COLLATE=C sort < <(printf "%s\n" "${docs[@]}"))
   x_options="$(column -t \
@@ -419,7 +460,10 @@ usage() {
   printf "\n"
 
   cat <<EOF
-$RED${BOLD}Usage: $(basename $0) [x.function] [--x-option ...] [args]$OFF
+$BOLD$UNDERSCORE$(basename $0)$OFF centralizes all relevant project commands.
+
+${BOLD}USAGE:
+    $RED$(basename $0) [x.function] [--x-option ...] [args]$OFF
 
 ${BOLD}x.functions:$OFF
 $(echo "${x_functions}" |
@@ -431,12 +475,11 @@ $(echo "${x_options}" |
 EOF
 }
 
-merge_comments() {
+clean_comment() {
   tmp="$1"
-  tmp=${tmp//\#/}
-  tmp=${tmp#* }
-  comment=${tmp//$'\n'/}
-  [[ -z $comment ]] && comment="-"
+  tmp="${tmp//\#/}"
+  comment="${tmp#* }"
+  [[ -z $comment ]] && comment="·"
   ((${#comment} > maxch)) && comment="${comment:0:maxch}..."
   echo "$comment"
 }

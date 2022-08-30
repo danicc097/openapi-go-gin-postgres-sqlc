@@ -12,6 +12,7 @@ if [ -t 1 ]; then
   CYAN="$(tput setaf 6)"
   WHITE="$(tput setaf 7)"
   BOLD="$(tput bold)"
+  UNDERSCORE="$(tput smul)"
   OFF="$(tput sgr0)"
 else
   RED=""
@@ -22,6 +23,7 @@ else
   CYAN=""
   WHITE=""
   BOLD=""
+  UNDERSCORE=""
   OFF=""
 fi
 
