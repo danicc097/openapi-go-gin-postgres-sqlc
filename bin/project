@@ -21,6 +21,8 @@ ENV_FILE=".env"
 BIN_DIR=$(dirname "$0")
 PG_REPO="internal/repos/postgresql"
 
+MAX_COMMENT_LEN=88
+
 # Check build dependencies are met.
 x.check-build-deps() {
   local -i fails
@@ -87,41 +89,13 @@ x.generate.tests-api() {
 
   cache=".generate-tests-api.cache"
   for test_dir in $test_dirs; do
-    x.generate.api \
+    generate_api \
       "$cache" \
       "$test_dir" \
       "$testdata/$test_dir/openapi.yaml" \
       "$testdata/$test_dir/internal" \
       "$BIN_DIR/../internal/go-gin-server-templates"
   done
-}
-
-# Run openapi generator for the internal package.
-x.generate.api() {
-  cache="$1"
-  prefix="$2"
-  spec="$3"
-  gen_out_dir="$4"
-  template_dir="$5"
-
-  invalid_cache=false
-  mkdir -p "$cache"
-
-  if ! md5sum -c "$cache/$prefix-go-gin-server-templates.md5" >/dev/null; then
-    invalid_cache=true
-    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/$prefix-go-gin-server-templates.md5"
-  fi
-  if ! md5sum -c "$cache/$prefix-openapi.md5" >/dev/null; then
-    invalid_cache=true
-    md5sum "$BIN_DIR"/../openapi.yaml >"$cache/$prefix-openapi.md5"
-  fi
-
-  if [[ $invalid_cache == true ]]; then
-    x.openapi-generator \
-      "$spec" \
-      "$gen_out_dir" \
-      "$template_dir"
-  fi
 }
 
 # Run post-generation scripts on the internal package.
@@ -135,12 +109,12 @@ x.postgen() {
 
 # Generate type-safe Go code from SQL.
 x.generate.sqlc() {
-  bin/scripts/sql-format.sh
   { cd $PG_REPO && sqlc generate && cd -; } || { echo "Failed sqlc generation" && exit 1; }
 }
 
 # Automatically generate CRUD and By queries based on existing indexes from
-# a Postgres schema. Does not work with a schema file, database must be up to date.
+# a Postgres schema.
+# Does not work with a schema file, database must be up to date.
 x.generate.xo() {
   (
     source "$ENV_FILE"
@@ -156,7 +130,8 @@ x.sync-swagger-ui() {
   cp "$SPEC" "$PWD"/internal/static/swagger-ui
 }
 
-# Generate mocks for specified interfaces.
+# Generate mocks for specified interfaces. Runs are cached to `cachedir`.
+# Args: cachedir
 x.generate.counterfeiter() {
   # This shouldn't pose any problems, the interface is the only input to counterfeiter.
   cache="$1"
@@ -179,7 +154,7 @@ x.generate() {
   echo "${MAGENTA}${BOLD}Running codegen and postgen...${OFF}"
   cache=".generate.cache"
 
-  x.generate.api "$cache" "internal" "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
+  generate_api "$cache" "internal" "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
   go generate ./... &
   x.generate.counterfeiter "$cache" &
   x.generate.sqlc &
@@ -189,12 +164,23 @@ x.generate() {
   wait
 }
 
+# Lints the entire project.
+x.lint() {
+  x.lint.sql
+}
+
+# Formats sql files.
+x.lint.sql() {
+  bin/scripts/sql-format.sh
+}
+
 # Bring docker compose services up.
 x.compose-up() {
   docker-compose up -d
 }
 
-# Test the entire project.
+# Test the entire project. Accepts `go test` parameters.
+# Args: [...]
 x.test() {
   x.compose-up
   x.generate
@@ -204,6 +190,7 @@ x.test() {
 
 # Test and build the entire project.
 x.build() {
+  x.lint
   x.test ""
   go build -o openapi-go-gin-postgres-sqlc "$PWD"/cmd/rest-server
 }
@@ -218,7 +205,7 @@ x.run() {
 x.run-hot-reload() {
   x.compose-up
   air \
-    --build.pre_build_cmd "bin/build generate" \
+    --build.pre_build_cmd "bin/project generate" \
     --build.cmd "go build -o ./air-main ./cmd/rest-server/" \
     --build.bin "./air-main -env=$ENV_FILE" \
     --build.exclude_regex ".gen.go,internal/gen/*,$PG_REPO/gen/*,testdata,_test.go" \
@@ -242,7 +229,8 @@ x.migrate() {
   )
 }
 
-# Creates a new migration file with the given name.
+# Creates a new migration file with the given `name`.
+# Args: name
 x.migrate.create-migration() {
   tmp="$*"
   tmp="${tmp// /_}"
@@ -272,12 +260,14 @@ create_test_database() {
 
 ############## openapi ##############
 
-# Validates an OpenAPI specification.
+# Validates the project's OpenAPI specification or `spec`.
+# Args: [spec]
 x.validate() {
   java -jar openapi-generator-cli.jar validate -i "${1:-$SPEC}"
 }
 
 # Wrapper for openapi-generator with sane output modifications.
+# Args: spec out tpl
 x.openapi-generator() {
   local spec="$1"
   local gen_out_dir="$2"
@@ -337,102 +327,162 @@ x.diff-openapi-spec() {
   fi
 }
 
-usage() {
-  declare -A x_funcs
-  declare x_funcs_args docs
-  local maxch=400
+generate_api() {
+  cache="$1"
+  prefix="$2"
+  spec="$3"
+  gen_out_dir="$4"
+  template_dir="$5"
+
+  invalid_cache=false
+  mkdir -p "$cache"
+
+  if ! md5sum -c "$cache/$prefix-go-gin-server-templates.md5" >/dev/null; then
+    invalid_cache=true
+    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/$prefix-go-gin-server-templates.md5"
+  fi
+  if ! md5sum -c "$cache/$prefix-openapi.md5" >/dev/null; then
+    invalid_cache=true
+    md5sum "$BIN_DIR"/../openapi.yaml >"$cache/$prefix-openapi.md5"
+  fi
+
+  if [[ $invalid_cache == true ]]; then
+    x.openapi-generator \
+      "$spec" \
+      "$gen_out_dir" \
+      "$template_dir"
+  fi
+}
+
+usage() (
+  command_comments_parser() {
+    head -$((${lns[$i]} - 1)) $0 |
+      tac |
+      sed -n '/#/!q;p' |
+      tac |
+      awk '{$1=$1;print}'
+  }
+
+  command_opts_comments_parser() {
+    tail -n +$((${lns[$i]} + 1)) $0 |
+      sed -n '/^[[:blank:]]*#/!q;p' |
+      awk '{$1=$1;print}'
+  }
+
+  construct_column() {
+    comment_parser="$1"
+    for i in ${!lns[@]}; do
+      comment_paragraph="$($comment_parser)"
+      ROWS["${rows[$i]}"]="$comment_paragraph"
+      mapfile -t comments <<<"${ROWS[${rows[$i]}]}"
+      for comment in "${comments[@]}"; do
+        comment="$(clean_comment "$comment")"
+        args="-"
+        if [[ ${comment,,} == args:* ]]; then
+          args=$(clean_args "$comment")
+        fi
+        ROW_ARGS[${rows[$i]}]="$args"
+      done
+    done
+
+    for i in "${!rows[@]}"; do
+      mapfile -t comments <<<"${ROWS[${rows[$i]}]}"
+      for j in "${!comments[@]}"; do
+        comment="$(clean_comment "${comments[$j]}")"
+        if [[ ${comment,,} == args:* ]]; then
+          continue
+        fi
+
+        if [[ $j = 0 ]]; then
+          docs+=("$(
+            printf -- "%s\t%s\t%s" \
+              "${rows[$i]}" \
+              "${ROW_ARGS[${rows[$i]}]}" \
+              "$comment"
+          )")
+          continue
+        fi
+
+        docs+=("$(
+          printf -- "%s\t%s\t%s" \
+            "" \
+            "" \
+            "$comment"
+        )")
+      done
+    done
+
+    column -t \
+      --separator $'\t' \
+      --output-width 150 \
+      --table-noextreme C2 \
+      --table-noheadings \
+      --table-wrap C3 \
+      --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}")
+  }
+
+  declare -A ROWS ROW_ARGS
+  declare docs rows X_FLAGS
 
   for c in "${COMMANDS[@]}"; do
     shopt -s extdebug
     lns+=("$(declare -F x.$c | awk '{print $2}')")
-    x_funcs_args+=("-")
+    rows+=("${c}")
     shopt -u extdebug
   done
 
-  for i in ${!lns[@]}; do
-    comment_line="$(head -$((${lns[$i]} - 1)) $0 |
-      tac |
-      sed -n '/#/!q;p' |
-      tac |
-      awk '{$1=$1;print}')"
-    # TODO keep separate arrays for comments and args as with --x-options
-    x_funcs["${COMMANDS[$i]}"]="$comment_line"
-  done
+  x_functions="$(construct_column command_comments_parser)"
 
-  printf "$RED${BOLD}Usage: %s [x.function] [--x-option ...] [args] \n\n$OFF" "$(basename $0)"
-  echo "${BOLD}x.functions: $OFF"
-  for i in "${!COMMANDS[@]}"; do
-    comment="$(merge_comments "${x_funcs[${COMMANDS[$i]}]}")"
-    docs+=("$(
-      printf -- "%s\t%s\t%s" \
-        "${COMMANDS[$i]}" \
-        "${x_funcs_args[$i]}" \
-        "$comment"
-    )")
-  done
-
-  column -t \
-    --separator $'\t' \
-    --output-width 100 \
-    --table-noextreme C2 \
-    --table-noheadings \
-    --table-wrap C3 \
-    --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}") |
-    GREP_COLORS='ms=1;34' grep -E --color "^[[:blank:]]{4}[[:alnum:][:punct:]]*|$"
-  printf "\n"
-  echo "${BOLD}--x-options: $OFF"
-  declare -A x_opts
-  declare lns x_flags x_opts_args
-
+  lns=()
+  rows=()
   docs=()
 
   while IFS= read -r line; do
-    x_flags+=("${line}")
-  done < <(sed -nr 's/.*(--x-[[:alnum:]_-]+)\)/\1/p' $0)
+    X_FLAGS+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
+  done < <(sed -nr '/.*(--x-[[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
+  mapfile -t X_FLAGS < \
+    <(LC_COLLATE=C sort < <(printf "%s\n" "${X_FLAGS[@]}"))
 
-  while IFS= read -r line; do
-    lns+=("${line}")
-  done < <(sed -nr '/.*(--x-[[:alnum:]_-]+)\)/=' $0)
-
-  for i in ${!lns[@]}; do
-    comment_line="$(tail -n +$((${lns[$i]} + 1)) $0 |
-      sed -n '/^[[:blank:]]*#/!q;p' |
-      awk '{$1=$1;print}')"
-    x_opts["${x_flags[$i]}"]=$comment_line
+  for c in "${X_FLAGS[@]}"; do
+    lns+=("${c##*)}")
+    rows+=("${c%%)*}")
   done
 
-  for i in "${!x_opts[@]}"; do
-    comment="$(merge_comments "${x_opts[$i]}")"
-    x_opts_args+=("-")
-    docs+=("$(
-      printf -- "%s\t%s\t%s" \
-        "$i" \
-        "${x_opts_args[$i]}" \
-        "$comment"
-    )")
-  done
-  mapfile -t docs < \
-    <(LC_COLLATE=C sort < <(printf "%s\n" "${docs[@]}"))
-  column -t \
-    --separator $'\t' \
-    --output-width 100 \
-    --table-noextreme C2 \
-    --table-noheadings \
-    --table-wrap C3 \
-    --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}") |
-    GREP_COLORS='ms=1;32' grep -E --color "^[[:blank:]]{4}[[:alnum:][:punct:]]*|$"
-  printf "\n"
+  x_options="$(construct_column command_opts_comments_parser)"
 
+  cat <<EOF
+
+$BOLD$UNDERSCORE$(basename $0)$OFF centralizes all relevant project commands.
+
+${BOLD}USAGE:
+    $RED$(basename $0) x.function [--x-option ...] [args]$OFF
+
+${BOLD}x.functions:$OFF
+$(echo "${x_functions}" |
+    sed -E 's/    ([[:alnum:][:punct:]]*)(.*)/    '"$BLUE$BOLD"'\1'"$OFF"'\2''/')
+
+${BOLD}--x-options:$OFF
+$(echo "${x_options}" |
+      sed -E 's/    ([[:alnum:][:punct:]]*)(.*)/    '"$GREEN$BOLD"'\1'"$OFF"'\2''/')
+EOF
+
+)
+
+clean_comment() {
+  tmp="$1"
+  tmp="${tmp//\#/}"
+  comment="${tmp#* }"
+  [[ -z $comment ]] && comment="·"
+  # TODO split in % MAX_COMMENT_LEN lines instead, on spaces only.
+  ((${#comment} > MAX_COMMENT_LEN)) && comment="${comment:0:MAX_COMMENT_LEN}..."
+  echo "$comment"
 }
 
-merge_comments() {
+clean_args() {
   tmp="$1"
-  tmp=${tmp//\#/}
-  tmp=${tmp#* }
-  comment=${tmp//$'\n'/}
-  [[ -z $comment ]] && comment="-"
-  ((${#comment} > maxch)) && comment="${comment:0:maxch}..."
-  echo "$comment"
+  tmp="${tmp,,##*args\:}"
+  args="${tmp#* }"
+  echo "$args"
 }
 
 # --------------------- completion and delegation --------------------
@@ -451,31 +501,54 @@ if [[ -n $COMP_LINE ]]; then
   pre="${COMP_LINE##* }" # the part after the last space in the current command
   cur_commands=(${COMP_LINE%"$pre"})
 
-  for c in "${COMMANDS[@]}"; do
-    # check if input matches c up to input length
-    [[ ${c:0:${#x_fn}} == "${x_fn,,}" ]] && echo "$c"
+  # for cur_command in "${cur_commands[@]}"; do
+  # for c in "${COMMANDS[@]}"; do
+  #   # check if input matches c up to input length
+  #   [[ ${c:0:${#x_fn}} == "${x_fn,,}" ]] && echo "$c"
 
-    [[ "${c}" == "$x_fn" ]] && xfn_specified=1
+  #   [[ "${c}" == "$x_fn" ]] && xfn_specified=1 && break
+  # done
+
+  for cur_command in "${cur_commands[@]}"; do
+    for c in "${COMMANDS[@]}"; do
+      if [[ "$c" == *"$cur_command"* ]]; then
+        xfn_specified=true
+        break 2
+      fi
+    done
   done
 
-  [[ -n "$xfn_specified" ]] && exit
+  for c in "${COMMANDS[@]}"; do
+    test -z "${xfn_specified}" || break
+    test -z "${pre}" -o "${c}" != "${c#"${pre}"}" -a "${pre}" != "${c}" && echo "${c}"
+  done
 
-  declare -A x_opts_specified
+  test -z "${xfn_specified}" && exit
+
+  # TODO should reuse logic to get them in ``usage``
+  while IFS= read -r line; do
+    x_opts_lines+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
+  done < <(sed -nr '/.*(--x-[[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
+  mapfile -t x_opts_lines < \
+    <(LC_COLLATE=C sort < <(printf "%s\n" "${x_opts_lines[@]}"))
+
+  declare __x_opts
+  for c in "${x_opts_lines[@]}"; do
+    __x_opts+=("${c%%)*}")
+  done
+
+  declare -A __x_opts_seen
   for cmd in "${cur_commands[@]}"; do
-    for opt in ${!x_opts[*]}; do
+    for opt in ${__x_opts[@]}; do
       if [[ "$opt" == *"$cmd"* ]]; then
-        x_opts_specified["$opt"]=1
+        __x_opts_seen[$opt]=true
         break
       fi
     done
-    # if [[ "${x_opts[$cmd]+1}" ]]; then
-    #   x_opts_specified["${cmd}"]=1
-    #   break
-    # fi
   done
 
-  for opt in ${!x_opts[*]}; do
-    [[ "${x_opts_specified[$opt]+1}" ]] && continue
+  for opt in ${__x_opts[@]}; do
+    [[ -n "${__x_opts_seen[$opt]}" ]] && continue
     [[ ${opt:0:${#pre}} == "${pre,,}" ]] && echo "${opt}"
   done
 
@@ -486,7 +559,7 @@ fi
 for arg in "$@"; do
   shift
   case $arg in
-  --x-force-regen)
+  --x-force-regen) # this comment should be ignored
     # Removes generation cache, forcing a new run.
     force_regen=1
     ;;

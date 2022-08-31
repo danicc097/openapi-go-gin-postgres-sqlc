@@ -21,7 +21,7 @@ func setupTests(tb testing.TB) {
 	tb.Helper()
 
 	cmd := exec.Command(
-		"../bin/build",
+		"../bin/project",
 		"generate.tests-api",
 	)
 	if out, err := cmd.CombinedOutput(); err != nil {
