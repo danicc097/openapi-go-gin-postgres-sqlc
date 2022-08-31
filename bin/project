@@ -21,6 +21,8 @@ ENV_FILE=".env"
 BIN_DIR=$(dirname "$0")
 PG_REPO="internal/repos/postgresql"
 
+MAX_COMMENT_LEN=88
+
 # Check build dependencies are met.
 x.check-build-deps() {
   local -i fails
@@ -128,7 +130,7 @@ x.sync-swagger-ui() {
   cp "$SPEC" "$PWD"/internal/static/swagger-ui
 }
 
-# Generate mocks for specified interfaces.
+# Generate mocks for specified interfaces. Runs are cached to `cachedir`.
 # Args: cachedir
 x.generate.counterfeiter() {
   # This shouldn't pose any problems, the interface is the only input to counterfeiter.
@@ -227,7 +229,7 @@ x.migrate() {
   )
 }
 
-# Creates a new migration file with the given name.
+# Creates a new migration file with the given `name`.
 # Args: name
 x.migrate.create-migration() {
   tmp="$*"
@@ -258,7 +260,7 @@ create_test_database() {
 
 ############## openapi ##############
 
-# Validates an OpenAPI specification.
+# Validates the project's OpenAPI specification or `spec`.
 # Args: [spec]
 x.validate() {
   java -jar openapi-generator-cli.jar validate -i "${1:-$SPEC}"
@@ -352,10 +354,75 @@ generate_api() {
   fi
 }
 
-usage() {
+usage() (
+  command_comments_parser() {
+    head -$((${lns[$i]} - 1)) $0 |
+      tac |
+      sed -n '/#/!q;p' |
+      tac |
+      awk '{$1=$1;print}'
+  }
+
+  command_opts_comments_parser() {
+    tail -n +$((${lns[$i]} + 1)) $0 |
+      sed -n '/^[[:blank:]]*#/!q;p' |
+      awk '{$1=$1;print}'
+  }
+
+  construct_column() {
+    comment_parser="$1"
+    for i in ${!lns[@]}; do
+      comment_paragraph="$($comment_parser)"
+      ROWS["${rows[$i]}"]="$comment_paragraph"
+      mapfile -t comments <<<"${ROWS[${rows[$i]}]}"
+      for comment in "${comments[@]}"; do
+        comment="$(clean_comment "$comment")"
+        args="-"
+        if [[ ${comment,,} == args:* ]]; then
+          args=$(clean_args "$comment")
+        fi
+        ROW_ARGS[${rows[$i]}]="$args"
+      done
+    done
+
+    for i in "${!rows[@]}"; do
+      mapfile -t comments <<<"${ROWS[${rows[$i]}]}"
+      for j in "${!comments[@]}"; do
+        comment="$(clean_comment "${comments[$j]}")"
+        if [[ ${comment,,} == args:* ]]; then
+          continue
+        fi
+
+        if [[ $j = 0 ]]; then
+          docs+=("$(
+            printf -- "%s\t%s\t%s" \
+              "${rows[$i]}" \
+              "${ROW_ARGS[${rows[$i]}]}" \
+              "$comment"
+          )")
+          continue
+        fi
+
+        docs+=("$(
+          printf -- "%s\t%s\t%s" \
+            "" \
+            "" \
+            "$comment"
+        )")
+      done
+    done
+
+    column -t \
+      --separator $'\t' \
+      --output-width 150 \
+      --table-noextreme C2 \
+      --table-noheadings \
+      --table-wrap C3 \
+      --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}")
+  }
+
   declare -A ROWS ROW_ARGS
-  declare docs rows
-  local maxch=88
+  declare docs rows X_FLAGS
 
   for c in "${COMMANDS[@]}"; do
     shopt -s extdebug
@@ -364,61 +431,7 @@ usage() {
     shopt -u extdebug
   done
 
-  for i in ${!lns[@]}; do
-    comment_paragraph="$(head -$((${lns[$i]} - 1)) $0 |
-      tac |
-      sed -n '/#/!q;p' |
-      tac |
-      awk '{$1=$1;print}')"
-    ROWS["${rows[$i]}"]="$comment_paragraph"
-
-    mapfile -t comments <<<"${ROWS[${rows[$i]}]}"
-    for comment in "${comments[@]}"; do
-      comment="$(clean_comment "$comment")"
-      args="-"
-      if [[ ${comment,,} == args:* ]]; then
-        args=$(clean_args "$comment")
-      fi
-      ROW_ARGS[${rows[$i]}]="$args"
-    done
-  done
-
-  for i in "${!rows[@]}"; do
-    mapfile -t comments <<<"${ROWS[${rows[$i]}]}"
-    for j in "${!comments[@]}"; do
-      comment="$(clean_comment "${comments[$j]}")"
-      if [[ ${comment,,} == args:* ]]; then
-        continue
-      fi
-
-      if [[ $j = 0 ]]; then
-        docs+=("$(
-          printf -- "%s\t%s\t%s" \
-            "${rows[$i]}" \
-            "${ROW_ARGS[${rows[$i]}]}" \
-            "$comment"
-        )")
-        continue
-      fi
-
-      docs+=("$(
-        printf -- "%s\t%s\t%s" \
-          "" \
-          "" \
-          "$comment"
-      )")
-    done
-  done
-
-  x_functions="$(column -t \
-    --separator $'\t' \
-    --output-width 150 \
-    --table-noextreme C2 \
-    --table-noheadings \
-    --table-wrap C3 \
-    --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}"))"
-
-  declare X_FLAGS
+  x_functions="$(construct_column command_comments_parser)"
 
   lns=()
   rows=()
@@ -427,7 +440,6 @@ usage() {
   while IFS= read -r line; do
     X_FLAGS+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
   done < <(sed -nr '/.*(--x-[[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
-
   mapfile -t X_FLAGS < \
     <(LC_COLLATE=C sort < <(printf "%s\n" "${X_FLAGS[@]}"))
 
@@ -436,61 +448,10 @@ usage() {
     rows+=("${c%%)*}")
   done
 
-  for i in ${!lns[@]}; do
-    comment_paragraph="$(
-      tail -n +$((${lns[$i]} + 1)) $0 |
-        sed -n '/^[[:blank:]]*#/!q;p' |
-        awk '{$1=$1;print}'
-    )"
-    ROWS["${rows[$i]}"]=$comment_paragraph
-    mapfile -t comments <<<"${ROWS[${rows[$i]}]}"
-    for comment in "${comments[@]}"; do
-      comment="$(clean_comment "$comment")"
-      args="-"
-      if [[ ${comment,,} == args:* ]]; then
-        args=$(clean_args "$comment")
-      fi
-      ROW_ARGS["${rows[$i]}"]="$args"
-    done
-  done
-
-  for i in "${!rows[@]}"; do
-    mapfile -t comments <<<"${ROWS[${rows[$i]}]}"
-    for j in "${!comments[@]}"; do
-      comment="$(clean_comment "${comments[$j]}")"
-      if [[ ${comment,,} == args:* ]]; then
-        continue
-      fi
-
-      if [[ $j = 0 ]]; then
-        docs+=("$(
-          printf -- "%s\t%s\t%s" \
-            "${rows[$i]}" \
-            "${ROW_ARGS[${rows[$i]}]}" \
-            "$comment"
-        )")
-        continue
-      fi
-
-      docs+=("$(
-        printf -- "%s\t%s\t%s" \
-          "" \
-          "" \
-          "$comment"
-      )")
-    done
-  done
-
-  x_options="$(column -t \
-    --separator $'\t' \
-    --output-width 150 \
-    --table-noextreme C2 \
-    --table-noheadings \
-    --table-wrap C3 \
-    --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}"))"
-  printf "\n"
+  x_options="$(construct_column command_opts_comments_parser)"
 
   cat <<EOF
+
 $BOLD$UNDERSCORE$(basename $0)$OFF centralizes all relevant project commands.
 
 ${BOLD}USAGE:
@@ -504,15 +465,16 @@ ${BOLD}--x-options:$OFF
 $(echo "${x_options}" |
       sed -E 's/    ([[:alnum:][:punct:]]*)(.*)/    '"$GREEN$BOLD"'\1'"$OFF"'\2''/')
 EOF
-}
+
+)
 
 clean_comment() {
   tmp="$1"
   tmp="${tmp//\#/}"
   comment="${tmp#* }"
   [[ -z $comment ]] && comment="·"
-  # TODO split in % maxch lines instead, on spaces only.
-  ((${#comment} > maxch)) && comment="${comment:0:maxch}..."
+  # TODO split in % MAX_COMMENT_LEN lines instead, on spaces only.
+  ((${#comment} > MAX_COMMENT_LEN)) && comment="${comment:0:MAX_COMMENT_LEN}..."
   echo "$comment"
 }
 
@@ -550,10 +512,18 @@ if [[ -n $COMP_LINE ]]; then
 
   declare -A __x_opts_seen
   declare __x_opts
+  # TODO should reuse logic to get them in ``usage``
+  # while IFS= read -r line; do
+  #   __x_opts+=("$(awk '{$1=$1;print $1}' <<<"${line##*)}")")
+  # done < <(sed -nr 's/.*(--x-[[:alnum:]_-]+[)]+).*/\1/p' $0)
   while IFS= read -r line; do
-    __x_opts+=("${line}")
-  done < <(sed -nr 's/.*(--x-[[:alnum:]_-]+)\)/\1/p' $0)
-
+    x_opts_lines+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
+  done < <(sed -nr '/.*(--x-[[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
+  mapfile -t x_opts_lines < \
+    <(LC_COLLATE=C sort < <(printf "%s\n" "${x_opts_lines[@]}"))
+  for c in "${x_opts_lines[@]}"; do
+    __x_opts+=("${c%%)*}")
+  done
   for cmd in "${cur_commands[@]}"; do
     for opt in ${__x_opts[@]}; do
       if [[ "$opt" == *"$cmd"* ]]; then
@@ -581,8 +551,6 @@ for arg in "$@"; do
   case $arg in
   --x-force-regen) # this comment should be ignored
     # Removes generation cache, forcing a new run.
-    # This is a new line.
-    # Args: arg1
     force_regen=1
     ;;
   --x-no-confirmation)
@@ -606,10 +574,4 @@ if [[ -n "$1" ]]; then
   done
 fi
 
-usage >bin/test-got-stdout.txt
-want="$(<bin/test-stdout.txt)"
-got="$(<bin/test-got-stdout.txt)"
-
-[[ "$got" = "$want" ]] && echo "😎😎😎😎" || echo "😡😡😡😡😡😡"
-
-# usage
+usage
