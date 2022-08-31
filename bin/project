@@ -501,44 +501,54 @@ if [[ -n $COMP_LINE ]]; then
   pre="${COMP_LINE##* }" # the part after the last space in the current command
   cur_commands=(${COMP_LINE%"$pre"})
 
-  for c in "${COMMANDS[@]}"; do
-    # check if input matches c up to input length
-    [[ ${c:0:${#x_fn}} == "${x_fn,,}" ]] && echo "$c"
+  # for cur_command in "${cur_commands[@]}"; do
+  # for c in "${COMMANDS[@]}"; do
+  #   # check if input matches c up to input length
+  #   [[ ${c:0:${#x_fn}} == "${x_fn,,}" ]] && echo "$c"
 
-    [[ "${c}" == "$x_fn" ]] && xfn_specified=1
+  #   [[ "${c}" == "$x_fn" ]] && xfn_specified=1 && break
+  # done
+
+  for cur_command in "${cur_commands[@]}"; do
+    for c in "${COMMANDS[@]}"; do
+      if [[ "$c" == *"$cur_command"* ]]; then
+        xfn_specified=true
+        break 2
+      fi
+    done
   done
 
-  [[ -n "$xfn_specified" ]] && exit
+  for c in "${COMMANDS[@]}"; do
+    test -z "${xfn_specified}" || break
+    test -z "${pre}" -o "${c}" != "${c#"${pre}"}" -a "${pre}" != "${c}" && echo "${c}"
+  done
 
-  declare -A __x_opts_seen
-  declare __x_opts
+  test -z "${xfn_specified}" && exit
+
   # TODO should reuse logic to get them in ``usage``
-  # while IFS= read -r line; do
-  #   __x_opts+=("$(awk '{$1=$1;print $1}' <<<"${line##*)}")")
-  # done < <(sed -nr 's/.*(--x-[[:alnum:]_-]+[)]+).*/\1/p' $0)
   while IFS= read -r line; do
     x_opts_lines+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
   done < <(sed -nr '/.*(--x-[[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
   mapfile -t x_opts_lines < \
     <(LC_COLLATE=C sort < <(printf "%s\n" "${x_opts_lines[@]}"))
+
+  declare __x_opts
   for c in "${x_opts_lines[@]}"; do
     __x_opts+=("${c%%)*}")
   done
+
+  declare -A __x_opts_seen
   for cmd in "${cur_commands[@]}"; do
     for opt in ${__x_opts[@]}; do
       if [[ "$opt" == *"$cmd"* ]]; then
-        __x_opts_seen["$opt"]=1
+        __x_opts_seen[$opt]=true
         break
       fi
     done
-    # if [[ "${__x_opts[$cmd]+1}" ]]; then
-    #   __x_opts_seen["${cmd}"]=1
-    #   break
-    # fi
   done
 
   for opt in ${__x_opts[@]}; do
-    [[ "${__x_opts_seen[$opt]+1}" ]] && continue
+    [[ -n "${__x_opts_seen[$opt]}" ]] && continue
     [[ ${opt:0:${#pre}} == "${pre,,}" ]] && echo "${opt}"
   done
 
