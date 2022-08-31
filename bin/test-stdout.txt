@@ -1,0 +1,41 @@
+
+project centralizes all relevant project commands.
+
+USAGE:
+    project x.function [--x-option ...] [args]
+
+x.functions:
+    bootstrap                 -             Check dependencies and fetch required tools.
+    build                     -             Test and build the entire project.
+    check-build-deps          -             Check build dependencies are met.
+    compose-up                -             Bring docker compose services up.
+    diff-openapi-spec         -             Run a diff against the previous OpenAPI spec in the main branch.
+                                            Can also be used to generate changelogs when upgrading major versions.
+    fetch.openapi-generator   -             Fetch openapi-generator jar file.
+    fetch.swagger-ui          -             Fetch latest swagger ui bundle.
+    generate                  -             Run all codegen and postgen commands for the project.
+    generate.counterfeiter    cachedir      Generate mocks for specified interfaces.
+    generate.sqlc             -             Generate type-safe Go code from SQL.
+    generate.tests-api        -             Run openapi generator for testdata.
+                                            jar won't output properly if absolute paths are passed from subdir.
+    generate.xo               -             Automatically generate CRUD and By queries based on existing indexes from
+                                            a Postgres schema.
+                                            Does not work with a schema file, database must be up to date.
+    install-tools             -             Install go libraries as runnable programs.
+    lint                      -             Lints the entire project.
+    lint.sql                  -             Formats sql files.
+    migrate                   -             Wrapper for golang-migrate with predefined configuration.
+    migrate.create-migration  name          Creates a new migration file with the given name.
+    openapi-generator         spec out tpl  Wrapper for openapi-generator with sane output modifications.
+    postgen                   -             Run post-generation scripts on the internal package.
+    release                   -             Ensure no breaking changes to the OpenAPI spec in the same version are present.
+    run                       -             Test, build and run the entire project.
+    run-hot-reload            -             Run the entire project with hot-reloading.
+    sync-swagger-ui           -             Apply bundle overrides on Swagger UI.
+    test                      [...]         Test the entire project. Accepts `go test` parameters.
+    validate                  [spec]        Validates an OpenAPI specification.
+
+--x-options:
+    --x-force-regen      arg1  Removes generation cache, forcing a new run.
+                               This is a new line.
+    --x-no-confirmation  -     Bypasses confirmation messages.

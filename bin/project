@@ -353,13 +353,14 @@ generate_api() {
 }
 
 usage() {
-  declare -A x_funcs x_funcs_args
-  declare docs
+  declare -A ROWS ROW_ARGS
+  declare docs rows
   local maxch=88
 
   for c in "${COMMANDS[@]}"; do
     shopt -s extdebug
     lns+=("$(declare -F x.$c | awk '{print $2}')")
+    rows+=("${c}")
     shopt -u extdebug
   done
 
@@ -369,24 +370,21 @@ usage() {
       sed -n '/#/!q;p' |
       tac |
       awk '{$1=$1;print}')"
-    # TODO keep separate ASSOCIATIVE arrays for comments and args indexed
-    # by func or flag name as with --x-options
-    # so we can abstract all printing
-    x_funcs["${COMMANDS[$i]}"]="$comment_paragraph"
+    ROWS["${rows[$i]}"]="$comment_paragraph"
 
-    mapfile -t comments <<<"${x_funcs[${COMMANDS[$i]}]}"
+    mapfile -t comments <<<"${ROWS[${rows[$i]}]}"
     for comment in "${comments[@]}"; do
       comment="$(clean_comment "$comment")"
       args="-"
       if [[ ${comment,,} == args:* ]]; then
         args=$(clean_args "$comment")
       fi
-      x_funcs_args[${COMMANDS[$i]}]="$args"
+      ROW_ARGS[${rows[$i]}]="$args"
     done
   done
 
-  for i in "${!COMMANDS[@]}"; do
-    mapfile -t comments <<<"${x_funcs[${COMMANDS[$i]}]}"
+  for i in "${!rows[@]}"; do
+    mapfile -t comments <<<"${ROWS[${rows[$i]}]}"
     for j in "${!comments[@]}"; do
       comment="$(clean_comment "${comments[$j]}")"
       if [[ ${comment,,} == args:* ]]; then
@@ -396,8 +394,8 @@ usage() {
       if [[ $j = 0 ]]; then
         docs+=("$(
           printf -- "%s\t%s\t%s" \
-            "${COMMANDS[$i]}" \
-            "${x_funcs_args[${COMMANDS[$i]}]}" \
+            "${rows[$i]}" \
+            "${ROW_ARGS[${rows[$i]}]}" \
             "$comment"
         )")
         continue
@@ -420,31 +418,44 @@ usage() {
     --table-wrap C3 \
     --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}"))"
 
-  declare -A x_opts x_opts_args
-  declare lns x_flags
+  declare X_FLAGS
 
+  lns=()
+  rows=()
   docs=()
 
   while IFS= read -r line; do
-    x_flags+=("${line}")
-  done < <(sed -nr 's/.*(--x-[[:alnum:]_-]+)\)/\1/p' $0)
+    X_FLAGS+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
+  done < <(sed -nr '/.*(--x-[[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
 
-  while IFS= read -r line; do
-    lns+=("${line}")
-  done < <(sed -nr '/.*(--x-[[:alnum:]_-]+)\)/=' $0)
+  mapfile -t X_FLAGS < \
+    <(LC_COLLATE=C sort < <(printf "%s\n" "${X_FLAGS[@]}"))
 
-  for i in ${!lns[@]}; do
-    comment_line="$(tail -n +$((${lns[$i]} + 1)) $0 |
-      sed -n '/^[[:blank:]]*#/!q;p' |
-      awk '{$1=$1;print}')"
-    x_opts["${x_flags[$i]}"]=$comment_line
-    # TODO grab special comment for args: Args: or whatever
-    # refactor commands to do the same so all can be abstracted
-    x_opts_args["${x_flags[$i]}"]="-"
+  for c in "${X_FLAGS[@]}"; do
+    lns+=("${c##*)}")
+    rows+=("${c%%)*}")
   done
 
-  for i in "${!x_opts[@]}"; do
-    mapfile -t comments <<<"${x_opts[$i]}"
+  for i in ${!lns[@]}; do
+    comment_paragraph="$(
+      tail -n +$((${lns[$i]} + 1)) $0 |
+        sed -n '/^[[:blank:]]*#/!q;p' |
+        awk '{$1=$1;print}'
+    )"
+    ROWS["${rows[$i]}"]=$comment_paragraph
+    mapfile -t comments <<<"${ROWS[${rows[$i]}]}"
+    for comment in "${comments[@]}"; do
+      comment="$(clean_comment "$comment")"
+      args="-"
+      if [[ ${comment,,} == args:* ]]; then
+        args=$(clean_args "$comment")
+      fi
+      ROW_ARGS["${rows[$i]}"]="$args"
+    done
+  done
+
+  for i in "${!rows[@]}"; do
+    mapfile -t comments <<<"${ROWS[${rows[$i]}]}"
     for j in "${!comments[@]}"; do
       comment="$(clean_comment "${comments[$j]}")"
       if [[ ${comment,,} == args:* ]]; then
@@ -454,8 +465,8 @@ usage() {
       if [[ $j = 0 ]]; then
         docs+=("$(
           printf -- "%s\t%s\t%s" \
-            "${i}" \
-            "${x_opts_args[$i]}" \
+            "${rows[$i]}" \
+            "${ROW_ARGS[${rows[$i]}]}" \
             "$comment"
         )")
         continue
@@ -470,16 +481,13 @@ usage() {
     done
   done
 
-  mapfile -t docs < \
-    <(LC_COLLATE=C sort < <(printf "%s\n" "${docs[@]}"))
   x_options="$(column -t \
     --separator $'\t' \
     --output-width 150 \
     --table-noextreme C2 \
     --table-noheadings \
     --table-wrap C3 \
-    --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}") |
-    GREP_COLORS='ms=1;32' grep -E --color "^[[:blank:]]{4}[[:alnum:][:punct:]]*|$")"
+    --table-columns C1,C2,C3 < <(printf "    %s\n" "${docs[@]}"))"
   printf "\n"
 
   cat <<EOF
@@ -503,6 +511,7 @@ clean_comment() {
   tmp="${tmp//\#/}"
   comment="${tmp#* }"
   [[ -z $comment ]] && comment="·"
+  # TODO split in % maxch lines instead, on spaces only.
   ((${#comment} > maxch)) && comment="${comment:0:maxch}..."
   echo "$comment"
 }
@@ -570,8 +579,10 @@ fi
 for arg in "$@"; do
   shift
   case $arg in
-  --x-force-regen)
+  --x-force-regen) # this comment should be ignored
     # Removes generation cache, forcing a new run.
+    # This is a new line.
+    # Args: arg1
     force_regen=1
     ;;
   --x-no-confirmation)
@@ -595,4 +606,10 @@ if [[ -n "$1" ]]; then
   done
 fi
 
-usage
+usage >bin/test-got-stdout.txt
+want="$(<bin/test-stdout.txt)"
+got="$(<bin/test-got-stdout.txt)"
+
+[[ "$got" = "$want" ]] && echo "😎😎😎😎" || echo "😡😡😡😡😡😡"
+
+# usage
