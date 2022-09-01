@@ -68,6 +68,11 @@ trim_string() {
   printf '%s\n' "$_"
 }
 
+err() {
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
+  exit 1
+}
+
 # Retrieve all environment variables from `env_file` and
 # set the key-value pairs in the given associative array
 get_envvars() {
@@ -75,13 +80,11 @@ get_envvars() {
   local env_file="$2"
   if [[ -f "$env_file" ]]; then
     while read -r line; do
-      if [[ $line =~ ^[#]?([A-Za-z0-9_]+)[[:space:]]*=[[:space:]]*(.*?)$ ]]; then
+      if [[ $line =~ ^[\#]?([A-Za-z0-9_]+)[[:space:]]*=[[:space:]]*(.*?)$ ]]; then
         key="$(trim_string ${BASH_REMATCH[1]})"
         val="$(trim_string ${BASH_REMATCH[2]})"
-        # echo "$line --> $key=$val"
         arr[$key]=$val
       fi
-
     done <"$env_file"
   else
     err "$env_file does not exist"

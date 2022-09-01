@@ -35,9 +35,8 @@ x.check-build-deps() {
   check.docker-compose || { ((fails++)) && true; }
   check.direnv || { ((fails++)) && true; }
   check.yq || { ((fails++)) && true; }
-
-  { ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met${OFF}"; }
-  { ((fails != 0)) && echo "${RED}❌ Missing dependencies.${OFF}"; } || exit 1
+  ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met.${OFF}"
+  ((fails != 0)) && err "${RED}❌ Missing dependencies.${OFF}"
 }
 
 # Check dependencies and fetch required tools.
@@ -109,7 +108,7 @@ x.postgen() {
 
 # Generate type-safe Go code from SQL.
 x.generate.sqlc() {
-  { cd $PG_REPO && sqlc generate && cd -; } || { echo "Failed sqlc generation" && exit 1; }
+  { cd $PG_REPO && sqlc generate && cd -; } || err "Failed sqlc generation"
 }
 
 # Automatically generate CRUD and By queries based on existing indexes from
@@ -250,7 +249,7 @@ x.migrate.create-migration() {
   tmp="$*"
   tmp="${tmp// /_}"
   name="${tmp,,}"
-  [[ -z $name ]] && echo "Please provide a migration name" && exit
+  [[ -z $name ]] && err "Please provide a migration name"
   x.migrate create -ext sql -dir db/migrations/ "$name"
 }
 
@@ -288,9 +287,9 @@ x.openapi-generator() {
   local gen_out_dir="$2"
   local template_dir="$3"
 
-  [[ -z $spec ]] && echo "openapi-generator: spec required" && exit 1
-  [[ -z $gen_out_dir ]] && echo "openapi-generator: out dir required" && exit 1
-  [[ -z $template_dir ]] && echo "openapi-generator: template dir required" && exit 1
+  [[ -z $spec ]] && err "openapi-generator: spec required"
+  [[ -z $gen_out_dir ]] && err "openapi-generator: out dir required"
+  [[ -z $template_dir ]] && err "openapi-generator: template dir required"
   echo "Generating API from $spec"
   echo "Generation directory: $gen_out_dir"
   echo "Template override directory: $template_dir"
@@ -512,25 +511,14 @@ mapfile -t COMMANDS < \
   <(LC_COLLATE=C sort < <(printf "%s\n" "${COMMANDS[@]}"))
 
 if [[ -n $COMP_LINE ]]; then
-  x_fn=${COMP_LINE#* }
   pre="${COMP_LINE##* }" # the part after the last space in the current command
   cur_commands=(${COMP_LINE%"$pre"})
 
-  # for cur_command in "${cur_commands[@]}"; do
-  # for c in "${COMMANDS[@]}"; do
-  #   # check if input matches c up to input length
-  #   [[ ${c:0:${#x_fn}} == "${x_fn,,}" ]] && echo "$c"
-
-  #   [[ "${c}" == "$x_fn" ]] && xfn_specified=1 && break
-  # done
-
-  for cur_command in "${cur_commands[@]}"; do
-    for c in "${COMMANDS[@]}"; do
-      if [[ "$c" == *"$cur_command"* ]]; then
-        xfn_specified=true
-        break 2
-      fi
-    done
+  for c in "${COMMANDS[@]}"; do
+    if [[ " ${cur_commands[*]} " =~ " ${c} " ]]; then
+      xfn_specified=true
+      break
+    fi
   done
 
   for c in "${COMMANDS[@]}"; do
@@ -581,6 +569,16 @@ for arg in "$@"; do
   --x-no-confirmation)
     # Bypasses confirmation messages.
     no_confirmation=1
+    ;;
+  --x-env)
+    # Environment to run commands in. Defaults to "dev".
+    # Args: env
+    env="$1"
+    valid_envs="dev e2e prod"
+    if [[ ! " ${valid_envs[*]} " =~ " $env " ]]; then
+      err "Valid environments: $valid_envs"
+    fi
+    shift
     ;;
   *) set -- "$@" "$arg" ;;
   esac
