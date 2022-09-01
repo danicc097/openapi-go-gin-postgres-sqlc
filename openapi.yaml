@@ -470,20 +470,6 @@ paths:
       summary: Creates list of users with given input array
       tags:
         - user
-  /user/createWithList:
-    post:
-      description: ""
-      operationId: createUsersWithListInput
-      requestBody:
-        $ref: "#/components/requestBodies/UserArray"
-      responses:
-        default:
-          description: successful operation
-      security:
-        - api_key: []
-      summary: Creates list of users with given input array
-      tags:
-        - user
   /user/login:
     get:
       description: ""
@@ -800,10 +786,21 @@ components:
         password: password
         email: email
         username: username
+      # not validated by kin-openapi [1]
+      required:
+        - username
+        - email
+        - password
       properties:
         username:
           type: string
+          # workaround for [1]
           x-go-custom-tag: binding:"required"
+          # patterns also not validated by kin (afaik, must check source), need a custom validation func instead, see
+          # https://pkg.go.dev/github.com/go-playground/validator/v10#hdr-Alias_Validators_and_Tags
+          # example: https://github.com/go-playground/validator/blob/master/_examples/custom-validation/main.go
+          # openapi3/schema_formats.go for regex compiling beforehand
+          pattern: "^[ a-zA-Z0-9_-]+$"
         email:
           type: string
           x-go-custom-tag: binding:"required"

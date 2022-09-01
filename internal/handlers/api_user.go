@@ -52,13 +52,6 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			Middlewares: h.middlewares("CreateUsersWithArrayInput"),
 		},
 		{
-			Name:        "CreateUsersWithListInput",
-			Method:      http.MethodPost,
-			Pattern:     "/user/createWithList",
-			HandlerFunc: h.CreateUsersWithListInput,
-			Middlewares: h.middlewares("CreateUsersWithListInput"),
-		},
-		{
 			Name:        "DeleteUser",
 			Method:      http.MethodDelete,
 			Pattern:     "/user/:username",
@@ -134,11 +127,6 @@ func (h *User) CreateUser(c *gin.Context) {
 
 // CreateUsersWithArrayInput creates list of users with given input array.
 func (h *User) CreateUsersWithArrayInput(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "501 not implemented")
-}
-
-// CreateUsersWithListInput creates list of users with given input array.
-func (h *User) CreateUsersWithListInput(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 

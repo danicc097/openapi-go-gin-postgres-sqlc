@@ -216,12 +216,14 @@ x.run() {
 # Run the entire project with hot-reloading.
 x.run-hot-reload() {
   x.compose-up
-  # TODO new include_files flag in fork. else generated .yaml files trigger rebuild.
+  # TODO new include_files flag in fork, e.g. for openapi.yaml.
+  # else generated .yaml files trigger rebuild.
   # --build.include_files "openapi.yaml" \
+  # NOTE: building binary very unreliable, leads to bin not found.
   air \
     --build.pre_build_cmd "bin/project generate" \
-    --build.cmd "go build -o ./air-main ./cmd/rest-server/" \
-    --build.bin "./air-main -env=$ENV_FILE" \
+    --build.cmd "" \
+    --build.bin "go run ./cmd/rest-server/ -env=$ENV_FILE" \
     --build.exclude_regex ".gen.go,internal/gen/*,$PG_REPO/gen/*,testdata,_test.go" \
     --build.stop_watch "internal/handlers/,internal/services/" \
     --build.delay 1000
