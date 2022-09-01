@@ -29,7 +29,7 @@ func testMain(m *testing.M) int {
 	}
 	defer pool.Close()
 
-	srv, err = run("../.env", ":8099", pool)
+	srv, err = run("../.env", ":0", "../openapi.yaml", pool)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't run test server: %s\n", err)
 		os.Exit(1)

@@ -29,7 +29,7 @@ func TestPingRoute(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/ping", nil)
 	resp := httptest.NewRecorder()
-
+	t.Logf("rqt: %s", req.URL)
 	srv.Handler.ServeHTTP(resp, req)
 
 	assert.Equal(t, http.StatusOK, resp.Code)
@@ -88,6 +88,7 @@ func TestCreateUserRoute(t *testing.T) {
 			t.Logf("%v", &buf)
 
 			req, err := http.NewRequest(http.MethodPost, os.Getenv("API_VERSION")+"/user", &buf)
+			req.Header.Add("Content-Type", "application/json")
 			if err != nil {
 				t.Errorf("%v", err)
 			}

@@ -217,6 +217,8 @@ x.run() {
 # Run the entire project with hot-reloading.
 x.run-hot-reload() {
   x.compose-up
+  # TODO new include_files flag in fork. else generated .yaml files trigger rebuild.
+  # --build.include_files "openapi.yaml" \
   air \
     --build.pre_build_cmd "bin/project generate" \
     --build.cmd "go build -o ./air-main ./cmd/rest-server/" \

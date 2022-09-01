@@ -11,13 +11,14 @@ import (
 )
 
 func main() {
-	var env, address string
+	var env, address, specPath string
 
 	flag.StringVar(&env, "env", "", "Environment Variables filename")
 	flag.StringVar(&address, "address", ":8090", "HTTP Server Address")
+	flag.StringVar(&specPath, "spec-path", "openapi.yaml", "OpenAPI specification filepath")
 	flag.Parse()
 
-	errC, err := server.Run(env, address)
+	errC, err := server.Run(env, address, specPath)
 	if err != nil {
 		log.Fatalf("Couldn't run: %s", err)
 	}

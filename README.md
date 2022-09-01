@@ -46,36 +46,6 @@ Any custom field with an `x-*` name pattern in the OpenAPI spec will be availabl
     Can generate a mock with e.g.
     [openapi-mock](https://github.com/muonsoft/openapi-mock).
 
-
-  - OAS 3.0 **Schema validator** for path params, query params and body. Alternative,
-   roll out a simple generated one (see generator logs for available fields in
-   templates. Something very similar is already being developed in
-   https://github.com/okhowang/openapi-generator/commit/524ff02255b6ee3f6246fe67540cda096337fd38)
-   Since we are using gin, with ``validator`` under the hood, we can get away
-   with appending fields to the `binding:` tag. For complex cases that require a
-   custom validator users can implement it themselves.
-
-    Existing tools:
-
-    1. [kin-openapi](https://github.com/getkin/kin-openapi) for complete request
-      and response validation - as is would require 2 routers (gorilla mux used
-      internally by kin - see
-      https://github.com/getkin/kin-openapi/blob/master/openapi3filter/middleware_test.go
-      for full implementation).
-    2. Gin middleware already implemented based on kin-openapi:
-    https://github.com/deepmap/oapi-codegen/blob/master/pkg/gin-middleware/oapi_validate.go
-    In the future we could grab what's needed and extend it if we need a little
-    postgen for the validator as well.
-
-    Experimental tools:
-
-    1. github.com/phumberdroz/gin-openapi-validator (gin middleware, uses
-      kin-openapi and has tests). Good to build upon, has all the basics.
-    2. https://github.com/wI2L/fizz (reversed, spec from go code). Gin
-       compatible.
-    3. https://github.com/stellirin/go-validator creates a middleware for Echo
-       based on echo's ``context`` (!= ``context.Context``)
-
   - equivalent of Python exception handler context manager but with global
   middleware on the api version route group:
       https://stackoverflow.com/questions/69948784/how-to-handle-errors-in-gin-middleware

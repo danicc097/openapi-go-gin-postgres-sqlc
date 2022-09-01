@@ -10,6 +10,8 @@ info:
   version: 2.0.0
 servers:
   - url: https://localhost:8090/v2
+  # for tests validation middleware to work on random port.
+  - url: /v2
 tags:
   - description: Everything about your Pets
     name: pet
@@ -449,8 +451,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/CreateUserResponse"
           description: successful operation
-      security:
-        - api_key: []
+      # security:
+      #   - api_key: []
       summary: creates a new user
       tags:
         - user

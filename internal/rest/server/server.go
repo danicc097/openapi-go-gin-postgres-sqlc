@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/fs"
 	"net/http"
 	"os"
@@ -10,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3filter"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	rv8 "github.com/go-redis/redis/v8"
@@ -22,6 +25,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/validator"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
@@ -36,6 +40,8 @@ type Config struct {
 	Redis   *rv8.Client
 	Metrics http.Handler
 	Logger  *zap.Logger
+	// SpecPath is the OpenAPI spec filepath.
+	SpecPath string
 }
 
 // New returns a new http server.
@@ -54,8 +60,34 @@ func New(conf Config) (*http.Server, error) {
 	}))
 	router.Use(ginzap.RecoveryWithZap(conf.Logger, true))
 
+	schemaBlob, err := os.ReadFile(conf.SpecPath)
+	if err != nil {
+		return nil, err
+	}
+
+	swagger, err := openapi3.NewLoader().LoadFromData(schemaBlob)
+	if err != nil {
+		return nil, err
+	}
+
+	options := validator.Options{
+		Options: openapi3filter.Options{
+			ExcludeRequestBody:    false,
+			ExcludeResponseBody:   false,
+			IncludeResponseStatus: true,
+			MultiError:            true,
+		},
+		MultiErrorHandler: func(me openapi3.MultiError) error {
+			return fmt.Errorf("multiple errors:  %s", me.Error())
+		},
+	}
+
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
 	vg := router.Group(os.Getenv("API_VERSION"))
+	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
+
+	router.Use(validator.OapiRequestValidatorWithOptions(swagger, &options))
+
 	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
 	authzSvc := services.Authorization{Logger: conf.Logger}
 	fakeSvc := services.Fake{Logger: conf.Logger, Pool: conf.Pool}
@@ -84,8 +116,6 @@ func New(conf Config) (*http.Server, error) {
 		Register(vg, []gin.HandlerFunc{})
 	// TODO /admin with authMw.EnsureAuthorized() in group
 
-	vg.StaticFS("/docs", http.FS(fsys))
-
 	conf.Logger.Info("Server started")
 
 	return &http.Server{
@@ -99,7 +129,7 @@ func New(conf Config) (*http.Server, error) {
 }
 
 // Run configures a server and underlying services with the given configuration.
-func Run(env, address string) (<-chan error, error) {
+func Run(env, address, specPath string) (<-chan error, error) {
 	if err := envvar.Load(env); err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
 	}
@@ -135,10 +165,11 @@ func Run(env, address string) (<-chan error, error) {
 	}
 
 	srv, err := New(Config{
-		Address: address,
-		Pool:    pool,
-		Redis:   rdb,
-		Logger:  logger,
+		Address:  address,
+		Pool:     pool,
+		Redis:    rdb,
+		Logger:   logger,
+		SpecPath: specPath,
 	})
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "New")

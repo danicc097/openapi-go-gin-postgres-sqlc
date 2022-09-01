@@ -43,7 +43,7 @@ func getStderr(t *testing.T, dir string) string {
 }
 
 // run configures a test server and underlying services with the given configuration.
-func run(env, address string, pool *pgxpool.Pool) (*http.Server, error) {
+func run(env, address, specPath string, pool *pgxpool.Pool) (*http.Server, error) {
 
 	if err := envvar.Load(env); err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
@@ -74,10 +74,11 @@ func run(env, address string, pool *pgxpool.Pool) (*http.Server, error) {
 	}
 
 	srv, err := server.New(server.Config{
-		Address: address,
-		Pool:    pool,
-		Redis:   rdb,
-		Logger:  logger,
+		Address:  address,
+		Pool:     pool,
+		Redis:    rdb,
+		Logger:   logger,
+		SpecPath: specPath,
 	})
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "New")
