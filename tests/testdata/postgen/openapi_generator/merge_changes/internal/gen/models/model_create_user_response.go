@@ -7,3 +7,9 @@ type CreateUserResponse struct {
 	AccessToken string `json:"access_token,omitempty"`
 	UserId      int64  `json:"user_id,omitempty"`
 }
+
+// TODO validate everything, accumulate errors and return error map instead.
+// validate ...
+func (o *CreateUserResponse) validate() error {
+	return nil
+}

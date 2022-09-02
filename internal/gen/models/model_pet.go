@@ -15,3 +15,9 @@ type Pet struct {
 	// This is a custom comment.
 	Status string `json:"status,omitempty" acustomtag:"status"`
 }
+
+// TODO validate everything, accumulate errors and return error map instead.
+// validate ...
+func (o *Pet) validate() error {
+	return nil
+}

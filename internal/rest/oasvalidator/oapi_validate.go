@@ -27,19 +27,19 @@ func OapiValidatorFromYamlFile(path string) (gin.HandlerFunc, error) {
 		return nil, fmt.Errorf("error reading %s: %s", path, err)
 	}
 
-	swagger, err := openapi3.NewLoader().LoadFromData(data)
+	openapi, err := openapi3.NewLoader().LoadFromData(data)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing %s as Swagger YAML: %s",
+		return nil, fmt.Errorf("error parsing %s as OpenAPI YAML: %s",
 			path, err)
 	}
-	return OapiRequestValidator(swagger), nil
+	return OapiRequestValidator(openapi), nil
 }
 
 // This is an gin middleware function which validates incoming HTTP requests
 // to make sure that they conform to the given OAPI 3.0 specification. When
 // OAPI validation fails on the request, we return an HTTP/400 with error message
-func OapiRequestValidator(swagger *openapi3.T) gin.HandlerFunc {
-	return OapiRequestValidatorWithOptions(swagger, nil)
+func OapiRequestValidator(openapi *openapi3.T) gin.HandlerFunc {
+	return OapiRequestValidatorWithOptions(openapi, nil)
 }
 
 // ErrorHandler is called when there is an error in validation
@@ -58,9 +58,9 @@ type Options struct {
 	MultiErrorHandler MultiErrorHandler
 }
 
-// Create a validator from a swagger object, with validation options
-func OapiRequestValidatorWithOptions(swagger *openapi3.T, options *Options) gin.HandlerFunc {
-	router, err := gorillamux.NewRouter(swagger)
+// Create a validator from a openapi object, with validation options
+func OapiRequestValidatorWithOptions(openapi *openapi3.T, options *Options) gin.HandlerFunc {
+	router, err := gorillamux.NewRouter(openapi)
 	if err != nil {
 		panic(err)
 	}

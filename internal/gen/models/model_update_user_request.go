@@ -10,3 +10,9 @@ type UpdateUserRequest struct {
 	FirstName string `json:"firstName,omitempty"`
 	LastName  string `json:"lastName,omitempty"`
 }
+
+// TODO validate everything, accumulate errors and return error map instead.
+// validate ...
+func (o *UpdateUserRequest) validate() error {
+	return nil
+}

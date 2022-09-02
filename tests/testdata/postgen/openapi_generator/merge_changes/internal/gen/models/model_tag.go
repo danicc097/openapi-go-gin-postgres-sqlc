@@ -7,3 +7,9 @@ type Tag struct {
 	Id   int64  `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
 }
+
+// TODO validate everything, accumulate errors and return error map instead.
+// validate ...
+func (o *Tag) validate() error {
+	return nil
+}

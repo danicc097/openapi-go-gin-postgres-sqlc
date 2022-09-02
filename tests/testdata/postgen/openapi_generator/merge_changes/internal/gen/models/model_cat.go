@@ -5,3 +5,9 @@ package models
 type Cat struct {
 	Declawed bool `json:"declawed,omitempty"`
 }
+
+// TODO validate everything, accumulate errors and return error map instead.
+// validate ...
+func (o *Cat) validate() error {
+	return nil
+}

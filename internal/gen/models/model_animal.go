@@ -6,3 +6,9 @@ type Animal struct {
 	ClassName string `json:"className"`
 	Color     string `json:"color,omitempty"`
 }
+
+// TODO validate everything, accumulate errors and return error map instead.
+// validate ...
+func (o *Animal) validate() error {
+	return nil
+}

@@ -44,8 +44,8 @@ func doPost(t *testing.T, handler http.Handler, rawURL string, jsonBody interfac
 }
 
 func TestOapiRequestValidator(t *testing.T) {
-	swagger, err := openapi3.NewLoader().LoadFromData(testSchema)
-	require.NoError(t, err, "Error initializing swagger")
+	openapi, err := openapi3.NewLoader().LoadFromData(testSchema)
+	require.NoError(t, err, "Error initializing openapi")
 
 	g := gin.New()
 
@@ -78,7 +78,7 @@ func TestOapiRequestValidator(t *testing.T) {
 	}
 
 	// Install our OpenApi based request validator
-	g.Use(OapiRequestValidatorWithOptions(swagger, &options))
+	g.Use(OapiRequestValidatorWithOptions(openapi, &options))
 
 	called := false
 
@@ -191,8 +191,8 @@ func TestOapiRequestValidator(t *testing.T) {
 }
 
 func TestOapiRequestValidatorWithOptionsMultiError(t *testing.T) {
-	swagger, err := openapi3.NewLoader().LoadFromData([]byte(testSchema))
-	require.NoError(t, err, "Error initializing swagger")
+	openapi, err := openapi3.NewLoader().LoadFromData([]byte(testSchema))
+	require.NoError(t, err, "Error initializing openapi")
 
 	g := gin.New()
 
@@ -208,7 +208,7 @@ func TestOapiRequestValidatorWithOptionsMultiError(t *testing.T) {
 	}
 
 	// register middleware
-	g.Use(OapiRequestValidatorWithOptions(swagger, &options))
+	g.Use(OapiRequestValidatorWithOptions(openapi, &options))
 
 	called := false
 
@@ -294,8 +294,8 @@ func TestOapiRequestValidatorWithOptionsMultiError(t *testing.T) {
 }
 
 func TestOapiRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T) {
-	swagger, err := openapi3.NewLoader().LoadFromData([]byte(testSchema))
-	require.NoError(t, err, "Error initializing swagger")
+	openapi, err := openapi3.NewLoader().LoadFromData([]byte(testSchema))
+	require.NoError(t, err, "Error initializing openapi")
 
 	g := gin.New()
 
@@ -314,7 +314,7 @@ func TestOapiRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T)
 	}
 
 	// register middleware
-	g.Use(OapiRequestValidatorWithOptions(swagger, &options))
+	g.Use(OapiRequestValidatorWithOptions(openapi, &options))
 
 	called := false
 

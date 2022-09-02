@@ -10,3 +10,9 @@ type UpdatePetRequest struct {
 	JsonData                Pet      `json:"jsonData,omitempty"`
 	BinaryDataN2Information *os.File `json:"binaryDataN2Information,omitempty"`
 }
+
+// TODO validate everything, accumulate errors and return error map instead.
+// validate ...
+func (o *UpdatePetRequest) validate() error {
+	return nil
+}

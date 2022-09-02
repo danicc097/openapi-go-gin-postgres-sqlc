@@ -7,3 +7,9 @@ type ValidationError struct {
 	Msg  string   `json:"msg"`
 	Type string   `json:"type"`
 }
+
+// TODO validate everything, accumulate errors and return error map instead.
+// validate ...
+func (o *ValidationError) validate() error {
+	return nil
+}

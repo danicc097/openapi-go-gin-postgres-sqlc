@@ -7,3 +7,9 @@ type AnyOfPig struct {
 	Color     string `json:"color"`
 	Size      int32  `json:"size"`
 }
+
+// TODO validate everything, accumulate errors and return error map instead.
+// validate ...
+func (o *AnyOfPig) validate() error {
+	return nil
+}

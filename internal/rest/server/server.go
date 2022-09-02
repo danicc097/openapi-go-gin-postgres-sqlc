@@ -72,7 +72,7 @@ func New(conf Config) (*http.Server, error) {
 		return nil, err
 	}
 
-	swagger, err := openapi3.NewLoader().LoadFromData(schemaBlob)
+	openapi, err := openapi3.NewLoader().LoadFromData(schemaBlob)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func New(conf Config) (*http.Server, error) {
 	vg := router.Group(os.Getenv("API_VERSION"))
 	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
 
-	router.Use(oasvalidator.OapiRequestValidatorWithOptions(swagger, &options))
+	router.Use(oasvalidator.OapiRequestValidatorWithOptions(openapi, &options))
 
 	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
 	authzSvc := services.Authorization{Logger: conf.Logger}

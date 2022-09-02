@@ -311,8 +311,13 @@ x.openapi-generator() {
   mkdir -p "$gen_out_dir"/handlers
   mkdir -p "$gen_out_dir"/services
   mkdir -p "$gen_out_dir"/rest
+
   mv "$gen_out_dir"/gen/routers.go "$gen_out_dir"/rest
-  mv "$gen_out_dir"/gen/model_*.go "$gen_out_dir"/gen/models 2>/dev/null || echo "No model files found. Skipping"
+  {
+    mv "$gen_out_dir"/gen/model_*.go "$gen_out_dir"/gen/models 2>/dev/null
+    goimports -w "$gen_out_dir"/gen/models
+  } || echo "No model files found. Skipping"
+
   rm -rf "$gen_out_dir/api"
 }
 

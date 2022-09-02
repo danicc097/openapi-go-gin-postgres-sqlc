@@ -2,9 +2,29 @@
 
 package models
 
+import (
+	"fmt"
+	"regexp"
+)
+
 // CreateUserRequest represents a new user.
 type CreateUserRequest struct {
 	Username string `json:"username" binding:"required,alphanumspace"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=7"`
+}
+
+// TODO validate everything, accumulate errors and return error map instead.
+// validate ...
+func (o *CreateUserRequest) validate() error {
+	// TODO: precompile pattern
+	if !regexp.MustCompile(`/^[ a-zA-Z0-9_-]+$/`).MatchString(o.Username) {
+		return fmt.Errorf("invalid Username: %s does not match pattern '/^[ a-zA-Z0-9_-]+$/'", o.Username)
+	}
+
+	if len(o.Password) < 7 {
+		return fmt.Errorf("Password too short: %s < %d", o.Password, 7)
+	}
+
+	return nil
 }

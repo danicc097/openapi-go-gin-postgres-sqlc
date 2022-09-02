@@ -12,3 +12,9 @@ type UploadFileRequest struct {
 	// file to upload.
 	File *os.File `json:"file,omitempty"`
 }
+
+// TODO validate everything, accumulate errors and return error map instead.
+// validate ...
+func (o *UploadFileRequest) validate() error {
+	return nil
+}

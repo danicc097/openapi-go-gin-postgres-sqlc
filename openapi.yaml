@@ -806,6 +806,7 @@ components:
           x-go-custom-tag: binding:"required,email"
         password:
           type: string
+          minLength: 7
           x-go-custom-tag: binding:"required,min=7"
       title: a User
       type: object

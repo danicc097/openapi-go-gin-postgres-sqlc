@@ -5,3 +5,9 @@ package models
 type HttpValidationError struct {
 	Detail []ValidationError `json:"detail,omitempty"`
 }
+
+// TODO validate everything, accumulate errors and return error map instead.
+// validate ...
+func (o *HttpValidationError) validate() error {
+	return nil
+}
