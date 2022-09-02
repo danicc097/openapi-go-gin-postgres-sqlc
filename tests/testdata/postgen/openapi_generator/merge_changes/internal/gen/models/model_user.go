@@ -14,9 +14,3 @@ type User struct {
 	// User Status.
 	UserStatus int32 `json:"userStatus,omitempty"`
 }
-
-// TODO validate everything, accumulate errors and return error map instead.
-// validate ...
-func (o *User) validate() error {
-	return nil
-}

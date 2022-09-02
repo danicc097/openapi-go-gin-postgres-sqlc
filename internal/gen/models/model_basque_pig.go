@@ -6,9 +6,3 @@ type BasquePig struct {
 	ClassName string `json:"className"`
 	Color     string `json:"color"`
 }
-
-// TODO validate everything, accumulate errors and return error map instead.
-// validate ...
-func (o *BasquePig) validate() error {
-	return nil
-}

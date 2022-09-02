@@ -3,7 +3,6 @@ package rest
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io/fs"
 	"net/http"
 	"os"
@@ -88,16 +87,16 @@ func New(conf Config) (*http.Server, error) {
 			IncludeResponseStatus: true,
 			MultiError:            true,
 		},
-		MultiErrorHandler: func(me openapi3.MultiError) error {
-			return fmt.Errorf("multiple errors:  %s", me.Error())
-		},
+		// MultiErrorHandler: func(me openapi3.MultiError) error {
+		// 	return fmt.Errorf("multiple errors:  %s", me.Error())
+		// },
 	}
 
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
 	vg := router.Group(os.Getenv("API_VERSION"))
 	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
 
-	router.Use(oasvalidator.OapiRequestValidatorWithOptions(openapi, &options))
+	vg.Use(oasvalidator.OapiRequestValidatorWithOptions(openapi, &options))
 
 	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
 	authzSvc := services.Authorization{Logger: conf.Logger}

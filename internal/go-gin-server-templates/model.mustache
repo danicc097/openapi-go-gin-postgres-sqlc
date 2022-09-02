@@ -27,15 +27,4 @@ type {{classname}} struct { {{#vars}}{{#description}}
   {{name}} {{#isNullable}}*{{/isNullable}}{{{dataType}}} `json:"{{baseName}}{{^required}},omitempty{{/required}}"{{#vendorExtensions.x-go-custom-tag}} {{{.}}}{{/vendorExtensions.x-go-custom-tag}}`{{/vars}}
 }
 
-// TODO validate everything, accumulate errors and return error map instead.
-// validate ...
-func (o *{{{classname}}}) validate() error {
-{{#vars}}
-{{#hasValidation}}
-{{>model_validate}}
-{{/hasValidation}}
-{{/vars}}
-    return nil
-}
-
 {{/isEnum}}{{/model}}{{/models}}

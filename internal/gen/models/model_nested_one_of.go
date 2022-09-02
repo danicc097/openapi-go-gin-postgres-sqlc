@@ -6,9 +6,3 @@ type NestedOneOf struct {
 	Size      int32 `json:"size,omitempty"`
 	NestedPig Pig   `json:"nestedPig,omitempty"`
 }
-
-// TODO validate everything, accumulate errors and return error map instead.
-// validate ...
-func (o *NestedOneOf) validate() error {
-	return nil
-}

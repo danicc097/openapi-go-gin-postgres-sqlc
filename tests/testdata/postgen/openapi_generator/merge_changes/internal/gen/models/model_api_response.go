@@ -8,9 +8,3 @@ type ApiResponse struct {
 	Type    string `json:"type,omitempty"`
 	Message string `json:"message,omitempty"`
 }
-
-// TODO validate everything, accumulate errors and return error map instead.
-// validate ...
-func (o *ApiResponse) validate() error {
-	return nil
-}

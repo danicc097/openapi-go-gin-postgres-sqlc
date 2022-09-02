@@ -5,9 +5,3 @@ package models
 type Dog struct {
 	Breed string `json:"breed,omitempty"`
 }
-
-// TODO validate everything, accumulate errors and return error map instead.
-// validate ...
-func (o *Dog) validate() error {
-	return nil
-}

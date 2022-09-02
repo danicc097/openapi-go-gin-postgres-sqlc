@@ -50,6 +50,10 @@ Any custom field with an `x-*` name pattern in the OpenAPI spec will be availabl
   middleware on the api version route group:
       https://stackoverflow.com/questions/69948784/how-to-handle-errors-in-gin-middleware
       in combination with internal/rest/rest.go renderErrorResponse
+    For parsing kinopenapi validation errors to our own more user
+    friendly ValidationError check out
+    https://github.com/getkin/kin-openapi/pull/197
+    until data validation is updated: https://github.com/getkin/kin-openapi/pull/412
 
   - frontend miscellanea:
     1. codegen from oas:

@@ -8,9 +8,3 @@ type UpdatePetWithFormRequest struct {
 	// Updated status of the pet.
 	Status string `json:"status,omitempty"`
 }
-
-// TODO validate everything, accumulate errors and return error map instead.
-// validate ...
-func (o *UpdatePetWithFormRequest) validate() error {
-	return nil
-}

@@ -11,9 +11,3 @@ type Special struct {
 	ArrayTest    string `json:"array[test],omitempty"`
 	string       `json:",omitempty"`
 }
-
-// TODO validate everything, accumulate errors and return error map instead.
-// validate ...
-func (o *Special) validate() error {
-	return nil
-}

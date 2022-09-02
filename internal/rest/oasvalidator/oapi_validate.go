@@ -118,6 +118,7 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 
 	err = openapi3filter.ValidateRequest(requestContext, validationInput)
 	if err != nil {
+		fmt.Printf("err: %T ::: %v\n", err, err)
 		me := openapi3.MultiError{}
 		if errors.As(err, &me) {
 			errFunc := getMultiErrorHandlerFromOptions(options)

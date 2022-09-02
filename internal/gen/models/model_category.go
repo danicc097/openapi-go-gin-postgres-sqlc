@@ -2,24 +2,8 @@
 
 package models
 
-import (
-	"fmt"
-	"regexp"
-)
-
 // Category a category for a pet.
 type Category struct {
 	Id   int64  `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
-}
-
-// TODO validate everything, accumulate errors and return error map instead.
-// validate ...
-func (o *Category) validate() error {
-	// TODO: precompile pattern
-	if !regexp.MustCompile(`/^[a-zA-Z0-9]+[a-zA-Z0-9\\.\\-_]*[a-zA-Z0-9]+$/`).MatchString(o.Name) {
-		return fmt.Errorf("invalid Name: %s does not match pattern '/^[a-zA-Z0-9]+[a-zA-Z0-9\\.\\-_]*[a-zA-Z0-9]+$/'", o.Name)
-	}
-
-	return nil
 }

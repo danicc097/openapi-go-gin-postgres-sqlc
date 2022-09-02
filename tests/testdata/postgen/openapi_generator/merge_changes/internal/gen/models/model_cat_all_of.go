@@ -5,9 +5,3 @@ package models
 type CatAllOf struct {
 	Declawed bool `json:"declawed,omitempty"`
 }
-
-// TODO validate everything, accumulate errors and return error map instead.
-// validate ...
-func (o *CatAllOf) validate() error {
-	return nil
-}

@@ -6,9 +6,3 @@ type DanishPig struct {
 	ClassName string `json:"className"`
 	Size      int32  `json:"size"`
 }
-
-// TODO validate everything, accumulate errors and return error map instead.
-// validate ...
-func (o *DanishPig) validate() error {
-	return nil
-}

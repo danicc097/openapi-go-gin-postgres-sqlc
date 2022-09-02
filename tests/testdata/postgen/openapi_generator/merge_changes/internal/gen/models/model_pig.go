@@ -7,9 +7,3 @@ type Pig struct {
 	Color     string `json:"color"`
 	Size      int32  `json:"size"`
 }
-
-// TODO validate everything, accumulate errors and return error map instead.
-// validate ...
-func (o *Pig) validate() error {
-	return nil
-}
