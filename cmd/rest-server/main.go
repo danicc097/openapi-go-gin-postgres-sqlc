@@ -7,7 +7,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/server"
+	server "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/server"
 )
 
 func main() {

@@ -66,6 +66,36 @@ func TestCreateUserRoute(t *testing.T) {
 			want{status: http.StatusOK},
 		},
 		{
+			"UsernameValidationFailed",
+			params{
+				user: models.CreateUserRequest{
+					Email:    format.RandomEmail(),
+					Password: "password",
+					Username: "[]]]",
+				}},
+			want{status: http.StatusBadRequest},
+		},
+		{
+			"EmailValidationFailed",
+			params{
+				user: models.CreateUserRequest{
+					Email:    "bad",
+					Password: "password",
+					Username: format.RandomName(),
+				}},
+			want{status: http.StatusBadRequest},
+		},
+		{
+			"PasswordValidationFailed",
+			params{
+				user: models.CreateUserRequest{
+					Email:    format.RandomEmail(),
+					Password: "short",
+					Username: format.RandomName(),
+				}},
+			want{status: http.StatusBadRequest},
+		},
+		{
 			"BadParams",
 			params{
 				user: struct {

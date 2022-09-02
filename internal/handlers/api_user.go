@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 )
 
@@ -109,16 +111,34 @@ func (h *User) CreateUser(c *gin.Context) {
 	var user models.CreateUserRequest
 
 	if err := c.BindJSON(&user); err != nil {
-		h.logger.Sugar().Debugf("CreateUser.user: %v", user)
-		c.JSON(http.StatusInternalServerError, err.Error())
+		switch err := err.(type) {
+		case validator.ValidationErrors:
+			respErrors := make(map[string]interface{})
+			for _, e := range err {
+				respErrors[e.StructNamespace()] = fmt.Sprintf("validation '%s' failed. Param: '%s'", e.Tag(), e.Param())
+				// TODO generic renderError and construct based on models.ValidationError a la pydantic
+				// to reuse frontend logic
+				fmt.Printf("e.Namespace(): %v\n", e.Namespace())
+				fmt.Printf("e.Field(): %v\n", e.Field())
+				fmt.Printf("e.StructNamespace(): %v\n", e.StructNamespace())
+				fmt.Printf("e.StructField(): %v\n", e.StructField())
+				fmt.Printf("e.Tag(): %v\n", e.Tag())
+				fmt.Printf("e.ActualTag(): %v\n", e.ActualTag())
+				fmt.Printf("e.Kind(): %v\n", e.Kind())
+				fmt.Printf("e.Type(): %v\n", e.Type())
+				fmt.Printf("e.Value(): %v\n", e.Value())
+				fmt.Printf("e.Param(): %v\n", e.Param())
+			}
+			c.JSON(http.StatusBadRequest, gin.H{"errors": respErrors})
+		}
 
+		h.logger.Sugar().Debugf("CreateUser.user: %v", user)
 		return
 	}
 
 	res, err := h.userSvc.Create(context.Background(), user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
-
 		return
 	}
 

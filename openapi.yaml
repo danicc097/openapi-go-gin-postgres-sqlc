@@ -795,7 +795,7 @@ components:
         username:
           type: string
           # workaround for [1]
-          x-go-custom-tag: binding:"required"
+          x-go-custom-tag: binding:"required,alphanumspace"
           # patterns also not validated by kin (afaik, must check source), need a custom validation func instead, see
           # https://pkg.go.dev/github.com/go-playground/validator/v10#hdr-Alias_Validators_and_Tags
           # example: https://github.com/go-playground/validator/blob/master/_examples/custom-validation/main.go
@@ -803,10 +803,10 @@ components:
           pattern: "^[ a-zA-Z0-9_-]+$"
         email:
           type: string
-          x-go-custom-tag: binding:"required"
+          x-go-custom-tag: binding:"required,email"
         password:
           type: string
-          x-go-custom-tag: binding:"required"
+          x-go-custom-tag: binding:"required,min=7"
       title: a User
       type: object
     CreateUserResponse:

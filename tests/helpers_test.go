@@ -14,7 +14,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/server"
+	server "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/server"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/golang-migrate/migrate/v4"
