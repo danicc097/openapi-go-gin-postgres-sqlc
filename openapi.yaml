@@ -442,6 +442,10 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateUserRequest"
+              # TODO kin should validate these but doesn't.
+            examples:
+              BadUser:
+                $ref: "#/components/examples/BadUser"
         description: Created user object
         required: true
       responses:
@@ -782,10 +786,6 @@ components:
       type: object
     CreateUserRequest:
       description: represents a new User
-      example:
-        password: password
-        email: email
-        username: username
       required:
         - username
         - email
@@ -1082,6 +1082,12 @@ components:
         type:
           title: Error Type
           type: string
+  examples:
+    BadUser:
+      value:
+        username: "]bad["
+        email: bad
+        password: short
   securitySchemes:
     petstore_auth:
       flows:

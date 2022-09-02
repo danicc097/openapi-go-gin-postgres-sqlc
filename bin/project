@@ -279,6 +279,8 @@ create_test_database() {
 # Validates the project's OpenAPI specification or `spec`.
 # Args: [spec]
 x.validate() {
+  # quite unreliable. e.g. ignored examples inexistent ref.
+  # prefer built in kin-openapi validation
   java -jar openapi-generator-cli.jar validate -i "${1:-$SPEC}"
 }
 
