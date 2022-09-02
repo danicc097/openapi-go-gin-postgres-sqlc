@@ -71,8 +71,12 @@ func New(conf Config) (*http.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	openapi, err := openapi3.NewLoader().LoadFromData(schemaBlob)
+	sl := openapi3.NewLoader()
+	openapi, err := sl.LoadFromData(schemaBlob)
+	if err != nil {
+		return nil, err
+	}
+	err = openapi.Validate(sl.Context)
 	if err != nil {
 		return nil, err
 	}
