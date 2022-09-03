@@ -36,7 +36,7 @@ x.check-build-deps() {
   check.direnv || { ((fails++)) && true; }
   check.yq || { ((fails++)) && true; }
   ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met.${OFF}"
-  ((fails != 0)) && err "${RED}❌ Missing dependencies.${OFF}"
+  { ((fails != 0)) && err "${RED}❌ Missing dependencies.${OFF}"; } || true
 }
 
 # Check dependencies and fetch required tools.
@@ -58,6 +58,7 @@ x.install-tools() {
   go install github.com/danicc097/air@latest
   go install github.com/xo/xo@latest
   go install github.com/tufin/oasdiff@latest
+  go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
   GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
 }
@@ -171,10 +172,10 @@ x.lint() {
 # Formats SQL files.
 x.lint.sql() {
   SQL_DIRS=(
-    "internal/repos/postgresql/queries"
+    "$PG_REPO/queries"
     "db/migrations"
   )
-  for slq_dir in $SQL_DIRS; do
+  for slq_dir in ${SQL_DIRS[@]}; do
     pg_format \
       --spaces 2 \
       --wrap-limit 88 \
@@ -331,14 +332,8 @@ x.openapi-generator() {
 # Run a diff against the previous OpenAPI spec in the main branch.
 # Can also be used to generate changelogs when upgrading major versions.
 x.diff-openapi-spec() {
-  commit=2
-  # use latest main commit as base if spec has not changed or in another branch
-  git diff --exit-code "$SPEC" &>/dev/null && commit=1
-  [[ $(git branch --show-current) != "main" ]] && commit=1
-
-  commit_name="$(git log --oneline -- $SPEC | sed -n ${commit}p | awk '{print $1}')"
   base_spec="/tmp/openapi.yaml"
-  git show "main@{$commit_name}:$SPEC" >"$base_spec"
+  git show "main:$SPEC" >"$base_spec"
 
   tmp="$(yq .info.version "$base_spec")"
   base_v="${tmp%%.*}"
@@ -349,9 +344,9 @@ x.diff-openapi-spec() {
 
   args="-format text -breaking-only -fail-on-diff"
   if oasdiff $args -base "$base_spec" -revision $SPEC; then
-    echo "${GREEN}No breaking changes found in $SPEC.${OFF}"
+    echo "${GREEN}No breaking changes found in $SPEC${OFF}"
   else
-    echo "${RED}Breaking changes found in $SPEC.${OFF}"
+    echo "${RED}Breaking changes found in $SPEC${OFF}"
   fi
 }
 
