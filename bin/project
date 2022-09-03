@@ -207,6 +207,11 @@ x.build() {
   go build -o openapi-go-gin-postgres-sqlc "$PWD"/cmd/rest-server
 }
 
+# Build the project for Windows.
+x.build.windows() {
+  GOOS=windows GOARCH=amd64 go build -o openapi-go-gin-postgres-sqlc.exe "$PWD"/cmd/rest-server
+}
+
 # Test, build and run the entire project.
 x.run() {
   x.build
