@@ -88,6 +88,21 @@ check.docker-compose() {
     }
 }
 
+check.pg_format() {
+  local vers
+  vers=$(pg_format --version)
+  minver=5
+  {
+    [[ "$vers" =~ [\ ]+([0-9]+)[\.]{1} ]] &&
+      ((BASH_REMATCH[1] >= minver)) &&
+      printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"
+  } ||
+    {
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver${OFF})"
+      return 1
+    }
+}
+
 check.direnv() {
   local vers
   vers=$(direnv --version)

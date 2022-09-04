@@ -35,6 +35,7 @@ x.check-build-deps() {
   check.docker-compose || { ((fails++)) && true; }
   check.direnv || { ((fails++)) && true; }
   check.yq || { ((fails++)) && true; }
+  check.pg_format || { ((fails++)) && true; }
   ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met.${OFF}"
   { ((fails != 0)) && err "${RED}❌ Missing dependencies.${OFF}"; } || true
 }
