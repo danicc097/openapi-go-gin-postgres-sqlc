@@ -1,0 +1,12 @@
+{
+  "schemaFile": "../openapi.yaml",
+  "apiFile": "./src/store/emptyApi.ts",
+  "apiImport": "emptySplitApi",
+  "outputFile": "./src/store/internalApi.ts",
+  "exportName": "internalApi",
+  "hooks": true,
+  "tag": true,
+  "argSuffix": "Args",
+  "responseSuffix": "Res",
+  "flattenArg": true
+}

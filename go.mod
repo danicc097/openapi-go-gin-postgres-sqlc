@@ -6,6 +6,7 @@ require (
 	github.com/dave/dst v0.27.0
 	github.com/deepmap/oapi-codegen v1.11.0
 	github.com/getkin/kin-openapi v0.100.0
+	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/zap v0.0.2
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-playground/validator/v10 v10.11.0
@@ -21,7 +22,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d
 	github.com/smartystreets/gunit v1.4.3
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.8.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c

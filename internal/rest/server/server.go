@@ -12,6 +12,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
+	"github.com/gin-contrib/cors"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -65,6 +66,18 @@ func New(conf Config) (*http.Server, error) {
 		// SkipPaths:  []string{"/no_log"},
 	}))
 	router.Use(ginzap.RecoveryWithZap(conf.Logger, true))
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"*"},
+		AllowHeaders:     []string{"*"},
+		ExposeHeaders:    []string{"*"},
+		AllowCredentials: true,
+		// AllowOriginFunc: func(origin string) bool {
+		// 	return origin == "https://github.com"
+		// },
+		MaxAge: 12 * time.Hour,
+	}))
 
 	schemaBlob, err := os.ReadFile(conf.SpecPath)
 	if err != nil {

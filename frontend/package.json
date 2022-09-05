@@ -1,0 +1,28 @@
+{
+  "name": "openapi-gen-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "generate": "./node_modules/.bin/rtk-query-codegen-openapi openapi-config.json"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.8.5",
+    "@rtk-query/codegen-openapi": "^1.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-redux": "^8.0.2",
+    "redux": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.17",
+    "@types/react-dom": "^18.0.6",
+    "@vitejs/plugin-react": "^2.1.0",
+    "openapi-types": "^12.0.2",
+    "typescript": "^4.8.2",
+    "vite": "^3.1.0"
+  }
+}
