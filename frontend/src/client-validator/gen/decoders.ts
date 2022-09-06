@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 import Ajv from 'ajv'
-
+import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
 import { validateJson } from '../validate'
 import {
@@ -37,6 +37,7 @@ import jsonSchema from './schema.json'
 
 const ajv = new Ajv({ strict: false, allErrors: true })
 ajv.compile(jsonSchema)
+addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time'] })
 
 // Decoders
 export const HTTPValidationErrorDecoder: Decoder<HTTPValidationError> = {

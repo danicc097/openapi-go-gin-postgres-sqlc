@@ -6,6 +6,10 @@ import { CreateUserRequestDecoder } from './client-validator/gen/decoders'
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
+// data driven components:
+// best: https://icflorescu.github.io/mantine-datatable/examples/row-context-menu
+// https://github.com/Kuechlin/mantine-data-grid
+// https://codesandbox.io/s/react-table-datagrid-forked-r19mf7
 
 function App() {
   const [username, setUsername] = useState('')
@@ -21,11 +25,12 @@ function App() {
         password: 'fgsgefse',
         username: username,
       })
+
       const payload = await createUser(createUserRequest).unwrap()
       console.log('fulfilled', payload)
     } catch (error) {
-      setError(error.message)
-      console.error('rejected', error)
+      setError(error.validationErrors)
+      console.error('rejected', error.validationErrors)
     }
   }
 
@@ -36,7 +41,7 @@ function App() {
           <pre>{JSON.stringify(createUserResult)}</pre>
         </div>
         <div>
-          <pre>{error}</pre>
+          <pre>{JSON.stringify(error)}</pre>
         </div>
         <a href="https://vitejs.dev" target="_blank">
           <img src="/vite.svg" className="logo" alt="Vite logo" />

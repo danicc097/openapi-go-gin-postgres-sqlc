@@ -10,7 +10,6 @@ generate({
   schemaFile: join(__dirname, '../openapi.yaml'),
   schemaType: 'yaml',
   directory: join(__dirname, 'src/client-validator/gen'),
-  formatOptions: { mode: 'full' },
   prettierOptions: {
     printWidth: 120,
     semi: false,
@@ -19,4 +18,6 @@ generate({
     trailingComma: 'all',
     parser: 'typescript',
   },
+  addFormats: true,
+  formatOptions: { formats: ['int64', 'int32', 'binary', 'date-time'] },
 })

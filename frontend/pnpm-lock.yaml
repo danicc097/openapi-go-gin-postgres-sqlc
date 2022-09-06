@@ -7,6 +7,7 @@ specifiers:
   '@types/react-dom': ^18.0.6
   '@vitejs/plugin-react': ^2.1.0
   ajv: ^8.11.0
+  ajv-formats: ^2.1.1
   openapi-types: ^12.0.2
   openapi-typescript-validator: ^3.3.0
   react: ^18.2.0
@@ -20,6 +21,7 @@ dependencies:
   '@reduxjs/toolkit': 1.8.5_kkwg4cbsojnjnupd3btipussee
   '@rtk-query/codegen-openapi': 1.0.0_openapi-types@12.0.2
   ajv: 8.11.0
+  ajv-formats: 2.1.1
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-redux: 8.0.2_yjtsim5uvgjttslbpqb5so5y3m
@@ -552,7 +554,6 @@ packages:
         optional: true
     dependencies:
       ajv: 8.11.0
-    dev: true
 
   /ajv/8.11.0:
     resolution: {integrity: sha512-wGgprdCvMalC0BztXvitD2hC04YffAvtsUn93JbGXYLAtCUO4xd17mCCZQxUOItiBwZvJScWo8NIvQMQ71rdpg==}

@@ -6,24 +6,54 @@ export interface Validator {
   errors?: ErrorObject[] | null
 }
 
+export interface ValidationErrors {
+  /* Location of the error */
+  path: string
+  /* Generic error message */
+  message?: string
+  errors?: ValidationError[]
+}
+
+interface ValidationError {
+  invalidParams: {
+    name: string
+    reason: string
+  }
+}
+
 export function validateJson(json: any, validator: Validator, definitionName: string): any {
+  let validationErrors: ValidationErrors = {
+    path: definitionName,
+    message: 'Unexpected data received',
+  }
   const jsonObject = typeof json === 'string' ? JSON.parse(json) : json
 
   if (validator(jsonObject)) {
     return jsonObject
   }
 
-  const jsonPreviewStr = (typeof json === 'string' ? json : JSON.stringify(jsonObject)).substring(0, 200)
   if (validator.errors) {
-    throw Error(`${definitionName} ${errorsText(validator.errors)}. JSON: ${jsonPreviewStr}`)
+    validationErrors.path = definitionName
+    validationErrors.message = 'Validation errors found.'
+    validationErrors.errors = parseErrors(validator.errors)
   }
 
-  throw Error(`${definitionName} Unexpected data received. JSON: ${jsonPreviewStr}`)
+  throw {
+    validationErrors,
+    error: new Error(),
+  }
 }
 
-function errorsText(errors: ErrorObject[]): string {
-  errors.forEach((element) => {
-    console.log(element)
-  })
-  return errors.map((error) => `${error.instancePath}: ${error.message}`).join('\n')
+function parseErrors(errors: ErrorObject[]): ValidationError[] {
+  let out: ValidationError[] = []
+  errors.forEach(
+    (error, i) =>
+      (out[i] = {
+        invalidParams: {
+          name: error.instancePath.split('/').slice(1).join(''),
+          reason: error.message,
+        },
+      }),
+  )
+  return out
 }
