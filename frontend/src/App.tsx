@@ -3,15 +3,18 @@ import reactLogo from './assets/react.svg'
 import './App.css'
 import { useCreateUserMutation } from './store/internalApi'
 
+// TODO role changing see:
+// https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
+
 function App() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
 
-  const [createUserTrigger, createUserResult] = useCreateUserMutation()
+  const [createUser, createUserResult] = useCreateUserMutation()
 
   const fetchData = async () => {
     try {
-      const payload = await createUserTrigger({
+      const payload = await createUser({
         email: email,
         password: 'fgsgefse',
         username: username,

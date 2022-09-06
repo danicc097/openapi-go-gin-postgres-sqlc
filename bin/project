@@ -227,13 +227,23 @@ x.run-hot-reload() {
   # else generated .yaml files trigger rebuild.
   # --build.include_files "openapi.yaml" \
   # NOTE: building binary very unreliable, leads to bin not found.
-  air \
-    --build.pre_build_cmd "bin/project generate" \
-    --build.cmd "" \
-    --build.bin "go run ./cmd/rest-server/ -env=$ENV_FILE" \
-    --build.exclude_regex ".gen.go,internal/gen/*,$PG_REPO/gen/*,testdata,_test.go" \
-    --build.stop_watch "internal/handlers/,internal/services/" \
-    --build.delay 1000
+  (
+    air \
+      --build.pre_build_cmd "bin/project generate" \
+      --build.cmd "" \
+      --build.bin "go run ./cmd/rest-server/ -env=$ENV_FILE" \
+      --build.exclude_regex ".gen.go,internal/gen/*,$PG_REPO/gen/*,testdata,_test.go" \
+      --build.stop_watch "internal/handlers/,internal/services/" \
+      --build.exclude_dir "*.cache,frontend" \
+      --build.delay 1000 |
+      tee 1.log |
+      sed -e "s/^/${BLUE}[Air]${OFF} /" &
+    { cd frontend && pnpm run dev |
+      tee 2.log |
+      sed -e "s/^/${GREEN}[Vite]${OFF} /"; } &
+    wait
+  )
+
 }
 
 # Ensure no breaking changes to the OpenAPI spec in the same version are present.
