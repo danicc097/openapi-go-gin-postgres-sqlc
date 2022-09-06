@@ -20,4 +20,5 @@ generate({
   },
   addFormats: true,
   formatOptions: { formats: ['int64', 'int32', 'binary', 'date-time'] },
+  ajvOptions: { strict: false, allErrors: true },
 })

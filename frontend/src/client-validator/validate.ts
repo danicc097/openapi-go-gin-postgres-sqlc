@@ -33,7 +33,6 @@ export function validateJson(json: any, validator: Validator, definitionName: st
   }
 
   if (validator.errors) {
-    validationErrors.path = definitionName
     validationErrors.message = 'Validation errors found.'
     validationErrors.errors = parseErrors(validator.errors)
   }
@@ -50,7 +49,7 @@ function parseErrors(errors: ErrorObject[]): ValidationError[] {
     (error, i) =>
       (out[i] = {
         invalidParams: {
-          name: error.instancePath.split('/').slice(1).join(''),
+          name: error.instancePath.split('/').slice(1).join('.'),
           reason: error.message,
         },
       }),

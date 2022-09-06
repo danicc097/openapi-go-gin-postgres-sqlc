@@ -247,11 +247,9 @@ x.run-hot-reload() {
 }
 
 x.run-frontend() {
-  ajv='s/new Ajv({ strict: false })/new Ajv({ strict: false, allErrors: true })/g'
   cd frontend &&
     pnpm run generate &&
     rm src/client-validator/gen/validate.ts &&
-    sed -i "$ajv" src/client-validator/gen/decoders.ts &&
     find src/client-validator/gen/ -type f -exec \
       sed -i "s/from '.\/validate'/from '..\/validate'/g" {} \; &&
     pnpm run dev |

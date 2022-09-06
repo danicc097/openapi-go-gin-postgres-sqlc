@@ -11,6 +11,21 @@ import { CreateUserRequestDecoder } from './client-validator/gen/decoders'
 // https://github.com/Kuechlin/mantine-data-grid
 // https://codesandbox.io/s/react-table-datagrid-forked-r19mf7
 
+/*
+TODO landing page is a demonstration of openapi+codegen workflow in both back and front:
+1. show how project works itself
+backend:
+openapi -> gen -> postgen (pending sqlc merging, if necessary) -> implement logic
+frontend:
+openapi -> gen (rtk + client side validation) -> automatic form validation and queries
+2. dummy form with complex schema: datetime, patterns, enums
+
+
+
+code highl. - https://mantine.dev/others/prism/
+
+*/
+
 function App() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -43,14 +58,7 @@ function App() {
         <div>
           <pre>{JSON.stringify(error)}</pre>
         </div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
       </div>
-      <h1>Vite + React</h1>
       <form>
         <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
           <label htmlFor="email">Email:</label>
