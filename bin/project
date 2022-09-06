@@ -242,18 +242,20 @@ x.run-hot-reload() {
     --build.stop_watch "internal/handlers/,internal/services/" \
     --build.exclude_dir "*.cache,frontend" \
     --build.delay 1000 |
-    sed -e "s/^/${BLUE}[Air]${OFF} /" &
+    sed -e "s/^/${BLUE}[Air]${OFF} /"
   # TODO compose
-  {
-    ajv='s/new Ajv({ strict: false })/new Ajv({ strict: false, allErrors: true })/g'
-    cd frontend &&
-      pnpm run generate &&
-      sed -i "$ajv" src/client-validator-gen/decoders.ts &&
-      pnpm run dev |
-      sed -e "s/^/${GREEN}[Vite]${OFF} /"
-  } &
-  wait
+}
 
+x.run-frontend() {
+  ajv='s/new Ajv({ strict: false })/new Ajv({ strict: false, allErrors: true })/g'
+  cd frontend &&
+    pnpm run generate &&
+    rm src/client-validator/gen/validate.ts &&
+    sed -i "$ajv" src/client-validator/gen/decoders.ts &&
+    find src/client-validator/gen/ -type f -exec \
+      sed -i "s/from '.\/validate'/from '..\/validate'/g" {} \; &&
+    pnpm run dev |
+    sed -e "s/^/${GREEN}[Vite]${OFF} /"
 }
 
 # Ensure no breaking changes to the OpenAPI spec in the same version are present.

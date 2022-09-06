@@ -9,6 +9,14 @@ const __dirname = path.dirname(__filename)
 generate({
   schemaFile: join(__dirname, '../openapi.yaml'),
   schemaType: 'yaml',
-  directory: join(__dirname, 'src/client-validator-gen'),
+  directory: join(__dirname, 'src/client-validator/gen'),
   formatOptions: { mode: 'full' },
+  prettierOptions: {
+    printWidth: 120,
+    semi: false,
+    singleQuote: true,
+    tabWidth: 2,
+    trailingComma: 'all',
+    parser: 'typescript',
+  },
 })

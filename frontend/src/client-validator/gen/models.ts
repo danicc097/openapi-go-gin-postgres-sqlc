@@ -6,172 +6,172 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type Location = string[];
-export type Message = string;
-export type ErrorType = string;
-export type Detail = ValidationError[];
-export type Dog = Animal & DogAllOf;
-export type Cat = Animal & Address & CatAllOf;
-export type AllofTagApiResponse = PetTag & AnUploadedResponse;
-export type AnyOfPig = BasquePig | DanishPig;
-export type Pig = BasquePig | DanishPig;
+export type Location = string[]
+export type Message = string
+export type ErrorType = string
+export type Detail = ValidationError[]
+export type Dog = Animal & DogAllOf
+export type Cat = Animal & Address & CatAllOf
+export type AllofTagApiResponse = PetTag & AnUploadedResponse
+export type AnyOfPig = BasquePig | DanishPig
+export type Pig = BasquePig | DanishPig
 
 export interface HTTPValidationError {
-  detail?: Detail;
+  detail?: Detail
 }
 export interface ValidationError {
-  loc: Location;
-  msg: Message;
-  type: ErrorType;
+  loc: Location
+  msg: Message
+  type: ErrorType
 }
 /**
  * An order for a pets from the pet store
  */
 export interface PetOrder {
-  id?: number;
-  petId?: number;
-  quantity?: number;
-  shipDate?: string;
+  id?: number
+  petId?: number
+  quantity?: number
+  shipDate?: string
   /**
    * Order Status
    */
-  status?: "placed" | "approved" | "delivered";
-  complete?: boolean;
+  status?: 'placed' | 'approved' | 'delivered'
+  complete?: boolean
 }
 /**
  * A category for a pet
  */
 export interface PetCategory {
-  id?: number;
-  name?: string;
+  id?: number
+  name?: string
 }
 /**
  * represents User data to update
  */
 export interface AUser {
-  username?: string;
-  email?: string;
-  password?: string;
-  firstName?: string;
-  lastName?: string;
+  username?: string
+  email?: string
+  password?: string
+  firstName?: string
+  lastName?: string
 }
 /**
  * represents a new User
  */
 export interface AUser1 {
-  username: string;
-  email: string;
-  password: string;
+  username: string
+  email: string
+  password: string
 }
 /**
  * represents the response to a User creation
  */
 export interface CreateUserResponse {
-  access_token?: string;
-  user_id?: number;
+  access_token?: string
+  user_id?: number
 }
 /**
  * A User who is purchasing from the pet store
  */
 export interface AUser2 {
-  id?: number;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  password?: string;
-  phone?: string;
+  id?: number
+  username?: string
+  firstName?: string
+  lastName?: string
+  email?: string
+  password?: string
+  phone?: string
   /**
    * User Status
    */
-  userStatus?: number;
+  userStatus?: number
 }
 /**
  * A tag for a pet
  */
 export interface PetTag {
-  id?: number;
-  name?: string;
+  id?: number
+  name?: string
 }
 /**
  * A pet for sale in the pet store
  */
 export interface APet {
-  id?: number;
-  category?: PetCategory;
-  name: string;
-  photoUrls: string[];
-  tags?: PetTag[];
+  id?: number
+  category?: PetCategory
+  name: string
+  photoUrls: string[]
+  tags?: PetTag[]
   /**
    * pet status in the store
    */
-  status?: "available" | "pending" | "sold";
+  status?: 'available' | 'pending' | 'sold'
 }
 /**
  * Describes the result of uploading an image resource
  */
 export interface AnUploadedResponse {
-  code?: number;
-  type?: string;
-  message?: string;
+  code?: number
+  type?: string
+  message?: string
 }
 /**
  * Describes the result of uploading an image resource
  */
 export interface AnUploadedResponse1 {
-  self?: number;
-  private?: string;
-  super?: string;
-  "123Number"?: string;
-  "array[test]"?: string;
-  ""?: string;
+  self?: number
+  private?: string
+  super?: string
+  '123Number'?: string
+  'array[test]'?: string
+  ''?: string
 }
 export interface Animal {
-  className: string;
-  color?: string;
+  className: string
+  color?: string
 }
 export interface DogAllOf {
-  breed?: string;
+  breed?: string
 }
 export interface Address {
-  [k: string]: number;
+  [k: string]: number
 }
 export interface CatAllOf {
-  declawed?: boolean;
+  declawed?: boolean
 }
 export interface BasquePig {
-  className: string;
-  color: string;
+  className: string
+  color: string
 }
 export interface DanishPig {
-  className: string;
-  size: number;
+  className: string
+  size: number
 }
 export interface NestedOneOf {
-  size?: number;
-  nestedPig?: Pig;
+  size?: number
+  nestedPig?: Pig
 }
 export interface UpdatePetRequest {
-  jsonData?: APet;
-  binaryDataN2Information?: string;
+  jsonData?: APet
+  binaryDataN2Information?: string
 }
 export interface UpdatePetWithFormRequest {
   /**
    * Updated name of the pet
    */
-  name?: string;
+  name?: string
   /**
    * Updated status of the pet
    */
-  status?: string;
+  status?: string
 }
 export interface UploadFileRequest {
   /**
    * Additional data to pass to server
    */
-  additionalMetadata?: string;
+  additionalMetadata?: string
   /**
    * file to upload
    */
-  file?: string;
+  file?: string
 }

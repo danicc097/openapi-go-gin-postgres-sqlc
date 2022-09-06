@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import './App.css'
 import { useCreateUserMutation } from './store/internalApi'
-import { CreateUserRequestDecoder } from './client-validator-gen/decoders'
+import { CreateUserRequestDecoder } from './client-validator/gen/decoders'
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
