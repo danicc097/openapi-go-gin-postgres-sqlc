@@ -53,7 +53,8 @@ Any custom field with an `x-*` name pattern in the OpenAPI spec will be availabl
     For parsing kinopenapi validation errors to our own more user
     friendly ValidationError check out
     https://github.com/getkin/kin-openapi/pull/197
-    and unpack_errors_test.go + convertError
+    as well as
+    unpack_errors_test.go + adapt the generic ``convertError`` to our needs
     until data validation is updated:
     https://github.com/getkin/kin-openapi/pull/412
 

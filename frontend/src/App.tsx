@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import './App.css'
 import { useCreateUserMutation } from './store/internalApi'
+import { CreateUserRequestDecoder } from './client-validator-gen/decoders'
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
@@ -9,18 +10,21 @@ import { useCreateUserMutation } from './store/internalApi'
 function App() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
+  const [error, setError] = useState('')
 
   const [createUser, createUserResult] = useCreateUserMutation()
 
   const fetchData = async () => {
     try {
-      const payload = await createUser({
+      const createUserRequest = CreateUserRequestDecoder.decode({
         email: email,
         password: 'fgsgefse',
         username: username,
-      }).unwrap()
+      })
+      const payload = await createUser(createUserRequest).unwrap()
       console.log('fulfilled', payload)
     } catch (error) {
+      setError(error.message)
       console.error('rejected', error)
     }
   }
@@ -28,7 +32,12 @@ function App() {
   return (
     <div className="App">
       <div>
-        <div>{JSON.stringify(createUserResult)}</div>
+        <div>
+          <pre>{JSON.stringify(createUserResult)}</pre>
+        </div>
+        <div>
+          <pre>{error}</pre>
+        </div>
         <a href="https://vitejs.dev" target="_blank">
           <img src="/vite.svg" className="logo" alt="Vite logo" />
         </a>
