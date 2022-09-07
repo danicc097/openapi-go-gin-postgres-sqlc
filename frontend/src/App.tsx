@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import './App.css'
-import { useCreateUserMutation } from './store/internalApi'
 import { CreateUserRequestDecoder } from './client-validator/gen/decoders'
+import { useCreateUserMutation } from './redux/slices/gen/internalApi'
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
@@ -37,15 +37,19 @@ function App() {
     try {
       const createUserRequest = CreateUserRequestDecoder.decode({
         email: email,
-        password: 'fgsgefse',
+        password: 'password',
         username: username,
       })
 
       const payload = await createUser(createUserRequest).unwrap()
       console.log('fulfilled', payload)
     } catch (error) {
-      setError(error.validationErrors)
-      console.error('rejected', error.validationErrors)
+      if (error.validationErrors) {
+        setError(error.validationErrors)
+        // TODO setFormErrors instead
+        return
+      }
+      setError(error)
     }
   }
 
@@ -59,24 +63,19 @@ function App() {
           <pre>{JSON.stringify(error)}</pre>
         </div>
       </div>
-      <form>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          fetchData()
+        }}
+      >
         <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
           <label htmlFor="email">Email:</label>
           <input type="text" id="email" onChange={(e) => setEmail(e.target.value)} name="Email"></input>
           <label htmlFor="username">Username:</label>
           <input type="text" id="username" onChange={(e) => setUsername(e.target.value)} name="Username"></input>
           Create user
-          <input
-            onClick={(e) => {
-              e.preventDefault()
-              fetchData().catch((error) => console.error('rejected', error))
-            }}
-            onSubmit={(e) => {
-              fetchData().catch((error) => console.error('rejected', error))
-            }}
-            type="submit"
-            value="Submit"
-          />
+          <input type="submit" value="Submit" />
         </div>
       </form>
     </div>

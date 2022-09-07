@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux'
-import { internalApi } from '../store/internalApi'
+import { internalApi } from './slices/gen/internalApi'
 
 const rootReducer = combineReducers({
   internalApi: internalApi.reducer,

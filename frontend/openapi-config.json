@@ -1,8 +1,8 @@
 {
   "schemaFile": "../openapi.yaml",
-  "apiFile": "./src/store/emptyApi.ts",
-  "apiImport": "emptySplitApi",
-  "outputFile": "./src/store/internalApi.ts",
+  "apiFile": "./src/redux/slices/emptyApi.ts",
+  "apiImport": "emptyInternalApi",
+  "outputFile": "./src/redux/slices/gen/internalApi.ts",
   "exportName": "internalApi",
   "hooks": true,
   "tag": true,
