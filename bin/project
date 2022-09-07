@@ -227,7 +227,7 @@ x.run() {
   ./openapi-go-gin-postgres-sqlc -env="$ENV_FILE"
 }
 
-# Run the entire project with hot-reloading.
+# Run backend with hot-reloading.
 x.run-hot-reload() {
   x.compose-up
   # TODO new include_files flag in fork, e.g. for openapi.yaml.
@@ -246,10 +246,18 @@ x.run-hot-reload() {
   # TODO compose
 }
 
+# Run frontend with hot-reloading.
 x.run-frontend() {
   cd frontend &&
     pnpm run dev |
     sed -e "s/^/${GREEN}[Vite]${OFF} /"
+}
+
+# Run all project services with hot reload enabled.
+x.run-all-hot-reload() {
+  x.run-hot-reload &
+  x.run-frontend &
+  wait
 }
 
 # Ensure no breaking changes to the OpenAPI spec in the same version are present.

@@ -8,7 +8,7 @@ type SliceState = {
   toastList: unknown[]
 }
 
-const addToast: CaseReducer<SliceState, PayloadAction<unknown[]>> = (state, action) => {
+const addToast: CaseReducer<SliceState, PayloadAction<unknown>> = (state, action) => {
   state.toastList.push(action.payload)
 }
 

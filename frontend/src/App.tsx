@@ -3,6 +3,7 @@ import reactLogo from './assets/react.svg'
 import './App.css'
 import { CreateUserRequestDecoder } from './client-validator/gen/decoders'
 import { useCreateUserMutation } from './redux/slices/gen/internalApi'
+import { useUI } from 'src/hooks/ui'
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
@@ -31,6 +32,7 @@ function App() {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
 
+  const { addToast } = useUI()
   const [createUser, createUserResult] = useCreateUserMutation()
 
   const fetchData = async () => {
@@ -43,10 +45,13 @@ function App() {
 
       const payload = await createUser(createUserRequest).unwrap()
       console.log('fulfilled', payload)
+      addToast('done')
     } catch (error) {
       if (error.validationErrors) {
         setError(error.validationErrors)
         // TODO setFormErrors instead
+        console.error(error)
+        addToast('error')
         return
       }
       setError(error)
