@@ -259,7 +259,7 @@ export type AUser2 = {
   email?: string
   password?: string
   phone?: string
-  userStatus?: number
+  role?: 'user' | 'manager' | 'admin'
 }
 export type AUser3 = {
   username?: string

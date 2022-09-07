@@ -816,15 +816,6 @@ components:
       type: object
     User:
       description: A User who is purchasing from the pet store
-      example:
-        firstName: firstName
-        lastName: lastName
-        password: password
-        userStatus: 6
-        phone: phone
-        id: 0
-        email: email
-        username: username
       properties:
         id:
           format: int64
@@ -841,10 +832,13 @@ components:
           type: string
         phone:
           type: string
-        userStatus:
-          description: User Status
-          format: int32
-          type: integer
+        role:
+          description: User role
+          enum:
+            - user
+            - manager
+            - admin
+          type: string
       title: a User
       type: object
       xml:

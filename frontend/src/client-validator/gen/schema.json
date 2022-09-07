@@ -171,12 +171,14 @@
         "phone": {
           "type": "string"
         },
-        "userStatus": {
-          "description": "User Status",
-          "format": "int32",
-          "type": "integer",
-          "minimum": -2147483648,
-          "maximum": 2147483647
+        "role": {
+          "description": "User role",
+          "enum": [
+            "user",
+            "manager",
+            "admin"
+          ],
+          "type": "string"
         }
       },
       "title": "a User",

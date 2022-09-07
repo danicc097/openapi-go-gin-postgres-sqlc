@@ -4,10 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "dev": "pnpm run generate && vite",
+    "build": "pnpm run generate && tsc && vite build",
     "preview": "vite preview",
-    "generate": "rtk-query-codegen-openapi openapi-config.json && node generate-client-validator.js"
+    "generate": "./generate.bash",
+    "lint": "eslint --config ./.eslintrc.json --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx ./src",
+    "lint:fix": "eslint --config ./.eslintrc.json --ext .js,.jsx,.ts,.tsx --fix ./src"
   },
   "resolveJsonModule": true,
   "dependencies": {
@@ -15,6 +17,7 @@
     "@rtk-query/codegen-openapi": "^1.0.0",
     "ajv": "^8.11.0",
     "ajv-formats": "^2.1.1",
+    "openapi-typescript": "^5.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^8.0.2",
@@ -23,9 +26,22 @@
   "devDependencies": {
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
+    "@typescript-eslint/eslint-plugin": "^5.36.2",
+    "@typescript-eslint/parser": "^5.36.2",
     "@vitejs/plugin-react": "^2.1.0",
+    "eslint": "^8.23.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-html": "^6.1.2",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-jest-dom": "^3.9.0",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-react": "^7.24.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "eslint-plugin-testing-library": "^5.6.1",
     "openapi-types": "^12.0.2",
     "openapi-typescript-validator": "github:danicc097/openapi-typescript-validator",
+    "prettier": "^2.7.1",
     "typescript": "^4.8.2",
     "vite": "^3.1.0"
   }

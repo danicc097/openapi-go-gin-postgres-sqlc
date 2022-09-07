@@ -248,10 +248,6 @@ x.run-hot-reload() {
 
 x.run-frontend() {
   cd frontend &&
-    pnpm run generate &&
-    rm src/client-validator/gen/validate.ts &&
-    find src/client-validator/gen/ -type f -exec \
-      sed -i "s/from '.\/validate'/from '..\/validate'/g" {} \; &&
     pnpm run dev |
     sed -e "s/^/${GREEN}[Vite]${OFF} /"
 }

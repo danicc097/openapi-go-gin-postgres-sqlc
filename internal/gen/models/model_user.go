@@ -11,6 +11,6 @@ type User struct {
 	Email     string `json:"email,omitempty"`
 	Password  string `json:"password,omitempty"`
 	Phone     string `json:"phone,omitempty"`
-	// User Status.
-	UserStatus int32 `json:"userStatus,omitempty"`
+	// User role.
+	Role string `json:"role,omitempty"`
 }

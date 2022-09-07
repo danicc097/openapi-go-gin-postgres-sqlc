@@ -82,9 +82,9 @@ export interface AUser2 {
   password?: string
   phone?: string
   /**
-   * User Status
+   * User role
    */
-  userStatus?: number
+  role?: 'user' | 'manager' | 'admin'
 }
 /**
  * A tag for a pet
