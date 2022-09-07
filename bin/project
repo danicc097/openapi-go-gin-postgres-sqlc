@@ -255,9 +255,29 @@ x.run-frontend() {
 
 # Run all project services with hot reload enabled.
 x.run-all-hot-reload() {
-  x.run-hot-reload &
-  x.run-frontend &
-  wait
+  pids=()
+  next_allowed_run=$(date +%s)
+  latency=2
+  inotifywait \
+    --monitor . \
+    --event=modify \
+    --format='%T %f' \
+    --timefmt='%s' |
+    while read -r event; do
+      event_time=$(echo "$event" | awk '{print $1}')
+      event_file=$(echo "$event" | awk '{print $2}')
+      if [[ $event_time -ge $next_allowed_run && $event_file = "openapi.yaml" ]]; then
+        next_allowed_run=$(date --date="${latency}sec" +%s)
+        echo "processes to kill: ${pids[*]}"
+        # kill -INT $pid
+        sleep 10 &
+        pids+=("$!")
+        # x.run-hot-reload &
+        # x.run-frontend &
+        sleep $latency # Wait for additional changes
+      fi
+    done
+
 }
 
 # Ensure no breaking changes to the OpenAPI spec in the same version are present.
