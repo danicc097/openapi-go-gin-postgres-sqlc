@@ -275,28 +275,28 @@ x.run-all-hot-reload() {
 
   run_hot_reload
   next_allowed_run=$(date +%s)
-  latency=10
+  latency=4
   # close_write event, else duplicated, tripl. events -> race condition
-  inotifywait \
-    --monitor ./openapi.yaml \
-    --event=close_write \
-    --format='%T %f' \
-    --timefmt='%s' |
-    while read -r event_time event_file; do
-      # FIXME Resource temporarily unavailable if not entering loop
-      if [[ $event_time -ge $next_allowed_run ]]; then
-        echo "$BOLD$GREEN-building-$OFF"
-        next_allowed_run=$(date --date="${latency}sec" +%s)
-        echo "processes to kill: ${pids[*]}"
+  while true; do
+    inotifywait \
+      --monitor ./openapi.yaml \
+      --event=close_write \
+      --format='%T %f' \
+      --timefmt='%s' |
+      while read -r event_time event_file || sleep $latency; do
+        if [[ $event_time -ge $next_allowed_run ]]; then
+          echo "$BOLD$GREEN-building-$OFF"
+          next_allowed_run=$(date --date="${latency}sec" +%s)
+          echo "processes to kill: ${pids[*]}"
 
-        # TODO pids not getting killed as they should
-        for pid in "${pids[@]}"; do
-          kill "$pid" || : # NOT getting killed.
-        done
-        run_hot_reload
-        # sleep $latency # causes read error: 0: Resource temporarily unavailable on while read
-      fi
-    done
+          # TODO pids not getting killed as they should
+          for pid in "${pids[@]}"; do
+            kill "$pid" || : # NOT getting killed.
+          done
+          run_hot_reload
+        fi
+      done
+  done
 }
 
 # Ensure no breaking changes to the OpenAPI spec in the same version are present.
