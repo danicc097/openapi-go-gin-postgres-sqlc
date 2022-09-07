@@ -8,10 +8,11 @@ set -e
 
 trap killgroup SIGINT
 
+pids=()
 killgroup() {
   echo killing...
   for pid in ${pids[@]}; do
-    kill $pid
+    kill $pid || :
   done
   kill 0
 }
@@ -261,55 +262,42 @@ x.run-frontend() {
 # air and vite hot reload working fine while watching
 # Run all project services with hot reload enabled.
 x.run-all-hot-reload() {
-  ps -ef | grep vite | awk -F ' ' '{print $2}' | xargs kill -9 || true
-  ps -ef | grep air | awk -F ' ' '{print $2}' | xargs kill -9 || true
-  x.run-hot-reload &
-  pids+=("$!")
-  x.run-frontend &
-  pids+=("$!")
+  # to be replaced by dcompose up --build when oas changes --> pid shenanigans wont apply
+  run_hot_reload() {
+    # TODO dont use this.
+    ps -ef | grep vite | awk -F ' ' '{print $2}' | xargs kill || true
+    ps -ef | grep air | awk -F ' ' '{print $2}' | xargs kill || true
+    x.run-hot-reload &
+    pids+=("$!")
+    x.run-frontend &
+    pids+=("$!")
+  }
 
+  run_hot_reload
   next_allowed_run=$(date +%s)
-  latency=4
+  latency=10
   # close_write event, else duplicated, tripl. events -> race condition
   inotifywait \
     --monitor ./openapi.yaml \
     --event=close_write \
     --format='%T %f' \
     --timefmt='%s' |
-    # FIXME read: read error: 0: Resource temporarily unavailable on while read
-    # after the first spec change.
-    while read -r event; do
-      echo "event: ${event}"
-      event_time=$(echo "$event" | awk '{print $1}')
-      # event_file=$(echo "$event" | awk '{print $2}')
+    while read -r event_time event_file; do
+      # FIXME Resource temporarily unavailable if not entering loop
       if [[ $event_time -ge $next_allowed_run ]]; then
-        echo "$BOLD$GREEN-building: $building$OFF"
+        echo "$BOLD$GREEN-building-$OFF"
         next_allowed_run=$(date --date="${latency}sec" +%s)
         echo "processes to kill: ${pids[*]}"
-        for pid in ${pids[@]}; do
-          kill -TERM $pid # NOT getting killed. we have duplicated processes
+
+        # TODO pids not getting killed as they should
+        for pid in "${pids[@]}"; do
+          kill "$pid" || : # NOT getting killed.
         done
-        # TODO pids not getting killed properly
-        ps -ef | grep vite | awk -F ' ' '{print $2}' | xargs kill -9 || true
-        ps -ef | grep air | awk -F ' ' '{print $2}' | xargs kill -9 || true
-        # jobs -p | xargs -rn10 kill # does nothing
-        pids=()
-        x.run-hot-reload &
-        pids+=("$!")
-        x.run-frontend &
-        pids+=("$!")
-        sleep $latency # Wait for additional changes
+        run_hot_reload
+        # sleep $latency # causes read error: 0: Resource temporarily unavailable on while read
       fi
     done
 }
-
-# # Run all project services with hot reload enabled.
-# x.run-all-hot-reload() {
-#   x.run-hot-reload &
-#   pids+=("$!")
-#   x.run-frontend &
-#   pids+=("$!")
-# }
 
 # Ensure no breaking changes to the OpenAPI spec in the same version are present.
 x.release() {
