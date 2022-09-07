@@ -10,6 +10,9 @@ trap killgroup SIGINT
 
 killgroup() {
   echo killing...
+  for pid in ${pids[@]}; do
+    kill $pid
+  done
   kill 0
 }
 
@@ -238,10 +241,12 @@ x.run-hot-reload() {
     --build.pre_build_cmd "bin/project generate" \
     --build.cmd "" \
     --build.bin "go run ./cmd/rest-server/ -env=$ENV_FILE" \
-    --build.exclude_regex ".gen.go,internal/gen/*,$PG_REPO/gen/*,testdata,_test.go" \
+    --build.include_ext "go" \
+    --build.exclude_regex ".gen.go,_test.go" \
+    --build.exclude_dir ".git,tmp,internal/gen,$PG_REPO/gen,tests/testdata,frontend,*.cache" \
     --build.stop_watch "internal/handlers/,internal/services/" \
-    --build.exclude_dir "*.cache,frontend" \
-    --build.delay 1000 |
+    --build.delay 1000 \
+    --build.exclude_unchanged "true" |
     sed -e "s/^/${BLUE}[Air]${OFF} /"
   # TODO compose
 }
@@ -253,32 +258,58 @@ x.run-frontend() {
     sed -e "s/^/${GREEN}[Vite]${OFF} /"
 }
 
+# air and vite hot reload working fine while watching
 # Run all project services with hot reload enabled.
 x.run-all-hot-reload() {
-  pids=()
+  ps -ef | grep vite | awk -F ' ' '{print $2}' | xargs kill -9 || true
+  ps -ef | grep air | awk -F ' ' '{print $2}' | xargs kill -9 || true
+  x.run-hot-reload &
+  pids+=("$!")
+  x.run-frontend &
+  pids+=("$!")
+
   next_allowed_run=$(date +%s)
-  latency=2
+  latency=4
+  # close_write event, else duplicated, tripl. events -> race condition
   inotifywait \
-    --monitor . \
-    --event=modify \
+    --monitor ./openapi.yaml \
+    --event=close_write \
     --format='%T %f' \
     --timefmt='%s' |
+    # FIXME read: read error: 0: Resource temporarily unavailable on while read
+    # after the first spec change.
     while read -r event; do
+      echo "event: ${event}"
       event_time=$(echo "$event" | awk '{print $1}')
-      event_file=$(echo "$event" | awk '{print $2}')
-      if [[ $event_time -ge $next_allowed_run && $event_file = "openapi.yaml" ]]; then
+      # event_file=$(echo "$event" | awk '{print $2}')
+      if [[ $event_time -ge $next_allowed_run ]]; then
+        echo "$BOLD$GREEN-building: $building$OFF"
         next_allowed_run=$(date --date="${latency}sec" +%s)
         echo "processes to kill: ${pids[*]}"
-        # kill -INT $pid
-        sleep 10 &
+        for pid in ${pids[@]}; do
+          kill -TERM $pid # NOT getting killed. we have duplicated processes
+        done
+        # TODO pids not getting killed properly
+        ps -ef | grep vite | awk -F ' ' '{print $2}' | xargs kill -9 || true
+        ps -ef | grep air | awk -F ' ' '{print $2}' | xargs kill -9 || true
+        # jobs -p | xargs -rn10 kill # does nothing
+        pids=()
+        x.run-hot-reload &
         pids+=("$!")
-        # x.run-hot-reload &
-        # x.run-frontend &
+        x.run-frontend &
+        pids+=("$!")
         sleep $latency # Wait for additional changes
       fi
     done
-
 }
+
+# # Run all project services with hot reload enabled.
+# x.run-all-hot-reload() {
+#   x.run-hot-reload &
+#   pids+=("$!")
+#   x.run-frontend &
+#   pids+=("$!")
+# }
 
 # Ensure no breaking changes to the OpenAPI spec in the same version are present.
 x.release() {
