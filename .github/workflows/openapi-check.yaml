@@ -22,5 +22,5 @@ jobs:
       - name: Diff OpenAPI spec
         run: |
           source .envrc
-          git fetch origin main:main
+          git fetch origin main:main || true
           project diff-openapi-spec
