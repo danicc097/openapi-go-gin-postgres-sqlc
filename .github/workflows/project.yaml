@@ -1,0 +1,24 @@
+name: Project
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      # source .envrc instead of direnv setup
+      - name: Run project
+        run: |
+          source .envrc
+          docker network create traefik-net
+          project test
