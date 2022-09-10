@@ -1,9 +1,8 @@
-package handlers
+package rest
 
 import (
 	"fmt"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -25,9 +24,9 @@ func NewPet(svc services.Pet) *Pet {
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
 func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
-	routes := []rest.Route{}
+	routes := []route{}
 
-	rest.RegisterRoutes(r, routes, "/pet", mws)
+	registerRoutes(r, routes, "/pet", mws)
 }
 
 // middlewares returns individual route middleware per operation id.

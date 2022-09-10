@@ -1,9 +1,8 @@
-package handlers
+package rest
 
 import (
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -25,7 +24,7 @@ func NewDefault(svc services.Default) *Default {
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
 func (h *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
-	routes := []rest.Route{
+	routes := []route{
 		{
 			Name:        "Ping",
 			Method:      http.MethodGet,
@@ -35,7 +34,7 @@ func (h *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 		},
 	}
 
-	rest.RegisterRoutes(r, routes, "/default", mws)
+	registerRoutes(r, routes, "/default", mws)
 }
 
 // middlewares returns individual route middleware per operation id.

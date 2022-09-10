@@ -1,9 +1,8 @@
-package handlers
+package rest
 
 import (
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -25,7 +24,7 @@ func NewUser(svc services.User) *User {
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
 func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
-	routes := []rest.Route{
+	routes := []route{
 		{
 			Name:        "CreateUser",
 			Method:      http.MethodPost,
@@ -84,7 +83,7 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 		},
 	}
 
-	rest.RegisterRoutes(r, routes, "/user", mws)
+	registerRoutes(r, routes, "/user", mws)
 }
 
 // CreateUser creates a new user.

@@ -14,7 +14,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
-	server "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/server"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/golang-migrate/migrate/v4"
@@ -73,7 +73,7 @@ func run(env, address, specPath string, pool *pgxpool.Pool) (*http.Server, error
 		panic(err)
 	}
 
-	srv, err := server.New(server.Config{
+	srv, err := rest.NewServer(rest.Config{
 		Address:  address,
 		Pool:     pool,
 		Redis:    rdb,

@@ -53,7 +53,7 @@ func TestHandlerPostProcessing(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
 			conf := &postgen.Conf{
-				CurrentHandlersDir: path.Join(baseDir, tc.Dir, "internal/rest/handlers"),
+				CurrentHandlersDir: path.Join(baseDir, tc.Dir, "internal/rest"),
 				GenHandlersDir:     path.Join(baseDir, tc.Dir, "internal/gen"),
 				OutHandlersDir:     path.Join(baseDir, tc.Dir, "got"),
 				OutServicesDir:     path.Join(baseDir, tc.Dir, "internal/services"),
@@ -100,7 +100,7 @@ func TestHandlerPostProcessing(t *testing.T) {
 					t.Fatal(err)
 				}
 				if diff := cmp.Diff(want.String(), got.String()); diff != "" {
-					t.Errorf("strings differed (-want +got):\n%s", diff)
+					t.Errorf("%s: strings differed (-want +got):\n%s", wp, diff)
 				}
 			}
 		})

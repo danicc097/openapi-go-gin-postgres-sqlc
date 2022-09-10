@@ -1,9 +1,8 @@
-package handlers
+package rest
 
 import (
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -25,7 +24,7 @@ func NewStore(svc services.Store) *Store {
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
 func (h *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
-	routes := []rest.Route{
+	routes := []route{
 		{
 			Name:        "DeleteOrder",
 			Method:      http.MethodDelete,
@@ -56,7 +55,7 @@ func (h *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 		},
 	}
 
-	rest.RegisterRoutes(r, routes, "/store", mws)
+	registerRoutes(r, routes, "/store", mws)
 }
 
 // middlewares returns individual route middleware per operation id.

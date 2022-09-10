@@ -1,9 +1,8 @@
-package handlers
+package rest
 
 import (
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -25,7 +24,7 @@ func NewFake(svc services.Fake) *Fake {
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
 func (h *Fake) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
-	routes := []rest.Route{
+	routes := []route{
 		{
 			Name:        "FakeDataFile",
 			Method:      http.MethodGet,
@@ -35,7 +34,7 @@ func (h *Fake) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 		},
 	}
 
-	rest.RegisterRoutes(r, routes, "/fake", mws)
+	registerRoutes(r, routes, "/fake", mws)
 }
 
 // middlewares returns individual route middleware per operation id.
