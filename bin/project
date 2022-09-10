@@ -11,7 +11,6 @@ trap killgroup SIGINT
 pids=()
 killgroup() {
   printf "\nkilling spawned processes...\n"
-  pkill -P ${$}
   kill 0
 }
 
@@ -260,23 +259,18 @@ x.run-frontend() {
 # air and vite hot reload working fine while watching
 # Run all project services with hot reload enabled.
 x.run-all-hot-reload() {
-  # to be replaced by dcompose up --build when oas changes --> pid shenanigans wont apply
+  # to be replaced by dcompose up --build when oas changes
   run_hot_reload() {
-    # TODO dont use this.
-    ps -ef | grep vite | awk -F ' ' '{print $2}' | xargs kill || true
-    ps -ef | grep air | awk -F ' ' '{print $2}' | xargs kill || true
-
     x.run-hot-reload &
+    pids+=("$!")
     x.run-frontend &
+    pids+=("$!")
   }
 
-  (
-    trap 'kill $(jobs -p)' EXIT
-    run_hot_reload
-  )
-  pids+=("$!")
+  run_hot_reload
+
   next_allowed_run=$(date +%s)
-  latency=4
+  latency=3
   # close_write event, else duplicated, tripl. events -> race condition
   while true; do
     inotifywait \
@@ -286,19 +280,15 @@ x.run-all-hot-reload() {
       --timefmt='%s' |
       while read -r event_time event_file || sleep $latency; do
         if [[ $event_time -ge $next_allowed_run ]]; then
-          echo "$BOLD$GREEN-building-$OFF"
           next_allowed_run=$(date --date="${latency}sec" +%s)
-          echo "processes to kill: ${pids[*]}"
 
-          # TODO pids not getting killed as they should
-          # for pid in "${pids[@]}"; do
-          #   pkill -P $pid || : # NOT getting killed.
-          # done
-          (
-            trap 'kill $(jobs -p)' EXIT
-            run_hot_reload
-          )
-          pids+=("$!")
+          for pid in "${pids[@]}"; do
+            # air and vite spawn processes as well, need to kill those (whose parent is pid), kill $pid will not kill children. pkill -P would also work
+            kill $(list_descendants $pid)
+          done
+          pids=()
+
+          run_hot_reload
         fi
       done
   done

@@ -44,6 +44,14 @@ Current directory: $PWD"
   fi
 }
 
+list_descendants() {
+  local desc_pids=$(ps -o pid= --ppid "$1")
+  for pid in $desc_pids; do
+    list_descendants "$pid"
+  done
+  echo "$desc_pids"
+}
+
 # Retrieve environment variable `var` from `env_file`
 get_envvar() {
   local env_file="$1"
