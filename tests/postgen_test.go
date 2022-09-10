@@ -53,7 +53,7 @@ func TestHandlerPostProcessing(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
 			conf := &postgen.Conf{
-				CurrentHandlersDir: path.Join(baseDir, tc.Dir, "internal/handlers"),
+				CurrentHandlersDir: path.Join(baseDir, tc.Dir, "internal/rest/handlers"),
 				GenHandlersDir:     path.Join(baseDir, tc.Dir, "internal/gen"),
 				OutHandlersDir:     path.Join(baseDir, tc.Dir, "got"),
 				OutServicesDir:     path.Join(baseDir, tc.Dir, "internal/services"),

@@ -4,7 +4,7 @@ package handlerstesting
 import (
 	"sync"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/handlers"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/handlers"
 )
 
 type FakeAuthenticationService struct {

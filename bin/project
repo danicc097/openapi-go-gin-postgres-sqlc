@@ -146,12 +146,12 @@ x.generate.counterfeiter() {
   cache="$1"
 
   envvar="internal/envvar/envvar.go"
-  services="internal/handlers/services.go"
+  services="internal/rest/handlers/services.go"
 
   if ! md5sum -c "$cache/counterfeiter.md5" >/dev/null; then
     counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
-    counterfeiter -o internal/handlers/handlerstesting/authorization.gen.go $services AuthorizationService &
-    counterfeiter -o internal/handlers/handlerstesting/authentication.gen.go $services AuthenticationService &
+    counterfeiter -o internal/rest/handlers/handlerstesting/authorization.gen.go $services AuthorizationService &
+    counterfeiter -o internal/rest/handlers/handlerstesting/authentication.gen.go $services AuthenticationService &
     md5sum $envvar $services >"$cache/counterfeiter.md5" &
     wait
   fi
@@ -242,7 +242,7 @@ x.run-hot-reload() {
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
     --build.exclude_dir ".git,tmp,internal/gen,$PG_REPO/gen,tests/testdata,frontend,*.cache" \
-    --build.stop_watch "internal/handlers/,internal/services/" \
+    --build.stop_watch "internal/rest/handlers/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
     sed -e "s/^/${BLUE}[Air]${OFF} /"
@@ -375,9 +375,8 @@ x.openapi-generator() {
     --global-property=debugModels,debugOperations >debug-openapi.log #>/dev/null \
 
   mkdir -p "$gen_out_dir"/gen/models
-  mkdir -p "$gen_out_dir"/handlers
+  mkdir -p "$gen_out_dir"/rest/handlers
   mkdir -p "$gen_out_dir"/services
-  mkdir -p "$gen_out_dir"/rest
 
   mv "$gen_out_dir"/gen/routers.go "$gen_out_dir"/rest
   {
