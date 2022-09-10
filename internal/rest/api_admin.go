@@ -1,9 +1,8 @@
-package handlers
+package rest
 
 import (
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,7 +23,7 @@ func NewAdmin(svc UserService) *Admin {
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
 func (h *Admin) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
-	routes := []rest.Route{
+	routes := []route{
 		{
 			Name:        "AdminPing",
 			Method:      http.MethodGet,
@@ -34,7 +33,7 @@ func (h *Admin) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 		},
 	}
 
-	rest.RegisterRoutes(r, routes, "/admin", mws)
+	registerRoutes(r, routes, "/admin", mws)
 }
 
 // middlewares returns individual route middleware per operation id.

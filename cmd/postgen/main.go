@@ -12,9 +12,9 @@ import (
 func main() {
 	const baseDir = "internal"
 	conf := &postgen.Conf{
-		CurrentHandlersDir: path.Join(baseDir, "handlers"),
+		CurrentHandlersDir: path.Join(baseDir, "rest"),
 		GenHandlersDir:     path.Join(baseDir, "gen"),
-		OutHandlersDir:     path.Join(baseDir, "handlers"),
+		OutHandlersDir:     path.Join(baseDir, "rest"),
 		OutServicesDir:     path.Join(baseDir, "services"),
 	}
 

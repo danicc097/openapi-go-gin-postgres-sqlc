@@ -19,7 +19,7 @@ type ErrorResponse struct {
 	// Validations validation.Errors `json:"validations,omitempty"`
 }
 
-func RenderErrorResponse(c *gin.Context, msg string, err error) {
+func renderErrorResponse(c *gin.Context, msg string, err error) {
 	resp := ErrorResponse{Error: msg}
 	status := http.StatusInternalServerError
 

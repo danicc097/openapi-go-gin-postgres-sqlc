@@ -1,5 +1,5 @@
 {{! The things one must do to not touch Java. }}
-package handlers
+package rest
 
 {{#operations}}
 import (
@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 )
 
 // {{baseName}} handles routes with the '{{#lambda.lowercase}}{{{baseName}}}{{/lambda.lowercase}}' tag.
@@ -27,7 +26,7 @@ func New{{baseName}}(svc services.{{baseName}}) *{{baseName}} {
 // Register connects handlers to an existing router group with the given middlewares.
 // Generated method. DO NOT EDIT.
 func (h *{{baseName}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
-  routes := []rest.Route{
+  routes := []route{
 {{#operation}}
 	{
     Name: "{{operationId}}",
@@ -41,7 +40,7 @@ func (h *{{baseName}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 {{! hack since baseName is broken for the default tag }}
 {{#operation.0}}
 
-  rest.RegisterRoutes(r, routes, "/{{#tags}}{{name}}{{/tags}}", mws)
+  registerRoutes(r, routes, "/{{#tags}}{{name}}{{/tags}}", mws)
 {{/operation.0}}
 }
 

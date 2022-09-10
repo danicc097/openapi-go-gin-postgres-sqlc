@@ -23,12 +23,9 @@ import (
 
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/handlers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/oasvalidator"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
@@ -47,12 +44,12 @@ type Config struct {
 	SpecPath string
 }
 
-// New returns a new http server.
-func New(conf Config) (*http.Server, error) {
+// NewServer returns a new http server.
+func NewServer(conf Config) (*http.Server, error) {
 	router := gin.Default()
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		v.RegisterValidation("alphanumspace", rest.Alphanumspace)
+		v.RegisterValidation("alphanumspace", Alphanumspace)
 	}
 
 	router.Use(gin.Recovery())
@@ -93,7 +90,7 @@ func New(conf Config) (*http.Server, error) {
 		return nil, err
 	}
 
-	options := oasvalidator.Options{
+	options := OAValidatorOptions{
 		Options: openapi3filter.Options{
 			ExcludeRequestBody:    false,
 			ExcludeResponseBody:   false,
@@ -109,7 +106,7 @@ func New(conf Config) (*http.Server, error) {
 	vg := router.Group(os.Getenv("API_VERSION"))
 	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
 
-	vg.Use(oasvalidator.OapiRequestValidatorWithOptions(openapi, &options))
+	vg.Use(OapiRequestValidatorWithOptions(openapi, &options))
 
 	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
 	authzSvc := services.Authorization{Logger: conf.Logger}
@@ -118,24 +115,24 @@ func New(conf Config) (*http.Server, error) {
 	storeSvc := services.Store{Logger: conf.Logger, Pool: conf.Pool}
 	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool)
 
-	authMw := handlers.NewAuthMw(conf.Logger, authnSvc, authzSvc, userSvc)
-	handlers.
-		NewAdmin(userSvc).
+	authMw := NewAuthMw(conf.Logger, authnSvc, authzSvc, userSvc)
+
+	NewAdmin(userSvc).
 		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthorized(db.RoleAdmin)})
-	handlers.
-		NewDefault().
+
+	NewDefault().
 		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated(), authMw.EnsureVerified()})
-	handlers.
-		NewFake(fakeSvc).
+
+	NewFake(fakeSvc).
 		Register(vg, []gin.HandlerFunc{})
-	handlers.
-		NewPet(petSvc).
+
+	NewPet(petSvc).
 		Register(vg, []gin.HandlerFunc{})
-	handlers.
-		NewStore(storeSvc).
+
+	NewStore(storeSvc).
 		Register(vg, []gin.HandlerFunc{})
-	handlers.
-		NewUser(conf.Logger, userSvc, authnSvc, authzSvc).
+
+	NewUser(conf.Logger, userSvc, authnSvc, authzSvc).
 		Register(vg, []gin.HandlerFunc{})
 	// TODO /admin with authMw.EnsureAuthorized() in group
 
@@ -187,7 +184,7 @@ func Run(env, address, specPath string) (<-chan error, error) {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.zapNew")
 	}
 
-	srv, err := New(Config{
+	srv, err := NewServer(Config{
 		Address:  address,
 		Pool:     pool,
 		Redis:    rdb,

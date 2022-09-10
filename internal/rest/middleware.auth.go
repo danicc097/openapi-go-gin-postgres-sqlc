@@ -1,4 +1,4 @@
-package handlers
+package rest
 
 import (
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"

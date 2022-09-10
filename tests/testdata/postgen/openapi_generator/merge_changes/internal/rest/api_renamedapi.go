@@ -1,4 +1,4 @@
-package handlers
+package rest
 
 // this file would contain e.g. handlers for a renamed tag, or someone
 // didnt follow naming conventions (dont create api_* files).

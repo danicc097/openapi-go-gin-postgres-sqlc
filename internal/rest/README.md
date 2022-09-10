@@ -1,11 +1,11 @@
-# Package `handlers`
+# Package `rest`
 
 ## Instructions
 
 Fill in all `api_*.go` files with your own handler implementations and helper
 functions.
 For external endpoints not defined in the spec, e.g. fileservers, create a new
-handler file that does **not** follow the `api_*.go` pattern.
+handler file that does **not** follow the `api_*.go` filename pattern.
 
 ## Notes
 

@@ -146,12 +146,12 @@ x.generate.counterfeiter() {
   cache="$1"
 
   envvar="internal/envvar/envvar.go"
-  services="internal/handlers/services.go"
+  services="internal/rest/services.go"
 
   if ! md5sum -c "$cache/counterfeiter.md5" >/dev/null; then
     counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
-    counterfeiter -o internal/handlers/handlerstesting/authorization.gen.go $services AuthorizationService &
-    counterfeiter -o internal/handlers/handlerstesting/authentication.gen.go $services AuthenticationService &
+    counterfeiter -o internal/rest/resttesting/authorization.gen.go $services AuthorizationService &
+    counterfeiter -o internal/rest/resttesting/authentication.gen.go $services AuthenticationService &
     md5sum $envvar $services >"$cache/counterfeiter.md5" &
     wait
   fi
@@ -242,7 +242,7 @@ x.run-hot-reload() {
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
     --build.exclude_dir ".git,tmp,internal/gen,$PG_REPO/gen,tests/testdata,frontend,*.cache" \
-    --build.stop_watch "internal/handlers/,internal/services/" \
+    --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
     sed -e "s/^/${BLUE}[Air]${OFF} /"
@@ -274,7 +274,7 @@ x.run-all-hot-reload() {
   # close_write event, else duplicated, tripl. events -> race condition
   while true; do
     inotifywait \
-      --monitor ./openapi.yaml \
+      --monitor "$SPEC" \
       --event=close_write \
       --format='%T %f' \
       --timefmt='%s' |
@@ -375,9 +375,8 @@ x.openapi-generator() {
     --global-property=debugModels,debugOperations >debug-openapi.log #>/dev/null \
 
   mkdir -p "$gen_out_dir"/gen/models
-  mkdir -p "$gen_out_dir"/handlers
-  mkdir -p "$gen_out_dir"/services
   mkdir -p "$gen_out_dir"/rest
+  mkdir -p "$gen_out_dir"/services
 
   mv "$gen_out_dir"/gen/routers.go "$gen_out_dir"/rest
   {
@@ -425,7 +424,7 @@ generate_api() {
   fi
   if ! md5sum -c "$cache/$prefix-openapi.md5" >/dev/null; then
     invalid_cache=true
-    md5sum "$BIN_DIR"/../openapi.yaml >"$cache/$prefix-openapi.md5"
+    md5sum "$BIN_DIR"/../"$SPEC" >"$cache/$prefix-openapi.md5"
   fi
 
   if [[ $invalid_cache == true ]]; then

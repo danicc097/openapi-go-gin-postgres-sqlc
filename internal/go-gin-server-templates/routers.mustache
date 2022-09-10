@@ -9,8 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Route contains information for a single endpoint.
-type Route struct {
+// route contains information for a single endpoint.
+type route struct {
 	// Name is the route name.
 	Name string
 	// Method is the string for the HTTP method.
@@ -25,11 +25,9 @@ type Route struct {
 	Middlewares []gin.HandlerFunc
 }
 
-// Routes is the list of the generated Route.
-type Routes []Route
 
-// RegisterRoute creates a router group, adds group middleware and registers routes with their own middleware.
-func RegisterRoutes(router *gin.RouterGroup, rr []Route, group string, mws []gin.HandlerFunc) {
+// registerRoute creates a router group, adds group middleware and registers routes with their own middleware.
+func registerRoutes(router *gin.RouterGroup, rr []route, group string, mws []gin.HandlerFunc) {
 	if reg, _ := regexp.Compile("/([a-z]+)"); !reg.MatchString(group) {
 		panic("invalid router group: " + group)
 	}

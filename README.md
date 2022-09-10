@@ -19,7 +19,18 @@ and flags at will.
 
 ![](.github/autodocs.png)
 
+## What's this for?
+
+Your OpenAPI v3 spec becomes a real single source of truth for the full stack. Any
+change to it is validated and cascades down to:
+ - **frontend**: generated API queries (`rtk-query`) and user-friendly client-side validation
+   (fork of `openapi-typescript-validator`).
+ - **backend**: generated Gin server (`openapi-generator` and custom
+   post-generation), request and response validation (`kin-openapi`).
+
 ## TODOs
+
+  - GH actions
 
   - [Oauth2 as openapi
     spec](https://github.com/ybelenko/oauth2_as_oas3_components/tree/master/dist/components)
@@ -30,7 +41,7 @@ and flags at will.
   - equivalent of Python exception handler context manager but with global
   middleware on the api version route group:
       https://stackoverflow.com/questions/69948784/how-to-handle-errors-in-gin-middleware
-      in combination with internal/rest/rest.go RenderErrorResponse
+      in combination with internal/rest/rest.go renderErrorResponse
     For parsing kinopenapi validation errors to our own more user
     friendly ValidationError check out
     https://github.com/getkin/kin-openapi/pull/197
