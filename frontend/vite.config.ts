@@ -14,14 +14,24 @@ export default ({ mode }) => {
   // import.meta.env.VITE_PORT available here with: process.env.VITE_PORT
 
   return defineConfig({
-    plugins: [react(), tsconfigPaths(), dynamicImport({})],
+    plugins: [
+      react({
+        jsxImportSource: '@emotion/react',
+        jsxRuntime: 'automatic',
+        babel: {
+          plugins: ['@emotion/babel-plugin'],
+        },
+      }),
+      tsconfigPaths(),
+      dynamicImport({}),
+    ],
 
     server: {
       port: Number(process.env.VITE_PORT) || 5143,
-      hmr: {
-        protocol: 'wss',
-        // clientPort: 9443,
-      },
+      // hmr: {
+      //   protocol: 'wss',
+      //   clientPort: 9443,
+      // },
     },
     define: {
       'process.env.NODE_ENV': `"${mode}"`,

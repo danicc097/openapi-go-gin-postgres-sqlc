@@ -4,6 +4,10 @@ import './App.css'
 import { CreateUserRequestDecoder } from './client-validator/gen/decoders'
 import { useCreateUserMutation } from './redux/slices/gen/internalApi'
 import { useUI } from 'src/hooks/ui'
+import { Alert, Button, Group, Text, TextInput } from '@mantine/core'
+import { IconAlertCircle } from '@tabler/icons'
+import { ValidationErrors } from 'src/client-validator/validate'
+import { Prism } from '@mantine/prism'
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
@@ -30,7 +34,7 @@ code highl. - https://mantine.dev/others/prism/
 function App() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
-  const [error, setError] = useState('')
+  const [errors, setError] = useState<ValidationErrors>(null)
 
   const { addToast } = useUI()
   const [createUser, createUserResult] = useCreateUserMutation()
@@ -46,6 +50,7 @@ function App() {
       const payload = await createUser(createUserRequest).unwrap()
       console.log('fulfilled', payload)
       addToast('done')
+      setError(null)
     } catch (error) {
       if (error.validationErrors) {
         setError(error.validationErrors)
@@ -58,15 +63,35 @@ function App() {
     }
   }
 
+  const renderResult = () =>
+    createUserResult ? (
+      <Prism style={{ textAlign: 'left' }} language="json">
+        {JSON.stringify(createUserResult, null, '\t')}
+      </Prism>
+    ) : null
+
+  // TODO handle ValidationErrors(🆗) and api response errors
+  const renderErrors = () =>
+    errors ? (
+      <Alert
+        style={{ textAlign: 'start' }}
+        icon={<IconAlertCircle size={16} />}
+        title={`${errors.message}`}
+        color="red"
+      >
+        {errors?.errors?.map((v, i) => (
+          <p key={i} style={{ margin: '4px' }}>
+            • <strong>{v.invalidParams.name}</strong>: {v.invalidParams.reason}
+          </p>
+        ))}
+      </Alert>
+    ) : null
+
   return (
-    <div className="App">
+    <div className="App" style={{ maxWidth: '500px', minWidth: '400px' }}>
       <div>
-        <div>
-          <pre>{JSON.stringify(createUserResult)}</pre>
-        </div>
-        <div>
-          <pre>{JSON.stringify(error)}</pre>
-        </div>
+        <div>{renderResult()}</div>
+        <div>{renderErrors()}</div>
       </div>
       <form
         onSubmit={(e) => {
@@ -75,12 +100,11 @@ function App() {
         }}
       >
         <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-          <label htmlFor="email">Email:</label>
-          <input type="text" id="email" onChange={(e) => setEmail(e.target.value)} name="Email"></input>
-          <label htmlFor="username">Username:</label>
-          <input type="text" id="username" onChange={(e) => setUsername(e.target.value)} name="Username"></input>
-          Create user
-          <input type="submit" value="Submit" />
+          <TextInput label="Email" onChange={(e) => setEmail(e.target.value)} placeholder="mail@example.com" />
+          <TextInput label="Username" onChange={(e) => setUsername(e.target.value)} placeholder="username" />
+          <Group position="right" mt="md">
+            <Button type="submit">Submit</Button>
+          </Group>
         </div>
       </form>
     </div>
