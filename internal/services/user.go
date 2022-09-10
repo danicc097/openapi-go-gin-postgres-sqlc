@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -37,7 +37,7 @@ func (u *User) Create(ctx context.Context, params models.CreateUserRequest) (mod
 
 	res, err := u.urepo.Create(ctx, params)
 	if err != nil {
-		return models.CreateUserResponse{}, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "urepo.Create")
+		return models.CreateUserResponse{}, errors.Wrap(err, "urepo.Create")
 	}
 
 	return res, nil

@@ -58,6 +58,7 @@ type Options struct {
 	MultiErrorHandler MultiErrorHandler
 }
 
+// TODO use RenderErrorResponse instead
 // Create a validator from a openapi object, with validation options
 func OapiRequestValidatorWithOptions(openapi *openapi3.T, options *Options) gin.HandlerFunc {
 	router, err := gorillamux.NewRouter(openapi)

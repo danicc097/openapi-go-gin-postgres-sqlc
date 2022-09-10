@@ -22,6 +22,7 @@ const (
 	ErrorCodeUnknown ErrorCode = iota
 	ErrorCodeNotFound
 	ErrorCodeInvalidArgument
+	ErrorCodeAlreadyExists
 )
 
 // WrapErrorf returns a wrapped error.

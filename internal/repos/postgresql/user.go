@@ -3,6 +3,7 @@ package postgresql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
@@ -21,12 +22,27 @@ func NewUser(d db.DBTX) *User {
 	}
 }
 
+// TODO use xo instead. need triggers
 // Create inserts a new user record.
 func (u *User) Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error) {
 	// TODO logger needs to be passed down to repo as well
 	// environment.Logger.Sugar().Infof("users.Create.params: %v", params)
 	// TODO creating salt, etc. delegated to jwt.go service
 	// https://github.com/appleboy/gin-jwt
+	_, err := u.q.GetUser(ctx, db.GetUserParams{
+		Username: sql.NullString{String: params.Username, Valid: true},
+	})
+	if err == nil {
+		return models.CreateUserResponse{}, internal.WrapErrorf(err, internal.ErrorCodeAlreadyExists, fmt.Sprintf("username %s already exists", params.Username))
+	}
+
+	_, err = u.q.GetUser(ctx, db.GetUserParams{
+		Email: sql.NullString{String: params.Email, Valid: true},
+	})
+	if err == nil {
+		return models.CreateUserResponse{}, internal.WrapErrorf(err, internal.ErrorCodeAlreadyExists, fmt.Sprintf("email %s already exists", params.Email))
+	}
+
 	newID, err := u.q.RegisterNewUser(ctx, db.RegisterNewUserParams{
 		Username: params.Username,
 		Email:    params.Email,
