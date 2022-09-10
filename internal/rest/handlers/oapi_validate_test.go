@@ -1,4 +1,4 @@
-package oasvalidator
+package handlers
 
 import (
 	"context"
@@ -20,7 +20,7 @@ import (
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
 )
 
-//go:embed test_spec.yaml
+//go:embed testdata/test_spec.yaml
 var testSchema []byte
 
 func doGet(t *testing.T, handler http.Handler, rawURL string) *httptest.ResponseRecorder {
@@ -51,7 +51,7 @@ func TestOapiRequestValidator(t *testing.T) {
 
 	// Set up an authenticator to check authenticated function. It will allow
 	// access to "someScope", but disallow others.
-	options := Options{
+	options := OAValidatorOptions{
 		ErrorHandler: func(c *gin.Context, message string, statusCode int) {
 			c.String(statusCode, "test: "+message)
 		},
@@ -198,7 +198,7 @@ func TestOapiRequestValidatorWithOptionsMultiError(t *testing.T) {
 
 	// Set up an authenticator to check authenticated function. It will allow
 	// access to "someScope", but disallow others.
-	options := Options{
+	options := OAValidatorOptions{
 		Options: openapi3filter.Options{
 			ExcludeRequestBody:    false,
 			ExcludeResponseBody:   false,
@@ -301,7 +301,7 @@ func TestOapiRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T)
 
 	// Set up an authenticator to check authenticated function. It will allow
 	// access to "someScope", but disallow others.
-	options := Options{
+	options := OAValidatorOptions{
 		Options: openapi3filter.Options{
 			ExcludeRequestBody:    false,
 			ExcludeResponseBody:   false,

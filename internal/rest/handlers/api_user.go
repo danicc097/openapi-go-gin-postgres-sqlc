@@ -109,13 +109,13 @@ func (h *User) CreateUser(c *gin.Context) {
 	var user models.CreateUserRequest
 
 	if err := c.BindJSON(&user); err != nil {
-		rest.RenderErrorResponse(c, "error creating user", err)
+		renderErrorResponse(c, "error creating user", err)
 		return
 	}
 
 	res, err := h.userSvc.Create(context.Background(), user)
 	if err != nil {
-		rest.RenderErrorResponse(c, "error creating user", err)
+		renderErrorResponse(c, "error creating user", err)
 		return
 	}
 

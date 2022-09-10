@@ -28,7 +28,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/handlers"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/oasvalidator"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
@@ -93,7 +92,7 @@ func New(conf Config) (*http.Server, error) {
 		return nil, err
 	}
 
-	options := oasvalidator.Options{
+	options := handlers.OAValidatorOptions{
 		Options: openapi3filter.Options{
 			ExcludeRequestBody:    false,
 			ExcludeResponseBody:   false,
@@ -109,7 +108,7 @@ func New(conf Config) (*http.Server, error) {
 	vg := router.Group(os.Getenv("API_VERSION"))
 	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
 
-	vg.Use(oasvalidator.OapiRequestValidatorWithOptions(openapi, &options))
+	vg.Use(handlers.OapiRequestValidatorWithOptions(openapi, &options))
 
 	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
 	authzSvc := services.Authorization{Logger: conf.Logger}

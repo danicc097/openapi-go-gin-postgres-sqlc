@@ -1,4 +1,4 @@
-package oasvalidator
+package handlers
 
 import (
 	"context"
@@ -48,9 +48,9 @@ type ErrorHandler func(c *gin.Context, message string, statusCode int)
 // MultiErrorHandler is called when oapi returns a MultiError type
 type MultiErrorHandler func(openapi3.MultiError) error
 
-// Options to customize request validation. These are passed through to
+// OAValidatorOptions to customize request validation. These are passed through to
 // openapi3filter.
-type Options struct {
+type OAValidatorOptions struct {
 	ErrorHandler      ErrorHandler
 	Options           openapi3filter.Options
 	ParamDecoder      openapi3filter.ContentParameterDecoder
@@ -58,9 +58,9 @@ type Options struct {
 	MultiErrorHandler MultiErrorHandler
 }
 
-// TODO use RenderErrorResponse instead
+// TODO use renderErrorResponse instead
 // Create a validator from a openapi object, with validation options
-func OapiRequestValidatorWithOptions(openapi *openapi3.T, options *Options) gin.HandlerFunc {
+func OapiRequestValidatorWithOptions(openapi *openapi3.T, options *OAValidatorOptions) gin.HandlerFunc {
 	router, err := gorillamux.NewRouter(openapi)
 	if err != nil {
 		panic(err)
@@ -73,7 +73,7 @@ func OapiRequestValidatorWithOptions(openapi *openapi3.T, options *Options) gin.
 				// in case the handler didn't internally call Abort, stop the chain
 				c.Abort()
 			} else {
-				// note: i am not sure if this is the best way to handle this
+				// TODO renderErrorResponse instead. Should parse errors to be more rfc7807 friendly
 				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			}
 		}
@@ -83,7 +83,7 @@ func OapiRequestValidatorWithOptions(openapi *openapi3.T, options *Options) gin.
 
 // ValidateRequestFromContext is called from the middleware above and actually does the work
 // of validating a request.
-func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *Options) error {
+func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *OAValidatorOptions) error {
 	req := c.Request
 	route, pathParams, err := router.FindRoute(req)
 
@@ -164,7 +164,7 @@ func GetUserData(c context.Context) interface{} {
 
 // attempt to get the MultiErrorHandler from the options. If it is not set,
 // return a default handler
-func getMultiErrorHandlerFromOptions(options *Options) MultiErrorHandler {
+func getMultiErrorHandlerFromOptions(options *OAValidatorOptions) MultiErrorHandler {
 	if options == nil {
 		return defaultMultiErrorHandler
 	}
