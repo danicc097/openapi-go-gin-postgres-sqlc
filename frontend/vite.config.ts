@@ -28,6 +28,7 @@ export default ({ mode }) => {
 
     server: {
       port: Number(process.env.VITE_PORT) || 5143,
+      strictPort: true,
       // hmr: {
       //   protocol: 'wss',
       //   clientPort: 9443,
