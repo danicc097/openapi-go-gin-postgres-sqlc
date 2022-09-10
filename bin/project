@@ -405,6 +405,7 @@ x.diff-openapi-spec() {
     echo "${GREEN}No breaking changes found in $SPEC${OFF}"
   else
     echo "${RED}Breaking changes found in $SPEC${OFF}"
+    return 1
   fi
 }
 

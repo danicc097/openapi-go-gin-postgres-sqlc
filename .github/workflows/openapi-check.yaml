@@ -1,0 +1,26 @@
+name: OpenAPI check
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: "main"
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - name: Diff OpenAPI spec
+        run: |
+          source .envrc
+          git fetch origin main:main
+          project diff-openapi-spec
