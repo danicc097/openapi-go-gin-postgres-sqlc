@@ -10,10 +10,8 @@ trap killgroup SIGINT
 
 pids=()
 killgroup() {
-  echo killing...
-  for pid in ${pids[@]}; do
-    kill $pid || :
-  done
+  printf "\nkilling spawned processes...\n"
+  pkill -P ${$}
   kill 0
 }
 
@@ -267,13 +265,16 @@ x.run-all-hot-reload() {
     # TODO dont use this.
     ps -ef | grep vite | awk -F ' ' '{print $2}' | xargs kill || true
     ps -ef | grep air | awk -F ' ' '{print $2}' | xargs kill || true
+
     x.run-hot-reload &
-    pids+=("$!")
     x.run-frontend &
-    pids+=("$!")
   }
 
-  run_hot_reload
+  (
+    trap 'kill $(jobs -p)' EXIT
+    run_hot_reload
+  )
+  pids+=("$!")
   next_allowed_run=$(date +%s)
   latency=4
   # close_write event, else duplicated, tripl. events -> race condition
@@ -290,10 +291,14 @@ x.run-all-hot-reload() {
           echo "processes to kill: ${pids[*]}"
 
           # TODO pids not getting killed as they should
-          for pid in "${pids[@]}"; do
-            kill "$pid" || : # NOT getting killed.
-          done
-          run_hot_reload
+          # for pid in "${pids[@]}"; do
+          #   pkill -P $pid || : # NOT getting killed.
+          # done
+          (
+            trap 'kill $(jobs -p)' EXIT
+            run_hot_reload
+          )
+          pids+=("$!")
         fi
       done
   done
