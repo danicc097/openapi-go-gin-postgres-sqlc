@@ -8,8 +8,9 @@ set -e
 
 trap killgroup SIGINT
 
+pids=()
 killgroup() {
-  echo killing...
+  printf "\nkilling spawned processes...\n"
   kill 0
 }
 
@@ -238,10 +239,12 @@ x.run-hot-reload() {
     --build.pre_build_cmd "bin/project generate" \
     --build.cmd "" \
     --build.bin "go run ./cmd/rest-server/ -env=$ENV_FILE" \
-    --build.exclude_regex ".gen.go,internal/gen/*,$PG_REPO/gen/*,testdata,_test.go" \
+    --build.include_ext "go" \
+    --build.exclude_regex ".gen.go,_test.go" \
+    --build.exclude_dir ".git,tmp,internal/gen,$PG_REPO/gen,tests/testdata,frontend,*.cache" \
     --build.stop_watch "internal/handlers/,internal/services/" \
-    --build.exclude_dir "*.cache,frontend" \
-    --build.delay 1000 |
+    --build.delay 1000 \
+    --build.exclude_unchanged "true" |
     sed -e "s/^/${BLUE}[Air]${OFF} /"
   # TODO compose
 }
@@ -253,31 +256,42 @@ x.run-frontend() {
     sed -e "s/^/${GREEN}[Vite]${OFF} /"
 }
 
+# air and vite hot reload working fine while watching
 # Run all project services with hot reload enabled.
 x.run-all-hot-reload() {
-  pids=()
-  next_allowed_run=$(date +%s)
-  latency=2
-  inotifywait \
-    --monitor . \
-    --event=modify \
-    --format='%T %f' \
-    --timefmt='%s' |
-    while read -r event; do
-      event_time=$(echo "$event" | awk '{print $1}')
-      event_file=$(echo "$event" | awk '{print $2}')
-      if [[ $event_time -ge $next_allowed_run && $event_file = "openapi.yaml" ]]; then
-        next_allowed_run=$(date --date="${latency}sec" +%s)
-        echo "processes to kill: ${pids[*]}"
-        # kill -INT $pid
-        sleep 10 &
-        pids+=("$!")
-        # x.run-hot-reload &
-        # x.run-frontend &
-        sleep $latency # Wait for additional changes
-      fi
-    done
+  # to be replaced by dcompose up --build when oas changes
+  run_hot_reload() {
+    x.run-hot-reload &
+    pids+=("$!")
+    x.run-frontend &
+    pids+=("$!")
+  }
 
+  run_hot_reload
+
+  next_allowed_run=$(date +%s)
+  latency=3
+  # close_write event, else duplicated, tripl. events -> race condition
+  while true; do
+    inotifywait \
+      --monitor ./openapi.yaml \
+      --event=close_write \
+      --format='%T %f' \
+      --timefmt='%s' |
+      while read -r event_time event_file || sleep $latency; do
+        if [[ $event_time -ge $next_allowed_run ]]; then
+          next_allowed_run=$(date --date="${latency}sec" +%s)
+
+          for pid in "${pids[@]}"; do
+            # air and vite spawn processes as well, need to kill those (whose parent is pid), kill $pid will not kill children. pkill -P would also work
+            kill $(list_descendants $pid)
+          done
+          pids=()
+
+          run_hot_reload
+        fi
+      done
+  done
 }
 
 # Ensure no breaking changes to the OpenAPI spec in the same version are present.

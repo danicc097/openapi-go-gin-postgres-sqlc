@@ -18,10 +18,10 @@ export default ({ mode }) => {
 
     server: {
       port: Number(process.env.VITE_PORT) || 5143,
-      // hmr: {
-      //   protocol: 'wss',
-      //   clientPort: 9443,
-      // },
+      hmr: {
+        protocol: 'wss',
+        // clientPort: 9443,
+      },
     },
     define: {
       'process.env.NODE_ENV': `"${mode}"`,

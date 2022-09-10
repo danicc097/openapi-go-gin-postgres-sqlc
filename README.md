@@ -12,31 +12,12 @@ generator templates and a sensible post-generation tool that allows you to use c
 structured, easily extendable code by smartly merging nodes
 from your modified and generated files' abstract syntax trees.
 
-You also get dynamic ``x`` function and ``x`` flags and arguments documentation for
-free from your own source and comments
+You also get dynamic ``x`` function and ``x`` flags arguments documentation _and_ autocompletion for
+free (from your own source and comments)
 so they're always up to date without any repetitive work: add/remove functions
 and flags at will.
 
 ![](.github/autodocs.png)
-
-
-## OpenAPI schema magic fields
-
-- **Struct tags** with `x-go-custom-tag` in schema fields get appended as is. Example (gin-specific):
-```YAML
-x-go-custom-tag: binding:"required[,customValidator]" [key:val ]
-# Special case for ``format: date-time`` fields
-# form data only:
-x-go-custom-tag: time_format:"2006-01-02"
-# the rest require custom unmarshalling if time is not RFC3339:
-# see https://github.com/gin-gonic/gin/issues/1193
-# there are some quirks to take into account as well:
-# see https://segmentfault.com/a/1190000022264001
-x-go-custom-tag: binding:"required"
-```
-
-Any custom field with an `x-*` name pattern in the OpenAPI spec will be available in
-`vendorExtensions` in openapi-generator's mustache templates.
 
 ## TODOs
 
