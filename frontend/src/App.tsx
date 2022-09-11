@@ -10,8 +10,8 @@ import { Prism } from '@mantine/prism'
 import type { Decoder } from 'src/client-validator/gen/helpers'
 import type { schemas } from 'src/types/schema'
 import type { ValidationErrors } from 'src/client-validator/validate'
-import { useCreateUserForm } from 'src/hooks/createUserForm'
 import { useForm } from '@mantine/form'
+import { validateField } from 'src/services/validation'
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
@@ -46,10 +46,11 @@ const REQUIRED_USER_CREATE_KEYS: Record<RequiredUserCreateKeys, boolean> = {
 function App() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
-  const [errors, setError] = useState<ValidationErrors>(null)
+  // TODO object with validation errors and api response errors
+  // and extracted accordingly
+  const [calloutErrors, setCalloutError] = useState<ValidationErrors>(null)
 
   const { addToast } = useUI()
-  // const { form, defaultForm, setFormErrors, setForm, formErrors } = useCreateUserForm()
   const [createUser, createUserResult] = useCreateUserMutation()
 
   type CreateUserRequestForm = schemas['CreateUserRequest'] & {
@@ -60,58 +61,30 @@ function App() {
     initialValues: { username: '', email: '', password: '', passwordConfirm: '' },
     validateInputOnChange: true,
     validate: {
-      username: (value) => validateField(CreateUserRequestDecoder, 'username', value),
-      email: (value) => validateField(CreateUserRequestDecoder, 'email', value),
-      password: (value) => validateField(CreateUserRequestDecoder, 'password', value),
+      username: (v, vv, path) => validateField(CreateUserRequestDecoder, path, vv),
+      email: (v, vv, path) => validateField(CreateUserRequestDecoder, path, vv),
+      password: (v, vv, path) => validateField(CreateUserRequestDecoder, path, vv),
+      passwordConfirm: (v, vv, path) => (v !== vv.password ? 'Passwords do not match' : null),
     },
   })
 
-  const validateField = (decoder: Decoder<any>, key: string, value: string): string => {
-    try {
-      decoder.decode({
-        [key]: value,
-      })
-      return ''
-    } catch (error) {
-      const vErrors: ValidationErrors = error.validationErrors
-      let errMsg = ''
-      vErrors?.errors?.forEach((v) => {
-        if (v.invalidParams.name === key) {
-          errMsg = ' '
-        }
-      })
-
-      return errMsg
-    }
-  }
-
-  // TODO
-  // onChange: validate the whole thing on each field change,
-  // and for each field that has validation error
-  // AND value != "" --> set formError[field] = true
-  // onSubmit: renderError with everything, and set formError[field] = true for all
-  // of them
   const fetchData = async () => {
     try {
-      const createUserRequest = CreateUserRequestDecoder.decode({
-        email: email,
-        password: 'password',
-        username: username,
-      })
+      const createUserRequest = CreateUserRequestDecoder.decode(form.values)
 
       const payload = await createUser(createUserRequest).unwrap()
       console.log('fulfilled', payload)
       addToast('done')
-      setError(null)
+      setCalloutError(null)
     } catch (error) {
       if (error.validationErrors) {
-        setError(error.validationErrors)
+        setCalloutError(error.validationErrors)
         // TODO setFormErrors instead
         console.error(error)
         addToast('error')
         return
       }
-      setError(error)
+      setCalloutError(error)
     }
   }
 
@@ -124,14 +97,14 @@ function App() {
 
   // TODO handle ValidationErrors(🆗) and api response errors
   const renderErrors = () =>
-    errors ? (
+    calloutErrors ? (
       <Alert
         style={{ textAlign: 'start' }}
         icon={<IconAlertCircle size={16} />}
-        title={`${errors.message}`}
+        title={`${calloutErrors.message}`}
         color="red"
       >
-        {errors?.errors?.map((v, i) => (
+        {calloutErrors?.errors?.map((v, i) => (
           <p key={i} style={{ margin: '4px' }}>
             • <strong>{v.invalidParams.name}</strong>: {v.invalidParams.reason}
           </p>
@@ -139,9 +112,9 @@ function App() {
       </Alert>
     ) : null
 
-  const hasErrors = (field: string): boolean => {
+  const hasValidationErrors = (field: string): boolean => {
     let hasError = false
-    errors?.errors?.forEach((v) => {
+    calloutErrors?.errors?.forEach((v) => {
       if (v.invalidParams.name === field) {
         hasError = true
       }
@@ -150,13 +123,32 @@ function App() {
     return hasError
   }
 
-  const handleSubmit = async (values, e) => {
-    e.preventDefault()
+  const handleError = (errors: typeof form.errors) => {
+    if (Object.values(errors).some((v) => v)) {
+      console.log('some errors found')
+
+      // TODO validate everything and show ALL validation errors
+      // (we dont want to show very long error messages in each form
+      // field, just that the field has an error,
+      // so all validation errors are aggregated with full description in a callout)
+      try {
+        CreateUserRequestDecoder.decode(form.values)
+        setCalloutError(null)
+      } catch (error) {
+        if (error.validationErrors) {
+          setCalloutError(error.validationErrors)
+          console.error(error)
+          return
+        }
+        setCalloutError(error)
+      }
+    }
+  }
+
+  const handleSubmit = async (values: typeof form.values, e) => {
     console.log(values)
-    // TODO validate everything (in client) regardless of  form errors
-    // and show validation errors (we dont want to show very long error messages in each form
-    // field, so all validation errors are aggregated with full description in a callout)
-    fetchData()
+    e.preventDefault()
+    await fetchData()
   }
 
   return (
@@ -166,8 +158,8 @@ function App() {
         <div>{renderErrors()}</div>
       </div>
       {/* optional handleValidationFailure */}
-      <form onSubmit={form.onSubmit(handleSubmit)}>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+      <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+        <form onSubmit={form.onSubmit(handleSubmit, handleError)}>
           <TextInput
             withAsterisk={REQUIRED_USER_CREATE_KEYS['email']}
             label="Email"
@@ -216,8 +208,8 @@ function App() {
           <Group position="right" mt="md">
             <Button type="submit">Submit</Button>
           </Group>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   )
 }
