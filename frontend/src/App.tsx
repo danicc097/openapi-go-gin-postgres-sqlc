@@ -8,6 +8,7 @@ import { Alert, Button, Group, Text, TextInput } from '@mantine/core'
 import { IconAlertCircle } from '@tabler/icons'
 import { ValidationErrors } from 'src/client-validator/validate'
 import { Prism } from '@mantine/prism'
+import { components } from 'src/types/schema'
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
@@ -30,6 +31,14 @@ openapi -> gen (rtk + client side validation) -> automatic form validation and q
 code highl. - https://mantine.dev/others/prism/
 
 */
+
+type RequiredUserCreateKeys = RequiredKeys<components['schemas']['CreateUserRequest']>
+
+const REQUIRED_USER_CREATE_KEYS: Record<RequiredUserCreateKeys, boolean> = {
+  username: true,
+  email: true,
+  password: true,
+}
 
 function App() {
   const [username, setUsername] = useState('')
@@ -88,7 +97,7 @@ function App() {
     ) : null
 
   return (
-    <div className="App" style={{ maxWidth: '500px', minWidth: '400px' }}>
+    <div className="App" style={{ maxWidth: '500px', minWidth: '400px', textAlign: 'left' }}>
       <div>
         <div>{renderResult()}</div>
         <div>{renderErrors()}</div>
@@ -100,8 +109,26 @@ function App() {
         }}
       >
         <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-          <TextInput label="Email" onChange={(e) => setEmail(e.target.value)} placeholder="mail@example.com" />
-          <TextInput label="Username" onChange={(e) => setUsername(e.target.value)} placeholder="username" />
+          <TextInput
+            withAsterisk={REQUIRED_USER_CREATE_KEYS['email']}
+            label="Email"
+            name="email"
+            error={errors?.errors?.map((v) => {
+              if (v.invalidParams.name === 'email') return true
+            })}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="mail@example.com"
+          />
+          <TextInput
+            withAsterisk={REQUIRED_USER_CREATE_KEYS['username']}
+            label="Username"
+            name="username"
+            error={errors?.errors?.map((v) => {
+              if (v.invalidParams.name === 'username') return true
+            })}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="username"
+          />
           <Group position="right" mt="md">
             <Button type="submit">Submit</Button>
           </Group>

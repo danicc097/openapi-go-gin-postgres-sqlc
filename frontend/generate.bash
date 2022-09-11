@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCHEMA_OUT="src/types/schema.ts"
+SCHEMA_OUT="src/types/schema.d.ts"
 
 mkdir -p src/redux/slices/gen
 mkdir -p src/types

@@ -53,6 +53,6 @@
     "openapi-typescript-validator": "github:danicc097/openapi-typescript-validator",
     "prettier": "^2.7.1",
     "typescript": "^4.8.2",
-    "vite": "^3.0.9"
+    "vite": "3.0.9"
   }
 }
