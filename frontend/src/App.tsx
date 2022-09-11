@@ -11,7 +11,7 @@ import type { Decoder } from 'src/client-validator/gen/helpers'
 import type { schemas } from 'src/types/schema'
 import type { ValidationErrors } from 'src/client-validator/validate'
 import { useForm } from '@mantine/form'
-import { validateField } from 'src/services/validation'
+import { validateField } from 'src/utils/validation'
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
@@ -96,6 +96,13 @@ function App() {
     ) : null
 
   // TODO handle ValidationErrors(🆗) and api response errors
+  // "error": {
+  // 	"status": 409,  -->statusCodeToReasonPhrase[statusCode]
+  // 	"data": {
+  // 		"error": "error creating user",
+  // 		"message": "username --- already exists"
+  // 	}
+  // },
   const renderErrors = () =>
     calloutErrors ? (
       <Alert
@@ -146,7 +153,6 @@ function App() {
   }
 
   const handleSubmit = async (values: typeof form.values, e) => {
-    console.log(values)
     e.preventDefault()
     await fetchData()
   }
@@ -157,7 +163,6 @@ function App() {
         <div>{renderResult()}</div>
         <div>{renderErrors()}</div>
       </div>
-      {/* optional handleValidationFailure */}
       <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
         <form onSubmit={form.onSubmit(handleSubmit, handleError)}>
           <TextInput
@@ -165,45 +170,24 @@ function App() {
             label="Email"
             placeholder="mail@example.com"
             {...form.getInputProps('email')}
-            // TODO formErrors[field] instead of true (e.g. passwords not matching is
-            // outside openapi spec)
-            // error={hasErrors('email') ? true : null}
-            // // TODO abstract generic onChange(name, value, decoder)
-            // onChange={(e) => {
-            //   setEmail(e.target.value)
-            // }}
           />
           <TextInput
             withAsterisk={REQUIRED_USER_CREATE_KEYS['username']}
             label="Username"
             placeholder="username"
             {...form.getInputProps('username')}
-            // error={hasErrors('username') ? true : null}
-            // onChange={(e) => {
-            //   setUsername(e.target.value)
-            // }}
           />
           <PasswordInput
             withAsterisk={REQUIRED_USER_CREATE_KEYS['password']}
             label="Password"
             placeholder="password"
             {...form.getInputProps('password')}
-            // value={form.password}
-            // error={hasErrors('password') ? true : null}
-            // onChange={(e) => {
-            //   setUsername(e.target.value)
-            // }}
           />
           <PasswordInput
             withAsterisk={REQUIRED_USER_CREATE_KEYS['passwordConfirm']}
             label="Confirm password"
             placeholder="password"
             {...form.getInputProps('passwordConfirm')}
-            // value={form.passwordConfirm}
-            // error={hasErrors('password') ? true : null}
-            // onChange={(e) => {
-            //   e.target.value
-            // }}
           />
           <Group position="right" mt="md">
             <Button type="submit">Submit</Button>

@@ -1,4 +1,7 @@
 /* eslint-disable */
+// @ts-nocheck
+/* eslint-disable */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'

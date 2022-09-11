@@ -81,7 +81,7 @@ devDependencies:
   eslint-plugin-react-hooks: 4.6.0_eslint@8.23.0
   eslint-plugin-testing-library: 5.6.1_yqf6kl63nyoq5megxukfnom5rm
   openapi-types: 12.0.2
-  openapi-typescript-validator: github.com/danicc097/openapi-typescript-validator/b42d86f6360d2661ee0cd1351268cfd955748870
+  openapi-typescript-validator: github.com/danicc097/openapi-typescript-validator/cd83d434bd9b924f157f16172f1ffacb36d53f8a
   prettier: 2.7.1
   typescript: 4.8.2
   vite: 3.0.9
@@ -988,7 +988,7 @@ packages:
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 18.7.15
+      '@types/node': 18.7.16
     dev: true
 
   /@types/hoist-non-react-statics/3.3.1:
@@ -1022,8 +1022,8 @@ packages:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
     dev: true
 
-  /@types/lodash/4.14.184:
-    resolution: {integrity: sha512-RoZphVtHbxPZizt4IcILciSWiC6dcn+eZ8oX9IWEYfDMcocdd42f7NPI6fQj+6zI8y4E0L7gu2pcZKLGTRaV9Q==}
+  /@types/lodash/4.14.185:
+    resolution: {integrity: sha512-evMDG1bC4rgQg4ku9tKpuMh5iBNEwNa3tf9zRHdP1qlv+1WUg44xat4IxCE14gIpZRGUUWAx2VhItCZc25NfMA==}
     dev: true
 
   /@types/minimatch/5.1.2:
@@ -1032,6 +1032,10 @@ packages:
 
   /@types/node/18.7.15:
     resolution: {integrity: sha512-XnjpaI8Bgc3eBag2Aw4t2Uj/49lLBSStHWfqKvIuXD7FIrZyMLWp8KuAFHAqxMZYTF9l08N1ctUn9YNybZJVmQ==}
+
+  /@types/node/18.7.16:
+    resolution: {integrity: sha512-EQHhixfu+mkqHMZl1R2Ovuvn47PUw18azMJOTwSZr9/fhzHNGXAJ0ma0dayRVchprpCj0Kc1K1xKoWaATWF1qg==}
+    dev: true
 
   /@types/parse-json/4.0.0:
     resolution: {integrity: sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==}
@@ -2964,7 +2968,7 @@ packages:
     dependencies:
       '@bcherny/json-schema-ref-parser': 9.0.9
       '@types/json-schema': 7.0.11
-      '@types/lodash': 4.14.184
+      '@types/lodash': 4.14.185
       '@types/prettier': 2.7.0
       cli-color: 2.0.3
       get-stdin: 8.0.0
@@ -4263,8 +4267,8 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  github.com/danicc097/openapi-typescript-validator/b42d86f6360d2661ee0cd1351268cfd955748870:
-    resolution: {tarball: https://codeload.github.com/danicc097/openapi-typescript-validator/tar.gz/b42d86f6360d2661ee0cd1351268cfd955748870}
+  github.com/danicc097/openapi-typescript-validator/cd83d434bd9b924f157f16172f1ffacb36d53f8a:
+    resolution: {tarball: https://codeload.github.com/danicc097/openapi-typescript-validator/tar.gz/cd83d434bd9b924f157f16172f1ffacb36d53f8a}
     name: openapi-typescript-validator
     version: 4.0.0
     prepare: true

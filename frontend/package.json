@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm run generate && vite",
+    "tsc": "tsc ",
     "build": "pnpm run generate && tsc && vite build",
     "preview": "vite preview",
     "generate": "./generate.bash",
