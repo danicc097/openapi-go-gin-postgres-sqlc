@@ -4,11 +4,12 @@ import './App.css'
 import { CreateUserRequestDecoder } from './client-validator/gen/decoders'
 import { useCreateUserMutation } from './redux/slices/gen/internalApi'
 import { useUI } from 'src/hooks/ui'
-import { Alert, Button, Group, Text, TextInput } from '@mantine/core'
+import { Alert, Button, Group, PasswordInput, Text, TextInput } from '@mantine/core'
 import { IconAlertCircle } from '@tabler/icons'
-import { ValidationErrors } from 'src/client-validator/validate'
 import { Prism } from '@mantine/prism'
-import { components } from 'src/types/schema'
+import { Decoder } from 'src/client-validator/gen/helpers'
+import type { schemas } from 'src/types/schema'
+import type { ValidationErrors } from 'src/client-validator/validate'
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
@@ -32,7 +33,7 @@ code highl. - https://mantine.dev/others/prism/
 
 */
 
-type RequiredUserCreateKeys = RequiredKeys<components['schemas']['CreateUserRequest']>
+type RequiredUserCreateKeys = RequiredKeys<schemas['CreateUserRequest']>
 
 const REQUIRED_USER_CREATE_KEYS: Record<RequiredUserCreateKeys, boolean> = {
   username: true,
@@ -48,6 +49,12 @@ function App() {
   const { addToast } = useUI()
   const [createUser, createUserResult] = useCreateUserMutation()
 
+  // TODO
+  // onChange: validate the whole thing on each field change,
+  // and for each field that has validation error
+  // AND value != "" --> set formError[field] = true
+  // onSubmit: renderError with everything, and set formError[field] = true for all
+  // of them
   const fetchData = async () => {
     try {
       const createUserRequest = CreateUserRequestDecoder.decode({
@@ -96,38 +103,72 @@ function App() {
       </Alert>
     ) : null
 
+  const hasErrors = (field: string): boolean => {
+    let hasError = false
+    errors?.errors?.forEach((v) => {
+      if (v.invalidParams.name === field) {
+        hasError = true
+      }
+    })
+
+    return hasError
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    fetchData()
+  }
+
   return (
     <div className="App" style={{ maxWidth: '500px', minWidth: '400px', textAlign: 'left' }}>
       <div>
         <div>{renderResult()}</div>
         <div>{renderErrors()}</div>
       </div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          fetchData()
-        }}
-      >
+      <form onSubmit={handleSubmit}>
         <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
           <TextInput
             withAsterisk={REQUIRED_USER_CREATE_KEYS['email']}
             label="Email"
             name="email"
-            error={errors?.errors?.map((v) => {
-              if (v.invalidParams.name === 'email') return true
-            })}
-            onChange={(e) => setEmail(e.target.value)}
+            // TODO formErrors[field] instead of true (e.g. passwords not matching is
+            // outside openapi spec)
+            error={hasErrors('email') ? true : null}
+            // TODO abstract generic onChange(name, value, decoder)
+            onChange={(e) => {
+              setEmail(e.target.value)
+            }}
             placeholder="mail@example.com"
           />
           <TextInput
             withAsterisk={REQUIRED_USER_CREATE_KEYS['username']}
             label="Username"
             name="username"
-            error={errors?.errors?.map((v) => {
-              if (v.invalidParams.name === 'username') return true
-            })}
-            onChange={(e) => setUsername(e.target.value)}
+            error={hasErrors('username') ? true : null}
+            onChange={(e) => {
+              setUsername(e.target.value)
+            }}
             placeholder="username"
+          />
+          <PasswordInput
+            withAsterisk={REQUIRED_USER_CREATE_KEYS['password']}
+            label="Password"
+            name="password"
+            error={hasErrors('password') ? true : null}
+            onChange={(e) => {
+              setUsername(e.target.value)
+            }}
+            placeholder="password"
+          />
+          <PasswordInput
+            withAsterisk={REQUIRED_USER_CREATE_KEYS['password']}
+            label="Confirm password"
+            name="password"
+            error={hasErrors('password') ? true : null}
+            onChange={(e) => {
+              setUsername(e.target.value)
+            }}
+            placeholder="password"
           />
           <Group position="right" mt="md">
             <Button type="submit">Submit</Button>
