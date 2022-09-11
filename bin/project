@@ -278,7 +278,7 @@ x.run-all-hot-reload() {
       --event=close_write \
       --format='%T %f' \
       --timefmt='%s' |
-      while read -r event_time event_file || sleep $latency; do
+      while read -r event_time event_file 2>/dev/null || sleep $latency; do
         if [[ $event_time -ge $next_allowed_run ]]; then
           next_allowed_run=$(date --date="${latency}sec" +%s)
 

@@ -7,9 +7,11 @@ import { useUI } from 'src/hooks/ui'
 import { Alert, Button, Group, PasswordInput, Text, TextInput } from '@mantine/core'
 import { IconAlertCircle } from '@tabler/icons'
 import { Prism } from '@mantine/prism'
-import { Decoder } from 'src/client-validator/gen/helpers'
+import type { Decoder } from 'src/client-validator/gen/helpers'
 import type { schemas } from 'src/types/schema'
 import type { ValidationErrors } from 'src/client-validator/validate'
+import { useCreateUserForm } from 'src/hooks/createUserForm'
+import { useForm } from '@mantine/form'
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
@@ -47,7 +49,41 @@ function App() {
   const [errors, setError] = useState<ValidationErrors>(null)
 
   const { addToast } = useUI()
+  // const { form, defaultForm, setFormErrors, setForm, formErrors } = useCreateUserForm()
   const [createUser, createUserResult] = useCreateUserMutation()
+
+  type CreateUserRequestForm = schemas['CreateUserRequest'] & {
+    passwordConfirm: string
+  }
+
+  const form = useForm<CreateUserRequestForm>({
+    initialValues: { username: '', email: '', password: '', passwordConfirm: '' },
+    validateInputOnChange: true,
+    validate: {
+      username: (value) => validateField(CreateUserRequestDecoder, 'username', value),
+      email: (value) => validateField(CreateUserRequestDecoder, 'email', value),
+      password: (value) => validateField(CreateUserRequestDecoder, 'password', value),
+    },
+  })
+
+  const validateField = (decoder: Decoder<any>, key: string, value: string): string => {
+    try {
+      decoder.decode({
+        [key]: value,
+      })
+      return ''
+    } catch (error) {
+      const vErrors: ValidationErrors = error.validationErrors
+      let errMsg = ''
+      vErrors?.errors?.forEach((v) => {
+        if (v.invalidParams.name === key) {
+          errMsg = ' '
+        }
+      })
+
+      return errMsg
+    }
+  }
 
   // TODO
   // onChange: validate the whole thing on each field change,
@@ -114,8 +150,12 @@ function App() {
     return hasError
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (values, e) => {
     e.preventDefault()
+    console.log(values)
+    // TODO validate everything (in client) regardless of  form errors
+    // and show validation errors (we dont want to show very long error messages in each form
+    // field, so all validation errors are aggregated with full description in a callout)
     fetchData()
   }
 
@@ -125,50 +165,53 @@ function App() {
         <div>{renderResult()}</div>
         <div>{renderErrors()}</div>
       </div>
-      <form onSubmit={handleSubmit}>
+      {/* optional handleValidationFailure */}
+      <form onSubmit={form.onSubmit(handleSubmit)}>
         <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
           <TextInput
             withAsterisk={REQUIRED_USER_CREATE_KEYS['email']}
             label="Email"
-            name="email"
+            placeholder="mail@example.com"
+            {...form.getInputProps('email')}
             // TODO formErrors[field] instead of true (e.g. passwords not matching is
             // outside openapi spec)
-            error={hasErrors('email') ? true : null}
-            // TODO abstract generic onChange(name, value, decoder)
-            onChange={(e) => {
-              setEmail(e.target.value)
-            }}
-            placeholder="mail@example.com"
+            // error={hasErrors('email') ? true : null}
+            // // TODO abstract generic onChange(name, value, decoder)
+            // onChange={(e) => {
+            //   setEmail(e.target.value)
+            // }}
           />
           <TextInput
             withAsterisk={REQUIRED_USER_CREATE_KEYS['username']}
             label="Username"
-            name="username"
-            error={hasErrors('username') ? true : null}
-            onChange={(e) => {
-              setUsername(e.target.value)
-            }}
             placeholder="username"
+            {...form.getInputProps('username')}
+            // error={hasErrors('username') ? true : null}
+            // onChange={(e) => {
+            //   setUsername(e.target.value)
+            // }}
           />
           <PasswordInput
             withAsterisk={REQUIRED_USER_CREATE_KEYS['password']}
             label="Password"
-            name="password"
-            error={hasErrors('password') ? true : null}
-            onChange={(e) => {
-              setUsername(e.target.value)
-            }}
             placeholder="password"
+            {...form.getInputProps('password')}
+            // value={form.password}
+            // error={hasErrors('password') ? true : null}
+            // onChange={(e) => {
+            //   setUsername(e.target.value)
+            // }}
           />
           <PasswordInput
-            withAsterisk={REQUIRED_USER_CREATE_KEYS['password']}
+            withAsterisk={REQUIRED_USER_CREATE_KEYS['passwordConfirm']}
             label="Confirm password"
-            name="password"
-            error={hasErrors('password') ? true : null}
-            onChange={(e) => {
-              setUsername(e.target.value)
-            }}
             placeholder="password"
+            {...form.getInputProps('passwordConfirm')}
+            // value={form.passwordConfirm}
+            // error={hasErrors('password') ? true : null}
+            // onChange={(e) => {
+            //   e.target.value
+            // }}
           />
           <Group position="right" mt="md">
             <Button type="submit">Submit</Button>
