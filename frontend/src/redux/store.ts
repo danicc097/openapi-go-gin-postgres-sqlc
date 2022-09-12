@@ -1,10 +1,12 @@
 import { configureStore, ThunkAction, Action, Store } from '@reduxjs/toolkit'
+import { internalApi } from 'src/redux/slices/gen/internalApi'
 import rootReducer from './rootReducer'
 
 // thunk mw already in rtk's configureStore
 const store = configureStore({
   reducer: rootReducer,
   ...(import.meta.env.NODE_ENV === 'production' && { devTools: false }),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(internalApi.middleware),
 })
 
 export default function configureReduxStore() {

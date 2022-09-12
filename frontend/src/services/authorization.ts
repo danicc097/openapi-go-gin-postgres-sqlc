@@ -1,4 +1,4 @@
-import { components } from '../types/schema'
+import type { components } from '../types/schema'
 
 type RolePermissions = {
   [key in components['schemas']['User']['role']]: components['schemas']['User']['role'][]

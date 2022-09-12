@@ -16,3 +16,9 @@ go.work*
 whiteboard.excalidraw
 heredoc-example
 file-to-watch
+
+.env
+.env.prod
+.env.production
+.env.dev
+.env.development

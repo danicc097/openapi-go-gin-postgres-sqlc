@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm run generate && vite",
+    "tsc": "tsc ",
     "build": "pnpm run generate && tsc && vite build",
     "preview": "vite preview",
     "generate": "./generate.bash",
@@ -15,6 +16,7 @@
   "dependencies": {
     "@emotion/react": "^11.10.4",
     "@mantine/core": "^5.3.0",
+    "@mantine/form": "^5.3.0",
     "@mantine/hooks": "^5.3.0",
     "@mantine/notifications": "^5.3.0",
     "@mantine/prism": "^5.3.0",
@@ -53,6 +55,6 @@
     "openapi-typescript-validator": "github:danicc097/openapi-typescript-validator",
     "prettier": "^2.7.1",
     "typescript": "^4.8.2",
-    "vite": "^3.0.9"
+    "vite": "3.0.9"
   }
 }
