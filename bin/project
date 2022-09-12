@@ -25,7 +25,7 @@ SPEC="openapi.yaml"
 GEN_OUT_DIR="internal"
 TEMPLATE_DIR="internal/go-gin-server-templates"
 PWD="$(pwd)"
-ENV_FILE=".env"
+ENV_FILE=".env.dev"
 BIN_DIR=$(dirname "$0")
 PG_REPO="internal/repos/postgresql"
 
@@ -133,12 +133,6 @@ x.generate.xo() {
   )
 }
 
-# Apply bundle overrides on Swagger UI.
-x.sync-swagger-ui() {
-  cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
-  cp "$SPEC" "$PWD"/internal/static/swagger-ui
-}
-
 # Generate mocks for specified interfaces. Runs are cached to `cachedir`.
 # Args: cachedir
 x.generate.counterfeiter() {
@@ -168,7 +162,6 @@ x.generate() {
   x.generate.counterfeiter "$cache" &
   x.generate.sqlc &
   x.generate.xo &
-  x.sync-swagger-ui &
   x.postgen "$cache" &
   wait
 }
@@ -204,7 +197,7 @@ x.compose-up() {
 # Test the entire project. Accepts `go test` parameters.
 # Args: [...]
 x.test() {
-  x.compose-up
+  run_shared_services
   x.generate
   create_test_database
   godotenv -f "$ENV_FILE" go test $@ ./...
@@ -230,7 +223,7 @@ x.run() {
 
 # Run backend with hot-reloading.
 x.run-hot-reload() {
-  x.compose-up
+  run_shared_services
   # TODO new include_files flag in fork, e.g. for openapi.yaml.
   # else generated .yaml files trigger rebuild.
   # --build.include_files "openapi.yaml" \
@@ -297,16 +290,20 @@ x.run-all-hot-reload() {
 x.run-docker-prod() {
   local compose_args="-d --build"
   local env="prod"
-  source ".env.$env"
+  (
+    source ".env.$env"
 
-  docker network create traefik-net 2>/dev/null || true
-  run_shared_services
-  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
-    --project-name "$PROJECT_PREFIX"_"$env" \
-    -f docker-compose.yml \
-    -f docker-compose."$env".yml \
-    --env-file ".env.$env" \
-    up $compose_args
+    x.generate
+
+    docker network create traefik-net 2>/dev/null || true
+    run_shared_services
+    DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
+      --project-name "$PROJECT_PREFIX"_"$env" \
+      -f docker-compose.yml \
+      -f docker-compose."$env".yml \
+      --env-file ".env.$env" \
+      up $compose_args
+  )
 }
 
 run_shared_services() {

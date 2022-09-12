@@ -26,4 +26,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, stderr.String())
 		os.Exit(1)
 	}
+
+	url := "https://openapi.prod.localhost/api/v2/openapi.yaml"
+	postgen.SetupSwaggerUI(url)
 }

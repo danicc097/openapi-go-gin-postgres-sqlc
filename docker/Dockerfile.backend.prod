@@ -17,7 +17,7 @@ RUN go build -o main ./cmd/rest-server
 # RUN chown -R $DOCKER_UID:$DOCKER_GID /go/src
 # RUN chmod -R 775 /go/src
 
-FROM scratch AS runtime
+FROM alpine:3.15 AS runtime
 
 ENV GIN_MODE=release
 COPY --from=build /go/src/main ./
