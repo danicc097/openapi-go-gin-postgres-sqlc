@@ -18,29 +18,14 @@ services:
       PGDATA: /var/lib/postgresql/data
     volumes:
       - ./db/postgresql.conf:/etc/postgresql/postgresql.conf
-      - ./.psqlrc:/var/lib/postgresql/.psqlrc
+      - ./db/.psqlrc:/var/lib/postgresql/.psqlrc
     command: postgres -c "config_file=/etc/postgresql/postgresql.conf"
     ports:
       - ${DB_PORT:?not set}:5432
     env_file:
-      - .env
+      - .env.${APP_ENV:?not set}
     restart: unless-stopped
     logging: *default-logging
-  vault:
-    image: vault:1.9.8
-    ports:
-      - "8300:8300"
-    cap_add:
-      - IPC_LOCK
-    restart: unless-stopped
-    environment:
-      VAULT_DEV_ROOT_TOKEN_ID: myroot
-      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8300"
-  redis:
-    image: redis:6.2.3-alpine3.13
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
 
 networks:
   traefik-net:

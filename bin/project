@@ -294,6 +294,29 @@ x.run-all-hot-reload() {
   done
 }
 
+x.run-docker-prod() {
+  local compose_args="-d --build"
+  local env="prod"
+  source ".env.$env"
+
+  docker network create traefik-net 2>/dev/null || true
+  run_shared_services
+  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
+    --project-name "$PROJECT_PREFIX"_"$env" \
+    -f docker-compose.yml \
+    -f docker-compose."$env".yml \
+    --env-file ".env.$env" \
+    up $compose_args
+}
+
+run_shared_services() {
+  docker-compose --project-name "$PROJECT_PREFIX" \
+    -f "docker/redis/docker-compose.yml" \
+    -f "docker/vault/docker-compose.yml" \
+    --env-file ".env.prod" \
+    up -d --remove-orphans
+}
+
 # Ensure no breaking changes to the OpenAPI spec in the same version are present.
 x.release() {
   x.diff-openapi-spec

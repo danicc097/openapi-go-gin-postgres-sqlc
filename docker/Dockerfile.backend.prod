@@ -1,0 +1,24 @@
+FROM golang:1.18-alpine AS build
+
+ARG DOCKER_UID
+ARG DOCKER_GID
+
+RUN apk --no-cache add ca-certificates
+WORKDIR /go/src
+COPY ../go.mod .
+COPY ../go.sum .
+RUN go get -d -v ./...
+COPY ../. .
+ENV CGO_ENABLED=0
+RUN go build -o main ./cmd/rest-server
+
+# RUN groupadd -g $DOCKER_GID rootless
+# RUN useradd -m rootless -u $DOCKER_UID -g $DOCKER_GID
+# RUN chown -R $DOCKER_UID:$DOCKER_GID /go/src
+# RUN chmod -R 775 /go/src
+
+FROM scratch AS runtime
+
+ENV GIN_MODE=release
+COPY --from=build /go/src/main ./
+COPY --from=build /go/src/openapi.yaml ./
