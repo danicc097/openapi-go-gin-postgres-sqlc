@@ -23,7 +23,12 @@ func TestErrorCause(t *testing.T) {
 	assert.Equal(t, "root", ierr.Cause().Error())
 
 	err = internal.NewErrorf(internal.ErrorCodeUnknown, "root")
-	err = fmt.Errorf("error validating route: %s", err.Error())
+	err = fmt.Errorf("wrapper not an internal.Error %s", err.Error())
 	errors.As(err, &ierr)
 	assert.Equal(t, "root", ierr.Cause().Error())
+
+	err = fmt.Errorf("not an internal.Error")
+	err = internal.WrapErrorf(err, internal.ErrorCodeUnknown, "root")
+	errors.As(err, &ierr)
+	assert.Equal(t, "not an internal.Error", ierr.Cause().Error())
 }
