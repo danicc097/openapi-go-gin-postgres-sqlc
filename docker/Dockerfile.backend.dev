@@ -3,14 +3,15 @@ FROM golang:1.18-alpine AS build
 ARG DOCKER_UID
 ARG DOCKER_GID
 
+# TODO install air and run the same command in x.run-hot-reload in docker-compose's command:
+
 RUN apk --no-cache add ca-certificates
 WORKDIR /go/src
 COPY ../go.* .
 RUN go mod download
 COPY ../. .
 ENV CGO_ENABLED=0
-RUN --mount=type=cache,target=/root/.cache/go-build \
-  go build -o main ./cmd/rest-server
+RUN go build -o main ./cmd/rest-server
 
 # RUN groupadd -g $DOCKER_GID rootless
 # RUN useradd -m rootless -u $DOCKER_UID -g $DOCKER_GID

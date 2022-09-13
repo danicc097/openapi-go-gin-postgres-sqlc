@@ -24,6 +24,7 @@ info:
   version: 2.0.0
 servers:
   - url: https://localhost:8090/v2
+  - url: https://openapi.prod.localhost/api/v2
   # for tests validation middleware to work on random port.
   - url: /v2
 tags:

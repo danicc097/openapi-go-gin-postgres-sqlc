@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -29,12 +30,19 @@ func New(conf *envvar.Configuration) (*pgxpool.Pool, error) {
 
 	// XXX: We will revisit this code in future episodes replacing it with another solution
 	databaseHost := get("POSTGRES_SERVER")
-	databasePort := get("DB_PORT")
 	databaseUsername := get("POSTGRES_USER")
 	databasePassword := get("POSTGRES_PASSWORD")
 	databaseName := get("POSTGRES_DB")
 	databaseSSLMode := get("DATABASE_SSLMODE")
 	// XXX: -
+
+	var databasePort string
+	switch env := os.Getenv("APP_ENV"); env {
+	case "prod":
+		databasePort = get("POSTGRES_PORT") //container
+	default:
+		databasePort = get("DB_PORT")
+	}
 
 	dsn := url.URL{
 		Scheme: "postgres",

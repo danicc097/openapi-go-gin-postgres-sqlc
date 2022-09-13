@@ -125,7 +125,7 @@ x.generate.sqlc() {
 # Does not work with a schema file, database must be up to date.
 x.generate.xo() {
   mkdir -p $PG_REPO/gen/crud
-  xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+  xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
     -o $PG_REPO/gen/crud
 }
 
@@ -197,7 +197,7 @@ x.test() {
   source ".env.$env"
   run_shared_services
   x.generate
-  create_test_database
+  create_database "postgres_test"
   godotenv -f ".env.$env" go test $@ ./...
 }
 
@@ -286,15 +286,18 @@ x.run-all-hot-reload() {
 }
 
 x.run-dockerized() {
+
   source ".env.$env"
 
   local compose_args="-d --build"
   # TODO shared postgres container -> dbname "postgres_$env"
 
-  x.generate
-
   docker network create traefik-net 2>/dev/null || true
   run_shared_services
+
+  create_database "postgres_$env"
+  x.generate
+
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
     --project-name "$PROJECT_PREFIX"_"$env" \
     -f docker-compose."$env".yml \
@@ -318,7 +321,7 @@ x.migrate() {
   source ".env.$env"
   migrate \
     -path db/migrations/ \
-    -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+    -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
     "$@"
 }
 
@@ -332,21 +335,21 @@ x.migrate.create-migration() {
   x.migrate create -ext sql -dir db/migrations/ "$name"
 }
 
-create_test_database() {
+create_database() {
   source ".env.$env"
 
-  local postgres_test_db="postgres_test"
+  db="$1"
 
-  drop_db "$postgres_test_db"
+  drop_db "$db"
 
-  echo "${BLUE}${BOLD}Stopping any running processes for database $postgres_test_db.${OFF}"
+  echo "${BLUE}${BOLD}Stopping any running processes for database $db.${OFF}"
   docker exec -t postgres_db_"$PROJECT_PREFIX" \
     psql --no-psqlrc \
     -U "$POSTGRES_USER" \
     -d "postgres" \
     -c "select pg_terminate_backend(pid) \
         from pg_stat_activity \
-        where datname='$postgres_test_db'"
+        where datname='$db'"
 }
 
 ############## openapi ##############
@@ -652,7 +655,7 @@ while [[ "$#" -gt 0 ]]; do
     # Environment to run commands in. Defaults to "dev".
     # Args: env
     env="$2"
-    echo "env is $env"
+
     valid_envs="dev e2e prod"
     if [[ ! " ${valid_envs[*]} " =~ " $env " ]]; then
       err "Valid environments: $valid_envs"
