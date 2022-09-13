@@ -25,7 +25,7 @@ SPEC="openapi.yaml"
 GEN_OUT_DIR="internal"
 TEMPLATE_DIR="internal/go-gin-server-templates"
 PWD="$(pwd)"
-ENV_FILE=".env.dev"
+env="dev"
 BIN_DIR=$(dirname "$0")
 PG_REPO="internal/repos/postgresql"
 
@@ -67,7 +67,6 @@ x.install-tools() {
   go install github.com/danicc097/air@latest
   go install github.com/xo/xo@latest
   go install github.com/tufin/oasdiff@latest
-  go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
   GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
 }
@@ -125,12 +124,9 @@ x.generate.sqlc() {
 # a Postgres schema.
 # Does not work with a schema file, database must be up to date.
 x.generate.xo() {
-  (
-    source "$ENV_FILE"
-    mkdir -p $PG_REPO/gen/crud
-    xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
-      -o $PG_REPO/gen/crud
-  )
+  mkdir -p $PG_REPO/gen/crud
+  xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+    -o $PG_REPO/gen/crud
 }
 
 # Generate mocks for specified interfaces. Runs are cached to `cachedir`.
@@ -153,6 +149,7 @@ x.generate.counterfeiter() {
 
 # Run all codegen and postgen commands for the project.
 x.generate() {
+  source ".env.$env"
   # TODO --force-regen to any x fn removes all cache dirs
   echo "${MAGENTA}${BOLD}Running codegen and postgen...${OFF}"
   cache=".generate.cache"
@@ -197,10 +194,11 @@ x.compose-up() {
 # Test the entire project. Accepts `go test` parameters.
 # Args: [...]
 x.test() {
+  source ".env.$env"
   run_shared_services
   x.generate
   create_test_database
-  godotenv -f "$ENV_FILE" go test $@ ./...
+  godotenv -f ".env.$env" go test $@ ./...
 }
 
 # Test and build the entire project.
@@ -218,7 +216,7 @@ x.build.windows() {
 # Test, build and run the entire project.
 x.run() {
   x.build
-  ./openapi-go-gin-postgres-sqlc -env="$ENV_FILE"
+  ./openapi-go-gin-postgres-sqlc -env=".env.$env"
 }
 
 # Run backend with hot-reloading.
@@ -231,7 +229,7 @@ x.run-hot-reload() {
   air \
     --build.pre_build_cmd "bin/project generate" \
     --build.cmd "" \
-    --build.bin "go run ./cmd/rest-server/ -env=$ENV_FILE" \
+    --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
     --build.exclude_dir ".git,tmp,internal/gen,$PG_REPO/gen,tests/testdata,frontend,*.cache" \
@@ -287,31 +285,27 @@ x.run-all-hot-reload() {
   done
 }
 
-x.run-docker-prod() {
+x.run-dockerized() {
+  source ".env.$env"
+
   local compose_args="-d --build"
-  local env="prod"
-  (
-    source ".env.$env"
+  # TODO shared postgres container -> dbname "postgres_$env"
 
-    x.generate
+  x.generate
 
-    docker network create traefik-net 2>/dev/null || true
-    run_shared_services
-    DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
-      --project-name "$PROJECT_PREFIX"_"$env" \
-      -f docker-compose.yml \
-      -f docker-compose."$env".yml \
-      --env-file ".env.$env" \
-      up $compose_args
-  )
+  docker network create traefik-net 2>/dev/null || true
+  run_shared_services
+  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
+    --project-name "$PROJECT_PREFIX"_"$env" \
+    -f docker-compose."$env".yml \
+    --env-file ".env.$env" \
+    up $compose_args
 }
 
 run_shared_services() {
-  docker-compose --project-name "$PROJECT_PREFIX" \
-    -f "docker/redis/docker-compose.yml" \
-    -f "docker/vault/docker-compose.yml" \
-    --env-file ".env.prod" \
-    up -d --remove-orphans
+  local compose_options="-p $PROJECT_PREFIX --env-file ../.env.$env"
+  local compose_args=" -d --remove-orphans"
+  cd docker && docker-compose $compose_options up $compose_args && cd -
 }
 
 # Ensure no breaking changes to the OpenAPI spec in the same version are present.
@@ -321,13 +315,11 @@ x.release() {
 
 # Wrapper for golang-migrate with predefined configuration.
 x.migrate() {
-  (
-    source "$ENV_FILE"
-    migrate \
-      -path db/migrations/ \
-      -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
-      "$@"
-  )
+  source ".env.$env"
+  migrate \
+    -path db/migrations/ \
+    -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+    "$@"
 }
 
 # Creates a new migration file with the given `name`.
@@ -341,22 +333,20 @@ x.migrate.create-migration() {
 }
 
 create_test_database() {
-  (
-    source "$ENV_FILE"
+  source ".env.$env"
 
-    local postgres_test_db="${POSTGRES_DB}_test"
+  local postgres_test_db="postgres_test"
 
-    drop_db "$postgres_test_db" .env
+  drop_db "$postgres_test_db"
 
-    echo "${BLUE}${BOLD}Stopping any running processes for database $postgres_test_db.${OFF}"
-    docker exec -t postgres_db_"$PROJECT_PREFIX"_"$APP_ENV" \
-      psql --no-psqlrc \
-      -U "$POSTGRES_USER" \
-      -d "$POSTGRES_DB" \
-      -c "select pg_terminate_backend(pid) \
+  echo "${BLUE}${BOLD}Stopping any running processes for database $postgres_test_db.${OFF}"
+  docker exec -t postgres_db_"$PROJECT_PREFIX" \
+    psql --no-psqlrc \
+    -U "$POSTGRES_USER" \
+    -d "postgres" \
+    -c "select pg_terminate_backend(pid) \
         from pg_stat_activity \
         where datname='$postgres_test_db'"
-  )
 }
 
 ############## openapi ##############
@@ -647,9 +637,9 @@ if [[ -n $COMP_LINE ]]; then
 fi
 
 # First comment lines automatically added to usage docs.
-for arg in "$@"; do
-  shift
-  case $arg in
+set +e
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
   --x-force-regen) # this comment should be ignored
     # Removes generation cache, forcing a new run.
     force_regen=1
@@ -661,16 +651,24 @@ for arg in "$@"; do
   --x-env)
     # Environment to run commands in. Defaults to "dev".
     # Args: env
-    env="$1"
+    env="$2"
+    echo "env is $env"
     valid_envs="dev e2e prod"
     if [[ ! " ${valid_envs[*]} " =~ " $env " ]]; then
       err "Valid environments: $valid_envs"
     fi
     shift
     ;;
-  *) set -- "$@" "$arg" ;;
+  *)
+    args+=("$1")
+    ;;
   esac
+  shift
 done
+for arg in ${args[@]}; do
+  set -- "$@" "$arg"
+done
+set -e
 
 # handle executing x functions
 if [[ -n "$1" ]]; then

@@ -102,27 +102,35 @@ get_envvars() {
 # Drop and recreate database `db` using configuration from
 # environment variables in `env_file`
 drop_db() {
-  (
-    local db="$1"
-    local env_file="$2"
+  local db="$1"
 
-    source "$env_file"
+  _pg_isready
 
-    docker exec -t postgres_db_"$PROJECT_PREFIX"_"$APP_ENV" \
-      psql --no-psqlrc \
-      -U "$POSTGRES_USER" \
-      -d "$POSTGRES_DB" \
-      -c "CREATE DATABASE test OWNER $POSTGRES_USER;" || true
+  docker exec -t postgres_db_"$PROJECT_PREFIX" \
+    psql --no-psqlrc \
+    -U "$POSTGRES_USER" \
+    -d "postgres" \
+    -c "CREATE DATABASE test OWNER $POSTGRES_USER;" || true
 
-    echo "${RED}${BOLD}Dropping database $db.${OFF}"
-    docker exec -t postgres_db_"$PROJECT_PREFIX"_"$APP_ENV" \
-      dropdb --if-exists -f "$db"
+  echo "${RED}${BOLD}Dropping database $db.${OFF}"
+  docker exec -t postgres_db_"$PROJECT_PREFIX" \
+    dropdb --if-exists -f "$db"
 
-    echo "${BLUE}${BOLD}Creating database $db.${OFF}"
-    docker exec -t postgres_db_"$PROJECT_PREFIX"_"$APP_ENV" \
-      psql --no-psqlrc \
-      -U "$POSTGRES_USER" \
-      -d test \
-      -c "CREATE DATABASE $db OWNER $POSTGRES_USER;"
-  )
+  echo "${BLUE}${BOLD}Creating database $db.${OFF}"
+  docker exec -t postgres_db_"$PROJECT_PREFIX" \
+    psql --no-psqlrc \
+    -U "$POSTGRES_USER" \
+    -d test \
+    -c "CREATE DATABASE $db OWNER $POSTGRES_USER;"
+}
+
+_pg_isready() {
+  pg_ready=0
+  while [[ ! $pg_ready -eq 1 ]]; do
+    docker exec -t postgres_db_"$PROJECT_PREFIX" \
+      pg_isready -U "$POSTGRES_USER" || {
+      echo "Waiting for postgres database to be ready..." && sleep 2 && continue
+    }
+    pg_ready=1
+  done
 }

@@ -17,7 +17,6 @@ func SetupSwaggerUI(url string) error {
 window.onload = function () {
 	//<editor-fold desc="Changeable Configuration Block">
 
-	// the following lines will be replaced by docker/configurator, when it runs in a docker-container
 	window.ui = SwaggerUIBundle({
 		url: {{.URL}},
 		dom_id: "#swagger-ui",
@@ -52,7 +51,10 @@ window.onload = function () {
 		return err
 	}
 
-	os.Link("openapi.yaml", path.Join(staticDir, "swagger-ui/openapi.yaml"))
+	err = os.Link("openapi.yaml", path.Join(staticDir, "swagger-ui/openapi.yaml"))
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
