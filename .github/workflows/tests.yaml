@@ -21,4 +21,6 @@ jobs:
         run: |
           source .envrc
           docker network create traefik-net
+          ls -a
+          pwd
           project test --x-env ci
