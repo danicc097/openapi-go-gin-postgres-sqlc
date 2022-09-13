@@ -16,10 +16,10 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
+      "cwd": ".",
       "program": "${fileDirname}",
       "args": [
-        "-env",
-        ".env.dev"
+        "-env=.env.dev"
       ]
     }
   ]

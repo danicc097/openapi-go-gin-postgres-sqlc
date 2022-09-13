@@ -59,6 +59,7 @@ func (e *Error) Code() ErrorCode {
 }
 
 // Cause returns the root error cause in the chain.
+// TODO infinite loop
 func (e *Error) Cause() error {
 	var err error
 	root := e
@@ -67,8 +68,11 @@ func (e *Error) Cause() error {
 			return root
 		}
 
-		if r, ok := err.(*Error); ok {
-			root = r
+		r, ok := err.(*Error)
+		if !ok {
+			return err
 		}
+
+		root = r
 	}
 }
