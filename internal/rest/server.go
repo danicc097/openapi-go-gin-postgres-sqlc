@@ -175,10 +175,10 @@ func Run(env, address, specPath string) (<-chan error, error) {
 	var logger *zap.Logger
 
 	switch os.Getenv("APP_ENV") {
-	case "dev":
-		logger, err = zap.NewDevelopment()
-	default:
+	case "prod":
 		logger, err = zap.NewProduction()
+	default:
+		logger, err = zap.NewDevelopment()
 	}
 
 	if err != nil {
@@ -237,7 +237,7 @@ func Run(env, address, specPath string) (<-chan error, error) {
 		// ErrServerClosed."
 		var err error
 		switch env := os.Getenv("APP_ENV"); env {
-		case "dev":
+		case "dev", "ci":
 			err = srv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")
 		case "prod":
 			err = srv.ListenAndServe()

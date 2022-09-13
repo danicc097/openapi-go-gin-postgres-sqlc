@@ -656,7 +656,7 @@ while [[ "$#" -gt 0 ]]; do
     # Args: env
     env="$2"
 
-    valid_envs="dev e2e prod"
+    valid_envs="dev e2e prod ci"
     if [[ ! " ${valid_envs[*]} " =~ " $env " ]]; then
       err "Valid environments: $valid_envs"
     fi
