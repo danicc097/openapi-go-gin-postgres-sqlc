@@ -19,6 +19,6 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 
 FROM alpine:3.15 AS runtime
 
-ENV GIN_MODE=release
+ENV GIN_MODE=debug
 COPY --from=build /go/src/main ./
 COPY --from=build /go/src/openapi.yaml ./

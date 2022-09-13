@@ -14,7 +14,6 @@ type Fake struct {
 }
 
 // NewFake returns a new handler for the 'fake' route group.
-// Edit as required.
 func NewFake(svc services.Fake) *Fake {
 	return &Fake{
 		svc: svc,
@@ -38,7 +37,6 @@ func (h *Fake) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-// Edit as required.
 func (h *Fake) middlewares(opID string) []gin.HandlerFunc {
 	switch opID {
 	default:

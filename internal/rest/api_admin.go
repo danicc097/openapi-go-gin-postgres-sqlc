@@ -13,7 +13,6 @@ type Admin struct {
 }
 
 // NewAdmin returns a new handler for the 'admin' route group.
-// Edit as required.
 func NewAdmin(svc UserService) *Admin {
 	return &Admin{
 		svc: svc,
@@ -37,7 +36,6 @@ func (h *Admin) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-// Edit as required.
 func (h *Admin) middlewares(opID string) []gin.HandlerFunc {
 	switch opID {
 	default:

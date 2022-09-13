@@ -43,6 +43,7 @@ func main() {
 	flag.StringVar(&specPath, "spec-path", "openapi.yaml", "OpenAPI specification filepath")
 	flag.Parse()
 
+	// TODO dynamic
 	url := fmt.Sprintf("https://localhost%s/v2/docs", address)
 	// go openBrowser(url)
 

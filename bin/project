@@ -221,6 +221,7 @@ x.run() {
 
 # Run backend with hot-reloading.
 x.run-hot-reload() {
+  source ".env.$env"
   run_shared_services
   # TODO new include_files flag in fork, e.g. for openapi.yaml.
   # else generated .yaml files trigger rebuild.
@@ -250,6 +251,7 @@ x.run-frontend() {
 # air and vite hot reload working fine while watching
 # Run all project services with hot reload enabled.
 x.run-all-hot-reload() {
+  source ".env.$env"
   # to be replaced by dcompose up --build when oas changes
   run_hot_reload() {
     x.run-hot-reload &
@@ -289,7 +291,6 @@ x.run-dockerized() {
 
   source ".env.$env"
 
-  local compose_args="-d --build"
   # TODO shared postgres container -> dbname "postgres_$env"
 
   docker network create traefik-net 2>/dev/null || true
@@ -302,13 +303,17 @@ x.run-dockerized() {
     --project-name "$PROJECT_PREFIX"_"$env" \
     -f docker-compose."$env".yml \
     --env-file ".env.$env" \
-    up $compose_args
+    up -d --build
 }
 
 run_shared_services() {
-  local compose_options="-p $PROJECT_PREFIX --env-file ../.env.$env"
-  local compose_args=" -d --remove-orphans"
-  cd docker && docker-compose $compose_options up $compose_args && cd -
+  cd docker
+  docker-compose \
+    -p "$PROJECT_PREFIX" \
+    -f docker-compose.shared.yml \
+    --env-file ../.env."$env" \
+    up -d --remove-orphans
+  cd -
 }
 
 # Ensure no breaking changes to the OpenAPI spec in the same version are present.

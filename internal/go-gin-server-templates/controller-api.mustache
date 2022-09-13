@@ -16,7 +16,6 @@ type {{baseName}} struct {
 }
 
 // New{{baseName}} returns a new handler for the '{{#lambda.lowercase}}{{{baseName}}}{{/lambda.lowercase}}' route group.
-// Edit as required.
 func New{{baseName}}(svc services.{{baseName}}) *{{baseName}} {
 	return &{{baseName}}{
 		svc: svc,
@@ -45,7 +44,6 @@ func (h *{{baseName}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-// Edit as required.
 func (h *{{baseName}}) middlewares(opID string) []gin.HandlerFunc {
 	switch opID {
 	default:

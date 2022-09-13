@@ -13,7 +13,6 @@ type Default struct {
 }
 
 // NewDefault returns a new handler for the 'Default_' route group.
-// Edit as required.
 func NewDefault() *Default {
 	return &Default{}
 }
@@ -42,7 +41,6 @@ func (h *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-// Edit as required.
 func (h *Default) middlewares(opID string) []gin.HandlerFunc {
 	switch opID {
 	default:

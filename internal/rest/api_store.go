@@ -14,7 +14,6 @@ type Store struct {
 }
 
 // NewStore returns a new handler for the 'store' route group.
-// Edit as required.
 func NewStore(svc services.Store) *Store {
 	return &Store{
 		svc: svc,
@@ -59,7 +58,6 @@ func (h *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-// Edit as required.
 func (h *Store) middlewares(opID string) []gin.HandlerFunc {
 	switch opID {
 	default:

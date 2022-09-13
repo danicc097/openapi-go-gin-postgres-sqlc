@@ -14,7 +14,6 @@ type User struct {
 }
 
 // NewUser returns a new handler for user.
-// Edit as required.
 func NewUser(svc services.User) *User {
 	return &User{
 		svc: svc,

@@ -22,5 +22,6 @@ jobs:
       - name: Diff OpenAPI spec
         run: |
           source .envrc
-          git fetch origin main:main || true
+
+          [[ $(git branch --show-current) != "main" ]] && git fetch origin main:main
           project diff-openapi-spec
