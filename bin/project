@@ -111,7 +111,7 @@ x.postgen() {
   cache="$1"
   mkdir -p "$cache"
   go build -o postgen "$PWD"/cmd/postgen/main.go
-  POSTGEN_CACHE="$cache" ./postgen
+  ./postgen -cachedir="$cache" -env=".env.$env"
   mv "$GEN_OUT_DIR"/gen/api_*.go "$cache/" 2>/dev/null || true
 }
 

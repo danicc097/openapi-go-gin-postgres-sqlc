@@ -47,15 +47,17 @@ func contains[T comparable](elems []T, v T) bool {
 	the user to rename. it shouldve been unexported or a function in the first place anyway.
 */
 type OpenapiGenerator struct {
-	conf   *Conf
-	stderr io.Writer
+	conf     *Conf
+	stderr   io.Writer
+	cacheDir string
 }
 
 // NewOpenapiGenerator returns a new postgen OpenapiGenerator.
-func NewOpenapiGenerator(conf *Conf, stderr io.Writer) *OpenapiGenerator {
+func NewOpenapiGenerator(conf *Conf, stderr io.Writer, cacheDir string) *OpenapiGenerator {
 	return &OpenapiGenerator{
-		conf:   conf,
-		stderr: stderr,
+		conf:     conf,
+		stderr:   stderr,
+		cacheDir: cacheDir,
 	}
 }
 
@@ -378,9 +380,8 @@ func (o *OpenapiGenerator) getAPIBasenames(src string) ([]string, error) {
 
 	if len(paths) == 0 && strings.HasSuffix(src, "gen") {
 		fmt.Printf("No files found for %s, trying cache\n", src)
-		cacheDir := os.Getenv("POSTGEN_CACHE")
 
-		basenames, err := o.getAPIBasenames(cacheDir)
+		basenames, err := o.getAPIBasenames(o.cacheDir)
 		if err != nil {
 			return nil, err
 		}
@@ -392,8 +393,8 @@ Please remove the postgen *.cache directory.`)
 			return nil, errors.New("no generated files")
 		}
 
-		fmt.Printf("Using cached files in %s\n", cacheDir)
-		o.conf.GenHandlersDir = cacheDir
+		fmt.Printf("Using cached files in %s\n", o.cacheDir)
+		o.conf.GenHandlersDir = o.cacheDir
 
 		return basenames, nil
 	}
