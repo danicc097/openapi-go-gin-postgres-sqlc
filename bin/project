@@ -428,7 +428,7 @@ x.diff-openapi-spec() {
   ((rev_v != base_v)) &&
     echo "${YELLOW}Revision mismatch $rev_v and $base_v, skipping diff.${OFF}" && return
 
-  args="-format text -breaking-only -fail-on-diff"
+  args="-format text -breaking-only -fail-on-diff -exclude-description -exclude-examples"
   if oasdiff $args -base "$base_spec" -revision $SPEC; then
     echo "${GREEN}No breaking changes found in $SPEC${OFF}"
   else

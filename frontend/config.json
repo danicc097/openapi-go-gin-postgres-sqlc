@@ -1,7 +1,7 @@
 {
-  "APP_ENV": "$APP_ENV",
-  "DOMAIN": "$DOMAIN",
-  "API_VERSION": "$API_VERSION",
-  "API_PREFIX": "$API_PREFIX",
-  "API_PORT": "$API_PORT"
+  "APP_ENV": "",
+  "DOMAIN": "",
+  "API_VERSION": "",
+  "API_PREFIX": "",
+  "API_PORT": ""
 }
