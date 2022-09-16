@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/dave/dst v0.27.0
 	github.com/deepmap/oapi-codegen v1.11.0
-	github.com/getkin/kin-openapi v0.100.0
+	github.com/getkin/kin-openapi v0.102.0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/zap v0.0.2
 	github.com/gin-gonic/gin v1.8.1

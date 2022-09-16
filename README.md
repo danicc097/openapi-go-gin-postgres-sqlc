@@ -32,8 +32,6 @@ change to it is validated and cascades down to:
 
 ## TODOs
 
-  - GH actions
-
   - [Oauth2 as openapi
     spec](https://github.com/ybelenko/oauth2_as_oas3_components/tree/master/dist/components)
     with endpoints clearly documented based on RFCs

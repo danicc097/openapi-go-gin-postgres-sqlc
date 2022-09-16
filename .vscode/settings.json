@@ -11,6 +11,7 @@
     // "--fast" // breaks some linters like errcheck, if its too slow then enable back
   ],
   "go.lintOnSave": "package",
+  "shellcheck.executablePath": "shellcheck",
   "shellcheck.customArgs": [
     "-x",
     // source-path doesnt work per script

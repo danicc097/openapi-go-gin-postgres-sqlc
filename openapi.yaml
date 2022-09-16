@@ -457,12 +457,9 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateUserRequest"
-              # waiting for https://github.com/getkin/kin-openapi/issues/588 merging
             examples:
-              BadUser:
-                $ref: "#/components/examples/BadUser"
-              GoodUser:
-                $ref: "#/components/examples/GoodUser"
+              User:
+                $ref: "#/components/examples/User"
         description: Created user object
         required: true
       responses:
@@ -822,7 +819,9 @@ components:
       type: object
     CreateUserResponse:
       description: represents the response to a User creation
-      example: id
+      example:
+        access_token: abcd
+        user_id: 1
       properties:
         # go with jwt for now
         access_token:
@@ -1094,12 +1093,7 @@ components:
           title: Error Type
           type: string
   examples:
-    BadUser:
-      value:
-        username: "]bad["
-        email: bad
-        password: short
-    GoodUser:
+    User:
       value:
         username: username
         email: email@email.com
