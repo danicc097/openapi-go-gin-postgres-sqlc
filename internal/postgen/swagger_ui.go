@@ -46,13 +46,13 @@ window.onload = function () {
 		return err
 	}
 
-	_, err = swaggerInit.Write(buf.Bytes())
-	if err != nil {
+	if _, err := swaggerInit.Write(buf.Bytes()); err != nil {
 		return err
 	}
 
-	err = os.Link("openapi.yaml", path.Join(staticDir, "swagger-ui/openapi.yaml"))
-	if err != nil {
+	bundleSpec := path.Join(staticDir, "swagger-ui/openapi.yaml")
+	os.Remove(bundleSpec)
+	if err := os.Link("openapi.yaml", bundleSpec); err != nil {
 		return err
 	}
 

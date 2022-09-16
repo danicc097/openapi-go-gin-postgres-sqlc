@@ -149,18 +149,29 @@ x.generate.counterfeiter() {
 
 # Run all codegen and postgen commands for the project.
 x.generate() {
+  local pids
   source ".env.$env"
   # TODO --force-regen to any x fn removes all cache dirs
   echo "${MAGENTA}${BOLD}Running codegen and postgen...${OFF}"
   cache=".generate.cache"
 
   generate_api "$cache" "internal" "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
+
   go generate ./... &
+  pids+=($!)
   x.generate.counterfeiter "$cache" &
+  pids+=($!)
   x.generate.sqlc &
+  pids+=($!)
   x.generate.xo &
+  pids+=($!)
   x.postgen "$cache" &
-  wait
+  pids+=($!)
+
+  for pid in "${pids[@]}"; do
+    wait "$pid"
+  done
+
 }
 
 # Lints the entire project.
@@ -196,8 +207,9 @@ x.compose-up() {
 x.test() {
   source ".env.$env"
   run_shared_services
+  x.db.recreate-database
   x.generate
-  create_database "postgres_test"
+  drop_and_recreate_db "postgres_test"
   godotenv -f ".env.$env" go test $@ ./...
 }
 
@@ -296,6 +308,7 @@ x.run-prod() {
 
   docker network create traefik-net 2>/dev/null || true
   run_shared_services
+  x.db.recreate-database
 
   cd frontend && pnpm run generate && cd -
   x.generate
@@ -343,28 +356,11 @@ x.migrate.create-migration() {
   x.migrate create -ext sql -dir db/migrations/ "$name"
 }
 
-# Creates a new database in the current environment.
-x.migrate.recreate-database() {
-  create_database "postgres_$env"
-  x.migrate up
-}
-
-# *drops* and recreates with a given database name and environment options
-create_database() {
-  source ".env.$env"
-
-  db="$1"
-
-  drop_db "$db"
-
-  echo "${BLUE}${BOLD}Stopping any running processes for database $db.${OFF}"
-  docker exec -t postgres_db_"$PROJECT_PREFIX" \
-    psql --no-psqlrc \
-    -U "$POSTGRES_USER" \
-    -d "postgres" \
-    -c "select pg_terminate_backend(pid) \
-        from pg_stat_activity \
-        where datname='$db'"
+# Creates a new database in the current environment if it doesn't exist
+# and stops its running processes if any.
+x.db.recreate-database() {
+  create_db_if_not_exists "postgres_$env"
+  stop_db_processes "postgres_$env"
 }
 
 ############## openapi ##############

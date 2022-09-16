@@ -163,7 +163,10 @@ export interface components {
     }
     /**
      * @description represents the response to a User creation
-     * @example id
+     * @example {
+     *   "access_token": "abcd",
+     *   "user_id": 1
+     * }
      */
     CreateUserResponse: {
       access_token?: string

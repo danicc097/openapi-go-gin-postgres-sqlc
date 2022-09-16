@@ -101,7 +101,7 @@ get_envvars() {
 
 # Drop and recreate database `db` using configuration from
 # environment variables in `env_file`
-drop_db() {
+drop_and_recreate_db() {
   local db="$1"
 
   _pg_isready
@@ -124,12 +124,39 @@ drop_db() {
     -c "CREATE DATABASE $db OWNER $POSTGRES_USER;"
 }
 
+create_db_if_not_exists() {
+  local db="$1"
+
+  _pg_isready
+
+  echo "${BLUE}${BOLD}Creating database $db.${OFF}"
+  docker exec -t postgres_db_"$PROJECT_PREFIX" \
+    psql --no-psqlrc -U "$POSTGRES_USER" -tc "SELECT 1 FROM pg_database WHERE datname = '$db'" | grep -q 1 ||
+    docker exec -t postgres_db_"$PROJECT_PREFIX" \
+      psql --no-psqlrc -U "$POSTGRES_USER" -c "CREATE DATABASE $db"
+}
+
+stop_db_processes() {
+  local db="$1"
+
+  _pg_isready
+
+  echo "${BLUE}${BOLD}Stopping any running processes for database $db.${OFF}"
+  docker exec -t postgres_db_"$PROJECT_PREFIX" \
+    psql --no-psqlrc \
+    -U "$POSTGRES_USER" \
+    -d "postgres" \
+    -c "select pg_terminate_backend(pid) \
+        from pg_stat_activity \
+        where datname='$db'"
+}
+
 _pg_isready() {
   pg_ready=0
   while [[ ! $pg_ready -eq 1 ]]; do
     docker exec -t postgres_db_"$PROJECT_PREFIX" \
       pg_isready -U "$POSTGRES_USER" || {
-      echo "Waiting for postgres database to be ready..." && sleep 2 && continue
+      echo "${YELLOW}Waiting for postgres database to be ready...${OFF}" && sleep 1 && continue
     }
     pg_ready=1
   done

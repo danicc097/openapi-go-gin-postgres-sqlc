@@ -43,5 +43,9 @@ func main() {
 
 	url := format.BuildBackendURL("openapi.yaml")
 
-	postgen.SetupSwaggerUI(url)
+	if err := postgen.SetupSwaggerUI(url); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, stderr.String())
+		os.Exit(1)
+	}
 }
