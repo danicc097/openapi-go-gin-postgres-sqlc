@@ -359,11 +359,11 @@ type Method struct {
 }
 
 type HandlerFile struct {
-	// F is the node of the file.
+	// F is the node of the source file.
 	F *dst.File
 	// Methods represents all methods in the generated struct indexed by method name.
 	Methods map[string]Method
-	// RoutesNode represents the complete routes assignment node.
+	// RoutesNode represents the routes slice assignment node.
 	RoutesNode *dst.AssignStmt
 	// Routes represents convenient extracted fields from route elements
 	// indexed by operation id.
@@ -372,7 +372,7 @@ type HandlerFile struct {
 
 func (o *OpenapiGenerator) getAPIBasenames(src string) ([]string, error) {
 	out := []string{}
-	// glob uses https://pkg.go.dev/path#Match patterns
+	// glob uses https://pkg.go.dev/path#Match patterns. Test files will match
 	paths, err := filepath.Glob(path.Join(src, "api_*.go"))
 	if err != nil {
 		return nil, err

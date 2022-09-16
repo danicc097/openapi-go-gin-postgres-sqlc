@@ -205,18 +205,18 @@ x.test() {
 x.build() {
   x.lint
   x.test ""
-  go build -o openapi-go-gin-postgres-sqlc "$PWD"/cmd/rest-server
+  go build -o rest-server "$PWD"/cmd/rest-server
 }
 
 # Build the project for Windows.
 x.build.windows() {
-  GOOS=windows GOARCH=amd64 go build -o openapi-go-gin-postgres-sqlc.exe "$PWD"/cmd/rest-server
+  GOOS=windows GOARCH=amd64 go build -o rest-server.exe "$PWD"/cmd/rest-server
 }
 
 # Test, build and run the entire project.
 x.run() {
   x.build
-  ./openapi-go-gin-postgres-sqlc -env=".env.$env"
+  ./rest-server -env=".env.$env"
 }
 
 # Run backend with hot-reloading.
@@ -243,8 +243,9 @@ x.run-hot-reload() {
 
 # Run frontend with hot-reloading.
 x.run-frontend() {
-  cd frontend &&
-    pnpm run dev |
+  cd frontend
+  pnpm run generate
+  pnpm run dev |
     sed -e "s/^/${GREEN}[Vite]${OFF} /"
 }
 
@@ -287,8 +288,8 @@ x.run-all-hot-reload() {
   done
 }
 
-x.run-dockerized() {
-
+x.run-prod() {
+  env="prod"
   source ".env.$env"
 
   # TODO shared postgres container -> dbname "postgres_$env"
@@ -297,6 +298,7 @@ x.run-dockerized() {
   run_shared_services
 
   create_database "postgres_$env"
+  cd frontend && pnpm run generate && cd -
   x.generate
 
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \

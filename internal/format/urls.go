@@ -24,7 +24,7 @@ func BuildBackendURL(subpaths ...string) string {
 	case "prod":
 		host = os.Getenv("DOMAIN")
 	default:
-		host = os.Getenv("DOMAIN") + ":" + os.Getenv("BACKEND_PORT")
+		host = os.Getenv("DOMAIN") + ":" + os.Getenv("API_PORT")
 	}
 
 	dsn := url.URL{

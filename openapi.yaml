@@ -457,10 +457,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateUserRequest"
-              # TODO kin should validate these but doesn't.
+              # waiting for https://github.com/getkin/kin-openapi/issues/588 merging
             examples:
               BadUser:
                 $ref: "#/components/examples/BadUser"
+              GoodUser:
+                $ref: "#/components/examples/GoodUser"
         description: Created user object
         required: true
       responses:
@@ -1097,6 +1099,11 @@ components:
         username: "]bad["
         email: bad
         password: short
+    GoodUser:
+      value:
+        username: username
+        email: email@email.com
+        password: password
   securitySchemes:
     petstore_auth:
       flows:

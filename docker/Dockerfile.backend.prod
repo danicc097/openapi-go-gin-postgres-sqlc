@@ -10,7 +10,7 @@ RUN go mod download
 COPY ../. .
 ENV CGO_ENABLED=0
 RUN --mount=type=cache,target=/root/.cache/go-build \
-  go build -o main ./cmd/rest-server
+  go build -o rest-server ./cmd/rest-server
 
 # RUN groupadd -g $DOCKER_GID rootless
 # RUN useradd -m rootless -u $DOCKER_UID -g $DOCKER_GID
@@ -20,5 +20,5 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 FROM alpine:3.15 AS runtime
 
 ENV GIN_MODE=debug
-COPY --from=build /go/src/main ./
+COPY --from=build /go/src/rest-server ./
 COPY --from=build /go/src/openapi.yaml ./

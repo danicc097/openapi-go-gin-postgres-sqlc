@@ -8,30 +8,51 @@ x-logging: &default-logging
 # Debug config with docker-compose --env-file <...> config
 services:
   backend:
-    image: ${PROJECT_PREFIX:?not set}-${APP_ENV:?not set}-backend:latest
-    container_name: backend_${PROJECT_PREFIX}_${APP_ENV}
+    image: ${PROJECT_PREFIX:?not set}-prod-backend:latest
+    container_name: backend_${PROJECT_PREFIX}_prod
     networks:
       - traefik-net
-    command: ./main -env=.env.${APP_ENV}
+    command: ./rest-server -env=.env.prod
     volumes:
-      - ./.env.${APP_ENV}:/.env.${APP_ENV}
+      - ./.env.prod:/.env.prod
     build:
       context: .
-      dockerfile: docker/Dockerfile.backend.${APP_ENV:?not set}
+      dockerfile: docker/Dockerfile.backend.prod
       args:
         - "DOCKER_UID=${DOCKER_UID:?not set}"
         - "DOCKER_GID=${DOCKER_GID:?not set}"
     restart: unless-stopped
     labels:
       - traefik.enable=true
-      - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-backend.rule=Host(`${DOMAIN}`) && PathPrefix("/api")
-      - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-backend.middlewares=${PROJECT_PREFIX}-stripprefix-backend,test-compress # check docs to exclude requests from compression
+      - traefik.http.routers.${PROJECT_PREFIX}-prod-backend.rule=Host(`${DOMAIN:?not set}`) && PathPrefix("/api")
+      - traefik.http.routers.${PROJECT_PREFIX}-prod-backend.middlewares=${PROJECT_PREFIX}-stripprefix-backend,test-compress # check docs to exclude requests from compression
       - traefik.http.middlewares.test-compress.compress=true
       - traefik.http.middlewares.${PROJECT_PREFIX}-stripprefix-backend.stripprefix.prefixes=/api
       - traefik.docker.network=traefik-net
-      - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-backend.entrypoints=websecure
-      - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-backend.tls=true
-      - traefik.http.services.${PROJECT_PREFIX}-${APP_ENV}-backend.loadbalancer.server.port=${BACKEND_PORT:?not set}
+      - traefik.http.routers.${PROJECT_PREFIX}-prod-backend.entrypoints=websecure
+      - traefik.http.routers.${PROJECT_PREFIX}-prod-backend.tls=true
+      - traefik.http.services.${PROJECT_PREFIX}-prod-backend.loadbalancer.server.port=${API_PORT:?not set}
+    logging: *default-logging
+
+  frontend:
+    image: ${PROJECT_PREFIX:?not set}-prod-frontend:latest
+    container_name: frontend_${PROJECT_PREFIX}_prod
+    networks:
+      - traefik-net
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend.prod
+    env_file: .env.prod
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${PROJECT_PREFIX}-prod-frontend.rule=Host(`${DOMAIN:?not set}`)
+      - traefik.docker.network=traefik-net
+      - traefik.http.routers.${PROJECT_PREFIX}-prod-frontend.middlewares=test-compress
+      - traefik.http.middlewares.test-compress.compress=true
+      - traefik.http.routers.${PROJECT_PREFIX}-prod-frontend.entrypoints=websecure
+      - traefik.http.routers.${PROJECT_PREFIX}-prod-frontend.tls=true
+      - traefik.http.services.${PROJECT_PREFIX}-prod-frontend.loadbalancer.server.port=${FRONTEND_PORT:?not set}
     logging: *default-logging
 
 networks:
