@@ -3,6 +3,7 @@ package rest
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/fs"
 	"net/http"
 	"os"
@@ -76,6 +77,10 @@ func NewServer(conf Config) (*http.Server, error) {
 		MaxAge: 12 * time.Hour,
 	}))
 
+	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
+	vg := router.Group(os.Getenv("API_VERSION"))
+	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
+
 	schemaBlob, err := os.ReadFile(conf.SpecPath)
 	if err != nil {
 		return nil, err
@@ -101,10 +106,6 @@ func NewServer(conf Config) (*http.Server, error) {
 		// 	return fmt.Errorf("multiple errors:  %s", me.Error())
 		// },
 	}
-
-	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
-	vg := router.Group(os.Getenv("API_VERSION"))
-	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
 
 	vg.Use(OapiRequestValidatorWithOptions(openapi, &options))
 
@@ -174,10 +175,10 @@ func Run(env, address, specPath string) (<-chan error, error) {
 	var logger *zap.Logger
 
 	switch os.Getenv("APP_ENV") {
-	case "dev":
-		logger, err = zap.NewDevelopment()
-	default:
+	case "prod":
 		logger, err = zap.NewProduction()
+	default:
+		logger, err = zap.NewDevelopment()
 	}
 
 	if err != nil {
@@ -234,7 +235,15 @@ func Run(env, address, specPath string) (<-chan error, error) {
 
 		// "ListenAndServe always returns a non-nil error. After Shutdown or Close, the returned error is
 		// ErrServerClosed."
-		err := srv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")
+		var err error
+		switch env := os.Getenv("APP_ENV"); env {
+		case "dev", "ci":
+			err = srv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")
+		case "prod":
+			err = srv.ListenAndServe()
+		default:
+			err = fmt.Errorf("unknown APP_ENV: %s", env)
+		}
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errC <- err
 		}

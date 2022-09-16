@@ -14,7 +14,6 @@ type Newapi struct {
 }
 
 // NewNewapi returns a new handler for the 'newapi' route group.
-// Edit as required.
 func NewNewapi(svc services.Newapi) *Newapi {
 	return &Newapi{
 		svc: svc,
@@ -38,7 +37,6 @@ func (h *Newapi) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-// Edit as required.
 func (h *Newapi) middlewares(opID string) []gin.HandlerFunc {
 	switch opID {
 	default:

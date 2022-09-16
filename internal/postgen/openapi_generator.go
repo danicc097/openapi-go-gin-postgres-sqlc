@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"html/template"
 	"io"
 	"os"
 	"path"
@@ -13,6 +12,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"text/template"
 
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
@@ -47,15 +47,17 @@ func contains[T comparable](elems []T, v T) bool {
 	the user to rename. it shouldve been unexported or a function in the first place anyway.
 */
 type OpenapiGenerator struct {
-	conf   *Conf
-	stderr io.Writer
+	conf     *Conf
+	stderr   io.Writer
+	cacheDir string
 }
 
 // NewOpenapiGenerator returns a new postgen OpenapiGenerator.
-func NewOpenapiGenerator(conf *Conf, stderr io.Writer) *OpenapiGenerator {
+func NewOpenapiGenerator(conf *Conf, stderr io.Writer, cacheDir string) *OpenapiGenerator {
 	return &OpenapiGenerator{
-		conf:   conf,
-		stderr: stderr,
+		conf:     conf,
+		stderr:   stderr,
+		cacheDir: cacheDir,
 	}
 }
 
@@ -357,11 +359,11 @@ type Method struct {
 }
 
 type HandlerFile struct {
-	// F is the node of the file.
+	// F is the node of the source file.
 	F *dst.File
 	// Methods represents all methods in the generated struct indexed by method name.
 	Methods map[string]Method
-	// RoutesNode represents the complete routes assignment node.
+	// RoutesNode represents the routes slice assignment node.
 	RoutesNode *dst.AssignStmt
 	// Routes represents convenient extracted fields from route elements
 	// indexed by operation id.
@@ -370,7 +372,7 @@ type HandlerFile struct {
 
 func (o *OpenapiGenerator) getAPIBasenames(src string) ([]string, error) {
 	out := []string{}
-	// glob uses https://pkg.go.dev/path#Match patterns
+	// glob uses https://pkg.go.dev/path#Match patterns. Test files will match
 	paths, err := filepath.Glob(path.Join(src, "api_*.go"))
 	if err != nil {
 		return nil, err
@@ -378,9 +380,8 @@ func (o *OpenapiGenerator) getAPIBasenames(src string) ([]string, error) {
 
 	if len(paths) == 0 && strings.HasSuffix(src, "gen") {
 		fmt.Printf("No files found for %s, trying cache\n", src)
-		cacheDir := os.Getenv("POSTGEN_CACHE")
 
-		basenames, err := o.getAPIBasenames(cacheDir)
+		basenames, err := o.getAPIBasenames(o.cacheDir)
 		if err != nil {
 			return nil, err
 		}
@@ -392,8 +393,8 @@ Please remove the postgen *.cache directory.`)
 			return nil, errors.New("no generated files")
 		}
 
-		fmt.Printf("Using cached files in %s\n", cacheDir)
-		o.conf.GenHandlersDir = cacheDir
+		fmt.Printf("Using cached files in %s\n", o.cacheDir)
+		o.conf.GenHandlersDir = o.cacheDir
 
 		return basenames, nil
 	}

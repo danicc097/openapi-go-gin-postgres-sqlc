@@ -43,13 +43,14 @@ func main() {
 	flag.StringVar(&specPath, "spec-path", "openapi.yaml", "OpenAPI specification filepath")
 	flag.Parse()
 
-	url := fmt.Sprintf("https://localhost%s/v2/docs", address)
 	// go openBrowser(url)
 
 	errC, err := server.Run(env, address, specPath)
 	if err != nil {
 		log.Fatalf("Couldn't run: %s", err)
 	}
+
+	url := format.BuildBackendURL("docs")
 	fmt.Printf("\n%sVisit the docs at %s%s\n\n", format.Green, url, format.Off)
 
 	if err := <-errC; err != nil {

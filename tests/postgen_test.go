@@ -64,7 +64,7 @@ func TestHandlerPostProcessing(t *testing.T) {
 				t.Fatal(err)
 			}
 			var stderr bytes.Buffer
-			og := postgen.NewOpenapiGenerator(conf, &stderr)
+			og := postgen.NewOpenapiGenerator(conf, &stderr, "")
 
 			s := getStderr(t, path.Join(baseDir, tc.Dir, "want"))
 

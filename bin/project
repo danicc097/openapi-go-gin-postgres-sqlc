@@ -25,7 +25,7 @@ SPEC="openapi.yaml"
 GEN_OUT_DIR="internal"
 TEMPLATE_DIR="internal/go-gin-server-templates"
 PWD="$(pwd)"
-ENV_FILE=".env"
+env="dev"
 BIN_DIR=$(dirname "$0")
 PG_REPO="internal/repos/postgresql"
 
@@ -67,7 +67,6 @@ x.install-tools() {
   go install github.com/danicc097/air@latest
   go install github.com/xo/xo@latest
   go install github.com/tufin/oasdiff@latest
-  go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
   GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
 }
@@ -112,7 +111,7 @@ x.postgen() {
   cache="$1"
   mkdir -p "$cache"
   go build -o postgen "$PWD"/cmd/postgen/main.go
-  POSTGEN_CACHE="$cache" ./postgen
+  ./postgen -cachedir="$cache" -env=".env.$env"
   mv "$GEN_OUT_DIR"/gen/api_*.go "$cache/" 2>/dev/null || true
 }
 
@@ -125,18 +124,9 @@ x.generate.sqlc() {
 # a Postgres schema.
 # Does not work with a schema file, database must be up to date.
 x.generate.xo() {
-  (
-    source "$ENV_FILE"
-    mkdir -p $PG_REPO/gen/crud
-    xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
-      -o $PG_REPO/gen/crud
-  )
-}
-
-# Apply bundle overrides on Swagger UI.
-x.sync-swagger-ui() {
-  cp internal/static/swagger-override/swagger-initializer.js internal/static/swagger-ui/
-  cp "$SPEC" "$PWD"/internal/static/swagger-ui
+  mkdir -p $PG_REPO/gen/crud
+  xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+    -o $PG_REPO/gen/crud
 }
 
 # Generate mocks for specified interfaces. Runs are cached to `cachedir`.
@@ -159,6 +149,7 @@ x.generate.counterfeiter() {
 
 # Run all codegen and postgen commands for the project.
 x.generate() {
+  source ".env.$env"
   # TODO --force-regen to any x fn removes all cache dirs
   echo "${MAGENTA}${BOLD}Running codegen and postgen...${OFF}"
   cache=".generate.cache"
@@ -168,7 +159,6 @@ x.generate() {
   x.generate.counterfeiter "$cache" &
   x.generate.sqlc &
   x.generate.xo &
-  x.sync-swagger-ui &
   x.postgen "$cache" &
   wait
 }
@@ -204,33 +194,35 @@ x.compose-up() {
 # Test the entire project. Accepts `go test` parameters.
 # Args: [...]
 x.test() {
-  x.compose-up
+  source ".env.$env"
+  run_shared_services
   x.generate
-  create_test_database
-  godotenv -f "$ENV_FILE" go test $@ ./...
+  create_database "postgres_test"
+  godotenv -f ".env.$env" go test $@ ./...
 }
 
 # Test and build the entire project.
 x.build() {
   x.lint
   x.test ""
-  go build -o openapi-go-gin-postgres-sqlc "$PWD"/cmd/rest-server
+  go build -o rest-server "$PWD"/cmd/rest-server
 }
 
 # Build the project for Windows.
 x.build.windows() {
-  GOOS=windows GOARCH=amd64 go build -o openapi-go-gin-postgres-sqlc.exe "$PWD"/cmd/rest-server
+  GOOS=windows GOARCH=amd64 go build -o rest-server.exe "$PWD"/cmd/rest-server
 }
 
 # Test, build and run the entire project.
 x.run() {
   x.build
-  ./openapi-go-gin-postgres-sqlc -env="$ENV_FILE"
+  ./rest-server -env=".env.$env"
 }
 
 # Run backend with hot-reloading.
 x.run-hot-reload() {
-  x.compose-up
+  source ".env.$env"
+  run_shared_services
   # TODO new include_files flag in fork, e.g. for openapi.yaml.
   # else generated .yaml files trigger rebuild.
   # --build.include_files "openapi.yaml" \
@@ -238,7 +230,7 @@ x.run-hot-reload() {
   air \
     --build.pre_build_cmd "bin/project generate" \
     --build.cmd "" \
-    --build.bin "go run ./cmd/rest-server/ -env=$ENV_FILE" \
+    --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
     --build.exclude_dir ".git,tmp,internal/gen,$PG_REPO/gen,tests/testdata,frontend,*.cache" \
@@ -251,14 +243,16 @@ x.run-hot-reload() {
 
 # Run frontend with hot-reloading.
 x.run-frontend() {
-  cd frontend &&
-    pnpm run dev |
+  cd frontend
+  pnpm run generate
+  pnpm run dev |
     sed -e "s/^/${GREEN}[Vite]${OFF} /"
 }
 
 # air and vite hot reload working fine while watching
 # Run all project services with hot reload enabled.
 x.run-all-hot-reload() {
+  source ".env.$env"
   # to be replaced by dcompose up --build when oas changes
   run_hot_reload() {
     x.run-hot-reload &
@@ -294,6 +288,37 @@ x.run-all-hot-reload() {
   done
 }
 
+x.run-prod() {
+  env="prod"
+  source ".env.$env"
+
+  # TODO shared postgres container -> dbname "postgres_$env"
+
+  docker network create traefik-net 2>/dev/null || true
+  run_shared_services
+
+  cd frontend && pnpm run generate && cd -
+  x.generate
+
+  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
+    --project-name "$PROJECT_PREFIX"_"$env" \
+    -f docker-compose."$env".yml \
+    --env-file ".env.$env" \
+    up -d --build
+
+  x.migrate up
+}
+
+run_shared_services() {
+  cd docker
+  docker-compose \
+    -p "$PROJECT_PREFIX" \
+    -f docker-compose.shared.yml \
+    --env-file ../.env."$env" \
+    up -d --remove-orphans
+  cd -
+}
+
 # Ensure no breaking changes to the OpenAPI spec in the same version are present.
 x.release() {
   x.diff-openapi-spec
@@ -301,13 +326,11 @@ x.release() {
 
 # Wrapper for golang-migrate with predefined configuration.
 x.migrate() {
-  (
-    source "$ENV_FILE"
-    migrate \
-      -path db/migrations/ \
-      -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_SERVER:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
-      "$@"
-  )
+  source ".env.$env"
+  migrate \
+    -path db/migrations/ \
+    -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+    "$@"
 }
 
 # Creates a new migration file with the given `name`.
@@ -320,23 +343,28 @@ x.migrate.create-migration() {
   x.migrate create -ext sql -dir db/migrations/ "$name"
 }
 
-create_test_database() {
-  (
-    source "$ENV_FILE"
+# Creates a new database in the current environment.
+x.migrate.recreate-database() {
+  create_database "postgres_$env"
+  x.migrate up
+}
 
-    local postgres_test_db="${POSTGRES_DB}_test"
+# *drops* and recreates with a given database name and environment options
+create_database() {
+  source ".env.$env"
 
-    drop_db "$postgres_test_db" .env
+  db="$1"
 
-    echo "${BLUE}${BOLD}Stopping any running processes for database $postgres_test_db.${OFF}"
-    docker exec -t postgres_db_"$PROJECT_PREFIX"_"$APP_ENV" \
-      psql --no-psqlrc \
-      -U "$POSTGRES_USER" \
-      -d "$POSTGRES_DB" \
-      -c "select pg_terminate_backend(pid) \
+  drop_db "$db"
+
+  echo "${BLUE}${BOLD}Stopping any running processes for database $db.${OFF}"
+  docker exec -t postgres_db_"$PROJECT_PREFIX" \
+    psql --no-psqlrc \
+    -U "$POSTGRES_USER" \
+    -d "postgres" \
+    -c "select pg_terminate_backend(pid) \
         from pg_stat_activity \
-        where datname='$postgres_test_db'"
-  )
+        where datname='$db'"
 }
 
 ############## openapi ##############
@@ -400,7 +428,7 @@ x.diff-openapi-spec() {
   ((rev_v != base_v)) &&
     echo "${YELLOW}Revision mismatch $rev_v and $base_v, skipping diff.${OFF}" && return
 
-  args="-format text -breaking-only -fail-on-diff"
+  args="-format text -breaking-only -fail-on-diff -exclude-description -exclude-examples"
   if oasdiff $args -base "$base_spec" -revision $SPEC; then
     echo "${GREEN}No breaking changes found in $SPEC${OFF}"
   else
@@ -627,9 +655,9 @@ if [[ -n $COMP_LINE ]]; then
 fi
 
 # First comment lines automatically added to usage docs.
-for arg in "$@"; do
-  shift
-  case $arg in
+set +e
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
   --x-force-regen) # this comment should be ignored
     # Removes generation cache, forcing a new run.
     force_regen=1
@@ -641,16 +669,24 @@ for arg in "$@"; do
   --x-env)
     # Environment to run commands in. Defaults to "dev".
     # Args: env
-    env="$1"
-    valid_envs="dev e2e prod"
+    env="$2"
+
+    valid_envs="dev e2e prod ci"
     if [[ ! " ${valid_envs[*]} " =~ " $env " ]]; then
       err "Valid environments: $valid_envs"
     fi
     shift
     ;;
-  *) set -- "$@" "$arg" ;;
+  *)
+    args+=("$1")
+    ;;
   esac
+  shift
 done
+for arg in ${args[@]}; do
+  set -- "$@" "$arg"
+done
+set -e
 
 # handle executing x functions
 if [[ -n "$1" ]]; then

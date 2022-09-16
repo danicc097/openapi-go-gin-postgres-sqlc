@@ -14,6 +14,7 @@ echo "export type schemas = components['schemas']" | cat - "$SCHEMA_OUT" >/tmp/o
 echo "// @ts-nocheck" | cat - "$SCHEMA_OUT" >/tmp/out && mv /tmp/out "$SCHEMA_OUT"
 echo "/* eslint-disable */" | cat - "$SCHEMA_OUT" >/tmp/out && mv /tmp/out "$SCHEMA_OUT"
 echo "/* eslint-disable @typescript-eslint/ban-ts-comment */" | cat - "$SCHEMA_OUT" >/tmp/out && mv /tmp/out "$SCHEMA_OUT"
+# TODO allow custom validate.ts baked into fork
 rm src/client-validator/gen/validate.ts
 find src/client-validator/gen/ -type f -exec \
   sed -i "s/from '.\/validate'/from '..\/validate'/g" {} \;

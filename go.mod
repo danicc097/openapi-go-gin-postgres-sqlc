@@ -1,6 +1,6 @@
 module github.com/danicc097/openapi-go-gin-postgres-sqlc
 
-go 1.18
+go 1.19
 
 require (
 	github.com/dave/dst v0.27.0

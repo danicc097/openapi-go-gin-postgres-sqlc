@@ -28,5 +28,3 @@ runs:
         project fetch.swagger-ui
         bin/scripts/install-pg_format.sh
         bin/scripts/install-mkcert.sh
-
-        mv .env.ci .env

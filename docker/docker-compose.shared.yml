@@ -9,7 +9,7 @@ x-logging: &default-logging
 services:
   db:
     image: postgres:13-alpine
-    container_name: postgres_db_${PROJECT_PREFIX:?not set}_${APP_ENV:?not set}
+    container_name: postgres_db_${PROJECT_PREFIX:?not set}
     user: postgres
     shm_size: 2g
     networks:
@@ -17,32 +17,50 @@ services:
     environment:
       PGDATA: /var/lib/postgresql/data
     volumes:
-      - ./db/postgresql.conf:/etc/postgresql/postgresql.conf
-      - ./.psqlrc:/var/lib/postgresql/.psqlrc
+      - openapi_pg_data:/var/lib/postgresql/data/
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ../.psqlrc:/var/lib/postgresql/.psqlrc
     command: postgres -c "config_file=/etc/postgresql/postgresql.conf"
     ports:
       - ${DB_PORT:?not set}:5432
     env_file:
-      - .env
+      - ../.env.${APP_ENV:?not set}
     restart: unless-stopped
     logging: *default-logging
+
+  redis:
+    image: redis:6-alpine
+    container_name: redis_${PROJECT_PREFIX:?not set}
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis
+    ports:
+      - 6379:6379
+    networks:
+      - traefik-net
+    restart: always
+    logging: *default-logging
+
   vault:
     image: vault:1.9.8
-    ports:
-      - "8300:8300"
+    container_name: vault_${PROJECT_PREFIX:?not set}
+    # ports:
+    #   - "8300:8300"
     cap_add:
       - IPC_LOCK
     restart: unless-stopped
+    networks:
+      - traefik-net
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: myroot
       VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8300"
-  redis:
-    image: redis:6.2.3-alpine3.13
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
+    logging: *default-logging
 
 networks:
   traefik-net:
     name: traefik-net
     external: true
+
+volumes:
+  openapi_pg_data:
+    # in order not to have project prefix we would use
+    # name: openapi_pg_data

@@ -14,7 +14,6 @@ type Pet struct {
 }
 
 // NewPet returns a new handler for the 'pet' route group.
-// Edit as required.
 func NewPet(svc services.Pet) *Pet {
 	return &Pet{
 		svc: svc,
@@ -38,7 +37,6 @@ func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-// Edit as required.
 func (h *Pet) middlewares(opID string) []gin.HandlerFunc {
 	switch opID {
 	default:

@@ -24,6 +24,7 @@ info:
   version: 2.0.0
 servers:
   - url: https://localhost:8090/v2
+  - url: https://openapi.prod.localhost/api/v2
   # for tests validation middleware to work on random port.
   - url: /v2
 tags:
@@ -456,10 +457,12 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateUserRequest"
-              # TODO kin should validate these but doesn't.
+              # waiting for https://github.com/getkin/kin-openapi/issues/588 merging
             examples:
               BadUser:
                 $ref: "#/components/examples/BadUser"
+              GoodUser:
+                $ref: "#/components/examples/GoodUser"
         description: Created user object
         required: true
       responses:
@@ -1096,6 +1099,11 @@ components:
         username: "]bad["
         email: bad
         password: short
+    GoodUser:
+      value:
+        username: username
+        email: email@email.com
+        password: password
   securitySchemes:
     petstore_auth:
       flows:

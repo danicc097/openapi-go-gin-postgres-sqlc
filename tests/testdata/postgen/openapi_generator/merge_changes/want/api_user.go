@@ -14,7 +14,6 @@ type User struct {
 }
 
 // NewUser returns a new handler for user.
-// Edit as required.
 func NewUser(svc services.User) *User {
 	return &User{
 		svc: svc,
@@ -78,7 +77,6 @@ func (h *User) UpdateUser(c *gin.Context) {
 }
 
 // middlewares returns individual route middleware per operation id.
-// Edit as required.
 func (h *User) middlewares(opID string) []gin.HandlerFunc {
 	switch opID {
 	default:
