@@ -297,7 +297,6 @@ x.run-prod() {
   docker network create traefik-net 2>/dev/null || true
   run_shared_services
 
-  create_database "postgres_$env"
   cd frontend && pnpm run generate && cd -
   x.generate
 
@@ -306,6 +305,8 @@ x.run-prod() {
     -f docker-compose."$env".yml \
     --env-file ".env.$env" \
     up -d --build
+
+  x.migrate up
 }
 
 run_shared_services() {
@@ -342,6 +343,13 @@ x.migrate.create-migration() {
   x.migrate create -ext sql -dir db/migrations/ "$name"
 }
 
+# Creates a new database in the current environment.
+x.migrate.recreate-database() {
+  create_database "postgres_$env"
+  x.migrate up
+}
+
+# *drops* and recreates with a given database name and environment options
 create_database() {
   source ".env.$env"
 

@@ -62,3 +62,5 @@ networks:
 
 volumes:
   openapi_pg_data:
+    # in order not to have project prefix we would use
+    # name: openapi_pg_data
