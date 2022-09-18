@@ -21,7 +21,7 @@ func main() {
 	flag.Parse()
 
 	if err := envvar.Load(env); err != nil {
-		log.Fatalf("envvar.Load: %s", err)
+		log.Fatalf("envvar.Load: %s\n", err)
 	}
 
 	const baseDir = "internal"

@@ -15,6 +15,7 @@ killgroup() {
 }
 
 ensure_pwd_is_top_level
+source ".envrc"
 
 export GIT_USER_ID=danicc097
 export GIT_REPO_ID=openapi-go-gin-postgres-sqlc
@@ -202,15 +203,22 @@ x.compose-up() {
   docker-compose up -d
 }
 
-# Test the entire project. Accepts `go test` parameters.
-# Args: [...]
-x.test() {
+# Runs required backend pre-test setup: services, database cleanup, codegen...
+# NOTE: should be called in a global test setup function.
+x.test.backend-setup() {
   source ".env.$env"
+
   run_shared_services
   x.db.recreate-database
   x.generate
   drop_and_recreate_db "postgres_test"
-  godotenv -f ".env.$env" go test $@ ./...
+  x.generate.tests-api
+}
+
+# Test the entire project. Accepts `go test` parameters.
+# Args: [...]
+x.test() {
+  go test $@ ./...
 }
 
 # Test and build the entire project.

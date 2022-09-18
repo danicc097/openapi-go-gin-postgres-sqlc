@@ -8,7 +8,6 @@ import (
 	"go/token"
 	"io"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"testing"
@@ -17,21 +16,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func setupTests(tb testing.TB) {
-	tb.Helper()
-
-	cmd := exec.Command(
-		"../bin/project",
-		"generate.tests-api",
-	)
-	if out, err := cmd.CombinedOutput(); err != nil {
-		tb.Logf("combined out:\n%s\n", string(out))
-		tb.Fatalf("cmd.Run() failed with %s\n", err)
-	}
-}
-
 func TestHandlerPostProcessing(t *testing.T) {
-	setupTests(t)
 	t.Parallel()
 
 	const baseDir = "testdata/postgen/openapi_generator"
