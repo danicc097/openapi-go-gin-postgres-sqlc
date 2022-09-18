@@ -206,6 +206,19 @@ x.compose-up() {
 # Runs required backend pre-test setup: services, database cleanup, codegen...
 # NOTE: should be called in a global test setup function.
 x.test.backend-setup() {
+  # TODO naive solution (terrible and racey): at startup create a /tmp/backend-setup-running file if it doesnt exist
+  # already (should be deleted once everything is run)
+  # give 10 seconds to run everything else timeout and delete the file and quit (other calls could create it!)
+  # better solution: ideally there is a way to have a singleton bash command
+  # ^ flock can do this. if we call project test.backend-setup many times in a row
+  # the lock will prevent more than 1 run...
+  # then have a test teardown where the lock is removed
+  
+  # OR simplest: dont do this at all. call project test.backend-setup
+  # before we run any test (file,fn or package) through the IDE... (rare occasion)
+  # and let x.test call test.backend-setup as it was before (only run
+  # once...)
+
   source ".env.$env"
 
   run_shared_services
