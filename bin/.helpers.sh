@@ -130,8 +130,12 @@ create_db_if_not_exists() {
   _pg_isready
 
   echo "${BLUE}${BOLD}Creating database $db.${OFF}"
-  docker exec -t postgres_db_"$PROJECT_PREFIX" \
-    psql --no-psqlrc -U "$POSTGRES_USER" -tc "SELECT 1 FROM pg_database WHERE datname = '$db'" | grep -q 1 ||
+  {
+    docker exec -t postgres_db_"$PROJECT_PREFIX" \
+      psql --no-psqlrc -U "$POSTGRES_USER" \
+      -tc "SELECT 1 FROM pg_database WHERE datname = '$db'" |
+      grep -q 1
+  } ||
     docker exec -t postgres_db_"$PROJECT_PREFIX" \
       psql --no-psqlrc -U "$POSTGRES_USER" -c "CREATE DATABASE $db"
 }
@@ -156,7 +160,9 @@ _pg_isready() {
   while [[ ! $pg_ready -eq 1 ]]; do
     docker exec -t postgres_db_"$PROJECT_PREFIX" \
       pg_isready -U "$POSTGRES_USER" || {
-      echo "${YELLOW}Waiting for postgres database to be ready...${OFF}" && sleep 1 && continue
+      echo "${YELLOW}Waiting for postgres database to be ready...${OFF}"
+      sleep 1
+      continue
     }
     pg_ready=1
   done

@@ -164,12 +164,12 @@ func Run(env, address, specPath string) (<-chan error, error) {
 
 	pool, err := postgresql.New(conf)
 	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewPostgreSQL")
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "postgresql.New")
 	}
 
 	rdb, err := redis.New(conf)
 	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewRedis")
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "redis.New")
 	}
 
 	var logger *zap.Logger
@@ -182,7 +182,7 @@ func Run(env, address, specPath string) (<-chan error, error) {
 	}
 
 	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.zapNew")
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "zap.New")
 	}
 
 	srv, err := NewServer(Config{
@@ -193,7 +193,7 @@ func Run(env, address, specPath string) (<-chan error, error) {
 		SpecPath: specPath,
 	})
 	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "New")
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "NewServer")
 	}
 
 	errC := make(chan error, 1)

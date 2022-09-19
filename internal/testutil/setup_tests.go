@@ -17,7 +17,7 @@ func GetFileRuntimeDirectory() string {
 	return dir
 }
 
-// Setup runs necessary pre-testing commands. See project bin for details.
+// Setup runs necessary pre-testing commands: env vars loading, sourcing...
 func Setup() {
 	os.Setenv("POSTGRES_DB", "postgres_test")
 	os.Setenv("IS_TESTING", "1")

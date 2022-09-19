@@ -19,7 +19,7 @@ import (
 func TestHandlerPostProcessing(t *testing.T) {
 	t.Parallel()
 
-	const baseDir = "testdata/postgen/openapi_generator"
+	const baseDir = "testdata/openapi_generator"
 
 	cases := []struct {
 		Name string
