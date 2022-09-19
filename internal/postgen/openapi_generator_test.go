@@ -1,4 +1,4 @@
-package tests
+package postgen
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -37,7 +37,7 @@ func TestHandlerPostProcessing(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
-			conf := &postgen.Conf{
+			conf := &Conf{
 				CurrentHandlersDir: path.Join(baseDir, tc.Dir, "internal/rest"),
 				GenHandlersDir:     path.Join(baseDir, tc.Dir, "internal/gen"),
 				OutHandlersDir:     path.Join(baseDir, tc.Dir, "got"),
@@ -49,9 +49,9 @@ func TestHandlerPostProcessing(t *testing.T) {
 				t.Fatal(err)
 			}
 			var stderr bytes.Buffer
-			og := postgen.NewOpenapiGenerator(conf, &stderr, "")
+			og := NewOpenapiGenerator(conf, &stderr, "")
 
-			s := getStderr(t, path.Join(baseDir, tc.Dir, "want"))
+			s := testutil.GetStderr(t, path.Join(baseDir, tc.Dir, "want"))
 
 			err = og.Generate()
 			if err != nil && s != "" {

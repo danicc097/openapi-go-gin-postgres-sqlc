@@ -93,7 +93,7 @@ x.fetch.swagger-ui() {
 # Run openapi generator for testdata.
 # jar won't output properly if absolute paths are passed from subdir.
 x.generate.tests-api() {
-  local testdata="$BIN_DIR/../tests/testdata/postgen/openapi_generator"
+  local testdata="$BIN_DIR/../internal/postgen/testdata/postgen/openapi_generator"
   local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
 
   cache=".generate-tests-api.cache"
@@ -204,10 +204,11 @@ x.compose-up() {
 }
 
 # Runs required backend pre-test setup: services, database cleanup, codegen...
-# NOTE: should be called in a global test setup function.
+# Can be called independently, e.g. before running tests through an IDE.
 x.test.backend-setup() {
   source ".env.$env"
-
+  # NOTE: tests run independently in Go so we can't have a function be called and run
+  # only once before any test starts
   run_shared_services
   x.db.recreate-database
   x.generate
@@ -218,7 +219,8 @@ x.test.backend-setup() {
 # Test the entire project. Accepts `go test` parameters.
 # Args: [...]
 x.test() {
-  go test $@ ./...
+  x.test.backend-setup
+  APP_ENV="$env" go test $@ ./...
 }
 
 # Test and build the entire project.
