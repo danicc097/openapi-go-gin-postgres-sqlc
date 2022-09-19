@@ -1,4 +1,4 @@
-package tests
+package rest
 
 import (
 	"bytes"
@@ -13,34 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setupSuite(t *testing.T) func(t *testing.T) {
-	t.Helper()
-
-	return func(t *testing.T) {
-		t.Helper()
-	}
-}
-
-func TestPingRoute(t *testing.T) {
-	t.Parallel()
-
-	teardownSuite := setupSuite(t)
-	defer teardownSuite(t)
-
-	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/ping", nil)
-	resp := httptest.NewRecorder()
-	t.Logf("rqt: %s", req.URL)
-	srv.Handler.ServeHTTP(resp, req)
-
-	assert.Equal(t, http.StatusOK, resp.Code)
-	assert.Equal(t, "pong", resp.Body.String())
-}
-
 func TestCreateUserRoute(t *testing.T) {
 	t.Parallel()
-
-	teardownSuite := setupSuite(t)
-	defer teardownSuite(t)
 
 	type params struct {
 		user any
@@ -50,7 +24,7 @@ func TestCreateUserRoute(t *testing.T) {
 		status int
 	}
 
-	cases := []struct {
+	testCases := []struct {
 		name   string
 		params params
 		want   want
@@ -105,13 +79,13 @@ func TestCreateUserRoute(t *testing.T) {
 		},
 	}
 
-	for _, test := range cases {
-		test := test
-		t.Run(test.name, func(t *testing.T) {
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			var buf bytes.Buffer
 
-			if err := json.NewEncoder(&buf).Encode(test.params.user); err != nil {
+			if err := json.NewEncoder(&buf).Encode(tc.params.user); err != nil {
 				t.Errorf("%v", err)
 			}
 
@@ -127,7 +101,7 @@ func TestCreateUserRoute(t *testing.T) {
 
 			srv.Handler.ServeHTTP(resp, req)
 			t.Logf("%v", resp)
-			assert.Equal(t, test.want.status, resp.Code)
+			assert.Equal(t, tc.want.status, resp.Code)
 		})
 	}
 }
