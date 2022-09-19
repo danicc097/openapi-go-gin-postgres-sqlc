@@ -93,7 +93,7 @@ x.fetch.swagger-ui() {
 # Run openapi generator for testdata.
 # jar won't output properly if absolute paths are passed from subdir.
 x.generate.tests-api() {
-  local testdata="$BIN_DIR/../tests/testdata/postgen/openapi_generator"
+  local testdata="$BIN_DIR/../internal/postgen/testdata/postgen/openapi_generator"
   local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
 
   cache=".generate-tests-api.cache"
@@ -204,23 +204,11 @@ x.compose-up() {
 }
 
 # Runs required backend pre-test setup: services, database cleanup, codegen...
-# NOTE: should be called in a global test setup function.
+# Can be called independently, e.g. before running tests through an IDE.
 x.test.backend-setup() {
-  # TODO naive solution (terrible and racey): at startup create a /tmp/backend-setup-running file if it doesnt exist
-  # already (should be deleted once everything is run)
-  # give 10 seconds to run everything else timeout and delete the file and quit (other calls could create it!)
-  # better solution: ideally there is a way to have a singleton bash command
-  # ^ flock can do this. if we call project test.backend-setup many times in a row
-  # the lock will prevent more than 1 run...
-  # then have a test teardown where the lock is removed
-  
-  # OR simplest: dont do this at all. call project test.backend-setup
-  # before we run any test (file,fn or package) through the IDE... (rare occasion)
-  # and let x.test call test.backend-setup as it was before (only run
-  # once...)
-
   source ".env.$env"
-
+  # NOTE: tests run independently in Go so we can't have a function be called and run
+  # only once before any test starts
   run_shared_services
   x.db.recreate-database
   x.generate
@@ -231,7 +219,8 @@ x.test.backend-setup() {
 # Test the entire project. Accepts `go test` parameters.
 # Args: [...]
 x.test() {
-  go test $@ ./...
+  x.test.backend-setup
+  APP_ENV="$env" go test $@ ./...
 }
 
 # Test and build the entire project.

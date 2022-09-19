@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"testing"
 
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -55,23 +54,6 @@ func testMain(m *testing.M) int {
 	defer srv.Close()
 
 	return m.Run()
-}
-
-// getStderr returns the contents of stderr.txt in dir.
-func getStderr(t *testing.T, dir string) string {
-	t.Helper()
-	path := filepath.Join(dir, "stderr.txt")
-
-	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		blob, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		return string(blob)
-	}
-
-	return ""
 }
 
 // run configures a test server and underlying services with the given configuration.
