@@ -46,11 +46,15 @@ type Config struct {
 }
 
 // NewServer returns a new http server.
-func NewServer(conf Config) (*http.Server, error) {
-	router := gin.Default()
-
+func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("alphanumspace", Alphanumspace)
+	}
+
+	router := gin.Default()
+
+	for _, mw := range mws {
+		router.Use(mw)
 	}
 
 	router.Use(gin.Recovery())
@@ -191,7 +195,7 @@ func Run(env, address, specPath string) (<-chan error, error) {
 		Redis:    rdb,
 		Logger:   logger,
 		SpecPath: specPath,
-	})
+	}, []gin.HandlerFunc{})
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "NewServer")
 	}

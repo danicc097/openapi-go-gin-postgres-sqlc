@@ -1,10 +1,41 @@
 package rest
 
 import (
+	"context"
+	"fmt"
+	"net/http"
+
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
+
+type userCtxKeyType string
+
+const userCtxKey userCtxKeyType = "user"
+
+type authenticatedCtxKey struct{}
+
+// TODO move elsewhere
+func GetUser(ctx *gin.Context) *db.Users {
+	user, ok := ctx.Value(userCtxKey).(*db.Users)
+	if !ok {
+		// Log this issue
+		fmt.Printf("userCtxKey was: %#v\n", ctx.Value(userCtxKey))
+		return nil
+	}
+
+	return user
+}
+
+func isAuthenticated(ctx context.Context) bool {
+	authenticated, ok := ctx.Value(authenticatedCtxKey{}).(bool)
+	if !ok {
+		// Log this issue
+		return false
+	}
+	return authenticated
+}
 
 // Auth handles authentication and authorization middleware.
 type Auth struct {
@@ -42,8 +73,14 @@ func (t *Auth) EnsureAuthenticated() gin.HandlerFunc {
 func (t *Auth) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t.Logger.Sugar().Info("Would have run EnsureAuthorized")
-		// u := userSvc.getUserByToken...
-		// t.authzSvc.IsAuthorized(u.Role, requiredRole)
+		user := GetUser(c)
+		if user == nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Could not get user from context."})
+		}
+		ok := t.authzSvc.IsAuthorized(user.Role, requiredRole)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"detail": "Unauthorized."})
+		}
 	}
 }
 

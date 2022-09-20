@@ -14,7 +14,6 @@ func TestPingRoute(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/ping", nil)
 	resp := httptest.NewRecorder()
-	t.Logf("rqt: %s", req.URL)
 	srv.Handler.ServeHTTP(resp, req)
 
 	assert.Equal(t, http.StatusOK, resp.Code)
