@@ -10,11 +10,18 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateUserRoute(t *testing.T) {
 	t.Parallel()
+
+	srv, err := runTestServer(pool, []gin.HandlerFunc{})
+	if err != nil {
+		t.Fatalf("Couldn't run test server: %s\n", err)
+	}
+	defer srv.Close()
 
 	type params struct {
 		user any

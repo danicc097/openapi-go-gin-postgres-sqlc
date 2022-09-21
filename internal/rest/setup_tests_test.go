@@ -19,7 +19,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var srv *http.Server
+var pool *pgxpool.Pool
 
 func TestMain(m *testing.M) {
 	os.Exit(testMain(m))
@@ -31,29 +31,19 @@ func testMain(m *testing.M) int {
 	// call flag.Parse() here if TestMain uses flags
 	var err error
 
-	pool, err := testutil.NewDB()
+	pool, err = testutil.NewDB()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't create pool: %s\n", err)
 		os.Exit(1)
 	}
 	defer pool.Close()
 
-	envFile := fmt.Sprintf("../../.env.%s", os.Getenv("APP_ENV"))
-	spec := "../../openapi.yaml"
-	srv, err = runTestServer(envFile, ":0", spec, pool)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Couldn't run test server: %s\n", err)
-		os.Exit(1)
-	}
-	defer srv.Close()
-
 	return m.Run()
 }
 
-// runTestServer configures a test server and underlying services with the given configuration.
-func runTestServer(env, address, specPath string, pool *pgxpool.Pool) (*http.Server, error) {
+func runTestServer(pool *pgxpool.Pool, mws []gin.HandlerFunc) (*http.Server, error) {
 
-	if err := envvar.Load(env); err != nil {
+	if err := envvar.Load(fmt.Sprintf("../../.env.%s", os.Getenv("APP_ENV"))); err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
 	}
 
@@ -82,12 +72,12 @@ func runTestServer(env, address, specPath string, pool *pgxpool.Pool) (*http.Ser
 	}
 
 	srv, err := NewServer(Config{
-		Address:  address,
+		Address:  ":0",
 		Pool:     pool,
 		Redis:    rdb,
 		Logger:   logger,
-		SpecPath: specPath,
-	}, []gin.HandlerFunc{})
+		SpecPath: "../../openapi.yaml",
+	}, mws)
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "New")
 	}

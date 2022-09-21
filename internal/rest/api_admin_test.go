@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -15,13 +14,17 @@ import (
 func TestAdminPingRoute(t *testing.T) {
 	t.Parallel()
 
-	resp := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(resp)
-	c.Set(string(userCtxKey), &db.Users{Role: db.RoleUser})
-	req, _ := http.NewRequestWithContext(c, http.MethodGet, os.Getenv("API_VERSION")+"/admin/ping", nil)
+	srv, err := runTestServer(pool, []gin.HandlerFunc{func(ctx *gin.Context) {
+		ctx.Set(string(userCtxKey), &db.Users{Role: db.RoleAdmin})
+	}})
+	if err != nil {
+		t.Fatalf("Couldn't run test server: %s\n", err)
+	}
+	defer srv.Close()
 
-	user := GetUser(c)
-	fmt.Printf("userrrr: %#v\n", user)
+	resp := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/admin/ping", nil)
+
 	srv.Handler.ServeHTTP(resp, req)
 
 	assert.Equal(t, http.StatusOK, resp.Code)

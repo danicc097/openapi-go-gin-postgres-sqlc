@@ -19,7 +19,7 @@ and out of scope of this app.
 */
 
 type AuthorizationService interface {
-	IsAuthorized(role, requiredRole db.Role) bool
+	IsAuthorized(role, requiredRole db.Role) error
 }
 
 type AuthenticationService interface {

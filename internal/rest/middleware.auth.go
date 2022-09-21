@@ -2,8 +2,6 @@ package rest
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/gin-gonic/gin"
@@ -18,10 +16,9 @@ type authenticatedCtxKey struct{}
 
 // TODO move elsewhere
 func GetUser(ctx *gin.Context) *db.Users {
-	user, ok := ctx.Value(userCtxKey).(*db.Users)
+	user, ok := ctx.Value(string(userCtxKey)).(*db.Users)
 	if !ok {
 		// Log this issue
-		fmt.Printf("userCtxKey was: %#v\n", ctx.Value(userCtxKey))
 		return nil
 	}
 
@@ -75,11 +72,13 @@ func (t *Auth) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc {
 		t.Logger.Sugar().Info("Would have run EnsureAuthorized")
 		user := GetUser(c)
 		if user == nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Could not get user from context."})
+			renderErrorResponse(c, "Could not get user from context.", nil)
+			return
 		}
-		ok := t.authzSvc.IsAuthorized(user.Role, requiredRole)
-		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"detail": "Unauthorized."})
+		err := t.authzSvc.IsAuthorized(user.Role, requiredRole)
+		if err != nil {
+			renderErrorResponse(c, "Unauthorized.", err)
+			return
 		}
 	}
 }

@@ -9,23 +9,23 @@ import (
 )
 
 type FakeAuthorizationService struct {
-	IsAuthorizedStub        func(db.Role, db.Role) bool
+	IsAuthorizedStub        func(db.Role, db.Role) error
 	isAuthorizedMutex       sync.RWMutex
 	isAuthorizedArgsForCall []struct {
 		arg1 db.Role
 		arg2 db.Role
 	}
 	isAuthorizedReturns struct {
-		result1 bool
+		result1 error
 	}
 	isAuthorizedReturnsOnCall map[int]struct {
-		result1 bool
+		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeAuthorizationService) IsAuthorized(arg1 db.Role, arg2 db.Role) bool {
+func (fake *FakeAuthorizationService) IsAuthorized(arg1 db.Role, arg2 db.Role) error {
 	fake.isAuthorizedMutex.Lock()
 	ret, specificReturn := fake.isAuthorizedReturnsOnCall[len(fake.isAuthorizedArgsForCall)]
 	fake.isAuthorizedArgsForCall = append(fake.isAuthorizedArgsForCall, struct {
@@ -51,7 +51,7 @@ func (fake *FakeAuthorizationService) IsAuthorizedCallCount() int {
 	return len(fake.isAuthorizedArgsForCall)
 }
 
-func (fake *FakeAuthorizationService) IsAuthorizedCalls(stub func(db.Role, db.Role) bool) {
+func (fake *FakeAuthorizationService) IsAuthorizedCalls(stub func(db.Role, db.Role) error) {
 	fake.isAuthorizedMutex.Lock()
 	defer fake.isAuthorizedMutex.Unlock()
 	fake.IsAuthorizedStub = stub
@@ -64,26 +64,26 @@ func (fake *FakeAuthorizationService) IsAuthorizedArgsForCall(i int) (db.Role, d
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeAuthorizationService) IsAuthorizedReturns(result1 bool) {
+func (fake *FakeAuthorizationService) IsAuthorizedReturns(result1 error) {
 	fake.isAuthorizedMutex.Lock()
 	defer fake.isAuthorizedMutex.Unlock()
 	fake.IsAuthorizedStub = nil
 	fake.isAuthorizedReturns = struct {
-		result1 bool
+		result1 error
 	}{result1}
 }
 
-func (fake *FakeAuthorizationService) IsAuthorizedReturnsOnCall(i int, result1 bool) {
+func (fake *FakeAuthorizationService) IsAuthorizedReturnsOnCall(i int, result1 error) {
 	fake.isAuthorizedMutex.Lock()
 	defer fake.isAuthorizedMutex.Unlock()
 	fake.IsAuthorizedStub = nil
 	if fake.isAuthorizedReturnsOnCall == nil {
 		fake.isAuthorizedReturnsOnCall = make(map[int]struct {
-			result1 bool
+			result1 error
 		})
 	}
 	fake.isAuthorizedReturnsOnCall[i] = struct {
-		result1 bool
+		result1 error
 	}{result1}
 }
 

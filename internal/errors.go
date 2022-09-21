@@ -23,6 +23,8 @@ const (
 	ErrorCodeNotFound
 	ErrorCodeInvalidArgument
 	ErrorCodeAlreadyExists
+	ErrorCodeUnauthorized
+	ErrorCodeUnauthenticated
 )
 
 // WrapErrorf returns a wrapped error.
@@ -59,7 +61,6 @@ func (e *Error) Code() ErrorCode {
 }
 
 // Cause returns the root error cause in the chain.
-// TODO infinite loop
 func (e *Error) Cause() error {
 	var err error
 	root := e

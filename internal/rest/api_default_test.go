@@ -6,11 +6,18 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPingRoute(t *testing.T) {
 	t.Parallel()
+
+	srv, err := runTestServer(pool, []gin.HandlerFunc{})
+	if err != nil {
+		t.Fatalf("Couldn't run test server: %s\n", err)
+	}
+	defer srv.Close()
 
 	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/ping", nil)
 	resp := httptest.NewRecorder()
