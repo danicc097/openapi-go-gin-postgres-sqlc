@@ -8,23 +8,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type userCtxKeyType string
-
-const userCtxKey userCtxKeyType = "user"
-
-type authenticatedCtxKey struct{}
-
-// TODO move elsewhere
-func GetUser(ctx *gin.Context) *db.Users {
-	user, ok := ctx.Value(string(userCtxKey)).(*db.Users)
-	if !ok {
-		// Log this issue
-		return nil
-	}
-
-	return user
-}
-
 func isAuthenticated(ctx context.Context) bool {
 	authenticated, ok := ctx.Value(authenticatedCtxKey{}).(bool)
 	if !ok {
@@ -42,7 +25,7 @@ type Auth struct {
 	userSvc  UserService
 }
 
-func NewAuthMw(
+func newAuthMw(
 	logger *zap.Logger,
 	authnSvc AuthenticationService,
 	authzSvc AuthorizationService,

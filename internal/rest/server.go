@@ -120,7 +120,7 @@ func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
 	storeSvc := services.Store{Logger: conf.Logger, Pool: conf.Pool}
 	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool)
 
-	authMw := NewAuthMw(conf.Logger, authnSvc, authzSvc, userSvc)
+	authMw := newAuthMw(conf.Logger, authnSvc, authzSvc, userSvc)
 
 	NewAdmin(userSvc).
 		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthorized(db.RoleAdmin)})
