@@ -139,10 +139,11 @@ x.generate.counterfeiter() {
   envvar="internal/envvar/envvar.go"
   services="internal/rest/services.go"
 
-  if ! md5sum -c "$cache/counterfeiter.md5" >/dev/null; then
+  if ! md5sum -c "$cache/counterfeiter.md5" >/dev/null || [[ $force_regen -eq 1 ]]; then
     counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
     counterfeiter -o internal/rest/resttesting/authorization.gen.go $services AuthorizationService &
     counterfeiter -o internal/rest/resttesting/authentication.gen.go $services AuthenticationService &
+    counterfeiter -o internal/services/servicestesting/user.gen.go "internal/services/user.go" UserRepo &
     md5sum $envvar $services >"$cache/counterfeiter.md5" &
     wait
   fi
@@ -453,11 +454,11 @@ generate_api() {
   invalid_cache=false
   mkdir -p "$cache"
 
-  if ! md5sum -c "$cache/$prefix-go-gin-server-templates.md5" >/dev/null; then
+  if ! md5sum -c "$cache/$prefix-go-gin-server-templates.md5" >/dev/null || [[ $force_regen -eq 1 ]]; then
     invalid_cache=true
     md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/$prefix-go-gin-server-templates.md5"
   fi
-  if ! md5sum -c "$cache/$prefix-openapi.md5" >/dev/null; then
+  if ! md5sum -c "$cache/$prefix-openapi.md5" >/dev/null || [[ $force_regen -eq 1 ]]; then
     invalid_cache=true
     md5sum "$BIN_DIR"/../"$SPEC" >"$cache/$prefix-openapi.md5"
   fi

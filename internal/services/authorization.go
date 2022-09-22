@@ -20,6 +20,8 @@ func NewAuthorization(logger *zap.Logger) *Authorization {
 	}
 }
 
+// TODO RBAC: https://incidentio.notion.site/Proposal-Product-RBAC-265201563d884ec5aeecbb246c02ddc6
+// but openapi friendly
 // RolePermissions returns access levels per role.
 func (a Authorization) RolePermissions() map[db.Role][]db.Role {
 	return map[db.Role][]db.Role{
