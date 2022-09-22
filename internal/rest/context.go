@@ -9,7 +9,7 @@ const userCtxKey = "user"
 
 type authenticatedCtxKey struct{}
 
-func GetUser(c *gin.Context) *db.Users {
+func GetUserFromCtx(c *gin.Context) *db.Users {
 	user, ok := c.Value(userCtxKey).(*db.Users)
 	if !ok {
 		return nil
@@ -18,6 +18,6 @@ func GetUser(c *gin.Context) *db.Users {
 	return user
 }
 
-func WithUser(c *gin.Context, user *db.Users) {
+func CtxWithUser(c *gin.Context, user *db.Users) {
 	c.Set(userCtxKey, user)
 }

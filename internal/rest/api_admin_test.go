@@ -15,7 +15,7 @@ func TestAdminPingRoute(t *testing.T) {
 	t.Parallel()
 
 	srv, err := runTestServer(pool, []gin.HandlerFunc{func(c *gin.Context) {
-		WithUser(c, &db.Users{Role: db.RoleAdmin})
+		CtxWithUser(c, &db.Users{Role: db.RoleAdmin})
 	}})
 	if err != nil {
 		t.Fatalf("Couldn't run test server: %s\n", err)

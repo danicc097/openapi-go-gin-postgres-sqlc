@@ -56,7 +56,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		req, _ := http.NewRequest(http.MethodGet, "/", nil)
 		authMw := newAuthMw(logger, authnSvc, authzSvc, userSvc)
 		engine.Use(func(c *gin.Context) {
-			WithUser(c, &db.Users{Role: tc.role})
+			CtxWithUser(c, &db.Users{Role: tc.role})
 		})
 		engine.Use(authMw.EnsureAuthorized(tc.requiredRole))
 		engine.GET("/", func(ctx *gin.Context) {
