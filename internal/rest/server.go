@@ -30,6 +30,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
+	"github.com/gin-contrib/pprof"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -46,11 +47,17 @@ type Config struct {
 }
 
 // NewServer returns a new http server.
-func NewServer(conf Config) (*http.Server, error) {
-	router := gin.Default()
-
+func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("alphanumspace", Alphanumspace)
+	}
+
+	router := gin.Default()
+
+	pprof.Register(router, "dev/pprof")
+
+	for _, mw := range mws {
+		router.Use(mw)
 	}
 
 	router.Use(gin.Recovery())
@@ -116,7 +123,7 @@ func NewServer(conf Config) (*http.Server, error) {
 	storeSvc := services.Store{Logger: conf.Logger, Pool: conf.Pool}
 	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool)
 
-	authMw := NewAuthMw(conf.Logger, authnSvc, authzSvc, userSvc)
+	authMw := newAuthMw(conf.Logger, authnSvc, authzSvc, userSvc)
 
 	NewAdmin(userSvc).
 		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthorized(db.RoleAdmin)})
@@ -191,7 +198,7 @@ func Run(env, address, specPath string) (<-chan error, error) {
 		Redis:    rdb,
 		Logger:   logger,
 		SpecPath: specPath,
-	})
+	}, []gin.HandlerFunc{})
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "NewServer")
 	}

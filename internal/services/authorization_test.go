@@ -14,12 +14,12 @@ func TestAuthorization(t *testing.T) {
 
 	svc := services.NewAuthorization(zaptest.NewLogger(t))
 
-	assert.Equal(t, false, svc.IsAuthorized(db.RoleUser, db.RoleManager))
-	assert.Equal(t, false, svc.IsAuthorized(db.RoleUser, db.RoleAdmin))
-	assert.Equal(t, false, svc.IsAuthorized(db.RoleManager, db.RoleAdmin))
+	assert.ErrorContains(t, svc.IsAuthorized(db.RoleUser, db.RoleManager), "access restricted")
+	assert.ErrorContains(t, svc.IsAuthorized(db.RoleUser, db.RoleAdmin), "access restricted")
+	assert.ErrorContains(t, svc.IsAuthorized(db.RoleManager, db.RoleAdmin), "access restricted")
 
 	for _, r := range db.AllRoleValues() {
-		assert.Equal(t, true, svc.IsAuthorized(r, r))
+		assert.NoError(t, svc.IsAuthorized(r, r))
 	}
 
 	previousRolePermissions := svc.RolePermissions()[db.RoleUser]

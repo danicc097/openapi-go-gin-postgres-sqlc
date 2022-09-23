@@ -1,10 +1,21 @@
 package rest
 
 import (
+	"context"
+
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
+
+func isAuthenticated(ctx context.Context) bool {
+	authenticated, ok := ctx.Value(authenticatedCtxKey{}).(bool)
+	if !ok {
+		// Log this issue
+		return false
+	}
+	return authenticated
+}
 
 // Auth handles authentication and authorization middleware.
 type Auth struct {
@@ -14,7 +25,7 @@ type Auth struct {
 	userSvc  UserService
 }
 
-func NewAuthMw(
+func newAuthMw(
 	logger *zap.Logger,
 	authnSvc AuthenticationService,
 	authzSvc AuthorizationService,
@@ -42,8 +53,16 @@ func (t *Auth) EnsureAuthenticated() gin.HandlerFunc {
 func (t *Auth) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t.Logger.Sugar().Info("Would have run EnsureAuthorized")
-		// u := userSvc.getUserByToken...
-		// t.authzSvc.IsAuthorized(u.Role, requiredRole)
+		user := GetUserFromCtx(c)
+		if user == nil {
+			renderErrorResponse(c, "Could not get user from context.", nil)
+			return
+		}
+		err := t.authzSvc.IsAuthorized(user.Role, requiredRole)
+		if err != nil {
+			renderErrorResponse(c, "Unauthorized.", err)
+			return
+		}
 	}
 }
 

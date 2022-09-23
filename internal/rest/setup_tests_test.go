@@ -1,17 +1,22 @@
 package rest
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
+	redis "github.com/go-redis/redis/v8"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/gin-gonic/gin"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -19,7 +24,6 @@ import (
 )
 
 var pool *pgxpool.Pool
-var srv *http.Server
 
 func TestMain(m *testing.M) {
 	os.Exit(testMain(m))
@@ -38,56 +42,48 @@ func testMain(m *testing.M) int {
 	}
 	defer pool.Close()
 
-	envFile := fmt.Sprintf("../../.env.%s", os.Getenv("APP_ENV"))
-	spec := "../../openapi.yaml"
-	srv, err = run(envFile, ":0", spec, pool)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Couldn't run test server: %s\n", err)
-		os.Exit(1)
-	}
-	defer srv.Close()
-
 	return m.Run()
 }
 
-// run configures a test server and underlying services with the given configuration.
-func run(env, address, specPath string, pool *pgxpool.Pool) (*http.Server, error) {
+func runTestServer(t *testing.T, pool *pgxpool.Pool, mws []gin.HandlerFunc) (*http.Server, error) {
+	ctx := context.Background()
 
-	if err := envvar.Load(env); err != nil {
+	if err := envvar.Load(fmt.Sprintf("../../.env.%s", os.Getenv("APP_ENV"))); err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
 	}
 
-	provider, err := vault.New()
-	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewVaultProvider")
-	}
+	// provider, err := vault.New()
+	// if err != nil {
+	// 	return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewVaultProvider")
+	// }
 
-	conf := envvar.New(provider)
+	// conf := envvar.New(provider)
 
-	rdb, err := redis.New(conf)
-	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewRedis")
-	}
+	s := miniredis.RunT(t)
+	rdb := redis.NewClient(&redis.Options{
+		Addr: s.Addr(),
+	})
+	// sanity check
+	rdb.Set(ctx, "foo", "bar", 10*time.Second)
+	assert.Equal(t, "bar", rdb.Get(ctx, "foo").Val())
 
+	logger, err := zap.NewDevelopment()
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.zapNew")
 	}
 
-	logger, _ := zap.NewDevelopment()
-
-	// TODO validation middleware
 	_, err = openapi3.NewLoader().LoadFromFile("../../openapi.yaml")
 	if err != nil {
 		panic(err)
 	}
 
 	srv, err := NewServer(Config{
-		Address:  address,
+		Address:  ":0",
 		Pool:     pool,
 		Redis:    rdb,
 		Logger:   logger,
-		SpecPath: specPath,
-	})
+		SpecPath: "../../openapi.yaml",
+	}, mws)
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "New")
 	}

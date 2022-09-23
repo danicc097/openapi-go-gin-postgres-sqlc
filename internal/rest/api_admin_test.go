@@ -6,21 +6,25 @@ import (
 	"os"
 	"testing"
 
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPingRoute(t *testing.T) {
+func TestAdminPingRoute(t *testing.T) {
 	t.Parallel()
 
-	srv, err := runTestServer(t, pool, []gin.HandlerFunc{})
+	srv, err := runTestServer(t, pool, []gin.HandlerFunc{func(c *gin.Context) {
+		CtxWithUser(c, &db.Users{Role: db.RoleAdmin})
+	}})
 	if err != nil {
 		t.Fatalf("Couldn't run test server: %s\n", err)
 	}
 	defer srv.Close()
 
-	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/ping", nil)
 	resp := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/admin/ping", nil)
+
 	srv.Handler.ServeHTTP(resp, req)
 
 	assert.Equal(t, http.StatusOK, resp.Code)

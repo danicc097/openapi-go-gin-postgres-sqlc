@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
@@ -19,6 +20,8 @@ func NewAuthorization(logger *zap.Logger) *Authorization {
 	}
 }
 
+// TODO RBAC: https://incidentio.notion.site/Proposal-Product-RBAC-265201563d884ec5aeecbb246c02ddc6
+// but openapi friendly
 // RolePermissions returns access levels per role.
 func (a Authorization) RolePermissions() map[db.Role][]db.Role {
 	return map[db.Role][]db.Role{
@@ -28,10 +31,14 @@ func (a Authorization) RolePermissions() map[db.Role][]db.Role {
 	}
 }
 
-func (a Authorization) IsAuthorized(role, requiredRole db.Role) bool {
+func (a Authorization) IsAuthorized(role, requiredRole db.Role) error {
 	roles := a.RolePermissions()[role]
 
-	return slices.Contains(roles, requiredRole)
+	if !slices.Contains(roles, requiredRole) {
+		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted")
+	}
+
+	return nil
 }
 
 /* TODO this is part of the authorization server.

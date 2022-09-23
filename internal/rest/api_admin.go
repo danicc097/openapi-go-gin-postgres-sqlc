@@ -45,5 +45,5 @@ func (h *Admin) middlewares(opID string) []gin.HandlerFunc {
 
 // AdminPing ping pongs.
 func (h *Admin) AdminPing(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "501 not implemented")
+	c.String(http.StatusOK, "pong")
 }

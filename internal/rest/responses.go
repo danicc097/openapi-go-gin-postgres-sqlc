@@ -42,6 +42,10 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 
 		case internal.ErrorCodeAlreadyExists:
 			status = http.StatusConflict
+		case internal.ErrorCodeUnauthorized:
+			status = http.StatusForbidden
+		case internal.ErrorCodeUnauthenticated:
+			status = http.StatusUnauthorized
 		case internal.ErrorCodeUnknown:
 			fallthrough
 		default:
