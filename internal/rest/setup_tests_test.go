@@ -1,16 +1,20 @@
 package rest
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
+	redis "github.com/go-redis/redis/v8"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -41,31 +45,33 @@ func testMain(m *testing.M) int {
 	return m.Run()
 }
 
-func runTestServer(pool *pgxpool.Pool, mws []gin.HandlerFunc) (*http.Server, error) {
+func runTestServer(t *testing.T, pool *pgxpool.Pool, mws []gin.HandlerFunc) (*http.Server, error) {
+	ctx := context.Background()
 
 	if err := envvar.Load(fmt.Sprintf("../../.env.%s", os.Getenv("APP_ENV"))); err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
 	}
 
-	provider, err := vault.New()
-	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewVaultProvider")
-	}
+	// provider, err := vault.New()
+	// if err != nil {
+	// 	return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewVaultProvider")
+	// }
 
-	conf := envvar.New(provider)
+	// conf := envvar.New(provider)
 
-	rdb, err := redis.New(conf)
-	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewRedis")
-	}
+	s := miniredis.RunT(t)
+	rdb := redis.NewClient(&redis.Options{
+		Addr: s.Addr(),
+	})
+	// sanity check
+	rdb.Set(ctx, "foo", "bar", 10*time.Second)
+	assert.Equal(t, "bar", rdb.Get(ctx, "foo").Val())
 
+	logger, err := zap.NewDevelopment()
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.zapNew")
 	}
 
-	logger, _ := zap.NewDevelopment()
-
-	// TODO validation middleware
 	_, err = openapi3.NewLoader().LoadFromFile("../../openapi.yaml")
 	if err != nil {
 		panic(err)

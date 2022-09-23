@@ -13,7 +13,7 @@ import (
 func TestPingRoute(t *testing.T) {
 	t.Parallel()
 
-	srv, err := runTestServer(pool, []gin.HandlerFunc{})
+	srv, err := runTestServer(t, pool, []gin.HandlerFunc{})
 	if err != nil {
 		t.Fatalf("Couldn't run test server: %s\n", err)
 	}

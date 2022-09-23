@@ -30,6 +30,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
+	"github.com/gin-contrib/pprof"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -52,6 +53,8 @@ func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
 	}
 
 	router := gin.Default()
+
+	pprof.Register(router, "dev/pprof")
 
 	for _, mw := range mws {
 		router.Use(mw)
