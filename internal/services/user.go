@@ -37,6 +37,7 @@ func (u *User) Create(ctx context.Context, params models.CreateUserRequest) (mod
 
 	res, err := u.urepo.Create(ctx, params)
 	if err != nil {
+		// TODO database info is leaked if its inaccessible
 		return models.CreateUserResponse{}, errors.Wrap(err, "urepo.Create")
 	}
 

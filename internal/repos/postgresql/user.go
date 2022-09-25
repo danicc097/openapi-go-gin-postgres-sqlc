@@ -25,6 +25,8 @@ func NewUser(d db.DBTX) *User {
 // TODO use xo instead. need triggers
 // Create inserts a new user record.
 func (u *User) Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error) {
+	defer newOTELSpan(ctx, "User.Create").End()
+
 	// TODO logger needs to be passed down to repo as well
 	// environment.Logger.Sugar().Infof("users.Create.params: %v", params)
 	// TODO creating salt, etc. delegated to jwt.go service

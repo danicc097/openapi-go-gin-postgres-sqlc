@@ -8,6 +8,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/otel"
 )
 
 // ErrorResponse represents a response containing an error message.
@@ -51,7 +52,12 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 		}
 	}
 
-	fmt.Printf("Error: %v\n", err)
+	if err != nil {
+		_, span := otel.Tracer(otelName).Start(c.Request.Context(), "renderErrorResponse")
+		defer span.End()
+
+		span.RecordError(err)
+	}
 
 	renderResponse(c, resp, status)
 }

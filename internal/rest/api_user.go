@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
@@ -108,9 +107,8 @@ func (h *User) middlewares(opID string) []gin.HandlerFunc {
 
 // CreateUser creates a new user.
 func (h *User) CreateUser(c *gin.Context) {
-	// _, span := h.tp.Start(c.Request.Context(), "CreateUser")
-	// defer span.End()
-	defer newOTELSpan(c, h.tp, "User.CreateUser").End()
+	ctx := c.Request.Context() // spans should use same context to have shared trace. FIXME not working
+	defer newOTELSpan(ctx, "User.CreateUser").End()
 
 	var user models.CreateUserRequest
 
@@ -119,7 +117,7 @@ func (h *User) CreateUser(c *gin.Context) {
 		return
 	}
 
-	res, err := h.userSvc.Create(context.Background(), user)
+	res, err := h.userSvc.Create(ctx, user)
 	if err != nil {
 		renderErrorResponse(c, "error creating user", err)
 		return

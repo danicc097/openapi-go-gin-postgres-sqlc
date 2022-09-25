@@ -1,16 +1,19 @@
-package rest
+package postgresql
 
 import (
 	"context"
 
 	"go.opentelemetry.io/otel"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
-const otelName = "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
+const otelName = "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 
 func newOTELSpan(ctx context.Context, name string) trace.Span {
 	_, span := otel.Tracer(otelName).Start(ctx, name)
+
+	span.SetAttributes(semconv.DBSystemPostgreSQL)
 
 	return span
 }

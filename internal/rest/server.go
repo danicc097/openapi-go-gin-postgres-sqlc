@@ -33,6 +33,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/gin-contrib/pprof"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -59,9 +60,8 @@ func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
 	// WithPropagators
 	// WithTracerProvider
 	router := gin.Default()
-	// FIXME
-	// p := jaegerp.Jaeger{}
-	// router.Use(otelgin.Middleware("rest-server", otelgin.WithTracerProvider(conf.Tracer), otelgin.WithPropagators(p)))
+	// don't set propagator here again
+	router.Use(otelgin.Middleware("rest-server", otelgin.WithTracerProvider(conf.Tracer)))
 	pprof.Register(router, "dev/pprof")
 
 	for _, mw := range mws {
@@ -201,16 +201,10 @@ func Run(env, address, specPath string) (<-chan error, error) {
 	}
 
 	tp := tracing.InitTracer()
-	defer func() {
-		if err := tp.Shutdown(context.Background()); err != nil {
-			log.Printf("Error shutting down tracer provider: %v", err)
-		}
-	}()
 
 	ctx := context.Background()
-	tracer := tp.Tracer("server-tracer")
 
-	_, span := tracer.Start(ctx, "trace-1")
+	_, span := tp.Tracer("server-start-tracer").Start(ctx, "server-start")
 	defer span.End()
 
 	srv, err := NewServer(Config{
@@ -239,9 +233,13 @@ func Run(env, address, specPath string) (<-chan error, error) {
 
 		ctxTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
+		// any action on shutdown must be deferred here and not in the main block
 		defer func() {
 			_ = logger.Sync()
 
+			if err := tp.Shutdown(context.Background()); err != nil {
+				log.Printf("Error shutting down tracer provider: %v", err)
+			}
 			pool.Close()
 			// rmq.Close()
 			rdb.Close()
