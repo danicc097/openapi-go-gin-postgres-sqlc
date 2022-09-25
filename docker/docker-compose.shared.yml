@@ -55,6 +55,14 @@ services:
       VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8300"
     logging: *default-logging
 
+  jaeger:
+    image: jaegertracing/all-in-one
+    container_name: jaeger
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "14268:14268"
+    logging: *default-logging
+
 networks:
   traefik-net:
     name: traefik-net

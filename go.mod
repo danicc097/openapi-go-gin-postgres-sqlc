@@ -12,7 +12,7 @@ require (
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-migrate/migrate/v4 v4.15.2
-	github.com/google/go-cmp v0.5.8
+	github.com/google/go-cmp v0.5.9
 	github.com/hashicorp/vault/api v1.7.2
 	github.com/jackc/pgconn v1.12.1
 	github.com/jackc/pgtype v1.11.0
@@ -23,6 +23,11 @@ require (
 	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d
 	github.com/smartystreets/gunit v1.4.3
 	github.com/stretchr/testify v1.8.0
+	go.opentelemetry.io/contrib/propagators/jaeger v1.10.0
+	go.opentelemetry.io/otel v1.10.0
+	go.opentelemetry.io/otel/exporters/jaeger v1.10.0
+	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.10.0
+	go.opentelemetry.io/otel/sdk v1.10.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
@@ -31,7 +36,10 @@ require (
 
 require (
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
+	github.com/go-logr/logr v1.2.3 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9 // indirect
+	go.opentelemetry.io/otel/trace v1.10.0 // indirect
 )
 
 require (

@@ -80,3 +80,11 @@ func GetenvBool(key string) (bool, error) {
 	}
 	return v, nil
 }
+
+func GetEnv(key, dft string) string {
+	v := os.Getenv(key)
+	if len(v) == 0 {
+		return dft
+	}
+	return v
+}

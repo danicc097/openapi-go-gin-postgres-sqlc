@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -29,6 +30,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/gin-contrib/pprof"
 
@@ -158,6 +160,20 @@ func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
 
 // Run configures a server and underlying services with the given configuration.
 func Run(env, address, specPath string) (<-chan error, error) {
+	tp := tracing.InitTracer()
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			log.Printf("Error shutting down tracer provider: %v", err)
+		}
+	}()
+
+	ctx := context.Background()
+	pp := envvar.GetEnv("PROJECT_PREFIX", "project-prefix")
+	tracer := tp.Tracer(pp + "-server-tracer")
+
+	ctx, span := tracer.Start(ctx, pp+"-server-trace-1")
+	defer span.End()
+
 	if err := envvar.Load(env); err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
 	}
