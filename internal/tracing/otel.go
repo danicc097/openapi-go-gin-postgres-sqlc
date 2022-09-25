@@ -41,6 +41,5 @@ func InitTracer() *sdktrace.TracerProvider {
 	otel.SetTracerProvider(tp)
 	p := jaegerp.Jaeger{}
 	otel.SetTextMapPropagator(p)
-
 	return tp
 }
