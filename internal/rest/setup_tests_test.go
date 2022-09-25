@@ -20,6 +20,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/jackc/pgx/v4/stdlib"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/zap"
 )
 
@@ -83,6 +84,7 @@ func runTestServer(t *testing.T, pool *pgxpool.Pool, mws []gin.HandlerFunc) (*ht
 		Redis:    rdb,
 		Logger:   logger,
 		SpecPath: "../../openapi.yaml",
+		Tracer:   sdktrace.NewTracerProvider(),
 	}, mws)
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "New")

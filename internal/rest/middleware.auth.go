@@ -52,7 +52,6 @@ func (t *Auth) EnsureAuthenticated() gin.HandlerFunc {
 // based on token -> email -> GetUserByEmail
 func (t *Auth) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		t.Logger.Sugar().Info("Would have run EnsureAuthorized")
 		user := GetUserFromCtx(c)
 		if user == nil {
 			renderErrorResponse(c, "Could not get user from context.", nil)
