@@ -265,8 +265,8 @@ func Run(env, address, specPath string) (<-chan error, error) {
 		var err error
 		switch env := os.Getenv("APP_ENV"); env {
 		case "dev", "ci":
-			err = srv.ListenAndServe()
-			// err = srv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")
+			// err = srv.ListenAndServe()
+			err = srv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")
 		case "prod":
 			err = srv.ListenAndServe()
 		default:

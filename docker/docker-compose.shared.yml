@@ -61,7 +61,8 @@ services:
     ports:
       - "16686:16686" # Jaeger UI
       - "14268:14268"
-    # environment:
+    environment:
+      ADMIN_HTTP_TLS_ENABLED: "false"
     #   SPAN_STORAGE_TYPE: elasticsearch
     #   ES_SERVER_URLS: http://elasticsearch:9200
     # depends_on:

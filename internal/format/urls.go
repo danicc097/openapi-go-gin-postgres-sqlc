@@ -28,7 +28,7 @@ func BuildBackendURL(subpaths ...string) string {
 	}
 
 	dsn := url.URL{
-		Scheme: "http",
+		Scheme: "https",
 		Host:   host,
 		Path:   path,
 	}
