@@ -16,7 +16,7 @@ package tracing
 // 	processor "go.opentelemetry.io/otel/sdk/metric/processor/basic"
 // 	selector "go.opentelemetry.io/otel/sdk/metric/selector/simple"
 // 	"go.opentelemetry.io/otel/sdk/resource"
-// 	"go.opentelemetry.io/otel/sdk/trace"
+// 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 // 	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
 
 // 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"

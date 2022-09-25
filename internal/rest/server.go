@@ -33,6 +33,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/gin-contrib/pprof"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -46,6 +47,7 @@ type Config struct {
 	Logger  *zap.Logger
 	// SpecPath is the OpenAPI spec filepath.
 	SpecPath string
+	Tracer   *sdktrace.TracerProvider
 }
 
 // NewServer returns a new http server.
@@ -54,8 +56,12 @@ func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
 		v.RegisterValidation("alphanumspace", Alphanumspace)
 	}
 
+	// WithPropagators
+	// WithTracerProvider
 	router := gin.Default()
-
+	// FIXME
+	// p := jaegerp.Jaeger{}
+	// router.Use(otelgin.Middleware("rest-server", otelgin.WithTracerProvider(conf.Tracer), otelgin.WithPropagators(p)))
 	pprof.Register(router, "dev/pprof")
 
 	for _, mw := range mws {
@@ -142,7 +148,7 @@ func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
 	NewStore(storeSvc).
 		Register(vg, []gin.HandlerFunc{})
 
-	NewUser(conf.Logger, userSvc, authnSvc, authzSvc).
+	NewUser(conf.Tracer, conf.Logger, userSvc, authnSvc, authzSvc).
 		Register(vg, []gin.HandlerFunc{})
 	// TODO /admin with authMw.EnsureAuthorized() in group
 
@@ -160,20 +166,6 @@ func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
 
 // Run configures a server and underlying services with the given configuration.
 func Run(env, address, specPath string) (<-chan error, error) {
-	tp := tracing.InitTracer()
-	defer func() {
-		if err := tp.Shutdown(context.Background()); err != nil {
-			log.Printf("Error shutting down tracer provider: %v", err)
-		}
-	}()
-
-	ctx := context.Background()
-	pp := envvar.GetEnv("PROJECT_PREFIX", "project-prefix")
-	tracer := tp.Tracer(pp + "-server-tracer")
-
-	ctx, span := tracer.Start(ctx, pp+"-server-trace-1")
-	defer span.End()
-
 	if err := envvar.Load(env); err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
 	}
@@ -208,12 +200,26 @@ func Run(env, address, specPath string) (<-chan error, error) {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "zap.New")
 	}
 
+	tp := tracing.InitTracer()
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			log.Printf("Error shutting down tracer provider: %v", err)
+		}
+	}()
+
+	ctx := context.Background()
+	tracer := tp.Tracer("server-tracer")
+
+	_, span := tracer.Start(ctx, "trace-1")
+	defer span.End()
+
 	srv, err := NewServer(Config{
 		Address:  address,
 		Pool:     pool,
 		Redis:    rdb,
 		Logger:   logger,
 		SpecPath: specPath,
+		Tracer:   tp,
 	}, []gin.HandlerFunc{})
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "NewServer")

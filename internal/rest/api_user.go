@@ -6,11 +6,13 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	"github.com/gin-gonic/gin"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.uber.org/zap"
 )
 
 // User handles routes with the 'user' tag.
 type User struct {
+	tp       *sdktrace.TracerProvider
 	logger   *zap.Logger
 	userSvc  UserService
 	authnSvc AuthenticationService
@@ -19,12 +21,14 @@ type User struct {
 
 // NewUser returns a new handler for the 'user' route group.
 func NewUser(
+	tp *sdktrace.TracerProvider,
 	logger *zap.Logger,
 	userSvc UserService,
 	authnSvc AuthenticationService,
 	authzSvc AuthorizationService,
 ) *User {
 	return &User{
+		tp:       tp,
 		logger:   logger,
 		userSvc:  userSvc,
 		authnSvc: authnSvc,
@@ -104,6 +108,10 @@ func (h *User) middlewares(opID string) []gin.HandlerFunc {
 
 // CreateUser creates a new user.
 func (h *User) CreateUser(c *gin.Context) {
+	// _, span := h.tp.Start(c.Request.Context(), "CreateUser")
+	// defer span.End()
+	defer newOTELSpan(c, h.tp, "User.CreateUser").End()
+
 	var user models.CreateUserRequest
 
 	if err := c.BindJSON(&user); err != nil {

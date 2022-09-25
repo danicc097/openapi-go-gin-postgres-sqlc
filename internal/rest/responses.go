@@ -10,8 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const otelName = "github.com/MarioCarrion/todo-api/internal/rest"
-
 // ErrorResponse represents a response containing an error message.
 type ErrorResponse struct {
 	Error   string `json:"error"`

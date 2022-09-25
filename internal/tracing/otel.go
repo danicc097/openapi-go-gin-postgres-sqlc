@@ -2,8 +2,8 @@ package tracing
 
 import (
 	"log"
-	"os"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	jaegerp "go.opentelemetry.io/contrib/propagators/jaeger"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -35,10 +35,9 @@ func InitTracer() *sdktrace.TracerProvider {
 		sdktrace.WithBatcher(jaegerExporter),
 		sdktrace.WithResource(resource.NewSchemaless(attribute.KeyValue{
 			Key:   semconv.ServiceNameKey,
-			Value: attribute.StringValue(os.Getenv("PROJECT_PREFIX")),
+			Value: attribute.StringValue(envvar.GetEnv("PROJECT_PREFIX", "project-prefix")),
 		})),
 	)
-
 	otel.SetTracerProvider(tp)
 	p := jaegerp.Jaeger{}
 	otel.SetTextMapPropagator(p)
