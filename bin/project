@@ -123,7 +123,7 @@ x.postgen() {
 
 # Generate type-safe Go code from SQL.
 x.generate.sqlc() {
-  { cd $PG_REPO && sqlc generate && cd -; } || err "Failed sqlc generation"
+  { cd $PG_REPO && sqlc generate && cd - >/dev/null; } || err "Failed sqlc generation"
 }
 
 # Automatically generate CRUD and By queries based on existing indexes from
@@ -157,17 +157,21 @@ x.generate.counterfeiter() {
 
 # Generates the required servers/clients for relevant services.
 x.generate.proto() {
-  IMPORT_PATH="github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb"
-  FILENAME="internal/python-ml-app-protos/tfidf/v1/service.proto"
-  # -I internal/python-ml-app-protos \
-  rm -rf ./internal/pb
-  mkdir -p ./internal/pb
-  protoc \
-    --go-grpc_out=./internal/pb/. \
-    --go_out=./internal/pb/. \
-    --go-grpc_opt=M$FILENAME=$IMPORT_PATH,paths=source_relative \
-    --go_opt=M$FILENAME=$IMPORT_PATH,paths=source_relative \
-    internal/python-ml-app-protos/tfidf/v1/service.proto
+  (
+    cd internal
+    IMPORT_PATH="./python-ml-app-protos/tfidf/v1"
+    FILENAME="python-ml-app-protos/tfidf/v1/service.proto"
+    # -I python-ml-app-protos \
+    rm -rf ./pb
+    mkdir -p ./pb
+    protoc \
+      --go-grpc_out=./pb/. \
+      --go_out=./pb/. \
+      --go-grpc_opt=M$FILENAME=$IMPORT_PATH,paths=import \
+      --go_opt=M$FILENAME=$IMPORT_PATH,paths=import \
+      python-ml-app-protos/tfidf/v1/service.proto
+    cd - >/dev/null
+  )
 }
 
 # Run all codegen and postgen commands for the project.
@@ -279,7 +283,7 @@ x.run-hot-reload() {
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,internal/gen,$PG_REPO/gen,tests/testdata,frontend,*.cache" \
+    --build.exclude_dir ".git,tmp,internal/gen,internal/pb,$PG_REPO/gen,tests/testdata,frontend,*.cache" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
@@ -344,7 +348,7 @@ x.run-prod() {
   run_shared_services
   x.db.recreate-database
 
-  cd frontend && pnpm run generate && cd -
+  cd frontend && pnpm run generate && cd - >/dev/null
   x.generate
 
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
@@ -363,7 +367,7 @@ run_shared_services() {
     -f docker-compose.shared.yml \
     --env-file ../.env."$env" \
     up -d --remove-orphans
-  cd -
+  cd - >/dev/null
 }
 
 # Ensure no breaking changes to the OpenAPI spec in the same version are present.

@@ -28,6 +28,9 @@ func NewUser(urepo UserRepo, logger *zap.Logger, pool *pgxpool.Pool) *User {
 func (u *User) Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error) {
 	u.logger.Sugar().Debugf("CreateUser.user: %v", params)
 
+	// TODO remove once traces tested
+	DummyMoviePrediction()
+
 	res, err := u.urepo.Create(ctx, params)
 	if err != nil {
 		// TODO database info is leaked if its inaccessible
