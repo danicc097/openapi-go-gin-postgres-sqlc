@@ -1,3 +1,4 @@
+// grouped for generation caching purposes
 package rest
 
 import (

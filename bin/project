@@ -143,13 +143,14 @@ x.generate.counterfeiter() {
 
   envvar="internal/envvar/envvar.go"
   services="internal/rest/services.go"
+  repos="internal/services/repos.go"
 
   if ! md5sum -c "$cache/counterfeiter.md5" >/dev/null || [[ $force_regen -eq 1 ]]; then
     counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
     counterfeiter -o internal/rest/resttesting/authorization.gen.go $services AuthorizationService &
     counterfeiter -o internal/rest/resttesting/authentication.gen.go $services AuthenticationService &
-    counterfeiter -o internal/services/servicestesting/user.gen.go "internal/services/user.go" UserRepo &
-    md5sum $envvar $services >"$cache/counterfeiter.md5" &
+    counterfeiter -o internal/services/servicestesting/user.gen.go $repos UserRepo &
+    md5sum $envvar $services $repos >"$cache/counterfeiter.md5" &
     wait
   fi
 }
