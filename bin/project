@@ -36,6 +36,7 @@ MAX_COMMENT_LEN=88
 x.check-build-deps() {
   local -i fails
   check.column || { ((fails++)) && true; }
+  check.protoc || { ((fails++)) && true; }
   check.bash || { ((fails++)) && true; }
   check.go || { ((fails++)) && true; }
   check.java || { ((fails++)) && true; }
@@ -158,17 +159,17 @@ x.generate.counterfeiter() {
 # Generates the required servers/clients for relevant services.
 x.generate.proto() {
   (
+    local import_path="./python-ml-app-protos/tfidf/v1"
+    local filename="python-ml-app-protos/tfidf/v1/service.proto"
+
     cd internal
-    IMPORT_PATH="./python-ml-app-protos/tfidf/v1"
-    FILENAME="python-ml-app-protos/tfidf/v1/service.proto"
-    # -I python-ml-app-protos \
     rm -rf ./pb
     mkdir -p ./pb
     protoc \
       --go-grpc_out=./pb/. \
       --go_out=./pb/. \
-      --go-grpc_opt=M$FILENAME=$IMPORT_PATH,paths=import \
-      --go_opt=M$FILENAME=$IMPORT_PATH,paths=import \
+      --go-grpc_opt=M$filename=$import_path,paths=import \
+      --go_opt=M$filename=$import_path,paths=import \
       python-ml-app-protos/tfidf/v1/service.proto
     cd - >/dev/null
   )

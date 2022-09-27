@@ -35,7 +35,7 @@ func InitTracer() *sdktrace.TracerProvider {
 		sdktrace.WithBatcher(jaegerExporter),
 		sdktrace.WithResource(resource.NewSchemaless(attribute.KeyValue{
 			Key:   semconv.ServiceNameKey,
-			Value: attribute.StringValue("rest-server"),
+			Value: attribute.StringValue("openapi-go-service"),
 		})),
 	)
 

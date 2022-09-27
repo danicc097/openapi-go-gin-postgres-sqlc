@@ -61,7 +61,7 @@ func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
 	// WithTracerProvider
 	router := gin.Default()
 	// don't set propagator here again
-	router.Use(otelgin.Middleware("rest-server", otelgin.WithTracerProvider(conf.Tracer)))
+	router.Use(otelgin.Middleware("", otelgin.WithTracerProvider(conf.Tracer)))
 	pprof.Register(router, "dev/pprof")
 
 	for _, mw := range mws {

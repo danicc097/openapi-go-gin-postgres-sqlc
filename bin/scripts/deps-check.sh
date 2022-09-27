@@ -23,6 +23,19 @@ check.column() {
     }
 }
 
+check.protoc() {
+  local vers
+  vers=$(protoc --version)
+  minver="libprotoc 3"
+  { [[ "$vers" = *$minver* ]] &&
+    printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: $minver"; } ||
+    {
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check.${OFF}"
+      echo "${YELLOW}Run install-protoc.sh to get $minver.${OFF}"
+      return 1
+    }
+}
+
 check.curl() {
   local -a versa
   mapfile versa < <(curl -V 2>&1)
