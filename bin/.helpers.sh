@@ -161,7 +161,7 @@ _pg_isready() {
     docker exec -t postgres_db_"$PROJECT_PREFIX" \
       pg_isready -U "$POSTGRES_USER" || {
       echo "${YELLOW}Waiting for postgres database to be ready...${OFF}"
-      sleep 1
+      sleep 2
       continue
     }
     pg_ready=1
