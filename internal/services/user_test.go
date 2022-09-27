@@ -31,7 +31,7 @@ func TestUser_Create(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "user created",
+			name: "user_created",
 			fields: fields{
 				urepo: &servicestesting.FakeUserRepo{CreateStub: func(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error) {
 					return models.CreateUserResponse{AccessToken: "abcd", UserId: 1}, nil
@@ -45,6 +45,7 @@ func TestUser_Create(t *testing.T) {
 					Email:    "email@mail.com",
 					Password: "password",
 				},
+				ctx: context.Background(),
 			},
 			want: models.CreateUserResponse{AccessToken: "abcd", UserId: 1},
 		},

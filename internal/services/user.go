@@ -29,7 +29,8 @@ func (u *User) Create(ctx context.Context, params models.CreateUserRequest) (mod
 	u.logger.Sugar().Debugf("CreateUser.user: %v", params)
 
 	// TODO remove once traces tested
-	DummyMoviePrediction()
+	// TODO counterfeiter on MovieGenreClient, package name <dir>testing with generated pb
+	DummyMoviePrediction(ctx)
 
 	res, err := u.urepo.Create(ctx, params)
 	if err != nil {
