@@ -32,3 +32,6 @@ runs:
         bin/scripts/install-mkcert.sh &
         bin/scripts/install-proto.sh &
         wait
+
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        echo "$HOME/bin" >> $GITHUB_PATH
