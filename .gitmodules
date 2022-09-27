@@ -1,0 +1,3 @@
+[submodule "internal/python-ml-app-protos"]
+	path = internal/python-ml-app-protos
+	url = git@github.com:danicc097/python-ml-app-protos.git

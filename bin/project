@@ -72,6 +72,7 @@ x.install-tools() {
 
   go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
   go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@v0.2.0
+  go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
   GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
 }
@@ -153,6 +154,21 @@ x.generate.counterfeiter() {
   fi
 }
 
+# Generates the required servers/clients for relevant services.
+x.generate.proto() {
+  IMPORT_PATH="github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb"
+  FILENAME="internal/python-ml-app-protos/tfidf/v1/service.proto"
+  # -I internal/python-ml-app-protos \
+  rm -rf ./internal/pb
+  mkdir -p ./internal/pb
+  protoc \
+    --go-grpc_out=./internal/pb/. \
+    --go_out=./internal/pb/. \
+    --go-grpc_opt=M$FILENAME=$IMPORT_PATH,paths=source_relative \
+    --go_opt=M$FILENAME=$IMPORT_PATH,paths=source_relative \
+    internal/python-ml-app-protos/tfidf/v1/service.proto
+}
+
 # Run all codegen and postgen commands for the project.
 x.generate() {
   local pids
@@ -170,6 +186,8 @@ x.generate() {
   x.generate.sqlc &
   pids+=($!)
   x.generate.xo &
+  pids+=($!)
+  x.generate.proto &
   pids+=($!)
   x.postgen "$cache" &
   pids+=($!)
