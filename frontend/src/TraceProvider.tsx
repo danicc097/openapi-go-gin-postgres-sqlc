@@ -10,33 +10,17 @@ import { BatchSpanProcessor, ConsoleSpanExporter, SimpleSpanProcessor } from '@o
 import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load'
 import { BatchSpanProcessorBase } from '@opentelemetry/sdk-trace-base/build/src/export/BatchSpanProcessorBase'
 import { B3Propagator } from '@opentelemetry/propagator-b3'
+import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
+import { CompositePropagator, W3CBaggagePropagator, W3CTraceContextPropagator } from '@opentelemetry/core'
+import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web'
 
-const collectorOptions = {
-  // url: 'http://localhost:9411/api/v2/spans',
-  // headers: {
-  //   // 'Content-Type': 'application/json',
-  //   // 'Access-Control-Allow-Headers': '*',
-  //   // 'X-CSRF': '1',
-  // },
-  // concurrencyLimit: 10,
-}
-
-// Trace provider (Main aplication trace)
 const provider = new WebTracerProvider({
   resource: new Resource({
-    'service.name': 'Frontend',
+    [SemanticResourceAttributes.SERVICE_NAME]: 'frontend',
   }),
 })
 
-// Exporter (opentelemetry collector hidden behind bff proxy)
-// const exporter = new OTLPTraceExporter(collectorOptions)
-// Instrumentation configurations for frontend
-const fetchInstrumentation = new FetchInstrumentation({
-  ignoreUrls: ['https://some-ignored-url.com'],
-})
-
-fetchInstrumentation.setTracerProvider(provider)
-
+provider.addSpanProcessor(new BatchSpanProcessor(new ConsoleSpanExporter()))
 provider.addSpanProcessor(
   new BatchSpanProcessor(
     new ZipkinExporter({
@@ -47,8 +31,7 @@ provider.addSpanProcessor(
     }),
   ),
 )
-provider.addSpanProcessor(new BatchSpanProcessor(new ConsoleSpanExporter()))
-// otlp http://localhost:4318/v1/traces net::ERR_CONNECTION_REFUSED
+// FIXME otlp http://localhost:4318/v1/traces net::ERR_CONNECTION_REFUSED
 provider.addSpanProcessor(
   new BatchSpanProcessor(
     new OTLPTraceExporter({
@@ -60,33 +43,30 @@ provider.addSpanProcessor(
   ),
 )
 
-provider.register({ propagator: new B3Propagator() })
+const contextManager = new ZoneContextManager()
+provider.register({
+  contextManager,
+  propagator: new CompositePropagator({
+    propagators: [new W3CBaggagePropagator(), new W3CTraceContextPropagator()],
+  }),
+})
 
 registerInstrumentations({
-  // , new DocumentLoadInstrumentation() not working as expected with SPA...
+  tracerProvider: provider,
   instrumentations: [
-    new FetchInstrumentation(),
-    new XMLHttpRequestInstrumentation({
-      ignoreUrls: [/localhost:8090\/sockjs-node/],
-      propagateTraceHeaderCorsUrls: ['https://httpbin.org/get'],
+    getWebAutoInstrumentations({
+      '@opentelemetry/instrumentation-fetch': {
+        propagateTraceHeaderCorsUrls: /.*/,
+        clearTimingResources: true,
+      },
+      '@opentelemetry/instrumentation-document-load': {
+        enabled: false,
+      },
     }),
   ],
 })
 
-// provider.addSpanProcessor(
-//   new SimpleSpanProcessor(
-//     new ZipkinExporter({
-//       // testing interceptor
-//       // getExportRequestHeaders: ()=> {
-//       //   return {
-//       //     foo: 'bar',
-//       //   }
-//       // }
-//     }),
-//   ),
-// )
-
-export const tracer = provider.getTracer('example-tracer-web')
+export const tracer = provider.getTracer('frontend')
 
 export type TraceProviderProps = {
   children?: React.ReactNode

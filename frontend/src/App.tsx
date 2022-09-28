@@ -13,6 +13,7 @@ import type { ValidationErrors } from 'src/client-validator/validate'
 import { useForm } from '@mantine/form'
 import { validateField } from 'src/utils/validation'
 import { tracer } from 'src/TraceProvider'
+import { withSpan } from 'src/utils/tracing'
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
@@ -63,7 +64,8 @@ function App() {
   }
 
   const form = useForm<CreateUserRequestForm>({
-    initialValues: { username: '', email: '', password: '', passwordConfirm: '' },
+    // TODO blank
+    initialValues: { username: 'user', email: 'user@mail', password: '12341234', passwordConfirm: '12341234' },
     validateInputOnChange: true,
     validate: {
       username: (v, vv, path) => validateField(CreateUserRequestDecoder, path, vv),
@@ -75,8 +77,6 @@ function App() {
 
   const fetchData = async () => {
     try {
-      tracer.startSpan('testspan').end()
-
       const createUserRequest = CreateUserRequestDecoder.decode(form.values)
 
       const payload = await createUser(createUserRequest).unwrap()
@@ -161,7 +161,7 @@ function App() {
 
   const handleSubmit = async (values: typeof form.values, e) => {
     e.preventDefault()
-    await fetchData()
+    withSpan(fetchData, 'createUserRequest')()
   }
 
   return (
