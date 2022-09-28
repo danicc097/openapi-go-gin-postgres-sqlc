@@ -13,6 +13,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	server "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func openBrowser(url string) {
@@ -44,6 +45,13 @@ func main() {
 	flag.Parse()
 
 	// go openBrowser(url)
+
+	var cpuTemp = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "cpu_temperature_celsius",
+		Help: "Current temperature of the CPU.",
+	})
+	prometheus.MustRegister(cpuTemp)
+	cpuTemp.Set(65.3)
 
 	errC, err := server.Run(env, address, specPath)
 	if err != nil {

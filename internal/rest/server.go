@@ -32,7 +32,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -64,12 +63,6 @@ func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
 	// don't set propagator here again
 	router.Use(otelgin.Middleware("", otelgin.WithTracerProvider(conf.Tracer)))
 	// pprof.Register(router, "dev/pprof")
-	var cpuTemp = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "cpu_temperature_celsius",
-		Help: "Current temperature of the CPU.",
-	})
-	prometheus.MustRegister(cpuTemp)
-	cpuTemp.Set(65.3)
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	for _, mw := range mws {
