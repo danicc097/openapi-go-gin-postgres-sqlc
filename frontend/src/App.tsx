@@ -12,6 +12,7 @@ import type { schemas } from 'src/types/schema'
 import type { ValidationErrors } from 'src/client-validator/validate'
 import { useForm } from '@mantine/form'
 import { validateField } from 'src/utils/validation'
+import { tracer } from 'src/TraceProvider'
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
@@ -74,6 +75,8 @@ function App() {
 
   const fetchData = async () => {
     try {
+      tracer.startSpan('testspan').end()
+
       const createUserRequest = CreateUserRequestDecoder.decode(form.values)
 
       const payload = await createUser(createUserRequest).unwrap()

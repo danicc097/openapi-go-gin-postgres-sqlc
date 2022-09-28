@@ -64,9 +64,12 @@ services:
       - 14268:14268 # spans directly from clients in jaeger.thrift format over binary thrift protocol
       # https://www.jaegertracing.io/docs/1.23/apis/#grpcprotobuf-stable
       - 16685:16685
+      - 14250:14250
       - "6832:6832/udp" # jaeger.thrift via UDP (binary)
     environment:
       ADMIN_HTTP_TLS_ENABLED: "false"
+      COLLECTOR_ZIPKIN_HOST_PORT: ":9411"
+      COLLECTOR_OTLP_ENABLED: "true"
     #   SPAN_STORAGE_TYPE: elasticsearch
     #   ES_SERVER_URLS: http://elasticsearch:9200
     # depends_on:
@@ -80,6 +83,18 @@ services:
       - 9411:9411
     restart: unless-stopped
     logging: *default-logging
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    volumes:
+      # TODO have prometheus.template.yml with $ENVVAR
+      # and run replace-envvars.sh as in frontend's generate
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+      - ${HOME}/.local/share/mkcert/rootCA.pem:/mkcert-rootCA.pem
+    ports:
+      - "9090:9090"
+    network_mode: host
 
   # elasticsearch:
   #   # limited by jaeger as of now

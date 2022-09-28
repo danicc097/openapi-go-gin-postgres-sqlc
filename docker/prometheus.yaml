@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 5s # Default is every 1 minute.
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+  - job_name: "openapi-go"
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+    # TODO in the future use otlp collector (collector-config)
+    # static_configs:
+    #   - targets: ["collector:9464"]
+    scheme: https
+    tls_config:
+      ca_file: /mkcert-rootCA.pem
+    static_configs:
+      - targets: ["localhost:8090"]
