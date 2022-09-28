@@ -1,6 +1,7 @@
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web'
 import { ZoneContextManager } from '@opentelemetry/context-zone'
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch'
+import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request'
 import { registerInstrumentations } from '@opentelemetry/instrumentation'
 import { Resource } from '@opentelemetry/resources'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
@@ -8,6 +9,7 @@ import { ZipkinExporter } from '@opentelemetry/exporter-zipkin'
 import { BatchSpanProcessor, ConsoleSpanExporter, SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load'
 import { BatchSpanProcessorBase } from '@opentelemetry/sdk-trace-base/build/src/export/BatchSpanProcessorBase'
+import { B3Propagator } from '@opentelemetry/propagator-b3'
 
 const collectorOptions = {
   // url: 'http://localhost:9411/api/v2/spans',
@@ -39,17 +41,36 @@ provider.addSpanProcessor(
   new BatchSpanProcessor(
     new ZipkinExporter({
       url: 'http://localhost:9411/api/v2/spans',
+      headers: {
+        'Content-Type': 'application/json', // by default uses text/plain -> 400
+      },
     }),
   ),
 )
 provider.addSpanProcessor(new BatchSpanProcessor(new ConsoleSpanExporter()))
+// otlp http://localhost:4318/v1/traces net::ERR_CONNECTION_REFUSED
+provider.addSpanProcessor(
+  new BatchSpanProcessor(
+    new OTLPTraceExporter({
+      url: 'http://localhost:4318/v1/traces',
+      headers: {
+        'Content-Type': 'application/json', // by default uses text/plain -> 400
+      },
+    }),
+  ),
+)
 
-provider.register()
+provider.register({ propagator: new B3Propagator() })
 
-// Registering instrumentations
 registerInstrumentations({
   // , new DocumentLoadInstrumentation() not working as expected with SPA...
-  instrumentations: [new FetchInstrumentation()],
+  instrumentations: [
+    new FetchInstrumentation(),
+    new XMLHttpRequestInstrumentation({
+      ignoreUrls: [/localhost:8090\/sockjs-node/],
+      propagateTraceHeaderCorsUrls: ['https://httpbin.org/get'],
+    }),
+  ],
 })
 
 // provider.addSpanProcessor(
