@@ -1,5 +1,5 @@
 global:
-  scrape_interval: 5s # Default is every 1 minute.
+  scrape_interval: 40s # Default is every 1 minute.
 
 scrape_configs:
   - job_name: prometheus
