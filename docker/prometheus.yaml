@@ -15,4 +15,5 @@ scrape_configs:
     tls_config:
       ca_file: /mkcert-rootCA.pem
     static_configs:
-      - targets: ["localhost:8090"]
+      # access localhost from container
+      - targets: ["host.docker.internal:8090"]

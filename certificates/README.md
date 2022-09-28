@@ -3,7 +3,7 @@
 Create with `mkcert`:
 
 ```bash
-mkcert --cert-file localhost.pem --key-file localhost-key.pem  localhost 127.0.0.1 ::1
+mkcert --cert-file localhost.pem --key-file localhost-key.pem  localhost 127.0.0.1 ::1 host.docker.internal
 mkcert -install
 ```
 

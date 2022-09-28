@@ -94,7 +94,9 @@ services:
       - ${HOME}/.local/share/mkcert/rootCA.pem:/mkcert-rootCA.pem
     ports:
       - "9090:9090"
-    network_mode: host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # network_mode: host
 
   # elasticsearch:
   #   # limited by jaeger as of now
