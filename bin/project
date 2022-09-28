@@ -295,10 +295,15 @@ x.run-hot-reload() {
 
 # Run frontend with hot-reloading.
 x.run-frontend() {
-  cd frontend
-  pnpm run generate
-  pnpm run dev |
-    sed -e "s/^/${GREEN}[Vite]${OFF} /"
+  cd frontend && pnpm run generate && cd - >/dev/null
+
+  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
+    --project-name "$PROJECT_PREFIX"_"$env" \
+    -f docker-compose."$env".yml \
+    --env-file ".env.$env" \
+    up -d --build
+  # pnpm run dev |
+  #   sed -e "s/^/${GREEN}[Vite]${OFF} /"
 }
 
 # air and vite hot reload working fine while watching

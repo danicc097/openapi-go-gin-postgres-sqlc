@@ -5,8 +5,11 @@ import dotenv from 'dotenv'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { resolve } from 'path'
 import dynamicImport from 'vite-plugin-dynamic-import'
+import Config from './config.json'
 
 dotenv.config()
+
+console.log('Number(Config.FRONTEND_PORT)', Number(Config.FRONTEND_PORT))
 
 export default ({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) }
@@ -27,7 +30,7 @@ export default ({ mode }) => {
     ],
 
     server: {
-      port: Number(process.env.VITE_PORT) || 5143,
+      port: Number(Config.FRONTEND_PORT) || 5143,
       strictPort: true,
       // hmr: {
       //   protocol: 'wss',

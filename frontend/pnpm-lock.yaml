@@ -7,6 +7,10 @@ specifiers:
   '@mantine/hooks': ^5.3.0
   '@mantine/notifications': ^5.3.0
   '@mantine/prism': ^5.3.0
+  '@opentelemetry/api': ^1.2.0
+  '@opentelemetry/exporter-zipkin': ^1.7.0
+  '@opentelemetry/sdk-trace-base': ^1.7.0
+  '@opentelemetry/sdk-trace-web': ^1.7.0
   '@reduxjs/toolkit': ^1.8.5
   '@rtk-query/codegen-openapi': ^1.0.0
   '@tabler/icons': ^1.95.1
@@ -50,6 +54,10 @@ dependencies:
   '@mantine/hooks': 5.3.0_react@18.2.0
   '@mantine/notifications': 5.3.0_6blp46xt7iaxtjhzvv24eh6u6a
   '@mantine/prism': 5.3.0_6blp46xt7iaxtjhzvv24eh6u6a
+  '@opentelemetry/api': 1.2.0
+  '@opentelemetry/exporter-zipkin': 1.7.0_@opentelemetry+api@1.2.0
+  '@opentelemetry/sdk-trace-base': 1.7.0_@opentelemetry+api@1.2.0
+  '@opentelemetry/sdk-trace-web': 1.7.0_@opentelemetry+api@1.2.0
   '@reduxjs/toolkit': 1.8.5_kkwg4cbsojnjnupd3btipussee
   '@rtk-query/codegen-openapi': 1.0.0_openapi-types@12.0.2
   '@tabler/icons': 1.95.1_biqbaboplfbrettd7655fr4n2y
@@ -620,7 +628,7 @@ packages:
     dependencies:
       '@types/istanbul-lib-coverage': 2.0.4
       '@types/istanbul-reports': 3.0.1
-      '@types/node': 18.7.15
+      '@types/node': 18.7.16
       '@types/yargs': 15.0.14
       chalk: 4.1.2
     dev: true
@@ -782,6 +790,74 @@ packages:
     dependencies:
       fast-deep-equal: 3.1.3
     dev: true
+
+  /@opentelemetry/api/1.2.0:
+    resolution: {integrity: sha512-0nBr+VZNKm9tvNDZFstI3Pq1fCTEDK5OZTnVKNvBNAKgd0yIvmwsP4m61rEv7ZP+tOUjWJhROpxK5MsnlF911g==}
+    engines: {node: '>=8.0.0'}
+    dev: false
+
+  /@opentelemetry/core/1.7.0_@opentelemetry+api@1.2.0:
+    resolution: {integrity: sha512-AVqAi5uc8DrKJBimCTFUT4iFI+5eXpo4sYmGbQ0CypG0piOTHE2g9c5aSoTGYXu3CzOmJZf7pT6Xh+nwm5d6yQ==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.0.0 <1.3.0'
+    dependencies:
+      '@opentelemetry/api': 1.2.0
+      '@opentelemetry/semantic-conventions': 1.7.0
+    dev: false
+
+  /@opentelemetry/exporter-zipkin/1.7.0_@opentelemetry+api@1.2.0:
+    resolution: {integrity: sha512-SsF3nt4vXl7ER89Mgysq2tFJZBsNhqX21PbU6jfqXbVfw/hw2IFtcya+IG3m5bI5r6RDbVGeWkOlMPmeH34idQ==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@opentelemetry/api': ^1.0.0
+    dependencies:
+      '@opentelemetry/api': 1.2.0
+      '@opentelemetry/core': 1.7.0_@opentelemetry+api@1.2.0
+      '@opentelemetry/resources': 1.7.0_@opentelemetry+api@1.2.0
+      '@opentelemetry/sdk-trace-base': 1.7.0_@opentelemetry+api@1.2.0
+      '@opentelemetry/semantic-conventions': 1.7.0
+    dev: false
+
+  /@opentelemetry/resources/1.7.0_@opentelemetry+api@1.2.0:
+    resolution: {integrity: sha512-u1M0yZotkjyKx8dj+46Sg5thwtOTBmtRieNXqdCRiWUp6SfFiIP0bI+1XK3LhuXqXkBXA1awJZaTqKduNMStRg==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.0.0 <1.3.0'
+    dependencies:
+      '@opentelemetry/api': 1.2.0
+      '@opentelemetry/core': 1.7.0_@opentelemetry+api@1.2.0
+      '@opentelemetry/semantic-conventions': 1.7.0
+    dev: false
+
+  /@opentelemetry/sdk-trace-base/1.7.0_@opentelemetry+api@1.2.0:
+    resolution: {integrity: sha512-Iz84C+FVOskmauh9FNnj4+VrA+hG5o+tkMzXuoesvSfunVSioXib0syVFeNXwOm4+M5GdWCuW632LVjqEXStIg==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.0.0 <1.3.0'
+    dependencies:
+      '@opentelemetry/api': 1.2.0
+      '@opentelemetry/core': 1.7.0_@opentelemetry+api@1.2.0
+      '@opentelemetry/resources': 1.7.0_@opentelemetry+api@1.2.0
+      '@opentelemetry/semantic-conventions': 1.7.0
+    dev: false
+
+  /@opentelemetry/sdk-trace-web/1.7.0_@opentelemetry+api@1.2.0:
+    resolution: {integrity: sha512-c+Aq9lMv6MIItJF6XiXCfqyCq/x4VgF6GoKY5aygsxapu1bVk96qaLfGkuQvlUlT2KlyaI6INQiFwQegBXoYiQ==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.0.0 <1.3.0'
+    dependencies:
+      '@opentelemetry/api': 1.2.0
+      '@opentelemetry/core': 1.7.0_@opentelemetry+api@1.2.0
+      '@opentelemetry/sdk-trace-base': 1.7.0_@opentelemetry+api@1.2.0
+      '@opentelemetry/semantic-conventions': 1.7.0
+    dev: false
+
+  /@opentelemetry/semantic-conventions/1.7.0:
+    resolution: {integrity: sha512-FGBx/Qd09lMaqQcogCHyYrFEpTx4cAjeS+48lMIR12z7LdH+zofGDVQSubN59nL6IpubfKqTeIDu9rNO28iHVA==}
+    engines: {node: '>=14'}
+    dev: false
 
   /@radix-ui/number/1.0.0:
     resolution: {integrity: sha512-Ofwh/1HX69ZfJRiRBMTy7rgjAzHmwe4kW9C9Y99HTRUcYLUuVT0KESFj15rPjRgKJs20GPq8Bm5aEDJ8DuA3vA==}
@@ -1035,6 +1111,7 @@ packages:
 
   /@types/node/18.7.15:
     resolution: {integrity: sha512-XnjpaI8Bgc3eBag2Aw4t2Uj/49lLBSStHWfqKvIuXD7FIrZyMLWp8KuAFHAqxMZYTF9l08N1ctUn9YNybZJVmQ==}
+    dev: false
 
   /@types/node/18.7.16:
     resolution: {integrity: sha512-EQHhixfu+mkqHMZl1R2Ovuvn47PUw18azMJOTwSZr9/fhzHNGXAJ0ma0dayRVchprpCj0Kc1K1xKoWaATWF1qg==}

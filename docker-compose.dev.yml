@@ -1,0 +1,38 @@
+version: "3.8"
+x-logging: &default-logging
+  options:
+    max-size: "10m"
+    max-file: "2"
+  driver: json-file
+
+# Debug config with docker-compose --env-file <...> config
+services:
+  frontend:
+    image: ${PROJECT_PREFIX:?not set}-dev-frontend:latest
+    container_name: frontend_${PROJECT_PREFIX}_dev
+    networks:
+      - traefik-net
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend.dev
+    env_file: .env.dev
+    volumes:
+      - ./frontend/:/frontend/
+    ports:
+      - ${FRONTEND_PORT:?not set}:${FRONTEND_PORT}
+    restart: unless-stopped
+    # labels:
+    #   - traefik.enable=true
+    #   - traefik.http.routers.${PROJECT_PREFIX}-dev-frontend.rule=Host(`${DOMAIN:?not set}`)
+    #   - traefik.docker.network=traefik-net
+    #   - traefik.http.routers.${PROJECT_PREFIX}-dev-frontend.middlewares=test-compress
+    #   - traefik.http.middlewares.test-compress.compress=true
+    #   - traefik.http.routers.${PROJECT_PREFIX}-dev-frontend.entrypoints=websecure
+    #   - traefik.http.routers.${PROJECT_PREFIX}-dev-frontend.tls=true
+    #   - traefik.http.services.${PROJECT_PREFIX}-dev-frontend.loadbalancer.server.port=${FRONTEND_PORT:?not set}
+    logging: *default-logging
+
+networks:
+  traefik-net:
+    name: traefik-net
+    external: true

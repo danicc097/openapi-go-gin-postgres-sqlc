@@ -29,9 +29,13 @@ frontend:
 openapi -> gen (rtk + client side validation) -> automatic form validation and queries
 2. dummy form with complex schema: datetime, patterns, enums
 
+TODO opentelemetry:
 
-
-code highl. - https://mantine.dev/others/prism/
+@opentelemetry/exporter-jaeger currently is only supported on Node.js.
+For web environments, as Jaeger supports zipkin format reporting
+(https://www.jaegertracing.io/docs/1.35/apis/#zipkin-formats-stable),
+you can use https://github.com/open-telemetry/opentelemetry-js/tree/main/packages/opentelemetry-exporter-zipkin
+to report to Jaeger backends.
 
 */
 
