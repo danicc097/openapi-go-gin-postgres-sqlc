@@ -179,7 +179,9 @@ x.generate.proto() {
 x.generate() {
   local pids
   source ".env.$env"
-  # TODO --force-regen to any x fn removes all cache dirs
+
+  x.db.recreate-database
+
   echo "${MAGENTA}${BOLD}Running codegen and postgen...${OFF}"
   cache=".generate.cache"
 
@@ -239,7 +241,6 @@ x.test.backend-setup() {
   # NOTE: tests run independently in Go so we can't have a function be called and run
   # only once before any test starts
   run_shared_services
-  x.db.recreate-database
   x.generate
   drop_and_recreate_db "postgres_test"
   x.generate.tests-api
