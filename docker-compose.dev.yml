@@ -17,6 +17,8 @@ services:
       dockerfile: docker/Dockerfile.frontend.dev
     env_file: .env.dev
     volumes:
+      # FIXME .dockerignore is ignored in compose, config.json still getting replaced.
+      # we can manually mount absolutely everything manually as a
       - ./frontend/:/frontend/
     ports:
       - ${FRONTEND_PORT:?not set}:${FRONTEND_PORT}

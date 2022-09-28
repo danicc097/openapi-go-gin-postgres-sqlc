@@ -5,7 +5,7 @@ WORKDIR /frontend
 
 ENV PATH /frontend/node_modules/.bin:$PATH
 ENV JQ_VERSION=1.6
-ENV JSFOLDER=/frontend/config/*.json
+ENV ENV_REPLACE_GLOB=/frontend/config.json
 
 RUN wget --no-check-certificate https://github.com/stedolan/jq/releases/download/jq-${JQ_VERSION}/jq-linux64 -O /tmp/jq-linux64
 RUN cp /tmp/jq-linux64 /usr/bin/jq
@@ -14,15 +14,17 @@ RUN apk add --no-cache bash git openssh moreutils gettext
 
 COPY ../frontend/pnpm-lock.yaml /frontend
 COPY ../frontend/config.template.json /frontend
-COPY ../frontend/replace-config.sh /frontend
+# ensure config has all k-v as "<KEY>": "$<KEY>"
 RUN jq \
   'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
-  ./config.template.json > ./config.tmp.json && mv ./config.tmp.json ./config.template.json
-RUN cat config.template.json
-# TODO env is not loaded in dev:
-# existing_vars are $YARN_VERSION,$PWD,$HOME,$JSFOLDER,$JQ_VERSION,$SHLVL,$PATH,$NODE_VERSION
-RUN ./replace-config.sh
+  ./config.template.json > ./config.tmp.json && mv ./config.tmp.json ./config.json
 RUN cat config.json
+# TODO env is not available in docker build step, only when running. have to modify config with
+# envvars in entrypoint... if we run it as an script in RUN we only get
+# $YARN_VERSION,$PWD,$HOME,$ENV_REPLACE_GLOB,$JQ_VERSION,$SHLVL,$PATH,$NODE_VERSION
+
+COPY ../frontend/nginx/replace-envvars.sh /docker-entrypoint.d/
+RUN chmod +x /docker-entrypoint.d/replace-envvars.sh
 
 ENV TSC_WATCHFILE "UseFsEventsWithFallbackDynamicPolling"
 CMD ["pnpm", "run", "dev"]

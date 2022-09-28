@@ -32,7 +32,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
-	"github.com/gin-contrib/pprof"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 
@@ -62,7 +61,7 @@ func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
 	router := gin.Default()
 	// don't set propagator here again
 	router.Use(otelgin.Middleware("", otelgin.WithTracerProvider(conf.Tracer)))
-	pprof.Register(router, "dev/pprof")
+	// pprof.Register(router, "dev/pprof")
 
 	for _, mw := range mws {
 		router.Use(mw)
