@@ -9,8 +9,6 @@ import Config from './config.json'
 
 dotenv.config()
 
-console.log('Number(Config.FRONTEND_PORT)', Number(Config.FRONTEND_PORT))
-
 export default ({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) }
 

@@ -1,6 +1,14 @@
 #!/bin/bash
 
 SCHEMA_OUT="src/types/schema.d.ts"
+export ENV_REPLACE_GLOB=config.json
+
+# ensure config has all k-v as "<KEY>": "$<KEY>"
+jq \
+  'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
+  ./config.template.json >./config.tmp.json && mv ./config.tmp.json ./config.json
+envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
+./nginx/replace-envvars.sh "$envvars"
 
 mkdir -p src/redux/slices/gen
 mkdir -p src/types

@@ -28,6 +28,7 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
   pnpm install -r --prefer-offline --unsafe-perm
 
 #RUN pnpm run test:no-watch
+# runtime env not available in vite.config
 RUN pnpm run build --unsafe-perm
 
 FROM nginx:1-alpine
