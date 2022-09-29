@@ -46,7 +46,7 @@ func testMain(m *testing.M) int {
 	return m.Run()
 }
 
-func runTestServer(t *testing.T, pool *pgxpool.Pool, mws []gin.HandlerFunc) (*http.Server, error) {
+func runTestServer(t *testing.T, pool *pgxpool.Pool, middlewares []gin.HandlerFunc) (*http.Server, error) {
 	ctx := context.Background()
 
 	if err := envvar.Load(fmt.Sprintf("../../.env.%s", os.Getenv("APP_ENV"))); err != nil {
@@ -85,7 +85,7 @@ func runTestServer(t *testing.T, pool *pgxpool.Pool, mws []gin.HandlerFunc) (*ht
 		Logger:   logger,
 		SpecPath: "../../openapi.yaml",
 		Tracer:   sdktrace.NewTracerProvider(),
-	}, mws)
+	}, middlewares...)
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "New")
 	}

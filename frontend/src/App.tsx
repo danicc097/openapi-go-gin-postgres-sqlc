@@ -50,8 +50,6 @@ const REQUIRED_USER_CREATE_KEYS: Record<RequiredUserCreateKeys, boolean> = {
 }
 
 function App() {
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
   // TODO object with validation errors and api response errors
   // and extracted accordingly
   const [calloutErrors, setCalloutError] = useState<ValidationErrors>(null)

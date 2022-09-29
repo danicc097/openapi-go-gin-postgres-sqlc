@@ -51,24 +51,13 @@ type Config struct {
 	Tracer   *sdktrace.TracerProvider
 }
 
-// NewServer returns a new http server.
-func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
+// NewServer returns a new http server with the given middlewares.
+func NewServer(conf Config, middlewares ...gin.HandlerFunc) (*http.Server, error) {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("alphanumspace", Alphanumspace)
 	}
 
-	// WithPropagators
-	// WithTracerProvider
 	router := gin.Default()
-	// don't set propagator here again
-	router.Use(otelgin.Middleware("", otelgin.WithTracerProvider(conf.Tracer)))
-	// pprof.Register(router, "dev/pprof")
-	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
-
-	for _, mw := range mws {
-		router.Use(mw)
-	}
-
 	router.Use(gin.Recovery())
 	// Add a ginzap middleware, which:
 	//   - Logs all requests, like a combined access and error log.
@@ -80,7 +69,6 @@ func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
 		// SkipPaths:  []string{"/no_log"},
 	}))
 	router.Use(ginzap.RecoveryWithZap(conf.Logger, true))
-
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"*"},
@@ -92,6 +80,15 @@ func NewServer(conf Config, mws []gin.HandlerFunc) (*http.Server, error) {
 		// },
 		MaxAge: 12 * time.Hour,
 	}))
+
+	// don't set propagator here again
+	router.Use(otelgin.Middleware("", otelgin.WithTracerProvider(conf.Tracer)))
+	// pprof.Register(router, "dev/pprof")
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+	for _, mw := range middlewares {
+		router.Use(mw)
+	}
 
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
 	vg := router.Group(os.Getenv("API_VERSION"))
@@ -215,7 +212,7 @@ func Run(env, address, specPath string) (<-chan error, error) {
 		Logger:   logger,
 		SpecPath: specPath,
 		Tracer:   tp,
-	}, []gin.HandlerFunc{})
+	})
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "NewServer")
 	}
