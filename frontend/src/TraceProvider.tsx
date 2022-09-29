@@ -74,9 +74,18 @@ export default function TraceProvider({ children }: TraceProviderProps) {
         '@opentelemetry/instrumentation-document-load': {
           enabled: false,
         },
+        '@opentelemetry/instrumentation-user-interaction': {},
+        '@opentelemetry/instrumentation-xml-http-request': {
+          propagateTraceHeaderCorsUrls: /.*/,
+          clearTimingResources: true,
+        },
       }),
     ],
   })
 
   return <>{children}</>
 }
+
+import opentelemetry from '@opentelemetry/api'
+
+export const tracer = opentelemetry.trace.getTracer('frontend')
