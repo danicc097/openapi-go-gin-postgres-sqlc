@@ -6,6 +6,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	"github.com/gin-gonic/gin"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -108,7 +109,13 @@ func (h *User) middlewares(opID string) []gin.HandlerFunc {
 // CreateUser creates a new user.
 func (h *User) CreateUser(c *gin.Context) {
 	ctx := c.Request.Context() // spans should use same context to have shared trace. FIXME not working
-	defer newOTELSpan(ctx, "User.CreateUser").End()
+	h.logger.Sugar().Infof("ctx is %v", ctx)
+	h.logger.Sugar().Infof("headers: %v", c.Request.Header)
+	// defer newOTELSpan(ctx, "User.CreateUser").End()
+	s := trace.SpanFromContext(ctx)
+	// s.SetName("bbbbb")
+	s.AddEvent("some log additional information")
+	s.End()
 
 	var user models.CreateUserRequest
 

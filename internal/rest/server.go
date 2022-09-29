@@ -81,8 +81,8 @@ func NewServer(conf Config, middlewares ...gin.HandlerFunc) (*http.Server, error
 		MaxAge: 12 * time.Hour,
 	}))
 
-	// don't set propagator here again
-	router.Use(otelgin.Middleware("", otelgin.WithTracerProvider(conf.Tracer)))
+	// no need to set provider and propagator again, will use server global's
+	router.Use(otelgin.Middleware(""))
 	// pprof.Register(router, "dev/pprof")
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
