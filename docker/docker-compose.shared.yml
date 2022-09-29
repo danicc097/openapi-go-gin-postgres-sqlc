@@ -56,7 +56,7 @@ services:
     logging: *default-logging
 
   jaeger:
-    image: jaegertracing/all-in-one:latest
+    image: jaegertracing/all-in-one:1.38
     container_name: jaeger
     networks:
       - traefik-net

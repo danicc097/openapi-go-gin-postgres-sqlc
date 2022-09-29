@@ -12,8 +12,9 @@ import type { schemas } from 'src/types/schema'
 import type { ValidationErrors } from 'src/client-validator/validate'
 import { useForm } from '@mantine/form'
 import { validateField } from 'src/utils/validation'
-import { tracer } from 'src/TraceProvider'
-import { withSpan } from 'src/utils/tracing'
+import opentelemetry from '@opentelemetry/api'
+
+const tracer = opentelemetry.trace.getTracer('frontend')
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js
@@ -159,7 +160,9 @@ function App() {
 
   const handleSubmit = async (values: typeof form.values, e) => {
     e.preventDefault()
-    withSpan(fetchData, 'createUserRequest')()
+    const span = tracer.startSpan('createUserRequest')
+    fetchData()
+    span.end()
   }
 
   return (
