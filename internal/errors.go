@@ -25,6 +25,7 @@ const (
 	ErrorCodeAlreadyExists
 	ErrorCodeUnauthorized
 	ErrorCodeUnauthenticated
+	ErrorCodeValidationError
 )
 
 // WrapErrorf returns a wrapped error.

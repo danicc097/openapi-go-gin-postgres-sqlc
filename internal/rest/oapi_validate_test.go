@@ -4,13 +4,13 @@ import (
 	"context"
 	_ "embed"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-gonic/gin"
@@ -309,7 +309,7 @@ func TestOapiRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T)
 			MultiError:            true,
 		},
 		MultiErrorHandler: func(me openapi3.MultiError) error {
-			return fmt.Errorf("Bad stuff -  %s", me.Error())
+			return internal.NewErrorf(internal.ErrorCodeValidationError, "Bad stuff -  %s", me.Error())
 		},
 	}
 

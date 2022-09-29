@@ -25,6 +25,7 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 	var ierr *internal.Error
 	if !errors.As(err, &ierr) {
 		resp.Error = "internal error"
+		resp.Message = msg
 	} else {
 		resp.Message = ierr.Cause().Error()
 		switch ierr.Code() {
@@ -39,6 +40,9 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 			// 	resp.Validations = verrors
 			// }
 
+		case internal.ErrorCodeValidationError:
+			status = http.StatusBadRequest
+			resp.Message = ierr.Error()
 		case internal.ErrorCodeAlreadyExists:
 			status = http.StatusConflict
 		case internal.ErrorCodeUnauthorized:

@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers"
@@ -19,28 +19,6 @@ const (
 	GinContextKey = "oapi-codegen/gin-context"
 	UserDataKey   = "oapi-codegen/user-data"
 )
-
-// Create validator middleware from a YAML file path
-func OapiValidatorFromYamlFile(path string) (gin.HandlerFunc, error) {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("error reading %s: %s", path, err)
-	}
-
-	openapi, err := openapi3.NewLoader().LoadFromData(data)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing %s as OpenAPI YAML: %s",
-			path, err)
-	}
-	return OapiRequestValidator(openapi), nil
-}
-
-// This is an gin middleware function which validates incoming HTTP requests
-// to make sure that they conform to the given OAPI 3.0 specification. When
-// OAPI validation fails on the request, we return an HTTP/400 with error message
-func OapiRequestValidator(openapi *openapi3.T) gin.HandlerFunc {
-	return OapiRequestValidatorWithOptions(openapi, nil)
-}
 
 // ErrorHandler is called when there is an error in validation
 type ErrorHandler func(c *gin.Context, message string, statusCode int)
@@ -66,6 +44,8 @@ func OapiRequestValidatorWithOptions(openapi *openapi3.T, options *OAValidatorOp
 		panic(err)
 	}
 	return func(c *gin.Context) {
+		defer newOTELSpan(c.Request.Context(), "OapiRequestValidatorWithOptions").End()
+
 		err := ValidateRequestFromContext(c, router, options)
 		if err != nil {
 			if options != nil && options.ErrorHandler != nil {
@@ -74,7 +54,9 @@ func OapiRequestValidatorWithOptions(openapi *openapi3.T, options *OAValidatorOp
 				c.Abort()
 			} else {
 				// TODO renderErrorResponse instead. Should parse errors to be more rfc7807 friendly
-				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				c.Abort()
+
+				renderErrorResponse(c, "openapi validation bad request", err)
 			}
 		}
 		c.Next()
@@ -93,11 +75,11 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 		case *routers.RouteError:
 			// We've got a bad request, the path requested doesn't match
 			// either server, or path, or something.
-			return errors.New(e.Reason)
+			return internal.NewErrorf(internal.ErrorCodeValidationError, e.Reason)
 		default:
 			// This should never happen today, but if our upstream code changes,
 			// we don't want to crash the server, so handle the unexpected error.
-			return fmt.Errorf("error validating route: %s", err.Error())
+			return internal.NewErrorf(internal.ErrorCodeValidationError, "unknown error validating route: %s", err.Error())
 		}
 	}
 
@@ -132,13 +114,13 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 			// Split up the verbose error by lines and return the first one
 			// openapi errors seem to be multi-line with a decent message on the first
 			errorLines := strings.Split(e.Error(), "\n")
-			return fmt.Errorf("error in openapi3filter.RequestError: %s", errorLines[0])
+			return internal.NewErrorf(internal.ErrorCodeValidationError, "error in openapi3filter.RequestError: %s", errorLines[0])
 		case *openapi3filter.SecurityRequirementsError:
-			return fmt.Errorf("error in openapi3filter.SecurityRequirementsError: %s", e.Error())
+			return internal.NewErrorf(internal.ErrorCodeValidationError, "error in openapi3filter.SecurityRequirementsError: %s", e.Error())
 		default:
 			// This should never happen today, but if our upstream code changes,
 			// we don't want to crash the server, so handle the unexpected error.
-			return fmt.Errorf("error validating request: %s", err)
+			return internal.NewErrorf(internal.ErrorCodeValidationError, "unknown error validating request: %s", err)
 		}
 	}
 	return nil
@@ -180,5 +162,5 @@ func getMultiErrorHandlerFromOptions(options *OAValidatorOptions) MultiErrorHand
 // of all of the errors. This method is called if there are no other
 // methods defined on the options.
 func defaultMultiErrorHandler(me openapi3.MultiError) error {
-	return fmt.Errorf("multiple errors encountered: %s", me)
+	return internal.NewErrorf(internal.ErrorCodeValidationError, "multiple errors encountered: %s", me)
 }
