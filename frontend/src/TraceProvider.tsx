@@ -13,6 +13,7 @@ import { B3Propagator } from '@opentelemetry/propagator-b3'
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
 import { CompositePropagator, W3CBaggagePropagator, W3CTraceContextPropagator } from '@opentelemetry/core'
 import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web'
+import opentelemetry from '@opentelemetry/api'
 
 export type TraceProviderProps = {
   children?: React.ReactNode
@@ -85,7 +86,5 @@ export default function TraceProvider({ children }: TraceProviderProps) {
 
   return <>{children}</>
 }
-
-import opentelemetry from '@opentelemetry/api'
 
 export const tracer = opentelemetry.trace.getTracer('frontend')
