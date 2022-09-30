@@ -99,6 +99,7 @@ export default function TraceProvider({ children }: TraceProviderProps) {
           enabled: false,
         },
         '@opentelemetry/instrumentation-user-interaction': {
+          //  You can also use this handler to enhance created span with extra attributes.
           shouldPreventSpanCreation,
         },
         '@opentelemetry/instrumentation-xml-http-request': {

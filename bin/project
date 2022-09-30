@@ -306,9 +306,9 @@ x.run-frontend() {
     sed -e "s/^/${GREEN}[Vite]${OFF} /"
 }
 
-# air and vite hot reload working fine while watching
-# Run all project services with hot reload enabled.
-x.run-all-hot-reload() {
+# Run all project services with hot reload enabled in dev mode.
+x.run-dev() {
+  env="dev"
   source ".env.$env"
   # to be replaced by dcompose up --build when oas changes
   run_hot_reload() {
@@ -345,11 +345,10 @@ x.run-all-hot-reload() {
   done
 }
 
+# Run project in production mode.
 x.run-prod() {
   env="prod"
   source ".env.$env"
-
-  # TODO shared postgres container -> dbname "postgres_$env"
 
   docker network create traefik-net 2>/dev/null || true
   run_shared_services
@@ -364,7 +363,7 @@ x.run-prod() {
     --env-file ".env.$env" \
     up -d --build
 
-  x.migrate up
+  echo "Migrations: $(x.migrate up)"
 }
 
 run_shared_services() {
@@ -711,8 +710,7 @@ while [[ "$#" -gt 0 ]]; do
     # Environment to run commands in. Defaults to "dev".
     # Args: env
     env="$2"
-
-    valid_envs="dev e2e prod ci"
+    valid_envs="dev staging prod ci"
     if [[ ! " ${valid_envs[*]} " =~ " $env " ]]; then
       err "Valid environments: $valid_envs"
     fi
@@ -729,6 +727,9 @@ for arg in ${args[@]}; do
 done
 set -e
 
+# applicable to any command
+ensure_envvars_set ".env.template" ".env.${env}"
+
 # handle executing x functions
 if [[ -n "$1" ]]; then
   declare CMD="$1"
@@ -742,4 +743,5 @@ if [[ -n "$1" ]]; then
   done
 fi
 
+# default to show usage if its a noop
 usage

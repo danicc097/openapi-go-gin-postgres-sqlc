@@ -167,3 +167,26 @@ _pg_isready() {
     pg_ready=1
   done
 }
+
+# Check all environment variables in a template are present in another.
+ensure_envvars_set() {
+  local env_template="$1"
+  local env_file="$2"
+  local -i n_missing
+
+  test -f "$env_template" || err "File $env_template does not exist"
+  test -f "$env_file" || err "File $env_file does not exist"
+
+  while IFS= read -r envvar; do
+    var=${envvar%%=}
+    if [[ "$var" =~ ^#.* ]]; then
+      continue
+    fi
+    if ! grep -qoE "^${var}[ ]?=" "$env_file"; then
+      echo "$env_file does not contain the variable $var (required by $env_template)"
+      ((n_missing++))
+    fi
+  done <"$env_template"
+
+  { ((n_missing != 0)) && exit 1; } || true
+}

@@ -17,8 +17,8 @@ import TraceProvider from 'src/TraceProvider'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <Provider store={store}>
-      <TraceProvider>
+    <TraceProvider>
+      <Provider store={store}>
         <MantineProvider
           withGlobalStyles
           withNormalizeCSS
@@ -32,7 +32,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         >
           <App />
         </MantineProvider>
-      </TraceProvider>
-    </Provider>
+      </Provider>
+    </TraceProvider>
   </React.StrictMode>,
 )
