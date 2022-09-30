@@ -32,24 +32,21 @@ change to it is validated and cascades down to:
 
 ## TODOs
 
+  - System design docs/diagrams
+
   - [Oauth2 as openapi
     spec](https://github.com/ybelenko/oauth2_as_oas3_components/tree/master/dist/components)
     with endpoints clearly documented based on RFCs
     Can generate a mock with e.g.
     [openapi-mock](https://github.com/muonsoft/openapi-mock).
 
-  - equivalent of Python exception handler context manager but with global
-  middleware on the api version route group:
-      https://stackoverflow.com/questions/69948784/how-to-handle-errors-in-gin-middleware
-      in combination with internal/rest/rest.go renderErrorResponse
-    For parsing kinopenapi validation errors to our own more user
+  - For parsing kinopenapi validation errors to our own more user
     friendly ValidationError check out
     https://github.com/getkin/kin-openapi/pull/197
     as well as
     unpack_errors_test.go + adapt the generic ``convertError`` to our needs
     until data validation is updated:
     https://github.com/getkin/kin-openapi/pull/412
-
 
   - frontend miscellanea:
     1. codegen from oas:
