@@ -15,19 +15,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	GinContextKey = "oapi-codegen/gin-context"
-	UserDataKey   = "oapi-codegen/user-data"
-)
-
-// ErrorHandler is called when there is an error in validation
+// ErrorHandler is called when there is an error in validation.
 type ErrorHandler func(c *gin.Context, message string, statusCode int)
 
-// MultiErrorHandler is called when oapi returns a MultiError type
+// MultiErrorHandler is called when oapi returns a MultiError type.
 type MultiErrorHandler func(openapi3.MultiError) error
 
-// OAValidatorOptions to customize request validation. These are passed through to
-// openapi3filter.
+// OAValidatorOptions customizes request validation.
 type OAValidatorOptions struct {
 	ErrorHandler      ErrorHandler
 	Options           openapi3filter.Options
@@ -36,8 +30,8 @@ type OAValidatorOptions struct {
 	MultiErrorHandler MultiErrorHandler
 }
 
-// TODO use renderErrorResponse instead
-// Create a validator from a openapi object, with validation options
+// OapiRequestValidatorWithOptions creates a validator middlewares from an openapi object.
+// TODO validate responses.
 func OapiRequestValidatorWithOptions(openapi *openapi3.T, options *OAValidatorOptions) gin.HandlerFunc {
 	router, err := gorillamux.NewRouter(openapi)
 	if err != nil {
@@ -50,14 +44,13 @@ func OapiRequestValidatorWithOptions(openapi *openapi3.T, options *OAValidatorOp
 		if err != nil {
 			if options != nil && options.ErrorHandler != nil {
 				options.ErrorHandler(c, err.Error(), http.StatusBadRequest)
-				// in case the handler didn't internally call Abort, stop the chain
-				c.Abort()
 			} else {
-				// TODO renderErrorResponse instead. Should parse errors to be more rfc7807 friendly
-				c.Abort()
-
-				renderErrorResponse(c, "openapi validation bad request", err)
+				// TODO should parse errors to be more rfc7807 friendly
+				// or make kinapi return more structured errors on request.
+				// perhaps waiting for oas 3.1 support will be easier
+				renderErrorResponse(c, "OpenAPI validation failed", err)
 			}
+			c.Abort()
 		}
 		c.Next()
 	}
@@ -91,12 +84,12 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 
 	// Pass the gin context into the request validator, so that any callbacks
 	// which it invokes make it available.
-	requestContext := context.WithValue(context.Background(), GinContextKey, c)
+	requestContext := context.WithValue(context.Background(), ginContextKey, c)
 
 	if options != nil {
 		validationInput.Options = &options.Options
 		validationInput.ParamDecoder = options.ParamDecoder
-		requestContext = context.WithValue(requestContext, UserDataKey, options.UserData)
+		requestContext = context.WithValue(requestContext, userDataKey, options.UserData)
 	}
 
 	err = openapi3filter.ValidateRequest(requestContext, validationInput)
@@ -124,24 +117,6 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 		}
 	}
 	return nil
-}
-
-// Helper function to get the gin context from within requests. It returns
-// nil if not found or wrong type.
-func GetGinContext(c context.Context) *gin.Context {
-	iface := c.Value(GinContextKey)
-	if iface == nil {
-		return nil
-	}
-	ginCtx, ok := iface.(*gin.Context)
-	if !ok {
-		return nil
-	}
-	return ginCtx
-}
-
-func GetUserData(c context.Context) interface{} {
-	return c.Value(UserDataKey)
 }
 
 // attempt to get the MultiErrorHandler from the options. If it is not set,

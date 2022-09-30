@@ -1,37 +1,26 @@
 package rest
 
 import (
-	"context"
-
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-func isAuthenticated(ctx context.Context) bool {
-	authenticated, ok := ctx.Value(authenticatedCtxKey{}).(bool)
-	if !ok {
-		// Log this issue
-		return false
-	}
-	return authenticated
-}
-
-// Auth handles authentication and authorization middleware.
-type Auth struct {
+// AuthMiddleware handles authentication and authorization middleware.
+type AuthMiddleware struct {
 	Logger   *zap.Logger
 	authnSvc AuthenticationService
 	authzSvc AuthorizationService
 	userSvc  UserService
 }
 
-func newAuthMw(
+func newAuthMiddleware(
 	logger *zap.Logger,
 	authnSvc AuthenticationService,
 	authzSvc AuthorizationService,
 	userSvc UserService,
-) *Auth {
-	return &Auth{
+) *AuthMiddleware {
+	return &AuthMiddleware{
 		Logger:   logger,
 		authnSvc: authnSvc,
 		authzSvc: authzSvc,
@@ -41,7 +30,7 @@ func newAuthMw(
 
 // EnsureAuthenticated checks whether the client is authenticated.
 // TODO check jwt.
-func (t *Auth) EnsureAuthenticated() gin.HandlerFunc {
+func (t *AuthMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t.Logger.Sugar().Info("Would have run EnsureAuthenticated")
 	}
@@ -50,9 +39,9 @@ func (t *Auth) EnsureAuthenticated() gin.HandlerFunc {
 // EnsureAuthorized checks whether the client is authorized.
 // TODO use authorization service, which in turn uses the user service to check role
 // based on token -> email -> GetUserByEmail
-func (t *Auth) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc {
+func (t *AuthMiddleware) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user := GetUserFromCtx(c)
+		user := getUserFromCtx(c)
 		if user == nil {
 			renderErrorResponse(c, "Could not get user from context.", nil)
 			return
@@ -66,7 +55,7 @@ func (t *Auth) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc {
 }
 
 // EnsureVerified checks whether the client is verified.
-func (t *Auth) EnsureVerified() gin.HandlerFunc {
+func (t *AuthMiddleware) EnsureVerified() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t.Logger.Sugar().Info("Would have run EnsureAuthorized")
 		// u := userSvc.getUserByToken...

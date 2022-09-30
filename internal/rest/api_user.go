@@ -98,7 +98,7 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 
 // middlewares returns individual route middleware per operation id.
 func (h *User) middlewares(opID string) []gin.HandlerFunc {
-	authMw := newAuthMw(h.logger, h.authnSvc, h.authzSvc, h.userSvc)
+	authMw := newAuthMiddleware(h.logger, h.authnSvc, h.authzSvc, h.userSvc)
 
 	switch opID {
 	case "CreateUser":
@@ -113,7 +113,7 @@ func (h *User) CreateUser(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	uid := ""
-	if u := GetUserFromCtx(c); u != nil {
+	if u := getUserFromCtx(c); u != nil {
 		uid = fmt.Sprintf("%d", u.UserID)
 	}
 	uida := tracing.UserIDAttribute.String(uid)
