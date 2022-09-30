@@ -3,4 +3,4 @@ pytest-asyncio
 pytest-xdist[psutil]
 pytest-aiohttp
 pytest-timeout
-pytest-playwright
+pytest-playwright==1.26.1

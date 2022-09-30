@@ -409,6 +409,7 @@ x.db.recreate-database() {
 
 ############## e2e ##############
 
+# Setup E2E Python environment.
 x.e2e.sync-dependencies() {
   (
     cd e2e
@@ -422,6 +423,19 @@ x.e2e.sync-dependencies() {
   )
 }
 
+# Run E2E tests. Accepts pytest parameters.
+# Args: [...]
+x.e2e.run() {
+  source ".env.$env"
+  (
+    name="$PROJECT_PREFIX-e2e"
+    cd e2e
+    DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain \
+      docker build -t "$name" .
+    docker run -it --rm --ipc=host -v "$(pwd):/src" "$name" bash -c "pytest $*"
+    cd - >/dev/null
+  )
+}
 ############## openapi ##############
 
 # Validates the project's OpenAPI specification or `spec`.
