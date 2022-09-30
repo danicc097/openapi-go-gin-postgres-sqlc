@@ -13,6 +13,7 @@ import (
 	"github.com/getkin/kin-openapi/routers"
 	"github.com/getkin/kin-openapi/routers/gorillamux"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // ErrorHandler is called when there is an error in validation.
@@ -30,17 +31,37 @@ type OAValidatorOptions struct {
 	MultiErrorHandler MultiErrorHandler
 }
 
-// OapiRequestValidatorWithOptions creates a validator middlewares from an openapi object.
-// TODO validate responses.
-func OapiRequestValidatorWithOptions(openapi *openapi3.T, options *OAValidatorOptions) gin.HandlerFunc {
-	router, err := gorillamux.NewRouter(openapi)
+// openapiMiddleware handles authentication and authorization middleware.
+type openapiMiddleware struct {
+	Logger *zap.Logger
+	router routers.Router //
+}
+
+// TODO kin-openapi already has middleware, possibly added after this was created
+// - see openapi3filter.NewValidator and tests/examples
+// we just need to add our own onError func and wrap it all in gin.WrapH
+func newOpenapiMiddleware(
+	logger *zap.Logger,
+	spec *openapi3.T,
+) *openapiMiddleware {
+	// kinopenapi's own mux based on gorilla for validation only
+	router, err := gorillamux.NewRouter(spec)
 	if err != nil {
 		panic(err)
 	}
-	return func(c *gin.Context) {
-		defer newOTELSpan(c.Request.Context(), "OapiRequestValidatorWithOptions").End()
+	return &openapiMiddleware{
+		Logger: logger,
+		router: router,
+	}
+}
 
-		err := ValidateRequestFromContext(c, router, options)
+// RequestValidatorWithOptions creates a validator middlewares from an openapi object.
+// TODO validate responses for dev and ci (with openapi3filter.Strict(true)).
+func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOptions) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		defer newOTELSpan(c.Request.Context(), "RequestValidatorWithOptions").End()
+
+		err := ValidateRequestFromContext(c, o.router, options)
 		if err != nil {
 			if options != nil && options.ErrorHandler != nil {
 				options.ErrorHandler(c, err.Error(), http.StatusBadRequest)

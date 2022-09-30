@@ -6,8 +6,8 @@ import (
 	"go.uber.org/zap"
 )
 
-// AuthMiddleware handles authentication and authorization middleware.
-type AuthMiddleware struct {
+// authMiddleware handles authentication and authorization middleware.
+type authMiddleware struct {
 	Logger   *zap.Logger
 	authnSvc AuthenticationService
 	authzSvc AuthorizationService
@@ -19,8 +19,8 @@ func newAuthMiddleware(
 	authnSvc AuthenticationService,
 	authzSvc AuthorizationService,
 	userSvc UserService,
-) *AuthMiddleware {
-	return &AuthMiddleware{
+) *authMiddleware {
+	return &authMiddleware{
 		Logger:   logger,
 		authnSvc: authnSvc,
 		authzSvc: authzSvc,
@@ -30,7 +30,7 @@ func newAuthMiddleware(
 
 // EnsureAuthenticated checks whether the client is authenticated.
 // TODO check jwt.
-func (t *AuthMiddleware) EnsureAuthenticated() gin.HandlerFunc {
+func (t *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t.Logger.Sugar().Info("Would have run EnsureAuthenticated")
 	}
@@ -39,7 +39,7 @@ func (t *AuthMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 // EnsureAuthorized checks whether the client is authorized.
 // TODO use authorization service, which in turn uses the user service to check role
 // based on token -> email -> GetUserByEmail
-func (t *AuthMiddleware) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc {
+func (t *authMiddleware) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := getUserFromCtx(c)
 		if user == nil {
@@ -55,7 +55,7 @@ func (t *AuthMiddleware) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc 
 }
 
 // EnsureVerified checks whether the client is verified.
-func (t *AuthMiddleware) EnsureVerified() gin.HandlerFunc {
+func (t *authMiddleware) EnsureVerified() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t.Logger.Sugar().Info("Would have run EnsureAuthorized")
 		// u := userSvc.getUserByToken...

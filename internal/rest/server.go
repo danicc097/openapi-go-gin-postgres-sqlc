@@ -120,7 +120,8 @@ func NewServer(conf Config, middlewares ...gin.HandlerFunc) (*http.Server, error
 		// },
 	}
 
-	vg.Use(OapiRequestValidatorWithOptions(openapi, &options))
+	oasMw := newOpenapiMiddleware(conf.Logger, openapi)
+	vg.Use(oasMw.RequestValidatorWithOptions(&options))
 
 	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
 	authzSvc := services.Authorization{Logger: conf.Logger}

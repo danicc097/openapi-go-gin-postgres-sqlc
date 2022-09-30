@@ -16,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zaptest"
 
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
 )
@@ -77,8 +78,8 @@ func TestOapiRequestValidator(t *testing.T) {
 		UserData: "hi!",
 	}
 
-	// Install our OpenApi based request validator
-	g.Use(OapiRequestValidatorWithOptions(openapi, &options))
+	oasMw := newOpenapiMiddleware(zaptest.NewLogger(t), openapi)
+	g.Use(oasMw.RequestValidatorWithOptions(&options))
 
 	called := false
 
@@ -190,7 +191,7 @@ func TestOapiRequestValidator(t *testing.T) {
 	}
 }
 
-func TestOapiRequestValidatorWithOptionsMultiError(t *testing.T) {
+func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 	openapi, err := openapi3.NewLoader().LoadFromData([]byte(testSchema))
 	require.NoError(t, err, "Error initializing openapi")
 
@@ -207,8 +208,8 @@ func TestOapiRequestValidatorWithOptionsMultiError(t *testing.T) {
 		},
 	}
 
-	// register middleware
-	g.Use(OapiRequestValidatorWithOptions(openapi, &options))
+	oasMw := newOpenapiMiddleware(zaptest.NewLogger(t), openapi)
+	g.Use(oasMw.RequestValidatorWithOptions(&options))
 
 	called := false
 
@@ -293,7 +294,7 @@ func TestOapiRequestValidatorWithOptionsMultiError(t *testing.T) {
 	}
 }
 
-func TestOapiRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T) {
+func TestRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T) {
 	openapi, err := openapi3.NewLoader().LoadFromData([]byte(testSchema))
 	require.NoError(t, err, "Error initializing openapi")
 
@@ -313,8 +314,8 @@ func TestOapiRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T)
 		},
 	}
 
-	// register middleware
-	g.Use(OapiRequestValidatorWithOptions(openapi, &options))
+	oasMw := newOpenapiMiddleware(zaptest.NewLogger(t), openapi)
+	g.Use(oasMw.RequestValidatorWithOptions(&options))
 
 	called := false
 
