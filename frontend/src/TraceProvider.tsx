@@ -1,7 +1,7 @@
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web'
 import { ZoneContextManager } from '@opentelemetry/context-zone'
-import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch'
-import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request'
+import type { FetchCustomAttributeFunction } from '@opentelemetry/instrumentation-fetch'
+import type { XHRCustomAttributeFunction } from '@opentelemetry/instrumentation-xml-http-request'
 import { registerInstrumentations } from '@opentelemetry/instrumentation'
 import { Resource } from '@opentelemetry/resources'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
@@ -15,7 +15,19 @@ import { CompositePropagator, W3CBaggagePropagator, W3CTraceContextPropagator } 
 import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web'
 import opentelemetry from '@opentelemetry/api'
 
-export type TraceProviderProps = {
+export const sessionID = crypto.randomUUID()
+
+export enum AttributeKeys {
+  SessionID = 'browser-session-id',
+}
+
+export function newFrontendSpan(name: string) {
+  const span = tracer.startSpan(name)
+  span.setAttribute(AttributeKeys.SessionID, sessionID)
+  return span
+}
+
+type TraceProviderProps = {
   children?: React.ReactNode
 }
 
@@ -28,18 +40,15 @@ export default function TraceProvider({ children }: TraceProviderProps) {
       [SemanticResourceAttributes.SERVICE_NAME]: 'frontend',
     }),
   })
-
-  provider.addSpanProcessor(new BatchSpanProcessor(new ConsoleSpanExporter()))
-  provider.addSpanProcessor(
-    new BatchSpanProcessor(
-      new ZipkinExporter({
-        // url: 'http://localhost:9411/api/v2/spans',
-        headers: {
-          'Content-Type': 'application/json', // by default uses text/plain -> 400
-        },
-      }),
-    ),
+  const zipKinSpanProcessor = new BatchSpanProcessor(
+    new ZipkinExporter({
+      // url: 'http://localhost:9411/api/v2/spans',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }),
   )
+  provider.addSpanProcessor(zipKinSpanProcessor)
   // FIXME otlp http://localhost:4318/v1/traces CORS error
   // has been blocked by CORS policy: Response to preflight request doesn't pass access control check:
   // No 'Access-Control-Allow-Origin' header is present on the requested resource.
@@ -64,6 +73,19 @@ export default function TraceProvider({ children }: TraceProviderProps) {
     }),
   })
 
+  const applyCustomAttributesOnSpan: FetchCustomAttributeFunction = (span, request, result) => {
+    span.setAttribute(AttributeKeys.SessionID, sessionID)
+  }
+
+  // cannot import ShouldPreventSpanCreation
+  const shouldPreventSpanCreation = (eventType, element: HTMLElement, span) => {
+    span.setAttribute(AttributeKeys.SessionID, sessionID)
+  }
+
+  const applyCustomAttributesOnSpanXHR: XHRCustomAttributeFunction = (span, xhr) => {
+    span.setAttribute(AttributeKeys.SessionID, sessionID)
+  }
+
   registerInstrumentations({
     tracerProvider: provider,
     instrumentations: [
@@ -71,14 +93,18 @@ export default function TraceProvider({ children }: TraceProviderProps) {
         '@opentelemetry/instrumentation-fetch': {
           propagateTraceHeaderCorsUrls: /.*/,
           clearTimingResources: true,
+          applyCustomAttributesOnSpan,
         },
         '@opentelemetry/instrumentation-document-load': {
           enabled: false,
         },
-        '@opentelemetry/instrumentation-user-interaction': {},
+        '@opentelemetry/instrumentation-user-interaction': {
+          shouldPreventSpanCreation,
+        },
         '@opentelemetry/instrumentation-xml-http-request': {
           propagateTraceHeaderCorsUrls: /.*/,
           clearTimingResources: true,
+          applyCustomAttributesOnSpan: applyCustomAttributesOnSpanXHR,
         },
       }),
     ],
