@@ -25,60 +25,60 @@ func NewPet(svc services.Pet) *Pet {
 func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "AddPet",
+			Name:        string(addPet),
 			Method:      http.MethodPost,
 			Pattern:     "/pet",
-			HandlerFunc: h.AddPet,
-			Middlewares: h.middlewares("AddPet"),
+			HandlerFunc: h.addPet,
+			Middlewares: h.middlewares(addPet),
 		},
 		{
-			Name:        "DeletePet",
+			Name:        string(deletePet),
 			Method:      http.MethodDelete,
 			Pattern:     "/pet/:petId",
-			HandlerFunc: h.DeletePet,
-			Middlewares: h.middlewares("DeletePet"),
+			HandlerFunc: h.deletePet,
+			Middlewares: h.middlewares(deletePet),
 		},
 		{
-			Name:        "FindPetsByStatus",
+			Name:        string(findPetsByStatus),
 			Method:      http.MethodGet,
 			Pattern:     "/pet/findByStatus",
-			HandlerFunc: h.FindPetsByStatus,
-			Middlewares: h.middlewares("FindPetsByStatus"),
+			HandlerFunc: h.findPetsByStatus,
+			Middlewares: h.middlewares(findPetsByStatus),
 		},
 		{
-			Name:        "FindPetsByTags",
+			Name:        string(findPetsByTags),
 			Method:      http.MethodGet,
 			Pattern:     "/pet/findByTags",
-			HandlerFunc: h.FindPetsByTags,
-			Middlewares: h.middlewares("FindPetsByTags"),
+			HandlerFunc: h.findPetsByTags,
+			Middlewares: h.middlewares(findPetsByTags),
 		},
 		{
-			Name:        "GetPetById",
+			Name:        string(getPetById),
 			Method:      http.MethodGet,
 			Pattern:     "/pet/:petId",
-			HandlerFunc: h.GetPetById,
-			Middlewares: h.middlewares("GetPetById"),
+			HandlerFunc: h.getPetById,
+			Middlewares: h.middlewares(getPetById),
 		},
 		{
-			Name:        "UpdatePet",
+			Name:        string(updatePet),
 			Method:      http.MethodPut,
 			Pattern:     "/pet",
-			HandlerFunc: h.UpdatePet,
-			Middlewares: h.middlewares("UpdatePet"),
+			HandlerFunc: h.updatePet,
+			Middlewares: h.middlewares(updatePet),
 		},
 		{
-			Name:        "UpdatePetWithForm",
+			Name:        string(updatePetWithForm),
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId",
-			HandlerFunc: h.UpdatePetWithForm,
-			Middlewares: h.middlewares("UpdatePetWithForm"),
+			HandlerFunc: h.updatePetWithForm,
+			Middlewares: h.middlewares(updatePetWithForm),
 		},
 		{
-			Name:        "UploadFile",
+			Name:        string(uploadFile),
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId/uploadImage",
-			HandlerFunc: h.UploadFile,
-			Middlewares: h.middlewares("UploadFile"),
+			HandlerFunc: h.uploadFile,
+			Middlewares: h.middlewares(uploadFile),
 		},
 	}
 
@@ -86,50 +86,50 @@ func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Pet) middlewares(opID opID) []gin.HandlerFunc {
+func (h *Pet) middlewares(opID petOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}
 	}
 }
 
-// AddPet add a new pet to the store.
-func (h *Pet) AddPet(c *gin.Context) {
+// addPet add a new pet to the store.
+func (h *Pet) addPet(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// DeletePet deletes a pet.
-func (h *Pet) DeletePet(c *gin.Context) {
+// deletePet deletes a pet.
+func (h *Pet) deletePet(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// FindPetsByStatus finds pets by status.
-func (h *Pet) FindPetsByStatus(c *gin.Context) {
+// findPetsByStatus finds pets by status.
+func (h *Pet) findPetsByStatus(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// FindPetsByTags finds pets by tags.
+// findPetsByTags finds pets by tags.
 // Deprecated
-func (h *Pet) FindPetsByTags(c *gin.Context) {
+func (h *Pet) findPetsByTags(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// UpdatePet update an existing pet.
-func (h *Pet) UpdatePet(c *gin.Context) {
+// updatePet update an existing pet.
+func (h *Pet) updatePet(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// UpdatePetWithForm updates a pet in the store with form data.
-func (h *Pet) UpdatePetWithForm(c *gin.Context) {
+// updatePetWithForm updates a pet in the store with form data.
+func (h *Pet) updatePetWithForm(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// UploadFile uploads an image.
-func (h *Pet) UploadFile(c *gin.Context) {
+// uploadFile uploads an image.
+func (h *Pet) uploadFile(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// GetPetById find pet by id.
-func (h *Pet) GetPetById(c *gin.Context) {
+// getPetById find pet by id.
+func (h *Pet) getPetById(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

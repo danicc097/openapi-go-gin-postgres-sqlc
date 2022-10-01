@@ -7,14 +7,12 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/gin-gonic/gin"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
 // User handles routes with the 'user' tag.
 type User struct {
-	tp       *sdktrace.TracerProvider
 	logger   *zap.Logger
 	userSvc  UserService
 	authnSvc AuthenticationService
@@ -23,14 +21,12 @@ type User struct {
 
 // NewUser returns a new handler for the 'user' route group.
 func NewUser(
-	tp *sdktrace.TracerProvider,
 	logger *zap.Logger,
 	userSvc UserService,
 	authnSvc AuthenticationService,
 	authzSvc AuthorizationService,
 ) *User {
 	return &User{
-		tp:       tp,
 		logger:   logger,
 		userSvc:  userSvc,
 		authnSvc: authnSvc,
@@ -43,53 +39,53 @@ func NewUser(
 func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "CreateUser",
+			Name:        string(createUser),
 			Method:      http.MethodPost,
 			Pattern:     "/user",
-			HandlerFunc: h.CreateUser,
-			Middlewares: h.middlewares("CreateUser"),
+			HandlerFunc: h.createUser,
+			Middlewares: h.middlewares(createUser),
 		},
 		{
-			Name:        "CreateUsersWithArrayInput",
+			Name:        string(createUsersWithArrayInput),
 			Method:      http.MethodPost,
 			Pattern:     "/user/createWithArray",
-			HandlerFunc: h.CreateUsersWithArrayInput,
-			Middlewares: h.middlewares("CreateUsersWithArrayInput"),
+			HandlerFunc: h.createUsersWithArrayInput,
+			Middlewares: h.middlewares(createUsersWithArrayInput),
 		},
 		{
-			Name:        "DeleteUser",
+			Name:        string(deleteUser),
 			Method:      http.MethodDelete,
 			Pattern:     "/user/:username",
-			HandlerFunc: h.DeleteUser,
-			Middlewares: h.middlewares("DeleteUser"),
+			HandlerFunc: h.deleteUser,
+			Middlewares: h.middlewares(deleteUser),
 		},
 		{
-			Name:        "GetUserByName",
+			Name:        string(getUserByName),
 			Method:      http.MethodGet,
 			Pattern:     "/user/:username",
-			HandlerFunc: h.GetUserByName,
-			Middlewares: h.middlewares("GetUserByName"),
+			HandlerFunc: h.getUserByName,
+			Middlewares: h.middlewares(getUserByName),
 		},
 		{
-			Name:        "LoginUser",
+			Name:        string(loginUser),
 			Method:      http.MethodGet,
 			Pattern:     "/user/login",
-			HandlerFunc: h.LoginUser,
-			Middlewares: h.middlewares("LoginUser"),
+			HandlerFunc: h.loginUser,
+			Middlewares: h.middlewares(loginUser),
 		},
 		{
-			Name:        "LogoutUser",
+			Name:        string(logoutUser),
 			Method:      http.MethodGet,
 			Pattern:     "/user/logout",
-			HandlerFunc: h.LogoutUser,
-			Middlewares: h.middlewares("LogoutUser"),
+			HandlerFunc: h.logoutUser,
+			Middlewares: h.middlewares(logoutUser),
 		},
 		{
-			Name:        "UpdateUser",
+			Name:        string(updateUser),
 			Method:      http.MethodPut,
 			Pattern:     "/user/:username",
-			HandlerFunc: h.UpdateUser,
-			Middlewares: h.middlewares("UpdateUser"),
+			HandlerFunc: h.updateUser,
+			Middlewares: h.middlewares(updateUser),
 		},
 	}
 
@@ -97,11 +93,11 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *User) middlewares(opID opID) []gin.HandlerFunc {
+func (h *User) middlewares(opID userOpID) []gin.HandlerFunc {
 	authMw := newAuthMiddleware(h.logger, h.authnSvc, h.authzSvc, h.userSvc)
 
 	switch opID {
-	case "CreateUser":
+	case createUser:
 		return []gin.HandlerFunc{authMw.EnsureAuthenticated()}
 	default:
 		return []gin.HandlerFunc{}
@@ -109,7 +105,7 @@ func (h *User) middlewares(opID opID) []gin.HandlerFunc {
 }
 
 // CreateUser creates a new user.
-func (h *User) CreateUser(c *gin.Context) {
+func (h *User) createUser(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	uid := ""
@@ -139,37 +135,37 @@ func (h *User) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-// CreateUsersWithArrayInput creates list of users with given input array.
-func (h *User) CreateUsersWithArrayInput(c *gin.Context) {
+// createUsersWithArrayInput creates list of users with given input array.
+func (h *User) createUsersWithArrayInput(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// DeleteUser delete user.
-func (h *User) DeleteUser(c *gin.Context) {
+// deleteUser delete user.
+func (h *User) deleteUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// GetUserByName get user by user name.
-func (h *User) GetUserByName(c *gin.Context) {
+// getUserByName get user by user name.
+func (h *User) getUserByName(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// LoginUser logs user into the system.
-func (h *User) LoginUser(c *gin.Context) {
+// loginUser logs user into the system.
+func (h *User) loginUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// LogoutUser logs out current logged in user session.
-func (h *User) LogoutUser(c *gin.Context) {
+// logoutUser logs out current logged in user session.
+func (h *User) logoutUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// UpdateUser updated user.
-func (h *User) UpdateUser(c *gin.Context) {
+// updateUser updated user.
+func (h *User) updateUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// UpdatePet update an existing pet.
-func (h *User) UpdatePet(c *gin.Context) {
+// updatePet update an existing pet.
+func (h *User) updatePet(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

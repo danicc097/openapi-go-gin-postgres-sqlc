@@ -147,7 +147,7 @@ func NewServer(conf Config, middlewares ...gin.HandlerFunc) (*http.Server, error
 	NewStore(storeSvc).
 		Register(vg, []gin.HandlerFunc{})
 
-	NewUser(conf.Tracer, conf.Logger, userSvc, authnSvc, authzSvc).
+	NewUser(conf.Logger, userSvc, authnSvc, authzSvc).
 		Register(vg, []gin.HandlerFunc{})
 	// TODO /admin with authMw.EnsureAuthorized() in group
 

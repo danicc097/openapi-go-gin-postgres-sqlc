@@ -29,14 +29,14 @@ func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Pet) middlewares(opID opID) []gin.HandlerFunc {
+func (h *Pet) middlewares(opID petOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}
 	}
 }
 
-// ConflictEndpointPet will clash with a generated operation id.
-func (h *Pet) ConflictEndpointPet(param1 string, param2 string) {
+// conflictEndpointPet will clash with a generated operation id.
+func (h *Pet) conflictEndpointPet(param1 string, param2 string) {
 	fmt.Println("this method will clash with a generated operation id")
 }

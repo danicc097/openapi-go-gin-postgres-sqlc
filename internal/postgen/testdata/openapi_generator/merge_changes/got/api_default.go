@@ -25,11 +25,11 @@ func NewDefault(svc services.Default) *Default {
 func (h *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "Ping",
+			Name:        string(ping),
 			Method:      http.MethodGet,
 			Pattern:     "/ping",
-			HandlerFunc: h.Ping,
-			Middlewares: h.middlewares("Ping"),
+			HandlerFunc: h.ping,
+			Middlewares: h.middlewares(ping),
 		},
 	}
 
@@ -37,14 +37,14 @@ func (h *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Default) middlewares(opID opID) []gin.HandlerFunc {
+func (h *Default) middlewares(opID defaultOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}
 	}
 }
 
-// Ping ping pongs.
-func (h *Default) Ping(c *gin.Context) {
+// ping ping pongs.
+func (h *Default) ping(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

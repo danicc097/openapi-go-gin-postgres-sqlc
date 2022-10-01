@@ -25,11 +25,11 @@ func NewFake(svc services.Fake) *Fake {
 func (h *Fake) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "FakeDataFile",
+			Name:        string(fakeDataFile),
 			Method:      http.MethodGet,
 			Pattern:     "/fake/data_file",
-			HandlerFunc: h.FakeDataFile,
-			Middlewares: h.middlewares("FakeDataFile"),
+			HandlerFunc: h.fakeDataFile,
+			Middlewares: h.middlewares(fakeDataFile),
 		},
 	}
 
@@ -37,14 +37,14 @@ func (h *Fake) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Fake) middlewares(opID opID) []gin.HandlerFunc {
+func (h *Fake) middlewares(opID fakeOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}
 	}
 }
 
-// FakeDataFile test data_file to ensure it's escaped correctly.
-func (h *Fake) FakeDataFile(c *gin.Context) {
+// fakeDataFile test data_file to ensure it's escaped correctly.
+func (h *Fake) fakeDataFile(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

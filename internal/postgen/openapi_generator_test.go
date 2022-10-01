@@ -52,7 +52,8 @@ func TestHandlerPostProcessing(t *testing.T) {
 			og := NewOpenapiGenerator(conf, &stderr, "", path.Join(baseDir, tc.Dir, "openapi.yaml"))
 
 			s := testutil.GetStderr(t, path.Join(baseDir, tc.Dir, "want"))
-
+			// TODO FIXME NameClashing should NOT have generated any files in got
+			t.Logf("stderr.txt: %s\n", s)
 			err = og.Generate()
 			if err != nil && s != "" {
 				// check stderr.txt is exactly as output

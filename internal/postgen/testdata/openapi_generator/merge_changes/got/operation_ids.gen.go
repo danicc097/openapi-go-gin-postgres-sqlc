@@ -2,12 +2,10 @@
 
 package rest
 
-type opID string
-
-type defaultOpID opID
-type newapiOpID opID
-type petOpID opID
-type userOpID opID
+type defaultOpID string
+type newapiOpID string
+type petOpID string
+type userOpID string
 
 const (
 	// Operation IDs for the 'default' tag.

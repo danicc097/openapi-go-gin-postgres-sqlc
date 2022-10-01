@@ -25,25 +25,25 @@ func NewPet(svc services.Pet) *Pet {
 func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "AddPet",
+			Name:        string(addPet),
 			Method:      http.MethodPost,
 			Pattern:     "/pet",
-			HandlerFunc: h.AddPet,
-			Middlewares: h.middlewares("AddPet"),
+			HandlerFunc: h.addPet,
+			Middlewares: h.middlewares(addPet),
 		},
 		{
-			Name:        "DeletePet",
+			Name:        string(deletePet),
 			Method:      http.MethodDelete,
 			Pattern:     "/pet/:petId",
-			HandlerFunc: h.DeletePet,
-			Middlewares: h.middlewares("DeletePet"),
+			HandlerFunc: h.deletePet,
+			Middlewares: h.middlewares(deletePet),
 		},
 		{
-			Name:        "UpdatePet",
+			Name:        string(updatePet),
 			Method:      http.MethodPut,
 			Pattern:     "/pet",
-			HandlerFunc: h.UpdatePet,
-			Middlewares: h.middlewares("UpdatePet"),
+			HandlerFunc: h.updatePet,
+			Middlewares: h.middlewares(updatePet),
 		},
 	}
 
@@ -51,24 +51,24 @@ func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Pet) middlewares(opID opID) []gin.HandlerFunc {
+func (h *Pet) middlewares(opID petOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}
 	}
 }
 
-// AddPet add a new pet to the store.
-func (h *Pet) AddPet(c *gin.Context) {
+// addPet add a new pet to the store.
+func (h *Pet) addPet(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// DeletePet deletes a pet.
-func (h *Pet) DeletePet(c *gin.Context) {
+// deletePet deletes a pet.
+func (h *Pet) deletePet(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// UpdatePet update an existing pet.
-func (h *Pet) UpdatePet(c *gin.Context) {
+// updatePet update an existing pet.
+func (h *Pet) updatePet(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

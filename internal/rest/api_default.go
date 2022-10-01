@@ -22,18 +22,18 @@ func NewDefault() *Default {
 func (h *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "OpenapiYamlGet",
+			Name:        string(openapiYamlGet),
 			Method:      http.MethodGet,
 			Pattern:     "/openapi.yaml",
-			HandlerFunc: h.OpenapiYamlGet,
-			Middlewares: h.middlewares("OpenapiYamlGet"),
+			HandlerFunc: h.openapiYamlGet,
+			Middlewares: h.middlewares(openapiYamlGet),
 		},
 		{
-			Name:        "Ping",
+			Name:        string(ping),
 			Method:      http.MethodGet,
 			Pattern:     "/ping",
-			HandlerFunc: h.Ping,
-			Middlewares: h.middlewares("Ping"),
+			HandlerFunc: h.ping,
+			Middlewares: h.middlewares(ping),
 		},
 	}
 
@@ -41,15 +41,15 @@ func (h *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Default) middlewares(opID opID) []gin.HandlerFunc {
+func (h *Default) middlewares(opID defaultOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}
 	}
 }
 
-// OpenapiYamlGet returns this very openapi spec..
-func (h *Default) OpenapiYamlGet(c *gin.Context) {
+// openapiYamlGet returns this very openapi spec..
+func (h *Default) openapiYamlGet(c *gin.Context) {
 
 	oas, err := static.SwaggerUI.ReadFile("swagger-ui/openapi.yaml")
 	if err != nil {
@@ -59,7 +59,7 @@ func (h *Default) OpenapiYamlGet(c *gin.Context) {
 	c.Data(http.StatusOK, gin.MIMEYAML, oas)
 }
 
-// Ping ping pongs.
-func (h *Default) Ping(c *gin.Context) {
+// ping ping pongs.
+func (h *Default) ping(c *gin.Context) {
 	c.String(http.StatusOK, "pong")
 }

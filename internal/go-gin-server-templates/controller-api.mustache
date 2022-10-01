@@ -28,11 +28,11 @@ func (h *{{baseName}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
   routes := []route{
 {{#operation}}
 	{
-    Name: "{{operationId}}",
+    Name: string({{#lambda.camelcase}}{{{operationId}}}{{/lambda.camelcase}}),
     Method: http.Method{{httpMethod}},
     Pattern: "{{{path}}}",
-    HandlerFunc: h.{{nickname}},
-    Middlewares: h.middlewares("{{operationId}}"),
+    HandlerFunc: h.{{#lambda.camelcase}}{{{nickname}}}{{/lambda.camelcase}},
+    Middlewares: h.middlewares({{#lambda.camelcase}}{{{operationId}}}{{/lambda.camelcase}}),
   },
 {{/operation}}
   }
@@ -40,23 +40,23 @@ func (h *{{baseName}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 {{#operation.0}}
 
   registerRoutes(r, routes, "/{{#tags}}{{name}}{{/tags}}", mws)
-{{/operation.0}}
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *{{baseName}}) middlewares(opID opID) []gin.HandlerFunc {
+func (h *{{baseName}}) middlewares(opID {{#tags}}{{name}}{{/tags}}OpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}
 	}
 }
+{{/operation.0}}
 
 {{#operation}}
-// {{nickname}} {{#lambda.lowercase}}{{{summary}}}{{/lambda.lowercase}}.
+// {{#lambda.camelcase}}{{{nickname}}}{{/lambda.camelcase}} {{#lambda.lowercase}}{{{summary}}}{{/lambda.lowercase}}.
 {{#isDeprecated}}
 // Deprecated
 {{/isDeprecated}}
-func (h *{{baseName}}) {{nickname}}(c *gin.Context) {
+func (h *{{baseName}}) {{#lambda.camelcase}}{{{nickname}}}{{/lambda.camelcase}}(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 {{/operation}}

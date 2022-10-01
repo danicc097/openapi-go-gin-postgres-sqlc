@@ -25,59 +25,59 @@ func NewUser(svc services.User) *User {
 func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "CreateUser",
+			Name:        string(createUser),
 			Method:      http.MethodPost,
 			Pattern:     "/user",
-			HandlerFunc: h.CreateUser,
-			Middlewares: h.middlewares("CreateUser"),
+			HandlerFunc: h.createUser,
+			Middlewares: h.middlewares(createUser),
 		},
 	}
 
 	registerRoutes(r, routes, "/user", mws)
 }
 
-// CreateUser creates a new user.
-func (h *User) CreateUser(c *gin.Context) {
+// createUser creates a new user.
+func (h *User) createUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// CreateUsersWithArrayInput creates list of users with given input array.
-func (h *User) CreateUsersWithArrayInput(c *gin.Context) {
+// createUsersWithArrayInput creates list of users with given input array.
+func (h *User) createUsersWithArrayInput(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// CreateUsersWithListInput creates list of users with given input array.
-func (h *User) CreateUsersWithListInput(c *gin.Context) {
+// createUsersWithListInput creates list of users with given input array.
+func (h *User) createUsersWithListInput(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// DeleteUser delete user.
-func (h *User) DeleteUser(c *gin.Context) {
+// deleteUser delete user.
+func (h *User) deleteUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// GetUserByName get user by user name.
-func (h *User) GetUserByName(c *gin.Context) {
+// getUserByName get user by user name.
+func (h *User) getUserByName(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// LoginUser logs user into the system.
-func (h *User) LoginUser(c *gin.Context) {
+// loginUser logs user into the system.
+func (h *User) loginUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// LogoutUser logs out current logged in user session.
-func (h *User) LogoutUser(c *gin.Context) {
+// logoutUser logs out current logged in user session.
+func (h *User) logoutUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// UpdateUser updated user.
-func (h *User) UpdateUser(c *gin.Context) {
+// updateUser updated user.
+func (h *User) updateUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *User) middlewares(opID opID) []gin.HandlerFunc {
+func (h *User) middlewares(opID userOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}

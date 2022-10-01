@@ -24,11 +24,11 @@ func NewAdmin(svc UserService) *Admin {
 func (h *Admin) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "AdminPing",
+			Name:        string(adminPing),
 			Method:      http.MethodGet,
 			Pattern:     "/admin/ping",
-			HandlerFunc: h.AdminPing,
-			Middlewares: h.middlewares("AdminPing"),
+			HandlerFunc: h.adminPing,
+			Middlewares: h.middlewares(adminPing),
 		},
 	}
 
@@ -36,14 +36,14 @@ func (h *Admin) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Admin) middlewares(opID opID) []gin.HandlerFunc {
+func (h *Admin) middlewares(opID adminOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}
 	}
 }
 
-// AdminPing ping pongs.
-func (h *Admin) AdminPing(c *gin.Context) {
+// adminPing ping pongs.
+func (h *Admin) adminPing(c *gin.Context) {
 	c.String(http.StatusOK, "pong")
 }

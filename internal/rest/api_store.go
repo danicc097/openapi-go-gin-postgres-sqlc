@@ -25,32 +25,32 @@ func NewStore(svc services.Store) *Store {
 func (h *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "DeleteOrder",
+			Name:        string(deleteOrder),
 			Method:      http.MethodDelete,
 			Pattern:     "/store/order/:orderId",
-			HandlerFunc: h.DeleteOrder,
-			Middlewares: h.middlewares("DeleteOrder"),
+			HandlerFunc: h.deleteOrder,
+			Middlewares: h.middlewares(deleteOrder),
 		},
 		{
-			Name:        "GetInventory",
+			Name:        string(getInventory),
 			Method:      http.MethodGet,
 			Pattern:     "/store/inventory",
-			HandlerFunc: h.GetInventory,
-			Middlewares: h.middlewares("GetInventory"),
+			HandlerFunc: h.getInventory,
+			Middlewares: h.middlewares(getInventory),
 		},
 		{
-			Name:        "GetOrderById",
+			Name:        string(getOrderById),
 			Method:      http.MethodGet,
 			Pattern:     "/store/order/:orderId",
-			HandlerFunc: h.GetOrderById,
-			Middlewares: h.middlewares("GetOrderById"),
+			HandlerFunc: h.getOrderById,
+			Middlewares: h.middlewares(getOrderById),
 		},
 		{
-			Name:        "PlaceOrder",
+			Name:        string(placeOrder),
 			Method:      http.MethodPost,
 			Pattern:     "/store/order",
-			HandlerFunc: h.PlaceOrder,
-			Middlewares: h.middlewares("PlaceOrder"),
+			HandlerFunc: h.placeOrder,
+			Middlewares: h.middlewares(placeOrder),
 		},
 	}
 
@@ -58,29 +58,29 @@ func (h *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Store) middlewares(opID opID) []gin.HandlerFunc {
+func (h *Store) middlewares(opID storeOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}
 	}
 }
 
-// DeleteOrder delete purchase order by id.
-func (h *Store) DeleteOrder(c *gin.Context) {
+// deleteOrder delete purchase order by id.
+func (h *Store) deleteOrder(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// GetInventory returns pet inventories by status.
-func (h *Store) GetInventory(c *gin.Context) {
+// getInventory returns pet inventories by status.
+func (h *Store) getInventory(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// GetOrderById find purchase order by id.
-func (h *Store) GetOrderById(c *gin.Context) {
+// getOrderById find purchase order by id.
+func (h *Store) getOrderById(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// PlaceOrder place an order for a pet.
-func (h *Store) PlaceOrder(c *gin.Context) {
+// placeOrder place an order for a pet.
+func (h *Store) placeOrder(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

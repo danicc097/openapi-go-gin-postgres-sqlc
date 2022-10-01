@@ -25,11 +25,11 @@ func NewUser(svc services.User) *User {
 func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "CreateUser",
+			Name:        string(createUser),
 			Method:      http.MethodPost,
 			Pattern:     "/user",
-			HandlerFunc: h.CreateUser,
-			Middlewares: h.middlewares("CreateUser"),
+			HandlerFunc: h.createUser,
+			Middlewares: h.middlewares(createUser),
 		},
 	}
 
@@ -37,14 +37,14 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *User) middlewares(opID opID) []gin.HandlerFunc {
+func (h *User) middlewares(opID userOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}
 	}
 }
 
-// CreateUser creates a new user.
-func (h *User) CreateUser(c *gin.Context) {
+// createUser creates a new user.
+func (h *User) createUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

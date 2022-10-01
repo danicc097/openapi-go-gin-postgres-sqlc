@@ -25,59 +25,59 @@ func NewUser(svc services.User) *User {
 func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "CreateUser",
+			Name:        string(createUser),
 			Method:      http.MethodPost,
 			Pattern:     "/user",
-			HandlerFunc: h.CreateUser,
+			HandlerFunc: h.createUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
-			Name:        "CreateUsersWithArrayInput",
+			Name:        string(createUsersWithArrayInput),
 			Method:      http.MethodPost,
 			Pattern:     "/user/createWithArray",
-			HandlerFunc: h.CreateUsersWithArrayInput,
+			HandlerFunc: h.createUsersWithArrayInput,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
-			Name:        "CreateUsersWithListInput",
+			Name:        string(createUsersWithListInput),
 			Method:      http.MethodPost,
 			Pattern:     "/user/createWithList",
-			HandlerFunc: h.CreateUsersWithListInput,
+			HandlerFunc: h.createUsersWithListInput,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
-			Name:        "DeleteUser",
+			Name:        string(deleteUser),
 			Method:      http.MethodDelete,
 			Pattern:     "/user/:username",
-			HandlerFunc: h.DeleteUser,
+			HandlerFunc: h.deleteUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
-			Name:        "GetUserByName",
+			Name:        string(getUserByName),
 			Method:      http.MethodGet,
 			Pattern:     "/user/:username",
-			HandlerFunc: h.GetUserByName,
+			HandlerFunc: h.getUserByName,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
-			Name:        "LoginUser",
+			Name:        string(loginUser),
 			Method:      http.MethodGet,
 			Pattern:     "/user/login",
-			HandlerFunc: h.LoginUser,
+			HandlerFunc: h.loginUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
-			Name:        "LogoutUser",
+			Name:        string(logoutUser),
 			Method:      http.MethodGet,
 			Pattern:     "/user/logout",
-			HandlerFunc: h.LogoutUser,
+			HandlerFunc: h.logoutUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
-			Name:        "UpdateUser",
+			Name:        string(updateUser),
 			Method:      http.MethodPut,
 			Pattern:     "/user/:username",
-			HandlerFunc: h.UpdateUser,
+			HandlerFunc: h.updateUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 	}
@@ -85,42 +85,42 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	registerRoutes(r, routes, "/user", mws)
 }
 
-// CreateUser creates a new user.
-func (h *User) CreateUser(c *gin.Context) {
+// createUser creates a new user.
+func (h *User) createUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// CreateUsersWithArrayInput creates list of users with given input array.
-func (h *User) CreateUsersWithArrayInput(c *gin.Context) {
+// createUsersWithArrayInput creates list of users with given input array.
+func (h *User) createUsersWithArrayInput(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// CreateUsersWithListInput creates list of users with given input array.
-func (h *User) CreateUsersWithListInput(c *gin.Context) {
+// createUsersWithListInput creates list of users with given input array.
+func (h *User) createUsersWithListInput(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// DeleteUser delete user.
-func (h *User) DeleteUser(c *gin.Context) {
+// deleteUser delete user.
+func (h *User) deleteUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// GetUserByName get user by user name.
-func (h *User) GetUserByName(c *gin.Context) {
+// getUserByName get user by user name.
+func (h *User) getUserByName(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// LoginUser logs user into the system.
-func (h *User) LoginUser(c *gin.Context) {
+// loginUser logs user into the system.
+func (h *User) loginUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// LogoutUser logs out current logged in user session.
-func (h *User) LogoutUser(c *gin.Context) {
+// logoutUser logs out current logged in user session.
+func (h *User) logoutUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// UpdateUser updated user.
-func (h *User) UpdateUser(c *gin.Context) {
+// updateUser updated user.
+func (h *User) updateUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

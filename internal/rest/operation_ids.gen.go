@@ -2,14 +2,12 @@
 
 package rest
 
-type opID string
-
-type adminOpID opID
-type defaultOpID opID
-type fakeOpID opID
-type petOpID opID
-type storeOpID opID
-type userOpID opID
+type adminOpID string
+type defaultOpID string
+type fakeOpID string
+type petOpID string
+type storeOpID string
+type userOpID string
 
 const (
 	// Operation IDs for the 'admin' tag.
@@ -20,7 +18,7 @@ const (
 	ping           defaultOpID = "ping"
 
 	// Operation IDs for the 'fake' tag.
-	fake_data_file fakeOpID = "fake_data_file"
+	fakeDataFile fakeOpID = "fakeDataFile"
 
 	// Operation IDs for the 'pet' tag.
 	addPet            petOpID = "addPet"

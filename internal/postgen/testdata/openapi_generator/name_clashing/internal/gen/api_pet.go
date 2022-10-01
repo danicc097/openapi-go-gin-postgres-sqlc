@@ -25,11 +25,11 @@ func NewPet(svc services.Pet) *Pet {
 func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "ConflictEndpointPet",
+			Name:        string(conflictEndpointPet),
 			Method:      http.MethodGet,
 			Pattern:     "/pet/ConflictEndpointPet",
-			HandlerFunc: h.ConflictEndpointPet,
-			Middlewares: h.middlewares("ConflictEndpointPet"),
+			HandlerFunc: h.conflictEndpointPet,
+			Middlewares: h.middlewares(conflictEndpointPet),
 		},
 	}
 
@@ -37,14 +37,14 @@ func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Pet) middlewares(opID opID) []gin.HandlerFunc {
+func (h *Pet) middlewares(opID petOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}
 	}
 }
 
-// ConflictEndpointPet name clashing test.
-func (h *Pet) ConflictEndpointPet(c *gin.Context) {
+// conflictEndpointPet name clashing test.
+func (h *Pet) conflictEndpointPet(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }

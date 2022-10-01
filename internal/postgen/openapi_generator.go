@@ -11,10 +11,10 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"text/template"
 
+	internalformat "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	"github.com/dave/dst/dstutil"
@@ -27,6 +27,7 @@ type Dir string
 type Tag string
 
 var handlerRegex = regexp.MustCompile("api_(.*).go")
+var operationIDRegex = regexp.MustCompile("^[a-zA-Z0-9]*$")
 
 func contains[T comparable](elems []T, v T) bool {
 	for _, s := range elems {
@@ -281,9 +282,8 @@ func generateOpIDs(operations map[string][]string, dest io.Writer) error {
 
 package rest
 
-type opID string
 {{range $tag, $opIDs := .Operations}}
-type {{$tag}}OpID opID{{end}}
+type {{$tag}}OpID string{{end}}
 
 const ({{range $tag, $opIDs := .Operations}}
 // Operation IDs for the '{{$tag}}' tag.
@@ -297,8 +297,6 @@ const ({{range $tag, $opIDs := .Operations}}
 
 	// TODO use type for those nested maps, else its a mess
 	// plus key types: Tag string (tags), HandlerFile string (filenames)
-
-	fmt.Printf("operations: %v\n", operations)
 
 	params := map[string]interface{}{
 		"Operations": operations,
@@ -337,6 +335,7 @@ func replaceNodes(f *dst.File, genHf, currentHf HandlerFile, tag Tag, opID strin
 		}
 		if rok && identok && ident.Name == string(tag) && m == "middlewares" {
 			fn.Body = currentHf.Methods["middlewares"].Decl.Body
+			fn.Type = genHf.Methods["middlewares"].Decl.Type
 		}
 
 		return true
@@ -362,17 +361,20 @@ func (o *OpenapiGenerator) generateMergedFiles(handlers map[Dir]map[Tag]HandlerF
 		ops := pi.Operations()
 		for method, v := range ops {
 			if v.OperationID == "" {
-				return fmt.Errorf("path %s: method %s: an operation ID is required for postgen", path, method)
+				return fmt.Errorf("path %q: method %q: operationId is required for postgen", path, method)
+			}
+			if !operationIDRegex.MatchString(v.OperationID) {
+				return fmt.Errorf("path %q: method %q: operationId %q does not match pattern %q", path, method, v.OperationID, operationIDRegex.String())
 			}
 			if len(v.Tags) > 1 {
-				return fmt.Errorf("path %s: method %s: at most one tag is permitted for postgen", path, method)
+				return fmt.Errorf("path %q: method %q: at most one tag is permitted for postgen", path, method)
 			}
 
 			t := "default"
 			if len(v.Tags) > 0 {
 				t = strings.ToLower(v.Tags[0])
 			}
-			operations[t] = append(operations[t], strings.ToLower(string(v.OperationID[0]))+v.OperationID[1:])
+			operations[t] = append(operations[t], internalformat.ToLowerCamel(v.OperationID))
 		}
 		for t, opIDs := range operations {
 			sort.Slice(opIDs, func(i, j int) bool {
@@ -390,7 +392,7 @@ func (o *OpenapiGenerator) generateMergedFiles(handlers map[Dir]map[Tag]HandlerF
 	}
 	err = generateOpIDs(operations, f)
 	if err != nil {
-		return err
+		return fmt.Errorf("error generating operation IDs: %w", err)
 	}
 
 	// -- generate handler files
@@ -558,8 +560,8 @@ func extractRoutes(rr *dst.AssignStmt) map[string]Route {
 
 				switch ident.Name {
 				case "Name":
-					if lit, islit := kv.Value.(*dst.BasicLit); islit {
-						opID, _ = strconv.Unquote(lit.Value)
+					if ce, isce := kv.Value.(*dst.CallExpr); isce {
+						opID = ce.Args[0].(*dst.Ident).Name
 						route.Name = opID
 					}
 					// case "Middlewares":
