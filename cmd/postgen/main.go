@@ -26,14 +26,14 @@ func main() {
 
 	const baseDir = "internal"
 	conf := &postgen.Conf{
-		CurrentHandlersDir: path.Join(baseDir, "rest"),
-		GenHandlersDir:     path.Join(baseDir, "gen"),
-		OutHandlersDir:     path.Join(baseDir, "rest"),
-		OutServicesDir:     path.Join(baseDir, "services"),
+		CurrentHandlersDir: postgen.Dir(path.Join(baseDir, "rest")),
+		GenHandlersDir:     postgen.Dir(path.Join(baseDir, "gen")),
+		OutHandlersDir:     postgen.Dir(path.Join(baseDir, "rest")),
+		OutServicesDir:     postgen.Dir(path.Join(baseDir, "services")),
 	}
 
 	var stderr bytes.Buffer
-	og := postgen.NewOpenapiGenerator(conf, &stderr, cacheDir)
+	og := postgen.NewOpenapiGenerator(conf, &stderr, postgen.Dir(cacheDir))
 
 	if err := og.Generate(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

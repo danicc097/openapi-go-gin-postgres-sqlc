@@ -38,13 +38,13 @@ func TestHandlerPostProcessing(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
 			conf := &Conf{
-				CurrentHandlersDir: path.Join(baseDir, tc.Dir, "internal/rest"),
-				GenHandlersDir:     path.Join(baseDir, tc.Dir, "internal/gen"),
-				OutHandlersDir:     path.Join(baseDir, tc.Dir, "got"),
-				OutServicesDir:     path.Join(baseDir, tc.Dir, "internal/services"),
+				CurrentHandlersDir: Dir(path.Join(baseDir, tc.Dir, "internal/rest")),
+				GenHandlersDir:     Dir(path.Join(baseDir, tc.Dir, "internal/gen")),
+				OutHandlersDir:     Dir(path.Join(baseDir, tc.Dir, "got")),
+				OutServicesDir:     Dir(path.Join(baseDir, tc.Dir, "internal/services")),
 			}
 
-			err := os.RemoveAll(conf.OutHandlersDir)
+			err := os.RemoveAll(string(conf.OutHandlersDir))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -70,7 +70,7 @@ func TestHandlerPostProcessing(t *testing.T) {
 			for _, f := range ff {
 				basename := path.Base(f)
 				wp := path.Join(baseDir, tc.Dir, "want", basename)
-				gp := path.Join(conf.OutHandlersDir, basename)
+				gp := path.Join(string(conf.OutHandlersDir), basename)
 				wantBlob, _ := os.ReadFile(wp)
 				gotBlob, _ := os.ReadFile(gp)
 				want := &bytes.Buffer{}
