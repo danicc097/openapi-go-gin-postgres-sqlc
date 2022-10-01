@@ -423,7 +423,7 @@ x.e2e.sync-dependencies() {
   )
 }
 
-# Run E2E tests. Accepts pytest parameters.
+# Run E2E tests. Accepts `pytest` parameters.
 # Args: [...]
 x.e2e.run() {
   source ".env.$env"

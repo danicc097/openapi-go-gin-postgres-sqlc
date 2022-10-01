@@ -8,6 +8,12 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+var roles = map[db.Role][]db.Role{
+	db.RoleUser:    {db.RoleUser},
+	db.RoleManager: {db.RoleUser, db.RoleManager},
+	db.RoleAdmin:   {db.RoleUser, db.RoleManager, db.RoleAdmin},
+}
+
 // Authorization represents a service for authorization.
 type Authorization struct {
 	Logger *zap.Logger
@@ -21,14 +27,11 @@ func NewAuthorization(logger *zap.Logger) *Authorization {
 }
 
 // TODO RBAC: https://incidentio.notion.site/Proposal-Product-RBAC-265201563d884ec5aeecbb246c02ddc6
-// but openapi friendly
+// casbin https://www.aserto.com/blog/building-rbac-in-go
+
 // RolePermissions returns access levels per role.
 func (a Authorization) RolePermissions() map[db.Role][]db.Role {
-	return map[db.Role][]db.Role{
-		db.RoleUser:    {db.RoleUser},
-		db.RoleManager: {db.RoleUser, db.RoleManager},
-		db.RoleAdmin:   {db.RoleUser, db.RoleManager, db.RoleAdmin},
-	}
+	return roles
 }
 
 func (a Authorization) IsAuthorized(role, requiredRole db.Role) error {
