@@ -32,19 +32,19 @@ func contains[T comparable](elems []T, v T) bool {
 }
 
 /*
-	Rationale:
-	We dont want users to manually add handlers and routes to handlers/*
-	If we let them, we wouldnt know at plain sight what was in the spec and what wasnt
-	and parsing will become a bigger mess.
-	Users can still add new methods to the struct. In case of generated methods conflicting with existing ones, generation will stop.
-	If we need a new route that cant be defined in the spec, e.g. fileserver,
-	we purposely want that out of the generated handler struct,
-	so its clear that its outside the spec.
-	It can still remain in handlers/* as long as its not api_*(!_test).go, e.g. fileserver.go
-	and it can still follow the same handlers struct pattern for all we care, it wont be touched.
-	IMPORTANT: if a method already exists in current but has no routes item (meaning
-	its probably some handler helper method created afterwards) then panic and alert
-	the user to rename. it shouldve been unexported or a function in the first place anyway.
+Rationale:
+We dont want users to manually add handlers and routes to handlers/*
+If we let them, we wouldnt know at plain sight what was in the spec and what wasnt
+and parsing will become a bigger mess.
+Users can still add new methods to the struct. In case of generated methods conflicting with existing ones, generation will stop.
+If we need a new route that cant be defined in the spec, e.g. fileserver,
+we purposely want that out of the generated handler struct,
+so its clear that its outside the spec.
+It can still remain in handlers/* as long as its not api_*(!_test).go, e.g. fileserver.go
+and it can still follow the same handlers struct pattern for all we care, it wont be touched.
+IMPORTANT: if a method already exists in current but has no routes item (meaning
+its probably some handler helper method created afterwards) then panic and alert
+the user to rename. it shouldve been unexported or a function in the first place anyway.
 */
 type OpenapiGenerator struct {
 	conf     *Conf
@@ -106,7 +106,7 @@ func (o *OpenapiGenerator) analyzeHandlers(basenames []string) (map[string]map[s
 			tag := cases.Title(language.English).String(reg.FindStringSubmatch(basename)[1])
 
 			mm := inspectStruct(file, tag)
-			rr := inspectNodes(file, tag)
+			rr := inspectRegisterNode(file, tag)
 			routes := extractRoutes(rr)
 			hf := HandlerFile{
 				F:          file,
@@ -460,8 +460,8 @@ func extractRoutes(rr *dst.AssignStmt) map[string]Route {
 	return out
 }
 
-// inspectNodes extracts the routes slice assignment node and middlewares method body for tag.
-func inspectNodes(f dst.Node, tag string) *dst.AssignStmt {
+// inspectRegisterNode extracts the routes slice assignment node and middlewares method body for tag.
+func inspectRegisterNode(f dst.Node, tag string) *dst.AssignStmt {
 	routesNode := &dst.AssignStmt{}
 
 	dst.Inspect(f, func(n dst.Node) bool {

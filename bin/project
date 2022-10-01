@@ -475,7 +475,8 @@ x.openapi-generator() {
   mkdir -p "$gen_out_dir"/rest
   mkdir -p "$gen_out_dir"/services
 
-  mv "$gen_out_dir"/gen/routers.go "$gen_out_dir"/rest
+  mv "$gen_out_dir"/gen/routers.go "$gen_out_dir"/rest/routers.gen.go
+
   {
     mv "$gen_out_dir"/gen/model_*.go "$gen_out_dir"/gen/models 2>/dev/null
     goimports -w "$gen_out_dir"/gen/models
