@@ -36,7 +36,7 @@ func (h *Admin) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Admin) middlewares(opID string) []gin.HandlerFunc {
+func (h *Admin) middlewares(opID opID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}

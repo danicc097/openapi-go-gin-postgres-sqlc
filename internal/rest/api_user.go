@@ -97,7 +97,7 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *User) middlewares(opID string) []gin.HandlerFunc {
+func (h *User) middlewares(opID opID) []gin.HandlerFunc {
 	authMw := newAuthMiddleware(h.logger, h.authnSvc, h.authzSvc, h.userSvc)
 
 	switch opID {

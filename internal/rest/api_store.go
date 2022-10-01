@@ -58,7 +58,7 @@ func (h *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Store) middlewares(opID string) []gin.HandlerFunc {
+func (h *Store) middlewares(opID opID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}

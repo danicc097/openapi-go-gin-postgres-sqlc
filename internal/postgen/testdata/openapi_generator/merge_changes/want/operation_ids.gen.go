@@ -2,10 +2,12 @@
 
 package rest
 
-type defaultOpID string
-type newapiOpID string
-type petOpID string
-type userOpID string
+type opID string
+
+type defaultOpID opID
+type newapiOpID opID
+type petOpID opID
+type userOpID opID
 
 const (
 	// Operation IDs for the 'default' tag.
@@ -16,8 +18,8 @@ const (
 
 	// Operation IDs for the 'pet' tag.
 	addPet    petOpID = "addPet"
-	updatePet petOpID = "updatePet"
 	deletePet petOpID = "deletePet"
+	updatePet petOpID = "updatePet"
 
 	// Operation IDs for the 'user' tag.
 	createUser userOpID = "createUser"

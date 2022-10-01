@@ -77,7 +77,7 @@ func (h *User) UpdateUser(c *gin.Context) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *User) middlewares(opID string) []gin.HandlerFunc {
+func (h *User) middlewares(opID opID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}

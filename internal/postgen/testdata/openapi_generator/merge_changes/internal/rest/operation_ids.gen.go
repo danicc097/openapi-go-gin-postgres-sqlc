@@ -18,8 +18,8 @@ const (
 
 	// Operation IDs for the 'pet' tag.
 	addPet    petOpID = "addPet"
-	deletePet petOpID = "deletePet"
 	updatePet petOpID = "updatePet"
+	deletePet petOpID = "deletePet"
 
 	// Operation IDs for the 'user' tag.
 	createUser userOpID = "createUser"

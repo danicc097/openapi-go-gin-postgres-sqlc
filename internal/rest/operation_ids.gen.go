@@ -2,46 +2,48 @@
 
 package rest
 
-type adminOpID string
-type defaultOpID string
-type fakeOpID string
-type petOpID string
-type storeOpID string
-type userOpID string
+type opID string
+
+type adminOpID opID
+type defaultOpID opID
+type fakeOpID opID
+type petOpID opID
+type storeOpID opID
+type userOpID opID
 
 const (
 	// Operation IDs for the 'admin' tag.
 	adminPing adminOpID = "adminPing"
 
 	// Operation IDs for the 'default' tag.
+	openapiYamlGet defaultOpID = "openapiYamlGet"
 	ping           defaultOpID = "ping"
-	OpenapiYamlGet defaultOpID = "OpenapiYamlGet"
 
 	// Operation IDs for the 'fake' tag.
 	fake_data_file fakeOpID = "fake_data_file"
 
 	// Operation IDs for the 'pet' tag.
+	addPet            petOpID = "addPet"
+	deletePet         petOpID = "deletePet"
 	findPetsByStatus  petOpID = "findPetsByStatus"
 	findPetsByTags    petOpID = "findPetsByTags"
-	deletePet         petOpID = "deletePet"
 	getPetById        petOpID = "getPetById"
+	updatePet         petOpID = "updatePet"
 	updatePetWithForm petOpID = "updatePetWithForm"
 	uploadFile        petOpID = "uploadFile"
-	updatePet         petOpID = "updatePet"
-	addPet            petOpID = "addPet"
 
 	// Operation IDs for the 'store' tag.
-	getInventory storeOpID = "getInventory"
-	placeOrder   storeOpID = "placeOrder"
 	deleteOrder  storeOpID = "deleteOrder"
+	getInventory storeOpID = "getInventory"
 	getOrderById storeOpID = "getOrderById"
+	placeOrder   storeOpID = "placeOrder"
 
 	// Operation IDs for the 'user' tag.
-	loginUser                 userOpID = "loginUser"
-	logoutUser                userOpID = "logoutUser"
-	deleteUser                userOpID = "deleteUser"
-	getUserByName             userOpID = "getUserByName"
-	updateUser                userOpID = "updateUser"
 	createUser                userOpID = "createUser"
 	createUsersWithArrayInput userOpID = "createUsersWithArrayInput"
+	deleteUser                userOpID = "deleteUser"
+	getUserByName             userOpID = "getUserByName"
+	loginUser                 userOpID = "loginUser"
+	logoutUser                userOpID = "logoutUser"
+	updateUser                userOpID = "updateUser"
 )
