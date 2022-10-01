@@ -34,7 +34,7 @@ type OAValidatorOptions struct {
 // openapiMiddleware handles authentication and authorization middleware.
 type openapiMiddleware struct {
 	Logger *zap.Logger
-	router routers.Router //
+	router routers.Router
 }
 
 // TODO kin-openapi already has middleware, possibly added after this was created

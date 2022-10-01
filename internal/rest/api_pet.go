@@ -25,60 +25,60 @@ func NewPet(svc services.Pet) *Pet {
 func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "AddPet",
+			Name:        string(AddPet),
 			Method:      http.MethodPost,
 			Pattern:     "/pet",
 			HandlerFunc: h.AddPet,
-			Middlewares: h.middlewares("AddPet"),
+			Middlewares: h.middlewares(AddPet),
 		},
 		{
-			Name:        "DeletePet",
+			Name:        string(DeletePet),
 			Method:      http.MethodDelete,
 			Pattern:     "/pet/:petId",
 			HandlerFunc: h.DeletePet,
-			Middlewares: h.middlewares("DeletePet"),
+			Middlewares: h.middlewares(DeletePet),
 		},
 		{
-			Name:        "FindPetsByStatus",
+			Name:        string(FindPetsByStatus),
 			Method:      http.MethodGet,
 			Pattern:     "/pet/findByStatus",
 			HandlerFunc: h.FindPetsByStatus,
-			Middlewares: h.middlewares("FindPetsByStatus"),
+			Middlewares: h.middlewares(FindPetsByStatus),
 		},
 		{
-			Name:        "FindPetsByTags",
+			Name:        string(FindPetsByTags),
 			Method:      http.MethodGet,
 			Pattern:     "/pet/findByTags",
 			HandlerFunc: h.FindPetsByTags,
-			Middlewares: h.middlewares("FindPetsByTags"),
+			Middlewares: h.middlewares(FindPetsByTags),
 		},
 		{
-			Name:        "GetPetById",
+			Name:        string(GetPetById),
 			Method:      http.MethodGet,
 			Pattern:     "/pet/:petId",
 			HandlerFunc: h.GetPetById,
-			Middlewares: h.middlewares("GetPetById"),
+			Middlewares: h.middlewares(GetPetById),
 		},
 		{
-			Name:        "UpdatePet",
+			Name:        string(UpdatePet),
 			Method:      http.MethodPut,
 			Pattern:     "/pet",
 			HandlerFunc: h.UpdatePet,
-			Middlewares: h.middlewares("UpdatePet"),
+			Middlewares: h.middlewares(UpdatePet),
 		},
 		{
-			Name:        "UpdatePetWithForm",
+			Name:        string(UpdatePetWithForm),
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId",
 			HandlerFunc: h.UpdatePetWithForm,
-			Middlewares: h.middlewares("UpdatePetWithForm"),
+			Middlewares: h.middlewares(UpdatePetWithForm),
 		},
 		{
-			Name:        "UploadFile",
+			Name:        string(UploadFile),
 			Method:      http.MethodPost,
 			Pattern:     "/pet/:petId/uploadImage",
 			HandlerFunc: h.UploadFile,
-			Middlewares: h.middlewares("UploadFile"),
+			Middlewares: h.middlewares(UploadFile),
 		},
 	}
 
@@ -86,7 +86,7 @@ func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Pet) middlewares(opID string) []gin.HandlerFunc {
+func (h *Pet) middlewares(opID petOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}

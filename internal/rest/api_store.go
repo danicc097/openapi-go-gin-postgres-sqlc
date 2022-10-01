@@ -25,32 +25,32 @@ func NewStore(svc services.Store) *Store {
 func (h *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "DeleteOrder",
+			Name:        string(DeleteOrder),
 			Method:      http.MethodDelete,
 			Pattern:     "/store/order/:orderId",
 			HandlerFunc: h.DeleteOrder,
-			Middlewares: h.middlewares("DeleteOrder"),
+			Middlewares: h.middlewares(DeleteOrder),
 		},
 		{
-			Name:        "GetInventory",
+			Name:        string(GetInventory),
 			Method:      http.MethodGet,
 			Pattern:     "/store/inventory",
 			HandlerFunc: h.GetInventory,
-			Middlewares: h.middlewares("GetInventory"),
+			Middlewares: h.middlewares(GetInventory),
 		},
 		{
-			Name:        "GetOrderById",
+			Name:        string(GetOrderById),
 			Method:      http.MethodGet,
 			Pattern:     "/store/order/:orderId",
 			HandlerFunc: h.GetOrderById,
-			Middlewares: h.middlewares("GetOrderById"),
+			Middlewares: h.middlewares(GetOrderById),
 		},
 		{
-			Name:        "PlaceOrder",
+			Name:        string(PlaceOrder),
 			Method:      http.MethodPost,
 			Pattern:     "/store/order",
 			HandlerFunc: h.PlaceOrder,
-			Middlewares: h.middlewares("PlaceOrder"),
+			Middlewares: h.middlewares(PlaceOrder),
 		},
 	}
 
@@ -58,7 +58,7 @@ func (h *Store) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Store) middlewares(opID string) []gin.HandlerFunc {
+func (h *Store) middlewares(opID storeOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}

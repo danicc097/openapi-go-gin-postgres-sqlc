@@ -7,14 +7,12 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/gin-gonic/gin"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
 // User handles routes with the 'user' tag.
 type User struct {
-	tp       *sdktrace.TracerProvider
 	logger   *zap.Logger
 	userSvc  UserService
 	authnSvc AuthenticationService
@@ -23,14 +21,12 @@ type User struct {
 
 // NewUser returns a new handler for the 'user' route group.
 func NewUser(
-	tp *sdktrace.TracerProvider,
 	logger *zap.Logger,
 	userSvc UserService,
 	authnSvc AuthenticationService,
 	authzSvc AuthorizationService,
 ) *User {
 	return &User{
-		tp:       tp,
 		logger:   logger,
 		userSvc:  userSvc,
 		authnSvc: authnSvc,
@@ -43,53 +39,53 @@ func NewUser(
 func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "CreateUser",
+			Name:        string(CreateUser),
 			Method:      http.MethodPost,
 			Pattern:     "/user",
 			HandlerFunc: h.CreateUser,
-			Middlewares: h.middlewares("CreateUser"),
+			Middlewares: h.middlewares(CreateUser),
 		},
 		{
-			Name:        "CreateUsersWithArrayInput",
+			Name:        string(CreateUsersWithArrayInput),
 			Method:      http.MethodPost,
 			Pattern:     "/user/createWithArray",
 			HandlerFunc: h.CreateUsersWithArrayInput,
-			Middlewares: h.middlewares("CreateUsersWithArrayInput"),
+			Middlewares: h.middlewares(CreateUsersWithArrayInput),
 		},
 		{
-			Name:        "DeleteUser",
+			Name:        string(DeleteUser),
 			Method:      http.MethodDelete,
 			Pattern:     "/user/:username",
 			HandlerFunc: h.DeleteUser,
-			Middlewares: h.middlewares("DeleteUser"),
+			Middlewares: h.middlewares(DeleteUser),
 		},
 		{
-			Name:        "GetUserByName",
+			Name:        string(GetUserByName),
 			Method:      http.MethodGet,
 			Pattern:     "/user/:username",
 			HandlerFunc: h.GetUserByName,
-			Middlewares: h.middlewares("GetUserByName"),
+			Middlewares: h.middlewares(GetUserByName),
 		},
 		{
-			Name:        "LoginUser",
+			Name:        string(LoginUser),
 			Method:      http.MethodGet,
 			Pattern:     "/user/login",
 			HandlerFunc: h.LoginUser,
-			Middlewares: h.middlewares("LoginUser"),
+			Middlewares: h.middlewares(LoginUser),
 		},
 		{
-			Name:        "LogoutUser",
+			Name:        string(LogoutUser),
 			Method:      http.MethodGet,
 			Pattern:     "/user/logout",
 			HandlerFunc: h.LogoutUser,
-			Middlewares: h.middlewares("LogoutUser"),
+			Middlewares: h.middlewares(LogoutUser),
 		},
 		{
-			Name:        "UpdateUser",
+			Name:        string(UpdateUser),
 			Method:      http.MethodPut,
 			Pattern:     "/user/:username",
 			HandlerFunc: h.UpdateUser,
-			Middlewares: h.middlewares("UpdateUser"),
+			Middlewares: h.middlewares(UpdateUser),
 		},
 	}
 
@@ -97,11 +93,11 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *User) middlewares(opID string) []gin.HandlerFunc {
+func (h *User) middlewares(opID userOpID) []gin.HandlerFunc {
 	authMw := newAuthMiddleware(h.logger, h.authnSvc, h.authzSvc, h.userSvc)
 
 	switch opID {
-	case "CreateUser":
+	case CreateUser:
 		return []gin.HandlerFunc{authMw.EnsureAuthenticated()}
 	default:
 		return []gin.HandlerFunc{}

@@ -21,15 +21,15 @@ func NewDefault(svc services.Default) *Default {
 }
 
 // Register connects handlers to an existing router group with the given middlewares.
-// Generated method. DO NOT EDIT.
+// Generated. DO NOT EDIT.
 func (h *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "Ping",
+			Name:        string(Ping),
 			Method:      http.MethodGet,
 			Pattern:     "/ping",
 			HandlerFunc: h.Ping,
-			Middlewares: h.middlewares("Ping"),
+			Middlewares: h.middlewares(Ping),
 		},
 	}
 
@@ -37,7 +37,7 @@ func (h *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Default) middlewares(opID string) []gin.HandlerFunc {
+func (h *Default) middlewares(opID defaultOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}

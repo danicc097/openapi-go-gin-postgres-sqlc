@@ -21,7 +21,7 @@ func NewPet(svc services.Pet) *Pet {
 }
 
 // Register connects handlers to an existing router group with the given middlewares.
-// Generated method. DO NOT EDIT.
+// Generated. DO NOT EDIT.
 func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{}
 
@@ -29,7 +29,7 @@ func (h *Pet) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Pet) middlewares(opID string) []gin.HandlerFunc {
+func (h *Pet) middlewares(opID petOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}

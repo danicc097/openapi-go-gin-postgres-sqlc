@@ -23,16 +23,16 @@ func New{{baseName}}(svc services.{{baseName}}) *{{baseName}} {
 }
 
 // Register connects handlers to an existing router group with the given middlewares.
-// Generated method. DO NOT EDIT.
+// Generated. DO NOT EDIT.
 func (h *{{baseName}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
   routes := []route{
 {{#operation}}
 	{
-    Name: "{{operationId}}",
+    Name: string({{operationId}}),
     Method: http.Method{{httpMethod}},
     Pattern: "{{{path}}}",
     HandlerFunc: h.{{nickname}},
-    Middlewares: h.middlewares("{{operationId}}"),
+    Middlewares: h.middlewares({{operationId}}),
   },
 {{/operation}}
   }
@@ -40,16 +40,16 @@ func (h *{{baseName}}) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 {{#operation.0}}
 
   registerRoutes(r, routes, "/{{#tags}}{{name}}{{/tags}}", mws)
-{{/operation.0}}
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *{{baseName}}) middlewares(opID string) []gin.HandlerFunc {
+func (h *{{baseName}}) middlewares(opID {{#tags}}{{name}}{{/tags}}OpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}
 	}
 }
+{{/operation.0}}
 
 {{#operation}}
 // {{nickname}} {{#lambda.lowercase}}{{{summary}}}{{/lambda.lowercase}}.

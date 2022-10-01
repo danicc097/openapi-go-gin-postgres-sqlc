@@ -21,60 +21,60 @@ func NewUser(svc services.User) *User {
 }
 
 // Register connects handlers to an existing router group with the given middlewares.
-// Generated method. DO NOT EDIT.
+// Generated. DO NOT EDIT.
 func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "CreateUser",
+			Name:        string(CreateUser),
 			Method:      http.MethodPost,
 			Pattern:     "/user",
 			HandlerFunc: h.CreateUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
-			Name:        "CreateUsersWithArrayInput",
+			Name:        string(CreateUsersWithArrayInput),
 			Method:      http.MethodPost,
 			Pattern:     "/user/createWithArray",
 			HandlerFunc: h.CreateUsersWithArrayInput,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
-			Name:        "CreateUsersWithListInput",
+			Name:        string(CreateUsersWithListInput),
 			Method:      http.MethodPost,
 			Pattern:     "/user/createWithList",
 			HandlerFunc: h.CreateUsersWithListInput,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
-			Name:        "DeleteUser",
+			Name:        string(DeleteUser),
 			Method:      http.MethodDelete,
 			Pattern:     "/user/:username",
 			HandlerFunc: h.DeleteUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
-			Name:        "GetUserByName",
+			Name:        string(GetUserByName),
 			Method:      http.MethodGet,
 			Pattern:     "/user/:username",
 			HandlerFunc: h.GetUserByName,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
-			Name:        "LoginUser",
+			Name:        string(LoginUser),
 			Method:      http.MethodGet,
 			Pattern:     "/user/login",
 			HandlerFunc: h.LoginUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
-			Name:        "LogoutUser",
+			Name:        string(LogoutUser),
 			Method:      http.MethodGet,
 			Pattern:     "/user/logout",
 			HandlerFunc: h.LogoutUser,
 			Middlewares: []gin.HandlerFunc{},
 		},
 		{
-			Name:        "UpdateUser",
+			Name:        string(UpdateUser),
 			Method:      http.MethodPut,
 			Pattern:     "/user/:username",
 			HandlerFunc: h.UpdateUser,

@@ -25,11 +25,11 @@ func NewFake(svc services.Fake) *Fake {
 func (h *Fake) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "FakeDataFile",
+			Name:        string(FakeDataFile),
 			Method:      http.MethodGet,
 			Pattern:     "/fake/data_file",
 			HandlerFunc: h.FakeDataFile,
-			Middlewares: h.middlewares("FakeDataFile"),
+			Middlewares: h.middlewares(FakeDataFile),
 		},
 	}
 
@@ -37,7 +37,7 @@ func (h *Fake) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Fake) middlewares(opID string) []gin.HandlerFunc {
+func (h *Fake) middlewares(opID fakeOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}

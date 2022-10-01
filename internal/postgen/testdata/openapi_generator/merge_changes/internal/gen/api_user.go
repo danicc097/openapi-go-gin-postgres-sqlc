@@ -21,15 +21,15 @@ func NewUser(svc services.User) *User {
 }
 
 // Register connects handlers to an existing router group with the given middlewares.
-// Generated method. DO NOT EDIT.
+// Generated. DO NOT EDIT.
 func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "CreateUser",
+			Name:        string(CreateUser),
 			Method:      http.MethodPost,
 			Pattern:     "/user",
 			HandlerFunc: h.CreateUser,
-			Middlewares: h.middlewares("CreateUser"),
+			Middlewares: h.middlewares(CreateUser),
 		},
 	}
 
@@ -37,7 +37,7 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *User) middlewares(opID string) []gin.HandlerFunc {
+func (h *User) middlewares(opID userOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}

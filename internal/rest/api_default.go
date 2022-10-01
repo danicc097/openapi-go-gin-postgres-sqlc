@@ -22,18 +22,18 @@ func NewDefault() *Default {
 func (h *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 	routes := []route{
 		{
-			Name:        "OpenapiYamlGet",
+			Name:        string(OpenapiYamlGet),
 			Method:      http.MethodGet,
 			Pattern:     "/openapi.yaml",
 			HandlerFunc: h.OpenapiYamlGet,
-			Middlewares: h.middlewares("OpenapiYamlGet"),
+			Middlewares: h.middlewares(OpenapiYamlGet),
 		},
 		{
-			Name:        "Ping",
+			Name:        string(Ping),
 			Method:      http.MethodGet,
 			Pattern:     "/ping",
 			HandlerFunc: h.Ping,
-			Middlewares: h.middlewares("Ping"),
+			Middlewares: h.middlewares(Ping),
 		},
 	}
 
@@ -41,7 +41,7 @@ func (h *Default) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 }
 
 // middlewares returns individual route middleware per operation id.
-func (h *Default) middlewares(opID string) []gin.HandlerFunc {
+func (h *Default) middlewares(opID defaultOpID) []gin.HandlerFunc {
 	switch opID {
 	default:
 		return []gin.HandlerFunc{}
