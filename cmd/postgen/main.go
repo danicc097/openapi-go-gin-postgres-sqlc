@@ -14,10 +14,11 @@ import (
 )
 
 func main() {
-	var env, cacheDir string
+	var env, cacheDir, spec string
 
 	flag.StringVar(&env, "env", ".env", "Environment Variables filename")
 	flag.StringVar(&cacheDir, "cachedir", ".postgen.cache", "Cache dir")
+	flag.StringVar(&spec, "spec", "openapi.yaml", "OpenAPI specification")
 	flag.Parse()
 
 	if err := envvar.Load(env); err != nil {
@@ -33,7 +34,7 @@ func main() {
 	}
 
 	var stderr bytes.Buffer
-	og := postgen.NewOpenapiGenerator(conf, &stderr, postgen.Dir(cacheDir))
+	og := postgen.NewOpenapiGenerator(conf, &stderr, postgen.Dir(cacheDir), spec)
 
 	if err := og.Generate(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

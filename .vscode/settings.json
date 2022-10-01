@@ -32,6 +32,9 @@
   "python.analysis.extraPaths": [
     "e2e",
   ],
+  "python.analysis.ignore": [
+    "python-ml-app"
+  ],
   // CRUCIAL to fix auto import suggestions. currently undocumented.
   // https://github.com/microsoft/pylance-release/issues/2533
   "python.analysis.indexing": true,

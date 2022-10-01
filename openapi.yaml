@@ -57,6 +57,7 @@ paths:
   /openapi.yaml:
     get:
       summary: Returns this very OpenAPI spec.
+      operationId: OpenapiYamlGet
       responses:
         "200":
           description: OpenAPI YAML file.

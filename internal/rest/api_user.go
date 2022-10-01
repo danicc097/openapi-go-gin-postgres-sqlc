@@ -168,3 +168,8 @@ func (h *User) LogoutUser(c *gin.Context) {
 func (h *User) UpdateUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
+
+// UpdatePet update an existing pet.
+func (h *User) UpdatePet(c *gin.Context) {
+	c.String(http.StatusNotImplemented, "501 not implemented")
+}

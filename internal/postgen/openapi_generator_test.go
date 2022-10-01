@@ -49,7 +49,7 @@ func TestHandlerPostProcessing(t *testing.T) {
 				t.Fatal(err)
 			}
 			var stderr bytes.Buffer
-			og := NewOpenapiGenerator(conf, &stderr, "")
+			og := NewOpenapiGenerator(conf, &stderr, "", path.Join(baseDir, tc.Dir, "openapi.yaml"))
 
 			s := testutil.GetStderr(t, path.Join(baseDir, tc.Dir, "want"))
 
