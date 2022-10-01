@@ -27,4 +27,4 @@ jobs:
           source .envrc
 
           [[ $(git branch --show-current) != "main" ]] && git fetch origin main:main
-          project diff-openapi-spec
+          project diff-openapi-spec --x-env ci
