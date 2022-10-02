@@ -14,6 +14,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHandlerPostProcessing(t *testing.T) {
@@ -37,6 +38,8 @@ func TestHandlerPostProcessing(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
+			var stderr bytes.Buffer
+
 			conf := &Conf{
 				CurrentHandlersDir: Dir(path.Join(baseDir, tc.Dir, "internal/rest")),
 				GenHandlersDir:     Dir(path.Join(baseDir, tc.Dir, "internal/gen")),
@@ -48,12 +51,9 @@ func TestHandlerPostProcessing(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			var stderr bytes.Buffer
 			og := NewOpenapiGenerator(conf, &stderr, "", path.Join(baseDir, tc.Dir, "openapi.yaml"))
-
 			s := testutil.GetStderr(t, path.Join(baseDir, tc.Dir, "want"))
-			// TODO FIXME NameClashing should NOT have generated any files in got
-			t.Logf("stderr.txt: %s\n", s)
+
 			err = og.Generate()
 			if err != nil && s != "" {
 				// check stderr.txt is exactly as output
@@ -88,6 +88,54 @@ func TestHandlerPostProcessing(t *testing.T) {
 				if diff := cmp.Diff(want.String(), got.String()); diff != "" {
 					t.Errorf("%s: strings differed (-want +got):\n%s", wp, diff)
 				}
+			}
+		})
+	}
+}
+
+func TestAnalyzeSpecBeforePostgen(t *testing.T) {
+	t.Parallel()
+
+	const baseDir = "testdata/analyze_specs"
+
+	cases := []struct {
+		Name        string
+		File        string
+		ErrContains string
+	}{
+		{
+			"valid",
+			"valid.yaml",
+			``,
+		},
+		{
+			"invalid_operationid",
+			"invalid_operationid.yaml",
+			`path "/pet/ConflictEndpointPet": method "GET": operationId "Conflict-Endpoint-Pet" does not match pattern "^[a-zA-Z0-9]*$"`,
+		},
+		{
+			"missing_operationid",
+			"missing_operationid.yaml",
+			`path "/pet/ConflictEndpointPet": method "GET": operationId is required for postgen`,
+		},
+		{
+			"more_than_one_tag",
+			"more_than_one_tag.yaml",
+			`path "/pet/ConflictEndpointPet": method "GET": at most one tag is permitted for postgen`,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.Name, func(t *testing.T) {
+			var stderr bytes.Buffer
+
+			og := NewOpenapiGenerator(&Conf{}, &stderr, "", path.Join(baseDir, tc.File))
+
+			err := og.analyzeSpec()
+			if err != nil && tc.ErrContains != "" {
+				assert.ErrorContains(t, err, tc.ErrContains)
+			} else if err != nil {
+				t.Fatalf("err: %s\nstderr: %s\n", err, &stderr)
 			}
 		})
 	}

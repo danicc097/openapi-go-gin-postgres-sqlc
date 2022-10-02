@@ -21,6 +21,7 @@ and flags at will.
 
 ![](.github/autodocs.png)
 
+
 ## What's this for?
 
 Your OpenAPI v3 spec becomes a real single source of truth for the full stack. Any
@@ -32,6 +33,13 @@ change to it is validated and cascades down to:
 
 Additionally, it features OpenTelemetry in both browser (automatic and
 manual instrumentation) and backend services (manual instrumentation).
+
+## Architecture
+
+Simplified:
+
+![](.github/system-diagram.png)
+
 
 ## Known issues
 
