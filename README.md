@@ -25,10 +25,19 @@ and flags at will.
 
 Your OpenAPI v3 spec becomes a real single source of truth for the full stack. Any
 change to it is validated and cascades down to:
- - **frontend**: generated API queries (`rtk-query`) and user-friendly client-side validation
+ - **frontend**: generated API queries (`rtk-query`). User-friendly [generated] client-side validation
    (fork of `openapi-typescript-validator`).
  - **backend**: generated Gin server (`openapi-generator` and custom
-   post-generation), request and response validation (`kin-openapi`).
+   post-generation) with codegen merged with your existing files. Request and response validation (`kin-openapi`).
+
+Additionally, it features OpenTelemetry in both browser (automatic and
+manual instrumentation) and backend services (manual instrumentation).
+
+## Known issues
+
+- Nested functions in `project`'s `x` functions will break automatic
+  documentation for that particular function due to a bug in `declare` where the last nested function line
+  number is returned instead of the parent.
 
 ## TODOs
 

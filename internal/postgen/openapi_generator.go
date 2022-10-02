@@ -384,7 +384,6 @@ func (o *OpenapiGenerator) generateMergedFiles(handlers map[Dir]map[Tag]HandlerF
 		}
 	}
 	// no need to check for uniqueness of operation IDs, done by openapi-generator at this point
-	fmt.Printf("operations: %v", operations)
 	s := path.Join(string(o.conf.OutHandlersDir), "operation_ids.gen.go")
 	f, err := os.Create(s)
 	if err != nil {

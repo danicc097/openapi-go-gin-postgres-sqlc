@@ -260,19 +260,8 @@ x.build() {
   go build -o rest-server "$PWD"/cmd/rest-server
 }
 
-# Build the project for Windows.
-x.build.windows() {
-  GOOS=windows GOARCH=amd64 go build -o rest-server.exe "$PWD"/cmd/rest-server
-}
-
-# Test, build and run the entire project.
-x.run() {
-  x.build
-  ./rest-server -env=".env.$env"
-}
-
 # Run backend with hot-reloading.
-x.run-hot-reload() {
+x.run.backend-hot-reload() {
   source ".env.$env"
   run_shared_services
   # TODO new include_files flag in fork, e.g. for openapi.yaml.
@@ -294,7 +283,7 @@ x.run-hot-reload() {
 }
 
 # Run frontend with hot-reloading.
-x.run-frontend() {
+x.run.frontend() {
   set -a
   source ".env.$env"
   set +a
@@ -310,13 +299,6 @@ x.run-frontend() {
 x.run-dev() {
   env="dev"
   source ".env.$env"
-  # to be replaced by dcompose up --build when oas changes
-  run_hot_reload() {
-    x.run-hot-reload &
-    pids+=("$!")
-    x.run-frontend &
-    pids+=("$!")
-  }
 
   run_hot_reload
 
@@ -343,6 +325,15 @@ x.run-dev() {
         fi
       done
   done
+}
+
+# IMPORTANT: bug in declare -F returns line number of last nested function, if any.
+# extracting function here instead...
+run_hot_reload() {
+  x.run.backend-hot-reload &
+  pids+=("$!")
+  x.run.frontend &
+  pids+=("$!")
 }
 
 # Run project in production mode.

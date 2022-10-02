@@ -9,7 +9,7 @@ const injectedRtkApi = api
       ping: build.query<PingRes, PingArgs>({
         query: () => ({ url: `/ping` }),
       }),
-      getOpenapiYaml: build.query<GetOpenapiYamlRes, GetOpenapiYamlArgs>({
+      openapiYamlGet: build.query<OpenapiYamlGetRes, OpenapiYamlGetArgs>({
         query: () => ({ url: `/openapi.yaml` }),
       }),
       adminPing: build.query<AdminPingRes, AdminPingArgs>({
@@ -120,8 +120,8 @@ const injectedRtkApi = api
 export { injectedRtkApi as internalApi }
 export type PingRes = /** status 200 OK */ string
 export type PingArgs = void
-export type GetOpenapiYamlRes = unknown
-export type GetOpenapiYamlArgs = void
+export type OpenapiYamlGetRes = unknown
+export type OpenapiYamlGetArgs = void
 export type AdminPingRes = /** status 200 OK */ string
 export type AdminPingArgs = void
 export type AddPetRes = /** status 200 successful operation */ APet
@@ -270,7 +270,7 @@ export type AUser3 = {
 }
 export const {
   usePingQuery,
-  useGetOpenapiYamlQuery,
+  useOpenapiYamlGetQuery,
   useAdminPingQuery,
   useAddPetMutation,
   useUpdatePetMutation,

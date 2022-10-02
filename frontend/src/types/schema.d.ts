@@ -12,16 +12,7 @@ export interface paths {
     get: operations['ping']
   }
   '/openapi.yaml': {
-    get: {
-      responses: {
-        /** OpenAPI YAML file. */
-        200: {
-          content: {
-            'text/yaml': string
-          }
-        }
-      }
-    }
+    get: operations['OpenapiYamlGet']
   }
   '/admin/ping': {
     get: operations['adminPing']
@@ -81,7 +72,7 @@ export interface paths {
     delete: operations['deleteUser']
   }
   '/fake/data_file': {
-    get: operations['fake_data_file']
+    get: operations['fakeDataFile']
   }
 }
 
@@ -365,6 +356,16 @@ export interface operations {
       422: {
         content: {
           'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  OpenapiYamlGet: {
+    responses: {
+      /** OpenAPI YAML file. */
+      200: {
+        content: {
+          'text/yaml': string
         }
       }
     }
@@ -715,7 +716,7 @@ export interface operations {
       404: unknown
     }
   }
-  fake_data_file: {
+  fakeDataFile: {
     parameters: {
       header: {
         /** dummy required parameter */
