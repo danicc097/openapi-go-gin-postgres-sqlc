@@ -79,7 +79,7 @@ func runTestServer(t *testing.T, pool *pgxpool.Pool, middlewares []gin.HandlerFu
 	}
 
 	srv, err := NewServer(Config{
-		Address:  ":0",
+		Address:  ":0", // random next available for each test server
 		Pool:     pool,
 		Redis:    rdb,
 		Logger:   logger,

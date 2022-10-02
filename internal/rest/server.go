@@ -17,8 +17,6 @@ import (
 	"github.com/gin-contrib/cors"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"github.com/go-playground/validator/v10"
 	rv8 "github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
@@ -53,10 +51,6 @@ type Config struct {
 
 // NewServer returns a new http server with the given middlewares.
 func NewServer(conf Config, middlewares ...gin.HandlerFunc) (*http.Server, error) {
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		v.RegisterValidation("alphanumspace", Alphanumspace)
-	}
-
 	router := gin.Default()
 	router.Use(gin.Recovery())
 	// Add a ginzap middleware, which:
@@ -205,6 +199,8 @@ func Run(env, address, specPath string) (<-chan error, error) {
 
 	_, span := tp.Tracer("server-start-tracer").Start(ctx, "server-start")
 	defer span.End()
+
+	registerValidators()
 
 	srv, err := NewServer(Config{
 		Address:  address,

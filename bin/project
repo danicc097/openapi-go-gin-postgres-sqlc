@@ -158,21 +158,21 @@ x.generate.counterfeiter() {
 
 # Generates the required servers/clients for relevant services.
 x.generate.proto() {
-  (
-    local import_path="./python-ml-app-protos/tfidf/v1"
-    local filename="python-ml-app-protos/tfidf/v1/service.proto"
+  local import_path="./python-ml-app-protos/tfidf/v1"
+  local filename="python-ml-app-protos/tfidf/v1/service.proto"
 
-    cd internal
-    rm -rf ./pb
-    mkdir -p ./pb
-    protoc \
-      --go-grpc_out=./pb/. \
-      --go_out=./pb/. \
-      --go-grpc_opt=M$filename=$import_path,paths=import \
-      --go_opt=M$filename=$import_path,paths=import \
-      python-ml-app-protos/tfidf/v1/service.proto
-    cd - >/dev/null
-  )
+  cd internal
+  rm -rf ./pb
+  mkdir -p ./pb
+  # Plugins are no longer supported by protoc-gen-go.
+  # Instead protoc-gen-go-grpc and the go package (in proto or via M flag) are required
+  protoc \
+    --go-grpc_out=./pb/. \
+    --go_out=./pb/. \
+    --go-grpc_opt=M$filename=$import_path,paths=import \
+    --go_opt=M$filename=$import_path,paths=import \
+    python-ml-app-protos/tfidf/v1/service.proto
+  cd - >/dev/null
 }
 
 # Run all codegen and postgen commands for the project.

@@ -3,6 +3,7 @@ package rest
 import (
 	"regexp"
 
+	"github.com/gin-gonic/gin/binding"
 	validator "github.com/go-playground/validator/v10"
 )
 
@@ -16,4 +17,10 @@ var (
 
 var Alphanumspace validator.Func = func(fl validator.FieldLevel) bool {
 	return alphanumSpaceRegex.MatchString(fl.Field().String())
+}
+
+func registerValidators() {
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("alphanumspace", Alphanumspace)
+	}
 }
