@@ -30,10 +30,10 @@ runs:
       run: |
         source .envrc
 
-        project e2e.sync-dependencies --x-env ci &
-        project install-tools --x-env ci &
-        project fetch.openapi-generator --x-env ci &
-        project fetch.swagger-ui --x-env ci &
+        project e2e.sync-dependencies --x-env=ci &
+        project install-tools --x-env=ci &
+        project fetch.openapi-generator --x-env=ci &
+        project fetch.swagger-ui --x-env=ci &
         bin/scripts/install-pg_format.sh &
         bin/scripts/install-mkcert.sh &
         bin/scripts/install-proto.sh &

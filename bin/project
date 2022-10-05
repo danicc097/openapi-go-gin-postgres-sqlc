@@ -610,7 +610,7 @@ usage() (
 
   while IFS= read -r line; do
     X_FLAGS+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
-  done < <(sed -nr '/.*(--x-[[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
+  done < <(sed -nr '/.*(--x-[=*[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
   mapfile -t X_FLAGS < \
     <(LC_COLLATE=C sort < <(printf "%s\n" "${X_FLAGS[@]}"))
 
@@ -688,7 +688,7 @@ if [[ -n $COMP_LINE ]]; then
   # TODO should reuse logic to get them in ``usage``
   while IFS= read -r line; do
     x_opts_lines+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
-  done < <(sed -nr '/.*(--x-[[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
+  done < <(sed -nr '/.*(--x-[=*[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
   mapfile -t x_opts_lines < \
     <(LC_COLLATE=C sort < <(printf "%s\n" "${x_opts_lines[@]}"))
 
@@ -709,7 +709,8 @@ if [[ -n $COMP_LINE ]]; then
 
   for opt in ${__x_opts[@]}; do
     [[ -n "${__x_opts_seen[$opt]}" ]] && continue
-    [[ ${opt:0:${#pre}} == "${pre,,}" ]] && echo "${opt}"
+    # TODO prevent opts that accept values having whitespace added
+    [[ ${opt:0:${#pre}} == "${pre,,}" ]] && echo "${opt//\*/}"
   done
 
   exit
@@ -727,15 +728,14 @@ while [[ "$#" -gt 0 ]]; do
     # Bypasses confirmation messages.
     no_confirmation=1
     ;;
-  --x-env)
+  --x-env=*)
     # Environment to run commands in. Defaults to "dev".
     # Args: env
-    env="$2"
+    env="${1#--x-env=}"
     valid_envs="dev staging prod ci"
     if [[ ! " ${valid_envs[*]} " =~ " $env " ]]; then
       err "Valid environments: $valid_envs"
     fi
-    shift
     ;;
   *)
     args+=("$1")
