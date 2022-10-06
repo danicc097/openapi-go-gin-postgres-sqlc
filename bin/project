@@ -525,7 +525,7 @@ generate_api() {
   fi
 }
 
-usage() (
+usage() {
   command_comments_parser() {
     head -$((${lns[$i]} - 1)) $0 |
       tac |
@@ -534,7 +534,7 @@ usage() (
       awk '{$1=$1;print}'
   }
 
-  command_opts_comments_parser() {
+  command_options_comments_parser() {
     tail -n +$((${lns[$i]} + 1)) $0 |
       sed -n '/^[[:blank:]]*#/!q;p' |
       awk '{$1=$1;print}'
@@ -593,7 +593,7 @@ usage() (
   }
 
   declare -A ROWS ROW_ARGS
-  declare docs rows X_FLAGS
+  declare docs rows X_OPTIONS
 
   for c in "${COMMANDS[@]}"; do
     shopt -s extdebug
@@ -608,18 +608,14 @@ usage() (
   rows=()
   docs=()
 
-  while IFS= read -r line; do
-    X_FLAGS+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
-  done < <(sed -nr '/.*(--x-[=*[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
-  mapfile -t X_FLAGS < \
-    <(LC_COLLATE=C sort < <(printf "%s\n" "${X_FLAGS[@]}"))
+  parse_x_options X_OPTIONS
 
-  for c in "${X_FLAGS[@]}"; do
+  for c in "${X_OPTIONS[@]}"; do
     lns+=("${c##*)}")
     rows+=("${c%%)*}")
   done
 
-  x_options="$(construct_column command_opts_comments_parser)"
+  x_options="$(construct_column command_options_comments_parser)"
 
   cat <<EOF
 
@@ -637,7 +633,17 @@ $(echo "${x_options}" |
       sed -E 's/    ([[:alnum:][:punct:]]*)(.*)/    '"$GREEN$BOLD"'\1'"$OFF"'\2''/')
 EOF
 
-)
+}
+
+# gets all --x-options values
+parse_x_options() {
+  declare -n list="$1" # pass ref by name
+  while IFS= read -r line; do
+    list+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
+  done < <(sed -nr '/.*(--x-[=*[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
+  mapfile -t list < \
+    <(LC_COLLATE=C sort < <(printf "%s\n" "${list[@]}"))
+}
 
 clean_comment() {
   tmp="$1"
@@ -685,21 +691,17 @@ if [[ -n $COMP_LINE ]]; then
 
   test -z "${xfn_specified}" && exit
 
-  # TODO should reuse logic to get them in ``usage``
-  while IFS= read -r line; do
-    x_opts_lines+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
-  done < <(sed -nr '/.*(--x-[=*[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
-  mapfile -t x_opts_lines < \
-    <(LC_COLLATE=C sort < <(printf "%s\n" "${x_opts_lines[@]}"))
+  declare __x_options x_options_lines
 
-  declare __x_opts
-  for c in "${x_opts_lines[@]}"; do
-    __x_opts+=("${c%%)*}")
+  parse_x_options x_options_lines
+
+  for c in "${x_options_lines[@]}"; do
+    __x_options+=("${c%%)*}")
   done
 
   declare -A __x_opts_seen
   for cmd in "${cur_commands[@]}"; do
-    for opt in ${__x_opts[@]}; do
+    for opt in ${__x_options[@]}; do
       if [[ "$opt" == *"$cmd"* ]]; then
         __x_opts_seen[$opt]=true
         break
@@ -707,7 +709,7 @@ if [[ -n $COMP_LINE ]]; then
     done
   done
 
-  for opt in ${__x_opts[@]}; do
+  for opt in ${__x_options[@]}; do
     [[ -n "${__x_opts_seen[$opt]}" ]] && continue
     # TODO prevent opts that accept values having whitespace added
     [[ ${opt:0:${#pre}} == "${pre,,}" ]] && echo "${opt//\*/}"

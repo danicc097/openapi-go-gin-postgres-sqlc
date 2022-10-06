@@ -84,7 +84,7 @@ err() {
 # Retrieve all environment variables from `env_file` and
 # set the key-value pairs in the given associative array
 get_envvars() {
-  declare -n arr="$1"
+  declare -n arr="$1" # pass ref by name
   local env_file="$2"
   if [[ -f "$env_file" ]]; then
     while read -r line; do
