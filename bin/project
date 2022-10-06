@@ -4,7 +4,7 @@
 source "${BASH_SOURCE%/*}/.helpers.sh"
 source "${BASH_SOURCE%/*}/scripts/deps-check.sh"
 
-set -e
+set -Eeo pipefail
 
 trap killgroup SIGINT
 
@@ -696,13 +696,15 @@ if [[ -n $COMP_LINE ]]; then
   parse_x_options x_options_lines
 
   for c in "${x_options_lines[@]}"; do
-    __x_options+=("${c%%)*}")
+    tmp="${c%%)*}"
+    xopt="${tmp//\*/}"
+    __x_options+=("$xopt")
   done
 
   declare -A __x_opts_seen
   for cmd in "${cur_commands[@]}"; do
     for opt in ${__x_options[@]}; do
-      if [[ "$opt" == *"$cmd"* ]]; then
+      if [[ "$cmd" == *"$opt"* ]]; then
         __x_opts_seen[$opt]=true
         break
       fi
@@ -712,7 +714,7 @@ if [[ -n $COMP_LINE ]]; then
   for opt in ${__x_options[@]}; do
     [[ -n "${__x_opts_seen[$opt]}" ]] && continue
     # TODO prevent opts that accept values having whitespace added
-    [[ ${opt:0:${#pre}} == "${pre,,}" ]] && echo "${opt//\*/}"
+    [[ ${opt:0:${#pre}} == "${pre,,}" ]] && echo "${opt}"
   done
 
   exit
@@ -740,16 +742,16 @@ while [[ "$#" -gt 0 ]]; do
     fi
     ;;
   *)
+    # will set everything else back
     args+=("$1")
     ;;
   esac
   shift
 done
+set -e
 for arg in ${args[@]}; do
   set -- "$@" "$arg"
 done
-set -e
-
 # applicable to any command
 ensure_envvars_set ".env.template" ".env.${env}"
 
