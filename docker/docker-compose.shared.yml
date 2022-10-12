@@ -107,6 +107,7 @@ services:
       - "host.docker.internal:host-gateway"
     depends_on:
       - jaeger
+    restart: unless-stopped
     # network_mode: host
 
   # elasticsearch:

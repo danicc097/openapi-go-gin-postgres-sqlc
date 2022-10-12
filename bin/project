@@ -27,7 +27,7 @@ GEN_OUT_DIR="internal"
 TEMPLATE_DIR="internal/go-gin-server-templates"
 PWD="$(pwd)"
 env="dev"
-BIN_DIR=$(dirname "$0")
+BIN_DIR=$(dirname "${BASH_SOURCE[0]}")
 PG_REPO="internal/repos/postgresql"
 
 MAX_COMMENT_LEN=88
@@ -402,30 +402,26 @@ x.db.recreate-database() {
 
 # Setup E2E Python environment.
 x.e2e.sync-dependencies() {
-  (
-    cd e2e
-    python -m venv .venv
-    source .venv/bin/activate
-    pip install pip-tools
-    pip-compile requirements.in
-    pip-compile requirements-dev.in
-    pip-sync requirements-dev.txt requirements.txt
-    cd - >/dev/null
-  )
+  cd e2e
+  python -m venv .venv
+  source .venv/bin/activate
+  pip install pip-tools
+  pip-compile requirements.in
+  pip-compile requirements-dev.in
+  pip-sync requirements-dev.txt requirements.txt
+  cd - >/dev/null
 }
 
 # Run E2E tests. Accepts `pytest` parameters.
 # Args: [...]
 x.e2e.run() {
   source ".env.$env"
-  (
-    name="$PROJECT_PREFIX-e2e"
-    cd e2e
-    DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain \
-      docker build -t "$name" .
-    docker run -it --rm --ipc=host -v "$(pwd):/src" "$name" bash -c "pytest $*"
-    cd - >/dev/null
-  )
+  name="$PROJECT_PREFIX-e2e"
+  cd e2e
+  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain \
+    docker build -t "$name" .
+  docker run -it --rm --ipc=host -v "$(pwd):/src" "$name" bash -c "pytest $*"
+  cd - >/dev/null
 }
 ############## openapi ##############
 

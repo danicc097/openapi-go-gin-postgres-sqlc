@@ -32,27 +32,68 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 type Config struct {
+	// Port to listen to. Use ":0" for a random port.
 	Address string
 	Pool    *pgxpool.Pool
 	Redis   *rv8.Client
-	Metrics http.Handler
 	Logger  *zap.Logger
 	// SpecPath is the OpenAPI spec filepath.
 	SpecPath string
-	Tracer   *sdktrace.TracerProvider
 }
 
-// NewServer returns a new http server with the given middlewares.
-func NewServer(conf Config, middlewares ...gin.HandlerFunc) (*http.Server, error) {
+func (c *Config) validate() error {
+	if c.Address == "" {
+		return fmt.Errorf("no server address provided")
+	}
+	if c.SpecPath == "" {
+		return fmt.Errorf("no openapi spec path provided")
+	}
+	if c.Pool == nil {
+		return fmt.Errorf("no Postgres pool provided")
+	}
+	if c.Redis == nil {
+		return fmt.Errorf("no Redis client provided")
+	}
+	if c.Logger == nil {
+		return fmt.Errorf("no logger provided")
+	}
+
+	return nil
+}
+
+type server struct {
+	httpsrv     *http.Server
+	middlewares []gin.HandlerFunc
+}
+
+type serverOption func(*server)
+
+// WithMiddlewares adds the given middlewares before registering the main routers.
+func WithMiddlewares(mws []gin.HandlerFunc) serverOption {
+	return func(s *server) {
+		s.middlewares = mws
+	}
+}
+
+// NewServer returns a new http server.
+func NewServer(conf Config, opts ...serverOption) (*server, error) {
+	err := conf.validate()
+	if err != nil {
+		return nil, err
+	}
+
+	srv := &server{}
+	for _, o := range opts {
+		o(srv)
+	}
+
 	router := gin.Default()
-	router.Use(gin.Recovery())
 	// Add a ginzap middleware, which:
 	//   - Logs all requests, like a combined access and error log.
 	//   - Logs to stdout.
@@ -80,7 +121,7 @@ func NewServer(conf Config, middlewares ...gin.HandlerFunc) (*http.Server, error
 	// pprof.Register(router, "dev/pprof")
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	for _, mw := range middlewares {
+	for _, mw := range srv.middlewares {
 		router.Use(mw)
 	}
 
@@ -146,15 +187,15 @@ func NewServer(conf Config, middlewares ...gin.HandlerFunc) (*http.Server, error
 	// TODO /admin with authMw.EnsureAuthorized() in group
 
 	conf.Logger.Info("Server started")
-
-	return &http.Server{
+	srv.httpsrv = &http.Server{
 		Handler:           router,
 		Addr:              conf.Address,
 		ReadTimeout:       1 * time.Second,
 		ReadHeaderTimeout: 1 * time.Second,
 		WriteTimeout:      1 * time.Second,
 		IdleTimeout:       1 * time.Second,
-	}, nil
+	}
+	return srv, nil
 }
 
 // Run configures a server and underlying services with the given configuration.
@@ -182,6 +223,7 @@ func Run(env, address, specPath string) (<-chan error, error) {
 
 	var logger *zap.Logger
 
+	// XXX there's work being done in https://github.com/uptrace/opentelemetry-go-extra/tree/main/otelzap
 	switch os.Getenv("APP_ENV") {
 	case "prod":
 		logger, err = zap.NewProduction()
@@ -208,7 +250,6 @@ func Run(env, address, specPath string) (<-chan error, error) {
 		Redis:    rdb,
 		Logger:   logger,
 		SpecPath: specPath,
-		Tracer:   tp,
 	})
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "NewServer")
@@ -243,9 +284,9 @@ func Run(env, address, specPath string) (<-chan error, error) {
 			close(errC)
 		}()
 
-		srv.SetKeepAlivesEnabled(false)
+		srv.httpsrv.SetKeepAlivesEnabled(false)
 
-		if err := srv.Shutdown(ctxTimeout); err != nil { //nolint: contextcheck
+		if err := srv.httpsrv.Shutdown(ctxTimeout); err != nil { //nolint: contextcheck
 			errC <- err
 		}
 
@@ -260,10 +301,10 @@ func Run(env, address, specPath string) (<-chan error, error) {
 		var err error
 		switch env := os.Getenv("APP_ENV"); env {
 		case "dev", "ci":
-			// err = srv.ListenAndServe()
-			err = srv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")
+			// err = srv.httpsrv.ListenAndServe()
+			err = srv.httpsrv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")
 		case "prod":
-			err = srv.ListenAndServe()
+			err = srv.httpsrv.ListenAndServe()
 		default:
 			err = fmt.Errorf("unknown APP_ENV: %s", env)
 		}
