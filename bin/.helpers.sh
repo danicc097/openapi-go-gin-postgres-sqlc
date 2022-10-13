@@ -44,6 +44,31 @@ Current directory: $PWD"
   fi
 }
 
+# Prompt the user for confirmation.
+confirm() {
+  test -n "$NO_CONFIRMATION" && return
+
+  local prompt="$1"
+  local response
+
+  [[ -z $prompt ]] && prompt="Are you sure?"
+
+  prompt+=" [y/n]"
+
+  while true; do
+    read -r -p "$prompt " response
+    case "${response,,}" in
+    [y][e][s] | [y])
+      return 0
+      ;;
+    [n][o] | [n])
+      return 1
+      ;;
+    *) ;;
+    esac
+  done
+}
+
 list_descendants() {
   local desc_pids=$(ps -o pid= --ppid "$1")
   for pid in $desc_pids; do
@@ -81,6 +106,8 @@ err() {
   exit 1
 }
 
+######################## env vars ###########################
+
 # Retrieve all environment variables from `env_file` and
 # set the key-value pairs in the given associative array
 get_envvars() {
@@ -97,75 +124,6 @@ get_envvars() {
   else
     err "$env_file does not exist"
   fi
-}
-
-# Drop and recreate database `db` using configuration from
-# environment variables in `env_file`
-drop_and_recreate_db() {
-  local db="$1"
-
-  _pg_isready
-
-  docker exec -t postgres_db_"$PROJECT_PREFIX" \
-    psql --no-psqlrc \
-    -U "$POSTGRES_USER" \
-    -d "postgres" \
-    -c "CREATE DATABASE test OWNER $POSTGRES_USER;" || true
-
-  echo "${RED}${BOLD}Dropping database $db.${OFF}"
-  docker exec -t postgres_db_"$PROJECT_PREFIX" \
-    dropdb --if-exists -f "$db"
-
-  echo "${BLUE}${BOLD}Creating database $db.${OFF}"
-  docker exec -t postgres_db_"$PROJECT_PREFIX" \
-    psql --no-psqlrc \
-    -U "$POSTGRES_USER" \
-    -d test \
-    -c "CREATE DATABASE $db OWNER $POSTGRES_USER;"
-}
-
-create_db_if_not_exists() {
-  local db="$1"
-
-  _pg_isready
-
-  echo "${BLUE}${BOLD}Creating database $db.${OFF}"
-  {
-    docker exec -t postgres_db_"$PROJECT_PREFIX" \
-      psql --no-psqlrc -U "$POSTGRES_USER" \
-      -tc "SELECT 1 FROM pg_database WHERE datname = '$db'" |
-      grep -q 1
-  } ||
-    docker exec -t postgres_db_"$PROJECT_PREFIX" \
-      psql --no-psqlrc -U "$POSTGRES_USER" -c "CREATE DATABASE $db"
-}
-
-stop_db_processes() {
-  local db="$1"
-
-  _pg_isready
-
-  echo "${BLUE}${BOLD}Stopping any running processes for database $db.${OFF}"
-  docker exec -t postgres_db_"$PROJECT_PREFIX" \
-    psql --no-psqlrc \
-    -U "$POSTGRES_USER" \
-    -d "postgres" \
-    -c "select pg_terminate_backend(pid) \
-        from pg_stat_activity \
-        where datname='$db'"
-}
-
-_pg_isready() {
-  pg_ready=0
-  while [[ ! $pg_ready -eq 1 ]]; do
-    docker exec -t postgres_db_"$PROJECT_PREFIX" \
-      pg_isready -U "$POSTGRES_USER" || {
-      echo "${YELLOW}Waiting for postgres database to be ready...${OFF}"
-      sleep 2
-      continue
-    }
-    pg_ready=1
-  done
 }
 
 # Check all environment variables in a template are present in another.
@@ -189,4 +147,94 @@ ensure_envvars_set() {
   done <"$env_template"
 
   { ((n_missing != 0)) && exit 1; } || true
+}
+
+######################## db ###########################
+
+# Drop and recreate database `db` for the current environment.
+drop_and_recreate_db() {
+  local db="$1"
+
+  _pg_isready
+
+  dockerdb psql --no-psqlrc \
+    -U "$POSTGRES_USER" \
+    -d "postgres" \
+    -c "CREATE DATABASE test OWNER $POSTGRES_USER;" || true
+
+  echo "${RED}${BOLD}Dropping database $db.${OFF}"
+  dockerdb \
+    dropdb --if-exists -f "$db"
+
+  echo "${BLUE}${BOLD}Creating database $db.${OFF}"
+  dockerdb psql --no-psqlrc \
+    -U "$POSTGRES_USER" \
+    -d test \
+    -c "CREATE DATABASE $db OWNER $POSTGRES_USER;"
+}
+
+# TODO should be dockerdb and accept anything
+# (should work via bash -c "...")
+dockerdb() {
+  docker exec -i postgres_db_"$PROJECT_PREFIX" "$@"
+}
+
+# Create database `db` for the current environment.
+create_db_if_not_exists() {
+  local db="$1"
+
+  _pg_isready
+
+  echo "${BLUE}${BOLD}Creating database $db.${OFF}"
+  {
+    dockerdb psql --no-psqlrc -U "$POSTGRES_USER" \
+      -tc "SELECT 1 FROM pg_database WHERE datname = '$db'" |
+      grep -q 1
+  } ||
+    dockerdb psql --no-psqlrc -U "$POSTGRES_USER" -c "CREATE DATABASE $db"
+}
+
+# Stop running processes in `db` for the current environment.
+stop_db_processes() {
+  local db="$1"
+
+  _pg_isready
+
+  echo "${BLUE}${BOLD}Stopping any running processes for database $db.${OFF}"
+  dockerdb psql --no-psqlrc \
+    -U "$POSTGRES_USER" \
+    -d "postgres" \
+    -c "select pg_terminate_backend(pid) \
+        from pg_stat_activity \
+        where datname='$db'"
+}
+
+_pg_isready() {
+  pg_ready=0
+  while [[ ! $pg_ready -eq 1 ]]; do
+    dockerdb \
+      pg_isready -U "$POSTGRES_USER" || {
+      echo "${YELLOW}Waiting for postgres database to be ready...${OFF}"
+      sleep 2
+      continue
+    }
+    pg_ready=1
+  done
+}
+
+######################## docker ###########################
+
+gzip_latest_image() {
+  local dir="$1"
+  local image="$2"
+  echo "Saving latest image $image to $dir"
+  mkdir -p "$dir"
+  docker save "$image":latest | gzip >"$dir/${image}_latest.tar.gz"
+}
+
+load_latest_gzip_image() {
+  local dir="$1"
+  local image="$2"
+  echo "Loading latest image $image from $dir"
+  docker load <"$dir/${image}_latest.tar.gz"
 }

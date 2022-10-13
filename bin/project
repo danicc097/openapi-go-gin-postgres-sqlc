@@ -30,6 +30,9 @@ env="dev"
 BIN_DIR=$(dirname "${BASH_SOURCE[0]}")
 PG_REPO="internal/repos/postgresql"
 
+DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
+DUMP_PREFIX="dump_${env}_"
+
 MAX_COMMENT_LEN=88
 
 # Check build dependencies are met.
@@ -178,7 +181,6 @@ x.generate.proto() {
 # Run all codegen and postgen commands for the project.
 x.generate() {
   local pids
-  source ".env.$env"
 
   x.db.recreate-database
 
@@ -229,18 +231,12 @@ x.lint.sql() {
   done
 }
 
-# Bring docker compose services up.
-x.compose-up() {
-  docker-compose up -d
-}
-
 # Runs required backend pre-test setup: services, database cleanup, codegen...
 # Can be called independently, e.g. before running tests through an IDE.
 x.test.backend-setup() {
-  source ".env.$env"
   # NOTE: tests run independently in Go so we can't have a function be called and run
   # only once before any test starts
-  run_shared_services
+  run_shared_services up -d --remove-orphans
   x.generate
   drop_and_recreate_db "postgres_test"
   x.generate.tests-api
@@ -250,7 +246,7 @@ x.test.backend-setup() {
 # Args: [...]
 x.test() {
   x.test.backend-setup
-  APP_ENV="$env" go test $@ ./...
+  APP_ENV="$env" go test "$@" ./...
 }
 
 # Test and build the entire project.
@@ -262,8 +258,7 @@ x.build() {
 
 # Run backend with hot-reloading.
 x.run.backend-hot-reload() {
-  source ".env.$env"
-  run_shared_services
+  run_shared_services up -d --remove-orphans
   # TODO new include_files flag in fork, e.g. for openapi.yaml.
   # else generated .yaml files trigger rebuild.
   # --build.include_files "openapi.yaml" \
@@ -285,7 +280,6 @@ x.run.backend-hot-reload() {
 # Run frontend with hot-reloading.
 x.run.frontend() {
   set -a
-  source ".env.$env"
   set +a
 
   cd frontend
@@ -298,7 +292,6 @@ x.run.frontend() {
 # Run all project services with hot reload enabled in dev mode.
 x.run-dev() {
   env="dev"
-  source ".env.$env"
 
   run_hot_reload
 
@@ -327,22 +320,12 @@ x.run-dev() {
   done
 }
 
-# IMPORTANT: bug in declare -F returns line number of last nested function, if any.
-# extracting function here instead...
-run_hot_reload() {
-  x.run.backend-hot-reload &
-  pids+=("$!")
-  x.run.frontend &
-  pids+=("$!")
-}
-
 # Run project in production mode.
 x.run-prod() {
   env="prod"
-  source ".env.$env"
 
   docker network create traefik-net 2>/dev/null || true
-  run_shared_services
+  run_shared_services up -d --remove-orphans
   x.db.recreate-database
 
   cd frontend && pnpm run generate && cd - >/dev/null
@@ -357,14 +340,9 @@ x.run-prod() {
   echo "Migrations: $(x.migrate up)"
 }
 
-run_shared_services() {
-  cd docker
-  docker-compose \
-    -p "$PROJECT_PREFIX" \
-    -f docker-compose.shared.yml \
-    --env-file ../.env."$env" \
-    up -d --remove-orphans
-  cd - >/dev/null
+# Removes running project containers.
+x.stop-project() {
+  run_shared_services down --remove-orphans
 }
 
 # Ensure no breaking changes to the OpenAPI spec in the same version are present.
@@ -372,9 +350,10 @@ x.release() {
   x.diff-openapi-spec
 }
 
+########################## migrations ##########################
+
 # Wrapper for golang-migrate with predefined configuration.
 x.migrate() {
-  source ".env.$env"
   migrate \
     -path db/migrations/ \
     -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
@@ -391,6 +370,8 @@ x.migrate.create-migration() {
   x.migrate create -ext sql -dir db/migrations/ "$name"
 }
 
+########################## db ##########################
+
 # Creates a new database in the current environment if it doesn't exist
 # and stops its running processes if any.
 x.db.recreate-database() {
@@ -398,7 +379,55 @@ x.db.recreate-database() {
   stop_db_processes "postgres_$env"
 }
 
-############## e2e ##############
+# Backups the database for the current environment.
+x.db.dump() {
+  running_dumps=$(dockerdb psql --no-psqlrc -P pager=off --quiet -tA -U postgres -d "postgres_$env" \
+    -c "SELECT pid FROM pg_stat_activity WHERE application_name = 'pg_dump';")
+  if [[ "$running_dumps" != "" ]]; then
+    echo "pg_dump is already running, aborting new dump"
+    exit 1
+  fi
+
+  mkdir -p "$DUMPS_FOLDER"
+  schema_v=$(dockerdb psql --no-psqlrc -P pager=off --quiet -tA -U postgres -d "postgres_$env" \
+    -c "SELECT version FROM schema_migrations;")
+  dump_file="${DUMP_PREFIX}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
+
+  echo "Dumping database to $dump_file"
+  docker exec -i postgres_db_"$PROJECT_PREFIX" pg_dump -U postgres -d "postgres_$env" |
+    gzip >"$DUMPS_FOLDER/$dump_file"
+}
+
+# Restores the database with the latest dump or `file` for the current environment.
+# Args: [file]
+x.db.restore() {
+  dump_file="$1"
+  if [[ -n $dump_file ]]; then
+    [[ ! -f $dump_file ]] && err "$dump_file does not exist"
+    [[ "$dump_file" != *"$DUMP_PREFIX"* ]] && confirm "${RED}Dump doesn't match prefix '$DUMP_PREFIX'. Continue?${OFF}"
+  else
+    mkdir -p "$DUMPS_FOLDER"
+    latest_dump_file=$(find "$DUMPS_FOLDER"/ -name "$DUMP_PREFIX*.gz" | sort -r | head -n 1)
+    if [[ -z "$latest_dump_file" ]]; then
+      err "No $DUMP_PREFIX* file found in $DUMPS_FOLDER"
+    fi
+    dump_file="$latest_dump_file"
+  fi
+
+  confirm "Do you want to restore ${YELLOW}$dump_file${OFF} in the ${RED}$env${OFF} environment?"
+
+  drop_and_recreate_db "postgres_$env"
+  gunzip -c "$dump_file" | dockerdb psql --no-psqlrc -U postgres -d "postgres_$env"
+  # sanity check, but probably better to do it before restoring...
+  dump_schema_v=$(dockerdb psql --no-psqlrc -P pager=off -qtAX -U postgres -d "postgres_$env" -c "SELECT version FROM schema_migrations;")
+  file_schema_v=$(echo "$dump_file" | sed -E 's/.*_version([0-9]+)\..*/\1/')
+  echo "Migration revision: $dump_schema_v"
+  if [[ "$dump_schema_v" != "$file_schema_v" ]]; then
+    err "Schema version mismatch: dump $dump_schema_v != file $file_schema_v"
+  fi
+}
+
+########################## e2e ##########################
 
 # Setup E2E Python environment.
 x.e2e.sync-dependencies() {
@@ -415,7 +444,6 @@ x.e2e.sync-dependencies() {
 # Run E2E tests. Accepts `pytest` parameters.
 # Args: [...]
 x.e2e.run() {
-  source ".env.$env"
   name="$PROJECT_PREFIX-e2e"
   cd e2e
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain \
@@ -423,7 +451,8 @@ x.e2e.run() {
   docker run -it --rm --ipc=host -v "$(pwd):/src" "$name" bash -c "pytest $*"
   cd - >/dev/null
 }
-############## openapi ##############
+
+########################## openapi ##########################
 
 # Validates the project's OpenAPI specification or `spec`.
 # Args: [spec]
@@ -492,6 +521,27 @@ x.diff-openapi-spec() {
     echo "${RED}Breaking changes found in $SPEC${OFF}"
     return 1
   fi
+}
+
+########################### helpers ###########################
+
+# IMPORTANT: bug in declare -F returns line number of last nested function, if any.
+# extracting function here instead...
+run_hot_reload() {
+  x.run.backend-hot-reload &
+  pids+=("$!")
+  x.run.frontend &
+  pids+=("$!")
+}
+
+run_shared_services() {
+  cd docker
+  docker-compose \
+    -p "$PROJECT_PREFIX" \
+    -f docker-compose.shared.yml \
+    --env-file ../.env."$env" \
+    "$@"
+  cd - >/dev/null
 }
 
 generate_api() {
@@ -726,7 +776,7 @@ while [[ "$#" -gt 0 ]]; do
     ;;
   --x-no-confirmation)
     # Bypasses confirmation messages.
-    no_confirmation=1
+    export NO_CONFIRMATION=1
     ;;
   --x-env=*)
     # Environment to run commands in. Defaults to "dev".
@@ -750,6 +800,7 @@ for arg in ${args[@]}; do
 done
 # applicable to any command
 ensure_envvars_set ".env.template" ".env.${env}"
+source ".env.$env"
 
 # handle executing x functions
 if [[ -n "$1" ]]; then
