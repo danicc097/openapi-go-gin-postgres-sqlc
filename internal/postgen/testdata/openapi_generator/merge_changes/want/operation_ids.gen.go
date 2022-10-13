@@ -2,6 +2,10 @@
 
 package rest
 
+type op interface {
+	defaultOpID | newapiOpID | petOpID | userOpID
+}
+
 type defaultOpID string
 type newapiOpID string
 type petOpID string

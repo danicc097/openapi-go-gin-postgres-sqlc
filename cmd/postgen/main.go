@@ -8,8 +8,8 @@ import (
 	"os"
 	"path"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen"
 )
 
@@ -42,7 +42,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	url := format.BuildBackendURL("openapi.yaml")
+	url := internal.BuildApiURL("openapi.yaml")
 
 	if err := postgen.SetupSwaggerUI(url); err != nil {
 		fmt.Fprintln(os.Stderr, err)

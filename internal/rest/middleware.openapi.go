@@ -71,8 +71,10 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 				// perhaps waiting for oas 3.1 support will be easier
 				renderErrorResponse(c, "OpenAPI validation failed", err)
 			}
+
 			c.Abort()
 		}
+
 		c.Next()
 	}
 }

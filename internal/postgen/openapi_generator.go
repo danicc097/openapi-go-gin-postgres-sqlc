@@ -26,6 +26,27 @@ import (
 type Dir string
 type Tag string
 
+type Method struct {
+	// Name is the method identifier.
+	Name string
+	// Decl is the method declaration node.
+	Decl *dst.FuncDecl
+}
+
+type HandlerFile struct {
+	// F is the node of the source file.
+	F *dst.File
+	// Methods represents all methods in the generated struct indexed by method name.
+	Methods map[string]Method
+	// RoutesNode represents the routes slice assignment node.
+	RoutesNode *dst.AssignStmt
+	// Routes represents convenient extracted fields from route elements
+	// indexed by operation id.
+	Routes map[string]Route
+}
+
+type Handlers map[Dir]map[Tag]HandlerFile
+
 var handlerRegex = regexp.MustCompile("api_(.*).go")
 var operationIDRegex = regexp.MustCompile("^[a-zA-Z0-9]*$")
 
@@ -47,25 +68,21 @@ func ensureUnique[T comparable](s []T) error {
 		}
 		set[element] = struct{}{}
 	}
+
 	return nil
 }
 
 /*
 Rationale:
-We dont want users to manually add handlers and routes to handlers/*
-If we let them, we wouldnt know at plain sight what was in the spec and what wasnt
-and parsing will become a bigger mess.
-Users can still add new methods to the struct. In case of generated methods conflicting with existing ones, generation will stop.
-If we need a new route that cant be defined in the spec, e.g. fileserver,
+- Users can still add new methods to the struct.
+In case of generated methods conflicting with existing ones, generation will stop.
+- If we need a new route that cant be defined in the spec, e.g. fileserver,
 we purposely want that out of the generated handler struct,
 so its clear that its outside the spec.
 It can still remain in handlers/* as long as its not api_*(!_test).go, e.g. fileserver.go
 and it can still follow the same handlers struct pattern for all we care, it wont be touched.
-IMPORTANT: if a method already exists in current but has no routes item (meaning
-its probably some handler helper method created afterwards) then panic and alert
-the user to rename. it shouldve been unexported or a function in the first place anyway.
 */
-type OpenapiGenerator struct {
+type openapiGenerator struct {
 	conf       *Conf
 	stderr     io.Writer
 	cacheDir   Dir
@@ -73,10 +90,11 @@ type OpenapiGenerator struct {
 	operations map[string][]string
 }
 
-// NewOpenapiGenerator returns a new postgen OpenapiGenerator.
-func NewOpenapiGenerator(conf *Conf, stderr io.Writer, cacheDir Dir, spec string) *OpenapiGenerator {
+// NewOpenapiGenerator returns a new postgen openapiGenerator.
+func NewOpenapiGenerator(conf *Conf, stderr io.Writer, cacheDir Dir, spec string) *openapiGenerator {
 	operations := make(map[string][]string)
-	return &OpenapiGenerator{
+
+	return &openapiGenerator{
 		conf:       conf,
 		stderr:     stderr,
 		cacheDir:   cacheDir,
@@ -86,11 +104,12 @@ func NewOpenapiGenerator(conf *Conf, stderr io.Writer, cacheDir Dir, spec string
 }
 
 // analyzeSpec ensures specific rules for codegen are met and extracts necessary data.
-func (o *OpenapiGenerator) analyzeSpec() error {
+func (o *openapiGenerator) analyzeSpec() error {
 	schemaBlob, err := os.ReadFile(o.spec)
 	if err != nil {
 		return fmt.Errorf("error opening schema file: %w", err)
 	}
+
 	openapi, err := openapi3.NewLoader().LoadFromData(schemaBlob)
 	if err != nil {
 		return fmt.Errorf("error loading schema: %w", err)
@@ -102,9 +121,12 @@ func (o *OpenapiGenerator) analyzeSpec() error {
 			if v.OperationID == "" {
 				return fmt.Errorf("path %q: method %q: operationId is required for postgen", path, method)
 			}
+
 			if !operationIDRegex.MatchString(v.OperationID) {
-				return fmt.Errorf("path %q: method %q: operationId %q does not match pattern %q", path, method, v.OperationID, operationIDRegex.String())
+				return fmt.Errorf("path %q: method %q: operationId %q does not match pattern %q",
+					path, method, v.OperationID, operationIDRegex.String())
 			}
+
 			if len(v.Tags) > 1 {
 				return fmt.Errorf("path %q: method %q: at most one tag is permitted for postgen", path, method)
 			}
@@ -113,8 +135,10 @@ func (o *OpenapiGenerator) analyzeSpec() error {
 			if len(v.Tags) > 0 {
 				t = strings.ToLower(v.Tags[0])
 			}
+
 			o.operations[t] = append(o.operations[t], internalformat.ToLowerCamel(v.OperationID))
 		}
+
 		for t, opIDs := range o.operations {
 			sort.Slice(opIDs, func(i, j int) bool {
 				return opIDs[i] < opIDs[j]
@@ -126,7 +150,7 @@ func (o *OpenapiGenerator) analyzeSpec() error {
 	return nil
 }
 
-func (o *OpenapiGenerator) Generate() error {
+func (o *openapiGenerator) Generate() error {
 	err := o.analyzeSpec()
 	if err != nil {
 		return fmt.Errorf("invalid spec: %w", err)
@@ -152,8 +176,8 @@ func (o *OpenapiGenerator) Generate() error {
 
 // analyzeHandlers returns all necessary merging information about handlers, indexed
 // by directory and tag.
-func (o *OpenapiGenerator) analyzeHandlers(basenames []string) (map[Dir]map[Tag]HandlerFile, error) {
-	handlers := make(map[Dir]map[Tag]HandlerFile)
+func (o *openapiGenerator) analyzeHandlers(basenames []string) (Handlers, error) {
+	handlers := make(Handlers)
 
 	dirs := []Dir{o.conf.GenHandlersDir, o.conf.CurrentHandlersDir}
 	for _, dir := range dirs {
@@ -198,7 +222,7 @@ func (o *OpenapiGenerator) analyzeHandlers(basenames []string) (map[Dir]map[Tag]
 
 // findClashingMethodNames ensures no previous methods that are not
 // handlers conflict with a newly generated operation id.
-func (o *OpenapiGenerator) findClashingMethodNames(basenames []string, handlers map[Dir]map[Tag]HandlerFile) error {
+func (o *openapiGenerator) findClashingMethodNames(basenames []string, handlers Handlers) error {
 	clashes := []string{}
 
 	for _, basename := range basenames {
@@ -230,7 +254,7 @@ Please rename either the affected method or operation id.
 
 // getCommonBasenames returns api filename (tag) intersections in current and raw gen dirs,
 // and copies non-intersecting files to the out dir without further analysis.
-func (o *OpenapiGenerator) getCommonBasenames() ([]string, error) {
+func (o *openapiGenerator) getCommonBasenames() ([]string, error) {
 	out := []string{}
 	idx := 0
 
@@ -292,7 +316,7 @@ func (o *OpenapiGenerator) getCommonBasenames() ([]string, error) {
 }
 
 // generateService fills in a template with a default service struct to a dest.
-func (o *OpenapiGenerator) generateService(tag Tag, dest io.Writer) error {
+func (o *openapiGenerator) generateService(tag Tag, dest io.Writer) error {
 	fmt.Printf("Creating service for tag: %s", tag)
 
 	t := template.Must(template.New("").Parse(`package services
@@ -317,8 +341,7 @@ func New{{.Tag}}() *{{.Tag}} {
 		return err
 	}
 
-	_, err := dest.Write(buf.Bytes())
-	if err != nil {
+	if _, err := dest.Write(buf.Bytes()); err != nil {
 		return err
 	}
 
@@ -326,10 +349,24 @@ func New{{.Tag}}() *{{.Tag}} {
 }
 
 // generateOpIDs fills in a template with all operation IDs to a dest.
-func (o *OpenapiGenerator) generateOpIDs(dest io.Writer) error {
-	t := template.Must(template.New("").Parse(`// Code generated by postgen. DO NOT EDIT.
+func (o *openapiGenerator) generateOpIDs(dest io.Writer) error {
+	funcs := template.FuncMap{
+		"stringsJoin": func(elems []string, prefix string, suffix string, sep string) string {
+			for i, e := range elems {
+				elems[i] = prefix + e + suffix
+			}
+
+			return strings.Join(elems, sep)
+		},
+	}
+
+	t := template.Must(template.New("").Funcs(funcs).Parse(`// Code generated by postgen. DO NOT EDIT.
 
 package rest
+
+type op interface {
+	{{ stringsJoin .Tags "" "OpID" " | "}}
+}
 
 {{range $tag, $opIDs := .Operations}}
 type {{$tag}}OpID string{{end}}
@@ -344,24 +381,27 @@ const ({{range $tag, $opIDs := .Operations}}
 
 	buf := &bytes.Buffer{}
 
-	// TODO use type for those nested maps, else its a mess
-	// plus key types: Tag string (tags), HandlerFile string (filenames)
+	tags := make([]string, 0, len(o.operations))
+	for k := range o.operations {
+		tags = append(tags, k)
+	}
+	sort.Strings(tags)
 
 	params := map[string]interface{}{
 		"Operations": o.operations,
+		"Tags":       tags,
 	}
 
 	if err := t.Execute(buf, params); err != nil {
 		return fmt.Errorf("could not execute template: %w", err)
 	}
 
-	// TODO run gofmt on it programmatically
 	formatted, err := format.Source(buf.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not format opId template: %w", err)
 	}
-	_, err = dest.Write(formatted)
-	if err != nil {
+
+	if _, err = dest.Write(formatted); err != nil {
 		return fmt.Errorf("could not write opId template: %w", err)
 	}
 
@@ -370,6 +410,7 @@ const ({{range $tag, $opIDs := .Operations}}
 
 // replaceNodes replaces handler file nodes accordingly.
 func replaceNodes(f *dst.File, genHf, currentHf HandlerFile, tag Tag, opID string) {
+	// visit handler struct methods
 	dstutil.Apply(f, nil, func(c *dstutil.Cursor) bool {
 		fn, isFn := c.Parent().(*dst.FuncDecl)
 		if !isFn || fn.Recv == nil || len(fn.Recv.List) != 1 {
@@ -379,10 +420,14 @@ func replaceNodes(f *dst.File, genHf, currentHf HandlerFile, tag Tag, opID strin
 		ident, identok := r.X.(*dst.Ident)
 		m := fn.Name.String()
 
-		if rok && identok && ident.Name == string(tag) && m == "Register" {
-			fn.Body.List[0] = genHf.RoutesNode
+		if !rok || !identok || ident.Name != string(tag) {
+			return true
 		}
-		if rok && identok && ident.Name == string(tag) && m == "middlewares" {
+
+		switch m {
+		case "Register":
+			fn.Body.List[0] = genHf.RoutesNode
+		case "middlewares":
 			fn.Body = currentHf.Methods["middlewares"].Decl.Body
 			fn.Type = genHf.Methods["middlewares"].Decl.Type
 		}
@@ -391,18 +436,31 @@ func replaceNodes(f *dst.File, genHf, currentHf HandlerFile, tag Tag, opID strin
 	})
 }
 
-func (o *OpenapiGenerator) generateMergedFiles(handlers map[Dir]map[Tag]HandlerFile) error {
+func (o *openapiGenerator) generateMergedFiles(handlers Handlers) error {
 	// -- generate typed operation ids
 	// This way we get a compilation error if the
 	// spec doesn't use unique op ids, and intellisense for middlewares, etc.
 	// no need to check for uniqueness of operation IDs, done by openapi-generator at this point
+
+	// TODO
+	// type op interface {
+	// 	adminOpID | defaultOpID | fakeOpID | petOpID | storeOpID | userOpID
+	// }
+	// // paths would need to be grabbed from Register func
+	// var operations = map[string]string{"createUser": "/...", ...}
+	// pathFor computes the relative path for an operation with the given path params.
+	// func pathFor[T op](o T, params ...string) string {
+	// 	p := operations[string(o)]
+	// if len(...)
+	// }
 	s := path.Join(string(o.conf.OutHandlersDir), "operation_ids.gen.go")
+
 	f, err := os.Create(s)
 	if err != nil {
 		return err
 	}
-	err = o.generateOpIDs(f)
-	if err != nil {
+
+	if err = o.generateOpIDs(f); err != nil {
 		return fmt.Errorf("could not generate operation IDs: %w", err)
 	}
 
@@ -478,26 +536,7 @@ func (o *OpenapiGenerator) generateMergedFiles(handlers map[Dir]map[Tag]HandlerF
 	return nil
 }
 
-type Method struct {
-	// Name is the method identifier.
-	Name string
-	// Decl is the method declaration node.
-	Decl *dst.FuncDecl
-}
-
-type HandlerFile struct {
-	// F is the node of the source file.
-	F *dst.File
-	// Methods represents all methods in the generated struct indexed by method name.
-	Methods map[string]Method
-	// RoutesNode represents the routes slice assignment node.
-	RoutesNode *dst.AssignStmt
-	// Routes represents convenient extracted fields from route elements
-	// indexed by operation id.
-	Routes map[string]Route
-}
-
-func (o *OpenapiGenerator) getAPIBasenames(src Dir) ([]string, error) {
+func (o *openapiGenerator) getAPIBasenames(src Dir) ([]string, error) {
 	out := []string{}
 	// glob uses https://pkg.go.dev/path#Match patterns. Test files will match
 	paths, err := filepath.Glob(path.Join(string(src), "api_*.go"))

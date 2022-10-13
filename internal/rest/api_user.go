@@ -123,12 +123,14 @@ func (h *User) createUser(c *gin.Context) {
 
 	if err := c.BindJSON(&user); err != nil {
 		renderErrorResponse(c, "error creating user", err)
+
 		return
 	}
 
 	res, err := h.userSvc.Create(ctx, user)
 	if err != nil {
 		renderErrorResponse(c, "error creating user", err)
+
 		return
 	}
 

@@ -24,10 +24,10 @@ services:
     restart: unless-stopped
     labels:
       - traefik.enable=true
-      - traefik.http.routers.${PROJECT_PREFIX}-prod-backend.rule=Host(`${DOMAIN:?not set}`) && PathPrefix("/api")
-      - traefik.http.routers.${PROJECT_PREFIX}-prod-backend.middlewares=${PROJECT_PREFIX}-stripprefix-backend,test-compress # check docs to exclude requests from compression
-      - traefik.http.middlewares.test-compress.compress=true
-      - traefik.http.middlewares.${PROJECT_PREFIX}-stripprefix-backend.stripprefix.prefixes=/api
+      - traefik.http.routers.${PROJECT_PREFIX}-prod-backend.rule=Host(`${DOMAIN:?not set}`) && PathPrefix("${API_PREFIX:?not set}")
+      - traefik.http.routers.${PROJECT_PREFIX}-prod-backend.middlewares=${PROJECT_PREFIX}-stripprefix-backend,${PROJECT_PREFIX}-compress # check docs to exclude requests from compression
+      - traefik.http.middlewares.${PROJECT_PREFIX}-compress.compress=true
+      - traefik.http.middlewares.${PROJECT_PREFIX}-stripprefix-backend.stripprefix.prefixes=${API_PREFIX:?not set}
       - traefik.docker.network=traefik-net
       - traefik.http.routers.${PROJECT_PREFIX}-prod-backend.entrypoints=websecure
       - traefik.http.routers.${PROJECT_PREFIX}-prod-backend.tls=true
@@ -48,8 +48,8 @@ services:
       - traefik.enable=true
       - traefik.http.routers.${PROJECT_PREFIX}-prod-frontend.rule=Host(`${DOMAIN:?not set}`)
       - traefik.docker.network=traefik-net
-      - traefik.http.routers.${PROJECT_PREFIX}-prod-frontend.middlewares=test-compress
-      - traefik.http.middlewares.test-compress.compress=true
+      - traefik.http.routers.${PROJECT_PREFIX}-prod-frontend.middlewares=${PROJECT_PREFIX}-compress
+      - traefik.http.middlewares.${PROJECT_PREFIX}-compress.compress=true
       - traefik.http.routers.${PROJECT_PREFIX}-prod-frontend.entrypoints=websecure
       - traefik.http.routers.${PROJECT_PREFIX}-prod-frontend.tls=true
       - traefik.http.services.${PROJECT_PREFIX}-prod-frontend.loadbalancer.server.port=${FRONTEND_PORT:?not set}

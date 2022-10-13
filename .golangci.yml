@@ -83,9 +83,10 @@ linters-settings:
       - github.com/danicc097/openapi-go-gin-postgres-sqlc/*
 issues:
   exclude-rules:
-    - path: /**/*
+    - path: "."
       linters:
         - gci
+        - nolintlint
     - path: internal/gen/
       linters:
         - lll

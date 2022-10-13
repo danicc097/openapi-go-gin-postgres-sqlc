@@ -8,8 +8,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
@@ -40,9 +40,9 @@ func TestCreateUserRoute(t *testing.T) {
 			"ValidParams",
 			params{
 				user: models.CreateUserRequest{
-					Email:    format.RandomEmail(),
+					Email:    testutil.RandomEmail(),
 					Password: "password",
-					Username: format.RandomName(),
+					Username: testutil.RandomName(),
 				}},
 			want{status: http.StatusOK},
 		},
@@ -50,7 +50,7 @@ func TestCreateUserRoute(t *testing.T) {
 			"UsernameValidationFailed",
 			params{
 				user: models.CreateUserRequest{
-					Email:    format.RandomEmail(),
+					Email:    testutil.RandomEmail(),
 					Password: "password",
 					Username: "[]]]",
 				}},
@@ -62,7 +62,7 @@ func TestCreateUserRoute(t *testing.T) {
 				user: models.CreateUserRequest{
 					Email:    "bad",
 					Password: "password",
-					Username: format.RandomName(),
+					Username: testutil.RandomName(),
 				}},
 			want{status: http.StatusBadRequest},
 		},
@@ -70,9 +70,9 @@ func TestCreateUserRoute(t *testing.T) {
 			"PasswordValidationFailed",
 			params{
 				user: models.CreateUserRequest{
-					Email:    format.RandomEmail(),
+					Email:    testutil.RandomEmail(),
 					Password: "short",
-					Username: format.RandomName(),
+					Username: testutil.RandomName(),
 				}},
 			want{status: http.StatusBadRequest},
 		},

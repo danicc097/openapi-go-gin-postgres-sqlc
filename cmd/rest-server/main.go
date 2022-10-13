@@ -11,7 +11,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format/colors"
 	server "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -58,11 +59,10 @@ func main() {
 		log.Fatalf("Couldn't run: %s", err)
 	}
 
-	url := format.BuildBackendURL("docs")
-	fmt.Printf("\n%sVisit the docs at %s%s\n\n", format.Green, url, format.Off)
+	docs := internal.BuildApiURL("docs")
+	fmt.Printf("\n%sVisit the docs at %s%s\n\n", colors.G, docs, colors.Off)
 
 	if err := <-errC; err != nil {
 		log.Fatalf("Error while running: %s", err)
 	}
-
 }

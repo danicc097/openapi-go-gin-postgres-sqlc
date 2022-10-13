@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -134,12 +133,13 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 		return nil, err
 	}
 	sl := openapi3.NewLoader()
+
 	openapi, err := sl.LoadFromData(schemaBlob)
 	if err != nil {
 		return nil, err
 	}
-	err = openapi.Validate(sl.Context)
-	if err != nil {
+
+	if err = openapi.Validate(sl.Context); err != nil {
 		return nil, err
 	}
 
@@ -273,9 +273,7 @@ func Run(env, address, specPath string) (<-chan error, error) {
 		defer func() {
 			_ = logger.Sync()
 
-			if err := tp.Shutdown(context.Background()); err != nil {
-				log.Printf("Error shutting down tracer provider: %v", err)
-			}
+			tp.Shutdown(context.Background())
 			pool.Close()
 			// rmq.Close()
 			rdb.Close()
@@ -299,6 +297,7 @@ func Run(env, address, specPath string) (<-chan error, error) {
 		// "ListenAndServe always returns a non-nil error. After Shutdown or Close, the returned error is
 		// ErrServerClosed."
 		var err error
+
 		switch env := os.Getenv("APP_ENV"); env {
 		case "dev", "ci":
 			// err = srv.httpsrv.ListenAndServe()
@@ -308,6 +307,7 @@ func Run(env, address, specPath string) (<-chan error, error) {
 		default:
 			err = fmt.Errorf("unknown APP_ENV: %s", env)
 		}
+
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errC <- err
 		}

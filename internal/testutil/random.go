@@ -1,4 +1,4 @@
-package format
+package testutil
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
-//nolint: gochecknoinits
+// nolint: gochecknoinits
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }

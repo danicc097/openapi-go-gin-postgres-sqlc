@@ -1,4 +1,4 @@
-package format
+package internal
 
 import (
 	"fmt"
@@ -6,10 +6,12 @@ import (
 	"os"
 )
 
-// BuildBackendURL returns a fully-qualified URL with the given path elements.
-func BuildBackendURL(subpaths ...string) string {
+// BuildApiURL returns a fully-qualified URL with the given path elements
+// accounting for reverse proxy configuration.
+func BuildApiURL(subpaths ...string) string {
 	elems := []string{os.Getenv("API_PREFIX"), os.Getenv("API_VERSION")}
 	elems = append(elems, subpaths...)
+
 	path, err := url.JoinPath(
 		"",
 		elems...,
@@ -20,6 +22,7 @@ func BuildBackendURL(subpaths ...string) string {
 	}
 
 	var host string
+
 	switch os.Getenv("APP_ENV") {
 	case "prod":
 		host = os.Getenv("DOMAIN")
