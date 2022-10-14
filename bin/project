@@ -159,7 +159,7 @@ x.generate.counterfeiter() {
   fi
 }
 
-# Generates the required servers/clients for relevant services.
+# Generate the required servers/clients for relevant services.
 x.generate.proto() {
   local import_path="./python-ml-app-protos/tfidf/v1"
   local filename="python-ml-app-protos/tfidf/v1/service.proto"
@@ -208,12 +208,12 @@ x.generate() {
 
 }
 
-# Lints the entire project.
+# Lint the entire project.
 x.lint() {
   x.lint.sql
 }
 
-# Formats SQL files.
+# Format SQL files.
 x.lint.sql() {
   SQL_DIRS=(
     "$PG_REPO/queries"
@@ -231,7 +231,7 @@ x.lint.sql() {
   done
 }
 
-# Runs required backend pre-test setup: services, database cleanup, codegen...
+# Run required backend pre-test setup: services, database cleanup, codegen...
 # Can be called independently, e.g. before running tests through an IDE.
 x.test.backend-setup() {
   # NOTE: tests run independently in Go so we can't have a function be called and run
@@ -274,12 +274,13 @@ x.run.backend-hot-reload() {
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
     sed -e "s/^/${BLUE}[Air]${OFF} /"
-  # TODO compose
 }
 
 # Run frontend with hot-reloading.
 x.run.frontend() {
   set -a
+  # export to replace config with envvars
+  source ".env.$env"
   set +a
 
   cd frontend
@@ -340,7 +341,7 @@ x.run-prod() {
   echo "Migrations: $(x.migrate up)"
 }
 
-# Removes running project containers, including shared ones between environments.
+# Remove running project containers, including shared ones between environments.
 x.stop-project() {
   run_shared_services down --remove-orphans
 }
@@ -348,10 +349,17 @@ x.stop-project() {
 # Checks before release:
 # - Magic keyword "STOPSHIP" not found in tracked files.
 x.release() {
-  x.search-stopship "STOPSHIP"
+  x.search-stopship "STOPSHIP" &
+  pids+=($!)
+  go mod verify &
+  pids+=($!)
+
+  for pid in "${pids[@]}"; do
+    wait "$pid"
+  done
 }
 
-# Blocks build if magic keyword is found in any file
+# Block build if magic keyword is found in any file
 # Args: keyword
 x.search-stopship() {
   stopship_keyword="$1"
@@ -384,7 +392,7 @@ x.migrate() {
     "$@"
 }
 
-# Creates a new migration file with the given `name`.
+# Create a new migration file with the given `name`.
 # Args: name
 x.migrate.create-migration() {
   tmp="$*"
@@ -396,14 +404,14 @@ x.migrate.create-migration() {
 
 ########################## db ##########################
 
-# Creates a new database in the current environment if it doesn't exist
+# Create a new database in the current environment if it doesn't exist
 # and stops its running processes if any.
 x.db.recreate-database() {
   create_db_if_not_exists "postgres_$env"
   stop_db_processes "postgres_$env"
 }
 
-# Backups the database for the current environment.
+# Backup the database for the current environment.
 x.db.dump() {
   running_dumps=$(dockerdb psql --no-psqlrc -P pager=off --quiet -tA -U postgres -d "postgres_$env" \
     -c "SELECT pid FROM pg_stat_activity WHERE application_name = 'pg_dump';")
@@ -422,7 +430,7 @@ x.db.dump() {
     gzip >"$DUMPS_FOLDER/$dump_file"
 }
 
-# Restores the database with the latest dump or `file` for the current environment.
+# Restore the database with the latest dump or `file` for the current environment.
 # Args: [file]
 x.db.restore() {
   dump_file="$1"
