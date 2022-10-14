@@ -340,14 +340,38 @@ x.run-prod() {
   echo "Migrations: $(x.migrate up)"
 }
 
-# Removes running project containers.
+# Removes running project containers, including shared ones between environments.
 x.stop-project() {
   run_shared_services down --remove-orphans
 }
 
-# Ensure no breaking changes to the OpenAPI spec in the same version are present.
+# Checks before release:
+# - Magic keyword "STOPSHIP" not found in tracked files.
 x.release() {
-  x.diff-openapi-spec
+  x.search-stopship "STOPSHIP"
+}
+
+# Blocks build if magic keyword is found in any file
+# Args: keyword
+x.search-stopship() {
+  stopship_keyword="$1"
+  local matches
+  matches=$(find "$(git rev-parse --show-toplevel)" \
+    -type f \
+    -not -path '**/.git/*' \
+    -not -path '**/.venv/*' \
+    -not -path '**/node_modules/*' \
+    -not -path '**/build/*' \
+    -not -path '**/*.pyc' \
+    -not -path "$0" \
+    -not -exec git check-ignore -q --no-index {} \; \
+    -exec grep -i --files-with-matches --regexp="$stopship_keyword" {} \;)
+  if [[ -n $matches ]]; then
+    echo "${RED}'$stopship_keyword'${OFF} found in tracked files."
+    echo "Please fix all related issues in the following files:"
+    printf "\t %s\n" $matches
+    exit 1
+  fi
 }
 
 ########################## migrations ##########################
@@ -668,7 +692,7 @@ usage() {
 $BOLD$UNDERSCORE$(basename $0)$OFF centralizes all relevant project commands.
 
 ${BOLD}USAGE:
-    $RED$(basename $0) x.function [--x-option ...] [args]$OFF
+    $RED$(basename $0) x.function [--x-option ...] args [optional args]$OFF
 
 ${BOLD}x.functions:$OFF
 $(echo "${x_functions}" |
