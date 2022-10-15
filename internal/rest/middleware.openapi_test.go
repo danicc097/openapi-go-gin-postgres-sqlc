@@ -234,7 +234,7 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		body, err := io.ReadAll(rec.Body)
 		if assert.NoError(t, err) {
-			assert.Contains(t, string(body), "multiple errors encountered")
+			assert.Contains(t, string(body), "validation errors encountered")
 			assert.Contains(t, string(body), "parameter \\\"id2\\\"")
 			assert.Contains(t, string(body), "value is required but missing")
 		}
@@ -249,7 +249,7 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		body, err := io.ReadAll(rec.Body)
 		if assert.NoError(t, err) {
-			assert.Contains(t, string(body), "multiple errors encountered")
+			assert.Contains(t, string(body), "validation errors encountered")
 			assert.Contains(t, string(body), "parameter \\\"id\\\"")
 			assert.Contains(t, string(body), "value is required but missing")
 			assert.Contains(t, string(body), "parameter \\\"id2\\\"")
@@ -266,7 +266,7 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		body, err := io.ReadAll(rec.Body)
 		if assert.NoError(t, err) {
-			assert.Contains(t, string(body), "multiple errors encountered")
+			assert.Contains(t, string(body), "validation errors encountered")
 			assert.Contains(t, string(body), "parameter \\\"id\\\"")
 			assert.Contains(t, string(body), "number must be at most 100")
 			assert.Contains(t, string(body), "parameter \\\"id2\\\"")
@@ -283,7 +283,7 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		body, err := io.ReadAll(rec.Body)
 		if assert.NoError(t, err) {
-			assert.Contains(t, string(body), "multiple errors encountered")
+			assert.Contains(t, string(body), "validation errors encountered")
 			assert.Contains(t, string(body), "parameter \\\"id\\\"")
 			assert.Contains(t, string(body), "abc: an invalid integer: invalid syntax")
 			assert.Contains(t, string(body), "parameter \\\"id2\\\"")

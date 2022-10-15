@@ -5,9 +5,9 @@ ARG DOCKER_GID
 
 RUN apk --no-cache add ca-certificates
 WORKDIR /go/src
-COPY ../go.* .
+COPY go.* .
 RUN go mod download
-COPY ../. .
+COPY . .
 ENV CGO_ENABLED=0
 RUN --mount=type=cache,target=/root/.cache/go-build \
   go build -o rest-server ./cmd/rest-server

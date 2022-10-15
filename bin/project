@@ -228,8 +228,8 @@ x.lint.go() {
     -not -path "**/*.cache/*" \
     -name "*.go")
 
-  gofumpt -w $files
   goimports -w $files
+  gofumpt -w $files
 }
 
 # Format SQL files.
@@ -357,7 +357,10 @@ x.run-prod() {
     --env-file ".env.$env" \
     up -d --build
 
-  echo "Migrations: $(x.migrate up)"
+  # TODO handle rollback and restore up to X revision (from restored db)
+  # see dump_schema_v
+  echo "Migrations:"
+  x.migrate up
 }
 
 # Remove running project containers, including shared ones between environments.

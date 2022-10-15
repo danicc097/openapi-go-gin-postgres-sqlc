@@ -105,6 +105,7 @@ func TestCreateUserRoute(t *testing.T) {
 
 			req, err := http.NewRequest(http.MethodPost, os.Getenv("API_VERSION")+"/user", &buf)
 			req.Header.Add("Content-Type", "application/json")
+			req.Header.Add("x-api-key", "dummy-key")
 			if err != nil {
 				t.Errorf("%v", err)
 			}

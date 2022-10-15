@@ -149,6 +149,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 			ExcludeResponseBody:   false,
 			IncludeResponseStatus: true,
 			MultiError:            true,
+			AuthenticationFunc:    verifyAuthentication,
 		},
 		// MultiErrorHandler: func(me openapi3.MultiError) error {
 		// 	return fmt.Errorf("multiple errors:  %s", me.Error())

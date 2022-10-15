@@ -17,7 +17,7 @@ services:
       - ./.env.prod:/.env.prod
     build:
       context: .
-      dockerfile: docker/Dockerfile.backend.prod
+      dockerfile: Dockerfile.prod
       args:
         - "DOCKER_UID=${DOCKER_UID:?not set}"
         - "DOCKER_GID=${DOCKER_GID:?not set}"
@@ -40,8 +40,8 @@ services:
     networks:
       - traefik-net
     build:
-      context: .
-      dockerfile: docker/Dockerfile.frontend.prod
+      context: frontend
+      dockerfile: Dockerfile.prod
     env_file: .env.prod
     restart: unless-stopped
     labels:

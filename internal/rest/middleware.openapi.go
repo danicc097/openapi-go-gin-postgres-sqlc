@@ -49,6 +49,7 @@ func newOpenapiMiddleware(
 	if err != nil {
 		panic(err)
 	}
+
 	return &openapiMiddleware{
 		Logger: logger,
 		router: router,
@@ -159,5 +160,5 @@ func getMultiErrorHandlerFromOptions(options *OAValidatorOptions) MultiErrorHand
 // of all of the errors. This method is called if there are no other
 // methods defined on the options.
 func defaultMultiErrorHandler(me openapi3.MultiError) error {
-	return internal.NewErrorf(internal.ErrorCodeValidationError, "multiple errors encountered: %s", me)
+	return internal.NewErrorf(internal.ErrorCodeValidationError, "validation errors encountered: %s", me)
 }
