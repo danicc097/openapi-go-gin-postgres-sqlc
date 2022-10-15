@@ -106,9 +106,8 @@ paths:
         "405":
           description: Invalid input
       security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
+        - bearer_auth: []
+        - api_key: []
       summary: Add a new pet to the store
       tags:
         - pet
@@ -134,9 +133,8 @@ paths:
         "405":
           description: Validation exception
       security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
+        - bearer_auth: []
+        - api_key: []
       summary: Update an existing pet
       tags:
         - pet
@@ -178,8 +176,8 @@ paths:
         "400":
           description: Invalid status value
       security:
-        - petstore_auth:
-            - read:pets
+        - bearer_auth: []
+        - api_key: []
       summary: Finds Pets by status
       tags:
         - pet
@@ -218,8 +216,8 @@ paths:
         "400":
           description: Invalid tag value
       security:
-        - petstore_auth:
-            - read:pets
+        - bearer_auth: []
+        - api_key: []
       summary: Finds Pets by tags
       tags:
         - pet
@@ -248,9 +246,8 @@ paths:
         "400":
           description: Invalid pet value
       security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
+        - bearer_auth: []
+        - api_key: []
       summary: Deletes a pet
       tags:
         - pet
@@ -282,6 +279,7 @@ paths:
         "404":
           description: Pet not found
       security:
+        - bearer_auth: []
         - api_key: []
       summary: Find pet by ID
       tags:
@@ -308,9 +306,8 @@ paths:
         "405":
           description: Invalid input
       security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
+        - bearer_auth: []
+        - api_key: []
       summary: Updates a pet in the store with form data
       tags:
         - pet
@@ -341,9 +338,8 @@ paths:
                 $ref: "#/components/schemas/ApiResponse"
           description: successful operation
       security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
+        - bearer_auth: []
+        - api_key: []
       summary: uploads an image
       tags:
         - pet
@@ -362,6 +358,7 @@ paths:
                 type: object
           description: successful operation
       security:
+        - bearer_auth: []
         - api_key: []
       summary: Returns pet inventories by status
       tags:
@@ -470,10 +467,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/CreateUserResponse"
           description: successful operation
-      # security:
-      #   - api_key: []
       summary: creates a new user
       security:
+        - bearer_auth: []
         - api_key: []
       tags:
         - user
@@ -487,6 +483,7 @@ paths:
         default:
           description: successful operation
       security:
+        - bearer_auth: []
         - api_key: []
       summary: Creates list of users with given input array
       tags:
@@ -560,6 +557,7 @@ paths:
         default:
           description: successful operation
       security:
+        - bearer_auth: []
         - api_key: []
       summary: Logs out current logged in user session
       tags:
@@ -583,6 +581,7 @@ paths:
         "404":
           description: User not found
       security:
+        - bearer_auth: []
         - api_key: []
       summary: Delete user
       tags:
@@ -641,6 +640,7 @@ paths:
         "404":
           description: User not found
       security:
+        - bearer_auth: []
         - api_key: []
       summary: Updated user
       tags:
@@ -1102,15 +1102,11 @@ components:
         email: email@email.com
         password: password
   securitySchemes:
-    petstore_auth:
-      flows:
-        implicit:
-          authorizationUrl: https://localhost:8090/api/oauth/dialog
-          scopes:
-            write:pets: modify pets in your account
-            read:pets: read your pets
-      type: oauth2
     api_key:
       in: header
       name: x-api-key
       type: apiKey
+    bearer_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

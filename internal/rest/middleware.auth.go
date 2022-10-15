@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/getkin/kin-openapi/openapi3filter"
@@ -71,17 +72,30 @@ func (t *authMiddleware) EnsureVerified() gin.HandlerFunc {
 }
 
 func verifyAuthentication(c context.Context, input *openapi3filter.AuthenticationInput) error {
-	if input.SecurityScheme.Type == "apiKey" {
-		var found bool
-
+	// https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#securityRequirementObject
+	switch input.SecurityScheme.Type {
+	case "apiKey":
 		if input.SecurityScheme.In != "header" {
-			return fmt.Errorf("api keys only supported in header")
+			return fmt.Errorf("api key authentication only supported in header")
 		}
 
-		_, found = input.RequestValidationInput.Request.Header[http.CanonicalHeaderKey(input.SecurityScheme.Name)]
+		_, found := input.RequestValidationInput.Request.Header[http.CanonicalHeaderKey(input.SecurityScheme.Name)]
 
 		if !found {
 			return fmt.Errorf("%v not found in header", input.SecurityScheme.Name)
+		}
+	case "http":
+		if input.SecurityScheme.Scheme != "bearer" {
+			return fmt.Errorf("http security scheme only supports 'bearer' scheme")
+		}
+
+		authHeader, found := input.RequestValidationInput.Request.Header[http.CanonicalHeaderKey("Authorization")]
+		if !found {
+			return fmt.Errorf("authorization header missing")
+		}
+
+		if !strings.HasPrefix(authHeader[0], "Bearer ") {
+			return fmt.Errorf("mismatching scheme in %s - expected Bearer", authHeader[0])
 		}
 	}
 
