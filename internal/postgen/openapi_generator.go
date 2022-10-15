@@ -23,8 +23,10 @@ import (
 	"golang.org/x/text/language"
 )
 
-type Dir string
-type Tag string
+type (
+	Dir string
+	Tag string
+)
 
 type Method struct {
 	// Name is the method identifier.
@@ -47,8 +49,10 @@ type HandlerFile struct {
 
 type Handlers map[Dir]map[Tag]HandlerFile
 
-var handlerRegex = regexp.MustCompile("api_(.*).go")
-var operationIDRegex = regexp.MustCompile("^[a-zA-Z0-9]*$")
+var (
+	handlerRegex     = regexp.MustCompile("api_(.*).go")
+	operationIDRegex = regexp.MustCompile("^[a-zA-Z0-9]*$")
+)
 
 func contains[T comparable](elems []T, v T) bool {
 	for _, s := range elems {
@@ -268,7 +272,7 @@ func (o *openapiGenerator) getCommonBasenames() ([]string, error) {
 		return nil, err
 	}
 
-	err = os.MkdirAll(string(o.conf.OutHandlersDir), 0777)
+	err = os.MkdirAll(string(o.conf.OutHandlersDir), 0o777)
 	if err != nil {
 		return nil, err
 	}
@@ -286,7 +290,7 @@ func (o *openapiGenerator) getCommonBasenames() ([]string, error) {
 			return nil, err
 		}
 
-		err = os.WriteFile(path.Join(string(o.conf.OutHandlersDir), genBasename), genBlob, 0600)
+		err = os.WriteFile(path.Join(string(o.conf.OutHandlersDir), genBasename), genBlob, 0o600)
 		if err != nil {
 			return nil, err
 		}
@@ -306,7 +310,7 @@ func (o *openapiGenerator) getCommonBasenames() ([]string, error) {
 			return nil, err
 		}
 
-		err = os.WriteFile(path.Join(string(o.conf.OutHandlersDir), currentBasename), currentBlob, 0600)
+		err = os.WriteFile(path.Join(string(o.conf.OutHandlersDir), currentBasename), currentBlob, 0o600)
 		if err != nil {
 			return nil, err
 		}
@@ -368,8 +372,10 @@ type op interface {
 	{{ stringsJoin .Tags "" "OpID" " | "}}
 }
 
-{{range $tag, $opIDs := .Operations}}
-type {{$tag}}OpID string{{end}}
+type (
+	{{range $tag, $opIDs := .Operations}}
+{{$tag}}OpID string{{end}}
+)
 
 const ({{range $tag, $opIDs := .Operations}}
 // Operation IDs for the '{{$tag}}' tag.

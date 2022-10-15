@@ -39,7 +39,7 @@ func New(conf *envvar.Configuration) (*pgxpool.Pool, error) {
 	var databasePort string
 	switch env := os.Getenv("APP_ENV"); env {
 	case "prod":
-		databasePort = get("POSTGRES_PORT") //container
+		databasePort = get("POSTGRES_PORT") // container
 	default:
 		databasePort = get("DB_PORT")
 	}

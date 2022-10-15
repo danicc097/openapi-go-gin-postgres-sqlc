@@ -48,12 +48,12 @@ import (
 //
 // Gunit will look at various function name prefixes to determine behavior:
 //
-//   "Test": Well, it's a test.
-//   "Skip": Skipped.
-//   "Long": Skipped when `go test` is ran with the `short` flag.
+//	"Test": Well, it's a test.
+//	"Skip": Skipped.
+//	"Long": Skipped when `go test` is ran with the `short` flag.
 //
-//   "Setup":    Executed before each test.
-//   "Teardown": Executed after  each test.
+//	"Setup":    Executed before each test.
+//	"Teardown": Executed after  each test.
 //
 // Functions without these prefixes are ignored.
 func TestSuite(t *testing.T) {
@@ -67,7 +67,6 @@ type F struct {
 
 // Setup prepares the fixture. Runs once per test.
 func (t *F) Setup() {
-
 }
 
 /*

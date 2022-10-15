@@ -6,12 +6,14 @@ type op interface {
 	adminOpID | defaultOpID | fakeOpID | petOpID | storeOpID | userOpID
 }
 
-type adminOpID string
-type defaultOpID string
-type fakeOpID string
-type petOpID string
-type storeOpID string
-type userOpID string
+type (
+	adminOpID   string
+	defaultOpID string
+	fakeOpID    string
+	petOpID     string
+	storeOpID   string
+	userOpID    string
+)
 
 const (
 	// Operation IDs for the 'admin' tag.

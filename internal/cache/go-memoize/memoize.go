@@ -10,7 +10,6 @@ import (
 
 // Memoizer allows you to memoize function calls. Memoizer is safe for concurrent use by multiple goroutines.
 type Memoizer struct {
-
 	// Storage exposes the underlying cache of memoized results to manipulate as desired - for example, to Flush().
 	Storage *cache.Cache
 

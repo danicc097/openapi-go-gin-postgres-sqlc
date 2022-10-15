@@ -11,9 +11,7 @@ const (
 	alphanumSpace = "^[a-zA-Z0-9 ]+$"
 )
 
-var (
-	alphanumSpaceRegex = regexp.MustCompile(alphanumSpace)
-)
+var alphanumSpaceRegex = regexp.MustCompile(alphanumSpace)
 
 var Alphanumspace validator.Func = func(fl validator.FieldLevel) bool {
 	return alphanumSpaceRegex.MatchString(fl.Field().String())

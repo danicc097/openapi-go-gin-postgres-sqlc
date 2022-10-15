@@ -47,7 +47,7 @@ func main() {
 
 	// go openBrowser(url)
 
-	var cpuTemp = prometheus.NewGauge(prometheus.GaugeOpts{
+	cpuTemp := prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "cpu_temperature_celsius",
 		Help: "Current temperature of the CPU.",
 	})

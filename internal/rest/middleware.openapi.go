@@ -84,7 +84,6 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *OAValidatorOptions) error {
 	req := c.Request
 	route, pathParams, err := router.FindRoute(req)
-
 	// We failed to find a matching route for the request.
 	if err != nil {
 		switch e := err.(type) {

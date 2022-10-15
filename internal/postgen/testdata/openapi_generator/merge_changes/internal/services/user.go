@@ -1,4 +1,3 @@
 package services
 
-type User struct {
-}
+type User struct{}

@@ -64,7 +64,6 @@ func GetenvStr(key string) (string, error) {
 	v := os.Getenv(key)
 	if v == "" {
 		return v, errors.Wrap(errEnvVarEmpty, key)
-
 	}
 	return v, nil
 }

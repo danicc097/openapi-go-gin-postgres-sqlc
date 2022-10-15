@@ -6,10 +6,12 @@ type op interface {
 	defaultOpID | newapiOpID | petOpID | userOpID
 }
 
-type defaultOpID string
-type newapiOpID string
-type petOpID string
-type userOpID string
+type (
+	defaultOpID string
+	newapiOpID  string
+	petOpID     string
+	userOpID    string
+)
 
 const (
 	// Operation IDs for the 'default' tag.

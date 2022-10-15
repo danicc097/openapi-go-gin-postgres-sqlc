@@ -21,7 +21,6 @@ func DummyMoviePrediction(ctx context.Context) error {
 		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
 		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
 	)
-
 	if err != nil {
 		return err
 	}

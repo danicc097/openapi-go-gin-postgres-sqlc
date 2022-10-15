@@ -1,4 +1,3 @@
 package services
 
-type Pet struct {
-}
+type Pet struct{}

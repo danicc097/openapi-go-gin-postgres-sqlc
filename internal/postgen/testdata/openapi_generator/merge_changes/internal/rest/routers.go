@@ -26,7 +26,6 @@ type route struct {
 	Middlewares []gin.HandlerFunc
 }
 
-
 // registerRoute creates a router group, adds group middleware and registers routes with their own middleware.
 func registerRoutes(router *gin.RouterGroup, rr []route, group string, mws []gin.HandlerFunc) {
 	if reg, _ := regexp.Compile("/([a-z]+)"); !reg.MatchString(group) {

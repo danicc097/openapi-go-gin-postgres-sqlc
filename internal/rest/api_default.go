@@ -50,7 +50,6 @@ func (h *Default) middlewares(opID defaultOpID) []gin.HandlerFunc {
 
 // openapiYamlGet returns this very openapi spec..
 func (h *Default) openapiYamlGet(c *gin.Context) {
-
 	oas, err := static.SwaggerUI.ReadFile("swagger-ui/openapi.yaml")
 	if err != nil {
 		panic("openapi spec not found")

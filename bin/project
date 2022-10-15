@@ -23,7 +23,10 @@ export GO_POST_PROCESS_FILE="/usr/bin/env gofmt -w -s"
 export GENVERS=6.0.1
 
 SPEC="openapi.yaml"
-GEN_OUT_DIR="internal"
+OPENAPI_GEN_OUT_DIR="internal"
+OPENAPI_GEN_DIR="$OPENAPI_GEN_OUT_DIR/gen"
+PROTO_DIR="internal/pb"
+PROTO_DIR="internal/pb"
 TEMPLATE_DIR="internal/go-gin-server-templates"
 PWD="$(pwd)"
 env="dev"
@@ -122,7 +125,7 @@ x.postgen() {
   mkdir -p "$cache"
   go build -o postgen "$PWD"/cmd/postgen/main.go
   ./postgen -cachedir="$cache" -env=".env.$env"
-  mv "$GEN_OUT_DIR"/gen/api_*.go "$cache/" 2>/dev/null || true
+  mv "$OPENAPI_GEN_DIR"/api_*.go "$cache/" 2>/dev/null || true
 }
 
 # Generate type-safe Go code from SQL.
@@ -187,7 +190,7 @@ x.generate() {
   echo "${MAGENTA}${BOLD}Running codegen and postgen...${OFF}"
   cache=".generate.cache"
 
-  generate_api "$cache" "internal" "$SPEC" "$GEN_OUT_DIR" "$TEMPLATE_DIR"
+  generate_api "$cache" "internal" "$SPEC" "$OPENAPI_GEN_OUT_DIR" "$TEMPLATE_DIR"
 
   go generate ./... &
   pids+=($!)
@@ -269,7 +272,7 @@ x.run.backend-hot-reload() {
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,internal/gen,internal/pb,$PG_REPO/gen,tests/testdata,frontend,*.cache" \
+    --build.exclude_dir ".git,tmp,$OPENAPI_GEN_DIR,$PROTO_DIR,$PG_REPO/gen,tests/testdata,frontend,*.cache" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |

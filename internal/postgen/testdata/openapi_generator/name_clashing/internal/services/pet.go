@@ -1,10 +1,8 @@
 package services
 
-type Pet struct {
-}
+type Pet struct{}
 
 // NewPet returns a new Pet service.
 func NewPet() *Pet {
 	return &Pet{}
 }
-

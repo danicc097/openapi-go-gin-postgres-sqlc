@@ -43,7 +43,8 @@ func TestCreateUserRoute(t *testing.T) {
 					Email:    testutil.RandomEmail(),
 					Password: "password",
 					Username: testutil.RandomName(),
-				}},
+				},
+			},
 			want{status: http.StatusOK},
 		},
 		{
@@ -53,7 +54,8 @@ func TestCreateUserRoute(t *testing.T) {
 					Email:    testutil.RandomEmail(),
 					Password: "password",
 					Username: "[]]]",
-				}},
+				},
+			},
 			want{status: http.StatusBadRequest},
 		},
 		{
@@ -63,7 +65,8 @@ func TestCreateUserRoute(t *testing.T) {
 					Email:    "bad",
 					Password: "password",
 					Username: testutil.RandomName(),
-				}},
+				},
+			},
 			want{status: http.StatusBadRequest},
 		},
 		{
@@ -73,7 +76,8 @@ func TestCreateUserRoute(t *testing.T) {
 					Email:    testutil.RandomEmail(),
 					Password: "short",
 					Username: testutil.RandomName(),
-				}},
+				},
+			},
 			want{status: http.StatusBadRequest},
 		},
 		{
@@ -81,7 +85,8 @@ func TestCreateUserRoute(t *testing.T) {
 			params{
 				user: struct {
 					Bad string `json:"bad,omitempty"`
-				}{"bad"}},
+				}{"bad"},
+			},
 			want{status: http.StatusBadRequest},
 		},
 	}
