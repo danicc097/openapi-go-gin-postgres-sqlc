@@ -26,7 +26,6 @@ SPEC="openapi.yaml"
 OPENAPI_GEN_OUT_DIR="internal"
 OPENAPI_GEN_DIR="$OPENAPI_GEN_OUT_DIR/gen"
 PROTO_DIR="internal/pb"
-PROTO_DIR="internal/pb"
 TEMPLATE_DIR="internal/go-gin-server-templates"
 PWD="$(pwd)"
 env="dev"
@@ -76,6 +75,7 @@ x.install-tools() {
   go install github.com/xo/xo@latest
   go install github.com/tufin/oasdiff@latest
   go install golang.org/x/tools/cmd/goimports@latest
+  go install mvdan.cc/gofumpt@latest
 
   go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
   go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@v0.2.0
@@ -213,7 +213,23 @@ x.generate() {
 
 # Lint the entire project.
 x.lint() {
-  x.lint.sql
+  x.lint.sql &
+  x.lint.go &
+  wait
+}
+
+# Format Go files.
+x.lint.go() {
+  files=$(find . \
+    -not -path "**/$OPENAPI_GEN_DIR/*" \
+    -not -path "**/$PROTO_DIR/*" \
+    -not -path "**/$PG_REPO/gen/*" \
+    -not -path "**/testdata/*" \
+    -not -path "**/*.cache/*" \
+    -name "*.go")
+
+  gofumpt -w $files
+  goimports -w $files
 }
 
 # Format SQL files.
@@ -272,7 +288,7 @@ x.run.backend-hot-reload() {
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$OPENAPI_GEN_DIR,$PROTO_DIR,$PG_REPO/gen,tests/testdata,frontend,*.cache" \
+    --build.exclude_dir ".git,tmp,$OPENAPI_GEN_DIR,$PROTO_DIR,$PG_REPO/gen,**/testdata,frontend,*.cache" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
