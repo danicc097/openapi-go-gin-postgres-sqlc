@@ -185,7 +185,6 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	NewUser(conf.Logger, userSvc, authnSvc, authzSvc).
 		Register(vg, []gin.HandlerFunc{})
-	// TODO /admin with authMw.EnsureAuthorized() in group
 
 	conf.Logger.Info("Server started")
 	srv.httpsrv = &http.Server{
