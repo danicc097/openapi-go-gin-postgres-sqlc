@@ -13,6 +13,7 @@ go.work*
 *.log
 *.cache
 /pom.xml
+**/testdata/**/got
 /certificates/*.pem
 
 whiteboard.excalidraw
