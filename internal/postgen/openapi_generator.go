@@ -455,7 +455,7 @@ func (o *openapiGenerator) generateMergedFiles(handlers Handlers) error {
 	// }
 	s := path.Join(string(o.conf.OutHandlersDir), "operation_ids.gen.go")
 
-	f, err := os.Create(s)
+	f, err := os.OpenFile(s, os.O_RDWR|os.O_CREATE, 0o660)
 	if err != nil {
 		return err
 	}
@@ -499,7 +499,7 @@ func (o *openapiGenerator) generateMergedFiles(handlers Handlers) error {
 
 		buf := &bytes.Buffer{}
 
-		f, err := os.Create(path.Join(string(o.conf.OutHandlersDir), "api_"+strings.ToLower(string(tag))+".go"))
+		f, err := os.OpenFile(path.Join(string(o.conf.OutHandlersDir), "api_"+strings.ToLower(string(tag))+".go"), os.O_RDWR|os.O_CREATE, 0o660)
 		if err != nil {
 			return err
 		}
@@ -521,7 +521,7 @@ func (o *openapiGenerator) generateMergedFiles(handlers Handlers) error {
 		}
 		s := path.Join(string(o.conf.OutServicesDir), strings.ToLower(string(tag))+".go")
 		if _, err := os.Stat(s); errors.Is(err, os.ErrNotExist) {
-			f, err := os.Create(s)
+			f, err := os.OpenFile(s, os.O_RDWR|os.O_CREATE, 0o660)
 			if err != nil {
 				return err
 			}

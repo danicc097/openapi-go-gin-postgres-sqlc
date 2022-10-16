@@ -4,6 +4,7 @@ linters:
   enable-all: true
 
   disable:
+    - nosnakecase
     - godox # marks TODO, FIX, ...
     - forbidigo # fmt banned, etc.
     - goerr113
