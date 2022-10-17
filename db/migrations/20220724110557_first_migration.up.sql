@@ -1,5 +1,6 @@
--- see https://github.com/OpenAPITools/openapi-generator/blob/master/samples/schema/petstore/mysql/mysql_schema.sql
 -- https://dba.stackexchange.com/questions/59006/what-is-a-valid-use-case-for-using-timestamp-without-time-zone
+BEGIN;
+
 create type role as ENUM (
   'user',
   'manager',
@@ -47,3 +48,5 @@ create table pet_tags (
   primary key (pet_tag_id),
   unique (name)
 );
+
+COMMIT;

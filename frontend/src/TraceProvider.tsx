@@ -42,6 +42,7 @@ export default function TraceProvider({ children }: TraceProviderProps) {
   })
   const zipKinSpanProcessor = new BatchSpanProcessor(
     new ZipkinExporter({
+      // TODO traefik label for prod since calls are made from outside
       // url: 'http://localhost:9411/api/v2/spans',
       headers: {
         'Content-Type': 'application/json',
@@ -49,21 +50,19 @@ export default function TraceProvider({ children }: TraceProviderProps) {
     }),
   )
   provider.addSpanProcessor(zipKinSpanProcessor)
-  // FIXME otlp http://localhost:4318/v1/traces CORS error
-  // has been blocked by CORS policy: Response to preflight request doesn't pass access control check:
-  // No 'Access-Control-Allow-Origin' header is present on the requested resource.
-  // with zipkin we can have --collector.zipkin.allowed-origins="*" --collector.zipkin.allowed-headers="*"
-  // so the ZipkinExporter works fine. Equivalent for otlp collector is...?
-  provider.addSpanProcessor(
-    new BatchSpanProcessor(
-      new OTLPTraceExporter({
-        // url: 'http://localhost:4318/v1/traces',
-        // https://github.com/open-telemetry/opentelemetry-js/issues/3062
-        // {} so it uses xhr instead of sendBeacon, but gives the same cors error
-        headers: {},
-      }),
-    ),
-  )
+
+  // possibly not supported by jaeger https://github.com/jaegertracing/jaeger/issues/3479#issuecomment-1012199971
+  // since there's a CORS error and no way to set allowed origins
+  // provider.addSpanProcessor(
+  //   new BatchSpanProcessor(
+  //     new OTLPTraceExporter({
+  //       // url: 'http://localhost:4318/v1/traces',
+  //       // https://github.com/open-telemetry/opentelemetry-js/issues/3062
+  //       // {} so it uses xhr instead of sendBeacon, but gives the same cors error
+  //       headers: {},
+  //     }),
+  //   ),
+  // )
 
   const contextManager = new ZoneContextManager()
   provider.register({

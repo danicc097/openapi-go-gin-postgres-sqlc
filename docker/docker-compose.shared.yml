@@ -48,6 +48,10 @@ services:
     cap_add:
       - IPC_LOCK
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 50M # TODO envvar
     networks:
       - traefik-net
     environment:
@@ -67,20 +71,21 @@ services:
       - 16685:16685
       - 14250:14250
       - "6831:6831/udp"
-      - 4318:4318
-      - 9411:9411 # Zipkin compatible endpoint
+      - 4318:4318 # otlp collector
+      - 9411:9411 # Zipkin collector compatible endpoint
       - "6832:6832/udp" # jaeger.thrift via UDP (binary)
+    # https://www.jaegertracing.io/docs/1.14/cli/#jaeger-all-in-one-elasticsearch
+    command: --log-level=debug --es.server-urls=http://host.docker.internal:9200 --collector.zipkin.allowed-origins="*" --collector.zipkin.allowed-headers="*"
     environment:
       # ADMIN_HTTP_TLS_ENABLED: "false"
       COLLECTOR_ZIPKIN_HOST_PORT: "9411"
-      COLLECTOR_OTLP_ENABLED: "true"
-    command: --log-level=debug --collector.zipkin.allowed-origins="*" --collector.zipkin.allowed-headers="*"
-    #   SPAN_STORAGE_TYPE: elasticsearch
-    #   ES_SERVER_URLS: http://elasticsearch:9200
-    # depends_on:
-    #   - elasticsearch
-    # extra_hosts:
-    #   - "host.docker.internal:host-gateway"
+      # COLLECTOR_OTLP_ENABLED: "true"
+      SPAN_STORAGE_TYPE: elasticsearch
+      # ES_SERVER_URLS: http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     logging: *default-logging
 
@@ -110,17 +115,21 @@ services:
     restart: unless-stopped
     # network_mode: host
 
-  # elasticsearch:
-  #   # limited by jaeger as of now
-  #   # 1GB memory
-  #   image: docker.elastic.co/elasticsearch/elasticsearch:6.8.22
-  #   ports:
-  #     - "9200:9200"
-  #     - "9300:9300"
-  #   environment:
-  #     - discovery.type=single-node
-  #   volumes:
-  #     - openapi_elasticsearch_data:/usr/share/elasticsearch/data
+  elasticsearch:
+    # limited by jaeger as of now
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.22
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    # 1GB memory if unrestricted
+    deploy:
+      resources:
+        limits:
+          memory: 250M # TODO envvar
+    environment:
+      - discovery.type=single-node
+    volumes:
+      - openapi_elasticsearch_data:/usr/share/elasticsearch/data
 
 networks:
   traefik-net:
