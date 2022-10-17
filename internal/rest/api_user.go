@@ -1,11 +1,9 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
@@ -108,14 +106,9 @@ func (h *User) middlewares(opID userOpID) []gin.HandlerFunc {
 func (h *User) createUser(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	uid := ""
-	if u := getUserFromCtx(c); u != nil {
-		uid = fmt.Sprintf("%d", u.UserID)
-	}
-	uida := tracing.UserIDAttribute.String(uid)
 	// span attribute not inheritable:
 	// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
-	s := newOTELSpan(ctx, "User.CreateUser", trace.WithAttributes(uida))
+	s := newOTELSpan(ctx, "User.CreateUser", trace.WithAttributes(userIDAttribute(c)))
 	s.AddEvent("create-user") // filterable with event="create-user"
 	defer s.End()
 

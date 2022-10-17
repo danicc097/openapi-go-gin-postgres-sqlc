@@ -25,3 +25,5 @@ file-to-watch
 .env.production
 .env.dev
 .env.development
+
+openapi-go.code-workspace

@@ -2,8 +2,12 @@ package rest
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
+	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -16,4 +20,13 @@ func newOTELSpan(ctx context.Context, name string, opts ...trace.SpanStartOption
 	_, span := otel.Tracer(otelName).Start(ctx, name, opts...)
 
 	return span
+}
+
+func userIDAttribute(c *gin.Context) attribute.KeyValue {
+	uid := ""
+	if u := getUserFromCtx(c); u != nil {
+		uid = fmt.Sprintf("%d", u.UserID)
+	}
+
+	return tracing.UserIDAttribute.String(uid)
 }
