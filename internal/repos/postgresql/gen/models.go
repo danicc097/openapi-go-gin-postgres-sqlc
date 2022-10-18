@@ -9,8 +9,6 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"time"
-
-	"github.com/jackc/pgtype"
 )
 
 type Role string
@@ -72,23 +70,6 @@ func AllRoleValues() []Role {
 		RoleManager,
 		RoleAdmin,
 	}
-}
-
-type Animals struct {
-	AnimalID int64  `db:"animal_id" json:"animal_id"`
-	Name     string `db:"name" json:"name"`
-}
-
-type PetTags struct {
-	PetTagID int64  `db:"pet_tag_id" json:"pet_tag_id"`
-	Name     string `db:"name" json:"name"`
-}
-
-type Pets struct {
-	PetID    int64          `db:"pet_id" json:"pet_id"`
-	AnimalID sql.NullInt32  `db:"animal_id" json:"animal_id"`
-	Color    sql.NullString `db:"color" json:"color"`
-	Metadata pgtype.JSONB   `db:"metadata" json:"metadata"`
 }
 
 type Users struct {

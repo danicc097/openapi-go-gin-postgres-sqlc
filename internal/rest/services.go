@@ -9,21 +9,17 @@ import (
 )
 
 type UserService interface {
-	Upsert(ctx context.Context, user crud.User) error
+	Upsert(ctx context.Context, user *crud.User) error
+	UserByEmail(ctx context.Context, email string) (*crud.User, error)
+	Create(ctx context.Context, user *crud.User) error
+	// +anything related to users
 }
 
-/* authentication/authorization based on specific requirements
-and out of scope of this app.
- -- delegated to auth server
- -- oauth2 where resource and auth servers are the same
- -- sessions and cookies
-*/
-
+// TODO custom RBAC.
+// casbin: strange api
 type AuthorizationService interface {
 	IsAuthorized(role, requiredRole db.Role) error
 }
 
-type AuthenticationService interface {
-	// TODO Authentication delegated to auth server.
-	// will use inmemory tokens for predefined users for simplicity.
-}
+// TODO oidc server and client from zitadel
+type AuthenticationService interface{}

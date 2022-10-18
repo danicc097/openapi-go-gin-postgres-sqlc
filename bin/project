@@ -140,7 +140,6 @@ x.generate.xo() {
   # TODO
   # I've used https://github.com/xo/xo, extended it with some custom functions for templating, extended the templates themselves, and can now generate CRUD for anything in the database, functions for common select queries based on the indices that exist in the database, field filtering and scanning, updates for subsets of fields including some atomic operations, etc. The sky is the limit honestly. It has allowed me to start with something approximating a statically generated ORM and extend it with any features I want as time goes on. I also write .extra.go files along side the generated .xo.go files to extend the structs that are generated with custom logic and methods to convert data into response formats.
 
-  rm -rf $PG_REPO/gen/crud
   mkdir -p $PG_REPO/gen/crud
   # xo schema --help
   xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
@@ -201,15 +200,18 @@ x.generate() {
 
   generate_api "$cache" "internal" "$SPEC" "$OPENAPI_GEN_OUT_DIR" "$TEMPLATE_DIR"
 
+  rm -rf $PG_REPO/gen
+
   go generate ./... &
   pids+=($!)
   x.generate.sqlc &
   pids+=($!)
   (
-    # xo cannot use db files as input, needs up-to-date schema.
-    # not recreating db on every gen can lead to plain wrong generation based on an old schema.
+    # xo cannot use db files as input, needs an up-to-date schema
+    # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
+    # use a unique db to prevent cosmic accidents
     export POSTGRES_DB="xoxo"
-    drop_and_recreate_db $POSTGRES_DB
+    x.db.drop-database
     x.migrate up
     x.generate.xo
   ) &
@@ -456,7 +458,7 @@ x.db.recreate-database() {
 
 # Drop and recreate the database in the current environment.
 x.db.drop-database() {
-  drop_and_recreate_db "postgres_$env"
+  drop_and_recreate_db "$POSTGRES_DB"
 }
 
 # Backup the database for the current environment.

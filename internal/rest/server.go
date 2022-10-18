@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -32,6 +33,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/otel/trace"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -158,14 +160,72 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	}
 
 	oasMw := newOpenapiMiddleware(conf.Logger, openapi)
-	vg.Use(oasMw.RequestValidatorWithOptions(&options))
 
 	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
 	authzSvc := services.Authorization{Logger: conf.Logger}
 	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool)
 
 	// TODO REMOVE
-	userSvc.Upsert(context.Background(), crud.User{})
+	vg.POST("/upsert-user", func(c *gin.Context) {
+		ctx := c.Request.Context()
+
+		// span attribute not inheritable:
+		// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
+		s := newOTELSpan(ctx, "User.CreateUser", trace.WithAttributes(userIDAttribute(c)))
+		s.AddEvent("create-user") // filterable with event="create-user"
+		defer s.End()
+
+		type UpsertUserRequest struct {
+			Username string `json:"username,omitempty" binding:"required"`
+			Email    string `json:"email,omitempty" binding:"required"`
+			Role     string `json:"role,omitempty" binding:"required"`
+		}
+		var body UpsertUserRequest
+		if err := c.BindJSON(&body); err != nil {
+			renderErrorResponse(c, "err::", err)
+			return
+		}
+
+		// TODO extract to helper
+		var role crud.Role
+		err = role.UnmarshalText([]byte(body.Role))
+		if err != nil {
+			renderErrorResponse(c, "err::", err)
+			return
+		}
+		conf.Logger.Sugar().Infof("body is :%#v", body)
+
+		user, err := userSvc.UserByEmail(c, body.Email)
+		if err != nil {
+			fmt.Printf("failed userSvc.UserByEmail: %s\n", err)
+		}
+		conf.Logger.Sugar().Infof("user by email: %v", user)
+		if user == nil {
+			err = userSvc.Create(c, &crud.User{
+				Username:  body.Username,
+				Email:     body.Email,
+				Role:      role,
+				FirstName: sql.NullString{String: "firstname", Valid: true},
+			})
+			if err != nil {
+				fmt.Printf("failed userSvc.UserByEmail: %s\n", err)
+				renderErrorResponse(c, "user could not be created", err)
+				return
+			}
+			renderResponse(c, "user created", http.StatusOK)
+			return
+		}
+		user.Username = body.Username
+		user.Email = body.Email
+		user.Role = role
+		err = userSvc.Upsert(c, user)
+		if err != nil {
+			renderErrorResponse(c, "err: ", err)
+			return
+		}
+	})
+
+	vg.Use(oasMw.RequestValidatorWithOptions(&options))
 
 	authMw := newAuthMiddleware(conf.Logger, authnSvc, authzSvc, userSvc)
 

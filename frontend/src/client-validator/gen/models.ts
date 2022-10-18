@@ -10,11 +10,6 @@ export type Location = string[]
 export type Message = string
 export type ErrorType = string
 export type Detail = ValidationError[]
-export type Dog = Animal & DogAllOf
-export type Cat = Animal & Address & CatAllOf
-export type AllofTagApiResponse = PetTag & AnUploadedResponse
-export type AnyOfPig = BasquePig | DanishPig
-export type Pig = BasquePig | DanishPig
 
 export interface HTTPValidationError {
   detail?: Detail
@@ -25,56 +20,10 @@ export interface ValidationError {
   type: ErrorType
 }
 /**
- * An order for a pets from the pet store
- */
-export interface PetOrder {
-  id?: number
-  petId?: number
-  quantity?: number
-  shipDate?: string
-  /**
-   * Order Status
-   */
-  status?: 'placed' | 'approved' | 'delivered'
-  complete?: boolean
-}
-/**
- * A category for a pet
- */
-export interface PetCategory {
-  id?: number
-  name?: string
-}
-/**
- * represents User data to update
+ * represents a user.
  */
 export interface AUser {
-  username?: string
-  email?: string
-  password?: string
-  firstName?: string
-  lastName?: string
-}
-/**
- * represents a new User
- */
-export interface AUser1 {
-  username: string
-  email: string
-  password: string
-}
-/**
- * represents the response to a User creation
- */
-export interface CreateUserResponse {
-  access_token?: string
-  user_id?: number
-}
-/**
- * A User who is purchasing from the pet store
- */
-export interface AUser2 {
-  id?: number
+  userID?: number
   username?: string
   firstName?: string
   lastName?: string
@@ -85,93 +34,4 @@ export interface AUser2 {
    * User role
    */
   role?: 'user' | 'manager' | 'admin'
-}
-/**
- * A tag for a pet
- */
-export interface PetTag {
-  id?: number
-  name?: string
-}
-/**
- * A pet for sale in the pet store
- */
-export interface APet {
-  id?: number
-  category?: PetCategory
-  name: string
-  photoUrls: string[]
-  tags?: PetTag[]
-  /**
-   * pet status in the store
-   */
-  status?: 'available' | 'pending' | 'sold'
-}
-/**
- * Describes the result of uploading an image resource
- */
-export interface AnUploadedResponse {
-  code?: number
-  type?: string
-  message?: string
-}
-/**
- * Describes the result of uploading an image resource
- */
-export interface AnUploadedResponse1 {
-  self?: number
-  private?: string
-  super?: string
-  '123Number'?: string
-  'array[test]'?: string
-  ''?: string
-}
-export interface Animal {
-  className: string
-  color?: string
-}
-export interface DogAllOf {
-  breed?: string
-}
-export interface Address {
-  [k: string]: number
-}
-export interface CatAllOf {
-  declawed?: boolean
-}
-export interface BasquePig {
-  className: string
-  color: string
-}
-export interface DanishPig {
-  className: string
-  size: number
-}
-export interface NestedOneOf {
-  size?: number
-  nestedPig?: Pig
-}
-export interface UpdatePetRequest {
-  jsonData?: APet
-  binaryDataN2Information?: string
-}
-export interface UpdatePetWithFormRequest {
-  /**
-   * Updated name of the pet
-   */
-  name?: string
-  /**
-   * Updated status of the pet
-   */
-  status?: string
-}
-export interface UploadFileRequest {
-  /**
-   * Additional data to pass to server
-   */
-  additionalMetadata?: string
-  /**
-   * file to upload
-   */
-  file?: string
 }

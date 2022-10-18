@@ -25,8 +25,8 @@ func NewUser(urepo UserRepo, logger *zap.Logger, pool *pgxpool.Pool) *User {
 }
 
 // Upsert upserts a user record.
-func (u *User) Upsert(ctx context.Context, user crud.User) error {
-	u.logger.Sugar().Debugf("CreateUser.user: %v", user)
+func (u *User) Upsert(ctx context.Context, user *crud.User) error {
+	defer newOTELSpan(ctx, "User.Upsert").End()
 
 	// TODO remove once traces tested
 	// TODO counterfeiter on MovieGenreClient, package name <dir>testing with generated pb
@@ -39,4 +39,37 @@ func (u *User) Upsert(ctx context.Context, user crud.User) error {
 	}
 
 	return nil
+}
+
+// Create upserts a user record.
+func (u *User) Create(ctx context.Context, user *crud.User) error {
+	defer newOTELSpan(ctx, "User.Create").End()
+
+	// TODO remove once traces tested
+	// TODO counterfeiter on MovieGenreClient, package name <dir>testing with generated pb
+	DummyMoviePrediction(ctx)
+
+	err := u.urepo.Create(ctx, user)
+	if err != nil {
+		// TODO database info is leaked if its inaccessible
+		return errors.Wrap(err, "urepo.Create")
+	}
+
+	return nil
+}
+
+// UserByEmail gets a user by email.
+func (u *User) UserByEmail(ctx context.Context, email string) (*crud.User, error) {
+	defer newOTELSpan(ctx, "User.UserByEmail").End()
+
+	// TODO remove once traces tested
+	// TODO counterfeiter on MovieGenreClient, package name <dir>testing with generated pb
+	DummyMoviePrediction(ctx)
+
+	user, err := u.urepo.UserByEmail(ctx, email)
+	if err != nil {
+		return nil, errors.Wrap(err, "urepo.UserByEmail")
+	}
+
+	return user, nil
 }

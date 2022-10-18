@@ -10,11 +10,23 @@ import (
 )
 
 type FakeUserRepo struct {
-	UpsertStub        func(context.Context, crud.User) error
+	CreateStub        func(context.Context, *crud.User) error
+	createMutex       sync.RWMutex
+	createArgsForCall []struct {
+		arg1 context.Context
+		arg2 *crud.User
+	}
+	createReturns struct {
+		result1 error
+	}
+	createReturnsOnCall map[int]struct {
+		result1 error
+	}
+	UpsertStub        func(context.Context, *crud.User) error
 	upsertMutex       sync.RWMutex
 	upsertArgsForCall []struct {
 		arg1 context.Context
-		arg2 crud.User
+		arg2 *crud.User
 	}
 	upsertReturns struct {
 		result1 error
@@ -22,16 +34,92 @@ type FakeUserRepo struct {
 	upsertReturnsOnCall map[int]struct {
 		result1 error
 	}
+	UserByEmailStub        func(context.Context, string) (*crud.User, error)
+	userByEmailMutex       sync.RWMutex
+	userByEmailArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+	}
+	userByEmailReturns struct {
+		result1 *crud.User
+		result2 error
+	}
+	userByEmailReturnsOnCall map[int]struct {
+		result1 *crud.User
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeUserRepo) Upsert(arg1 context.Context, arg2 crud.User) error {
+func (fake *FakeUserRepo) Create(arg1 context.Context, arg2 *crud.User) error {
+	fake.createMutex.Lock()
+	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
+	fake.createArgsForCall = append(fake.createArgsForCall, struct {
+		arg1 context.Context
+		arg2 *crud.User
+	}{arg1, arg2})
+	stub := fake.CreateStub
+	fakeReturns := fake.createReturns
+	fake.recordInvocation("Create", []interface{}{arg1, arg2})
+	fake.createMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeUserRepo) CreateCallCount() int {
+	fake.createMutex.RLock()
+	defer fake.createMutex.RUnlock()
+	return len(fake.createArgsForCall)
+}
+
+func (fake *FakeUserRepo) CreateCalls(stub func(context.Context, *crud.User) error) {
+	fake.createMutex.Lock()
+	defer fake.createMutex.Unlock()
+	fake.CreateStub = stub
+}
+
+func (fake *FakeUserRepo) CreateArgsForCall(i int) (context.Context, *crud.User) {
+	fake.createMutex.RLock()
+	defer fake.createMutex.RUnlock()
+	argsForCall := fake.createArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeUserRepo) CreateReturns(result1 error) {
+	fake.createMutex.Lock()
+	defer fake.createMutex.Unlock()
+	fake.CreateStub = nil
+	fake.createReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeUserRepo) CreateReturnsOnCall(i int, result1 error) {
+	fake.createMutex.Lock()
+	defer fake.createMutex.Unlock()
+	fake.CreateStub = nil
+	if fake.createReturnsOnCall == nil {
+		fake.createReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.createReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeUserRepo) Upsert(arg1 context.Context, arg2 *crud.User) error {
 	fake.upsertMutex.Lock()
 	ret, specificReturn := fake.upsertReturnsOnCall[len(fake.upsertArgsForCall)]
 	fake.upsertArgsForCall = append(fake.upsertArgsForCall, struct {
 		arg1 context.Context
-		arg2 crud.User
+		arg2 *crud.User
 	}{arg1, arg2})
 	stub := fake.UpsertStub
 	fakeReturns := fake.upsertReturns
@@ -52,13 +140,13 @@ func (fake *FakeUserRepo) UpsertCallCount() int {
 	return len(fake.upsertArgsForCall)
 }
 
-func (fake *FakeUserRepo) UpsertCalls(stub func(context.Context, crud.User) error) {
+func (fake *FakeUserRepo) UpsertCalls(stub func(context.Context, *crud.User) error) {
 	fake.upsertMutex.Lock()
 	defer fake.upsertMutex.Unlock()
 	fake.UpsertStub = stub
 }
 
-func (fake *FakeUserRepo) UpsertArgsForCall(i int) (context.Context, crud.User) {
+func (fake *FakeUserRepo) UpsertArgsForCall(i int) (context.Context, *crud.User) {
 	fake.upsertMutex.RLock()
 	defer fake.upsertMutex.RUnlock()
 	argsForCall := fake.upsertArgsForCall[i]
@@ -88,11 +176,80 @@ func (fake *FakeUserRepo) UpsertReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeUserRepo) UserByEmail(arg1 context.Context, arg2 string) (*crud.User, error) {
+	fake.userByEmailMutex.Lock()
+	ret, specificReturn := fake.userByEmailReturnsOnCall[len(fake.userByEmailArgsForCall)]
+	fake.userByEmailArgsForCall = append(fake.userByEmailArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	stub := fake.UserByEmailStub
+	fakeReturns := fake.userByEmailReturns
+	fake.recordInvocation("UserByEmail", []interface{}{arg1, arg2})
+	fake.userByEmailMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUserRepo) UserByEmailCallCount() int {
+	fake.userByEmailMutex.RLock()
+	defer fake.userByEmailMutex.RUnlock()
+	return len(fake.userByEmailArgsForCall)
+}
+
+func (fake *FakeUserRepo) UserByEmailCalls(stub func(context.Context, string) (*crud.User, error)) {
+	fake.userByEmailMutex.Lock()
+	defer fake.userByEmailMutex.Unlock()
+	fake.UserByEmailStub = stub
+}
+
+func (fake *FakeUserRepo) UserByEmailArgsForCall(i int) (context.Context, string) {
+	fake.userByEmailMutex.RLock()
+	defer fake.userByEmailMutex.RUnlock()
+	argsForCall := fake.userByEmailArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeUserRepo) UserByEmailReturns(result1 *crud.User, result2 error) {
+	fake.userByEmailMutex.Lock()
+	defer fake.userByEmailMutex.Unlock()
+	fake.UserByEmailStub = nil
+	fake.userByEmailReturns = struct {
+		result1 *crud.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserRepo) UserByEmailReturnsOnCall(i int, result1 *crud.User, result2 error) {
+	fake.userByEmailMutex.Lock()
+	defer fake.userByEmailMutex.Unlock()
+	fake.UserByEmailStub = nil
+	if fake.userByEmailReturnsOnCall == nil {
+		fake.userByEmailReturnsOnCall = make(map[int]struct {
+			result1 *crud.User
+			result2 error
+		})
+	}
+	fake.userByEmailReturnsOnCall[i] = struct {
+		result1 *crud.User
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeUserRepo) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.createMutex.RLock()
+	defer fake.createMutex.RUnlock()
 	fake.upsertMutex.RLock()
 	defer fake.upsertMutex.RUnlock()
+	fake.userByEmailMutex.RLock()
+	defer fake.userByEmailMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

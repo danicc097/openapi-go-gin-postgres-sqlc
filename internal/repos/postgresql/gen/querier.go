@@ -9,7 +9,6 @@ import (
 )
 
 type Querier interface {
-	GetPetById(ctx context.Context, petID int64) (GetPetByIdRow, error)
 	GetUser(ctx context.Context, arg GetUserParams) (GetUserRow, error)
 	ListAllUsers(ctx context.Context) ([]ListAllUsersRow, error)
 	UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) error

@@ -8,8 +8,10 @@ import (
 )
 
 // User defines the datastore/repository handling persisting User records.
-// TODO just crud (for impl see if xo for repo and sqlc for services can be used alongside easily
-// or need to have some postgen).
+// TODO need to figure out how to mix and match sqlc and xo
+// so far db interface is the same after some template mods.
 type UserRepo interface {
-	Upsert(ctx context.Context, user crud.User) error
+	Upsert(ctx context.Context, user *crud.User) error
+	UserByEmail(ctx context.Context, email string) (*crud.User, error)
+	Create(ctx context.Context, user *crud.User) error
 }

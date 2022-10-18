@@ -20,24 +20,4 @@ create table users (
   unique (email),
   unique (username)
 );
-create table animals (
-  animal_id bigserial not null,
-  name text not null,
-  primary key (animal_id),
-  unique (name)
-);
-create table pets (
-  pet_id bigserial not null,
-  animal_id integer,
-  color text,
-  metadata jsonb,
-  primary key (pet_id),
-  foreign key (animal_id) references animals (animal_id) on delete cascade
-);
-create table pet_tags (
-  pet_tag_id bigserial not null,
-  name text not null,
-  primary key (pet_tag_id),
-  unique (name)
-);
 commit;

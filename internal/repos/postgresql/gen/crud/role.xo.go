@@ -60,9 +60,13 @@ func (r Role) Value() (driver.Value, error) {
 
 // Scan satisfies the sql.Scanner interface.
 func (r *Role) Scan(v interface{}) error {
-	if buf, ok := v.([]byte); ok {
+	switch buf := v.(type) {
+	case []byte:
 		return r.UnmarshalText(buf)
+	case string:
+		return r.UnmarshalText([]byte(buf))
 	}
+
 	return ErrInvalidRole(fmt.Sprintf("%T", v))
 }
 

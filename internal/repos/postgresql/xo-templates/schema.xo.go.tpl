@@ -47,9 +47,13 @@ func ({{ short $e.GoName }} {{ $e.GoName }}) Value() (driver.Value, error) {
 
 // Scan satisfies the sql.Scanner interface.
 func ({{ short $e.GoName }} *{{ $e.GoName }}) Scan(v interface{}) error {
-	if buf, ok := v.([]byte); ok {
+  switch buf := v.(type) {
+	case []byte:
 		return {{ short $e.GoName }}.UnmarshalText(buf)
-	}
+	case string:
+		return {{ short $e.GoName }}.UnmarshalText([]byte(buf))
+  }
+
 	return ErrInvalid{{ $e.GoName }}(fmt.Sprintf("%T", v))
 }
 
