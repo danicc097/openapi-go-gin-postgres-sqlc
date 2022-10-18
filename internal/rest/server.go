@@ -24,6 +24,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/crud"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
@@ -162,6 +163,9 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
 	authzSvc := services.Authorization{Logger: conf.Logger}
 	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool)
+
+	// TODO REMOVE
+	userSvc.Upsert(context.Background(), crud.User{})
 
 	authMw := newAuthMiddleware(conf.Logger, authnSvc, authzSvc, userSvc)
 

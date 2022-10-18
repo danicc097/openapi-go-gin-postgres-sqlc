@@ -151,7 +151,7 @@ ensure_envvars_set() {
 
 ######################## db ###########################
 
-# Drop and recreate database `db` for the current environment.
+# Drop and recreate database `db`.
 drop_and_recreate_db() {
   local db="$1"
 
@@ -179,7 +179,7 @@ dockerdb() {
   docker exec -i postgres_db_"$PROJECT_PREFIX" "$@"
 }
 
-# Create database `db` for the current environment.
+# Create database `db`.
 create_db_if_not_exists() {
   local db="$1"
 
@@ -195,7 +195,7 @@ create_db_if_not_exists() {
     echo "Skipping $db database creation"
 }
 
-# Stop running processes in `db` for the current environment.
+# Stop running processes in `db`.
 stop_db_processes() {
   local db="$1"
 

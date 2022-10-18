@@ -98,11 +98,8 @@ type Users struct {
 	FirstName   sql.NullString `db:"first_name" json:"first_name"`
 	LastName    sql.NullString `db:"last_name" json:"last_name"`
 	Role        Role           `db:"role" json:"role"`
-	IsVerified  bool           `db:"is_verified" json:"is_verified"`
-	Salt        string         `db:"salt" json:"salt"`
-	Password    string         `db:"password" json:"password"`
-	IsActive    bool           `db:"is_active" json:"is_active"`
 	IsSuperuser bool           `db:"is_superuser" json:"is_superuser"`
 	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
 	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
+	DeletedAt   sql.NullTime   `db:"deleted_at" json:"deleted_at"`
 }

@@ -6,18 +6,13 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 type Querier interface {
 	GetPetById(ctx context.Context, petID int64) (GetPetByIdRow, error)
 	GetUser(ctx context.Context, arg GetUserParams) (GetUserRow, error)
-	ListAllUsers(ctx context.Context, isVerified sql.NullBool) ([]ListAllUsersRow, error)
-	RegisterNewUser(ctx context.Context, arg RegisterNewUserParams) (int64, error)
-	ResetUserPassword(ctx context.Context, arg ResetUserPasswordParams) error
+	ListAllUsers(ctx context.Context) ([]ListAllUsersRow, error)
 	UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) error
-	UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) error
-	VerifyUserByEmail(ctx context.Context, userEmail string) (string, error)
 }
 
 var _ Querier = (*Queries)(nil)

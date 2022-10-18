@@ -196,11 +196,6 @@ x.generate() {
 
   x.db.recreate-database
 
-  # need up-to-date schema for xo
-  if [[ $env =~ (dev|ci) ]]; then
-    x.migrate up
-  fi
-
   echo "${MAGENTA}${BOLD}Running codegen and postgen...${OFF}"
   cache=".generate.cache"
 
@@ -210,7 +205,14 @@ x.generate() {
   pids+=($!)
   x.generate.sqlc &
   pids+=($!)
-  x.generate.xo &
+  (
+    # xo cannot use db files as input, needs up-to-date schema.
+    # not recreating db on every gen can lead to plain wrong generation based on an old schema.
+    export POSTGRES_DB="xoxo"
+    drop_and_recreate_db $POSTGRES_DB
+    x.migrate up
+    x.generate.xo
+  ) &
   pids+=($!)
   x.generate.proto &
   pids+=($!)
@@ -428,7 +430,7 @@ x.migrate() {
 
   if [[ "${*:1}" =~ up* ]]; then
     for file in $(find db/post-migration -maxdepth 1 -name '*.sql' | sort); do
-      dockerdb psql --no-psqlrc -tA -U postgres -d "postgres_$env" <$file
+      dockerdb psql --no-psqlrc -tA -U postgres -d "$POSTGRES_DB" <$file
     done
   fi
 }
@@ -450,6 +452,11 @@ x.migrate.create-migration() {
 x.db.recreate-database() {
   create_db_if_not_exists "postgres_$env"
   stop_db_processes "postgres_$env"
+}
+
+# Drop and recreate the database in the current environment.
+x.db.drop-database() {
+  drop_and_recreate_db "postgres_$env"
 }
 
 # Backup the database for the current environment.
