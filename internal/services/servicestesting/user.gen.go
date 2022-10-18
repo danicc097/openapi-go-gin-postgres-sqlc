@@ -5,99 +5,94 @@ import (
 	"context"
 	"sync"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/crud"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 )
 
 type FakeUserRepo struct {
-	CreateStub        func(context.Context, models.CreateUserRequest) (models.CreateUserResponse, error)
-	createMutex       sync.RWMutex
-	createArgsForCall []struct {
+	UpsertStub        func(context.Context, crud.User) error
+	upsertMutex       sync.RWMutex
+	upsertArgsForCall []struct {
 		arg1 context.Context
-		arg2 models.CreateUserRequest
+		arg2 crud.User
 	}
-	createReturns struct {
-		result1 models.CreateUserResponse
-		result2 error
+	upsertReturns struct {
+		result1 error
 	}
-	createReturnsOnCall map[int]struct {
-		result1 models.CreateUserResponse
-		result2 error
+	upsertReturnsOnCall map[int]struct {
+		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeUserRepo) Create(arg1 context.Context, arg2 models.CreateUserRequest) (models.CreateUserResponse, error) {
-	fake.createMutex.Lock()
-	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
-	fake.createArgsForCall = append(fake.createArgsForCall, struct {
+func (fake *FakeUserRepo) Upsert(arg1 context.Context, arg2 crud.User) error {
+	fake.upsertMutex.Lock()
+	ret, specificReturn := fake.upsertReturnsOnCall[len(fake.upsertArgsForCall)]
+	fake.upsertArgsForCall = append(fake.upsertArgsForCall, struct {
 		arg1 context.Context
-		arg2 models.CreateUserRequest
+		arg2 crud.User
 	}{arg1, arg2})
-	stub := fake.CreateStub
-	fakeReturns := fake.createReturns
-	fake.recordInvocation("Create", []interface{}{arg1, arg2})
-	fake.createMutex.Unlock()
+	stub := fake.UpsertStub
+	fakeReturns := fake.upsertReturns
+	fake.recordInvocation("Upsert", []interface{}{arg1, arg2})
+	fake.upsertMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1
 	}
-	return fakeReturns.result1, fakeReturns.result2
+	return fakeReturns.result1
 }
 
-func (fake *FakeUserRepo) CreateCallCount() int {
-	fake.createMutex.RLock()
-	defer fake.createMutex.RUnlock()
-	return len(fake.createArgsForCall)
+func (fake *FakeUserRepo) UpsertCallCount() int {
+	fake.upsertMutex.RLock()
+	defer fake.upsertMutex.RUnlock()
+	return len(fake.upsertArgsForCall)
 }
 
-func (fake *FakeUserRepo) CreateCalls(stub func(context.Context, models.CreateUserRequest) (models.CreateUserResponse, error)) {
-	fake.createMutex.Lock()
-	defer fake.createMutex.Unlock()
-	fake.CreateStub = stub
+func (fake *FakeUserRepo) UpsertCalls(stub func(context.Context, crud.User) error) {
+	fake.upsertMutex.Lock()
+	defer fake.upsertMutex.Unlock()
+	fake.UpsertStub = stub
 }
 
-func (fake *FakeUserRepo) CreateArgsForCall(i int) (context.Context, models.CreateUserRequest) {
-	fake.createMutex.RLock()
-	defer fake.createMutex.RUnlock()
-	argsForCall := fake.createArgsForCall[i]
+func (fake *FakeUserRepo) UpsertArgsForCall(i int) (context.Context, crud.User) {
+	fake.upsertMutex.RLock()
+	defer fake.upsertMutex.RUnlock()
+	argsForCall := fake.upsertArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeUserRepo) CreateReturns(result1 models.CreateUserResponse, result2 error) {
-	fake.createMutex.Lock()
-	defer fake.createMutex.Unlock()
-	fake.CreateStub = nil
-	fake.createReturns = struct {
-		result1 models.CreateUserResponse
-		result2 error
-	}{result1, result2}
+func (fake *FakeUserRepo) UpsertReturns(result1 error) {
+	fake.upsertMutex.Lock()
+	defer fake.upsertMutex.Unlock()
+	fake.UpsertStub = nil
+	fake.upsertReturns = struct {
+		result1 error
+	}{result1}
 }
 
-func (fake *FakeUserRepo) CreateReturnsOnCall(i int, result1 models.CreateUserResponse, result2 error) {
-	fake.createMutex.Lock()
-	defer fake.createMutex.Unlock()
-	fake.CreateStub = nil
-	if fake.createReturnsOnCall == nil {
-		fake.createReturnsOnCall = make(map[int]struct {
-			result1 models.CreateUserResponse
-			result2 error
+func (fake *FakeUserRepo) UpsertReturnsOnCall(i int, result1 error) {
+	fake.upsertMutex.Lock()
+	defer fake.upsertMutex.Unlock()
+	fake.UpsertStub = nil
+	if fake.upsertReturnsOnCall == nil {
+		fake.upsertReturnsOnCall = make(map[int]struct {
+			result1 error
 		})
 	}
-	fake.createReturnsOnCall[i] = struct {
-		result1 models.CreateUserResponse
-		result2 error
-	}{result1, result2}
+	fake.upsertReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeUserRepo) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.createMutex.RLock()
-	defer fake.createMutex.RUnlock()
+	fake.upsertMutex.RLock()
+	defer fake.upsertMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

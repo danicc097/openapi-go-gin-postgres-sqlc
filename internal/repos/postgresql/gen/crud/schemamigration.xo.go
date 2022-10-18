@@ -41,7 +41,7 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) error {
 		`)`
 	// run
 	logf(sqlstr, sm.Version, sm.Dirty)
-	if _, err := db.ExecContext(ctx, sqlstr, sm.Version, sm.Dirty); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, sm.Version, sm.Dirty); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -63,7 +63,7 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) error {
 		`WHERE version = $2`
 	// run
 	logf(sqlstr, sm.Dirty, sm.Version)
-	if _, err := db.ExecContext(ctx, sqlstr, sm.Dirty, sm.Version); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, sm.Dirty, sm.Version); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -94,7 +94,7 @@ func (sm *SchemaMigration) Upsert(ctx context.Context, db DB) error {
 		`dirty = EXCLUDED.dirty `
 	// run
 	logf(sqlstr, sm.Version, sm.Dirty)
-	if _, err := db.ExecContext(ctx, sqlstr, sm.Version, sm.Dirty); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, sm.Version, sm.Dirty); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -115,7 +115,7 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 		`WHERE version = $1`
 	// run
 	logf(sqlstr, sm.Version)
-	if _, err := db.ExecContext(ctx, sqlstr, sm.Version); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, sm.Version); err != nil {
 		return logerror(err)
 	}
 	// set deleted
@@ -137,7 +137,7 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version int64) (*Schem
 	sm := SchemaMigration{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, version).Scan(&sm.Version, &sm.Dirty); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, version).Scan(&sm.Version, &sm.Dirty); err != nil {
 		return nil, logerror(err)
 	}
 	return &sm, nil

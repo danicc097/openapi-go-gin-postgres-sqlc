@@ -208,8 +208,6 @@ x.generate() {
 
   go generate ./... &
   pids+=($!)
-  x.generate.counterfeiter "$cache" &
-  pids+=($!)
   x.generate.sqlc &
   pids+=($!)
   x.generate.xo &
@@ -223,6 +221,7 @@ x.generate() {
     wait "$pid"
   done
 
+  x.generate.counterfeiter "$cache"
 }
 
 # Lint the entire project.

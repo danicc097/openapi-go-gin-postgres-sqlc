@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/crud"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -24,19 +24,19 @@ func NewUser(urepo UserRepo, logger *zap.Logger, pool *pgxpool.Pool) *User {
 	}
 }
 
-// Create inserts a new user record.
-func (u *User) Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error) {
-	u.logger.Sugar().Debugf("CreateUser.user: %v", params)
+// Upsert upserts a user record.
+func (u *User) Upsert(ctx context.Context, user crud.User) error {
+	u.logger.Sugar().Debugf("CreateUser.user: %v", user)
 
 	// TODO remove once traces tested
 	// TODO counterfeiter on MovieGenreClient, package name <dir>testing with generated pb
 	DummyMoviePrediction(ctx)
 
-	res, err := u.urepo.Create(ctx, params)
+	err := u.urepo.Upsert(ctx, user)
 	if err != nil {
 		// TODO database info is leaked if its inaccessible
-		return models.CreateUserResponse{}, errors.Wrap(err, "urepo.Create")
+		return errors.Wrap(err, "urepo.Upsert")
 	}
 
-	return res, nil
+	return nil
 }

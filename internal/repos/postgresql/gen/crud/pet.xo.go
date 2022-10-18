@@ -44,7 +44,7 @@ func (p *Pet) Insert(ctx context.Context, db DB) error {
 		`) RETURNING pet_id`
 	// run
 	logf(sqlstr, p.AnimalID, p.Color, p.Metadata)
-	if err := db.QueryRowContext(ctx, sqlstr, p.AnimalID, p.Color, p.Metadata).Scan(&p.PetID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, p.AnimalID, p.Color, p.Metadata).Scan(&p.PetID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -66,7 +66,7 @@ func (p *Pet) Update(ctx context.Context, db DB) error {
 		`WHERE pet_id = $4`
 	// run
 	logf(sqlstr, p.AnimalID, p.Color, p.Metadata, p.PetID)
-	if _, err := db.ExecContext(ctx, sqlstr, p.AnimalID, p.Color, p.Metadata, p.PetID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, p.AnimalID, p.Color, p.Metadata, p.PetID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -97,7 +97,7 @@ func (p *Pet) Upsert(ctx context.Context, db DB) error {
 		`animal_id = EXCLUDED.animal_id, color = EXCLUDED.color, metadata = EXCLUDED.metadata `
 	// run
 	logf(sqlstr, p.PetID, p.AnimalID, p.Color, p.Metadata)
-	if _, err := db.ExecContext(ctx, sqlstr, p.PetID, p.AnimalID, p.Color, p.Metadata); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, p.PetID, p.AnimalID, p.Color, p.Metadata); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -118,7 +118,7 @@ func (p *Pet) Delete(ctx context.Context, db DB) error {
 		`WHERE pet_id = $1`
 	// run
 	logf(sqlstr, p.PetID)
-	if _, err := db.ExecContext(ctx, sqlstr, p.PetID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, p.PetID); err != nil {
 		return logerror(err)
 	}
 	// set deleted
@@ -140,7 +140,7 @@ func PetByPetID(ctx context.Context, db DB, petID int64) (*Pet, error) {
 	p := Pet{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, petID).Scan(&p.PetID, &p.AnimalID, &p.Color, &p.Metadata); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, petID).Scan(&p.PetID, &p.AnimalID, &p.Color, &p.Metadata); err != nil {
 		return nil, logerror(err)
 	}
 	return &p, nil

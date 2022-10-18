@@ -13,7 +13,7 @@ func BeforeUpdateUpdatedAt(ctx context.Context, db DB) (Trigger, error) {
 	// run
 	var r0 Trigger
 	logf(sqlstr)
-	if err := db.QueryRowContext(ctx, sqlstr).Scan(&r0); err != nil {
+	if err := db.QueryRow(ctx, sqlstr).Scan(&r0); err != nil {
 		return Trigger{}, logerror(err)
 	}
 	return r0, nil

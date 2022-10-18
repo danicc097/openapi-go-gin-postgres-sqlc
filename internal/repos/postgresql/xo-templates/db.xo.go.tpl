@@ -65,16 +65,20 @@ func convLogger(logger interface{}) func(string, ...interface{}) {
 // types from schema '{{ schema }}'.
 //
 // This works with both database/sql.DB and database/sql.Tx.
+
+{{/* sqlc is
+type DBTX interface {
+	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
+	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
+	QueryRow(context.Context, string, ...interface{}) pgx.Row
+}
+
+need to accomodate all templates for pgx syntax
+*/}}
 type DB interface {
-{{ if context -}}
-	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
-	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
-	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
-{{- end -}}{{- if or context_both context_disable }}
-	Exec(string, ...interface{}) (sql.Result, error)
-	Query(string, ...interface{}) (*sql.Rows, error)
-	QueryRow(string, ...interface{}) *sql.Row
-{{- end }}
+	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
+	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
+	QueryRow(context.Context, string, ...interface{}) pgx.Row
 }
 
 // Error is an error.

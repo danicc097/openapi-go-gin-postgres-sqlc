@@ -51,7 +51,7 @@ func (u *User) Insert(ctx context.Context, db DB) error {
 		`) RETURNING user_id`
 	// run
 	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsVerified, u.Salt, u.Password, u.IsActive, u.IsSuperuser)
-	if err := db.QueryRowContext(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsVerified, u.Salt, u.Password, u.IsActive, u.IsSuperuser).Scan(&u.UserID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsVerified, u.Salt, u.Password, u.IsActive, u.IsSuperuser).Scan(&u.UserID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -73,7 +73,7 @@ func (u *User) Update(ctx context.Context, db DB) error {
 		`WHERE user_id = $11`
 	// run
 	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsVerified, u.Salt, u.Password, u.IsActive, u.IsSuperuser, u.UserID)
-	if _, err := db.ExecContext(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsVerified, u.Salt, u.Password, u.IsActive, u.IsSuperuser, u.UserID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsVerified, u.Salt, u.Password, u.IsActive, u.IsSuperuser, u.UserID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -104,7 +104,7 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, role = EXCLUDED.role, is_verified = EXCLUDED.is_verified, salt = EXCLUDED.salt, password = EXCLUDED.password, is_active = EXCLUDED.is_active, is_superuser = EXCLUDED.is_superuser `
 	// run
 	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsVerified, u.Salt, u.Password, u.IsActive, u.IsSuperuser)
-	if _, err := db.ExecContext(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsVerified, u.Salt, u.Password, u.IsActive, u.IsSuperuser); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsVerified, u.Salt, u.Password, u.IsActive, u.IsSuperuser); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -125,7 +125,7 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 		`WHERE user_id = $1`
 	// run
 	logf(sqlstr, u.UserID)
-	if _, err := db.ExecContext(ctx, sqlstr, u.UserID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
 		return logerror(err)
 	}
 	// set deleted
@@ -147,7 +147,7 @@ func UserByEmail(ctx context.Context, db DB, email string) (*User, error) {
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.Role, &u.IsVerified, &u.Salt, &u.Password, &u.IsActive, &u.IsSuperuser); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.Role, &u.IsVerified, &u.Salt, &u.Password, &u.IsActive, &u.IsSuperuser); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -167,7 +167,7 @@ func UserByUserID(ctx context.Context, db DB, userID int64) (*User, error) {
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.Role, &u.IsVerified, &u.Salt, &u.Password, &u.IsActive, &u.IsSuperuser); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.Role, &u.IsVerified, &u.Salt, &u.Password, &u.IsActive, &u.IsSuperuser); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -187,7 +187,7 @@ func UserByUsername(ctx context.Context, db DB, username string) (*User, error) 
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.Role, &u.IsVerified, &u.Salt, &u.Password, &u.IsActive, &u.IsSuperuser); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.Role, &u.IsVerified, &u.Salt, &u.Password, &u.IsActive, &u.IsSuperuser); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil

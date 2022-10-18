@@ -42,7 +42,7 @@ func (a *Animal) Insert(ctx context.Context, db DB) error {
 		`) RETURNING animal_id`
 	// run
 	logf(sqlstr, a.Name)
-	if err := db.QueryRowContext(ctx, sqlstr, a.Name).Scan(&a.AnimalID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, a.Name).Scan(&a.AnimalID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -64,7 +64,7 @@ func (a *Animal) Update(ctx context.Context, db DB) error {
 		`WHERE animal_id = $2`
 	// run
 	logf(sqlstr, a.Name, a.AnimalID)
-	if _, err := db.ExecContext(ctx, sqlstr, a.Name, a.AnimalID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, a.Name, a.AnimalID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -95,7 +95,7 @@ func (a *Animal) Upsert(ctx context.Context, db DB) error {
 		`name = EXCLUDED.name `
 	// run
 	logf(sqlstr, a.AnimalID, a.Name)
-	if _, err := db.ExecContext(ctx, sqlstr, a.AnimalID, a.Name); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, a.AnimalID, a.Name); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -116,7 +116,7 @@ func (a *Animal) Delete(ctx context.Context, db DB) error {
 		`WHERE animal_id = $1`
 	// run
 	logf(sqlstr, a.AnimalID)
-	if _, err := db.ExecContext(ctx, sqlstr, a.AnimalID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, a.AnimalID); err != nil {
 		return logerror(err)
 	}
 	// set deleted
@@ -138,7 +138,7 @@ func AnimalByName(ctx context.Context, db DB, name string) (*Animal, error) {
 	a := Animal{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, name).Scan(&a.AnimalID, &a.Name); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, name).Scan(&a.AnimalID, &a.Name); err != nil {
 		return nil, logerror(err)
 	}
 	return &a, nil
@@ -158,7 +158,7 @@ func AnimalByAnimalID(ctx context.Context, db DB, animalID int64) (*Animal, erro
 	a := Animal{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, animalID).Scan(&a.AnimalID, &a.Name); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, animalID).Scan(&a.AnimalID, &a.Name); err != nil {
 		return nil, logerror(err)
 	}
 	return &a, nil

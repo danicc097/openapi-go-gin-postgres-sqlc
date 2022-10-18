@@ -4,9 +4,11 @@ package crud
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"io"
+
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
 )
 
 var (
@@ -73,10 +75,11 @@ func convLogger(logger interface{}) func(string, ...interface{}) {
 // types from schema 'public'.
 //
 // This works with both database/sql.DB and database/sql.Tx.
+
 type DB interface {
-	ExecContext(context.Context, string, ...interface{}) (sql.Result, error)
-	QueryContext(context.Context, string, ...interface{}) (*sql.Rows, error)
-	QueryRowContext(context.Context, string, ...interface{}) *sql.Row
+	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
+	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
+	QueryRow(context.Context, string, ...interface{}) pgx.Row
 }
 
 // Error is an error.

@@ -9,13 +9,15 @@ import (
 
 // User represents the repository used for interacting with User records.
 type User struct {
-	q *db.Queries
+	q  *db.Queries
+	db db.DBTX
 }
 
 // NewUser instantiates the User repository.
 func NewUser(d db.DBTX) *User {
 	return &User{
-		q: db.New(d),
+		q:  db.New(d),
+		db: d,
 	}
 }
 
@@ -62,7 +64,9 @@ func NewUser(d db.DBTX) *User {
 func (u *User) Upsert(ctx context.Context, user crud.User) error {
 	defer newOTELSpan(ctx, "User.Upsert").End()
 	// TODO update templates for pgx like sqlc
-	return user.Upsert(ctx, u.q.)
+	// and see example go usage:
+	// https://github.com/xo/xo/blob/master/_examples/booktest/postgres.go
+	return user.Upsert(ctx, u.db)
 }
 
 // TODO use xo

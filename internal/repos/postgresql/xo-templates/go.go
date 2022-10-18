@@ -1155,9 +1155,6 @@ func (f *Funcs) foreign_key_context(v interface{}) string {
 	switch x := v.(type) {
 	case ForeignKey:
 		name = x.RefFunc
-		if f.context_both() {
-			name += "Context"
-		}
 		// add params
 		p = append(p, "db", f.convertTypes(x))
 	default:
@@ -1184,7 +1181,6 @@ func (f *Funcs) db(name string, v ...interface{}) string {
 	// params
 	var p []interface{}
 	if f.contextfn() {
-		name += "Context"
 		p = append(p, "ctx")
 	}
 	p = append(p, "sqlstr")
@@ -2076,7 +2072,9 @@ var goReservedNames = map[string]string{
 // nameContext adds suffix Context to name.
 func nameContext(context bool, name string) string {
 	if context {
-		return name + "Context"
+		// to accomodate xo's db to sqlc's
+		// return name + "Context"
+		return name
 	}
 	return name
 }

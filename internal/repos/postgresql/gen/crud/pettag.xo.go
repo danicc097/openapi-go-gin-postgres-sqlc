@@ -41,7 +41,7 @@ func (pt *PetTag) Insert(ctx context.Context, db DB) error {
 		`) RETURNING pet_tag_id`
 	// run
 	logf(sqlstr, pt.Name)
-	if err := db.QueryRowContext(ctx, sqlstr, pt.Name).Scan(&pt.PetTagID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, pt.Name).Scan(&pt.PetTagID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -63,7 +63,7 @@ func (pt *PetTag) Update(ctx context.Context, db DB) error {
 		`WHERE pet_tag_id = $2`
 	// run
 	logf(sqlstr, pt.Name, pt.PetTagID)
-	if _, err := db.ExecContext(ctx, sqlstr, pt.Name, pt.PetTagID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, pt.Name, pt.PetTagID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -94,7 +94,7 @@ func (pt *PetTag) Upsert(ctx context.Context, db DB) error {
 		`name = EXCLUDED.name `
 	// run
 	logf(sqlstr, pt.PetTagID, pt.Name)
-	if _, err := db.ExecContext(ctx, sqlstr, pt.PetTagID, pt.Name); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, pt.PetTagID, pt.Name); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -115,7 +115,7 @@ func (pt *PetTag) Delete(ctx context.Context, db DB) error {
 		`WHERE pet_tag_id = $1`
 	// run
 	logf(sqlstr, pt.PetTagID)
-	if _, err := db.ExecContext(ctx, sqlstr, pt.PetTagID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, pt.PetTagID); err != nil {
 		return logerror(err)
 	}
 	// set deleted
@@ -137,7 +137,7 @@ func PetTagByName(ctx context.Context, db DB, name string) (*PetTag, error) {
 	pt := PetTag{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, name).Scan(&pt.PetTagID, &pt.Name); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, name).Scan(&pt.PetTagID, &pt.Name); err != nil {
 		return nil, logerror(err)
 	}
 	return &pt, nil
@@ -157,7 +157,7 @@ func PetTagByPetTagID(ctx context.Context, db DB, petTagID int64) (*PetTag, erro
 	pt := PetTag{
 		_exists: true,
 	}
-	if err := db.QueryRowContext(ctx, sqlstr, petTagID).Scan(&pt.PetTagID, &pt.Name); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, petTagID).Scan(&pt.PetTagID, &pt.Name); err != nil {
 		return nil, logerror(err)
 	}
 	return &pt, nil
