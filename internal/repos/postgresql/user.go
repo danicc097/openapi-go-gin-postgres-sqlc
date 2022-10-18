@@ -73,7 +73,8 @@ func (u *User) Create(ctx context.Context, user *crud.User) error {
 	// https://github.com/jackc/pgx/issues/474
 	// (^ latest comments - see https://github.com/jackc/pgerrcode/)
 
-	return user.Insert(ctx, u.db)
+	// save inserts or updates if already exists
+	return user.Save(ctx, u.db)
 }
 
 // Upsert upserts a new user record.

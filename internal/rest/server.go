@@ -165,7 +165,19 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	authzSvc := services.Authorization{Logger: conf.Logger}
 	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool)
 
+	switch os.Getenv("APP_ENV") {
+	case "prod":
+		rlMw := newRateLimitMiddleware(conf.Logger, 15)
+		vg.Use(rlMw.Limit())
+	}
+
 	// TODO REMOVE
+	/*
+		curl -X 'POST'   'https://localhost:8090/v2/upsert-user'   -H 'accept: application/json'   -H 'Authorization: Bearer fsefse'  -d '{"username":"user","email":"email","role":"admin"}
+	*/
+	// https://github.com/xo/xo/blob/master/_examples/booktest/sql/postgres_schema.sql
+	// https://github.com/xo/xo/blob/master/_examples/booktest/postgres.go
+	// we can call functions directly
 	vg.POST("/upsert-user", func(c *gin.Context) {
 		ctx := c.Request.Context()
 
