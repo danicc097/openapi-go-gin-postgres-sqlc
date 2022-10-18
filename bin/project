@@ -137,9 +137,18 @@ x.generate.sqlc() {
 # a Postgres schema.
 # Does not work with a schema file, database must be up to date.
 x.generate.xo() {
+  # TODO
+  # I've used https://github.com/xo/xo, extended it with some custom functions for templating, extended the templates themselves, and can now generate CRUD for anything in the database, functions for common select queries based on the indices that exist in the database, field filtering and scanning, updates for subsets of fields including some atomic operations, etc. The sky is the limit honestly. It has allowed me to start with something approximating a statically generated ORM and extend it with any features I want as time goes on. I also write .extra.go files along side the generated .xo.go files to extend the structs that are generated with custom logic and methods to convert data into response formats.
+
+  rm -rf $PG_REPO/gen/crud
   mkdir -p $PG_REPO/gen/crud
+  # xo schema --help
   xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
-    -o $PG_REPO/gen/crud
+    --src "$PG_REPO"/xo-templates \
+    -o "$PG_REPO"/gen/crud \
+    -e "*.created_at" \
+    -e "*.updated_at"
+
 }
 
 # Generate mocks for specified interfaces. Runs are cached to `cachedir`.
@@ -186,6 +195,11 @@ x.generate() {
   local pids
 
   x.db.recreate-database
+
+  # need up-to-date schema for xo
+  if [[ $env =~ (dev|ci) ]]; then
+    x.migrate up
+  fi
 
   echo "${MAGENTA}${BOLD}Running codegen and postgen...${OFF}"
   cache=".generate.cache"
@@ -236,7 +250,7 @@ x.lint.go() {
 x.lint.sql() {
   SQL_DIRS=(
     "$PG_REPO/queries"
-    "db/migrations"
+    "db"
   )
   for slq_dir in ${SQL_DIRS[@]}; do
     pg_format \
@@ -246,7 +260,7 @@ x.lint.sql() {
       --keyword-case 1 \
       --placeholder "sqlc\\.(arg|narg)\\(:?[^)]*\\)" \
       --inplace \
-      $(find "$slq_dir" -maxdepth 1 -name '*.sql')
+      $(find "$slq_dir" -maxdepth 3 -name '*.sql')
   done
 }
 
@@ -412,6 +426,12 @@ x.migrate() {
     -path db/migrations/ \
     -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
     "$@"
+
+  if [[ "${*:1}" =~ up* ]]; then
+    for file in $(find db/post-migration -maxdepth 1 -name '*.sql' | sort); do
+      dockerdb psql --no-psqlrc -tA -U postgres -d "postgres_$env" <$file
+    done
+  fi
 }
 
 # Create a new migration file with the given `name`.
@@ -606,13 +626,18 @@ generate_api() {
   template_dir="$5"
 
   invalid_cache=false
+
+  if [[ $force_regen -eq 1 ]]; then
+    rm -rf "$cache"
+  fi
+
   mkdir -p "$cache"
 
-  if ! md5sum -c "$cache/$prefix-go-gin-server-templates.md5" >/dev/null || [[ $force_regen -eq 1 ]]; then
+  if ! md5sum -c "$cache/$prefix-go-gin-server-templates.md5" >/dev/null; then
     invalid_cache=true
     md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/$prefix-go-gin-server-templates.md5"
   fi
-  if ! md5sum -c "$cache/$prefix-openapi.md5" >/dev/null || [[ $force_regen -eq 1 ]]; then
+  if ! md5sum -c "$cache/$prefix-openapi.md5" >/dev/null; then
     invalid_cache=true
     md5sum "$BIN_DIR"/../"$SPEC" >"$cache/$prefix-openapi.md5"
   fi

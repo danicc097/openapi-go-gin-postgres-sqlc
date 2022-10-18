@@ -161,9 +161,6 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
 	authzSvc := services.Authorization{Logger: conf.Logger}
-	fakeSvc := services.Fake{Logger: conf.Logger, Pool: conf.Pool}
-	petSvc := services.Pet{Logger: conf.Logger, Pool: conf.Pool}
-	storeSvc := services.Store{Logger: conf.Logger, Pool: conf.Pool}
 	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool)
 
 	authMw := newAuthMiddleware(conf.Logger, authnSvc, authzSvc, userSvc)
@@ -173,15 +170,6 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	NewDefault().
 		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated(), authMw.EnsureVerified()})
-
-	NewFake(fakeSvc).
-		Register(vg, []gin.HandlerFunc{})
-
-	NewPet(petSvc).
-		Register(vg, []gin.HandlerFunc{})
-
-	NewStore(storeSvc).
-		Register(vg, []gin.HandlerFunc{})
 
 	NewUser(conf.Logger, userSvc, authnSvc, authzSvc).
 		Register(vg, []gin.HandlerFunc{})

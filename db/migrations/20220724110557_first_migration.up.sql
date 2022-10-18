@@ -1,12 +1,10 @@
 -- https://dba.stackexchange.com/questions/59006/what-is-a-valid-use-case-for-using-timestamp-without-time-zone
-BEGIN;
-
+begin;
 create type role as ENUM (
   'user',
   'manager',
   'admin'
 );
-
 create table users (
   user_id bigserial not null,
   username text not null,
@@ -25,14 +23,12 @@ create table users (
   unique (email),
   unique (username)
 );
-
 create table animals (
   animal_id bigserial not null,
   name text not null,
   primary key (animal_id),
   unique (name)
 );
-
 create table pets (
   pet_id bigserial not null,
   animal_id integer,
@@ -41,12 +37,10 @@ create table pets (
   primary key (pet_id),
   foreign key (animal_id) references animals (animal_id) on delete cascade
 );
-
 create table pet_tags (
   pet_tag_id bigserial not null,
   name text not null,
   primary key (pet_tag_id),
   unique (name)
 );
-
-COMMIT;
+commit;

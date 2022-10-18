@@ -2,12 +2,9 @@ package postgresql
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/crud"
 )
 
 // User represents the repository used for interacting with User records.
@@ -23,53 +20,62 @@ func NewUser(d db.DBTX) *User {
 }
 
 // TODO use xo instead. need triggers
-// Create inserts a new user record.
-func (u *User) Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error) {
-	defer newOTELSpan(ctx, "User.Create").End()
+// // Create inserts a new user record.
+// func (u *User) Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error) {
+// 	defer newOTELSpan(ctx, "User.Create").End()
 
-	// TODO logger needs to be passed down to repo as well
-	// environment.Logger.Sugar().Infof("users.Create.params: %v", params)
-	// TODO creating salt, etc. delegated to jwt.go service
-	// https://github.com/appleboy/gin-jwt
-	_, err := u.q.GetUser(ctx, db.GetUserParams{
-		Username: sql.NullString{String: params.Username, Valid: true},
-	})
-	if err == nil {
-		return models.CreateUserResponse{}, internal.WrapErrorf(err, internal.ErrorCodeAlreadyExists, fmt.Sprintf("username %s already exists", params.Username))
-	}
+// 	// TODO logger needs to be passed down to repo as well
+// 	// environment.Logger.Sugar().Infof("users.Create.params: %v", params)
+// 	// TODO creating salt, etc. delegated to jwt.go service
+// 	// https://github.com/appleboy/gin-jwt
+// 	_, err := u.q.GetUser(ctx, db.GetUserParams{
+// 		Username: sql.NullString{String: params.Username, Valid: true},
+// 	})
+// 	if err == nil {
+// 		return models.CreateUserResponse{}, internal.WrapErrorf(err, internal.ErrorCodeAlreadyExists, fmt.Sprintf("username %s already exists", params.Username))
+// 	}
 
-	_, err = u.q.GetUser(ctx, db.GetUserParams{
-		Email: sql.NullString{String: params.Email, Valid: true},
-	})
-	if err == nil {
-		return models.CreateUserResponse{}, internal.WrapErrorf(err, internal.ErrorCodeAlreadyExists, fmt.Sprintf("email %s already exists", params.Email))
-	}
+// 	_, err = u.q.GetUser(ctx, db.GetUserParams{
+// 		Email: sql.NullString{String: params.Email, Valid: true},
+// 	})
+// 	if err == nil {
+// 		return models.CreateUserResponse{}, internal.WrapErrorf(err, internal.ErrorCodeAlreadyExists, fmt.Sprintf("email %s already exists", params.Email))
+// 	}
 
-	newID, err := u.q.RegisterNewUser(ctx, db.RegisterNewUserParams{
-		Username: params.Username,
-		Email:    params.Email,
-		Password: params.Password,
-	})
-	if err != nil {
-		return models.CreateUserResponse{}, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "insert user")
-	}
+// 	newID, err := u.q.RegisterNewUser(ctx, db.RegisterNewUserParams{
+// 		Username: params.Username,
+// 		Email:    params.Email,
+// 		Password: params.Password,
+// 	})
+// 	if err != nil {
+// 		return models.CreateUserResponse{}, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "insert user")
+// 	}
 
-	return models.CreateUserResponse{
-		UserId:      newID,
-		AccessToken: "",
-	}, nil
+// 	return models.CreateUserResponse{
+// 		UserId:      newID,
+// 		AccessToken: "",
+// 	}, nil
+// }
+
+// Upsert upserts a new user record.
+// Simple wrapper around xo.
+func (u *User) Upsert(ctx context.Context, user crud.User) error {
+	defer newOTELSpan(ctx, "User.Upsert").End()
+	// TODO update templates for pgx like sqlc
+	return user.Upsert(ctx, u.q.)
 }
 
-// Update inserts a new user record.
-func (u *User) Update(ctx context.Context, params models.UpdateUserRequest) error {
-	err := u.q.UpdateUserById(ctx, db.UpdateUserByIdParams{
-		Username: sql.NullString{String: params.Username, Valid: true},
-		Email:    sql.NullString{String: params.Email, Valid: true},
-		Password: sql.NullString{String: params.Password, Valid: true},
-	})
-	if err != nil {
-		return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "insert user")
-	}
+// TODO use xo
+// // Update inserts a new user record.
+// func (u *User) Update(ctx context.Context, params models.UpdateUserRequest) error {
+// 	err := u.q.UpdateUserById(ctx, db.UpdateUserByIdParams{
+// 		Username: sql.NullString{String: params.Username, Valid: true},
+// 		Email:    sql.NullString{String: params.Email, Valid: true},
+// 		Password: sql.NullString{String: params.Password, Valid: true},
+// 	})
+// 	if err != nil {
+// 		return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "insert user")
+// 	}
 
-	return nil
-}
+// 	return nil
+// }

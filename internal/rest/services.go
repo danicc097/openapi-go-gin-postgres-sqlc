@@ -2,14 +2,11 @@
 package rest
 
 import (
-	"context"
-
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 )
 
 type UserService interface {
-	Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error)
+	// Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error)
 }
 
 /* authentication/authorization based on specific requirements

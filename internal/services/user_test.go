@@ -20,13 +20,15 @@ func TestUser_Create(t *testing.T) {
 		pool   *pgxpool.Pool
 	}
 	type args struct {
-		ctx    context.Context
+		ctx context.Context
+		// TODO model will come from xoxo (ideally)/sqlc
 		params models.CreateUserRequest
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
+		name   string
+		fields fields
+		args   args
+		// TODO model will come from xoxo (ideally)/sqlc
 		want    models.CreateUserResponse
 		wantErr bool
 	}{
@@ -43,7 +45,6 @@ func TestUser_Create(t *testing.T) {
 				params: models.CreateUserRequest{
 					Username: "username",
 					Email:    "email@mail.com",
-					Password: "password",
 				},
 				ctx: context.Background(),
 			},
