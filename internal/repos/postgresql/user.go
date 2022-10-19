@@ -10,15 +10,15 @@ import (
 
 // User represents the repository used for interacting with User records.
 type User struct {
-	q  *db.Queries
-	db db.DBTX
+	q *db.Queries
+	// tx pgx.Tx
 }
 
 // NewUser instantiates the User repository.
 func NewUser(d db.DBTX) *User {
 	return &User{
-		q:  db.New(d),
-		db: d,
+		q: db.New(d), // pgx.Pool implements db.DBTX
+		// tx: tx,
 	}
 }
 
@@ -74,20 +74,20 @@ func (u *User) Create(ctx context.Context, user *crud.User) error {
 	// (^ latest comments - see https://github.com/jackc/pgerrcode/)
 
 	// save inserts or updates if already exists
-	return user.Save(ctx, u.db)
+	return user.Save(ctx, u.tx)
 }
 
 // Upsert upserts a new user record.
 func (u *User) Upsert(ctx context.Context, user *crud.User) error {
 	defer newOTELSpan(ctx, "User.Upsert").End()
 	// https://github.com/xo/xo/blob/master/_examples/booktest/postgres.go
-	return user.Upsert(ctx, u.db)
+	return user.Upsert(ctx, u.tx)
 }
 
 func (u *User) UserByEmail(ctx context.Context, email string) (*crud.User, error) {
 	defer newOTELSpan(ctx, "User.UserByEmail").End()
 
-	user, err := crud.UserByEmail(ctx, u.db, email)
+	user, err := crud.UserByEmail(ctx, u.tx, email)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user by email: %v", err)
 	}

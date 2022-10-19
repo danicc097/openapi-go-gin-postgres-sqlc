@@ -190,6 +190,19 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 		s.AddEvent("create-user") // filterable with event="create-user"
 		defer s.End()
 
+		// TODO should start all tx at the handler level, in case we use different services
+		// and pass it down to services -> repos
+		// need autocommit option
+		// IMPORTANT: read https://groups.google.com/g/golang-nuts/c/y8uLMofW2-E and then this comment tree
+		// https://medium.com/@florian_445/thanks-for-your-answer-6d03846860fa, then the article
+		// itself.
+		// tx, err := conf.Pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable})
+		// if err != nil {
+		// 	renderErrorResponse(c, "err::", err)
+		// 	return
+		// }
+		// defer tx.Rollback(ctx)
+
 		type UpsertUserRequest struct {
 			Username string `json:"username,omitempty" binding:"required"`
 			Email    string `json:"email,omitempty" binding:"required"`
@@ -238,6 +251,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 			renderErrorResponse(c, "err: ", err)
 			return
 		}
+		tx.Commit(ctx)
 	})
 
 	vg.Use(oasMw.RequestValidatorWithOptions(&options))
