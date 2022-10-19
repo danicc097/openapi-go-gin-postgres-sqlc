@@ -1,5 +1,3 @@
-//go:build xotpl
-
 package gotpl
 
 import (
@@ -645,7 +643,7 @@ func convertProc(ctx context.Context, overloadMap map[string][]Proc, order []str
 
 // convertTable converts a xo.Table to a Table.
 func convertTable(ctx context.Context, t xo.Table) (Table, error) {
-	var cols, pkCols []Field
+	var cols, pkCols, generatedCols []Field
 	for _, z := range t.Columns {
 		f, err := convertField(ctx, camelExport, z)
 		if err != nil {
@@ -655,13 +653,25 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 		if z.IsPrimary {
 			pkCols = append(pkCols, f)
 		}
+		if f.IsGenerated {
+			generatedCols = append(generatedCols, f)
+		}
+	}
+	// custom manual override
+	manual := false
+	for _, pk := range pkCols {
+		if !pk.IsGenerated {
+			manual = true
+			break
+		}
 	}
 	return Table{
 		GoName:      camelExport(singularize(t.Name)),
 		SQLName:     t.Name,
 		Fields:      cols,
 		PrimaryKeys: pkCols,
-		Manual:      t.Manual,
+		Generated:   generatedCols,
+		Manual:      manual && t.Manual,
 	}, nil
 }
 
@@ -740,12 +750,13 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		return Field{}, err
 	}
 	return Field{
-		Type:       typ,
-		GoName:     tf(f.Name),
-		SQLName:    f.Name,
-		Zero:       zero,
-		IsPrimary:  f.IsPrimary,
-		IsSequence: f.IsSequence,
+		Type:        typ,
+		GoName:      tf(f.Name),
+		SQLName:     f.Name,
+		Zero:        zero,
+		IsPrimary:   f.IsPrimary,
+		IsSequence:  f.IsSequence,
+		IsGenerated: strings.Contains(f.Default, "()") || f.IsSequence,
 	}, nil
 }
 
@@ -907,8 +918,10 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"querystr": f.querystr,
 		"sqlstr":   f.sqlstr,
 		// helpers
-		"check_name": checkName,
-		"eval":       eval,
+		"check_name":    checkName,
+		"eval":          eval,
+		"add":           add,
+		"not_updatable": notUpdatable,
 	}
 }
 
@@ -1029,21 +1042,21 @@ func (f *Funcs) func_name_none(v interface{}) string {
 func (f *Funcs) func_name_context(v interface{}) string {
 	switch x := v.(type) {
 	case string:
-		return nameContext(f.context_both(), x)
+		return x
 	case Query:
-		return nameContext(f.context_both(), x.Name)
+		return x.Name
 	case Table:
-		return nameContext(f.context_both(), x.GoName)
+		return x.GoName
 	case ForeignKey:
-		return nameContext(f.context_both(), x.GoName)
+		return x.GoName
 	case Proc:
 		n := x.GoName
 		if x.Overloaded {
 			n = x.OverloadedName
 		}
-		return nameContext(f.context_both(), n)
+		return n
 	case Index:
-		return nameContext(f.context_both(), x.Func)
+		return x.Func
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 2: %T ]]", v)
 }
@@ -1155,6 +1168,10 @@ func (f *Funcs) foreign_key_context(v interface{}) string {
 	switch x := v.(type) {
 	case ForeignKey:
 		name = x.RefFunc
+		// for sqlc compatibility
+		// if f.context_both() {
+		// 	name += "Context"
+		// }
 		// add params
 		p = append(p, "db", f.convertTypes(x))
 	default:
@@ -1180,9 +1197,10 @@ func (f *Funcs) foreign_key_none(v interface{}) string {
 func (f *Funcs) db(name string, v ...interface{}) string {
 	// params
 	var p []interface{}
-	if f.contextfn() {
-		p = append(p, "ctx")
-	}
+	// for sqlc compatibility always use context
+	// if f.contextfn() {
+	p = append(p, "ctx")
+	// }
 	p = append(p, "sqlstr")
 	return fmt.Sprintf("db.%s(%s)", name, f.names("", append(p, v...)...))
 }
@@ -1203,7 +1221,7 @@ func (f *Funcs) db_prefix(name string, skip bool, vs ...interface{}) string {
 			// skip primary keys
 			if skip {
 				for _, field := range x.Fields {
-					if field.IsSequence {
+					if field.IsGenerated {
 						ignore = append(ignore, field.GoName)
 					}
 				}
@@ -1228,6 +1246,9 @@ func (f *Funcs) db_update(name string, v interface{}) string {
 	switch x := v.(type) {
 	case Table:
 		prefix := f.short(x.GoName) + "."
+		for _, pk := range x.Generated {
+			ignore = append(ignore, pk.GoName)
+		}
 		for _, pk := range x.PrimaryKeys {
 			ignore = append(ignore, pk.GoName)
 		}
@@ -1308,6 +1329,9 @@ func (f *Funcs) logf_update(v interface{}) string {
 	switch x := v.(type) {
 	case Table:
 		prefix := f.short(x.GoName) + "."
+		for _, pk := range x.Generated {
+			ignore = append(ignore, pk.GoName)
+		}
 		for _, pk := range x.PrimaryKeys {
 			ignore = append(ignore, pk.GoName)
 		}
@@ -1441,6 +1465,8 @@ func (f *Funcs) sqlstr(typ string, v interface{}) string {
 		lines = f.sqlstr_proc(v)
 	case "index":
 		lines = f.sqlstr_index(v)
+	case "list":
+		lines = f.sqlstr_list(v)
 	default:
 		return fmt.Sprintf("const sqlstr = `UNKNOWN QUERY TYPE: %s`", typ)
 	}
@@ -1456,7 +1482,7 @@ func (f *Funcs) sqlstr_insert_base(all bool, v interface{}) []string {
 		var n int
 		var fields, vals []string
 		for _, z := range x.Fields {
-			if z.IsSequence && !all {
+			if z.IsGenerated && !all {
 				continue
 			}
 			fields, vals = append(fields, f.colname(z)), append(vals, f.nth(n))
@@ -1483,11 +1509,11 @@ func (f *Funcs) sqlstr_insert_manual(v interface{}) []string {
 func (f *Funcs) sqlstr_insert(v interface{}) []string {
 	switch x := v.(type) {
 	case Table:
-		var seq Field
+		var generatedFields []string
 		var count int
 		for _, field := range x.Fields {
-			if field.IsSequence {
-				seq = field
+			if field.IsGenerated {
+				generatedFields = append(generatedFields, f.colname(field))
 			} else {
 				count++
 			}
@@ -1498,14 +1524,17 @@ func (f *Funcs) sqlstr_insert(v interface{}) []string {
 		case "oracle":
 			switch f.oracleType {
 			case "ora":
-				lines[len(lines)-1] += ` RETURNING ` + f.colname(seq) + ` INTO ` + f.nth(count)
+				lines[len(lines)-1] += ` RETURNING ` + strings.Join(generatedFields, ", ") + ` INTO ` + f.nth(count)
 			case "godror":
-				lines[len(lines)-1] += ` RETURNING ` + f.colname(seq) + ` /*LASTINSERTID*/ INTO :pk`
+				lines[len(lines)-1] += ` RETURNING ` + strings.Join(
+					generatedFields,
+					", ",
+				) + ` /*LASTINSERTID*/ INTO :pk`
 			default:
 				return []string{fmt.Sprintf("[[ UNSUPPORTED ORACLE TYPE: %s]]", f.oracleType)}
 			}
 		case "postgres":
-			lines[len(lines)-1] += ` RETURNING ` + f.colname(seq)
+			lines[len(lines)-1] += ` RETURNING ` + strings.Join(generatedFields, ", ")
 		case "sqlserver":
 			lines[len(lines)-1] += "; SELECT ID = CONVERT(BIGINT, SCOPE_IDENTITY())"
 		}
@@ -1529,7 +1558,7 @@ func (f *Funcs) sqlstr_update_base(prefix string, v interface{}) (int, []string)
 		var n int
 		var list []string
 		for _, z := range x.Fields {
-			if z.IsPrimary {
+			if z.IsPrimary || z.IsGenerated {
 				continue
 			}
 			name, param := f.colname(z), f.nth(n)
@@ -1612,7 +1641,7 @@ func (f *Funcs) sqlstr_upsert_mysql(v interface{}) []string {
 		var list []string
 		i := len(x.Fields)
 		for _, z := range x.Fields {
-			if z.IsSequence {
+			if z.IsGenerated {
 				continue
 			}
 			name := f.colname(z)
@@ -1662,7 +1691,7 @@ func (f *Funcs) sqlstr_upsert_sqlserver_oracle(v interface{}) []string {
 		var updateParams, insertParams, insertVals []string
 		for _, field := range x.Fields {
 			// sequences are always managed by db
-			if field.IsSequence {
+			if field.IsGenerated {
 				continue
 			}
 			// primary keys
@@ -1724,6 +1753,30 @@ func (f *Funcs) sqlstr_index(v interface{}) []string {
 			strings.Join(fields, ", ") + " ",
 			"FROM " + f.schemafn(x.Table.SQLName) + " ",
 			"WHERE " + strings.Join(list, " AND "),
+		}
+	}
+	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)}
+}
+
+// sqlstr_list builds a list fields.
+func (f *Funcs) sqlstr_list(v interface{}) []string {
+	switch x := v.(type) {
+	case Table:
+		// build table fieldnames
+		var fields []string
+		for _, z := range x.Fields {
+			fields = append(fields, f.colname(z))
+		}
+		// index fields
+		var list []string
+		for i, z := range x.Fields {
+			list = append(list, fmt.Sprintf("%s = %s", f.colname(z), f.nth(i)))
+		}
+		return []string{
+			"SELECT ",
+			strings.Join(fields, ", ") + " ",
+			"FROM " + f.schemafn(x.SQLName) + " ",
+			"ORDER BY created_at DESC LIMIT $1",
 		}
 	}
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)}
@@ -2069,16 +2122,6 @@ var goReservedNames = map[string]string{
 	"complex128": "c128",
 }
 
-// nameContext adds suffix Context to name.
-func nameContext(context bool, name string) string {
-	if context {
-		// to accomodate xo's db to sqlc's
-		// return name + "Context"
-		return name
-	}
-	return name
-}
-
 // Context keys.
 var (
 	AppendKey     xo.ContextKey = "append"
@@ -2239,6 +2282,20 @@ func OracleType(ctx context.Context) string {
 	return s
 }
 
+// add returns the sum of a and b.
+func add(b, a int) int {
+	return a + b
+}
+
+func notUpdatable(fields []Field) bool {
+	for _, field := range fields {
+		if !field.IsPrimary && !field.IsGenerated {
+			return false
+		}
+	}
+	return true
+}
+
 // addInitialisms adds snaker initialisms from the context.
 func addInitialisms(ctx context.Context) error {
 	z := ctx.Value(InitialismKey)
@@ -2308,6 +2365,7 @@ type Table struct {
 	Fields      []Field
 	Manual      bool
 	Comment     string
+	Generated   []Field
 }
 
 // ForeignKey is a foreign key template.
@@ -2335,13 +2393,14 @@ type Index struct {
 
 // Field is a field template.
 type Field struct {
-	GoName     string
-	SQLName    string
-	Type       string
-	Zero       string
-	IsPrimary  bool
-	IsSequence bool
-	Comment    string
+	GoName      string
+	SQLName     string
+	Type        string
+	Zero        string
+	IsPrimary   bool
+	IsSequence  bool
+	Comment     string
+	IsGenerated bool
 }
 
 // QueryParam is a custom query parameter template.

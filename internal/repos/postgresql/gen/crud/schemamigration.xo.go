@@ -14,6 +14,41 @@ type SchemaMigration struct {
 	_exists, _deleted bool
 }
 
+// GetMostRecentSchemaMigration returns n most recent rows from 'schema_migrations',
+// ordered by "created_at" in descending order.
+func GetMostRecentSchemaMigration(ctx context.Context, db DB, n int) ([]*SchemaMigration, error) {
+	// list
+	const sqlstr = `SELECT ` +
+		`version, dirty ` +
+		`FROM public.schema_migrations ` +
+		`ORDER BY created_at DESC LIMIT $1`
+	// run
+	logf(sqlstr, n)
+
+	rows, err := db.Query(ctx, sqlstr, n)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+
+	// load results
+	var res []*SchemaMigration
+	for rows.Next() {
+		sm := SchemaMigration{
+			_exists: true,
+		}
+		// scan
+		if err := rows.Scan(&sm.Version, &sm.Dirty); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &sm)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}
+
 // Exists returns true when the SchemaMigration exists in the database.
 func (sm *SchemaMigration) Exists() bool {
 	return sm._exists

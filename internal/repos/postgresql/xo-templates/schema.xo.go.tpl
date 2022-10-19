@@ -237,6 +237,40 @@ type {{ $t.GoName }} struct {
 {{ end -}}
 }
 
+// GetMostRecent{{ $t.GoName }} returns n most recent rows from '{{ $t.SQLName }}',
+// ordered by "created_at" in descending order.
+func GetMostRecent{{ $t.GoName }}(ctx context.Context, db DB, n int) ([]*{{ $t.GoName }}, error) {
+    // list
+    {{ sqlstr "list" $t }}
+	// run
+	logf(sqlstr, n)
+
+    rows, err := {{ db "Query" "n" }}
+    if err != nil {
+        return nil, logerror(err)
+    }
+    defer rows.Close()
+
+    // load results
+    var res []*{{ $t.GoName }}
+    for rows.Next() {
+        {{ short $t }} := {{ $t.GoName }}{
+        {{- if $t.PrimaryKeys }}
+            _exists: true,
+        {{ end -}}
+        }
+        // scan
+        if err := rows.Scan({{ names (print "&" (short $t) ".") $t.Fields }}); err != nil {
+            return nil, logerror(err)
+        }
+        res = append(res, &{{ short $t }})
+    }
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+    return res, nil
+}
+
 {{ if $t.PrimaryKeys -}}
 // Exists returns true when the {{ $t.GoName }} exists in the database.
 func ({{ short $t }} *{{ $t.GoName }}) Exists() bool {
@@ -257,7 +291,7 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	case {{ short $t }}._deleted: // deleted
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
-{{ if $t.Manual -}}
+{{ if eq (len $t.Generated) 0 -}}
 	// insert (manual)
 	{{ sqlstr "insert_manual" $t }}
 	// run
@@ -269,9 +303,9 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	// insert (primary key generated and returned by database)
 	{{ sqlstr "insert" $t }}
 	// run
-	{{ logf $t $t.PrimaryKeys }}
+	{{ logf $t $t.Generated }}
 {{ if (driver "postgres") -}}
-	if err := {{ db_prefix "QueryRow" true $t }}.Scan(&{{ short $t }}.{{ (index $t.PrimaryKeys 0).GoName }}); err != nil {
+	if err := {{ db_prefix "QueryRow" true $t }}.Scan({{ names (print "&" (short $t) ".") $t.Generated }}); err != nil {
 		return logerror(err)
 	}
 {{- else if (driver "sqlserver") -}}
@@ -324,7 +358,7 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 {{- end }}
 
 
-{{ if eq (len $t.Fields) (len $t.PrimaryKeys) -}}
+{{ if not_updatable $t.Fields -}}
 // ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
 {{- else -}}
 // {{ func_name_context "Update" }} updates a {{ $t.GoName }} in the database.

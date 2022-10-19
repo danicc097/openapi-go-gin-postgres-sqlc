@@ -177,7 +177,10 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	*/
 	// https://github.com/xo/xo/blob/master/_examples/booktest/sql/postgres_schema.sql
 	// https://github.com/xo/xo/blob/master/_examples/booktest/postgres.go
-	// we can call functions directly
+	// we can call functions directly: presumably should also work for update on mat views, vacuum etc.
+	// it can also generate custom queries like sqlc:
+	// https://github.com/xo/xo/blob/master/_examples/booktest/sql/postgres_query.sql
+	// is AuthorBookResultsByTags
 	vg.POST("/upsert-user", func(c *gin.Context) {
 		ctx := c.Request.Context()
 

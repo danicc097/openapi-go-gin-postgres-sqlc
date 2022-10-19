@@ -65,7 +65,6 @@ func convLogger(logger interface{}) func(string, ...interface{}) {
 // types from schema '{{ schema }}'.
 //
 // This works with both database/sql.DB and database/sql.Tx.
-
 {{/* sqlc is
 type DBTX interface {
 	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)

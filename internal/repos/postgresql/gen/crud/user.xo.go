@@ -21,6 +21,41 @@ type User struct {
 	_exists, _deleted bool
 }
 
+// GetMostRecentUser returns n most recent rows from 'users',
+// ordered by "created_at" in descending order.
+func GetMostRecentUser(ctx context.Context, db DB, n int) ([]*User, error) {
+	// list
+	const sqlstr = `SELECT ` +
+		`user_id, username, email, first_name, last_name, role, is_superuser, deleted_at ` +
+		`FROM public.users ` +
+		`ORDER BY created_at DESC LIMIT $1`
+	// run
+	logf(sqlstr, n)
+
+	rows, err := db.Query(ctx, sqlstr, n)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+
+	// load results
+	var res []*User
+	for rows.Next() {
+		u := User{
+			_exists: true,
+		}
+		// scan
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.Role, &u.IsSuperuser, &u.DeletedAt); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}
+
 // Exists returns true when the User exists in the database.
 func (u *User) Exists() bool {
 	return u._exists
