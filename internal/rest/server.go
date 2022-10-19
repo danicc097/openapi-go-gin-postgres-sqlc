@@ -196,6 +196,17 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 		// IMPORTANT: read https://groups.google.com/g/golang-nuts/c/y8uLMofW2-E and then this comment tree
 		// https://medium.com/@florian_445/thanks-for-your-answer-6d03846860fa, then the article
 		// itself.
+		// takeaways:
+		// - we start all transactions in each service method. Each service method is self-contained transaction-wise
+		//   and calls the necessary repos OR services. Watch out for circular deps, imagine
+		//   the for need usvc := users.New(nsvc) and nsvc := notifications.New(usvc) at the same time
+		//   to be passed to handlers... surely we're doing something wrong here
+		// - repos must not be concerned with transaction details
+		// - having transaction logic in services vs handlers:
+		//     if we see the need to have a transaction in a handler and pass it down to multiple services,
+		//     maybe it means we need a new service or method in an existing one.
+		//     also note services dont necessarily need an equivalently named repository or viceversa.
+
 		// tx, err := conf.Pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable})
 		// if err != nil {
 		// 	renderErrorResponse(c, "err::", err)
