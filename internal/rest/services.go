@@ -11,7 +11,7 @@ import (
 type UserService interface {
 	Upsert(ctx context.Context, user *crud.User) error
 	UserByEmail(ctx context.Context, email string) (*crud.User, error)
-	Create(ctx context.Context, user *crud.User) error
+	Register(ctx context.Context, user *crud.User) error
 	// +anything related to users
 }
 

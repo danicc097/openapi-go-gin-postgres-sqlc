@@ -1,3 +1,5 @@
+//go:build xotpl
+
 package gotpl
 
 import (

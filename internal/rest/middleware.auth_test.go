@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -51,10 +52,12 @@ func TestAuthorizationMiddleware(t *testing.T) {
 
 		authnSvc := services.Authentication{Logger: logger, Pool: pool}
 		authzSvc := services.Authorization{Logger: logger}
-		userSvc := services.NewUser(postgresql.NewUser(pool), logger, pool)
+		userSvc := services.NewUser(postgresql.NewUser(pool), logger, pool, &v1testing.FakeMovieGenreClient{})
+
+		authMw := newAuthMiddleware(logger, authnSvc, authzSvc, userSvc)
 
 		req, _ := http.NewRequest(http.MethodGet, "/", nil)
-		authMw := newAuthMiddleware(logger, authnSvc, authzSvc, userSvc)
+
 		engine.Use(func(c *gin.Context) {
 			ctxWithUser(c, &db.Users{Role: tc.role})
 		})

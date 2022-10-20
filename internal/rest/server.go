@@ -20,9 +20,12 @@ import (
 	rv8 "github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
+	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/crud"
@@ -33,6 +36,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel/trace"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -46,7 +50,8 @@ type Config struct {
 	Redis   *rv8.Client
 	Logger  *zap.Logger
 	// SpecPath is the OpenAPI spec filepath.
-	SpecPath string
+	SpecPath     string
+	MovieSvcConn *grpc.ClientConn
 }
 
 func (c *Config) validate() error {
@@ -64,6 +69,9 @@ func (c *Config) validate() error {
 	}
 	if c.Logger == nil {
 		return fmt.Errorf("no logger provided")
+	}
+	if c.MovieSvcConn == nil {
+		return fmt.Errorf("no movie service connection provided")
 	}
 
 	return nil
@@ -163,7 +171,10 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
 	authzSvc := services.Authorization{Logger: conf.Logger}
-	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool)
+
+	movieClient := v1.NewMovieGenreClient(conf.MovieSvcConn)
+
+	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool, movieClient)
 
 	switch os.Getenv("APP_ENV") {
 	case "prod":
@@ -200,6 +211,10 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 		// - we start all transactions in each service method. Each service method is self-contained transaction-wise
 		//   and calls the necessary repos OR services. Watch out for circular deps, imagine
 		//   the for need usvc := users.New(nsvc) and nsvc := notifications.New(usvc) at the same time
+		//   UPDATE ^: if we create the service inside NewXX() the problem is gone as long as services
+		//   remain in the same package, which they should. But in that case those services can't be mocked...
+		//   do we want to mock services when testing handlers? They're our integration tests and there's little point
+		//   in unit testing handlers without middleware, etc. rather than doing integration.
 		//   to be passed to handlers... surely we're doing something wrong here
 		// - repos must not be concerned with transaction details
 		// - having transaction logic in services vs handlers:
@@ -240,7 +255,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 		}
 		conf.Logger.Sugar().Infof("user by email: %v", user)
 		if user == nil {
-			err = userSvc.Create(c, &crud.User{
+			err = userSvc.Register(c, &crud.User{
 				Username:  body.Username,
 				Email:     body.Email,
 				Role:      role,
@@ -262,7 +277,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 			renderErrorResponse(c, "err: ", err)
 			return
 		}
-		tx.Commit(ctx)
+		// tx.Commit(ctx)
 	})
 
 	vg.Use(oasMw.RequestValidatorWithOptions(&options))
@@ -336,12 +351,21 @@ func Run(env, address, specPath string) (<-chan error, error) {
 
 	registerValidators()
 
+	movieSvcConn, err := grpc.Dial(":50051", grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
+		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
+	)
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "movieSvcConn")
+	}
+
 	srv, err := NewServer(Config{
-		Address:  address,
-		Pool:     pool,
-		Redis:    rdb,
-		Logger:   logger,
-		SpecPath: specPath,
+		Address:      address,
+		Pool:         pool,
+		Redis:        rdb,
+		Logger:       logger,
+		SpecPath:     specPath,
+		MovieSvcConn: movieSvcConn,
 	})
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "NewServer")
@@ -366,6 +390,7 @@ func Run(env, address, specPath string) (<-chan error, error) {
 			_ = logger.Sync()
 
 			tp.Shutdown(context.Background())
+			movieSvcConn.Close()
 			pool.Close()
 			// rmq.Close()
 			rdb.Close()
