@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=1091,2155,2068,2086
+# shellcheck disable=1091,2155,2068,2086,2031
 
 source "${BASH_SOURCE%/*}/.helpers.sh"
 source "${BASH_SOURCE%/*}/scripts/deps-check.sh"
@@ -37,114 +37,130 @@ DUMP_PREFIX="dump_${env}_"
 
 MAX_COMMENT_LEN=88
 
-# log for x functions. For example inside x.generate.counterfeiter:
-# xlog "Running generation"
-# >>> [generate.counterfeiter] Running generation
+# log for any function output.
 xlog() {
-  echo "${BLUE}[${FUNCNAME[1]#*.}] $*${OFF}"
-}
-
-# log and exit for x functions.
-xerr() {
-  err "${RED}[${FUNCNAME[1]#*.}] $*${OFF}"
+  while read -r input; do
+    if [[ "$CMD" = "${FUNCNAME[1]#*.}" ]]; then
+      echo "$input" # remove logging for the command itself
+    else
+      fn=$(printf "%*s |\n" $MAX_XFN_LEN "${FUNCNAME[1]#*.}")
+      sed -e "s/^/${BLUE}$fn${OFF} /" <<<$(echo "$input")
+    fi
+  done
 }
 
 # Check build dependencies are met.
 x.check-build-deps() {
-  local -i fails
-  check.column || { ((fails++)) && true; }
-  check.protoc || { ((fails++)) && true; }
-  check.bash || { ((fails++)) && true; }
-  check.go || { ((fails++)) && true; }
-  check.java || { ((fails++)) && true; }
-  check.curl || { ((fails++)) && true; }
-  check.docker || { ((fails++)) && true; }
-  check.docker-compose && { ((fails++)) && true; }
-  check.direnv || { ((fails++)) && true; }
-  check.yq || { ((fails++)) && true; }
-  check.pg_format || { ((fails++)) && true; }
-  ((fails == 0)) && xlog "${GREEN}🎉 All build dependencies met.${OFF}"
-  { ((fails != 0)) && xerr "${RED}❌ Missing dependencies.${OFF}"; } || true
+  {
+    local -i fails
+    check.column || { ((fails++)) && true; }
+    check.protoc || { ((fails++)) && true; }
+    check.bash || { ((fails++)) && true; }
+    check.go || { ((fails++)) && true; }
+    check.java || { ((fails++)) && true; }
+    check.curl || { ((fails++)) && true; }
+    check.docker || { ((fails++)) && true; }
+    check.docker-compose && { ((fails++)) && true; }
+    check.direnv || { ((fails++)) && true; }
+    check.yq || { ((fails++)) && true; }
+    check.pg_format || { ((fails++)) && true; }
+    ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met.${OFF}"
+    { ((fails != 0)) && err "${RED}❌ Missing dependencies.${OFF}"; } || true
+  } | xlog
 }
 
 # Check dependencies and fetch required tools.
 x.bootstrap() {
-  x.check-build-deps
-  x.install-tools
-  x.fetch.openapi-generator
-  x.fetch.swagger-ui
+  {
+    x.check-build-deps
+    x.install-tools
+    x.fetch.openapi-generator
+    x.fetch.swagger-ui
+  } | xlog
 }
 
 # Install go libraries as runnable programs.
 x.install-tools() {
-  set -o errexit -eo pipefail
+  {
+    set -o errexit -eo pipefail
 
-  go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
-  go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.15.0
-  go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
-  go install github.com/joho/godotenv/cmd/godotenv@latest
-  go install github.com/danicc097/air@latest
-  go install github.com/xo/xo@latest
-  go install github.com/tufin/oasdiff@latest
-  go install golang.org/x/tools/cmd/goimports@latest
-  go install mvdan.cc/gofumpt@latest
+    go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
+    go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.15.0
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
+    go install github.com/joho/godotenv/cmd/godotenv@latest
+    go install github.com/danicc097/air@latest
+    go install github.com/xo/xo@latest
+    go install github.com/tufin/oasdiff@latest
+    go install golang.org/x/tools/cmd/goimports@latest
+    go install mvdan.cc/gofumpt@latest
 
-  go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
-  go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@v0.2.0
-  go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
+    go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@v0.2.0
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
-  GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
+    GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
+  } | xlog
 }
 
 # Fetch openapi-generator jar file.
 x.fetch.openapi-generator() {
-  local url="https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/$GENVERS/openapi-generator-cli-$GENVERS.jar"
-  echo "$url > openapi-generator-cli.jar"
-  curl -L "$url" -o openapi-generator-cli.jar
+  {
+    local url="https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/$GENVERS/openapi-generator-cli-$GENVERS.jar"
+    echo "$url > openapi-generator-cli.jar"
+    curl -L "$url" -o openapi-generator-cli.jar
+  } | xlog
 }
 
 # Fetch latest swagger ui bundle.
 x.fetch.swagger-ui() {
-  name="$(curl --silent "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
-  curl -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
-  tar xf swagger-ui.tar.gz swagger-ui-"${name#*v}"/dist --one-top-level=swagger-ui --strip-components=2
-  rm swagger-ui.tar.gz
-  mkdir -p internal/static/swagger-ui
-  mv swagger-ui/* internal/static/swagger-ui/
-  rm -r swagger-ui
+  {
+    name="$(curl --silent "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
+    curl -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
+    tar xf swagger-ui.tar.gz swagger-ui-"${name#*v}"/dist --one-top-level=swagger-ui --strip-components=2
+    rm swagger-ui.tar.gz
+    mkdir -p internal/static/swagger-ui
+    mv swagger-ui/* internal/static/swagger-ui/
+    rm -r swagger-ui
+  } | xlog
 }
 
 # Run openapi generator for testdata.
 # jar won't output properly if absolute paths are passed from subdir.
 x.generate.tests-api() {
-  local testdata="$BIN_DIR/../internal/postgen/testdata/openapi_generator"
-  local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
+  {
+    local testdata="$BIN_DIR/../internal/postgen/testdata/openapi_generator"
+    local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
 
-  cache=".generate-tests-api.cache"
-  for test_dir in $test_dirs; do
-    generate_api \
-      "$cache" \
-      "$test_dir" \
-      "$testdata/$test_dir/openapi.yaml" \
-      "$testdata/$test_dir/internal" \
-      "$BIN_DIR/../internal/go-gin-server-templates"
-  done
+    cache=".generate-tests-api.cache"
+    for test_dir in $test_dirs; do
+      generate_api \
+        "$cache" \
+        "$test_dir" \
+        "$testdata/$test_dir/openapi.yaml" \
+        "$testdata/$test_dir/internal" \
+        "$BIN_DIR/../internal/go-gin-server-templates"
+    done
+  } | xlog
 }
 
 # Run post-generation scripts on the internal package.
 x.postgen() {
-  xlog "Running generation"
-  cache="$1"
-  mkdir -p "$cache"
-  go build -o postgen "$PWD"/cmd/postgen/main.go
-  ./postgen -cachedir="$cache" -env=".env.$env"
-  mv "$OPENAPI_GEN_DIR"/api_*.go "$cache/" 2>/dev/null || true
+  {
+    echo "Running generation"
+    cache="$1"
+    mkdir -p "$cache"
+    go build -o postgen "$PWD"/cmd/postgen/main.go
+    ./postgen -cachedir="$cache" -env=".env.$env"
+    mv "$OPENAPI_GEN_DIR"/api_*.go "$cache/" 2>/dev/null || true
+  } | xlog
 }
 
 # Generate type-safe Go code from SQL.
 x.generate.sqlc() {
-  xlog "Running generation"
-  { cd $PG_REPO && sqlc generate && cd - >/dev/null; } || xerr "Failed sqlc generation"
+  {
+    echo "Running generation"
+    sqlc generate -f "$PG_REPO"/sqlc.yaml || err "Failed sqlc generation"
+  } | xlog
 }
 
 # Automatically generate CRUD and By queries based on existing indexes from
@@ -153,164 +169,184 @@ x.generate.sqlc() {
 x.generate.xo() {
   # TODO from hn
   # I've used https://github.com/xo/xo, extended it with some custom functions for templating, extended the templates themselves, and can now generate CRUD for anything in the database, functions for common select queries based on the indices that exist in the database, field filtering and scanning, updates for subsets of fields including some atomic operations, etc. The sky is the limit honestly. It has allowed me to start with something approximating a statically generated ORM and extend it with any features I want as time goes on. I also write .extra.go files along side the generated .xo.go files to extend the structs that are generated with custom logic and methods to convert data into response formats.
-  xlog "Running generation"
+  {
+    echo "Running generation"
 
-  mkdir -p $PG_REPO/gen/crud
-  # xo schema --help
-  xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
-    --src "$PG_REPO"/xo-templates \
-    -o "$PG_REPO"/gen/crud \
-    -e "*.created_at" \
-    -e "*.updated_at"
-
+    mkdir -p $PG_REPO/gen/crud
+    # xo schema --help
+    xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+      --src "$PG_REPO"/xo-templates \
+      -o "$PG_REPO"/gen/crud \
+      -e "*.created_at" \
+      -e "*.updated_at" || err "Failed xo generation"
+  } | xlog
 }
 
 # Generate mocks for specified interfaces. Runs are cached to `cachedir`.
 # Args: cachedir
 x.generate.counterfeiter() {
   # This shouldn't pose any problems, the interface is the only input to counterfeiter.
-  cache="$1"
+  {
+    cache="$1"
 
-  envvar="internal/envvar/envvar.go"
-  services="internal/rest/services.go"
-  repos="internal/services/repos.go"
-  tfidfpb="internal/pb/python-ml-app-protos/tfidf/v1/service_grpc.pb.go"
+    envvar="internal/envvar/envvar.go"
+    services="internal/rest/services.go"
+    repos="internal/services/repos.go"
+    tfidfpb="internal/pb/python-ml-app-protos/tfidf/v1/service_grpc.pb.go"
 
-  xlog "Running generation"
+    echo "Running generation"
 
-  if ! md5sum -c "$cache/counterfeiter.md5" >/dev/null || [[ $force_regen -eq 1 ]]; then
-    xlog "Recreating mocks"
-    counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
-    counterfeiter -o internal/rest/resttesting/authorization.gen.go $services AuthorizationService &
-    counterfeiter -o internal/rest/resttesting/authentication.gen.go $services AuthenticationService &
-    counterfeiter -o internal/services/servicestesting/user.gen.go $repos UserRepo &
-    counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
-    counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
-    md5sum $envvar $services $repos $tfidfpb >"$cache/counterfeiter.md5" &
-    wait
-  fi
+    if ! md5sum -c "$cache/counterfeiter.md5" >/dev/null || [[ $force_regen -eq 1 ]]; then
+      echo "Recreating mocks"
+      {
+        counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
+        counterfeiter -o internal/rest/resttesting/authorization.gen.go $services AuthorizationService &
+        counterfeiter -o internal/rest/resttesting/authentication.gen.go $services AuthenticationService &
+        counterfeiter -o internal/services/servicestesting/user.gen.go $repos UserRepo &
+        counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
+        counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
+
+        md5sum $envvar $services $repos $tfidfpb >"$cache/counterfeiter.md5" &
+      } &>/dev/null
+      wait
+    fi
+  } | xlog
 }
 
 # Generate the required servers/clients for relevant services.
 x.generate.proto() {
-  local import_path="./python-ml-app-protos/tfidf/v1"
-  local filename="python-ml-app-protos/tfidf/v1/service.proto"
+  {
+    local import_path="python-ml-app-protos/tfidf/v1"
+    local filename="internal/python-ml-app-protos/tfidf/v1/service.proto"
 
-  cd internal
-  mkdir -p ./pb
-  # Plugins are no longer supported by protoc-gen-go.
-  # Instead protoc-gen-go-grpc and the go package (in proto or via M flag) are required
-  protoc \
-    --go-grpc_out=./pb/. \
-    --go_out=./pb/. \
-    --go-grpc_opt=M$filename=$import_path,paths=import \
-    --go_opt=M$filename=$import_path,paths=import \
-    python-ml-app-protos/tfidf/v1/service.proto
-  cd - >/dev/null
+    mkdir -p internal/pb
+    # Plugins are no longer supported by protoc-gen-go.
+    # Instead protoc-gen-go-grpc and the go package (in proto or via M flag) are required
+    echo "Running generation"
+    protoc \
+      --go-grpc_out=internal/pb/. \
+      --go_out=internal/pb/. \
+      --go-grpc_opt=M$filename=$import_path,paths=import \
+      --go_opt=M$filename=$import_path,paths=import \
+      internal/python-ml-app-protos/tfidf/v1/service.proto
+  } | xlog
 }
 
 # Run all codegen and postgen commands for the project.
 x.generate() {
-  local pids
+  {
+    local _pids
 
-  x.db.recreate-database
+    x.db.recreate-database
 
-  xlog "Running codegen and postgen"
-  cache=".generate.cache"
+    cache=".generate.cache"
 
-  generate_api "$cache" "internal" "$SPEC" "$OPENAPI_GEN_OUT_DIR" "$TEMPLATE_DIR"
+    generate_api "$cache" "internal" "$SPEC" "$OPENAPI_GEN_OUT_DIR" "$TEMPLATE_DIR"
 
-  rm -rf $PG_REPO/gen
+    rm -rf $PG_REPO/gen
 
-  go generate ./... &
-  pids+=($!)
-  x.generate.sqlc &
-  pids+=($!)
-  (
-    # xo cannot use db files as input, needs an up-to-date schema
-    # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
-    # use a unique db to prevent cosmic accidents
-    export POSTGRES_DB="xoxo"
-    x.db.drop-database
-    x.migrate up
-    x.generate.xo
-  ) &
-  pids+=($!)
-  x.generate.proto &
-  pids+=($!)
-  x.postgen "$cache" &
-  pids+=($!)
+    go generate ./... &
+    _pids+=($!)
+    x.generate.sqlc &
+    _pids+=($!)
+    (
+      # xo cannot use db files as input, needs an up-to-date schema
+      # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
+      # use a unique db to prevent cosmic accidents
+      export POSTGRES_DB="xoxo"
+      x.db.drop-database
+      x.migrate up
+      x.generate.xo
+    ) &
+    _pids+=($!)
+    x.generate.proto &
+    _pids+=($!)
+    x.postgen "$cache" &
+    _pids+=($!)
 
-  for pid in "${pids[@]}"; do
-    wait "$pid"
-  done
+    for pid in "${_pids[@]}"; do
+      wait "$pid"
+    done
 
-  # delay since it depends on generated output
-  x.generate.counterfeiter "$cache"
+    # delay since it depends on generated output
+    x.generate.counterfeiter "$cache"
+  } | xlog
 }
 
 # Lint the entire project.
 x.lint() {
-  x.lint.sql &
-  x.lint.go &
-  wait
+  {
+    x.lint.sql &
+    x.lint.go &
+    wait
+  } | xlog
 }
 
 # Format Go files.
 x.lint.go() {
-  files=$(find . \
-    -not -path "**/$OPENAPI_GEN_DIR/*" \
-    -not -path "**/$PROTO_DIR/*" \
-    -not -path "**/$PG_REPO/gen/*" \
-    -not -path "**/testdata/*" \
-    -not -path "**/*.cache/*" \
-    -name "*.go")
+  {
+    files=$(find . \
+      -not -path "**/$OPENAPI_GEN_DIR/*" \
+      -not -path "**/$PROTO_DIR/*" \
+      -not -path "**/$PG_REPO/gen/*" \
+      -not -path "**/testdata/*" \
+      -not -path "**/*.cache/*" \
+      -name "*.go")
 
-  goimports -w $files
-  gofumpt -w $files
+    goimports -w $files
+    gofumpt -w $files
+  } | xlog
 }
 
 # Format SQL files.
 x.lint.sql() {
-  SQL_DIRS=(
-    "$PG_REPO/queries"
-    "db"
-  )
-  for slq_dir in ${SQL_DIRS[@]}; do
-    pg_format \
-      --spaces 2 \
-      --wrap-limit 88 \
-      --function-case 2 \
-      --keyword-case 1 \
-      --placeholder "sqlc\\.(arg|narg)\\(:?[^)]*\\)" \
-      --inplace \
-      $(find "$slq_dir" -maxdepth 3 -name '*.sql')
-  done
+  {
+    SQL_DIRS=(
+      "$PG_REPO/queries"
+      "db"
+    )
+    for slq_dir in ${SQL_DIRS[@]}; do
+      pg_format \
+        --spaces 2 \
+        --wrap-limit 88 \
+        --function-case 2 \
+        --keyword-case 1 \
+        --placeholder "sqlc\\.(arg|narg)\\(:?[^)]*\\)" \
+        --inplace \
+        $(find "$slq_dir" -maxdepth 3 -name '*.sql')
+    done
+  } | xlog
 }
 
 # Run required backend pre-test setup: services, database cleanup, codegen...
 # Can be called independently, e.g. before running tests through an IDE.
 x.test.backend-setup() {
-  # NOTE: tests run independently in Go so we can't have a function be called and run
-  # only once before any test starts
-  run_shared_services up -d --remove-orphans
-  x.generate
-  drop_and_recreate_db "postgres_test"
-  x.generate.tests-api
+  {
+    # NOTE: tests run independently in Go so we can't have a function be called and run
+    # only once before any test starts
+    run_shared_services up -d --remove-orphans
+    x.generate
+    drop_and_recreate_db "postgres_test"
+    x.generate.tests-api
+  } | xlog
 }
 
 # Test the entire project. Accepts `go test` parameters.
 # Args: [...]
 x.test() {
-  x.test.backend-setup
-  APP_ENV="$env" go test "$@" ./...
+  {
+    x.test.backend-setup
+    APP_ENV="$env" go test "$@" ./...
+  } | xlog
 }
 
 # Test and build the entire project.
 x.build() {
-  x.lint
-  x.test ""
-  go build -o rest-server "$PWD"/cmd/rest-server
+  {
+    x.lint
+    x.test ""
+    go build -o rest-server "$PWD"/cmd/rest-server
+  } | xlog
 }
 
 # Run backend with hot-reloading.
@@ -397,75 +433,86 @@ x.run-prod() {
 
   # TODO handle rollback and restore up to X revision (from restored db)
   # see dump_schema_v
-  xlog "Migrations:"
+  echo "Migrations:"
   x.migrate up
 }
 
 # Remove running project containers, including shared ones between environments.
 x.stop-project() {
-  run_shared_services down --remove-orphans
+  {
+    run_shared_services down --remove-orphans
+  } | xlog
 }
 
 # Checks before release:
 # - Magic keyword "STOPSHIP" not found in tracked files.
 x.release() {
-  x.search-stopship "STOPSHIP" &
-  pids+=($!)
-  go mod verify &
-  pids+=($!)
+  {
+    x.search-stopship "STOPSHIP" &
+    pids+=($!)
+    go mod verify &
+    pids+=($!)
 
-  for pid in "${pids[@]}"; do
-    wait "$pid"
-  done
+    for pid in "${pids[@]}"; do
+      wait "$pid"
+    done
+  } | xlog
 }
 
 # Block build if magic keyword is found in any file
 # Args: keyword
 x.search-stopship() {
-  stopship_keyword="$1"
-  local matches
-  matches=$(find "$(git rev-parse --show-toplevel)" \
-    -type f \
-    -not -path '**/.git/*' \
-    -not -path '**/.venv/*' \
-    -not -path '**/node_modules/*' \
-    -not -path '**/build/*' \
-    -not -path '**/*.pyc' \
-    -not -path "$0" \
-    -not -exec git check-ignore -q --no-index {} \; \
-    -exec grep -i --files-with-matches --regexp="$stopship_keyword" {} \;)
-  if [[ -n $matches ]]; then
-    echo "${RED}'$stopship_keyword'${OFF} found in tracked files."
-    echo "Please fix all related issues in the following files:"
-    printf "\t %s\n" $matches
-    exit 1
-  fi
+  {
+    stopship_keyword="$1"
+    local matches
+    matches=$(find "$(git rev-parse --show-toplevel)" \
+      -type f \
+      -not -path '**/.git/*' \
+      -not -path '**/.venv/*' \
+      -not -path '**/node_modules/*' \
+      -not -path '**/build/*' \
+      -not -path '**/*.pyc' \
+      -not -path "$0" \
+      -not -exec git check-ignore -q --no-index {} \; \
+      -exec grep -i --files-with-matches --regexp="$stopship_keyword" {} \;)
+    if [[ -n $matches ]]; then
+      echo "${RED}'$stopship_keyword'${OFF} found in tracked files."
+      echo "Please fix all related issues in the following files:"
+      printf "\t %s\n" $matches
+      exit 1
+    fi
+  } | xlog
 }
 
 ########################## migrations ##########################
 
 # Wrapper for golang-migrate with predefined configuration.
 x.migrate() {
-  migrate \
-    -path db/migrations/ \
-    -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
-    "$@"
+  {
+    migrate \
+      -path db/migrations/ \
+      -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+      "$@" 2>&1 #
 
-  if [[ "${*:1}" =~ up* ]]; then
-    for file in $(find db/post-migration -maxdepth 1 -name '*.sql' | sort); do
-      dockerdb psql --no-psqlrc -tA -U postgres -d "$POSTGRES_DB" <$file
-    done
-  fi
+    if [[ "${*:1}" =~ up* ]]; then
+      echo "Running post-migration scripts"
+      for file in $(find db/post-migration -maxdepth 1 -name '*.sql' | sort); do
+        dockerdb psql --no-psqlrc -tA -U postgres -d "$POSTGRES_DB" <$file
+      done
+    fi
+  } | xlog
 }
 
 # Create a new migration file with the given `name`.
 # Args: name
 x.migrate.create-migration() {
-  tmp="$*"
-  tmp="${tmp// /_}"
-  name="${tmp,,}"
-  [[ -z $name ]] && xerr "Please provide a migration name"
-  x.migrate create -ext sql -dir db/migrations/ "$name"
+  {
+    tmp="$*"
+    tmp="${tmp// /_}"
+    name="${tmp,,}"
+    [[ -z $name ]] && err "Please provide a migration name"
+    x.migrate create -ext sql -dir db/migrations/ "$name"
+  } | xlog
 }
 
 ########################## db ##########################
@@ -473,85 +520,97 @@ x.migrate.create-migration() {
 # Create a new database in the current environment if it doesn't exist
 # and stops its running processes if any.
 x.db.recreate-database() {
-  create_db_if_not_exists "postgres_$env"
-  stop_db_processes "postgres_$env"
+  {
+    create_db_if_not_exists "postgres_$env"
+    stop_db_processes "postgres_$env"
+  } | xlog
 }
 
 # Drop and recreate the database in the current environment.
 x.db.drop-database() {
-  drop_and_recreate_db "$POSTGRES_DB"
+  {
+    drop_and_recreate_db "$POSTGRES_DB"
+  } | xlog
 }
 
 # Backup the database for the current environment.
 x.db.dump() {
-  running_dumps=$(dockerdb psql --no-psqlrc -P pager=off --quiet -tA -U postgres -d "postgres_$env" \
-    -c "SELECT pid FROM pg_stat_activity WHERE application_name = 'pg_dump';")
-  if [[ "$running_dumps" != "" ]]; then
-    xerr "pg_dump is already running, aborting new dump"
-  fi
+  {
+    running_dumps=$(dockerdb psql --no-psqlrc -P pager=off --quiet -tA -U postgres -d "postgres_$env" \
+      -c "SELECT pid FROM pg_stat_activity WHERE application_name = 'pg_dump';")
+    if [[ "$running_dumps" != "" ]]; then
+      err "pg_dump is already running, aborting new dump"
+    fi
 
-  mkdir -p "$DUMPS_FOLDER"
-  schema_v=$(dockerdb psql --no-psqlrc -P pager=off --quiet -tA -U postgres -d "postgres_$env" \
-    -c "SELECT version FROM schema_migrations;")
-  dump_file="${DUMP_PREFIX}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
+    mkdir -p "$DUMPS_FOLDER"
+    schema_v=$(dockerdb psql --no-psqlrc -P pager=off --quiet -tA -U postgres -d "postgres_$env" \
+      -c "SELECT version FROM schema_migrations;")
+    dump_file="${DUMP_PREFIX}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
 
-  xlog "Dumping database to $dump_file"
-  docker exec -i postgres_db_"$PROJECT_PREFIX" pg_dump -U postgres -d "postgres_$env" |
-    gzip >"$DUMPS_FOLDER/$dump_file"
+    echo "Dumping database to $dump_file"
+    docker exec -i postgres_db_"$PROJECT_PREFIX" pg_dump -U postgres -d "postgres_$env" |
+      gzip >"$DUMPS_FOLDER/$dump_file"
+  } | xlog
 }
 
 # Restore the database with the latest dump or `file` for the current environment.
 # Args: [file]
 x.db.restore() {
-  dump_file="$1"
-  if [[ -n $dump_file ]]; then
-    [[ ! -f $dump_file ]] && xerr "$dump_file does not exist"
-    [[ "$dump_file" != *"$DUMP_PREFIX"* ]] && confirm "${RED}Dump doesn't match prefix '$DUMP_PREFIX'. Continue?${OFF}"
-  else
-    mkdir -p "$DUMPS_FOLDER"
-    latest_dump_file=$(find "$DUMPS_FOLDER"/ -name "$DUMP_PREFIX*.gz" | sort -r | head -n 1)
-    if [[ -z "$latest_dump_file" ]]; then
-      xerr "No $DUMP_PREFIX* file found in $DUMPS_FOLDER"
+  {
+    dump_file="$1"
+    if [[ -n $dump_file ]]; then
+      [[ ! -f $dump_file ]] && err "$dump_file does not exist"
+      [[ "$dump_file" != *"$DUMP_PREFIX"* ]] && confirm "${RED}Dump doesn't match prefix '$DUMP_PREFIX'. Continue?${OFF}"
+    else
+      mkdir -p "$DUMPS_FOLDER"
+      latest_dump_file=$(find "$DUMPS_FOLDER"/ -name "$DUMP_PREFIX*.gz" | sort -r | head -n 1)
+      if [[ -z "$latest_dump_file" ]]; then
+        err "No $DUMP_PREFIX* file found in $DUMPS_FOLDER"
+      fi
+      dump_file="$latest_dump_file"
     fi
-    dump_file="$latest_dump_file"
-  fi
 
-  confirm "Do you want to restore ${YELLOW}$dump_file${OFF} in the ${RED}$env${OFF} environment?"
+    confirm "Do you want to restore ${YELLOW}$dump_file${OFF} in the ${RED}$env${OFF} environment?"
 
-  drop_and_recreate_db "postgres_$env"
-  gunzip -c "$dump_file" | dockerdb psql --no-psqlrc -U postgres -d "postgres_$env"
-  # sanity check, but probably better to do it before restoring...
-  dump_schema_v=$(dockerdb psql --no-psqlrc -P pager=off -qtAX -U postgres -d "postgres_$env" -c "SELECT version FROM schema_migrations;")
-  file_schema_v=$(echo "$dump_file" | sed -E 's/.*_version([0-9]+)\..*/\1/')
-  xlog "Migration revision: $dump_schema_v"
-  if [[ "$dump_schema_v" != "$file_schema_v" ]]; then
-    xerr "Schema version mismatch: dump $dump_schema_v != file $file_schema_v"
-  fi
+    x.db.drop-database
+    gunzip -c "$dump_file" | dockerdb psql --no-psqlrc -U postgres -d "postgres_$env"
+    # sanity check, but probably better to do it before restoring...
+    dump_schema_v=$(dockerdb psql --no-psqlrc -P pager=off -qtAX -U postgres -d "postgres_$env" -c "SELECT version FROM schema_migrations;")
+    file_schema_v=$(echo "$dump_file" | sed -E 's/.*_version([0-9]+)\..*/\1/')
+    echo "Migration revision: $dump_schema_v"
+    if [[ "$dump_schema_v" != "$file_schema_v" ]]; then
+      err "Schema version mismatch: dump $dump_schema_v != file $file_schema_v"
+    fi
+  } | xlog
 }
 
 ########################## e2e ##########################
 
 # Setup E2E Python environment.
 x.e2e.sync-dependencies() {
-  cd e2e
-  python -m venv .venv
-  source .venv/bin/activate
-  pip install pip-tools
-  pip-compile requirements.in
-  pip-compile requirements-dev.in
-  pip-sync requirements-dev.txt requirements.txt
-  cd - >/dev/null
+  {
+    cd e2e
+    python -m venv .venv
+    source .venv/bin/activate
+    pip install pip-tools
+    pip-compile requirements.in
+    pip-compile requirements-dev.in
+    pip-sync requirements-dev.txt requirements.txt
+    cd - >/dev/null
+  } | xlog
 }
 
 # Run E2E tests. Accepts `pytest` parameters.
 # Args: [...]
 x.e2e.run() {
-  name="$PROJECT_PREFIX-e2e"
-  cd e2e
-  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain \
-    docker build -t "$name" .
-  docker run -it --rm --ipc=host -v "$(pwd):/src" "$name" bash -c "pytest $*"
-  cd - >/dev/null
+  {
+    name="$PROJECT_PREFIX-e2e"
+    cd e2e
+    DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain \
+      docker build -t "$name" .
+    docker run -it --rm --ipc=host -v "$(pwd):/src" "$name" bash -c "pytest $*"
+    cd - >/dev/null
+  } | xlog
 }
 
 ########################## openapi ##########################
@@ -567,62 +626,66 @@ x.validate() {
 # Wrapper for openapi-generator with sane output modifications.
 # Args: spec out tpl
 x.openapi-generator() {
-  local spec="$1"
-  local gen_out_dir="$2"
-  local template_dir="$3"
-
-  [[ -z $spec ]] && xerr "openapi-generator: spec required"
-  [[ -z $gen_out_dir ]] && xerr "openapi-generator: out dir required"
-  [[ -z $template_dir ]] && xerr "openapi-generator: template dir required"
-  xlog "Generating API from $spec"
-  xlog "Generation directory: $gen_out_dir"
-  xlog "Template override directory: $template_dir"
-
-  rm -rf "$gen_out_dir/gen"
-  # debug has a very small overhead compared to the >1s required per spec
-  java -jar "$BIN_DIR"/../openapi-generator-cli.jar generate \
-    -g go-gin-server \
-    -i "$spec" \
-    -o "$gen_out_dir" \
-    -t "$template_dir" \
-    --additional-properties=packageName=openapi,apiPath=gen,hideGenerationTimestamp=true \
-    --enable-post-process-file \
-    --global-property=debugModels,debugOperations >debug-openapi.log #>/dev/null \
-
-  mkdir -p "$gen_out_dir"/gen/models
-  mkdir -p "$gen_out_dir"/rest
-  mkdir -p "$gen_out_dir"/services
-
-  mv "$gen_out_dir"/gen/routers.go "$gen_out_dir"/rest/routers.gen.go
-
   {
-    mv "$gen_out_dir"/gen/model_*.go "$gen_out_dir"/gen/models 2>/dev/null
-    goimports -w "$gen_out_dir"/gen/models
-  } || xlog "No model files found. Skipping"
+    local spec="$1"
+    local gen_out_dir="$2"
+    local template_dir="$3"
 
-  rm -rf "$gen_out_dir/api"
+    [[ -z $spec ]] && err "openapi-generator: spec required"
+    [[ -z $gen_out_dir ]] && err "openapi-generator: out dir required"
+    [[ -z $template_dir ]] && err "openapi-generator: template dir required"
+    echo "Generating API from $spec"
+    echo "Generation directory: $gen_out_dir"
+    echo "Template override directory: $template_dir"
+
+    rm -rf "$gen_out_dir/gen"
+    # debug has a very small overhead compared to the >1s required per spec
+    java -jar "$BIN_DIR"/../openapi-generator-cli.jar generate \
+      -g go-gin-server \
+      -i "$spec" \
+      -o "$gen_out_dir" \
+      -t "$template_dir" \
+      --additional-properties=packageName=openapi,apiPath=gen,hideGenerationTimestamp=true \
+      --enable-post-process-file \
+      --global-property=debugModels,debugOperations >debug-openapi.log #>/dev/null \
+
+    mkdir -p "$gen_out_dir"/gen/models
+    mkdir -p "$gen_out_dir"/rest
+    mkdir -p "$gen_out_dir"/services
+
+    mv "$gen_out_dir"/gen/routers.go "$gen_out_dir"/rest/routers.gen.go
+
+    {
+      mv "$gen_out_dir"/gen/model_*.go "$gen_out_dir"/gen/models 2>/dev/null
+      goimports -w "$gen_out_dir"/gen/models
+    } || echo "No model files found. Skipping"
+
+    rm -rf "$gen_out_dir/api"
+  } | xlog
 }
 
 # Run a diff against the previous OpenAPI spec in the main branch.
 # Can also be used to generate changelogs when upgrading major versions.
 x.diff-openapi-spec() {
-  base_spec="/tmp/openapi.yaml"
-  git show "main:$SPEC" >"$base_spec"
+  {
+    base_spec="/tmp/openapi.yaml"
+    git show "main:$SPEC" >"$base_spec"
 
-  tmp="$(yq .info.version "$base_spec")"
-  base_v="${tmp%%.*}"
-  tmp=$(yq .info.version "$SPEC")
-  rev_v="${tmp%%.*}"
-  ((rev_v != base_v)) &&
-    echo "${YELLOW}Revision mismatch $rev_v and $base_v, skipping diff.${OFF}" && return
+    tmp="$(yq .info.version "$base_spec")"
+    base_v="${tmp%%.*}"
+    tmp=$(yq .info.version "$SPEC")
+    rev_v="${tmp%%.*}"
+    ((rev_v != base_v)) &&
+      echo "${YELLOW}Revision mismatch $rev_v and $base_v, skipping diff.${OFF}" && return
 
-  args="-format text -breaking-only -fail-on-diff -exclude-description -exclude-examples"
-  if oasdiff $args -base "$base_spec" -revision $SPEC; then
-    echo "${GREEN}No breaking changes found in $SPEC${OFF}"
-  else
-    echo "${RED}Breaking changes found in $SPEC${OFF}"
-    return 1
-  fi
+    args="-format text -breaking-only -fail-on-diff -exclude-description -exclude-examples"
+    if oasdiff $args -base "$base_spec" -revision $SPEC; then
+      echo "${GREEN}No breaking changes found in $SPEC${OFF}"
+    else
+      echo "${RED}Breaking changes found in $SPEC${OFF}"
+      return 1
+    fi
+  } | xlog
 }
 
 ########################### helpers ###########################
@@ -826,6 +889,12 @@ done < <(declare -F)
 mapfile -t COMMANDS < \
   <(LC_COLLATE=C sort < <(printf "%s\n" "${COMMANDS[@]}"))
 
+MAX_XFN_LEN=0 # for logging purposes
+for c in "${COMMANDS[@]}"; do
+  len=${#c}
+  ((len > MAX_XFN_LEN)) && MAX_XFN_LEN=$((len - 2)) # remove "x."
+done
+
 if [[ -n $COMP_LINE ]]; then
   pre="${COMP_LINE##* }" # the part after the last space in the current command
   cur_commands=(${COMP_LINE%"$pre"})
@@ -891,7 +960,7 @@ while [[ "$#" -gt 0 ]]; do
     env="${1#--x-env=}"
     valid_envs="dev staging prod ci"
     if [[ ! " ${valid_envs[*]} " =~ " $env " ]]; then
-      xerr "Valid environments: $valid_envs"
+      err "Valid environments: $valid_envs"
     fi
     ;;
   *)

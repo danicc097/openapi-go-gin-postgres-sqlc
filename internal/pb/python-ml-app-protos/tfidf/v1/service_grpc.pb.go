@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.19.4
-// source: python-ml-app-protos/tfidf/v1/service.proto
+// source: internal/python-ml-app-protos/tfidf/v1/service.proto
 
 package v1
 
@@ -137,5 +137,5 @@ var MovieGenre_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "python-ml-app-protos/tfidf/v1/service.proto",
+	Metadata: "internal/python-ml-app-protos/tfidf/v1/service.proto",
 }

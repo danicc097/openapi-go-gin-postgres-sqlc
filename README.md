@@ -20,6 +20,11 @@ and flags at will.
 
 ![](.github/autodocs.png)
 
+All calls to `x` functions are logged for easier parallel execution and nested
+calls tracking:
+
+![](.github/logging.png)
+
 ## What's this for?
 
 Your OpenAPI v3 spec becomes a real single source of truth for the full stack. Any
