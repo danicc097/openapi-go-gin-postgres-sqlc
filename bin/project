@@ -209,6 +209,10 @@ x.generate.counterfeiter() {
         md5sum $envvar $services $repos $tfidfpb >"$cache/counterfeiter.md5" &
       } &>/dev/null
       wait
+
+      # counterfeiter is unaware of grpc's obscure mustEmbedUnimplemented***() for forward server compatibility
+      sed -i '/type FakeMovieGenreServer struct {/a v1\.UnimplementedMovieGenreServer' \
+        internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go
     fi
   } | xlog
 }

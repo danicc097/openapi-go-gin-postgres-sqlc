@@ -208,7 +208,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	// TODO REMOVE
 	/*
-		curl -X 'POST'   'https://localhost:8090/v2/upsert-user'   -H 'accept: application/json'   -H 'Authorization: Bearer fsefse'  -d '{"username":"user","email":"email","role":"admin"}
+		curl -X 'POST'   'https://localhost:8090/v2/upsert-user'   -H 'accept: application/json'   -H 'Authorization: Bearer fsefse'  -d '{"username":"user","email":"email","role":"admin"}'
 	*/
 	// https://github.com/xo/xo/blob/master/_examples/booktest/sql/postgres_schema.sql
 	// https://github.com/xo/xo/blob/master/_examples/booktest/postgres.go
