@@ -197,7 +197,6 @@ x.generate.proto() {
   local filename="python-ml-app-protos/tfidf/v1/service.proto"
 
   cd internal
-  rm -rf ./pb
   mkdir -p ./pb
   # Plugins are no longer supported by protoc-gen-go.
   # Instead protoc-gen-go-grpc and the go package (in proto or via M flag) are required

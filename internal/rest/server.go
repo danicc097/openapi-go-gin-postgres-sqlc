@@ -171,9 +171,33 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
 	authzSvc := services.Authorization{Logger: conf.Logger}
-
 	movieClient := v1.NewMovieGenreClient(conf.MovieSvcConn)
 
+	// TODO need to instantiate the repo with the conn/transaction already.
+	// hence we need to create a new service for every new request
+	// with a pool conn (already do this in py impl), else we
+	// would need to have helpers to change db dBTX in the repo itself, and the repo
+	// should not be concerned with this.
+	// TLDR refactor: all services need to be instantiated in the handler itself,
+	// beginning a transaction every time and sharing it for most use cases.
+	// handler structs receive everything necessary to construct all services.
+	// then all services share the same conn, _ := conf.Pool.Acquire() initialized in the handler
+	// (dont want to handle transactions or any committing in services, its up to caller - i.e. handlers, cli...)
+	// unless we have a reason not to (e.g. conn is not concurrency safe)
+	// finally we must call conn.Close and Rollback. we commit along the way
+
+	// use a direct pool connection if a query cannot be run in a transaction.
+	// IMPORTANT: read https://groups.google.com/g/golang-nuts/c/y8uLMofW2-E and then this comment tree
+	// https://medium.com/@florian_445/thanks-for-your-answer-6d03846860fa, then the article
+	// itself.
+	// takeaways:
+	// - we start any transactions in each handler method. Each service method calls the necessary
+	// repos OR services. Services are built in each handler, else imagine
+	//   the need for usvc := users.New(nsvc) and nsvc := notifications.New(usvc) at the same time
+	//   if we create the service inside NewXX() the problem is gone as long as services
+	//   remain in the same package, which they should.
+	// - repos must not be concerned with transaction details
+	// - also note services dont necessarily need an equivalently named repository or viceversa.
 	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool, movieClient)
 
 	switch os.Getenv("APP_ENV") {
@@ -200,27 +224,6 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 		s := newOTELSpan(ctx, "User.CreateUser", trace.WithAttributes(userIDAttribute(c)))
 		s.AddEvent("create-user") // filterable with event="create-user"
 		defer s.End()
-
-		// TODO should start all tx at the handler level, in case we use different services
-		// and pass it down to services -> repos
-		// need autocommit option
-		// IMPORTANT: read https://groups.google.com/g/golang-nuts/c/y8uLMofW2-E and then this comment tree
-		// https://medium.com/@florian_445/thanks-for-your-answer-6d03846860fa, then the article
-		// itself.
-		// takeaways:
-		// - we start all transactions in each service method. Each service method is self-contained transaction-wise
-		//   and calls the necessary repos OR services. Watch out for circular deps, imagine
-		//   the for need usvc := users.New(nsvc) and nsvc := notifications.New(usvc) at the same time
-		//   UPDATE ^: if we create the service inside NewXX() the problem is gone as long as services
-		//   remain in the same package, which they should. But in that case those services can't be mocked...
-		//   do we want to mock services when testing handlers? They're our integration tests and there's little point
-		//   in unit testing handlers without middleware, etc. rather than doing integration.
-		//   to be passed to handlers... surely we're doing something wrong here
-		// - repos must not be concerned with transaction details
-		// - having transaction logic in services vs handlers:
-		//     if we see the need to have a transaction in a handler and pass it down to multiple services,
-		//     maybe it means we need a new service or method in an existing one.
-		//     also note services dont necessarily need an equivalently named repository or viceversa.
 
 		// tx, err := conf.Pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable})
 		// if err != nil {

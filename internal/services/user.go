@@ -52,8 +52,6 @@ func NewUser(urepo UserRepo, logger *zap.Logger, pool *pgxpool.Pool, movieSvcCli
 func (u *User) Upsert(ctx context.Context, user *crud.User) error {
 	defer newOTELSpan(ctx, "User.Upsert").End()
 
-	// TODO remove once traces tested
-	// TODO counterfeiter on MovieGenreClient, package name <dir>testing with generated pb
 	predictions, _ := u.movieSvc.PredictMovieGenre(ctx, synopsis)
 	u.logger.Sugar().Infof("Movie predictions: %v", predictions)
 

@@ -60,11 +60,6 @@ func convLogger(logger interface{}) func(string, ...interface{}) {
 	}
 	panic(fmt.Sprintf("unsupported logger type %T", logger))
 }
-
-// DB is the common interface for database operations that can be used with
-// types from schema '{{ schema }}'.
-//
-// This works with both database/sql.DB and database/sql.Tx.
 {{/* sqlc is
 type DBTX interface {
 	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
@@ -74,6 +69,8 @@ type DBTX interface {
 
 need to accomodate all templates for pgx syntax
 */}}
+// DB is the common interface for database operations that can be used with
+// types from schema '{{ schema }}'.
 type DB interface {
 	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
 	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
