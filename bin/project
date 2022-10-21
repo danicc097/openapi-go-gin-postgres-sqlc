@@ -37,16 +37,26 @@ DUMP_PREFIX="dump_${env}_"
 
 MAX_COMMENT_LEN=88
 
+exec 3>&2
+
 # log for any function output.
 xlog() {
-  while read -r input; do
-    if [[ "$CMD" = "${FUNCNAME[1]#*.}" ]]; then
-      echo "$input" # remove logging for the command itself
-    else
-      fn=$(printf "%*s |\n" $MAX_XFN_LEN "${FUNCNAME[1]#*.}")
-      sed -e "s/^/${BLUE}$fn${OFF} /" <<<$(echo "$input")
-    fi
-  done
+  if [[ "$CMD" = "${FUNCNAME[1]#*.}" ]]; then
+    cat # remove logging for the command itself
+  else
+    fn=$(printf "%*s |\n" $MAX_XFN_LEN "${FUNCNAME[1]#*.}")
+    sed -e "s/^/${BLUE}$fn${OFF} /"
+  fi
+}
+
+# log stderr for any function output.
+xerr() {
+  if [[ "$CMD" = "${FUNCNAME[1]#*.}" ]]; then
+    cat # remove logging for the command itself
+  else
+    fn=$(printf "%*s |\n" $MAX_XFN_LEN "${FUNCNAME[1]#*.}")
+    sed -e "s/^/${RED}$fn${OFF} /"
+  fi
 }
 
 # Check build dependencies are met.
@@ -66,7 +76,7 @@ x.check-build-deps() {
     check.pg_format || { ((fails++)) && true; }
     ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met.${OFF}"
     { ((fails != 0)) && err "${RED}❌ Missing dependencies.${OFF}"; } || true
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Check dependencies and fetch required tools.
@@ -76,7 +86,7 @@ x.bootstrap() {
     x.install-tools
     x.fetch.openapi-generator
     x.fetch.swagger-ui
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Install go libraries as runnable programs.
@@ -99,7 +109,7 @@ x.install-tools() {
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
     GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Fetch openapi-generator jar file.
@@ -108,7 +118,7 @@ x.fetch.openapi-generator() {
     local url="https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/$GENVERS/openapi-generator-cli-$GENVERS.jar"
     echo "$url > openapi-generator-cli.jar"
     curl -L "$url" -o openapi-generator-cli.jar
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Fetch latest swagger ui bundle.
@@ -121,7 +131,7 @@ x.fetch.swagger-ui() {
     mkdir -p internal/static/swagger-ui
     mv swagger-ui/* internal/static/swagger-ui/
     rm -r swagger-ui
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Run openapi generator for testdata.
@@ -140,7 +150,7 @@ x.generate.tests-api() {
         "$testdata/$test_dir/internal" \
         "$BIN_DIR/../internal/go-gin-server-templates"
     done
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Run post-generation scripts on the internal package.
@@ -152,7 +162,7 @@ x.postgen() {
     go build -o postgen "$PWD"/cmd/postgen/main.go
     ./postgen -cachedir="$cache" -env=".env.$env"
     mv "$OPENAPI_GEN_DIR"/api_*.go "$cache/" 2>/dev/null || true
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Generate type-safe Go code from SQL.
@@ -160,7 +170,7 @@ x.generate.sqlc() {
   {
     echo "Running generation"
     sqlc generate -f "$PG_REPO"/sqlc.yaml || err "Failed sqlc generation"
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Automatically generate CRUD and By queries based on existing indexes from
@@ -169,6 +179,8 @@ x.generate.sqlc() {
 x.generate.xo() {
   # TODO from hn
   # I've used https://github.com/xo/xo, extended it with some custom functions for templating, extended the templates themselves, and can now generate CRUD for anything in the database, functions for common select queries based on the indices that exist in the database, field filtering and scanning, updates for subsets of fields including some atomic operations, etc. The sky is the limit honestly. It has allowed me to start with something approximating a statically generated ORM and extend it with any features I want as time goes on. I also write .extra.go files along side the generated .xo.go files to extend the structs that are generated with custom logic and methods to convert data into response formats.
+
+  # TODO wrapper
   {
     echo "Running generation"
 
@@ -179,7 +191,7 @@ x.generate.xo() {
       -o "$PG_REPO"/gen/crud \
       -e "*.created_at" \
       -e "*.updated_at" || err "Failed xo generation"
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Generate mocks for specified interfaces. Runs are cached to `cachedir`.
@@ -214,7 +226,7 @@ x.generate.counterfeiter() {
       sed -i '/type FakeMovieGenreServer struct {/a v1\.UnimplementedMovieGenreServer' \
         internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go
     fi
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Generate the required servers/clients for relevant services.
@@ -233,12 +245,13 @@ x.generate.proto() {
       --go-grpc_opt=M$filename=$import_path,paths=import \
       --go_opt=M$filename=$import_path,paths=import \
       internal/python-ml-app-protos/tfidf/v1/service.proto
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Run all codegen and postgen commands for the project.
 x.generate() {
   {
+    echo "${GREEN}Running code generation.${OFF}"
     local _pids
 
     x.db.recreate-database
@@ -274,7 +287,7 @@ x.generate() {
 
     # delay since it depends on generated output
     x.generate.counterfeiter "$cache"
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Lint the entire project.
@@ -283,7 +296,7 @@ x.lint() {
     x.lint.sql &
     x.lint.go &
     wait
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Format Go files.
@@ -299,7 +312,7 @@ x.lint.go() {
 
     goimports -w $files
     gofumpt -w $files
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Format SQL files.
@@ -319,7 +332,7 @@ x.lint.sql() {
         --inplace \
         $(find "$slq_dir" -maxdepth 3 -name '*.sql')
     done
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Run required backend pre-test setup: services, database cleanup, codegen...
@@ -332,7 +345,7 @@ x.test.backend-setup() {
     x.generate
     drop_and_recreate_db "postgres_test"
     x.generate.tests-api
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Test the entire project. Accepts `go test` parameters.
@@ -341,7 +354,7 @@ x.test() {
   {
     x.test.backend-setup
     APP_ENV="$env" go test "$@" ./...
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Test and build the entire project.
@@ -350,7 +363,7 @@ x.build() {
     x.lint
     x.test ""
     go build -o rest-server "$PWD"/cmd/rest-server
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Run backend with hot-reloading.
@@ -433,7 +446,7 @@ x.run-prod() {
     --project-name "$PROJECT_PREFIX"_"$env" \
     -f docker-compose."$env".yml \
     --env-file ".env.$env" \
-    up -d --build
+    up -d --build 2>&1 # https://github.com/docker/compose/issues/7346
 
   # TODO handle rollback and restore up to X revision (from restored db)
   # see dump_schema_v
@@ -445,7 +458,7 @@ x.run-prod() {
 x.stop-project() {
   {
     run_shared_services down --remove-orphans
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Checks before release:
@@ -460,7 +473,7 @@ x.release() {
     for pid in "${pids[@]}"; do
       wait "$pid"
     done
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Block build if magic keyword is found in any file
@@ -485,7 +498,7 @@ x.search-stopship() {
       printf "\t %s\n" $matches
       exit 1
     fi
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 ########################## migrations ##########################
@@ -496,7 +509,7 @@ x.migrate() {
     migrate \
       -path db/migrations/ \
       -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
-      "$@" 2>&1 #
+      "$@" 2>&1 # migrate outputs everything to stderr
 
     if [[ "${*:1}" =~ up* ]]; then
       echo "Running post-migration scripts"
@@ -504,7 +517,7 @@ x.migrate() {
         dockerdb psql --no-psqlrc -tA -U postgres -d "$POSTGRES_DB" <$file
       done
     fi
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Create a new migration file with the given `name`.
@@ -516,7 +529,7 @@ x.migrate.create-migration() {
     name="${tmp,,}"
     [[ -z $name ]] && err "Please provide a migration name"
     x.migrate create -ext sql -dir db/migrations/ "$name"
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 ########################## db ##########################
@@ -527,14 +540,14 @@ x.db.recreate-database() {
   {
     create_db_if_not_exists "postgres_$env"
     stop_db_processes "postgres_$env"
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Drop and recreate the database in the current environment.
 x.db.drop-database() {
   {
     drop_and_recreate_db "$POSTGRES_DB"
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Backup the database for the current environment.
@@ -554,7 +567,7 @@ x.db.dump() {
     echo "Dumping database to $dump_file"
     docker exec -i postgres_db_"$PROJECT_PREFIX" pg_dump -U postgres -d "postgres_$env" |
       gzip >"$DUMPS_FOLDER/$dump_file"
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Restore the database with the latest dump or `file` for the current environment.
@@ -585,7 +598,7 @@ x.db.restore() {
     if [[ "$dump_schema_v" != "$file_schema_v" ]]; then
       err "Schema version mismatch: dump $dump_schema_v != file $file_schema_v"
     fi
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 ########################## e2e ##########################
@@ -601,7 +614,7 @@ x.e2e.sync-dependencies() {
     pip-compile requirements-dev.in
     pip-sync requirements-dev.txt requirements.txt
     cd - >/dev/null
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Run E2E tests. Accepts `pytest` parameters.
@@ -614,7 +627,7 @@ x.e2e.run() {
       docker build -t "$name" .
     docker run -it --rm --ipc=host -v "$(pwd):/src" "$name" bash -c "pytest $*"
     cd - >/dev/null
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 ########################## openapi ##########################
@@ -665,7 +678,7 @@ x.openapi-generator() {
     } || echo "No model files found. Skipping"
 
     rm -rf "$gen_out_dir/api"
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 # Run a diff against the previous OpenAPI spec in the main branch.
@@ -689,7 +702,7 @@ x.diff-openapi-spec() {
       echo "${RED}Breaking changes found in $SPEC${OFF}"
       return 1
     fi
-  } | xlog
+  } 2> >(xerr) > >(xlog)
 }
 
 ########################### helpers ###########################
@@ -709,7 +722,7 @@ run_shared_services() {
     -p "$PROJECT_PREFIX" \
     -f docker-compose.shared.yml \
     --env-file ../.env."$env" \
-    "$@"
+    "$@" 2>&1 # https://github.com/docker/compose/issues/7346
   cd - >/dev/null
 }
 

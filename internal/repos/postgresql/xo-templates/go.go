@@ -1315,6 +1315,7 @@ func (f *Funcs) logf(v interface{}, ignore ...interface{}) string {
 			return fmt.Sprintf("[[ UNSUPPORTED TYPE 11 (%d): %T ]]", i, x)
 		}
 	}
+	fmt.Fprintf(os.Stderr, "Ignored names: %v\n", ignoreNames)
 	// add fields
 	switch x := v.(type) {
 	case Table:
@@ -1761,6 +1762,7 @@ func (f *Funcs) sqlstr_index(v interface{}) []string {
 }
 
 // sqlstr_list builds a list fields.
+// TODO make generic.
 func (f *Funcs) sqlstr_list(v interface{}) []string {
 	switch x := v.(type) {
 	case Table:
