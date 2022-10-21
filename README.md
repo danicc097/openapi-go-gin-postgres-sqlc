@@ -20,7 +20,7 @@ and flags at will.
 
 ![](.github/autodocs.png)
 
-All calls to `x` functions are logged for easier parallel execution and nested
+All calls to `x` functions are logged (distinguishing stdout and stderr) for easier parallel execution and nested
 calls tracking:
 
 ![](.github/logging.png)

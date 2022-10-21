@@ -37,25 +37,28 @@ DUMP_PREFIX="dump_${env}_"
 
 MAX_COMMENT_LEN=88
 
-exec 3>&2
-
 # log for any function output.
 xlog() {
-  if [[ "$CMD" = "${FUNCNAME[1]#*.}" ]]; then
+  fname="${FUNCNAME[1]#*.}"
+  if [[ "$CMD" = "$fname" ]]; then
     cat # remove logging for the command itself
   else
-    fn=$(printf "%*s |\n" $MAX_XFN_LEN "${FUNCNAME[1]#*.}")
-    sed -e "s/^/${BLUE}$fn${OFF} /"
+    fn=$(printf "%*s |\n" $MAX_XFN_LEN "$fname")
+    sed -ue "s/^/${BLUE}$fn${OFF} /"
   fi
 }
 
 # log stderr for any function output.
+# sed is buffering by default (without -u)
+# so streams dont preserve order
+# https://unix.stackexchange.com/questions/418705/redirecting-stderr-and-stdout-separately-to-a-function-in-a-bash-script
 xerr() {
-  if [[ "$CMD" = "${FUNCNAME[1]#*.}" ]]; then
+  fname="${FUNCNAME[1]#*.}"
+  if [[ "$CMD" = "$fname" ]]; then
     cat # remove logging for the command itself
   else
-    fn=$(printf "%*s |\n" $MAX_XFN_LEN "${FUNCNAME[1]#*.}")
-    sed -e "s/^/${RED}$fn${OFF} /"
+    fn=$(printf "%*s |\n" $MAX_XFN_LEN "$fname")
+    sed -ue "s/^/${RED}$fn${OFF} /" >&2
   fi
 }
 
@@ -251,7 +254,7 @@ x.generate.proto() {
 # Run all codegen and postgen commands for the project.
 x.generate() {
   {
-    echo "${GREEN}Running code generation.${OFF}"
+    echo "Running code generation"
     local _pids
 
     x.db.recreate-database
