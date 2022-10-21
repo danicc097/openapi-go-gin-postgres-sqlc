@@ -50,8 +50,8 @@ type Config struct {
 	Redis   *rv8.Client
 	Logger  *zap.Logger
 	// SpecPath is the OpenAPI spec filepath.
-	SpecPath     string
-	MovieSvcConn *grpc.ClientConn
+	SpecPath       string
+	MovieSvcClient v1.MovieGenreClient
 }
 
 func (c *Config) validate() error {
@@ -70,8 +70,8 @@ func (c *Config) validate() error {
 	if c.Logger == nil {
 		return fmt.Errorf("no logger provided")
 	}
-	if c.MovieSvcConn == nil {
-		return fmt.Errorf("no movie service connection provided")
+	if c.MovieSvcClient == nil {
+		return fmt.Errorf("no movie service client provided")
 	}
 
 	return nil
@@ -171,7 +171,6 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
 	authzSvc := services.Authorization{Logger: conf.Logger}
-	movieClient := v1.NewMovieGenreClient(conf.MovieSvcConn)
 
 	// TODO need to instantiate the repo with the conn/transaction already.
 	// hence we need to create a new service for every new request
@@ -198,7 +197,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	//   remain in the same package, which they should.
 	// - repos must not be concerned with transaction details
 	// - also note services dont necessarily need an equivalently named repository or viceversa.
-	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool, movieClient)
+	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool, conf.MovieSvcClient)
 
 	switch os.Getenv("APP_ENV") {
 	case "prod":
@@ -363,12 +362,12 @@ func Run(env, address, specPath string) (<-chan error, error) {
 	}
 
 	srv, err := NewServer(Config{
-		Address:      address,
-		Pool:         pool,
-		Redis:        rdb,
-		Logger:       logger,
-		SpecPath:     specPath,
-		MovieSvcConn: movieSvcConn,
+		Address:        address,
+		Pool:           pool,
+		Redis:          rdb,
+		Logger:         logger,
+		SpecPath:       specPath,
+		MovieSvcClient: v1.NewMovieGenreClient(movieSvcConn),
 	})
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "NewServer")
