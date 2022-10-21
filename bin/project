@@ -87,7 +87,7 @@ x.bootstrap() {
   {
     x.check-build-deps
     x.install-tools
-    x.fetch.openapi-generator
+    x.fetch.openapi-gen
     x.fetch.swagger-ui
   } 2> >(xerr) > >(xlog)
 }
@@ -116,7 +116,7 @@ x.install-tools() {
 }
 
 # Fetch openapi-generator jar file.
-x.fetch.openapi-generator() {
+x.fetch.openapi-gen() {
   {
     local url="https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/$GENVERS/openapi-generator-cli-$GENVERS.jar"
     echo "$url > openapi-generator-cli.jar"
@@ -139,7 +139,7 @@ x.fetch.swagger-ui() {
 
 # Run openapi generator for testdata.
 # jar won't output properly if absolute paths are passed from subdir.
-x.generate.tests-api() {
+x.gen.tests-api() {
   {
     local testdata="$BIN_DIR/../internal/postgen/testdata/openapi_generator"
     local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
@@ -169,7 +169,7 @@ x.postgen() {
 }
 
 # Generate type-safe Go code from SQL.
-x.generate.sqlc() {
+x.gen.sqlc() {
   {
     echo "Running generation"
     sqlc generate -f "$PG_REPO"/sqlc.yaml || err "Failed sqlc generation"
@@ -179,7 +179,7 @@ x.generate.sqlc() {
 # Automatically generate CRUD and By queries based on existing indexes from
 # a Postgres schema.
 # Does not work with a schema file, database must be up to date.
-x.generate.xo() {
+x.gen.xo() {
   # TODO from hn
   # I've used https://github.com/xo/xo, extended it with some custom functions for templating, extended the templates themselves, and can now generate CRUD for anything in the database, functions for common select queries based on the indices that exist in the database, field filtering and scanning, updates for subsets of fields including some atomic operations, etc. The sky is the limit honestly. It has allowed me to start with something approximating a statically generated ORM and extend it with any features I want as time goes on. I also write .extra.go files along side the generated .xo.go files to extend the structs that are generated with custom logic and methods to convert data into response formats.
 
@@ -199,7 +199,7 @@ x.generate.xo() {
 
 # Generate mocks for specified interfaces. Runs are cached to `cachedir`.
 # Args: cachedir
-x.generate.counterfeiter() {
+x.gen.counterfeiter() {
   # This shouldn't pose any problems, the interface is the only input to counterfeiter.
   {
     cache="$1"
@@ -233,7 +233,7 @@ x.generate.counterfeiter() {
 }
 
 # Generate the required servers/clients for relevant services.
-x.generate.proto() {
+x.gen.proto() {
   {
     local import_path="python-ml-app-protos/tfidf/v1"
     local filename="internal/python-ml-app-protos/tfidf/v1/service.proto"
@@ -252,12 +252,12 @@ x.generate.proto() {
 }
 
 # Run all codegen and postgen commands for the project.
-x.generate() {
+x.gen() {
   {
     echo "Running code generation"
     local _pids
 
-    x.db.recreate-database
+    x.db.recreate
 
     cache=".generate.cache"
 
@@ -267,19 +267,19 @@ x.generate() {
 
     go generate ./... &
     _pids+=($!)
-    x.generate.sqlc &
+    x.gen.sqlc &
     _pids+=($!)
     (
       # xo cannot use db files as input, needs an up-to-date schema
       # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
       # use a unique db to prevent cosmic accidents
       export POSTGRES_DB="xoxo"
-      x.db.drop-database
+      x.db.drop
       x.migrate up
-      x.generate.xo
+      x.gen.xo
     ) &
     _pids+=($!)
-    x.generate.proto &
+    x.gen.proto &
     _pids+=($!)
     x.postgen "$cache" &
     _pids+=($!)
@@ -289,7 +289,7 @@ x.generate() {
     done
 
     # delay since it depends on generated output
-    x.generate.counterfeiter "$cache"
+    x.gen.counterfeiter "$cache"
   } 2> >(xerr) > >(xlog)
 }
 
@@ -345,9 +345,9 @@ x.test.backend-setup() {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts
     run_shared_services up -d --remove-orphans
-    x.generate
+    x.gen
     drop_and_recreate_db "postgres_test"
-    x.generate.tests-api
+    x.gen.tests-api
   } 2> >(xerr) > >(xlog)
 }
 
@@ -370,7 +370,7 @@ x.build() {
 }
 
 # Run backend with hot-reloading.
-x.run.backend-hot-reload() {
+x.run.backend-hr() {
   run_shared_services up -d --remove-orphans
   # TODO new include_files flag in fork, e.g. for openapi.yaml.
   # else generated .yaml files trigger rebuild.
@@ -440,10 +440,10 @@ x.run-prod() {
 
   docker network create traefik-net 2>/dev/null || true
   run_shared_services up -d --remove-orphans
-  x.db.recreate-database
+  x.db.recreate
 
   cd frontend && pnpm run generate && cd - >/dev/null
-  x.generate
+  x.gen
 
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
     --project-name "$PROJECT_PREFIX"_"$env" \
@@ -525,7 +525,7 @@ x.migrate() {
 
 # Create a new migration file with the given `name`.
 # Args: name
-x.migrate.create-migration() {
+x.migrate.create() {
   {
     tmp="$*"
     tmp="${tmp// /_}"
@@ -537,9 +537,18 @@ x.migrate.create-migration() {
 
 ########################## db ##########################
 
+# Shows active and max number of connections for the current environment.
+x.db.conns() {
+  {
+    current_conns=$(dockerdb psql -qtAX -d $POSTGRES_DB -c "SELECT count(*) FROM pg_stat_activity WHERE datname = '$POSTGRES_DB';")
+    max_conns=$(dockerdb psql -qtAX -d $POSTGRES_DB -c "SHOW max_connections;")
+    echo "$current_conns/$max_conns active connections in '$POSTGRES_DB'"
+  } 2> >(xerr) > >(xlog)
+}
+
 # Create a new database in the current environment if it doesn't exist
 # and stops its running processes if any.
-x.db.recreate-database() {
+x.db.recreate() {
   {
     create_db_if_not_exists "postgres_$env"
     stop_db_processes "postgres_$env"
@@ -547,7 +556,7 @@ x.db.recreate-database() {
 }
 
 # Drop and recreate the database in the current environment.
-x.db.drop-database() {
+x.db.drop() {
   {
     drop_and_recreate_db "$POSTGRES_DB"
   } 2> >(xerr) > >(xlog)
@@ -592,7 +601,7 @@ x.db.restore() {
 
     confirm "Do you want to restore ${YELLOW}$dump_file${OFF} in the ${RED}$env${OFF} environment?"
 
-    x.db.drop-database
+    x.db.drop
     gunzip -c "$dump_file" | dockerdb psql --no-psqlrc -U postgres -d "postgres_$env"
     # sanity check, but probably better to do it before restoring...
     dump_schema_v=$(dockerdb psql --no-psqlrc -P pager=off -qtAX -U postgres -d "postgres_$env" -c "SELECT version FROM schema_migrations;")
@@ -607,7 +616,7 @@ x.db.restore() {
 ########################## e2e ##########################
 
 # Setup E2E Python environment.
-x.e2e.sync-dependencies() {
+x.e2e.sync-deps() {
   {
     cd e2e
     python -m venv .venv
@@ -686,7 +695,7 @@ x.openapi-generator() {
 
 # Run a diff against the previous OpenAPI spec in the main branch.
 # Can also be used to generate changelogs when upgrading major versions.
-x.diff-openapi-spec() {
+x.diff-oas() {
   {
     base_spec="/tmp/openapi.yaml"
     git show "main:$SPEC" >"$base_spec"
@@ -713,7 +722,7 @@ x.diff-openapi-spec() {
 # IMPORTANT: bug in declare -F returns line number of last nested function, if any.
 # extracting function here instead...
 run_hot_reload() {
-  x.run.backend-hot-reload &
+  x.run.backend-hr &
   pids+=("$!")
   x.run.frontend &
   pids+=("$!")
@@ -912,7 +921,7 @@ mapfile -t COMMANDS < \
 MAX_XFN_LEN=0 # for logging purposes
 for c in "${COMMANDS[@]}"; do
   len=${#c}
-  ((len > MAX_XFN_LEN)) && MAX_XFN_LEN=$((len - 2)) # remove "x."
+  ((len > MAX_XFN_LEN)) && MAX_XFN_LEN=$((len - 1)) # remove "x." but account for extra last space appended.
 done
 
 if [[ -n $COMP_LINE ]]; then
