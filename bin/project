@@ -218,11 +218,12 @@ x.gen.counterfeiter() {
         counterfeiter -o internal/rest/resttesting/authorization.gen.go $services AuthorizationService &
         counterfeiter -o internal/rest/resttesting/authentication.gen.go $services AuthenticationService &
         counterfeiter -o internal/services/servicestesting/user.gen.go $repos UserRepo &
+        counterfeiter -o internal/rest/resttesting/user.gen.go $services UserService &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
+      } 2>&1
 
-        md5sum $envvar $services $repos $tfidfpb >"$cache/counterfeiter.md5" &
-      } &>/dev/null
+      md5sum $envvar $services $repos $tfidfpb >"$cache/counterfeiter.md5" &
       wait
 
       # counterfeiter is unaware of grpc's obscure mustEmbedUnimplemented***() for forward server compatibility

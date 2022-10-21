@@ -6,12 +6,12 @@ import (
 )
 
 type Authentication struct {
-	Logger *zap.Logger
-	Pool   *pgxpool.Pool
+	logger *zap.Logger
+	pool   *pgxpool.Pool
 }
 
-func NewAuthentication(logger *zap.Logger) *Authentication {
+func NewAuthentication(logger *zap.Logger, pool *pgxpool.Pool) *Authentication {
 	return &Authentication{
-		Logger: logger,
+		logger: logger,
 	}
 }

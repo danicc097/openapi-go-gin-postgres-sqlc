@@ -1,32 +1,37 @@
 package rest
 
 import (
+	"database/sql"
+	"fmt"
 	"net/http"
 
+	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/crud"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v4/pgxpool"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
 // User handles routes with the 'user' tag.
 type User struct {
-	logger   *zap.Logger
-	userSvc  UserService
-	authnSvc AuthenticationService
-	authzSvc AuthorizationService
+	logger         *zap.Logger
+	pool           *pgxpool.Pool
+	movieSvcClient v1.MovieGenreClient
 }
 
 // NewUser returns a new handler for the 'user' route group.
 func NewUser(
 	logger *zap.Logger,
-	userSvc UserService,
-	authnSvc AuthenticationService,
-	authzSvc AuthorizationService,
+	pool *pgxpool.Pool,
+	movieSvcClient v1.MovieGenreClient,
 ) *User {
 	return &User{
-		logger:   logger,
-		userSvc:  userSvc,
-		authnSvc: authnSvc,
-		authzSvc: authzSvc,
+		logger:         logger,
+		pool:           pool,
+		movieSvcClient: movieSvcClient,
 	}
 }
 
@@ -48,6 +53,13 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 			HandlerFunc: h.getCurrentUser,
 			Middlewares: h.middlewares(getCurrentUser),
 		},
+		{
+			Name:        string(updateUser),
+			Method:      http.MethodPut,
+			Pattern:     "/user/:id",
+			HandlerFunc: h.updateUser,
+			Middlewares: h.middlewares(updateUser),
+		},
 	}
 
 	registerRoutes(r, routes, "/user", mws)
@@ -55,7 +67,7 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 
 // middlewares returns individual route middleware per operation id.
 func (h *User) middlewares(opID userOpID) []gin.HandlerFunc {
-	authMw := newAuthMiddleware(h.logger, h.authnSvc, h.authzSvc, h.userSvc)
+	authMw := newAuthMiddleware(h.logger, h.pool)
 
 	switch opID {
 	case getCurrentUser:
@@ -86,7 +98,7 @@ func (h *User) middlewares(opID userOpID) []gin.HandlerFunc {
 // 		return
 // 	}
 
-// 	res, err := h.userSvc.Create(ctx, user)
+// 	res, err := userSvc.Create(ctx, user)
 // 	if err != nil {
 // 		renderErrorResponse(c, "error creating user", err)
 
@@ -104,4 +116,94 @@ func (h *User) deleteUser(c *gin.Context) {
 // getCurrentUser returns the logged in user.
 func (h *User) getCurrentUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
+}
+
+// updateUser updates the user by id.
+func (h *User) updateUser(c *gin.Context) {
+	/*
+		curl -X 'POST'   'https://localhost:8090/v2/user/{}'   -H 'accept: application/json'   -H 'Authorization: Bearer fsefse'  -d '{"username":"user","email":"email","role":"admin"}'
+	*/
+	// https://github.com/xo/xo/blob/master/_examples/booktest/sql/postgres_schema.sql
+	// https://github.com/xo/xo/blob/master/_examples/booktest/postgres.go
+	// we can call functions directly: presumably should also work for update on mat views, vacuum etc.
+	// it can also generate custom queries like sqlc:
+	// https://github.com/xo/xo/blob/master/_examples/booktest/sql/postgres_query.sql
+	// is AuthorBookResultsByTags
+	ctx := c.Request.Context()
+	userSvc := services.NewUser(postgresql.NewUser(h.pool), h.logger, h.pool, h.movieSvcClient)
+
+	// span attribute not inheritable:
+	// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
+	s := newOTELSpan(ctx, "User.updateUser", trace.WithAttributes(userIDAttribute(c)))
+	s.AddEvent("update-user") // filterable with event="update-user"
+	defer s.End()
+
+	// tx, err := h.Pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable})
+	// if err != nil {
+	// 	renderErrorResponse(c, "err::", err)
+	// 	return
+	// }
+	// defer tx.Rollback(ctx)
+
+	// TODO back to OAS schema.
+	// only role can be updated, username and email come from idp
+	type UpsertUserRequest struct {
+		Username string `json:"username,omitempty" binding:"required"`
+		Email    string `json:"email,omitempty" binding:"required"`
+		Role     string `json:"role,omitempty" binding:"required"`
+	}
+	var body UpsertUserRequest
+
+	if err := c.BindJSON(&body); err != nil {
+		renderErrorResponse(c, "err::", err)
+
+		return
+	}
+
+	// TODO extract to helper
+	var role crud.Role
+
+	err := role.UnmarshalText([]byte(body.Role))
+	if err != nil {
+		renderErrorResponse(c, "err::", err)
+
+		return
+	}
+
+	h.logger.Sugar().Infof("body is :%#v", body)
+
+	user, err := userSvc.UserByEmail(c, body.Email)
+	if err != nil {
+		fmt.Printf("failed userSvc.UserByEmail: %s\n", err)
+	}
+
+	h.logger.Sugar().Infof("user by email: %v", user)
+
+	if user == nil {
+		err = userSvc.Register(c, &crud.User{
+			Username:  body.Username,
+			Email:     body.Email,
+			Role:      role,
+			FirstName: sql.NullString{String: "firstname", Valid: true},
+		})
+		if err != nil {
+			fmt.Printf("failed userSvc.UserByEmail: %s\n", err)
+			renderErrorResponse(c, "user could not be created", err)
+
+			return
+		}
+		renderResponse(c, "user created", http.StatusOK)
+
+		return
+	}
+	user.Username = body.Username
+	user.Email = body.Email
+	user.Role = role
+	err = userSvc.Upsert(c, user)
+	if err != nil {
+		renderErrorResponse(c, "err: ", err)
+
+		return
+	}
+	// tx.Commit(ctx)
 }

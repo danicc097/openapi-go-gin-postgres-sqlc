@@ -7,30 +7,26 @@ import (
 	"strings"
 
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
 )
 
 // authMiddleware handles authentication and authorization middleware.
 type authMiddleware struct {
-	Logger   *zap.Logger
-	authnSvc AuthenticationService
-	authzSvc AuthorizationService
-	userSvc  UserService
+	logger *zap.Logger
+	pool   *pgxpool.Pool
 }
 
 func newAuthMiddleware(
 	logger *zap.Logger,
-	authnSvc AuthenticationService,
-	authzSvc AuthorizationService,
-	userSvc UserService,
+	pool *pgxpool.Pool,
 ) *authMiddleware {
 	return &authMiddleware{
-		Logger:   logger,
-		authnSvc: authnSvc,
-		authzSvc: authzSvc,
-		userSvc:  userSvc,
+		logger: logger,
+		pool:   pool,
 	}
 }
 
@@ -38,7 +34,7 @@ func newAuthMiddleware(
 // TODO check app-specific jwt or api_key
 func (t *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		t.Logger.Sugar().Info("Would have run EnsureAuthenticated")
+		t.logger.Sugar().Info("Would have run EnsureAuthenticated")
 	}
 }
 
@@ -47,13 +43,14 @@ func (t *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 // based on token -> email -> GetUserByEmail -> role
 func (t *authMiddleware) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		authzSvc := services.NewAuthorization(t.logger, t.pool)
 		user := getUserFromCtx(c)
 		if user == nil {
 			renderErrorResponse(c, "Could not get user from context.", nil)
 
 			return
 		}
-		err := t.authzSvc.IsAuthorized(user.Role, requiredRole)
+		err := authzSvc.IsAuthorized(user.Role, requiredRole)
 		if err != nil {
 			renderErrorResponse(c, "Unauthorized.", err)
 
@@ -65,7 +62,7 @@ func (t *authMiddleware) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc 
 // EnsureVerified checks whether the client is verified.
 func (t *authMiddleware) EnsureVerified() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		t.Logger.Sugar().Info("Would have run EnsureAuthorized")
+		t.logger.Sugar().Info("Would have run EnsureAuthorized")
 		// u := userSvc.getUserByToken...
 		// ... u.isVerified
 	}

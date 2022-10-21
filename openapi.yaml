@@ -119,6 +119,26 @@ paths:
         - api_key: []
       tags:
         - user
+    put:
+      summary: updates the user by id
+      operationId: updateUser
+      parameters:
+        - description: userID that needs to be updated
+          explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
+      responses:
+        "404":
+          description: User not found
+      security:
+        - bearer_auth: []
+        - api_key: []
+      tags:
+        - user
 components:
   schemas:
     HTTPValidationError:

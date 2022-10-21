@@ -16,13 +16,14 @@ var roles = map[db.Role][]db.Role{
 
 // Authorization represents a service for authorization.
 type Authorization struct {
-	Logger *zap.Logger
-	Pool   *pgxpool.Pool
+	logger *zap.Logger
+	pool   *pgxpool.Pool
 }
 
-func NewAuthorization(logger *zap.Logger) *Authorization {
+func NewAuthorization(logger *zap.Logger, pool *pgxpool.Pool) *Authorization {
 	return &Authorization{
-		Logger: logger,
+		logger: logger,
+		pool:   pool,
 	}
 }
 

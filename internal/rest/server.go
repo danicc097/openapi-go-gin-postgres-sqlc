@@ -2,7 +2,6 @@ package rest
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -28,16 +27,13 @@ import (
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/crud"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-	"go.opentelemetry.io/otel/trace"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -169,9 +165,6 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	oasMw := newOpenapiMiddleware(conf.Logger, openapi)
 
-	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
-	authzSvc := services.Authorization{Logger: conf.Logger}
-
 	// TODO need to instantiate the repo with the conn/transaction already.
 	// hence we need to create a new service for every new request
 	// with a pool conn (already do this in py impl), else we
@@ -197,7 +190,6 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	//   remain in the same package, which they should.
 	// - repos must not be concerned with transaction details
 	// - also note services dont necessarily need an equivalently named repository or viceversa.
-	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool, conf.MovieSvcClient)
 
 	switch os.Getenv("APP_ENV") {
 	case "prod":
@@ -205,94 +197,17 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 		vg.Use(rlMw.Limit())
 	}
 
-	// TODO REMOVE
-	/*
-		curl -X 'POST'   'https://localhost:8090/v2/upsert-user'   -H 'accept: application/json'   -H 'Authorization: Bearer fsefse'  -d '{"username":"user","email":"email","role":"admin"}'
-	*/
-	// https://github.com/xo/xo/blob/master/_examples/booktest/sql/postgres_schema.sql
-	// https://github.com/xo/xo/blob/master/_examples/booktest/postgres.go
-	// we can call functions directly: presumably should also work for update on mat views, vacuum etc.
-	// it can also generate custom queries like sqlc:
-	// https://github.com/xo/xo/blob/master/_examples/booktest/sql/postgres_query.sql
-	// is AuthorBookResultsByTags
-	vg.POST("/upsert-user", func(c *gin.Context) {
-		ctx := c.Request.Context()
-
-		// span attribute not inheritable:
-		// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
-		s := newOTELSpan(ctx, "User.CreateUser", trace.WithAttributes(userIDAttribute(c)))
-		s.AddEvent("create-user") // filterable with event="create-user"
-		defer s.End()
-
-		// tx, err := conf.Pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable})
-		// if err != nil {
-		// 	renderErrorResponse(c, "err::", err)
-		// 	return
-		// }
-		// defer tx.Rollback(ctx)
-
-		type UpsertUserRequest struct {
-			Username string `json:"username,omitempty" binding:"required"`
-			Email    string `json:"email,omitempty" binding:"required"`
-			Role     string `json:"role,omitempty" binding:"required"`
-		}
-		var body UpsertUserRequest
-		if err := c.BindJSON(&body); err != nil {
-			renderErrorResponse(c, "err::", err)
-			return
-		}
-
-		// TODO extract to helper
-		var role crud.Role
-		err = role.UnmarshalText([]byte(body.Role))
-		if err != nil {
-			renderErrorResponse(c, "err::", err)
-			return
-		}
-		conf.Logger.Sugar().Infof("body is :%#v", body)
-
-		user, err := userSvc.UserByEmail(c, body.Email)
-		if err != nil {
-			fmt.Printf("failed userSvc.UserByEmail: %s\n", err)
-		}
-		conf.Logger.Sugar().Infof("user by email: %v", user)
-		if user == nil {
-			err = userSvc.Register(c, &crud.User{
-				Username:  body.Username,
-				Email:     body.Email,
-				Role:      role,
-				FirstName: sql.NullString{String: "firstname", Valid: true},
-			})
-			if err != nil {
-				fmt.Printf("failed userSvc.UserByEmail: %s\n", err)
-				renderErrorResponse(c, "user could not be created", err)
-				return
-			}
-			renderResponse(c, "user created", http.StatusOK)
-			return
-		}
-		user.Username = body.Username
-		user.Email = body.Email
-		user.Role = role
-		err = userSvc.Upsert(c, user)
-		if err != nil {
-			renderErrorResponse(c, "err: ", err)
-			return
-		}
-		// tx.Commit(ctx)
-	})
-
 	vg.Use(oasMw.RequestValidatorWithOptions(&options))
 
-	authMw := newAuthMiddleware(conf.Logger, authnSvc, authzSvc, userSvc)
+	authMw := newAuthMiddleware(conf.Logger, conf.Pool)
 
-	NewAdmin(userSvc).
+	NewAdmin(conf.Logger, conf.Pool).
 		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthorized(db.RoleAdmin)})
 
 	NewDefault().
 		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated(), authMw.EnsureVerified()})
 
-	NewUser(conf.Logger, userSvc, authnSvc, authzSvc).
+	NewUser(conf.Logger, conf.Pool, conf.MovieSvcClient).
 		Register(vg, []gin.HandlerFunc{})
 
 	conf.Logger.Info("Server started")
