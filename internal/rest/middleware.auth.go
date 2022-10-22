@@ -40,7 +40,7 @@ func newAuthMiddleware(
 func (t *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t.logger.Sugar().Info("Would have run EnsureAuthenticated and set user in ctx")
-		authsvc := services.NewAuthentication(t.pool, t.logger, t.movieSvcClient)
+		authsvc := services.NewAuthentication(t.pool, t.logger)
 		// if x-api-key header found
 		authsvc.GetUserFromApiKey(c.Request.Context())
 		// if auth header with bearer scheme found

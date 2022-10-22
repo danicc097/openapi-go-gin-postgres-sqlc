@@ -9,7 +9,7 @@ import (
 
 // User represents a row from 'public.users'.
 type User struct {
-	UserID      int64          `json:"user_id"`      // user_id
+	UserID      int            `json:"user_id"`      // user_id
 	Username    string         `json:"username"`     // username
 	Email       string         `json:"email"`        // email
 	FirstName   sql.NullString `json:"first_name"`   // first_name
@@ -188,7 +188,7 @@ func UserByEmail(ctx context.Context, db DB, email string) (*User, error) {
 // UserByUserID retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_pkey'.
-func UserByUserID(ctx context.Context, db DB, userID int64) (*User, error) {
+func UserByUserID(ctx context.Context, db DB, userID int) (*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`user_id, username, email, first_name, last_name, role, is_superuser, deleted_at ` +

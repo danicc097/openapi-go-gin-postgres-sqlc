@@ -145,7 +145,7 @@ func (h *User) updateUser(c *gin.Context) {
 	}
 	defer tx.Rollback(ctx)
 
-	userSvc := services.NewUser(tx, h.logger, h.movieSvcClient)
+	userSvc := services.NewUser(tx, h.logger)
 
 	// span attribute not inheritable:
 	// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026

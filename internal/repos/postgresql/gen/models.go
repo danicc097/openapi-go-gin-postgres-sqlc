@@ -72,8 +72,15 @@ func AllRoleValues() []Role {
 	}
 }
 
+type Movies struct {
+	MovieID  int32  `db:"movie_id" json:"movie_id"`
+	Title    string `db:"title" json:"title"`
+	Year     int32  `db:"year" json:"year"`
+	Synopsis string `db:"synopsis" json:"synopsis"`
+}
+
 type Users struct {
-	UserID      int64          `db:"user_id" json:"user_id"`
+	UserID      int32          `db:"user_id" json:"user_id"`
 	Username    string         `db:"username" json:"username"`
 	Email       string         `db:"email" json:"email"`
 	FirstName   sql.NullString `db:"first_name" json:"first_name"`

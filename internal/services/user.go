@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 
-	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/crud"
@@ -31,21 +30,19 @@ type User struct {
 	// regarding testing, service package testing need not mock the service or do they?
 	// if we define it as in interface we are forcing consumers to use this package's interface..
 	someService *SomeService
-	movieSvc    *moviePrediction
 }
 
 // NewUser returns a new User service.
-func NewUser(d db.DBTX, logger *zap.Logger, movieSvcClient v1.MovieGenreClient) *User {
+func NewUser(d db.DBTX, logger *zap.Logger) *User {
 	return &User{
 		d:      d,
 		logger: logger,
 		urepo:  postgresql.NewUser(d),
-		// NewMoviePrediction would receive repo interfaces, etc via args to NewUser,
-		//  but we dont want to use an interface for moviePrediction.
-		// in this package impl we will always want the actual moviePrediction impl. of the package.
+		// NewMovie would receive repo interfaces, etc via args to NewUser,
+		//  but we dont want to use an interface for movie.
+		// in this package impl we will always want the actual movie impl. of the package.
 		// Note that User service can be mocked the same way if need be since we dont pass any concrete service
 		// in args, just the building blocks, which should ALWAYS be interfaces for things we control.
-		movieSvc: NewMoviePrediction(movieSvcClient),
 	}
 }
 
@@ -53,11 +50,7 @@ func NewUser(d db.DBTX, logger *zap.Logger, movieSvcClient v1.MovieGenreClient) 
 func (u *User) Upsert(ctx context.Context, user *crud.User) error {
 	defer newOTELSpan(ctx, "User.Upsert").End()
 
-	predictions, _ := u.movieSvc.PredictMovieGenre(ctx, synopsis)
-	u.logger.Sugar().Infof("Movie predictions: %v", predictions)
-
-	err := u.urepo.Upsert(ctx, user)
-	if err != nil {
+	if err := u.urepo.Upsert(ctx, user); err != nil {
 		// TODO database info is leaked if its inaccessible
 		return errors.Wrap(err, "urepo.Upsert")
 	}
@@ -69,8 +62,7 @@ func (u *User) Upsert(ctx context.Context, user *crud.User) error {
 func (u *User) Register(ctx context.Context, user *crud.User) error {
 	defer newOTELSpan(ctx, "User.Register").End()
 
-	err := u.urepo.Create(ctx, user)
-	if err != nil {
+	if err := u.urepo.Create(ctx, user); err != nil {
 		return errors.Wrap(err, "urepo.Create")
 	}
 
@@ -80,9 +72,6 @@ func (u *User) Register(ctx context.Context, user *crud.User) error {
 // UserByEmail gets a user by email.
 func (u *User) UserByEmail(ctx context.Context, email string) (*crud.User, error) {
 	defer newOTELSpan(ctx, "User.UserByEmail").End()
-
-	predictions, _ := u.movieSvc.PredictMovieGenre(ctx, synopsis)
-	u.logger.Sugar().Infof("Movie predictions: %v", predictions)
 
 	user, err := u.urepo.UserByEmail(ctx, email)
 	if err != nil {

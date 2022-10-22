@@ -6,7 +6,7 @@ create type role as ENUM (
   'admin'
 );
 create table users (
-  user_id bigserial not null,
+  user_id serial not null,
   username text not null,
   email text not null,
   first_name text,
@@ -19,5 +19,12 @@ create table users (
   primary key (user_id),
   unique (email),
   unique (username)
+);
+create table movies (
+  movie_id serial not null,
+  title text not null,
+  year integer not null,
+  synopsis text not null,
+  primary key (movie_id)
 );
 commit;

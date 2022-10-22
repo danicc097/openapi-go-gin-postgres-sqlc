@@ -47,7 +47,7 @@ type GetUserRow struct {
 	IsSuperuser bool      `db:"is_superuser" json:"is_superuser"`
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
-	UserID      int64     `db:"user_id" json:"user_id"`
+	UserID      int32     `db:"user_id" json:"user_id"`
 }
 
 func (q *Queries) GetUser(ctx context.Context, arg GetUserParams) (GetUserRow, error) {
@@ -79,7 +79,7 @@ from
 `
 
 type ListAllUsersRow struct {
-	UserID      int64     `db:"user_id" json:"user_id"`
+	UserID      int32     `db:"user_id" json:"user_id"`
 	Username    string    `db:"username" json:"username"`
 	Email       string    `db:"email" json:"email"`
 	Role        Role      `db:"role" json:"role"`
@@ -129,7 +129,7 @@ where
 type UpdateUserByIdParams struct {
 	Username sql.NullString `db:"username" json:"username"`
 	Email    sql.NullString `db:"email" json:"email"`
-	UserID   int64          `db:"user_id" json:"user_id"`
+	UserID   int32          `db:"user_id" json:"user_id"`
 }
 
 func (q *Queries) UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) error {
