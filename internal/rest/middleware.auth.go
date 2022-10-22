@@ -45,6 +45,8 @@ func (t *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		authsvc.GetUserFromApiKey(c.Request.Context())
 		// if auth header with bearer scheme found
 		authsvc.GetUserFromToken(c.Request.Context())
+
+		// set user to context
 	}
 }
 

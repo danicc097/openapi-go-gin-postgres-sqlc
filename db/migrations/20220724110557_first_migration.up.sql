@@ -6,11 +6,13 @@ create type role as ENUM (
   'admin'
 );
 create table users (
-  user_id serial not null,
+  user_id UUID DEFAULT gen_random_uuid() NOT NULL,
   username text not null,
   email text not null,
   first_name text,
   last_name text,
+  full_name text GENERATED ALWAYS AS (((first_name) || ' ') || (last_name)) STORED,
+  external_id text NOT NULL,
   role role default 'user' not null,
   is_superuser boolean default 'False' not null,
   created_at timestamp without time zone default current_timestamp not null,
@@ -26,5 +28,13 @@ create table movies (
   year integer not null,
   synopsis text not null,
   primary key (movie_id)
+);
+create table api_keys (
+  api_key_id serial not null,
+  api_key text not null,
+  user_id UUID not null,
+  primary key (api_key_id),
+  unique (api_key),
+  foreign key (user_id) references users (user_id) on delete cascade
 );
 commit;

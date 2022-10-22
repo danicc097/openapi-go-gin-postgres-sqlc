@@ -8,6 +8,9 @@ set -Eeo pipefail
 
 trap killgroup SIGINT
 
+# TODO fix `err` function to exit from any subshell
+trap '[ "$?" -ne 77 ] || exit 77' ERR
+
 pids=()
 killgroup() {
   printf "\nkilling spawned processes...\n"
@@ -261,7 +264,7 @@ x.gen() {
       export POSTGRES_DB="xoxo"
       x.db.drop
       x.migrate up
-      generate_xo
+      generate_xo || err "Failed xo generation"
     ) &
     _pids+=($!)
     x.gen.proto &
@@ -737,7 +740,7 @@ generate_xo() {
       --src "$PG_REPO"/xo-templates \
       -o "$PG_REPO"/gen/crud \
       -e "*.created_at" \
-      -e "*.updated_at" || err "Failed xo generation"
+      -e "*.updated_at"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

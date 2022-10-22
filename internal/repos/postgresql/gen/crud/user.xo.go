@@ -5,15 +5,19 @@ package crud
 import (
 	"context"
 	"database/sql"
+
+	"github.com/google/uuid"
 )
 
 // User represents a row from 'public.users'.
 type User struct {
-	UserID      int            `json:"user_id"`      // user_id
+	UserID      uuid.UUID      `json:"user_id"`      // user_id
 	Username    string         `json:"username"`     // username
 	Email       string         `json:"email"`        // email
 	FirstName   sql.NullString `json:"first_name"`   // first_name
 	LastName    sql.NullString `json:"last_name"`    // last_name
+	FullName    sql.NullString `json:"full_name"`    // full_name
+	ExternalID  string         `json:"external_id"`  // external_id
 	Role        Role           `json:"role"`         // role
 	IsSuperuser bool           `json:"is_superuser"` // is_superuser
 	DeletedAt   sql.NullTime   `json:"deleted_at"`   // deleted_at
@@ -26,7 +30,7 @@ type User struct {
 func GetMostRecentUser(ctx context.Context, db DB, n int) ([]*User, error) {
 	// list
 	const sqlstr = `SELECT ` +
-		`user_id, username, email, first_name, last_name, role, is_superuser, deleted_at ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, deleted_at ` +
 		`FROM public.users ` +
 		`ORDER BY created_at DESC LIMIT $1`
 	// run
@@ -45,7 +49,7 @@ func GetMostRecentUser(ctx context.Context, db DB, n int) ([]*User, error) {
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.Role, &u.IsSuperuser, &u.DeletedAt); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.IsSuperuser, &u.DeletedAt); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &u)
@@ -77,13 +81,13 @@ func (u *User) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	const sqlstr = `INSERT INTO public.users (` +
-		`username, email, first_name, last_name, role, is_superuser, deleted_at` +
+		`username, email, first_name, last_name, full_name, external_id, role, is_superuser, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
 		`) RETURNING user_id`
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsSuperuser, u.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsSuperuser, u.DeletedAt).Scan(&u.UserID); err != nil {
+	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt)
+	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt).Scan(&u.UserID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -101,11 +105,11 @@ func (u *User) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	const sqlstr = `UPDATE public.users SET ` +
-		`username = $1, email = $2, first_name = $3, last_name = $4, role = $5, is_superuser = $6, deleted_at = $7 ` +
-		`WHERE user_id = $8`
+		`username = $1, email = $2, first_name = $3, last_name = $4, full_name = $5, external_id = $6, role = $7, is_superuser = $8, deleted_at = $9 ` +
+		`WHERE user_id = $10`
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsSuperuser, u.DeletedAt, u.UserID)
-	if _, err := db.Exec(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsSuperuser, u.DeletedAt, u.UserID); err != nil {
+	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt, u.UserID)
+	if _, err := db.Exec(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt, u.UserID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -127,16 +131,16 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	const sqlstr = `INSERT INTO public.users (` +
-		`user_id, username, email, first_name, last_name, role, is_superuser, deleted_at` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10` +
 		`)` +
 		` ON CONFLICT (user_id) DO ` +
 		`UPDATE SET ` +
-		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, role = EXCLUDED.role, is_superuser = EXCLUDED.is_superuser, deleted_at = EXCLUDED.deleted_at `
+		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, full_name = EXCLUDED.full_name, external_id = EXCLUDED.external_id, role = EXCLUDED.role, is_superuser = EXCLUDED.is_superuser, deleted_at = EXCLUDED.deleted_at `
 	// run
-	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsSuperuser, u.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.Role, u.IsSuperuser, u.DeletedAt); err != nil {
+	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -171,7 +175,7 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 func UserByEmail(ctx context.Context, db DB, email string) (*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`user_id, username, email, first_name, last_name, role, is_superuser, deleted_at ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, deleted_at ` +
 		`FROM public.users ` +
 		`WHERE email = $1`
 	// run
@@ -179,7 +183,7 @@ func UserByEmail(ctx context.Context, db DB, email string) (*User, error) {
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.Role, &u.IsSuperuser, &u.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.IsSuperuser, &u.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -188,10 +192,10 @@ func UserByEmail(ctx context.Context, db DB, email string) (*User, error) {
 // UserByUserID retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_pkey'.
-func UserByUserID(ctx context.Context, db DB, userID int) (*User, error) {
+func UserByUserID(ctx context.Context, db DB, userID uuid.UUID) (*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`user_id, username, email, first_name, last_name, role, is_superuser, deleted_at ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, deleted_at ` +
 		`FROM public.users ` +
 		`WHERE user_id = $1`
 	// run
@@ -199,7 +203,7 @@ func UserByUserID(ctx context.Context, db DB, userID int) (*User, error) {
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.Role, &u.IsSuperuser, &u.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.IsSuperuser, &u.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -211,7 +215,7 @@ func UserByUserID(ctx context.Context, db DB, userID int) (*User, error) {
 func UserByUsername(ctx context.Context, db DB, username string) (*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`user_id, username, email, first_name, last_name, role, is_superuser, deleted_at ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, deleted_at ` +
 		`FROM public.users ` +
 		`WHERE username = $1`
 	// run
@@ -219,7 +223,7 @@ func UserByUsername(ctx context.Context, db DB, username string) (*User, error) 
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.Role, &u.IsSuperuser, &u.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.IsSuperuser, &u.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil

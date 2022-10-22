@@ -9,6 +9,8 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Role string
@@ -72,6 +74,12 @@ func AllRoleValues() []Role {
 	}
 }
 
+type ApiKeys struct {
+	ApiKeyID int32     `db:"api_key_id" json:"api_key_id"`
+	ApiKey   string    `db:"api_key" json:"api_key"`
+	UserID   uuid.UUID `db:"user_id" json:"user_id"`
+}
+
 type Movies struct {
 	MovieID  int32  `db:"movie_id" json:"movie_id"`
 	Title    string `db:"title" json:"title"`
@@ -80,11 +88,13 @@ type Movies struct {
 }
 
 type Users struct {
-	UserID      int32          `db:"user_id" json:"user_id"`
+	UserID      uuid.UUID      `db:"user_id" json:"user_id"`
 	Username    string         `db:"username" json:"username"`
 	Email       string         `db:"email" json:"email"`
 	FirstName   sql.NullString `db:"first_name" json:"first_name"`
 	LastName    sql.NullString `db:"last_name" json:"last_name"`
+	FullName    sql.NullString `db:"full_name" json:"full_name"`
+	ExternalID  string         `db:"external_id" json:"external_id"`
 	Role        Role           `db:"role" json:"role"`
 	IsSuperuser bool           `db:"is_superuser" json:"is_superuser"`
 	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
