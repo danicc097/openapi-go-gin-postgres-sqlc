@@ -36,28 +36,34 @@ DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
 DUMP_PREFIX="dump_${env}_"
 
 MAX_COMMENT_LEN=88
+MAX_FNAME_LOG_LEN=12
 
 # log for any function output.
 xlog() {
   fname="${FUNCNAME[1]#*.}"
+  if [[ ${#fname} -gt $MAX_FNAME_LOG_LEN ]]; then
+    fname="${fname:0:$MAX_FNAME_LOG_LEN}…"
+  fi
   if [[ "$CMD" = "$fname" ]]; then
     cat # remove logging for the command itself
   else
-    fn=$(printf "%*s |\n" $MAX_XFN_LEN "$fname")
+    fn=$(printf "%*s |\n" $((MAX_FNAME_LOG_LEN + 1)) "$fname")
     sed -ue "s/^/${BLUE}$fn${OFF} /"
   fi
 }
 
 # log stderr for any function output.
-# sed is buffering by default (without -u)
-# so streams dont preserve order
-# https://unix.stackexchange.com/questions/418705/redirecting-stderr-and-stdout-separately-to-a-function-in-a-bash-script
+# sed is buffering by default (without -u) so streams dont preserve order
+# > >(one) 2> >(two) are background processes so it will break our parallel code.
 xerr() {
   fname="${FUNCNAME[1]#*.}"
+  if [[ ${#fname} -gt $MAX_FNAME_LOG_LEN ]]; then
+    fname="${fname:0:$MAX_FNAME_LOG_LEN}…"
+  fi
   if [[ "$CMD" = "$fname" ]]; then
     cat # remove logging for the command itself
   else
-    fn=$(printf "%*s |\n" $MAX_XFN_LEN "$fname")
+    fn=$(printf "%*s |\n" $((MAX_FNAME_LOG_LEN + 1)) "$fname")
     sed -ue "s/^/${RED}$fn${OFF} /" >&2
   fi
 }
@@ -176,27 +182,6 @@ x.gen.sqlc() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Automatically generate CRUD and By queries based on existing indexes from
-# a Postgres schema.
-# Does not work with a schema file, database must be up to date.
-x.gen.xo() {
-  # TODO from hn
-  # I've used https://github.com/xo/xo, extended it with some custom functions for templating, extended the templates themselves, and can now generate CRUD for anything in the database, functions for common select queries based on the indices that exist in the database, field filtering and scanning, updates for subsets of fields including some atomic operations, etc. The sky is the limit honestly. It has allowed me to start with something approximating a statically generated ORM and extend it with any features I want as time goes on. I also write .extra.go files along side the generated .xo.go files to extend the structs that are generated with custom logic and methods to convert data into response formats.
-
-  # TODO wrapper
-  { { {
-    echo "Running generation"
-
-    mkdir -p $PG_REPO/gen/crud
-    # xo schema --help
-    xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
-      --src "$PG_REPO"/xo-templates \
-      -o "$PG_REPO"/gen/crud \
-      -e "*.created_at" \
-      -e "*.updated_at" || err "Failed xo generation"
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-}
-
 # Generate mocks for specified interfaces. Runs are cached to `cachedir`.
 # Args: cachedir
 x.gen.counterfeiter() {
@@ -276,7 +261,7 @@ x.gen() {
       export POSTGRES_DB="xoxo"
       x.db.drop
       x.migrate up
-      x.gen.xo
+      generate_xo
     ) &
     _pids+=($!)
     x.gen.proto &
@@ -736,6 +721,24 @@ run_shared_services() {
     --env-file ../.env."$env" \
     "$@" 2>&1 # https://github.com/docker/compose/issues/7346
   cd - >/dev/null
+}
+
+# Automatically generate CRUD and By queries based on existing indexes from a Postgres schema.
+generate_xo() {
+  # TODO from hn
+  # I've used https://github.com/xo/xo, extended it with some custom functions for templating, extended the templates themselves, and can now generate CRUD for anything in the database, functions for common select queries based on the indices that exist in the database, field filtering and scanning, updates for subsets of fields including some atomic operations, etc. The sky is the limit honestly. It has allowed me to start with something approximating a statically generated ORM and extend it with any features I want as time goes on. I also write .extra.go files along side the generated .xo.go files to extend the structs that are generated with custom logic and methods to convert data into response formats.
+
+  { { {
+    echo "Running generation"
+
+    mkdir -p $PG_REPO/gen/crud
+    # xo schema --help
+    xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+      --src "$PG_REPO"/xo-templates \
+      -o "$PG_REPO"/gen/crud \
+      -e "*.created_at" \
+      -e "*.updated_at" || err "Failed xo generation"
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 generate_api() {
