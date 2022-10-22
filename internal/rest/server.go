@@ -199,16 +199,16 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	vg.Use(oasMw.RequestValidatorWithOptions(&options))
 
-	authMw := newAuthMiddleware(conf.Logger, conf.Pool)
+	authMw := newAuthMiddleware(conf.Logger, conf.Pool, conf.MovieSvcClient)
 
 	NewAdmin(conf.Logger, conf.Pool).
 		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthorized(db.RoleAdmin)})
 
 	NewDefault().
-		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated(), authMw.EnsureVerified()})
+		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated()})
 
 	NewUser(conf.Logger, conf.Pool, conf.MovieSvcClient).
-		Register(vg, []gin.HandlerFunc{})
+		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated()})
 
 	conf.Logger.Info("Server started")
 	srv.httpsrv = &http.Server{

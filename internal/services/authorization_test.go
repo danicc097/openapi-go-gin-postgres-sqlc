@@ -5,7 +5,6 @@ import (
 
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"
 )
@@ -13,7 +12,7 @@ import (
 func TestAuthorization(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewAuthorization(zaptest.NewLogger(t), &pgxpool.Pool{})
+	svc := services.NewAuthorization(zaptest.NewLogger(t))
 
 	assert.ErrorContains(t, svc.IsAuthorized(db.RoleUser, db.RoleManager), "access restricted")
 	assert.ErrorContains(t, svc.IsAuthorized(db.RoleUser, db.RoleAdmin), "access restricted")

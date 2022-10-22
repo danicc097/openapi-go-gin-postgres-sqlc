@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/getkin/kin-openapi/openapi3filter"
@@ -16,25 +17,34 @@ import (
 
 // authMiddleware handles authentication and authorization middleware.
 type authMiddleware struct {
-	logger *zap.Logger
-	pool   *pgxpool.Pool
+	logger         *zap.Logger
+	pool           *pgxpool.Pool
+	movieSvcClient v1.MovieGenreClient
 }
 
 func newAuthMiddleware(
 	logger *zap.Logger,
 	pool *pgxpool.Pool,
+	movieSvcClient v1.MovieGenreClient,
 ) *authMiddleware {
 	return &authMiddleware{
-		logger: logger,
-		pool:   pool,
+		logger:         logger,
+		pool:           pool,
+		movieSvcClient: movieSvcClient,
 	}
 }
 
 // EnsureAuthenticated checks whether the client is authenticated.
 // TODO check app-specific jwt or api_key
+// else redirect to /auth/{provider}/login (no auth middleware here or in */callback).
 func (t *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		t.logger.Sugar().Info("Would have run EnsureAuthenticated")
+		t.logger.Sugar().Info("Would have run EnsureAuthenticated and set user in ctx")
+		authsvc := services.NewAuthentication(t.pool, t.logger, t.movieSvcClient)
+		// if x-api-key header found
+		authsvc.GetUserFromApiKey(c.Request.Context())
+		// if auth header with bearer scheme found
+		authsvc.GetUserFromToken(c.Request.Context())
 	}
 }
 
@@ -43,7 +53,7 @@ func (t *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 // based on token -> email -> GetUserByEmail -> role
 func (t *authMiddleware) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authzSvc := services.NewAuthorization(t.logger, t.pool)
+		authzSvc := services.NewAuthorization(t.logger)
 		user := getUserFromCtx(c)
 		if user == nil {
 			renderErrorResponse(c, "Could not get user from context.", nil)
@@ -56,15 +66,6 @@ func (t *authMiddleware) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc 
 
 			return
 		}
-	}
-}
-
-// EnsureVerified checks whether the client is verified.
-func (t *authMiddleware) EnsureVerified() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		t.logger.Sugar().Info("Would have run EnsureAuthorized")
-		// u := userSvc.getUserByToken...
-		// ... u.isVerified
 	}
 }
 

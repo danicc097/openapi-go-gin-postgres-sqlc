@@ -6,10 +6,11 @@ import (
 	"net/http"
 
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/crud"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
@@ -67,11 +68,17 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 
 // middlewares returns individual route middleware per operation id.
 func (h *User) middlewares(opID userOpID) []gin.HandlerFunc {
-	authMw := newAuthMiddleware(h.logger, h.pool)
+	authMw := newAuthMiddleware(h.logger, h.pool, h.movieSvcClient)
 
 	switch opID {
-	case getCurrentUser:
-		return []gin.HandlerFunc{authMw.EnsureAuthenticated()}
+	case deleteUser:
+		return []gin.HandlerFunc{
+			authMw.EnsureAuthorized(db.RoleAdmin),
+		}
+	case updateUser:
+		return []gin.HandlerFunc{
+			authMw.EnsureAuthorized(db.RoleAdmin),
+		}
 	default:
 		return []gin.HandlerFunc{}
 	}
@@ -130,7 +137,15 @@ func (h *User) updateUser(c *gin.Context) {
 	// https://github.com/xo/xo/blob/master/_examples/booktest/sql/postgres_query.sql
 	// is AuthorBookResultsByTags
 	ctx := c.Request.Context()
-	userSvc := services.NewUser(postgresql.NewUser(h.pool), h.logger, h.pool, h.movieSvcClient)
+
+	tx, err := h.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable})
+	if err != nil {
+		renderErrorResponse(c, "err::", err)
+		return
+	}
+	defer tx.Rollback(ctx)
+
+	userSvc := services.NewUser(tx, h.logger, h.movieSvcClient)
 
 	// span attribute not inheritable:
 	// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
@@ -138,15 +153,9 @@ func (h *User) updateUser(c *gin.Context) {
 	s.AddEvent("update-user") // filterable with event="update-user"
 	defer s.End()
 
-	// tx, err := h.Pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable})
-	// if err != nil {
-	// 	renderErrorResponse(c, "err::", err)
-	// 	return
-	// }
-	// defer tx.Rollback(ctx)
-
 	// TODO back to OAS schema.
-	// only role can be updated, username and email come from idp
+	// only role can be updated, username and email come from idp.
+	// lets add first_name last_name.
 	type UpsertUserRequest struct {
 		Username string `json:"username,omitempty" binding:"required"`
 		Email    string `json:"email,omitempty" binding:"required"`
@@ -163,7 +172,7 @@ func (h *User) updateUser(c *gin.Context) {
 	// TODO extract to helper
 	var role crud.Role
 
-	err := role.UnmarshalText([]byte(body.Role))
+	err = role.UnmarshalText([]byte(body.Role))
 	if err != nil {
 		renderErrorResponse(c, "err::", err)
 
@@ -205,5 +214,5 @@ func (h *User) updateUser(c *gin.Context) {
 
 		return
 	}
-	// tx.Commit(ctx)
+	tx.Commit(ctx)
 }

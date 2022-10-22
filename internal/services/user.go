@@ -4,8 +4,9 @@ import (
 	"context"
 
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/crud"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -17,7 +18,9 @@ Among the most gruesome horror movies of 2022, The Sadness lives up to its name 
 `
 
 type User struct {
-	urepo UserRepo
+	d      db.DBTX
+	logger *zap.Logger
+	urepo  UserRepo
 	// services can call other services. In this case
 	// the interface for this service would defined in the same package where the implementation is called,
 	// which makes little sense since in this package we will always want to pass this package's
@@ -28,17 +31,15 @@ type User struct {
 	// regarding testing, service package testing need not mock the service or do they?
 	// if we define it as in interface we are forcing consumers to use this package's interface..
 	someService *SomeService
-	logger      *zap.Logger
-	pool        *pgxpool.Pool
 	movieSvc    *moviePrediction
 }
 
 // NewUser returns a new User service.
-func NewUser(urepo UserRepo, logger *zap.Logger, pool *pgxpool.Pool, movieSvcClient v1.MovieGenreClient) *User {
+func NewUser(d db.DBTX, logger *zap.Logger, movieSvcClient v1.MovieGenreClient) *User {
 	return &User{
-		urepo:  urepo,
+		d:      d,
 		logger: logger,
-		pool:   pool,
+		urepo:  postgresql.NewUser(d),
 		// NewMoviePrediction would receive repo interfaces, etc via args to NewUser,
 		//  but we dont want to use an interface for moviePrediction.
 		// in this package impl we will always want the actual moviePrediction impl. of the package.
