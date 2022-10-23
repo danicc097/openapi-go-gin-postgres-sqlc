@@ -52,8 +52,8 @@ type GetUserRow struct {
 	UserID      uuid.UUID `db:"user_id" json:"user_id"`
 }
 
-func (q *Queries) GetUser(ctx context.Context, arg GetUserParams) (GetUserRow, error) {
-	row := q.db.QueryRow(ctx, GetUser, arg.Email, arg.Username, arg.UserID)
+func (q *Queries) GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetUserRow, error) {
+	row := db.QueryRow(ctx, GetUser, arg.Email, arg.Username, arg.UserID)
 	var i GetUserRow
 	err := row.Scan(
 		&i.Username,
@@ -90,8 +90,8 @@ type ListAllUsersRow struct {
 	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
-func (q *Queries) ListAllUsers(ctx context.Context) ([]ListAllUsersRow, error) {
-	rows, err := q.db.Query(ctx, ListAllUsers)
+func (q *Queries) ListAllUsers(ctx context.Context, db DBTX) ([]ListAllUsersRow, error) {
+	rows, err := db.Query(ctx, ListAllUsers)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ type UpdateUserByIdParams struct {
 	UserID   uuid.UUID      `db:"user_id" json:"user_id"`
 }
 
-func (q *Queries) UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) error {
-	_, err := q.db.Exec(ctx, UpdateUserById, arg.Username, arg.Email, arg.UserID)
+func (q *Queries) UpdateUserById(ctx context.Context, db DBTX, arg UpdateUserByIdParams) error {
+	_, err := db.Exec(ctx, UpdateUserById, arg.Username, arg.Email, arg.UserID)
 	return err
 }

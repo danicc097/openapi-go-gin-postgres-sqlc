@@ -103,7 +103,8 @@ trim_string() {
 
 err() {
   echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
-  exit 1
+  kill -s SIGUSR1 $PROC
+  exit 1 # if not using trap
 }
 
 ######################## env vars ###########################

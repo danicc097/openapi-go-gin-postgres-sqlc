@@ -7,39 +7,43 @@ source "${BASH_SOURCE%/*}/scripts/deps-check.sh"
 set -Eeo pipefail
 
 trap killgroup SIGINT
+trap errtrap SIGUSR1
 
-# TODO fix `err` function to exit from any subshell
-trap '[ "$?" -ne 77 ] || exit 77' ERR
-
-pids=()
 killgroup() {
   printf "\nkilling spawned processes...\n"
   kill 0
+  exit 1
+}
+
+errtrap() {
+  printf "\nExiting due to propagated error...\n"
+  exit 1
 }
 
 ensure_pwd_is_top_level
+
 source ".envrc"
 
+export PROC=$$
 export GIT_USER_ID=danicc097
 export GIT_REPO_ID=openapi-go-gin-postgres-sqlc
 export GO_POST_PROCESS_FILE="/usr/bin/env gofmt -w -s"
 export GENVERS=6.0.1
 
-SPEC="openapi.yaml"
-OPENAPI_GEN_OUT_DIR="internal"
-OPENAPI_GEN_DIR="$OPENAPI_GEN_OUT_DIR/gen"
-PROTO_DIR="internal/pb"
-TEMPLATE_DIR="internal/go-gin-server-templates"
-PWD="$(pwd)"
+readonly SPEC="openapi.yaml"
+readonly OPENAPI_GEN_OUT_DIR="internal"
+readonly OPENAPI_GEN_DIR="$OPENAPI_GEN_OUT_DIR/gen"
+readonly PROTO_DIR="internal/pb"
+readonly TEMPLATE_DIR="internal/go-gin-server-templates"
+readonly BIN_DIR=$(dirname "${BASH_SOURCE[0]}")
+readonly PG_REPO="internal/repos/postgresql"
+readonly MAX_COMMENT_LEN=88
+readonly MAX_FNAME_LOG_LEN=12
+readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
+
+pids=()
 env="dev"
-BIN_DIR=$(dirname "${BASH_SOURCE[0]}")
-PG_REPO="internal/repos/postgresql"
-
-DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
-DUMP_PREFIX="dump_${env}_"
-
-MAX_COMMENT_LEN=88
-MAX_FNAME_LOG_LEN=12
+dump_prefix="dump_${env}_"
 
 # log for any function output.
 xlog() {
@@ -257,16 +261,6 @@ x.gen() {
     _pids+=($!)
     x.gen.sqlc &
     _pids+=($!)
-    (
-      # xo cannot use db files as input, needs an up-to-date schema
-      # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
-      # use a unique db to prevent cosmic accidents
-      export POSTGRES_DB="xoxo"
-      x.db.drop
-      x.migrate up
-      generate_xo || err "Failed xo generation"
-    ) &
-    _pids+=($!)
     x.gen.proto &
     _pids+=($!)
     x.postgen "$cache" &
@@ -275,6 +269,16 @@ x.gen() {
     for pid in "${_pids[@]}"; do
       wait "$pid"
     done
+
+    (
+      # xo cannot use db files as input, needs an up-to-date schema
+      # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
+      # use a unique db to prevent cosmic accidents
+      export POSTGRES_DB="xoxo"
+      x.db.drop
+      x.migrate up
+      generate_xo || err "Failed xo generation"
+    )
 
     # delay since it depends on generated output
     x.gen.counterfeiter "$cache"
@@ -562,7 +566,7 @@ x.db.dump() {
     mkdir -p "$DUMPS_FOLDER"
     schema_v=$(dockerdb psql --no-psqlrc -P pager=off --quiet -tA -U postgres -d "postgres_$env" \
       -c "SELECT version FROM schema_migrations;")
-    dump_file="${DUMP_PREFIX}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
+    dump_file="${dump_prefix}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
 
     echo "Dumping database to $dump_file"
     docker exec -i postgres_db_"$PROJECT_PREFIX" pg_dump -U postgres -d "postgres_$env" |
@@ -577,12 +581,12 @@ x.db.restore() {
     dump_file="$1"
     if [[ -n $dump_file ]]; then
       [[ ! -f $dump_file ]] && err "$dump_file does not exist"
-      [[ "$dump_file" != *"$DUMP_PREFIX"* ]] && confirm "${RED}Dump doesn't match prefix '$DUMP_PREFIX'. Continue?${OFF}"
+      [[ "$dump_file" != *"$dump_prefix"* ]] && confirm "${RED}Dump doesn't match prefix '$dump_prefix'. Continue?${OFF}"
     else
       mkdir -p "$DUMPS_FOLDER"
-      latest_dump_file=$(find "$DUMPS_FOLDER"/ -name "$DUMP_PREFIX*.gz" | sort -r | head -n 1)
+      latest_dump_file=$(find "$DUMPS_FOLDER"/ -name "$dump_prefix*.gz" | sort -r | head -n 1)
       if [[ -z "$latest_dump_file" ]]; then
-        err "No $DUMP_PREFIX* file found in $DUMPS_FOLDER"
+        err "No $dump_prefix* file found in $DUMPS_FOLDER"
       fi
       dump_file="$latest_dump_file"
     fi

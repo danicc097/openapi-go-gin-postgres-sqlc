@@ -9,9 +9,9 @@ import (
 )
 
 type Querier interface {
-	GetUser(ctx context.Context, arg GetUserParams) (GetUserRow, error)
-	ListAllUsers(ctx context.Context) ([]ListAllUsersRow, error)
-	UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) error
+	GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetUserRow, error)
+	ListAllUsers(ctx context.Context, db DBTX) ([]ListAllUsersRow, error)
+	UpdateUserById(ctx context.Context, db DBTX, arg UpdateUserByIdParams) error
 }
 
 var _ Querier = (*Queries)(nil)

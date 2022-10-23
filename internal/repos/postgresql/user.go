@@ -18,7 +18,7 @@ type User struct {
 func NewUser(d db.DBTX) *User {
 	// IMPORTANT: d must either be a regular conn or a transaction. repo should not be concerned.
 	return &User{
-		q:  db.New(d), // pgx.Pool implements db.DBTX
+		q:  db.New(), // pgx.Pool also implements db.DBTX
 		db: d,
 	}
 }
