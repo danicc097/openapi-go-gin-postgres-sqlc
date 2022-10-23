@@ -38,7 +38,7 @@ readonly TEMPLATE_DIR="internal/go-gin-server-templates"
 readonly BIN_DIR=$(dirname "${BASH_SOURCE[0]}")
 readonly PG_REPO="internal/repos/postgresql"
 readonly MAX_COMMENT_LEN=88
-readonly MAX_FNAME_LOG_LEN=12
+readonly MAX_FNAME_LOG_LEN=13
 readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
 
 pids=()
@@ -48,15 +48,13 @@ dump_prefix="dump_${env}_"
 # log for any function output.
 xlog() {
   fname="${FUNCNAME[1]#*.}"
+  [[ "$CMD" = "$fname" ]] && cat && return
   if [[ ${#fname} -gt $MAX_FNAME_LOG_LEN ]]; then
     fname="${fname:0:$MAX_FNAME_LOG_LEN}…"
   fi
-  if [[ "$CMD" = "$fname" ]]; then
-    cat # remove logging for the command itself
-  else
-    fn=$(printf "%*s |\n" $((MAX_FNAME_LOG_LEN + 1)) "$fname")
-    sed -ue "s/^/${BLUE}$fn${OFF} /"
-  fi
+
+  local fn=$(printf "%*s |\n" $((MAX_FNAME_LOG_LEN + 1)) "$fname")
+  sed -ue "s/^/${BLUE}$fname >${OFF} /"
 }
 
 # log stderr for any function output.
@@ -64,15 +62,13 @@ xlog() {
 # > >(one) 2> >(two) are background processes so it will break our parallel code.
 xerr() {
   fname="${FUNCNAME[1]#*.}"
+  [[ "$CMD" = "$fname" ]] && cat && return
   if [[ ${#fname} -gt $MAX_FNAME_LOG_LEN ]]; then
     fname="${fname:0:$MAX_FNAME_LOG_LEN}…"
   fi
-  if [[ "$CMD" = "$fname" ]]; then
-    cat # remove logging for the command itself
-  else
-    fn=$(printf "%*s |\n" $((MAX_FNAME_LOG_LEN + 1)) "$fname")
-    sed -ue "s/^/${RED}$fn${OFF} /" >&2
-  fi
+
+  local fn=$(printf "%*s |\n" $((MAX_FNAME_LOG_LEN + 1)) "$fname")
+  sed -ue "s/^/${RED}$fname >${OFF} /" >&2
 }
 
 # Check build dependencies are met.
@@ -86,7 +82,7 @@ x.check-build-deps() {
     check.java || { ((fails++)) && true; }
     check.curl || { ((fails++)) && true; }
     check.docker || { ((fails++)) && true; }
-    check.docker-compose && { ((fails++)) && true; }
+    check.docker-compose || { ((fails++)) && true; }
     check.direnv || { ((fails++)) && true; }
     check.yq || { ((fails++)) && true; }
     check.pg_format || { ((fails++)) && true; }
