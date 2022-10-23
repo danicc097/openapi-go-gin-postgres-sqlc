@@ -11,6 +11,7 @@ import (
 	"github.com/alicebob/miniredis/v2"
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
 	redis "github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
 
@@ -78,11 +79,12 @@ func runTestServer(t *testing.T, pool *pgxpool.Pool, middlewares []gin.HandlerFu
 	}
 
 	srv, err := NewServer(Config{
-		Address:  ":0", // random next available for each test server
-		Pool:     pool,
-		Redis:    rdb,
-		Logger:   logger,
-		SpecPath: "../../openapi.yaml",
+		Address:        ":0", // random next available for each test server
+		Pool:           pool,
+		Redis:          rdb,
+		Logger:         logger,
+		SpecPath:       "../../openapi.yaml",
+		MovieSvcClient: &v1testing.FakeMovieGenreClient{},
 	}, WithMiddlewares(middlewares))
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "New")

@@ -5,9 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
-	services "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -49,12 +48,10 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		logger, _ := zap.NewDevelopment()
 		_, engine := gin.CreateTestContext(resp)
 
-		authnSvc := services.Authentication{Logger: logger, Pool: pool}
-		authzSvc := services.Authorization{Logger: logger}
-		userSvc := services.NewUser(postgresql.NewUser(pool), logger, pool)
+		authMw := newAuthMiddleware(logger, pool, &v1testing.FakeMovieGenreClient{})
 
 		req, _ := http.NewRequest(http.MethodGet, "/", nil)
-		authMw := newAuthMiddleware(logger, authnSvc, authzSvc, userSvc)
+
 		engine.Use(func(c *gin.Context) {
 			ctxWithUser(c, &db.Users{Role: tc.role})
 		})

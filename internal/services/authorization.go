@@ -2,8 +2,7 @@ package services
 
 import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
@@ -16,13 +15,12 @@ var roles = map[db.Role][]db.Role{
 
 // Authorization represents a service for authorization.
 type Authorization struct {
-	Logger *zap.Logger
-	Pool   *pgxpool.Pool
+	logger *zap.Logger
 }
 
 func NewAuthorization(logger *zap.Logger) *Authorization {
 	return &Authorization{
-		Logger: logger,
+		logger: logger,
 	}
 }
 

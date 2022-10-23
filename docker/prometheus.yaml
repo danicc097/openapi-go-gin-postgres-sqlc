@@ -1,5 +1,5 @@
 global:
-  scrape_interval: 40s # Default is every 1 minute.
+  scrape_interval: 6040s # Default is every 1 minute.
 
 scrape_configs:
   - job_name: prometheus
@@ -9,6 +9,7 @@ scrape_configs:
     # metrics_path defaults to '/metrics'
     # scheme defaults to 'http'.
     # TODO in the future use otlp collector (collector-config)
+    # right now jaeger doesnt support
     # static_configs:
     #   - targets: ["collector:9464"]
     scheme: https

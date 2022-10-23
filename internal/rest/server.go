@@ -19,18 +19,21 @@ import (
 	rv8 "github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
+	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -43,7 +46,8 @@ type Config struct {
 	Redis   *rv8.Client
 	Logger  *zap.Logger
 	// SpecPath is the OpenAPI spec filepath.
-	SpecPath string
+	SpecPath       string
+	MovieSvcClient v1.MovieGenreClient
 }
 
 func (c *Config) validate() error {
@@ -61,6 +65,9 @@ func (c *Config) validate() error {
 	}
 	if c.Logger == nil {
 		return fmt.Errorf("no logger provided")
+	}
+	if c.MovieSvcClient == nil {
+		return fmt.Errorf("no movie service client provided")
 	}
 
 	return nil
@@ -157,34 +164,51 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	}
 
 	oasMw := newOpenapiMiddleware(conf.Logger, openapi)
+
+	// TODO need to instantiate the repo with the conn/transaction already.
+	// hence we need to create a new service for every new request
+	// with a pool conn (already do this in py impl), else we
+	// would need to have helpers to change db dBTX in the repo itself, and the repo
+	// should not be concerned with this.
+	// TLDR refactor: all services need to be instantiated in the handler itself,
+	// beginning a transaction every time and sharing it for most use cases.
+	// handler structs receive everything necessary to construct all services.
+	// then all services share the same conn, _ := conf.Pool.Acquire() initialized in the handler
+	// (dont want to handle transactions or any committing in services, its up to caller - i.e. handlers, cli...)
+	// unless we have a reason not to (e.g. conn is not concurrency safe)
+	// finally we must call conn.Close and Rollback. we commit along the way
+
+	// use a direct pool connection if a query cannot be run in a transaction.
+	// IMPORTANT: read https://groups.google.com/g/golang-nuts/c/y8uLMofW2-E and then this comment tree
+	// https://medium.com/@florian_445/thanks-for-your-answer-6d03846860fa, then the article
+	// itself.
+	// takeaways:
+	// - we start any transactions in each handler method. Each service method calls the necessary
+	// repos OR services. Services are built in each handler, else imagine
+	//   the need for usvc := users.New(nsvc) and nsvc := notifications.New(usvc) at the same time
+	//   if we create the service inside NewXX() the problem is gone as long as services
+	//   remain in the same package, which they should.
+	// - repos must not be concerned with transaction details
+	// - also note services dont necessarily need an equivalently named repository or viceversa.
+
+	switch os.Getenv("APP_ENV") {
+	case "prod":
+		rlMw := newRateLimitMiddleware(conf.Logger, 15)
+		vg.Use(rlMw.Limit())
+	}
+
 	vg.Use(oasMw.RequestValidatorWithOptions(&options))
 
-	authnSvc := services.Authentication{Logger: conf.Logger, Pool: conf.Pool}
-	authzSvc := services.Authorization{Logger: conf.Logger}
-	fakeSvc := services.Fake{Logger: conf.Logger, Pool: conf.Pool}
-	petSvc := services.Pet{Logger: conf.Logger, Pool: conf.Pool}
-	storeSvc := services.Store{Logger: conf.Logger, Pool: conf.Pool}
-	userSvc := services.NewUser(postgresql.NewUser(conf.Pool), conf.Logger, conf.Pool)
+	authMw := newAuthMiddleware(conf.Logger, conf.Pool, conf.MovieSvcClient)
 
-	authMw := newAuthMiddleware(conf.Logger, authnSvc, authzSvc, userSvc)
-
-	NewAdmin(userSvc).
+	NewAdmin(conf.Logger, conf.Pool).
 		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthorized(db.RoleAdmin)})
 
 	NewDefault().
-		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated(), authMw.EnsureVerified()})
+		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated()})
 
-	NewFake(fakeSvc).
-		Register(vg, []gin.HandlerFunc{})
-
-	NewPet(petSvc).
-		Register(vg, []gin.HandlerFunc{})
-
-	NewStore(storeSvc).
-		Register(vg, []gin.HandlerFunc{})
-
-	NewUser(conf.Logger, userSvc, authnSvc, authzSvc).
-		Register(vg, []gin.HandlerFunc{})
+	NewUser(conf.Logger, conf.Pool, conf.MovieSvcClient).
+		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated()})
 
 	conf.Logger.Info("Server started")
 	srv.httpsrv = &http.Server{
@@ -244,12 +268,21 @@ func Run(env, address, specPath string) (<-chan error, error) {
 
 	registerValidators()
 
+	movieSvcConn, err := grpc.Dial(":50051", grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
+		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
+	)
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "movieSvcConn")
+	}
+
 	srv, err := NewServer(Config{
-		Address:  address,
-		Pool:     pool,
-		Redis:    rdb,
-		Logger:   logger,
-		SpecPath: specPath,
+		Address:        address,
+		Pool:           pool,
+		Redis:          rdb,
+		Logger:         logger,
+		SpecPath:       specPath,
+		MovieSvcClient: v1.NewMovieGenreClient(movieSvcConn),
 	})
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "NewServer")
@@ -274,6 +307,7 @@ func Run(env, address, specPath string) (<-chan error, error) {
 			_ = logger.Sync()
 
 			tp.Shutdown(context.Background())
+			movieSvcConn.Close()
 			pool.Close()
 			// rmq.Close()
 			rdb.Close()

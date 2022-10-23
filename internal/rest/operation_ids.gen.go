@@ -3,15 +3,12 @@
 package rest
 
 type op interface {
-	adminOpID | defaultOpID | fakeOpID | petOpID | storeOpID | userOpID
+	adminOpID | defaultOpID | userOpID
 }
 
 type (
 	adminOpID   string
 	defaultOpID string
-	fakeOpID    string
-	petOpID     string
-	storeOpID   string
 	userOpID    string
 )
 
@@ -23,31 +20,8 @@ const (
 	openapiYamlGet defaultOpID = "openapiYamlGet"
 	ping           defaultOpID = "ping"
 
-	// Operation IDs for the 'fake' tag.
-	fakeDataFile fakeOpID = "fakeDataFile"
-
-	// Operation IDs for the 'pet' tag.
-	addPet            petOpID = "addPet"
-	deletePet         petOpID = "deletePet"
-	findPetsByStatus  petOpID = "findPetsByStatus"
-	findPetsByTags    petOpID = "findPetsByTags"
-	getPetById        petOpID = "getPetById"
-	updatePet         petOpID = "updatePet"
-	updatePetWithForm petOpID = "updatePetWithForm"
-	uploadFile        petOpID = "uploadFile"
-
-	// Operation IDs for the 'store' tag.
-	deleteOrder  storeOpID = "deleteOrder"
-	getInventory storeOpID = "getInventory"
-	getOrderById storeOpID = "getOrderById"
-	placeOrder   storeOpID = "placeOrder"
-
 	// Operation IDs for the 'user' tag.
-	createUser                userOpID = "createUser"
-	createUsersWithArrayInput userOpID = "createUsersWithArrayInput"
-	deleteUser                userOpID = "deleteUser"
-	getUserByName             userOpID = "getUserByName"
-	loginUser                 userOpID = "loginUser"
-	logoutUser                userOpID = "logoutUser"
-	updateUser                userOpID = "updateUser"
+	deleteUser     userOpID = "deleteUser"
+	getCurrentUser userOpID = "getCurrentUser"
+	updateUser     userOpID = "updateUser"
 )

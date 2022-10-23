@@ -320,7 +320,7 @@ func (o *openapiGenerator) getCommonBasenames() ([]string, error) {
 }
 
 // generateService fills in a template with a default service struct to a dest.
-func (o *openapiGenerator) generateService(tag Tag, dest io.Writer) error {
+func (o *openapiGenerator) generateService(tag Tag) ([]byte, error) {
 	fmt.Printf("Creating service for tag: %s", tag)
 
 	t := template.Must(template.New("").Parse(`package services
@@ -335,25 +335,21 @@ func New{{.Tag}}() *{{.Tag}} {
 
 `))
 
-	buf := &bytes.Buffer{}
+	src := &bytes.Buffer{}
 
 	params := map[string]interface{}{
 		"Tag": cases.Title(language.English).String(string(tag)),
 	}
 
-	if err := t.Execute(buf, params); err != nil {
-		return err
+	if err := t.Execute(src, params); err != nil {
+		return nil, err
 	}
 
-	if _, err := dest.Write(buf.Bytes()); err != nil {
-		return err
-	}
-
-	return nil
+	return src.Bytes(), nil
 }
 
 // generateOpIDs fills in a template with all operation IDs to a dest.
-func (o *openapiGenerator) generateOpIDs(dest io.Writer) error {
+func (o *openapiGenerator) generateOpIDs() ([]byte, error) {
 	funcs := template.FuncMap{
 		// "stringsJoin": func(elems []string, prefix string, suffix string, sep string) string {
 		// 	for i, e := range elems {
@@ -393,19 +389,15 @@ const ({{range $tag, $opIDs := .Operations}}
 	}
 
 	if err := t.Execute(buf, params); err != nil {
-		return fmt.Errorf("could not execute template: %w", err)
+		return nil, fmt.Errorf("could not execute template: %w", err)
 	}
 
-	formatted, err := format.Source(buf.Bytes())
+	src, err := format.Source(buf.Bytes())
 	if err != nil {
-		return fmt.Errorf("could not format opId template: %w", err)
+		return nil, fmt.Errorf("could not format opId template: %w", err)
 	}
 
-	if _, err = dest.Write(formatted); err != nil {
-		return fmt.Errorf("could not write opId template: %w", err)
-	}
-
-	return nil
+	return src, nil
 }
 
 // replaceNodes replaces handler file nodes accordingly.
@@ -453,15 +445,20 @@ func (o *openapiGenerator) generateMergedFiles(handlers Handlers) error {
 	// 	p := operations[string(o)]
 	// if len(...)
 	// }
-	s := path.Join(string(o.conf.OutHandlersDir), "operation_ids.gen.go")
 
-	f, err := os.OpenFile(s, os.O_RDWR|os.O_CREATE, 0o660)
+	src, err := o.generateOpIDs()
 	if err != nil {
-		return err
+		return fmt.Errorf("could not generate operation IDs: %w", err)
+	}
+	fname := path.Join(string(o.conf.OutHandlersDir), "operation_ids.gen.go")
+
+	f, err := os.OpenFile(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o660)
+	if err != nil {
+		return fmt.Errorf("could not open %s: %w", fname, err)
 	}
 
-	if err = o.generateOpIDs(f); err != nil {
-		return fmt.Errorf("could not generate operation IDs: %w", err)
+	if _, err = f.Write(src); err != nil {
+		return fmt.Errorf("could not write opId template: %w", err)
 	}
 
 	// -- generate handler files
@@ -499,7 +496,9 @@ func (o *openapiGenerator) generateMergedFiles(handlers Handlers) error {
 
 		buf := &bytes.Buffer{}
 
-		f, err := os.OpenFile(path.Join(string(o.conf.OutHandlersDir), "api_"+strings.ToLower(string(tag))+".go"), os.O_RDWR|os.O_CREATE, 0o660)
+		fname := path.Join(string(o.conf.OutHandlersDir), "api_"+strings.ToLower(string(tag))+".go")
+
+		f, err := os.OpenFile(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o660)
 		if err != nil {
 			return err
 		}
@@ -519,16 +518,21 @@ func (o *openapiGenerator) generateMergedFiles(handlers Handlers) error {
 		if tag == "Default" {
 			continue
 		}
-		s := path.Join(string(o.conf.OutServicesDir), strings.ToLower(string(tag))+".go")
-		if _, err := os.Stat(s); errors.Is(err, os.ErrNotExist) {
-			f, err := os.OpenFile(s, os.O_RDWR|os.O_CREATE, 0o660)
+		fname := path.Join(string(o.conf.OutServicesDir), strings.ToLower(string(tag))+".go")
+		// only generate them once
+		if _, err := os.Stat(fname); errors.Is(err, os.ErrNotExist) {
+			src, err := o.generateService(tag)
 			if err != nil {
-				return err
+				return fmt.Errorf("could not generate operation IDs: %w", err)
 			}
 
-			err = o.generateService(tag, f)
+			f, err := os.OpenFile(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o660)
 			if err != nil {
-				return err
+				return fmt.Errorf("could not open %s: %w", fname, err)
+			}
+
+			if _, err = f.Write(src); err != nil {
+				return fmt.Errorf("could not write service template: %w", err)
 			}
 		}
 	}

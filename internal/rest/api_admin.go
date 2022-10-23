@@ -4,18 +4,21 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v4/pgxpool"
+	"go.uber.org/zap"
 )
 
 // Admin handles routes with the 'admin' tag.
 type Admin struct {
-	svc UserService
-	// add or remove services, etc. as required
+	logger *zap.Logger
+	pool   *pgxpool.Pool
 }
 
 // NewAdmin returns a new handler for the 'admin' route group.
-func NewAdmin(svc UserService) *Admin {
+func NewAdmin(logger *zap.Logger, pool *pgxpool.Pool) *Admin {
 	return &Admin{
-		svc: svc,
+		logger: logger,
+		pool:   pool,
 	}
 }
 

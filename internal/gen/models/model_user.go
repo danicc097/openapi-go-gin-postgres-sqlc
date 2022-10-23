@@ -2,9 +2,9 @@
 
 package models
 
-// User a user who is purchasing from the pet store.
+// User represents a user..
 type User struct {
-	Id        int64  `json:"id,omitempty"`
+	UserID    int64  `json:"userID,omitempty"`
 	Username  string `json:"username,omitempty"`
 	FirstName string `json:"firstName,omitempty"`
 	LastName  string `json:"lastName,omitempty"`

@@ -26,6 +26,7 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 	if !errors.As(err, &ierr) {
 		resp.Error = "internal error"
 		resp.Message = msg
+		fmt.Printf("err:%s\n", err)
 	} else {
 		resp.Message = ierr.Cause().Error()
 		switch ierr.Code() {
