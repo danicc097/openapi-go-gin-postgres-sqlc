@@ -519,7 +519,7 @@ x.migrate.create() {
     tmp="${tmp// /_}"
     name="${tmp,,}"
     [[ -z $name ]] && err "Please provide a migration name"
-    x.migrate create -ext sql -dir db/migrations/ "$name"
+    x.migrate create -ext sql -dir db/migrations/ -seq -digits 7 "$name"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
