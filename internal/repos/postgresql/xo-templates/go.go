@@ -487,16 +487,17 @@ func buildQueryName(query xo.Query) string {
 
 // emitSchema emits the xo schema for the template set.
 func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) error {
-	// emit enums
-	for _, e := range schema.Enums {
-		enum := convertEnum(e)
-		emit(xo.Template{
-			Partial:  "enum",
-			Dest:     strings.ToLower(enum.GoName) + ext,
-			SortName: enum.GoName,
-			Data:     enum,
-		})
-	}
+	// will use sqlc
+	// // emit enums
+	// for _, e := range schema.Enums {
+	// 	enum := convertEnum(e)
+	// 	emit(xo.Template{
+	// 		Partial:  "enum",
+	// 		Dest:     strings.ToLower(enum.GoName) + ext,
+	// 		SortName: enum.GoName,
+	// 		Data:     enum,
+	// 	})
+	// }
 	// build procs
 	overloadMap := make(map[string][]Proc)
 	// procOrder ensures procs are always emitted in alphabetic order for

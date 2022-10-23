@@ -2,7 +2,7 @@ package services
 
 import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )

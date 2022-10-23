@@ -3,7 +3,7 @@ package services_test
 import (
 	"testing"
 
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"

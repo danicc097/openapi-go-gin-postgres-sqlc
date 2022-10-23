@@ -4,14 +4,13 @@ package rest
 import (
 	"context"
 
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/crud"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
 type UserService interface {
-	Upsert(ctx context.Context, user *crud.User) error
-	UserByEmail(ctx context.Context, email string) (*crud.User, error)
-	Register(ctx context.Context, user *crud.User) error
+	Upsert(ctx context.Context, user *db.User) error
+	UserByEmail(ctx context.Context, email string) (*db.User, error)
+	Register(ctx context.Context, user *db.User) error
 	// +anything related to users
 }
 

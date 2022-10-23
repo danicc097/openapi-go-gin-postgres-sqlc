@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/crud"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
 // User represents the repository used for interacting with User records.
@@ -60,7 +59,7 @@ func NewUser(d db.DBTX) *User {
 // }
 
 // Create inserts a new user record.
-func (u *User) Create(ctx context.Context, user *crud.User) error {
+func (u *User) Create(ctx context.Context, user *db.User) error {
 	defer newOTELSpan(ctx, "User.Create").End()
 	// https://github.com/xo/xo/blob/master/_examples/booktest/postgres.go
 	// != Save, where pks are provided.
@@ -78,16 +77,16 @@ func (u *User) Create(ctx context.Context, user *crud.User) error {
 }
 
 // Upsert upserts a new user record.
-func (u *User) Upsert(ctx context.Context, user *crud.User) error {
+func (u *User) Upsert(ctx context.Context, user *db.User) error {
 	defer newOTELSpan(ctx, "User.Upsert").End()
 	// https://github.com/xo/xo/blob/master/_examples/booktest/postgres.go
 	return user.Upsert(ctx, u.db)
 }
 
-func (u *User) UserByEmail(ctx context.Context, email string) (*crud.User, error) {
+func (u *User) UserByEmail(ctx context.Context, email string) (*db.User, error) {
 	defer newOTELSpan(ctx, "User.UserByEmail").End()
 
-	user, err := crud.UserByEmail(ctx, u.db, email)
+	user, err := db.UserByEmail(ctx, u.db, email)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user by email: %v", err)
 	}

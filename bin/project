@@ -738,11 +738,15 @@ generate_xo() {
   { { {
     echo "Running generation"
 
-    mkdir -p $PG_REPO/gen/crud
+    echo $PG_REPO
+
+    mkdir -p $PG_REPO/gen/db
     # xo schema --help
+    # xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable"       --src="$PG_REPO/xo-templates" -o "$PG_REPO"/gen/db -e "*.created_at" -e "*.updated_at" # --go-custom="db" \
+    echo "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable"
     xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
       --src "$PG_REPO"/xo-templates \
-      -o "$PG_REPO"/gen/crud \
+      -o "$PG_REPO"/gen/db \
       -e "*.created_at" \
       -e "*.updated_at"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

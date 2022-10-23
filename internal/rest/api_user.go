@@ -6,8 +6,7 @@ import (
 	"net/http"
 
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/crud"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4"
@@ -170,9 +169,9 @@ func (h *User) updateUser(c *gin.Context) {
 	}
 
 	// TODO extract to helper
-	var role crud.Role
+	var role db.Role
 
-	err = role.UnmarshalText([]byte(body.Role))
+	err = role.Scan([]byte(body.Role))
 	if err != nil {
 		renderErrorResponse(c, "err::", err)
 
@@ -189,7 +188,7 @@ func (h *User) updateUser(c *gin.Context) {
 	h.logger.Sugar().Infof("user by email: %v", user)
 
 	if user == nil {
-		err = userSvc.Register(c, &crud.User{
+		err = userSvc.Register(c, &db.User{
 			Username:  body.Username,
 			Email:     body.Email,
 			Role:      role,

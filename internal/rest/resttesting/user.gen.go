@@ -5,16 +5,16 @@ import (
 	"context"
 	"sync"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/crud"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 )
 
 type FakeUserService struct {
-	RegisterStub        func(context.Context, *crud.User) error
+	RegisterStub        func(context.Context, *db.User) error
 	registerMutex       sync.RWMutex
 	registerArgsForCall []struct {
 		arg1 context.Context
-		arg2 *crud.User
+		arg2 *db.User
 	}
 	registerReturns struct {
 		result1 error
@@ -22,11 +22,11 @@ type FakeUserService struct {
 	registerReturnsOnCall map[int]struct {
 		result1 error
 	}
-	UpsertStub        func(context.Context, *crud.User) error
+	UpsertStub        func(context.Context, *db.User) error
 	upsertMutex       sync.RWMutex
 	upsertArgsForCall []struct {
 		arg1 context.Context
-		arg2 *crud.User
+		arg2 *db.User
 	}
 	upsertReturns struct {
 		result1 error
@@ -34,30 +34,30 @@ type FakeUserService struct {
 	upsertReturnsOnCall map[int]struct {
 		result1 error
 	}
-	UserByEmailStub        func(context.Context, string) (*crud.User, error)
+	UserByEmailStub        func(context.Context, string) (*db.User, error)
 	userByEmailMutex       sync.RWMutex
 	userByEmailArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
 	}
 	userByEmailReturns struct {
-		result1 *crud.User
+		result1 *db.User
 		result2 error
 	}
 	userByEmailReturnsOnCall map[int]struct {
-		result1 *crud.User
+		result1 *db.User
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeUserService) Register(arg1 context.Context, arg2 *crud.User) error {
+func (fake *FakeUserService) Register(arg1 context.Context, arg2 *db.User) error {
 	fake.registerMutex.Lock()
 	ret, specificReturn := fake.registerReturnsOnCall[len(fake.registerArgsForCall)]
 	fake.registerArgsForCall = append(fake.registerArgsForCall, struct {
 		arg1 context.Context
-		arg2 *crud.User
+		arg2 *db.User
 	}{arg1, arg2})
 	stub := fake.RegisterStub
 	fakeReturns := fake.registerReturns
@@ -78,13 +78,13 @@ func (fake *FakeUserService) RegisterCallCount() int {
 	return len(fake.registerArgsForCall)
 }
 
-func (fake *FakeUserService) RegisterCalls(stub func(context.Context, *crud.User) error) {
+func (fake *FakeUserService) RegisterCalls(stub func(context.Context, *db.User) error) {
 	fake.registerMutex.Lock()
 	defer fake.registerMutex.Unlock()
 	fake.RegisterStub = stub
 }
 
-func (fake *FakeUserService) RegisterArgsForCall(i int) (context.Context, *crud.User) {
+func (fake *FakeUserService) RegisterArgsForCall(i int) (context.Context, *db.User) {
 	fake.registerMutex.RLock()
 	defer fake.registerMutex.RUnlock()
 	argsForCall := fake.registerArgsForCall[i]
@@ -114,12 +114,12 @@ func (fake *FakeUserService) RegisterReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeUserService) Upsert(arg1 context.Context, arg2 *crud.User) error {
+func (fake *FakeUserService) Upsert(arg1 context.Context, arg2 *db.User) error {
 	fake.upsertMutex.Lock()
 	ret, specificReturn := fake.upsertReturnsOnCall[len(fake.upsertArgsForCall)]
 	fake.upsertArgsForCall = append(fake.upsertArgsForCall, struct {
 		arg1 context.Context
-		arg2 *crud.User
+		arg2 *db.User
 	}{arg1, arg2})
 	stub := fake.UpsertStub
 	fakeReturns := fake.upsertReturns
@@ -140,13 +140,13 @@ func (fake *FakeUserService) UpsertCallCount() int {
 	return len(fake.upsertArgsForCall)
 }
 
-func (fake *FakeUserService) UpsertCalls(stub func(context.Context, *crud.User) error) {
+func (fake *FakeUserService) UpsertCalls(stub func(context.Context, *db.User) error) {
 	fake.upsertMutex.Lock()
 	defer fake.upsertMutex.Unlock()
 	fake.UpsertStub = stub
 }
 
-func (fake *FakeUserService) UpsertArgsForCall(i int) (context.Context, *crud.User) {
+func (fake *FakeUserService) UpsertArgsForCall(i int) (context.Context, *db.User) {
 	fake.upsertMutex.RLock()
 	defer fake.upsertMutex.RUnlock()
 	argsForCall := fake.upsertArgsForCall[i]
@@ -176,7 +176,7 @@ func (fake *FakeUserService) UpsertReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeUserService) UserByEmail(arg1 context.Context, arg2 string) (*crud.User, error) {
+func (fake *FakeUserService) UserByEmail(arg1 context.Context, arg2 string) (*db.User, error) {
 	fake.userByEmailMutex.Lock()
 	ret, specificReturn := fake.userByEmailReturnsOnCall[len(fake.userByEmailArgsForCall)]
 	fake.userByEmailArgsForCall = append(fake.userByEmailArgsForCall, struct {
@@ -202,7 +202,7 @@ func (fake *FakeUserService) UserByEmailCallCount() int {
 	return len(fake.userByEmailArgsForCall)
 }
 
-func (fake *FakeUserService) UserByEmailCalls(stub func(context.Context, string) (*crud.User, error)) {
+func (fake *FakeUserService) UserByEmailCalls(stub func(context.Context, string) (*db.User, error)) {
 	fake.userByEmailMutex.Lock()
 	defer fake.userByEmailMutex.Unlock()
 	fake.UserByEmailStub = stub
@@ -215,28 +215,28 @@ func (fake *FakeUserService) UserByEmailArgsForCall(i int) (context.Context, str
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeUserService) UserByEmailReturns(result1 *crud.User, result2 error) {
+func (fake *FakeUserService) UserByEmailReturns(result1 *db.User, result2 error) {
 	fake.userByEmailMutex.Lock()
 	defer fake.userByEmailMutex.Unlock()
 	fake.UserByEmailStub = nil
 	fake.userByEmailReturns = struct {
-		result1 *crud.User
+		result1 *db.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserService) UserByEmailReturnsOnCall(i int, result1 *crud.User, result2 error) {
+func (fake *FakeUserService) UserByEmailReturnsOnCall(i int, result1 *db.User, result2 error) {
 	fake.userByEmailMutex.Lock()
 	defer fake.userByEmailMutex.Unlock()
 	fake.UserByEmailStub = nil
 	if fake.userByEmailReturnsOnCall == nil {
 		fake.userByEmailReturnsOnCall = make(map[int]struct {
-			result1 *crud.User
+			result1 *db.User
 			result2 error
 		})
 	}
 	fake.userByEmailReturnsOnCall[i] = struct {
-		result1 *crud.User
+		result1 *db.User
 		result2 error
 	}{result1, result2}
 }
