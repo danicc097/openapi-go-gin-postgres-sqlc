@@ -110,11 +110,12 @@ x.install-tools() {
     go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.15.0
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
     go install github.com/joho/godotenv/cmd/godotenv@latest
-    go install github.com/danicc097/air@latest
-    go install github.com/xo/xo@latest
     go install github.com/tufin/oasdiff@latest
     go install golang.org/x/tools/cmd/goimports@latest
     go install mvdan.cc/gofumpt@latest
+    go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
+    go install github.com/danicc097/air@latest
+    go install github.com/danicc097/xo@latest
 
     go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
     go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@v0.2.0
@@ -185,6 +186,14 @@ x.gen.sqlc() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
+# Generate a Go client for the project.
+x.gen.client() {
+  { { {
+    echo "Running generation"
+    oapi-codegen --config internal/client/oapi-codegen.yaml "$SPEC" || err "Failed client generation"
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
 # Generate mocks for specified interfaces. Runs are cached to `cachedir`.
 # Args: cachedir
 x.gen.counterfeiter() {
@@ -252,6 +261,8 @@ x.gen() {
     go generate ./... &
     _pids+=($!)
     x.gen.sqlc &
+    _pids+=($!)
+    x.gen.client &
     _pids+=($!)
     x.gen.proto &
     _pids+=($!)

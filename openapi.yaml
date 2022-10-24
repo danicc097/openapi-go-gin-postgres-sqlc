@@ -131,6 +131,13 @@ paths:
           schema:
             type: string
           style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+        description: Updated user object
+        required: true
       responses:
         "404":
           description: User not found
@@ -150,6 +157,41 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ValidationError"
+    UpdateUserRequest:
+      description: represents User data to update
+      example:
+        role: manager
+        first_name: Jane
+        last_name: Doe
+      properties:
+        role:
+          $ref: "#/components/schemas/Role"
+        first_name:
+          type: string
+          pattern: "^[ a-zA-Z0-9_-]+$"
+        last_name:
+          type: string
+          pattern: "^[ a-zA-Z0-9_-]+$"
+      title: a User
+      type: object
+    Scope:
+      title: Scope
+      type: string
+      # TODO dynamic from x-db-enum: user_scopes (select unnest(enum_range(null, null::<enum>));)
+      # we could use xoxo postgres db which has all migrations
+      # and modified before anything is done
+      enum:
+        - scope1
+        - scope2
+    Role:
+      title: Role
+      type: string
+      # TODO dynamic from x-db-enum: role (select unnest(enum_range(null, null::<enum>));)
+      # if using lookup tables we could do x-db-table: <table-name> could do  (select name from table-name)
+      enum:
+        - user
+        - manager
+        - admin
     User:
       description: represents a user.
       properties:

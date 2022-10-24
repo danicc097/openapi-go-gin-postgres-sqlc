@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -157,12 +158,7 @@ func (h *User) updateUser(c *gin.Context) {
 	// TODO back to OAS schema.
 	// only role can be updated, username and email come from idp.
 	// lets add first_name last_name.
-	type UpsertUserRequest struct {
-		Username string `json:"username,omitempty" binding:"required"`
-		Email    string `json:"email,omitempty" binding:"required"`
-		Role     string `json:"role,omitempty" binding:"required"`
-	}
-	var body UpsertUserRequest
+	var body models.UpdateUserRequest
 
 	if err := c.BindJSON(&body); err != nil {
 		renderErrorResponse(c, "err::", err)
