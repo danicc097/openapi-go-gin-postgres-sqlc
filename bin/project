@@ -730,12 +730,8 @@ generate_xo() {
   { { {
     echo "Running generation"
 
-    echo $PG_REPO
-
     mkdir -p $PG_REPO/gen/db
     # xo schema --help
-    # xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable"       --src="$PG_REPO/xo-templates" -o "$PG_REPO"/gen/db -e "*.created_at" -e "*.updated_at" # --go-custom="db" \
-    echo "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable"
     xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
       --src "$PG_REPO"/xo-templates \
       -o "$PG_REPO"/gen/db \

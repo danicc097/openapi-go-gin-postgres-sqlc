@@ -26,20 +26,20 @@ func TestAuthorizationMiddleware(t *testing.T) {
 			role:         db.RoleUser,
 			requiredRole: db.RoleAdmin,
 			status:       http.StatusForbidden,
-			body:         "access restricted",
+			body:         "Unauthorized.",
 		},
 		{
 			name:         "unauthorized_manager",
 			role:         db.RoleManager,
 			requiredRole: db.RoleAdmin,
 			status:       http.StatusForbidden,
-			body:         "access restricted",
+			body:         "Unauthorized.",
 		},
 		{
 			name:         "authorized",
 			role:         db.RoleAdmin,
 			requiredRole: db.RoleAdmin,
-			status:       http.StatusForbidden,
+			status:       http.StatusOK,
 			body:         "ok",
 		},
 	}
@@ -66,7 +66,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		})
 		engine.ServeHTTP(resp, req)
 
-		assert.Equal(t, http.StatusForbidden, tc.status)
+		assert.Equal(t, tc.status, resp.Code)
 		assert.Contains(t, resp.Body.String(), tc.body)
 	}
 }

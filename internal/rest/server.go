@@ -192,9 +192,9 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	// - repos must not be concerned with transaction details
 	// - also note services dont necessarily need an equivalently named repository or viceversa.
 
+	rlMw := newRateLimitMiddleware(conf.Logger, 15, 3)
 	switch os.Getenv("APP_ENV") {
 	case "prod":
-		rlMw := newRateLimitMiddleware(conf.Logger, 15)
 		vg.Use(rlMw.Limit())
 	}
 
@@ -207,13 +207,18 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 
 	NewAdmin(conf.Logger, conf.Pool).
-		Register(vg, []gin.HandlerFunc{authmw.EnsureAuthorized(db.RoleAdmin)})
-
+		Register(vg, []gin.HandlerFunc{
+			authmw.EnsureAuthenticated(),
+			authmw.EnsureAuthorized(db.RoleAdmin),
+		})
 	NewDefault().
-		Register(vg, []gin.HandlerFunc{authmw.EnsureAuthenticated()})
-
+		Register(vg, []gin.HandlerFunc{
+			authmw.EnsureAuthenticated(),
+		})
 	NewUser(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authmw).
-		Register(vg, []gin.HandlerFunc{authmw.EnsureAuthenticated()})
+		Register(vg, []gin.HandlerFunc{
+			authmw.EnsureAuthenticated(),
+		})
 
 	conf.Logger.Info("Server started")
 	srv.httpsrv = &http.Server{

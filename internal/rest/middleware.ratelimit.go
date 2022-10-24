@@ -6,7 +6,6 @@
 package rest
 
 import (
-	"log"
 	"net"
 	"net/http"
 	"sync"
@@ -28,7 +27,9 @@ type visitor struct {
 type rateLimitMiddleware struct {
 	logger *zap.Logger
 	// rlim is the number of events per second allowed.
-	rlim     rate.Limit
+	rlim rate.Limit
+	// rlim is the number of burst allowed.
+	blim     int
 	visitors map[string]*visitor
 
 	mu sync.Mutex
@@ -37,10 +38,12 @@ type rateLimitMiddleware struct {
 func newRateLimitMiddleware(
 	logger *zap.Logger,
 	rlim rate.Limit,
+	blim int,
 ) *rateLimitMiddleware {
 	return &rateLimitMiddleware{
 		logger:   logger,
 		rlim:     rlim,
+		blim:     blim,
 		visitors: make(map[string]*visitor),
 		mu:       sync.Mutex{},
 	}
@@ -53,11 +56,12 @@ func (r *rateLimitMiddleware) Limit() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ip, _, err := net.SplitHostPort(c.Request.RemoteAddr)
 		if err != nil {
-			log.Print(err.Error())
-			c.AbortWithStatus(http.StatusInternalServerError)
-
-			return
+			ip = c.Request.RemoteAddr
+			if ip == "" {
+				ip = "unknown"
+			}
 		}
+		r.logger.Sugar().Infof("ip: %v", ip)
 
 		limiter := r.getVisitor(ip)
 		if !limiter.Allow() {
@@ -76,7 +80,7 @@ func (r *rateLimitMiddleware) getVisitor(ip string) *rate.Limiter {
 
 	v, exists := r.visitors[ip]
 	if !exists {
-		limiter := rate.NewLimiter(r.rlim, 3)
+		limiter := rate.NewLimiter(r.rlim, r.blim)
 		// Include the current time when creating a new visitor.
 		r.visitors[ip] = &visitor{limiter, time.Now()}
 

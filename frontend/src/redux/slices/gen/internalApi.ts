@@ -24,6 +24,10 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/user/${queryArg}`, method: 'DELETE' }),
         invalidatesTags: ['user'],
       }),
+      updateUser: build.mutation<UpdateUserRes, UpdateUserArgs>({
+        query: (queryArg) => ({ url: `/user/${queryArg}`, method: 'PUT' }),
+        invalidatesTags: ['user'],
+      }),
     }),
     overrideExisting: false,
   })
@@ -38,6 +42,8 @@ export type GetCurrentUserRes = /** status 200 successful operation */ AUser
 export type GetCurrentUserArgs = void
 export type DeleteUserRes = unknown
 export type DeleteUserArgs = /** userID that needs to be deleted */ string
+export type UpdateUserRes = unknown
+export type UpdateUserArgs = /** userID that needs to be updated */ string
 export type ValidationError = {
   loc: string[]
   msg: string
@@ -62,4 +68,5 @@ export const {
   useAdminPingQuery,
   useGetCurrentUserQuery,
   useDeleteUserMutation,
+  useUpdateUserMutation,
 } = injectedRtkApi

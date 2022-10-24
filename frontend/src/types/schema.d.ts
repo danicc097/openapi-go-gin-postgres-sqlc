@@ -21,6 +21,7 @@ export interface paths {
     get: operations['getCurrentUser']
   }
   [key: `/user/${string}`]: {
+    put: operations['updateUser']
     delete: operations['deleteUser']
   }
 }
@@ -114,6 +115,18 @@ export interface operations {
           'application/json': components['schemas']['User']
         }
       }
+    }
+  }
+  updateUser: {
+    parameters: {
+      path: {
+        /** userID that needs to be updated */
+        id: string
+      }
+    }
+    responses: {
+      /** User not found */
+      404: unknown
     }
   }
   deleteUser: {
