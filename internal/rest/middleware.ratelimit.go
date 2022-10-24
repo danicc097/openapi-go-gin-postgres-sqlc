@@ -26,7 +26,7 @@ type visitor struct {
 
 // rateLimitMiddleware allows rate limiting requests.
 type rateLimitMiddleware struct {
-	Logger *zap.Logger
+	logger *zap.Logger
 	// rlim is the number of events per second allowed.
 	rlim     rate.Limit
 	visitors map[string]*visitor
@@ -39,7 +39,7 @@ func newRateLimitMiddleware(
 	rlim rate.Limit,
 ) *rateLimitMiddleware {
 	return &rateLimitMiddleware{
-		Logger:   logger,
+		logger:   logger,
 		rlim:     rlim,
 		visitors: make(map[string]*visitor),
 		mu:       sync.Mutex{},

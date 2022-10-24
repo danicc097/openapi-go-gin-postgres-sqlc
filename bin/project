@@ -193,7 +193,6 @@ x.gen.counterfeiter() {
     cache="$1"
 
     envvar="internal/envvar/envvar.go"
-    services="internal/rest/services.go"
     repos="internal/services/repos.go"
     tfidfpb="internal/pb/python-ml-app-protos/tfidf/v1/service_grpc.pb.go"
 
@@ -203,13 +202,10 @@ x.gen.counterfeiter() {
       echo "Recreating mocks"
       {
         counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
-        counterfeiter -o internal/rest/resttesting/authorization.gen.go $services AuthorizationService &
-        counterfeiter -o internal/rest/resttesting/authentication.gen.go $services AuthenticationService &
         counterfeiter -o internal/services/servicestesting/user.gen.go $repos UserRepo &
-        counterfeiter -o internal/rest/resttesting/user.gen.go $services UserService &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
-        md5sum $envvar $services $repos $tfidfpb >"$cache/counterfeiter.md5" &
+        md5sum $envvar $repos $tfidfpb >"$cache/counterfeiter.md5" &
         wait
       } 2>&1 # outputs to stderr for some reason
 

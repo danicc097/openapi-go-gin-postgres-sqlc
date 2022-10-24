@@ -7,11 +7,9 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
-// User defines the datastore/repository handling persisting User records.
-// TODO need to figure out how to mix and match sqlc and xo
-// so far db interface is the same after some template mods.
+// UserRepo defines the datastore/repository handling persisting User records.
 type UserRepo interface {
-	Upsert(ctx context.Context, user *db.User) error
-	UserByEmail(ctx context.Context, email string) (*db.User, error)
-	Create(ctx context.Context, user *db.User) error
+	Upsert(ctx context.Context, d db.DBTX, user *db.User) error
+	UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error)
+	Create(ctx context.Context, d db.DBTX, user *db.User) error
 }

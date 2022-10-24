@@ -5,8 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -48,7 +49,11 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		logger, _ := zap.NewDevelopment()
 		_, engine := gin.CreateTestContext(resp)
 
-		authMw := newAuthMiddleware(logger, pool, &v1testing.FakeMovieGenreClient{})
+		usvc := services.NewUser(postgresql.NewUser(), logger)
+		authzsvc := services.NewAuthorization(logger)
+		authnsvc := services.NewAuthentication(logger, usvc)
+
+		authMw := newAuthMiddleware(logger, pool, authnsvc, authzsvc, usvc)
 
 		req, _ := http.NewRequest(http.MethodGet, "/", nil)
 

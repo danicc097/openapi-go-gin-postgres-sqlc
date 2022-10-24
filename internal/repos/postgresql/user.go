@@ -9,22 +9,19 @@ import (
 
 // User represents the repository used for interacting with User records.
 type User struct {
-	q  *db.Queries
-	db db.DBTX
+	q *db.Queries
 }
 
 // NewUser instantiates the User repository.
-func NewUser(d db.DBTX) *User {
-	// IMPORTANT: d must either be a regular conn or a transaction. repo should not be concerned.
+func NewUser() *User {
 	return &User{
-		q:  db.New(), // pgx.Pool also implements db.DBTX
-		db: d,
+		q: db.New(),
 	}
 }
 
 // TODO use xo instead. need triggers
 // // Create inserts a new user record.
-// func (u *User) Create(ctx context.Context, params models.CreateUserRequest) (models.CreateUserResponse, error) {
+// func (u *User) Create(ctx context.Context, d db.DBTX, params models.CreateUserRequest) (models.CreateUserResponse, error) {
 // 	defer newOTELSpan(ctx, "User.Create").End()
 
 // 	// TODO logger needs to be passed down to repo as well
@@ -59,7 +56,7 @@ func NewUser(d db.DBTX) *User {
 // }
 
 // Create inserts a new user record.
-func (u *User) Create(ctx context.Context, user *db.User) error {
+func (u *User) Create(ctx context.Context, d db.DBTX, user *db.User) error {
 	defer newOTELSpan(ctx, "User.Create").End()
 	// https://github.com/xo/xo/blob/master/_examples/booktest/postgres.go
 	// != Save, where pks are provided.
@@ -73,20 +70,20 @@ func (u *User) Create(ctx context.Context, user *db.User) error {
 	// (^ latest comments - see https://github.com/jackc/pgerrcode/)
 
 	// save inserts or updates if already exists
-	return user.Save(ctx, u.db)
+	return user.Save(ctx, d)
 }
 
 // Upsert upserts a new user record.
-func (u *User) Upsert(ctx context.Context, user *db.User) error {
+func (u *User) Upsert(ctx context.Context, d db.DBTX, user *db.User) error {
 	defer newOTELSpan(ctx, "User.Upsert").End()
 	// https://github.com/xo/xo/blob/master/_examples/booktest/postgres.go
-	return user.Upsert(ctx, u.db)
+	return user.Upsert(ctx, d)
 }
 
-func (u *User) UserByEmail(ctx context.Context, email string) (*db.User, error) {
+func (u *User) UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error) {
 	defer newOTELSpan(ctx, "User.UserByEmail").End()
 
-	user, err := db.UserByEmail(ctx, u.db, email)
+	user, err := db.UserByEmail(ctx, d, email)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user by email: %v", err)
 	}
@@ -96,7 +93,7 @@ func (u *User) UserByEmail(ctx context.Context, email string) (*db.User, error) 
 
 // TODO use xo
 // // Update inserts a new user record.
-// func (u *User) Update(ctx context.Context, params models.UpdateUserRequest) error {
+// func (u *User) Update(ctx context.Context, d db.DBTX, params models.UpdateUserRequest) error {
 // 	err := u.q.UpdateUserById(ctx, db.UpdateUserByIdParams{
 // 		Username: sql.NullString{String: params.Username, Valid: true},
 // 		Email:    sql.NullString{String: params.Email, Valid: true},

@@ -2,8 +2,8 @@
 
 linters:
   enable-all: true
-
   disable:
+    - wsl
     - nosnakecase
     - godox # marks TODO, FIX, ...
     - forbidigo # fmt banned, etc.
@@ -37,12 +37,6 @@ linters-settings:
       - io/ioutil.ReadFile
       - io.Copy(*bytes.Buffer)
       - io.Copy(os.Stdout)
-  wsl:
-    allow-cuddle-declarations: true
-    allow-assign-and-anything: true
-    allow-assign-and-call: true
-    allow-multiline-assign: true
-    allow-trailing-comment: true
   gofmt:
     simplify: true
   lll:

@@ -17,9 +17,11 @@ import (
 
 // User handles routes with the 'user' tag.
 type User struct {
+	usvc           *services.User
 	logger         *zap.Logger
 	pool           *pgxpool.Pool
 	movieSvcClient v1.MovieGenreClient
+	authmw         *authMiddleware
 }
 
 // NewUser returns a new handler for the 'user' route group.
@@ -27,11 +29,15 @@ func NewUser(
 	logger *zap.Logger,
 	pool *pgxpool.Pool,
 	movieSvcClient v1.MovieGenreClient,
+	usvc *services.User,
+	authmw *authMiddleware,
 ) *User {
 	return &User{
 		logger:         logger,
 		pool:           pool,
 		movieSvcClient: movieSvcClient,
+		usvc:           usvc,
+		authmw:         authmw,
 	}
 }
 
@@ -67,16 +73,14 @@ func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
 
 // middlewares returns individual route middleware per operation id.
 func (h *User) middlewares(opID userOpID) []gin.HandlerFunc {
-	authMw := newAuthMiddleware(h.logger, h.pool, h.movieSvcClient)
-
 	switch opID {
 	case deleteUser:
 		return []gin.HandlerFunc{
-			authMw.EnsureAuthorized(db.RoleAdmin),
+			h.authmw.EnsureAuthorized(db.RoleAdmin),
 		}
 	case updateUser:
 		return []gin.HandlerFunc{
-			authMw.EnsureAuthorized(db.RoleAdmin),
+			h.authmw.EnsureAuthorized(db.RoleAdmin),
 		}
 	default:
 		return []gin.HandlerFunc{}
@@ -104,7 +108,7 @@ func (h *User) middlewares(opID userOpID) []gin.HandlerFunc {
 // 		return
 // 	}
 
-// 	res, err := userSvc.Create(ctx, user)
+// 	res, err := h.usvc.Create(ctx, user)
 // 	if err != nil {
 // 		renderErrorResponse(c, "error creating user", err)
 
@@ -144,8 +148,6 @@ func (h *User) updateUser(c *gin.Context) {
 	}
 	defer tx.Rollback(ctx)
 
-	userSvc := services.NewUser(tx, h.logger)
-
 	// span attribute not inheritable:
 	// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
 	s := newOTELSpan(ctx, "User.updateUser", trace.WithAttributes(userIDAttribute(c)))
@@ -180,22 +182,22 @@ func (h *User) updateUser(c *gin.Context) {
 
 	h.logger.Sugar().Infof("body is :%#v", body)
 
-	user, err := userSvc.UserByEmail(c, body.Email)
+	user, err := h.usvc.UserByEmail(c, tx, body.Email)
 	if err != nil {
-		fmt.Printf("failed userSvc.UserByEmail: %s\n", err)
+		fmt.Printf("failed h.usvc.UserByEmail: %s\n", err)
 	}
 
 	h.logger.Sugar().Infof("user by email: %v", user)
 
 	if user == nil {
-		err = userSvc.Register(c, &db.User{
+		err = h.usvc.Register(c, tx, &db.User{
 			Username:  body.Username,
 			Email:     body.Email,
 			Role:      role,
 			FirstName: sql.NullString{String: "firstname", Valid: true},
 		})
 		if err != nil {
-			fmt.Printf("failed userSvc.UserByEmail: %s\n", err)
+			fmt.Printf("failed h.usvc.UserByEmail: %s\n", err)
 			renderErrorResponse(c, "user could not be created", err)
 
 			return
@@ -207,11 +209,12 @@ func (h *User) updateUser(c *gin.Context) {
 	user.Username = body.Username
 	user.Email = body.Email
 	user.Role = role
-	err = userSvc.Upsert(c, user)
-	if err != nil {
+
+	if err = h.usvc.Upsert(c, tx, user); err != nil {
 		renderErrorResponse(c, "err: ", err)
 
 		return
 	}
+
 	tx.Commit(ctx)
 }

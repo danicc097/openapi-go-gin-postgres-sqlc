@@ -28,6 +28,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
@@ -197,18 +198,22 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 		vg.Use(rlMw.Limit())
 	}
 
+	usvc := services.NewUser(postgresql.NewUser(), conf.Logger)
+	authzsvc := services.NewAuthorization(conf.Logger)
+	authnsvc := services.NewAuthentication(conf.Logger, usvc)
+
 	vg.Use(oasMw.RequestValidatorWithOptions(&options))
 
-	authMw := newAuthMiddleware(conf.Logger, conf.Pool, conf.MovieSvcClient)
+	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 
 	NewAdmin(conf.Logger, conf.Pool).
-		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthorized(db.RoleAdmin)})
+		Register(vg, []gin.HandlerFunc{authmw.EnsureAuthorized(db.RoleAdmin)})
 
 	NewDefault().
-		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated()})
+		Register(vg, []gin.HandlerFunc{authmw.EnsureAuthenticated()})
 
-	NewUser(conf.Logger, conf.Pool, conf.MovieSvcClient).
-		Register(vg, []gin.HandlerFunc{authMw.EnsureAuthenticated()})
+	NewUser(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authmw).
+		Register(vg, []gin.HandlerFunc{authmw.EnsureAuthenticated()})
 
 	conf.Logger.Info("Server started")
 	srv.httpsrv = &http.Server{

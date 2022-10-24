@@ -10,11 +10,12 @@ import (
 )
 
 type FakeUserRepo struct {
-	CreateStub        func(context.Context, *db.User) error
+	CreateStub        func(context.Context, db.DBTX, *db.User) error
 	createMutex       sync.RWMutex
 	createArgsForCall []struct {
 		arg1 context.Context
-		arg2 *db.User
+		arg2 db.DBTX
+		arg3 *db.User
 	}
 	createReturns struct {
 		result1 error
@@ -22,11 +23,12 @@ type FakeUserRepo struct {
 	createReturnsOnCall map[int]struct {
 		result1 error
 	}
-	UpsertStub        func(context.Context, *db.User) error
+	UpsertStub        func(context.Context, db.DBTX, *db.User) error
 	upsertMutex       sync.RWMutex
 	upsertArgsForCall []struct {
 		arg1 context.Context
-		arg2 *db.User
+		arg2 db.DBTX
+		arg3 *db.User
 	}
 	upsertReturns struct {
 		result1 error
@@ -34,11 +36,12 @@ type FakeUserRepo struct {
 	upsertReturnsOnCall map[int]struct {
 		result1 error
 	}
-	UserByEmailStub        func(context.Context, string) (*db.User, error)
+	UserByEmailStub        func(context.Context, db.DBTX, string) (*db.User, error)
 	userByEmailMutex       sync.RWMutex
 	userByEmailArgsForCall []struct {
 		arg1 context.Context
-		arg2 string
+		arg2 db.DBTX
+		arg3 string
 	}
 	userByEmailReturns struct {
 		result1 *db.User
@@ -52,19 +55,20 @@ type FakeUserRepo struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeUserRepo) Create(arg1 context.Context, arg2 *db.User) error {
+func (fake *FakeUserRepo) Create(arg1 context.Context, arg2 db.DBTX, arg3 *db.User) error {
 	fake.createMutex.Lock()
 	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
 	fake.createArgsForCall = append(fake.createArgsForCall, struct {
 		arg1 context.Context
-		arg2 *db.User
-	}{arg1, arg2})
+		arg2 db.DBTX
+		arg3 *db.User
+	}{arg1, arg2, arg3})
 	stub := fake.CreateStub
 	fakeReturns := fake.createReturns
-	fake.recordInvocation("Create", []interface{}{arg1, arg2})
+	fake.recordInvocation("Create", []interface{}{arg1, arg2, arg3})
 	fake.createMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2)
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
@@ -78,17 +82,17 @@ func (fake *FakeUserRepo) CreateCallCount() int {
 	return len(fake.createArgsForCall)
 }
 
-func (fake *FakeUserRepo) CreateCalls(stub func(context.Context, *db.User) error) {
+func (fake *FakeUserRepo) CreateCalls(stub func(context.Context, db.DBTX, *db.User) error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = stub
 }
 
-func (fake *FakeUserRepo) CreateArgsForCall(i int) (context.Context, *db.User) {
+func (fake *FakeUserRepo) CreateArgsForCall(i int) (context.Context, db.DBTX, *db.User) {
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
 	argsForCall := fake.createArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeUserRepo) CreateReturns(result1 error) {
@@ -114,19 +118,20 @@ func (fake *FakeUserRepo) CreateReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeUserRepo) Upsert(arg1 context.Context, arg2 *db.User) error {
+func (fake *FakeUserRepo) Upsert(arg1 context.Context, arg2 db.DBTX, arg3 *db.User) error {
 	fake.upsertMutex.Lock()
 	ret, specificReturn := fake.upsertReturnsOnCall[len(fake.upsertArgsForCall)]
 	fake.upsertArgsForCall = append(fake.upsertArgsForCall, struct {
 		arg1 context.Context
-		arg2 *db.User
-	}{arg1, arg2})
+		arg2 db.DBTX
+		arg3 *db.User
+	}{arg1, arg2, arg3})
 	stub := fake.UpsertStub
 	fakeReturns := fake.upsertReturns
-	fake.recordInvocation("Upsert", []interface{}{arg1, arg2})
+	fake.recordInvocation("Upsert", []interface{}{arg1, arg2, arg3})
 	fake.upsertMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2)
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
@@ -140,17 +145,17 @@ func (fake *FakeUserRepo) UpsertCallCount() int {
 	return len(fake.upsertArgsForCall)
 }
 
-func (fake *FakeUserRepo) UpsertCalls(stub func(context.Context, *db.User) error) {
+func (fake *FakeUserRepo) UpsertCalls(stub func(context.Context, db.DBTX, *db.User) error) {
 	fake.upsertMutex.Lock()
 	defer fake.upsertMutex.Unlock()
 	fake.UpsertStub = stub
 }
 
-func (fake *FakeUserRepo) UpsertArgsForCall(i int) (context.Context, *db.User) {
+func (fake *FakeUserRepo) UpsertArgsForCall(i int) (context.Context, db.DBTX, *db.User) {
 	fake.upsertMutex.RLock()
 	defer fake.upsertMutex.RUnlock()
 	argsForCall := fake.upsertArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeUserRepo) UpsertReturns(result1 error) {
@@ -176,19 +181,20 @@ func (fake *FakeUserRepo) UpsertReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeUserRepo) UserByEmail(arg1 context.Context, arg2 string) (*db.User, error) {
+func (fake *FakeUserRepo) UserByEmail(arg1 context.Context, arg2 db.DBTX, arg3 string) (*db.User, error) {
 	fake.userByEmailMutex.Lock()
 	ret, specificReturn := fake.userByEmailReturnsOnCall[len(fake.userByEmailArgsForCall)]
 	fake.userByEmailArgsForCall = append(fake.userByEmailArgsForCall, struct {
 		arg1 context.Context
-		arg2 string
-	}{arg1, arg2})
+		arg2 db.DBTX
+		arg3 string
+	}{arg1, arg2, arg3})
 	stub := fake.UserByEmailStub
 	fakeReturns := fake.userByEmailReturns
-	fake.recordInvocation("UserByEmail", []interface{}{arg1, arg2})
+	fake.recordInvocation("UserByEmail", []interface{}{arg1, arg2, arg3})
 	fake.userByEmailMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2)
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -202,17 +208,17 @@ func (fake *FakeUserRepo) UserByEmailCallCount() int {
 	return len(fake.userByEmailArgsForCall)
 }
 
-func (fake *FakeUserRepo) UserByEmailCalls(stub func(context.Context, string) (*db.User, error)) {
+func (fake *FakeUserRepo) UserByEmailCalls(stub func(context.Context, db.DBTX, string) (*db.User, error)) {
 	fake.userByEmailMutex.Lock()
 	defer fake.userByEmailMutex.Unlock()
 	fake.UserByEmailStub = stub
 }
 
-func (fake *FakeUserRepo) UserByEmailArgsForCall(i int) (context.Context, string) {
+func (fake *FakeUserRepo) UserByEmailArgsForCall(i int) (context.Context, db.DBTX, string) {
 	fake.userByEmailMutex.RLock()
 	defer fake.userByEmailMutex.RUnlock()
 	argsForCall := fake.userByEmailArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeUserRepo) UserByEmailReturns(result1 *db.User, result2 error) {
