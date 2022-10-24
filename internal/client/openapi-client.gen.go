@@ -24,11 +24,18 @@ const (
 	Bearer_authScopes = "bearer_auth.Scopes"
 )
 
+// Defines values for Organization.
+const (
+	Team1 Organization = "team-1"
+	Team2 Organization = "team-2"
+	Team3 Organization = "team-3"
+)
+
 // Defines values for Role.
 const (
-	RoleAdmin   Role = "admin"
-	RoleManager Role = "manager"
-	RoleUser    Role = "user"
+	Admin   Role = "admin"
+	Manager Role = "manager"
+	User    Role = "user"
 )
 
 // Defines values for Scope.
@@ -37,19 +44,32 @@ const (
 	Scope2 Scope = "scope2"
 )
 
-// Defines values for UserRole.
-const (
-	UserRoleAdmin   UserRole = "admin"
-	UserRoleManager UserRole = "manager"
-	UserRoleUser    UserRole = "user"
-)
+// represents a user
+type GetCurrentUserResponse struct {
+	Email     *string `json:"email,omitempty"`
+	FirstName *string `json:"first_name,omitempty"`
+	LastName  *string `json:"last_name,omitempty"`
+
+	// organizations a user belongs to
+	Orgs     *interface{} `json:"orgs,omitempty"`
+	Password *string      `json:"password,omitempty"`
+	Phone    *string      `json:"phone,omitempty"`
+
+	// User role.
+	Role     *Role   `json:"role,omitempty"`
+	UserId   *int64  `json:"user_id,omitempty"`
+	Username *string `json:"username,omitempty"`
+}
 
 // HTTPValidationError defines model for HTTPValidationError.
 type HTTPValidationError struct {
 	Detail *[]ValidationError `json:"detail,omitempty"`
 }
 
-// Role defines model for Role.
+// Organization a user belongs to.
+type Organization string
+
+// User role.
 type Role string
 
 // Scope defines model for Scope.
@@ -59,25 +79,10 @@ type Scope string
 type UpdateUserRequest struct {
 	FirstName *string `json:"first_name,omitempty"`
 	LastName  *string `json:"last_name,omitempty"`
-	Role      *Role   `json:"role,omitempty"`
+
+	// User role.
+	Role *Role `json:"role,omitempty"`
 }
-
-// represents a user.
-type User struct {
-	Email     *string `json:"email,omitempty"`
-	FirstName *string `json:"firstName,omitempty"`
-	LastName  *string `json:"lastName,omitempty"`
-	Password  *string `json:"password,omitempty"`
-	Phone     *string `json:"phone,omitempty"`
-
-	// User role
-	Role     *UserRole `json:"role,omitempty"`
-	UserID   *int64    `json:"userID,omitempty"`
-	Username *string   `json:"username,omitempty"`
-}
-
-// User role
-type UserRole string
 
 // ValidationError defines model for ValidationError.
 type ValidationError struct {
@@ -592,7 +597,7 @@ func (r PingResponse) StatusCode() int {
 type GetCurrentUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *User
+	JSON200      *GetCurrentUserResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -808,7 +813,7 @@ func ParseGetCurrentUserResponse(rsp *http.Response) (*GetCurrentUserResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest User
+		var dest GetCurrentUserResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

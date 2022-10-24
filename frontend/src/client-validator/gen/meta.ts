@@ -3,11 +3,17 @@
 /* eslint-disable */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { HTTPValidationError, User, ValidationError } from './models'
+import { HTTPValidationError, UpdateUserRequest, Scope, Role, GetCurrentUserResponse, ValidationError } from './models'
 
 export const schemaDefinitions = {
   HTTPValidationError: info<HTTPValidationError>('HTTPValidationError', '#/definitions/HTTPValidationError'),
-  User: info<User>('User', '#/definitions/User'),
+  UpdateUserRequest: info<UpdateUserRequest>('UpdateUserRequest', '#/definitions/UpdateUserRequest'),
+  Scope: info<Scope>('Scope', '#/definitions/Scope'),
+  Role: info<Role>('Role', '#/definitions/Role'),
+  GetCurrentUserResponse: info<GetCurrentUserResponse>(
+    'GetCurrentUserResponse',
+    '#/definitions/GetCurrentUserResponse',
+  ),
   ValidationError: info<ValidationError>('ValidationError', '#/definitions/ValidationError'),
 }
 

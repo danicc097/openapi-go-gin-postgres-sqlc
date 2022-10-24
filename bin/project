@@ -40,6 +40,7 @@ readonly PG_REPO="internal/repos/postgresql"
 readonly MAX_COMMENT_LEN=88
 readonly MAX_FNAME_LOG_LEN=13
 readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
+readonly GEN_POSTGRES_DB="gen_db"
 
 pids=()
 env="dev"
@@ -167,14 +168,35 @@ x.gen.tests-api() {
 }
 
 # Run pre-generation scripts in the internal package.
+# Openapi spec:
+# - `x-db-enum` field syncs the spec enum with the given database enum.
 x.pregen() {
   { { {
     echo "Running generation"
 
-    POSTGRES_DB="gen_db" x.db.drop
-    POSTGRES_DB="gen_db" x.migrate up
+    POSTGRES_DB=$GEN_POSTGRES_DB x.db.drop
+    POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up
+    vext="x-db-enum"
+    for enum in $(yq e ".. | select(has(\"$vext\")).$vext" $SPEC); do
+      local db_enums=()
+      path="$(enum_name=$enum yq e ".. | select(has(\"$vext\") and .$vext == env(enum_name)) | (path | join(\".\"))" $SPEC)"
+      mapfile -t db_enums < <(dockerdb psql -qtAX -d $GEN_POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
+
+      [[ ${#db_enums[@]} -gt 0 ]] || { echo "Enum '$enum' not found in database. Skipping" >&2 && continue; }
+      for i in ${!db_enums[@]}; do
+        # FIXME not supported by openapi-generator. Should be thinking of moving on to deepmap's or roll our own
+        [[ ${db_enums[$i]} == *" "* ]] && err "Enums with spaces currently not supported: '${db_enums[$i]}'"
+        db_enums[$i]="\"${db_enums[$i]}\""
+      done
+      enums=$(printf ",%s" "${db_enums[@]}")
+      enums="[${enums:1}]"
+      echo "Replacing enum '$enum' in $SPEC with: $enums"
+      enums=$enums yq e ".$path.enum = env(enums)" -i $SPEC
+
+    done
+
     # go build -o pregen "$PWD"/cmd/pregen/main.go
-    # ./pregen -cachedir="$cache" -env=".env.$env"
+    # ./pregen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -279,7 +301,7 @@ x.gen() {
     # xo cannot use db files as input, needs an up-to-date schema
     # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
     # use a unique db to prevent cosmic accidents
-    POSTGRES_DB="gen_db" x.gen.xo &
+    x.gen.xo &
     _pids+=($!)
     x.gen.client &
     _pids+=($!)
@@ -382,7 +404,7 @@ x.run.backend-hr() {
   # --build.include_files "openapi.yaml" \
   # NOTE: building binary very unreliable, leads to bin not found.
   air \
-    --build.pre_build_cmd "bin/project generate" \
+    --build.pre_build_cmd "bin/erate" \
     --build.cmd "" \
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
@@ -753,7 +775,7 @@ x.gen.xo() {
 
     mkdir -p $PG_REPO/gen/db
     # xo schema --help
-    xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+    xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
       --src "$PG_REPO"/xo-templates \
       -o "$PG_REPO"/gen/db \
       -e "*.created_at" \

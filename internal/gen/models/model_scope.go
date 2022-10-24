@@ -6,6 +6,6 @@ type Scope string
 
 // List of Scope.
 const (
-	SCOPE1 Scope = "scope1"
-	SCOPE2 Scope = "scope2"
+	Scope1 Scope = "scope1"
+	Scope2 Scope = "scope2"
 )

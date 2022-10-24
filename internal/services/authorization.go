@@ -25,7 +25,9 @@ func NewAuthorization(logger *zap.Logger) *Authorization {
 }
 
 // TODO RBAC: https://incidentio.notion.site/Proposal-Product-RBAC-265201563d884ec5aeecbb246c02ddc6
-// casbin https://www.aserto.com/blog/building-rbac-in-go
+// last resort: casbin. too much scope, poor docs, maintenance
+// for frontend https://casbin.org/docs/en/frontend
+// load policy from db: https://github.com/casbin/casbin-pg-adapter
 
 // RolePermissions returns access levels per role.
 func (a Authorization) RolePermissions() map[db.Role][]db.Role {

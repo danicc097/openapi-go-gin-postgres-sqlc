@@ -2,11 +2,12 @@
 
 package models
 
+// Role : User role.
 type Role string
 
 // List of Role.
 const (
-	USER    Role = "user"
-	MANAGER Role = "manager"
-	ADMIN   Role = "admin"
+	User    Role = "user"
+	Manager Role = "manager"
+	Admin   Role = "admin"
 )

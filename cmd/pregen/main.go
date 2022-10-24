@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pregen"
 )
 
 func main() {
@@ -27,27 +25,12 @@ func main() {
 
 	// TODO read openapi spec, look for x-db-enum or x-db-tables vendor ext.
 	// and replace enum values with sql query output
-
-	const baseDir = "internal"
-	conf := &postgen.Conf{
-		CurrentHandlersDir: postgen.Dir(path.Join(baseDir, "rest")),
-		GenHandlersDir:     postgen.Dir(path.Join(baseDir, "gen")),
-		OutHandlersDir:     postgen.Dir(path.Join(baseDir, "rest")),
-		OutServicesDir:     postgen.Dir(path.Join(baseDir, "services")),
-	}
+	// TODO	messy, could all be done with docker exec and yq...
 
 	var stderr bytes.Buffer
-	og := postgen.NewOpenapiGenerator(conf, &stderr, postgen.Dir(cacheDir), spec)
+	og := pregen.New(&stderr, spec)
 
 	if err := og.Generate(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		fmt.Fprintln(os.Stderr, stderr.String())
-		os.Exit(1)
-	}
-
-	url := internal.BuildApiURL("openapi.yaml")
-
-	if err := postgen.SetupSwaggerUI(url); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		fmt.Fprintln(os.Stderr, stderr.String())
 		os.Exit(1)

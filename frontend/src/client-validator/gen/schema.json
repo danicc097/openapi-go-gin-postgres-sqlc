@@ -16,10 +16,51 @@
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "User": {
+    "UpdateUserRequest": {
+      "description": "represents User data to update",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/Role"
+        },
+        "first_name": {
+          "type": "string",
+          "pattern": "^[ a-zA-Z0-9_-]+$"
+        },
+        "last_name": {
+          "type": "string",
+          "pattern": "^[ a-zA-Z0-9_-]+$"
+        }
+      },
+      "title": "a User",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Scope": {
+      "title": "Scope",
+      "type": "string",
+      "x-db-enum": "scope",
+      "enum": [
+        "scope1",
+        "scope2"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Role": {
+      "title": "Role",
+      "description": "User role.",
+      "type": "string",
+      "x-db-enum": "role",
+      "enum": [
+        "user",
+        "manager",
+        "admin"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "GetCurrentUserResponse": {
       "description": "represents a user.",
       "properties": {
-        "userID": {
+        "user_id": {
           "format": "int64",
           "type": "integer",
           "minimum": -9223372036854776000,
@@ -28,10 +69,10 @@
         "username": {
           "type": "string"
         },
-        "firstName": {
+        "first_name": {
           "type": "string"
         },
-        "lastName": {
+        "last_name": {
           "type": "string"
         },
         "email": {
@@ -44,13 +85,7 @@
           "type": "string"
         },
         "role": {
-          "description": "User role",
-          "enum": [
-            "user",
-            "manager",
-            "admin"
-          ],
-          "type": "string"
+          "$ref": "#/definitions/Role"
         }
       },
       "title": "a User",
@@ -89,8 +124,17 @@
     "HTTPValidationError": {
       "$ref": "#/definitions/HTTPValidationError"
     },
-    "User": {
-      "$ref": "#/definitions/User"
+    "UpdateUserRequest": {
+      "$ref": "#/definitions/UpdateUserRequest"
+    },
+    "Scope": {
+      "$ref": "#/definitions/Scope"
+    },
+    "Role": {
+      "$ref": "#/definitions/Role"
+    },
+    "GetCurrentUserResponse": {
+      "$ref": "#/definitions/GetCurrentUserResponse"
     },
     "ValidationError": {
       "$ref": "#/definitions/ValidationError"

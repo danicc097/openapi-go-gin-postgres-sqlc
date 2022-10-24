@@ -5,6 +5,7 @@ openapi-go-gin-postgres-sqlc*
 openapi-generator-cli.jar
 /post-generate-api
 /postgen
+/pregen
 .openapi-generator
 **/swagger-ui/**/*
 tmp

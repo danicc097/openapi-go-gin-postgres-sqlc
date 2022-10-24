@@ -10,6 +10,11 @@ export type Location = string[]
 export type Message = string
 export type ErrorType = string
 export type Detail = ValidationError[]
+/**
+ * User role.
+ */
+export type Role = 'user' | 'manager' | 'admin'
+export type Scope = 'scope1' | 'scope2'
 
 export interface HTTPValidationError {
   detail?: Detail
@@ -20,18 +25,23 @@ export interface ValidationError {
   type: ErrorType
 }
 /**
- * represents a user.
+ * represents User data to update
  */
 export interface AUser {
-  userID?: number
+  role?: Role
+  first_name?: string
+  last_name?: string
+}
+/**
+ * represents a user.
+ */
+export interface AUser1 {
+  user_id?: number
   username?: string
-  firstName?: string
-  lastName?: string
+  first_name?: string
+  last_name?: string
   email?: string
   password?: string
   phone?: string
-  /**
-   * User role
-   */
-  role?: 'user' | 'manager' | 'admin'
+  role?: Role
 }

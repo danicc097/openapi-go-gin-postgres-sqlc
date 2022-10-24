@@ -11,7 +11,7 @@ type {{{classname}}} {{^format}}{{dataType}}{{/format}}{{{format}}}
 const (
 	{{#allowableValues}}
 	{{#enumVars}}
-	{{#enumClassPrefix}}{{{classname.toUpperCase}}}_{{/enumClassPrefix}}{{name}} {{{classname}}} = {{{value}}}
+	{{#enumClassPrefix}}{{#lambda.titlecase}}{{#lambda.lowercase}}{{{classname}}}{{/lambda.lowercase}}{{/lambda.titlecase}}_{{/enumClassPrefix}}{{#lambda.titlecase}}{{#lambda.lowercase}}{{{name}}}{{/lambda.lowercase}}{{/lambda.titlecase}} {{{classname}}} = {{{value}}}
 	{{/enumVars}}
 	{{/allowableValues}}
 ){{/isEnum}}{{^isEnum}}{{#description}}

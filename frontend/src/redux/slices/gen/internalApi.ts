@@ -25,7 +25,7 @@ const injectedRtkApi = api
         invalidatesTags: ['user'],
       }),
       updateUser: build.mutation<UpdateUserRes, UpdateUserArgs>({
-        query: (queryArg) => ({ url: `/user/${queryArg}`, method: 'PUT' }),
+        query: (queryArg) => ({ url: `/user/${queryArg.id}`, method: 'PUT', body: queryArg.updateUserRequest }),
         invalidatesTags: ['user'],
       }),
     }),
@@ -41,9 +41,14 @@ export type AdminPingArgs = void
 export type GetCurrentUserRes = /** status 200 successful operation */ AUser
 export type GetCurrentUserArgs = void
 export type DeleteUserRes = unknown
-export type DeleteUserArgs = /** userID that needs to be deleted */ string
+export type DeleteUserArgs = /** user_id that needs to be deleted */ string
 export type UpdateUserRes = unknown
-export type UpdateUserArgs = /** userID that needs to be updated */ string
+export type UpdateUserArgs = {
+  /** user_id that needs to be updated */
+  id: string
+  /** Updated user object */
+  updateUserRequest: AUser2
+}
 export type ValidationError = {
   loc: string[]
   msg: string
@@ -52,15 +57,21 @@ export type ValidationError = {
 export type HttpValidationError = {
   detail?: ValidationError[]
 }
+export type Role = 'user' | 'manager' | 'admin'
 export type AUser = {
-  userID?: number
+  user_id?: number
   username?: string
-  firstName?: string
-  lastName?: string
+  first_name?: string
+  last_name?: string
   email?: string
   password?: string
   phone?: string
-  role?: 'user' | 'manager' | 'admin'
+  role?: Role
+}
+export type AUser2 = {
+  role?: Role
+  first_name?: string
+  last_name?: string
 }
 export const {
   usePingQuery,
