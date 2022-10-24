@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
 )
@@ -20,8 +21,8 @@ func NewAuthentication(logger *zap.Logger, usvc *User) *Authentication {
 	}
 }
 
-func (a *Authentication) GetUserFromToken(ctx context.Context) {
+func (a *Authentication) GetUserFromToken(ctx context.Context) *db.User {
 }
 
-func (a *Authentication) GetUserFromApiKey(ctx context.Context) {
+func (a *Authentication) GetUserFromApiKey(ctx context.Context) *db.User {
 }

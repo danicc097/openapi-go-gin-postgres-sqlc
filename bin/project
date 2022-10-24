@@ -659,8 +659,8 @@ x.openapi-generator() {
       -o "$gen_out_dir" \
       -t "$template_dir" \
       --additional-properties=packageName=openapi,apiPath=gen,hideGenerationTimestamp=true \
-      --enable-post-process-file \
-      --global-property=debugModels,debugOperations >debug-openapi.log #>/dev/null \
+      --enable-post-process-file >/dev/null
+    # --global-property=debugModels,debugOperations >debug-openapi.log #>/dev/null \
 
     mkdir -p "$gen_out_dir"/gen/models
     mkdir -p "$gen_out_dir"/rest
