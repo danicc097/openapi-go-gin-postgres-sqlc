@@ -166,7 +166,19 @@ x.gen.tests-api() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Run post-generation scripts on the internal package.
+# Run pre-generation scripts in the internal package.
+x.pregen() {
+  { { {
+    echo "Running generation"
+
+    POSTGRES_DB="gen_db" x.db.drop
+    POSTGRES_DB="gen_db" x.migrate up
+    # go build -o pregen "$PWD"/cmd/pregen/main.go
+    # ./pregen -cachedir="$cache" -env=".env.$env"
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Run post-generation scripts in the internal package.
 x.postgen() {
   { { {
     echo "Running generation"
@@ -254,6 +266,8 @@ x.gen() {
 
     cache=".generate.cache"
 
+    x.pregen
+
     generate_api "$cache" "internal" "$SPEC" "$OPENAPI_GEN_OUT_DIR" "$TEMPLATE_DIR"
 
     rm -rf $PG_REPO/gen
@@ -262,26 +276,22 @@ x.gen() {
     _pids+=($!)
     x.gen.sqlc &
     _pids+=($!)
+    # xo cannot use db files as input, needs an up-to-date schema
+    # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
+    # use a unique db to prevent cosmic accidents
+    POSTGRES_DB="gen_db" x.gen.xo &
+    _pids+=($!)
     x.gen.client &
     _pids+=($!)
     x.gen.proto &
-    _pids+=($!)
-    x.postgen "$cache" &
     _pids+=($!)
 
     for pid in "${_pids[@]}"; do
       wait "$pid"
     done
 
-    (
-      # xo cannot use db files as input, needs an up-to-date schema
-      # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
-      # use a unique db to prevent cosmic accidents
-      export POSTGRES_DB="xoxo"
-      x.db.drop
-      x.migrate up
-      generate_xo || err "Failed xo generation"
-    )
+    x.postgen "$cache"
+    _pids+=($!)
 
     # delay since it depends on generated output
     x.gen.counterfeiter "$cache"
@@ -532,7 +542,7 @@ x.migrate.create() {
 
 ########################## db ##########################
 
-# Shows active and max number of connections for the current environment.
+# Show active and max number of connections for the current environment.
 x.db.conns() {
   { { {
     current_conns=$(dockerdb psql -qtAX -d $POSTGRES_DB -c "SELECT count(*) FROM pg_stat_activity WHERE datname = '$POSTGRES_DB';")
@@ -734,7 +744,7 @@ run_shared_services() {
 }
 
 # Automatically generate CRUD and By queries based on existing indexes from a Postgres schema.
-generate_xo() {
+x.gen.xo() {
   # TODO from hn
   # I've used https://github.com/xo/xo, extended it with some custom functions for templating, extended the templates themselves, and can now generate CRUD for anything in the database, functions for common select queries based on the indices that exist in the database, field filtering and scanning, updates for subsets of fields including some atomic operations, etc. The sky is the limit honestly. It has allowed me to start with something approximating a statically generated ORM and extend it with any features I want as time goes on. I also write .extra.go files along side the generated .xo.go files to extend the structs that are generated with custom logic and methods to convert data into response formats.
 
@@ -747,7 +757,7 @@ generate_xo() {
       --src "$PG_REPO"/xo-templates \
       -o "$PG_REPO"/gen/db \
       -e "*.created_at" \
-      -e "*.updated_at"
+      -e "*.updated_at" || err "Failed xo generation"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
