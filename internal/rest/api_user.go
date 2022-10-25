@@ -1,11 +1,8 @@
 package rest
 
 import (
-	"database/sql"
-	"fmt"
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/gen/models"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -158,59 +155,59 @@ func (h *User) updateUser(c *gin.Context) {
 	// TODO back to OAS schema.
 	// only role can be updated, username and email come from idp.
 	// lets add first_name last_name.
-	var body models.UpdateUserRequest
+	// var body models.UpdateUserRequest
 
-	if err := c.BindJSON(&body); err != nil {
-		renderErrorResponse(c, "err::", err)
+	// if err := c.BindJSON(&body); err != nil {
+	// 	renderErrorResponse(c, "err::", err)
 
-		return
-	}
+	// 	return
+	// }
 
-	// TODO extract to helper
-	var role db.Role
+	// // TODO extract to helper
+	// var role db.Role
 
-	err = role.Scan([]byte(body.Role))
-	if err != nil {
-		renderErrorResponse(c, "err::", err)
+	// err = role.Scan([]byte(body.Role))
+	// if err != nil {
+	// 	renderErrorResponse(c, "err::", err)
 
-		return
-	}
+	// 	return
+	// }
 
-	h.logger.Sugar().Infof("body is :%#v", body)
+	// h.logger.Sugar().Infof("body is :%#v", body)
 
-	user, err := h.usvc.UserByEmail(c, tx, body.Email)
-	if err != nil {
-		fmt.Printf("failed h.usvc.UserByEmail: %s\n", err)
-	}
+	// user, err := h.usvc.UserByEmail(c, tx, body.Email)
+	// if err != nil {
+	// 	fmt.Printf("failed h.usvc.UserByEmail: %s\n", err)
+	// }
 
-	h.logger.Sugar().Infof("user by email: %v", user)
+	// h.logger.Sugar().Infof("user by email: %v", user)
 
-	if user == nil {
-		err = h.usvc.Register(c, tx, &db.User{
-			Username:  body.Username,
-			Email:     body.Email,
-			Role:      role,
-			FirstName: sql.NullString{String: "firstname", Valid: true},
-		})
-		if err != nil {
-			fmt.Printf("failed h.usvc.UserByEmail: %s\n", err)
-			renderErrorResponse(c, "user could not be created", err)
+	// if user == nil {
+	// 	err = h.usvc.Register(c, tx, &db.User{
+	// 		Username:  body.Username,
+	// 		Email:     body.Email,
+	// 		Role:      role,
+	// 		FirstName: sql.NullString{String: "firstname", Valid: true},
+	// 	})
+	// 	if err != nil {
+	// 		fmt.Printf("failed h.usvc.UserByEmail: %s\n", err)
+	// 		renderErrorResponse(c, "user could not be created", err)
 
-			return
-		}
-		renderResponse(c, "user created", http.StatusOK)
+	// 		return
+	// 	}
+	// 	renderResponse(c, "user created", http.StatusOK)
 
-		return
-	}
-	user.Username = body.Username
-	user.Email = body.Email
-	user.Role = role
+	// 	return
+	// }
+	// user.Username = body.Username
+	// user.Email = body.Email
+	// user.Role = role
 
-	if err = h.usvc.Upsert(c, tx, user); err != nil {
-		renderErrorResponse(c, "err: ", err)
+	// if err = h.usvc.Upsert(c, tx, user); err != nil {
+	// 	renderErrorResponse(c, "err: ", err)
 
-		return
-	}
+	// 	return
+	// }
 
 	tx.Commit(ctx)
 }

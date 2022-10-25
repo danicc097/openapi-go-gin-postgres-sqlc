@@ -51,7 +51,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		a.authnsvc.GetUserFromToken(c.Request.Context())
 
 		// set user to context
-		ctxWithUser(c)
+		// ctxWithUser(c)
 	}
 }
 

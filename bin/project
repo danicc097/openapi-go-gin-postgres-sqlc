@@ -224,7 +224,11 @@ x.gen.sqlc() {
 x.gen.client() {
   { { {
     echo "Running generation"
-    oapi-codegen --config internal/client/oapi-codegen.yaml "$SPEC" || err "Failed client generation"
+    oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
+    oapi-codegen --config internal/client/oapi-codegen-types.yaml "$SPEC" || err "Failed client generation"
+
+    oapi-codegen --config internal/server/oapi-codegen-server.yaml "$SPEC" || err "Failed server generation"
+    oapi-codegen --config internal/server/oapi-codegen-types.yaml "$SPEC" || err "Failed server generation"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

@@ -1,8 +1,7 @@
 # see https://github.com/deepmap/oapi-codegen/blob/eea15c751f801d686c9c9c817c35a9b92f3a482d/pkg/codegen/configuration.go
-package: client
+package: server
 generate:
-  client: true
   models: true
-output: internal/client/openapi-client.gen.go
+output: internal/server/openapi-types.gen.go
 output-options:
   skip-prune: true

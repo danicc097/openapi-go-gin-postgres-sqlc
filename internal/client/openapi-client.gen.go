@@ -19,84 +19,6 @@ import (
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 )
 
-const (
-	Api_keyScopes     = "api_key.Scopes"
-	Bearer_authScopes = "bearer_auth.Scopes"
-)
-
-// Defines values for Organization.
-const (
-	Team1 Organization = "team-1"
-	Team2 Organization = "team-2"
-	Team3 Organization = "team-3"
-)
-
-// Defines values for Role.
-const (
-	Admin   Role = "admin"
-	Manager Role = "manager"
-	User    Role = "user"
-)
-
-// Defines values for Scope.
-const (
-	Scope1 Scope = "scope1"
-	Scope2 Scope = "scope2"
-)
-
-// represents a user
-type GetCurrentUserResponse struct {
-	Email     *string `json:"email,omitempty"`
-	FirstName *string `json:"first_name,omitempty"`
-	LastName  *string `json:"last_name,omitempty"`
-
-	// organizations a user belongs to
-	Orgs     *interface{} `json:"orgs,omitempty"`
-	Password *string      `json:"password,omitempty"`
-	Phone    *string      `json:"phone,omitempty"`
-
-	// User role.
-	Role     *Role   `json:"role,omitempty"`
-	UserId   *int64  `json:"user_id,omitempty"`
-	Username *string `json:"username,omitempty"`
-}
-
-// HTTPValidationError defines model for HTTPValidationError.
-type HTTPValidationError struct {
-	Detail *[]ValidationError `json:"detail,omitempty"`
-}
-
-// Organization a user belongs to.
-type Organization string
-
-// User role.
-type Role string
-
-// Scope defines model for Scope.
-type Scope string
-
-// represents User data to update
-type UpdateUserRequest struct {
-	FirstName *string `json:"first_name,omitempty"`
-	LastName  *string `json:"last_name,omitempty"`
-
-	// User role.
-	Role *Role `json:"role,omitempty"`
-}
-
-// ValidationError defines model for ValidationError.
-type ValidationError struct {
-	Loc  []string `json:"loc"`
-	Msg  string   `json:"msg"`
-	Type string   `json:"type"`
-}
-
-// UpdateUserJSONBody defines parameters for UpdateUser.
-type UpdateUserJSONBody = UpdateUserRequest
-
-// UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
-type UpdateUserJSONRequestBody = UpdateUserJSONBody
-
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
 
@@ -597,7 +519,7 @@ func (r PingResponse) StatusCode() int {
 type GetCurrentUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *GetCurrentUserResponse
+	JSON200      *GetCurrentUserRes
 }
 
 // Status returns HTTPResponse.Status
@@ -813,7 +735,7 @@ func ParseGetCurrentUserResponse(rsp *http.Response) (*GetCurrentUserResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest GetCurrentUserResponse
+		var dest GetCurrentUserRes
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

@@ -2,8 +2,8 @@
 
 package models
 
-// GetCurrentUserResponse represents a user.
-type GetCurrentUserResponse struct {
+// GetCurrentUserRes represents a user.
+type GetCurrentUserRes struct {
 	UserId    int64  `json:"user_id,omitempty"`
 	Username  string `json:"username,omitempty"`
 	FirstName string `json:"first_name,omitempty"`

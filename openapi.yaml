@@ -88,7 +88,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetCurrentUserResponse"
+                $ref: "#/components/schemas/GetCurrentUserRes"
           description: successful operation
       security:
         - bearer_auth: []
@@ -197,7 +197,7 @@ components:
     # we must specify x-db-model for adapters to be generated.
     # x-db-model is specified in req or res objects only (kin filter)
     # ^ all this is part of postgen
-    GetCurrentUserResponse:
+    GetCurrentUserRes:
       description: represents a user
       properties:
         user_id:
