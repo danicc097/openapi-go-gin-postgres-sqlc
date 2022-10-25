@@ -192,12 +192,29 @@ x.pregen() {
       enums="[${enums:1}]"
       echo "Replacing enum '$enum' in $SPEC with: $enums"
       enums=$enums yq e ".$path.enum = env(enums)" -i $SPEC
+    done
 
+    echo "Applying PascalCase to operation IDs in $SPEC"
+    for opId in $(yq e ".. | select(has(\"operationId\")).operationId" $SPEC); do
+      newopId="$(to_pascal $opId)"
+      paths=$(opId=$opId yq e ".. | select(has(\"operationId\") and .operationId == env(opId)) | (path)" $SPEC)
+      mapfile paths <<<$paths
+      escaped_path="$(join_yq_paths paths)"
+      newopId=$newopId yq e ".$escaped_path.operationId = env(newopId)" -i $SPEC
     done
 
     # go build -o pregen "$PWD"/cmd/pregen/main.go
     # ./pregen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# outputs safe double-quoted paths for yq
+# fixes paths where a dot is present
+join_yq_paths() {
+  declare -n arr="$1"
+  arr=("${arr[*]//- /}")
+  mapfile arr < <(printf "\"%s\"\n" ${arr[*]})
+  join_by "." ${arr[*]}
 }
 
 # Run post-generation scripts in the internal package.
@@ -220,15 +237,15 @@ x.gen.sqlc() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Generate a Go client for the project.
-x.gen.client() {
+# Generate Go client and server.
+x.gen.client-server() {
   { { {
     echo "Running generation"
     oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
     oapi-codegen --config internal/client/oapi-codegen-types.yaml "$SPEC" || err "Failed client generation"
 
-    oapi-codegen --config internal/server/oapi-codegen-server.yaml "$SPEC" || err "Failed server generation"
-    oapi-codegen --config internal/server/oapi-codegen-types.yaml "$SPEC" || err "Failed server generation"
+    oapi-codegen --config internal/rest/oapi-codegen-server.yaml "$SPEC" || err "Failed server generation"
+    oapi-codegen --config internal/rest/oapi-codegen-types.yaml "$SPEC" || err "Failed server generation"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -307,7 +324,7 @@ x.gen() {
     # use a unique db to prevent cosmic accidents
     x.gen.xo &
     _pids+=($!)
-    x.gen.client &
+    x.gen.client-server &
     _pids+=($!)
     x.gen.proto &
     _pids+=($!)

@@ -13,15 +13,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// User handles routes with the 'user' tag.
-type User struct {
-	usvc           *services.User
-	logger         *zap.Logger
-	pool           *pgxpool.Pool
-	movieSvcClient v1.MovieGenreClient
-	authmw         *authMiddleware
-}
-
 // NewUser returns a new handler for the 'user' route group.
 func NewUser(
 	logger *zap.Logger,

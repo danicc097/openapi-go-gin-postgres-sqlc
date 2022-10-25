@@ -160,19 +160,19 @@ func (o *openapiGenerator) Generate() error {
 		return fmt.Errorf("invalid spec: %w", err)
 	}
 
-	cb, err := o.getCommonBasenames()
+	src, err := o.generateOpIDs()
 	if err != nil {
-		return fmt.Errorf("error getting common basenames: %w", err)
+		return fmt.Errorf("could not generate operation IDs: %w", err)
+	}
+	fname := path.Join(string(o.conf.OutHandlersDir), "operation_ids.gen.go")
+
+	f, err := os.OpenFile(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o660)
+	if err != nil {
+		return fmt.Errorf("could not open %s: %w", fname, err)
 	}
 
-	handlers, err := o.analyzeHandlers(cb)
-	if err != nil {
-		return fmt.Errorf("error analyzing handlers: %w", err)
-	}
-
-	err = o.generateMergedFiles(handlers)
-	if err != nil {
-		return fmt.Errorf("error generating merged files: %w", err)
+	if _, err = f.Write(src); err != nil {
+		return fmt.Errorf("could not write opId template: %w", err)
 	}
 
 	return nil
@@ -445,21 +445,6 @@ func (o *openapiGenerator) generateMergedFiles(handlers Handlers) error {
 	// 	p := operations[string(o)]
 	// if len(...)
 	// }
-
-	src, err := o.generateOpIDs()
-	if err != nil {
-		return fmt.Errorf("could not generate operation IDs: %w", err)
-	}
-	fname := path.Join(string(o.conf.OutHandlersDir), "operation_ids.gen.go")
-
-	f, err := os.OpenFile(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o660)
-	if err != nil {
-		return fmt.Errorf("could not open %s: %w", fname, err)
-	}
-
-	if _, err = f.Write(src); err != nil {
-		return fmt.Errorf("could not write opId template: %w", err)
-	}
 
 	// -- generate handler files
 	for tag, currentHF := range handlers[o.conf.CurrentHandlersDir] {

@@ -32,7 +32,7 @@ paths:
     get:
       description: ""
       summary: Ping pongs
-      operationId: ping
+      operationId: Ping
       responses:
         "200":
           description: OK
@@ -62,7 +62,7 @@ paths:
   /admin/ping:
     get:
       summary: Ping pongs
-      operationId: adminPing
+      operationId: AdminPing
       responses:
         "200":
           description: OK
@@ -82,7 +82,7 @@ paths:
   /user/me:
     get:
       summary: returns the logged in user
-      operationId: getCurrentUser
+      operationId: GetCurrentUser
       responses:
         "200":
           content:
@@ -98,7 +98,7 @@ paths:
   /user/{id}:
     delete:
       summary: deletes the user by id
-      operationId: deleteUser
+      operationId: DeleteUser
       parameters:
         - description: user_id that needs to be deleted
           explode: false
@@ -118,7 +118,7 @@ paths:
         - user
     put:
       summary: updates the user by id
-      operationId: updateUser
+      operationId: UpdateUser
       parameters:
         - description: user_id that needs to be updated
           explode: false
