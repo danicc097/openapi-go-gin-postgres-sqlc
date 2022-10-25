@@ -11,12 +11,9 @@
 # ```
 # NOTE: Any custom field with an `x-*` name pattern in the OpenAPI spec will be available in
 # `vendorExtensions` in openapi-generator's mustache templates.
-
 openapi: 3.0.2
 info:
-  description:
-    "This is a sample server Petstore server. For this sample, you can\
-    \ use the api key `special-key` to test the authorization filters."
+  description: "This is a sample server Petstore server. For this sample, you can use the api key `special-key` to test the authorization filters."
   license:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
@@ -91,7 +88,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/GetCurrentUserRes"
           description: successful operation
       security:
         - bearer_auth: []
@@ -103,7 +100,7 @@ paths:
       summary: deletes the user by id
       operationId: deleteUser
       parameters:
-        - description: userID that needs to be deleted
+        - description: user_id that needs to be deleted
           explode: false
           in: path
           name: id
@@ -123,7 +120,7 @@ paths:
       summary: updates the user by id
       operationId: updateUser
       parameters:
-        - description: userID that needs to be updated
+        - description: user_id that needs to be updated
           explode: false
           in: path
           name: id
@@ -131,6 +128,13 @@ paths:
           schema:
             type: string
           style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+        description: Updated user object
+        required: true
       responses:
         "404":
           description: User not found
@@ -150,17 +154,60 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ValidationError"
-    User:
-      description: represents a user.
+    UpdateUserRequest:
+      description: represents User data to update
+      example:
+        role: manager
+        first_name: Jane
+        last_name: Doe
       properties:
-        userID:
+        role:
+          $ref: "#/components/schemas/Role"
+        first_name:
+          type: string
+          pattern: "^[ a-zA-Z0-9_-]+$"
+        last_name:
+          type: string
+          pattern: "^[ a-zA-Z0-9_-]+$"
+      title: a User
+      type: object
+    Scope:
+      title: Scope
+      type: string
+      x-db-enum: scope
+      enum:
+        - scope1
+        - scope2
+    Role:
+      title: Role
+      description: User role.
+      type: string
+      x-db-enum: role
+      enum: ["user", "manager", "admin"]
+    Organization:
+      title: Organization
+      description: Organization a user belongs to.
+      type: string
+      x-db-enum: org
+      enum: ["team-1", "team-2", "team-3"]
+    # TODO generate adapter to convert db model -> this
+    # based on matches of x-db-model: <...>'s json tags (both sqlc and xo generate them)
+    # against parsed property names (kin) - when its a response object only (kin filter)
+    # if request: adapter to convert this -> db model.
+    # we must specify x-db-model for adapters to be generated.
+    # x-db-model is specified in req or res objects only (kin filter)
+    # ^ all this is part of postgen
+    GetCurrentUserRes:
+      description: represents a user
+      properties:
+        user_id:
           format: int64
           type: integer
         username:
           type: string
-        firstName:
+        first_name:
           type: string
-        lastName:
+        last_name:
           type: string
         email:
           type: string
@@ -169,12 +216,11 @@ components:
         phone:
           type: string
         role:
-          description: User role
-          enum:
-            - user
-            - manager
-            - admin
-          type: string
+          $ref: "#/components/schemas/Role"
+        orgs:
+          description: organizations a user belongs to
+          items:
+            $ref: "#/components/schemas/Organization"
       title: a User
       type: object
       xml:

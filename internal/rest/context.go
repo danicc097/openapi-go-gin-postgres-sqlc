@@ -14,8 +14,8 @@ const (
 	userDataKey   = "middleware.openapi/user-data"
 )
 
-func getUserFromCtx(c *gin.Context) *db.Users {
-	user, ok := c.Value(userCtxKey).(*db.Users)
+func getUserFromCtx(c *gin.Context) *db.User {
+	user, ok := c.Value(userCtxKey).(*db.User)
 	if !ok {
 		return nil
 	}
@@ -23,7 +23,7 @@ func getUserFromCtx(c *gin.Context) *db.Users {
 	return user
 }
 
-func ctxWithUser(c *gin.Context, user *db.Users) {
+func ctxWithUser(c *gin.Context, user *db.User) {
 	c.Set(userCtxKey, user)
 }
 

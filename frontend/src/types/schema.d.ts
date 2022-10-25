@@ -35,22 +35,43 @@ export interface components {
     }
     /**
      * a User
+     * @description represents User data to update
+     * @example {
+     *   "role": "manager",
+     *   "first_name": "Jane",
+     *   "last_name": "Doe"
+     * }
+     */
+    UpdateUserRequest: {
+      role?: components['schemas']['Role']
+      first_name?: string
+      last_name?: string
+    }
+    /**
+     * Scope
+     * @enum {string}
+     */
+    Scope: 'scope1' | 'scope2'
+    /**
+     * Role
+     * @description User role.
+     * @enum {string}
+     */
+    Role: 'user' | 'manager' | 'admin'
+    /**
+     * a User
      * @description represents a user.
      */
-    User: {
+    GetCurrentUserResponse: {
       /** Format: int64 */
-      userID?: number
+      user_id?: number
       username?: string
-      firstName?: string
-      lastName?: string
+      first_name?: string
+      last_name?: string
       email?: string
       password?: string
       phone?: string
-      /**
-       * @description User role
-       * @enum {string}
-       */
-      role?: 'user' | 'manager' | 'admin'
+      role?: components['schemas']['Role']
     }
     /** ValidationError */
     ValidationError: {
@@ -112,7 +133,7 @@ export interface operations {
       /** successful operation */
       200: {
         content: {
-          'application/json': components['schemas']['User']
+          'application/json': components['schemas']['GetCurrentUserResponse']
         }
       }
     }
@@ -120,7 +141,7 @@ export interface operations {
   updateUser: {
     parameters: {
       path: {
-        /** userID that needs to be updated */
+        /** user_id that needs to be updated */
         id: string
       }
     }
@@ -128,11 +149,17 @@ export interface operations {
       /** User not found */
       404: unknown
     }
+    /** Updated user object */
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateUserRequest']
+      }
+    }
   }
   deleteUser: {
     parameters: {
       path: {
-        /** userID that needs to be deleted */
+        /** user_id that needs to be deleted */
         id: string
       }
     }

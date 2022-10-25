@@ -51,7 +51,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 50M # TODO envvar
+          memory: 150M # TODO envvar
     networks:
       - traefik-net
     environment:
@@ -125,9 +125,10 @@ services:
     deploy:
       resources:
         limits:
-          memory: 250M # TODO envvar
+          memory: 450M # TODO envvar
     environment:
       - discovery.type=single-node
+    restart: unless-stopped
     volumes:
       - openapi_elasticsearch_data:/usr/share/elasticsearch/data
 

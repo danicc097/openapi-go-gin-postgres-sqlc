@@ -101,6 +101,13 @@ trim_string() {
   printf '%s\n' "$_"
 }
 
+join_by() {
+  local d=${1-} f=${2-}
+  if shift 2; then
+    printf %s "$f" "${@/#/$d}"
+  fi
+}
+
 err() {
   echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
   kill -s SIGUSR1 $PROC

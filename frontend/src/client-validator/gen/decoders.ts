@@ -7,7 +7,7 @@ import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
 import { validateJson } from '../validate'
-import { HTTPValidationError, User, ValidationError } from './models'
+import { HTTPValidationError, UpdateUserRequest, Scope, Role, GetCurrentUserResponse, ValidationError } from './models'
 import jsonSchema from './schema.json'
 
 const ajv = new Ajv({ strict: false, allErrors: true })
@@ -27,16 +27,52 @@ export const HTTPValidationErrorDecoder: Decoder<HTTPValidationError> = {
     return validateJson(json, schema, HTTPValidationErrorDecoder.definitionName)
   },
 }
-export const UserDecoder: Decoder<User> = {
-  definitionName: 'User',
-  schemaRef: '#/definitions/User',
+export const UpdateUserRequestDecoder: Decoder<UpdateUserRequest> = {
+  definitionName: 'UpdateUserRequest',
+  schemaRef: '#/definitions/UpdateUserRequest',
 
-  decode(json: unknown): User {
-    const schema = ajv.getSchema(UserDecoder.schemaRef)
+  decode(json: unknown): UpdateUserRequest {
+    const schema = ajv.getSchema(UpdateUserRequestDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${UserDecoder.definitionName} not found`)
+      throw new Error(`Schema ${UpdateUserRequestDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, UserDecoder.definitionName)
+    return validateJson(json, schema, UpdateUserRequestDecoder.definitionName)
+  },
+}
+export const ScopeDecoder: Decoder<Scope> = {
+  definitionName: 'Scope',
+  schemaRef: '#/definitions/Scope',
+
+  decode(json: unknown): Scope {
+    const schema = ajv.getSchema(ScopeDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ScopeDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ScopeDecoder.definitionName)
+  },
+}
+export const RoleDecoder: Decoder<Role> = {
+  definitionName: 'Role',
+  schemaRef: '#/definitions/Role',
+
+  decode(json: unknown): Role {
+    const schema = ajv.getSchema(RoleDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RoleDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RoleDecoder.definitionName)
+  },
+}
+export const GetCurrentUserResponseDecoder: Decoder<GetCurrentUserResponse> = {
+  definitionName: 'GetCurrentUserResponse',
+  schemaRef: '#/definitions/GetCurrentUserResponse',
+
+  decode(json: unknown): GetCurrentUserResponse {
+    const schema = ajv.getSchema(GetCurrentUserResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${GetCurrentUserResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, GetCurrentUserResponseDecoder.definitionName)
   },
 }
 export const ValidationErrorDecoder: Decoder<ValidationError> = {

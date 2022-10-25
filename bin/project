@@ -40,6 +40,7 @@ readonly PG_REPO="internal/repos/postgresql"
 readonly MAX_COMMENT_LEN=88
 readonly MAX_FNAME_LOG_LEN=13
 readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
+readonly GEN_POSTGRES_DB="gen_db"
 
 pids=()
 env="dev"
@@ -110,11 +111,12 @@ x.install-tools() {
     go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.15.0
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
     go install github.com/joho/godotenv/cmd/godotenv@latest
-    go install github.com/danicc097/air@latest
-    go install github.com/xo/xo@latest
     go install github.com/tufin/oasdiff@latest
     go install golang.org/x/tools/cmd/goimports@latest
     go install mvdan.cc/gofumpt@latest
+    go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
+    go install github.com/danicc097/air@latest
+    go install github.com/danicc097/xo@latest
 
     go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
     go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@v0.2.0
@@ -165,7 +167,40 @@ x.gen.tests-api() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Run post-generation scripts on the internal package.
+# Run pre-generation scripts in the internal package.
+# Openapi spec:
+# - `x-db-enum` field syncs the spec enum with the given database enum.
+x.pregen() {
+  { { {
+    echo "Running generation"
+
+    POSTGRES_DB=$GEN_POSTGRES_DB x.db.drop
+    POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up
+    vext="x-db-enum"
+    for enum in $(yq e ".. | select(has(\"$vext\")).$vext" $SPEC); do
+      local db_enums=()
+      path="$(enum_name=$enum yq e ".. | select(has(\"$vext\") and .$vext == env(enum_name)) | (path | join(\".\"))" $SPEC)"
+      mapfile -t db_enums < <(dockerdb psql -qtAX -d $GEN_POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
+
+      [[ ${#db_enums[@]} -gt 0 ]] || { echo "Enum '$enum' not found in database. Skipping" >&2 && continue; }
+      for i in ${!db_enums[@]}; do
+        # FIXME not supported by openapi-generator. Should be thinking of moving on to deepmap's or roll our own
+        [[ ${db_enums[$i]} == *" "* ]] && err "Enums with spaces currently not supported: '${db_enums[$i]}'"
+        db_enums[$i]="\"${db_enums[$i]}\""
+      done
+      enums=$(printf ",%s" "${db_enums[@]}")
+      enums="[${enums:1}]"
+      echo "Replacing enum '$enum' in $SPEC with: $enums"
+      enums=$enums yq e ".$path.enum = env(enums)" -i $SPEC
+
+    done
+
+    # go build -o pregen "$PWD"/cmd/pregen/main.go
+    # ./pregen -env=".env.$env"
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Run post-generation scripts in the internal package.
 x.postgen() {
   { { {
     echo "Running generation"
@@ -182,6 +217,18 @@ x.gen.sqlc() {
   { { {
     echo "Running generation"
     sqlc generate -f "$PG_REPO"/sqlc.yaml || err "Failed sqlc generation"
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Generate a Go client for the project.
+x.gen.client() {
+  { { {
+    echo "Running generation"
+    oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
+    oapi-codegen --config internal/client/oapi-codegen-types.yaml "$SPEC" || err "Failed client generation"
+
+    oapi-codegen --config internal/server/oapi-codegen-server.yaml "$SPEC" || err "Failed server generation"
+    oapi-codegen --config internal/server/oapi-codegen-types.yaml "$SPEC" || err "Failed server generation"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -245,6 +292,8 @@ x.gen() {
 
     cache=".generate.cache"
 
+    x.pregen
+
     generate_api "$cache" "internal" "$SPEC" "$OPENAPI_GEN_OUT_DIR" "$TEMPLATE_DIR"
 
     rm -rf $PG_REPO/gen
@@ -253,24 +302,22 @@ x.gen() {
     _pids+=($!)
     x.gen.sqlc &
     _pids+=($!)
-    x.gen.proto &
+    # xo cannot use db files as input, needs an up-to-date schema
+    # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
+    # use a unique db to prevent cosmic accidents
+    x.gen.xo &
     _pids+=($!)
-    x.postgen "$cache" &
+    x.gen.client &
+    _pids+=($!)
+    x.gen.proto &
     _pids+=($!)
 
     for pid in "${_pids[@]}"; do
       wait "$pid"
     done
 
-    (
-      # xo cannot use db files as input, needs an up-to-date schema
-      # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
-      # use a unique db to prevent cosmic accidents
-      export POSTGRES_DB="xoxo"
-      x.db.drop
-      x.migrate up
-      generate_xo || err "Failed xo generation"
-    )
+    x.postgen "$cache"
+    _pids+=($!)
 
     # delay since it depends on generated output
     x.gen.counterfeiter "$cache"
@@ -361,7 +408,7 @@ x.run.backend-hr() {
   # --build.include_files "openapi.yaml" \
   # NOTE: building binary very unreliable, leads to bin not found.
   air \
-    --build.pre_build_cmd "bin/project generate" \
+    --build.pre_build_cmd "bin/erate" \
     --build.cmd "" \
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
@@ -521,7 +568,7 @@ x.migrate.create() {
 
 ########################## db ##########################
 
-# Shows active and max number of connections for the current environment.
+# Show active and max number of connections for the current environment.
 x.db.conns() {
   { { {
     current_conns=$(dockerdb psql -qtAX -d $POSTGRES_DB -c "SELECT count(*) FROM pg_stat_activity WHERE datname = '$POSTGRES_DB';")
@@ -659,8 +706,8 @@ x.openapi-generator() {
       -o "$gen_out_dir" \
       -t "$template_dir" \
       --additional-properties=packageName=openapi,apiPath=gen,hideGenerationTimestamp=true \
-      --enable-post-process-file \
-      --global-property=debugModels,debugOperations >debug-openapi.log #>/dev/null \
+      --enable-post-process-file >/dev/null
+    # --global-property=debugModels,debugOperations >debug-openapi.log #>/dev/null \
 
     mkdir -p "$gen_out_dir"/gen/models
     mkdir -p "$gen_out_dir"/rest
@@ -723,7 +770,7 @@ run_shared_services() {
 }
 
 # Automatically generate CRUD and By queries based on existing indexes from a Postgres schema.
-generate_xo() {
+x.gen.xo() {
   # TODO from hn
   # I've used https://github.com/xo/xo, extended it with some custom functions for templating, extended the templates themselves, and can now generate CRUD for anything in the database, functions for common select queries based on the indices that exist in the database, field filtering and scanning, updates for subsets of fields including some atomic operations, etc. The sky is the limit honestly. It has allowed me to start with something approximating a statically generated ORM and extend it with any features I want as time goes on. I also write .extra.go files along side the generated .xo.go files to extend the structs that are generated with custom logic and methods to convert data into response formats.
 
@@ -732,11 +779,11 @@ generate_xo() {
 
     mkdir -p $PG_REPO/gen/db
     # xo schema --help
-    xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
+    xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
       --src "$PG_REPO"/xo-templates \
       -o "$PG_REPO"/gen/db \
       -e "*.created_at" \
-      -e "*.updated_at"
+      -e "*.updated_at" || err "Failed xo generation"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
