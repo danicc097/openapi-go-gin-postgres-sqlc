@@ -3,78 +3,10 @@ package rest
 import (
 	"net/http"
 
-	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
 )
-
-// NewUser returns a new handler for the 'user' route group.
-func NewUser(
-	logger *zap.Logger,
-	pool *pgxpool.Pool,
-	movieSvcClient v1.MovieGenreClient,
-	usvc *services.User,
-	authmw *authMiddleware,
-) *User {
-	return &User{
-		logger:         logger,
-		pool:           pool,
-		movieSvcClient: movieSvcClient,
-		usvc:           usvc,
-		authmw:         authmw,
-	}
-}
-
-// Register connects handlers to an existing router group with the given middlewares.
-// Generated method. DO NOT EDIT.
-func (h *User) Register(r *gin.RouterGroup, mws []gin.HandlerFunc) {
-	routes := []route{
-		{
-			Name:        string(deleteUser),
-			Method:      http.MethodDelete,
-			Pattern:     "/user/:id",
-			HandlerFunc: h.deleteUser,
-			Middlewares: h.middlewares(deleteUser),
-		},
-		{
-			Name:        string(getCurrentUser),
-			Method:      http.MethodGet,
-			Pattern:     "/user/me",
-			HandlerFunc: h.getCurrentUser,
-			Middlewares: h.middlewares(getCurrentUser),
-		},
-		{
-			Name:        string(updateUser),
-			Method:      http.MethodPut,
-			Pattern:     "/user/:id",
-			HandlerFunc: h.updateUser,
-			Middlewares: h.middlewares(updateUser),
-		},
-	}
-
-	registerRoutes(r, routes, "/user", mws)
-}
-
-// middlewares returns individual route middleware per operation id.
-func (h *User) middlewares(opID userOpID) []gin.HandlerFunc {
-	switch opID {
-	case deleteUser:
-		return []gin.HandlerFunc{
-			h.authmw.EnsureAuthorized(db.RoleAdmin),
-		}
-	case updateUser:
-		return []gin.HandlerFunc{
-			h.authmw.EnsureAuthorized(db.RoleAdmin),
-		}
-	default:
-		return []gin.HandlerFunc{}
-	}
-}
 
 // createUser creates a new user.
 // TODO remove handler once oidc imp., but will use the service in /login.
@@ -107,18 +39,18 @@ func (h *User) middlewares(opID userOpID) []gin.HandlerFunc {
 // 	c.JSON(http.StatusOK, res)
 // }
 
-// deleteUser deletes the user by id.
-func (h *User) deleteUser(c *gin.Context) {
+// DeleteUser deletes the user by id.
+func (h *Handlers) DeleteUser(c *gin.Context, id string) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// getCurrentUser returns the logged in user.
-func (h *User) getCurrentUser(c *gin.Context) {
+// GetCurrentUser returns the logged in user.
+func (h *Handlers) GetCurrentUser(c *gin.Context) {
 	c.String(http.StatusNotImplemented, "501 not implemented")
 }
 
-// updateUser updates the user by id.
-func (h *User) updateUser(c *gin.Context) {
+// UpdateUser updates the user by id.
+func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 	/*
 		curl -X 'POST'   'https://localhost:8090/v2/user/{}'   -H 'accept: application/json'   -H 'Authorization: Bearer fsefse'  -d '{"username":"user","email":"email","role":"admin"}'
 	*/

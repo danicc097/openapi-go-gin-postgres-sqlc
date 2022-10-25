@@ -2,6 +2,6 @@
 package: rest
 generate:
   gin-server: true
-output: internal/server/openapi-server.gen.go
+output: internal/rest/openapi-server.gen.go
 output-options:
   skip-prune: true

@@ -2,6 +2,6 @@
 package: rest
 generate:
   models: true
-output: internal/server/openapi-types.gen.go
+output: internal/rest/openapi-types.gen.go
 output-options:
   skip-prune: true

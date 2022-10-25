@@ -15,6 +15,10 @@ export type Detail = ValidationError[]
  */
 export type Role = 'user' | 'manager' | 'admin'
 export type Scope = 'scope1' | 'scope2'
+/**
+ * Organization a user belongs to.
+ */
+export type Organization = 'team-1' | 'team-2' | 'team-3'
 
 export interface HTTPValidationError {
   detail?: Detail
@@ -33,7 +37,7 @@ export interface AUser {
   last_name?: string
 }
 /**
- * represents a user.
+ * represents a user
  */
 export interface AUser1 {
   user_id?: number
@@ -44,4 +48,8 @@ export interface AUser1 {
   password?: string
   phone?: string
   role?: Role
+  /**
+   * organizations a user belongs to
+   */
+  orgs?: Organization[]
 }

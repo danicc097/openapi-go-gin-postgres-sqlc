@@ -9,20 +9,20 @@ export type schemas = components['schemas']
 
 export interface paths {
   '/ping': {
-    get: operations['ping']
+    get: operations['Ping']
   }
   '/openapi.yaml': {
     get: operations['OpenapiYamlGet']
   }
   '/admin/ping': {
-    get: operations['adminPing']
+    get: operations['AdminPing']
   }
   '/user/me': {
-    get: operations['getCurrentUser']
+    get: operations['GetCurrentUser']
   }
   [key: `/user/${string}`]: {
-    put: operations['updateUser']
-    delete: operations['deleteUser']
+    put: operations['UpdateUser']
+    delete: operations['DeleteUser']
   }
 }
 
@@ -59,10 +59,16 @@ export interface components {
      */
     Role: 'user' | 'manager' | 'admin'
     /**
-     * a User
-     * @description represents a user.
+     * Organization
+     * @description Organization a user belongs to.
+     * @enum {string}
      */
-    GetCurrentUserResponse: {
+    Organization: 'team-1' | 'team-2' | 'team-3'
+    /**
+     * a User
+     * @description represents a user
+     */
+    GetCurrentUserRes: {
       /** Format: int64 */
       user_id?: number
       username?: string
@@ -72,6 +78,8 @@ export interface components {
       password?: string
       phone?: string
       role?: components['schemas']['Role']
+      /** @description organizations a user belongs to */
+      orgs?: components['schemas']['Organization'][]
     }
     /** ValidationError */
     ValidationError: {
@@ -86,7 +94,7 @@ export interface components {
 }
 
 export interface operations {
-  ping: {
+  Ping: {
     responses: {
       /** OK */
       200: {
@@ -112,7 +120,7 @@ export interface operations {
       }
     }
   }
-  adminPing: {
+  AdminPing: {
     responses: {
       /** OK */
       200: {
@@ -128,17 +136,17 @@ export interface operations {
       }
     }
   }
-  getCurrentUser: {
+  GetCurrentUser: {
     responses: {
       /** successful operation */
       200: {
         content: {
-          'application/json': components['schemas']['GetCurrentUserResponse']
+          'application/json': components['schemas']['GetCurrentUserRes']
         }
       }
     }
   }
-  updateUser: {
+  UpdateUser: {
     parameters: {
       path: {
         /** user_id that needs to be updated */
@@ -156,7 +164,7 @@ export interface operations {
       }
     }
   }
-  deleteUser: {
+  DeleteUser: {
     parameters: {
       path: {
         /** user_id that needs to be deleted */
