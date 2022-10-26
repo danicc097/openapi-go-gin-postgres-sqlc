@@ -9,8 +9,6 @@
 # # see https://segmentfault.com/a/1190000022264001
 # x-go-custom-tag: binding:"required"
 # ```
-# NOTE: Any custom field with an `x-*` name pattern in the OpenAPI spec will be available in
-# `vendorExtensions` in openapi-generator's mustache templates.
 openapi: 3.0.2
 info:
   description: "This is a sample server Petstore server. For this sample, you can use the api key `special-key` to test the authorization filters."
@@ -189,7 +187,7 @@ components:
       description: Organization a user belongs to.
       type: string
       x-db-enum: org
-      enum: ["team-1", "team-2", "team-3"]
+      enum: ["team 1", "team 2", "team 3"]
     # TODO generate adapter to convert db model -> this
     # based on matches of x-db-model: <...>'s json tags (both sqlc and xo generate them)
     # against parsed property names (kin) - when its a response object only (kin filter)

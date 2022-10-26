@@ -6,11 +6,6 @@
 
 API-first and Database-first approach with OpenAPI v3, sqlc+xo codegen,
 generated backend, frontend client and validators and an unimaginative title.
-Featuring an overhaul of the [Go Gin
-server](https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/go-gin-server.md)
-generator templates and a sensible post-generation tool that allows you to use cleanly
-structured, easily extendable code by smartly merging nodes
-from your modified and generated files' abstract syntax trees.
 
 You also get dynamic `x` function and `x` flags arguments documentation _and_
 autocompletion (`complete -C project project`) for
@@ -32,9 +27,8 @@ change to it is validated and cascades down to:
 
 - **frontend**: generated API queries (`rtk-query`). User-friendly [generated] client-side validation
   (fork of `openapi-typescript-validator`).
-- **backend**: generated Gin server (`openapi-generator` and custom
-  post-generation) with codegen merged with your existing files. Request and
-  response validation (`kin-openapi`). Generated CRUD and index queries via `xo`
+- **backend**: generated Gin server (custom `oapi-codegen` and post-generation).
+  Request and response validation (`kin-openapi`). Generated CRUD and index queries via `xo`
   and custom queries via `sqlc` by leveraging custom `xo` template generation
   that ensures compatibility.
 
@@ -46,6 +40,14 @@ manual instrumentation) and backend services (manual instrumentation).
 Simplified:
 
 ![](.github/system-diagram.png)
+
+## Changelog
+
+- `v0.2`: discard `OpenAPITools/openapi-generator` with custom postgeneration for `deepmap/oapi-codegen`. Any
+  change to fix broken generator functionality requires opening a PR or a disturbing
+  amount of postgeneration code. Templates getting out of hand and also require
+  a PR for custom functions. `oapi-codegen` much more extensible and idiomatic
+  being already Go and properly maintained.
 
 ## Known issues
 

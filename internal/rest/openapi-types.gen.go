@@ -10,9 +10,9 @@ const (
 
 // Defines values for Organization.
 const (
-	Team1 Organization = "team-1"
-	Team2 Organization = "team-2"
-	Team3 Organization = "team-3"
+	Team1 Organization = "team 1"
+	Team2 Organization = "team 2"
+	Team3 Organization = "team 3"
 )
 
 // Defines values for Role.

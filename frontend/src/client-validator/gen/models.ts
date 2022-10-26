@@ -18,7 +18,7 @@ export type Scope = 'scope1' | 'scope2'
 /**
  * Organization a user belongs to.
  */
-export type Organization = 'team-1' | 'team-2' | 'team-3'
+export type Organization = 'team 1' | 'team 2' | 'team 3'
 
 export interface HTTPValidationError {
   detail?: Detail
@@ -49,7 +49,7 @@ export interface AUser1 {
   phone?: string
   role?: Role
   /**
-   * organizations a user belongs to
+   * are organizations a user belongs to
    */
   orgs?: Organization[]
 }

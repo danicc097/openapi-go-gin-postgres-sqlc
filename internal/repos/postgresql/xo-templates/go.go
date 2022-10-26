@@ -17,10 +17,10 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/danicc097/xo/loader"
+	xo "github.com/danicc097/xo/types"
 	"github.com/kenshaw/inflector"
 	"github.com/kenshaw/snaker"
-	"github.com/xo/xo/loader"
-	xo "github.com/xo/xo/types"
 	"golang.org/x/tools/imports"
 	"mvdan.cc/gofumpt/format"
 )
@@ -205,13 +205,6 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Type:       "bool",
 				Desc:       "enables legacy v1 template funcs",
 				Default:    "false",
-			},
-			{
-				ContextKey: OracleTypeKey,
-				Type:       "string",
-				Desc:       "oracle driver type",
-				Default:    "ora",
-				Enums:      []string{"ora", "godror"},
 			},
 		},
 		Funcs: func(ctx context.Context, _ string) (template.FuncMap, error) {
@@ -767,10 +760,6 @@ func goType(ctx context.Context, typ xo.Type) (string, string, error) {
 	driver, _, schema := xo.DriverDbSchema(ctx)
 	var f func(xo.Type, string, string, string) (string, string, error)
 	switch driver {
-	case "mysql":
-		f = loader.MysqlGoType
-	case "oracle":
-		f = loader.OracleGoType
 	case "postgres":
 		switch mode := ArrayMode(ctx); mode {
 		case "stdlib":
@@ -782,8 +771,6 @@ func goType(ctx context.Context, typ xo.Type) (string, string, error) {
 		}
 	case "sqlite3":
 		f = loader.Sqlite3GoType
-	case "sqlserver":
-		f = loader.SqlserverGoType
 	default:
 		return "", "", fmt.Errorf("unknown driver %q", driver)
 	}
@@ -808,22 +795,21 @@ const ext = ".xo.go"
 
 // Funcs is a set of template funcs.
 type Funcs struct {
-	driver     string
-	schema     string
-	nth        func(int) string
-	first      bool
-	pkg        string
-	tags       []string
-	imports    []string
-	conflict   string
-	custom     string
-	escSchema  bool
-	escTable   bool
-	escColumn  bool
-	fieldtag   *template.Template
-	context    string
-	inject     string
-	oracleType string
+	driver    string
+	schema    string
+	nth       func(int) string
+	first     bool
+	pkg       string
+	tags      []string
+	imports   []string
+	conflict  string
+	custom    string
+	escSchema bool
+	escTable  bool
+	escColumn bool
+	fieldtag  *template.Template
+	context   string
+	inject    string
 	// knownTypes is the collection of known Go types.
 	knownTypes map[string]bool
 	// shorts is the collection of Go style short names for types, mainly
@@ -869,7 +855,6 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 		fieldtag:   fieldtag,
 		context:    Context(ctx),
 		inject:     inject,
-		oracleType: OracleType(ctx),
 		knownTypes: KnownTypes(ctx),
 		shorts:     Shorts(ctx),
 	}
@@ -1281,8 +1266,6 @@ func (f *Funcs) db_named(name string, v interface{}) string {
 
 func (f *Funcs) named(name, value string, out bool) string {
 	switch {
-	case out && f.driver == "oracle" && f.oracleType == "ora":
-		return fmt.Sprintf("sql.Out{Dest: %s}", value)
 	case out:
 		return fmt.Sprintf("sql.Named(%q, sql.Out{Dest: %s})", name, value)
 	}
@@ -1525,22 +1508,8 @@ func (f *Funcs) sqlstr_insert(v interface{}) []string {
 		lines := f.sqlstr_insert_base(false, v)
 		// add return clause
 		switch f.driver {
-		case "oracle":
-			switch f.oracleType {
-			case "ora":
-				lines[len(lines)-1] += ` RETURNING ` + strings.Join(generatedFields, ", ") + ` INTO ` + f.nth(count)
-			case "godror":
-				lines[len(lines)-1] += ` RETURNING ` + strings.Join(
-					generatedFields,
-					", ",
-				) + ` /*LASTINSERTID*/ INTO :pk`
-			default:
-				return []string{fmt.Sprintf("[[ UNSUPPORTED ORACLE TYPE: %s]]", f.oracleType)}
-			}
 		case "postgres":
 			lines[len(lines)-1] += ` RETURNING ` + strings.Join(generatedFields, ", ")
-		case "sqlserver":
-			lines[len(lines)-1] += "; SELECT ID = CONVERT(BIGINT, SCOPE_IDENTITY())"
 		}
 		return lines
 	}
@@ -1608,10 +1577,6 @@ func (f *Funcs) sqlstr_upsert(v interface{}) []string {
 		switch f.driver {
 		case "postgres", "sqlite3":
 			return append(lines, f.sqlstr_upsert_postgres_sqlite(x)...)
-		case "mysql":
-			return append(lines, f.sqlstr_upsert_mysql(x)...)
-		case "sqlserver", "oracle":
-			return f.sqlstr_upsert_sqlserver_oracle(x)
 		}
 	}
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 21 %s: %T ]]", f.driver, v)}
@@ -1633,92 +1598,6 @@ func (f *Funcs) sqlstr_upsert_postgres_sqlite(v interface{}) []string {
 		return append(lines, update...)
 	}
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 22: %T ]]", v)}
-}
-
-// sqlstr_upsert_mysql builds an uspert query for mysql
-//
-// INSERT (..) VALUES (..) ON DUPLICATE KEY UPDATE SET ...
-func (f *Funcs) sqlstr_upsert_mysql(v interface{}) []string {
-	switch x := v.(type) {
-	case Table:
-		lines := []string{" ON DUPLICATE KEY UPDATE "}
-		var list []string
-		i := len(x.Fields)
-		for _, z := range x.Fields {
-			if z.IsGenerated {
-				continue
-			}
-			name := f.colname(z)
-			list = append(list, fmt.Sprintf("%s = VALUES(%s)", name, name))
-			i++
-		}
-		return append(lines, strings.Join(list, ", "))
-	}
-	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 23: %T ]]", v)}
-}
-
-// sqlstr_upsert_sqlserver_oracle builds an upsert query for sqlserver
-//
-// MERGE [table] AS target USING (SELECT [pkeys]) AS source ...
-func (f *Funcs) sqlstr_upsert_sqlserver_oracle(v interface{}) []string {
-	switch x := v.(type) {
-	case Table:
-		var lines []string
-		// merge [table]...
-		switch f.driver {
-		case "sqlserver":
-			lines = []string{"MERGE " + f.schemafn(x.SQLName) + " AS t "}
-		case "oracle":
-			lines = []string{"MERGE " + f.schemafn(x.SQLName) + "t "}
-		}
-		// using (select ..)
-		var fields, predicate []string
-		for i, field := range x.Fields {
-			fields = append(fields, fmt.Sprintf("%s %s", f.nth(i), field.SQLName))
-		}
-		for _, field := range x.PrimaryKeys {
-			predicate = append(predicate, fmt.Sprintf("s.%s = t.%s", field.SQLName, field.SQLName))
-		}
-		// closing part for select
-		var closing string
-		switch f.driver {
-		case "sqlserver":
-			closing = `) AS s `
-		case "oracle":
-			closing = `FROM DUAL ) s `
-		}
-		lines = append(lines, `USING (`,
-			`SELECT `+strings.Join(fields, ", ")+" ",
-			closing,
-			`ON `+strings.Join(predicate, " AND ")+" ")
-		// build param lists
-		var updateParams, insertParams, insertVals []string
-		for _, field := range x.Fields {
-			// sequences are always managed by db
-			if field.IsGenerated {
-				continue
-			}
-			// primary keys
-			if !field.IsPrimary {
-				updateParams = append(updateParams, fmt.Sprintf("t.%s = s.%s", field.SQLName, field.SQLName))
-			}
-			insertParams = append(insertParams, field.SQLName)
-			insertVals = append(insertVals, "s."+field.SQLName)
-		}
-		// when matched then update...
-		lines = append(lines,
-			`WHEN MATCHED THEN `, `UPDATE SET `,
-			strings.Join(updateParams, ", ")+" ",
-			`WHEN NOT MATCHED THEN `,
-			`INSERT (`,
-			strings.Join(insertParams, ", "),
-			`) VALUES (`,
-			strings.Join(insertVals, ", "),
-			`);`,
-		)
-		return lines
-	}
-	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 24: %T ]]", v)}
 }
 
 // sqlstr_delete builds a DELETE query for the primary keys.
@@ -1797,31 +1676,17 @@ func (f *Funcs) sqlstr_proc(v interface{}) []string {
 		// sql string format
 		var format string
 		switch f.driver {
-		case "postgres", "mysql":
+		case "postgres":
 			format = "CALL %s(%s)"
-		case "sqlserver":
-			format = "%[1]s"
-		case "oracle":
-			format = "BEGIN %s(%s); END;"
 		}
 		// build params list; add return fields for orcle
 		l := x.Params
-		if f.driver == "oracle" {
-			l = append(l, x.Returns...)
-		}
 		var list []string
-		for i, field := range l {
+		for i := range l {
 			s := f.nth(i)
-			if f.driver == "oracle" {
-				s = ":" + field.SQLName
-			}
 			list = append(list, s)
 		}
-		// dont prefix with schema for oracle
 		name := f.schemafn(x.SQLName)
-		if f.driver == "oracle" {
-			name = x.SQLName
-		}
 		return []string{
 			fmt.Sprintf(format, name, strings.Join(list, ", ")),
 		}
@@ -1836,12 +1701,6 @@ func (f *Funcs) sqlstr_func(v interface{}) []string {
 		switch f.driver {
 		case "postgres":
 			format = "SELECT * FROM %s(%s)"
-		case "mysql":
-			format = "SELECT %s(%s)"
-		case "sqlserver":
-			format = "SELECT %s(%s) AS OUT"
-		case "oracle":
-			format = "SELECT %s(%s) FROM dual"
 		}
 		var list []string
 		l := x.Params
@@ -2149,7 +2008,6 @@ var (
 	InjectKey     xo.ContextKey = "inject"
 	InjectFileKey xo.ContextKey = "inject-file"
 	LegacyKey     xo.ContextKey = "legacy"
-	OracleTypeKey xo.ContextKey = "oracle-type"
 )
 
 // Append returns append from the context.
@@ -2279,12 +2137,6 @@ func InjectFile(ctx context.Context) string {
 func Legacy(ctx context.Context) bool {
 	b, _ := ctx.Value(LegacyKey).(bool)
 	return b
-}
-
-// OracleType returns oracle-type from the context.
-func OracleType(ctx context.Context) string {
-	s, _ := ctx.Value(OracleTypeKey).(string)
-	return s
 }
 
 // add returns the sum of a and b.

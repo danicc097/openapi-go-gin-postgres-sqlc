@@ -63,7 +63,7 @@ export interface components {
      * @description Organization a user belongs to.
      * @enum {string}
      */
-    Organization: 'team-1' | 'team-2' | 'team-3'
+    Organization: 'team 1' | 'team 2' | 'team 3'
     /**
      * a User
      * @description represents a user
@@ -78,7 +78,7 @@ export interface components {
       password?: string
       phone?: string
       role?: components['schemas']['Role']
-      /** @description organizations a user belongs to */
+      /** @description are organizations a user belongs to */
       orgs?: components['schemas']['Organization'][]
     }
     /** ValidationError */

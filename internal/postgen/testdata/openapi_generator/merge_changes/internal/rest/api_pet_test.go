@@ -1,3 +1,0 @@
-package rest_test
-
-// THIS FILE SHOULD BE COMPLETELY IGNORED.

@@ -128,16 +128,3 @@ check.direnv() {
       return 1
     }
 }
-
-check.java() {
-  local vers
-  vers=$(java -version 2>&1 | head -1)
-  vers=${vers#*version \"}
-  vers=${vers%%\"*}
-  { [[ $vers =~ ^(1\.[89]|9\.|[1-9][0-9]+) ]] &&
-    printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
-    {
-      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver${OFF})"
-      return 1
-    }
-}

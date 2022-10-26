@@ -1,4 +1,3 @@
-{{>partial_header}}
 package rest
 
 import (

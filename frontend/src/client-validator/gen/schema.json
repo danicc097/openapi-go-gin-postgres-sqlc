@@ -63,9 +63,9 @@
       "type": "string",
       "x-db-enum": "org",
       "enum": [
-        "team-1",
-        "team-2",
-        "team-3"
+        "team 1",
+        "team 2",
+        "team 3"
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -100,7 +100,7 @@
           "$ref": "#/definitions/Role"
         },
         "orgs": {
-          "description": "organizations a user belongs to",
+          "description": "are organizations a user belongs to",
           "items": {
             "$ref": "#/definitions/Organization"
           }

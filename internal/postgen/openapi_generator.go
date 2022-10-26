@@ -93,9 +93,15 @@ func (o *openapiGenerator) analyzeSpec() error {
 		return fmt.Errorf("error opening schema file: %w", err)
 	}
 
-	openapi, err := openapi3.NewLoader().LoadFromData(schemaBlob)
+	sl := openapi3.NewLoader()
+
+	openapi, err := sl.LoadFromData(schemaBlob)
 	if err != nil {
-		return fmt.Errorf("error loading schema: %w", err)
+		return fmt.Errorf("error loading openapi spec: %w", err)
+	}
+
+	if err = openapi.Validate(sl.Context); err != nil {
+		return fmt.Errorf("error validating openapi spec: %w", err)
 	}
 
 	for path, pi := range openapi.Paths {

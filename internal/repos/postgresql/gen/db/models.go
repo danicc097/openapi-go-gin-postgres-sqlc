@@ -16,9 +16,9 @@ import (
 type Org string
 
 const (
-	OrgTeam1 Org = "team-1"
-	OrgTeam2 Org = "team-2"
-	OrgTeam3 Org = "team-3"
+	OrgTeam1 Org = "team 1"
+	OrgTeam2 Org = "team 2"
+	OrgTeam3 Org = "team 3"
 )
 
 func (e *Org) Scan(src interface{}) error {

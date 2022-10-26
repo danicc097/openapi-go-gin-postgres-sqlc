@@ -5,11 +5,10 @@ create type role as ENUM (
   'manager',
   'admin'
 );
--- TODO openapi-generator cannot handle models with spaces and outputs empty string...
 create type org as ENUM (
-  'team-1',
-  'team-2',
-  'team-3'
+  'team 1',
+  'team 2',
+  'team 3'
 );
 create table users (
   user_id UUID DEFAULT gen_random_uuid() NOT NULL,
