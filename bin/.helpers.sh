@@ -108,6 +108,16 @@ join_by() {
   fi
 }
 
+to_pascal() {
+  local s=${1^}
+  local re='(.*_-+)([[:lower:]].*)'
+  while [[ $s =~ $re ]]; do
+    s=${BASH_REMATCH[1]}${BASH_REMATCH[2]^}
+  done
+  s=${s//[^[:alnum:]]/}
+  printf '%s\n' "$s"
+}
+
 err() {
   echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
   kill -s SIGUSR1 $PROC

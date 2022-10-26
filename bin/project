@@ -80,7 +80,6 @@ x.check-build-deps() {
     check.protoc || { ((fails++)) && true; }
     check.bash || { ((fails++)) && true; }
     check.go || { ((fails++)) && true; }
-    check.java || { ((fails++)) && true; }
     check.curl || { ((fails++)) && true; }
     check.docker || { ((fails++)) && true; }
     check.docker-compose || { ((fails++)) && true; }
@@ -97,7 +96,6 @@ x.bootstrap() {
   { { {
     x.check-build-deps
     x.install-tools
-    x.fetch.openapi-gen
     x.fetch.swagger-ui
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -114,24 +112,15 @@ x.install-tools() {
     go install github.com/tufin/oasdiff@latest
     go install golang.org/x/tools/cmd/goimports@latest
     go install mvdan.cc/gofumpt@latest
-    go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
     go install github.com/danicc097/air@latest
     go install github.com/danicc097/xo@latest
+    go install github.com/mikefarah/yq/v4@v4.27.2
 
     go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
     go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@v0.2.0
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
     GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-}
-
-# Fetch openapi-generator jar file.
-x.fetch.openapi-gen() {
-  { { {
-    local url="https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/$GENVERS/openapi-generator-cli-$GENVERS.jar"
-    echo "$url > openapi-generator-cli.jar"
-    curl -L "$url" -o openapi-generator-cli.jar
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -148,29 +137,10 @@ x.fetch.swagger-ui() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Run openapi generator for testdata.
-# jar won't output properly if absolute paths are passed from subdir.
-x.gen.tests-api() {
-  { { {
-    local testdata="$BIN_DIR/../internal/postgen/testdata/openapi_generator"
-    local test_dirs=$(find "$testdata" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)
-
-    cache=".generate-tests-api.cache"
-    for test_dir in $test_dirs; do
-      generate_api \
-        "$cache" \
-        "$test_dir" \
-        "$testdata/$test_dir/openapi.yaml" \
-        "$testdata/$test_dir/internal" \
-        "$BIN_DIR/../internal/go-gin-server-templates"
-    done
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-}
-
 # Run pre-generation scripts in the internal package.
-# Openapi spec:
-# - `x-db-enum` field syncs the spec enum with the given database enum.
 x.pregen() {
+  # Openapi spec:
+  # - `x-db-enum` field syncs the spec enum with the given database enum.
   { { {
     echo "Running generation"
 
@@ -182,22 +152,34 @@ x.pregen() {
       path="$(enum_name=$enum yq e ".. | select(has(\"$vext\") and .$vext == env(enum_name)) | (path | join(\".\"))" $SPEC)"
       mapfile -t db_enums < <(dockerdb psql -qtAX -d $GEN_POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
 
-      [[ ${#db_enums[@]} -gt 0 ]] || { echo "Enum '$enum' not found in database. Skipping" >&2 && continue; }
-      for i in ${!db_enums[@]}; do
-        # FIXME not supported by openapi-generator. Should be thinking of moving on to deepmap's or roll our own
-        [[ ${db_enums[$i]} == *" "* ]] && err "Enums with spaces currently not supported: '${db_enums[$i]}'"
-        db_enums[$i]="\"${db_enums[$i]}\""
-      done
-      enums=$(printf ",%s" "${db_enums[@]}")
+      [[ ${#db_enums[@]} -gt 0 ]] || err "$vext: Enum '$enum' not found in database"
+      enums=$(printf ",\"%s\"" "${db_enums[@]}")
       enums="[${enums:1}]"
       echo "Replacing enum '$enum' in $SPEC with: $enums"
       enums=$enums yq e ".$path.enum = env(enums)" -i $SPEC
+    done
 
+    echo "Applying PascalCase to operation IDs in $SPEC"
+    for opid in $(yq e ".. | select(has(\"operationId\")).operationId" $SPEC); do
+      new_opid="$(to_pascal $opid)"
+      paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" $SPEC)
+      mapfile paths <<<$paths
+      escaped_path="$(join_yq_paths paths)"
+      new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" -i $SPEC
     done
 
     # go build -o pregen "$PWD"/cmd/pregen/main.go
     # ./pregen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# outputs safe double-quoted paths for yq
+# fixes paths where a dot is present
+join_yq_paths() {
+  declare -n arr="$1"
+  arr=("${arr[*]//- /}")
+  mapfile arr < <(printf "\"%s\"\n" ${arr[*]})
+  join_by "." ${arr[*]}
 }
 
 # Run post-generation scripts in the internal package.
@@ -220,15 +202,18 @@ x.gen.sqlc() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Generate a Go client for the project.
-x.gen.client() {
+# Generate Go client and server.
+x.gen.client-server() {
   { { {
-    echo "Running generation"
-    oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
-    oapi-codegen --config internal/client/oapi-codegen-types.yaml "$SPEC" || err "Failed client generation"
+    go build -o oapi-codegen "$PWD"/cmd/oapi-codegen
 
-    oapi-codegen --config internal/server/oapi-codegen-server.yaml "$SPEC" || err "Failed server generation"
-    oapi-codegen --config internal/server/oapi-codegen-types.yaml "$SPEC" || err "Failed server generation"
+    echo "Running generation"
+    ./oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
+    ./oapi-codegen --config internal/client/oapi-codegen-types.yaml "$SPEC" || err "Failed client generation"
+
+    ./oapi-codegen --config internal/rest/oapi-codegen-server.yaml "$SPEC" || err "Failed server generation"
+    ./oapi-codegen --config internal/rest/oapi-codegen-types.yaml "$SPEC" || err "Failed server generation"
+
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -278,7 +263,7 @@ x.gen.proto() {
       --go_out=internal/pb/. \
       --go-grpc_opt=M$filename=$import_path,paths=import \
       --go_opt=M$filename=$import_path,paths=import \
-      internal/python-ml-app-protos/tfidf/v1/service.proto
+      internal/python-ml-app-protos/tfidf/v1/service.proto || err "Failed proto generation"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -294,8 +279,6 @@ x.gen() {
 
     x.pregen
 
-    generate_api "$cache" "internal" "$SPEC" "$OPENAPI_GEN_OUT_DIR" "$TEMPLATE_DIR"
-
     rm -rf $PG_REPO/gen
 
     go generate ./... &
@@ -307,7 +290,7 @@ x.gen() {
     # use a unique db to prevent cosmic accidents
     x.gen.xo &
     _pids+=($!)
-    x.gen.client &
+    x.gen.client-server &
     _pids+=($!)
     x.gen.proto &
     _pids+=($!)
@@ -317,7 +300,6 @@ x.gen() {
     done
 
     x.postgen "$cache"
-    _pids+=($!)
 
     # delay since it depends on generated output
     x.gen.counterfeiter "$cache"
@@ -378,7 +360,6 @@ x.test.backend-setup() {
     run_shared_services up -d --remove-orphans
     x.gen
     drop_and_recreate_db "postgres_test"
-    x.gen.tests-api
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -408,7 +389,7 @@ x.run.backend-hr() {
   # --build.include_files "openapi.yaml" \
   # NOTE: building binary very unreliable, leads to bin not found.
   air \
-    --build.pre_build_cmd "bin/erate" \
+    --build.pre_build_cmd "bin/project gen" \
     --build.cmd "" \
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
@@ -675,55 +656,6 @@ x.e2e.run() {
 
 ########################## openapi ##########################
 
-# Validates the project's OpenAPI specification or `spec`.
-# Args: [spec]
-x.validate() {
-  # quite unreliable. e.g. ignored examples inexistent ref.
-  # prefer built in kin-openapi validation
-  java -jar openapi-generator-cli.jar validate -i "${1:-$SPEC}"
-}
-
-# Wrapper for openapi-generator with sane output modifications.
-# Args: spec out tpl
-x.openapi-generator() {
-  { { {
-    local spec="$1"
-    local gen_out_dir="$2"
-    local template_dir="$3"
-
-    [[ -z $spec ]] && err "openapi-generator: spec required"
-    [[ -z $gen_out_dir ]] && err "openapi-generator: out dir required"
-    [[ -z $template_dir ]] && err "openapi-generator: template dir required"
-    echo "Generating API from $spec"
-    echo "Generation directory: $gen_out_dir"
-    echo "Template override directory: $template_dir"
-
-    rm -rf "$gen_out_dir/gen"
-    # debug has a very small overhead compared to the >1s required per spec
-    java -jar "$BIN_DIR"/../openapi-generator-cli.jar generate \
-      -g go-gin-server \
-      -i "$spec" \
-      -o "$gen_out_dir" \
-      -t "$template_dir" \
-      --additional-properties=packageName=openapi,apiPath=gen,hideGenerationTimestamp=true \
-      --enable-post-process-file >/dev/null
-    # --global-property=debugModels,debugOperations >debug-openapi.log #>/dev/null \
-
-    mkdir -p "$gen_out_dir"/gen/models
-    mkdir -p "$gen_out_dir"/rest
-    mkdir -p "$gen_out_dir"/services
-
-    mv "$gen_out_dir"/gen/routers.go "$gen_out_dir"/rest/routers.gen.go
-
-    {
-      mv "$gen_out_dir"/gen/model_*.go "$gen_out_dir"/gen/models 2>/dev/null
-      goimports -w "$gen_out_dir"/gen/models
-    } || echo "No model files found. Skipping"
-
-    rm -rf "$gen_out_dir/api"
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-}
-
 # Run a diff against the previous OpenAPI spec in the main branch.
 # Can also be used to generate changelogs when upgrading major versions.
 x.diff-oas() {
@@ -785,38 +717,6 @@ x.gen.xo() {
       -e "*.created_at" \
       -e "*.updated_at" || err "Failed xo generation"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-}
-
-generate_api() {
-  cache="$1"
-  prefix="$2"
-  spec="$3"
-  gen_out_dir="$4"
-  template_dir="$5"
-
-  invalid_cache=false
-
-  if [[ $force_regen -eq 1 ]]; then
-    rm -rf "$cache"
-  fi
-
-  mkdir -p "$cache"
-
-  if ! md5sum -c "$cache/$prefix-go-gin-server-templates.md5" >/dev/null; then
-    invalid_cache=true
-    md5sum "$BIN_DIR"/../internal/go-gin-server-templates/* >"$cache/$prefix-go-gin-server-templates.md5"
-  fi
-  if ! md5sum -c "$cache/$prefix-openapi.md5" >/dev/null; then
-    invalid_cache=true
-    md5sum "$BIN_DIR"/../"$SPEC" >"$cache/$prefix-openapi.md5"
-  fi
-
-  if [[ $invalid_cache == true ]]; then
-    x.openapi-generator \
-      "$spec" \
-      "$gen_out_dir" \
-      "$template_dir"
-  fi
 }
 
 usage() {

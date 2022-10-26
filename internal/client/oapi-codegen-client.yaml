@@ -2,6 +2,6 @@
 package: client
 generate:
   client: true
-output: internal/client/openapi-client.gen.go
+output: internal/client/openapi_client.gen.go
 output-options:
   skip-prune: true

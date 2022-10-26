@@ -7,7 +7,15 @@ import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
 import { validateJson } from '../validate'
-import { HTTPValidationError, UpdateUserRequest, Scope, Role, GetCurrentUserResponse, ValidationError } from './models'
+import {
+  HTTPValidationError,
+  UpdateUserRequest,
+  Scope,
+  Role,
+  Organization,
+  GetCurrentUserRes,
+  ValidationError,
+} from './models'
 import jsonSchema from './schema.json'
 
 const ajv = new Ajv({ strict: false, allErrors: true })
@@ -63,16 +71,28 @@ export const RoleDecoder: Decoder<Role> = {
     return validateJson(json, schema, RoleDecoder.definitionName)
   },
 }
-export const GetCurrentUserResponseDecoder: Decoder<GetCurrentUserResponse> = {
-  definitionName: 'GetCurrentUserResponse',
-  schemaRef: '#/definitions/GetCurrentUserResponse',
+export const OrganizationDecoder: Decoder<Organization> = {
+  definitionName: 'Organization',
+  schemaRef: '#/definitions/Organization',
 
-  decode(json: unknown): GetCurrentUserResponse {
-    const schema = ajv.getSchema(GetCurrentUserResponseDecoder.schemaRef)
+  decode(json: unknown): Organization {
+    const schema = ajv.getSchema(OrganizationDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${GetCurrentUserResponseDecoder.definitionName} not found`)
+      throw new Error(`Schema ${OrganizationDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, GetCurrentUserResponseDecoder.definitionName)
+    return validateJson(json, schema, OrganizationDecoder.definitionName)
+  },
+}
+export const GetCurrentUserResDecoder: Decoder<GetCurrentUserRes> = {
+  definitionName: 'GetCurrentUserRes',
+  schemaRef: '#/definitions/GetCurrentUserRes',
+
+  decode(json: unknown): GetCurrentUserRes {
+    const schema = ajv.getSchema(GetCurrentUserResDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${GetCurrentUserResDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, GetCurrentUserResDecoder.definitionName)
   },
 }
 export const ValidationErrorDecoder: Decoder<ValidationError> = {

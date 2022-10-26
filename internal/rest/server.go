@@ -26,7 +26,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
@@ -206,19 +205,9 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 
-	NewAdmin(conf.Logger, conf.Pool).
-		Register(vg, []gin.HandlerFunc{
-			authmw.EnsureAuthenticated(),
-			authmw.EnsureAuthorized(db.RoleAdmin),
-		})
-	NewDefault().
-		Register(vg, []gin.HandlerFunc{
-			authmw.EnsureAuthenticated(),
-		})
-	NewUser(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authmw).
-		Register(vg, []gin.HandlerFunc{
-			authmw.EnsureAuthenticated(),
-		})
+	handlers := NewHandlers(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authmw)
+
+	RegisterHandlersWithOptions(vg, handlers, GinServerOptions{BaseURL: ""})
 
 	conf.Logger.Info("Server started")
 	srv.httpsrv = &http.Server{

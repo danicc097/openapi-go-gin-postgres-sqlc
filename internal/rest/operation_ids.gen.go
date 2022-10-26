@@ -2,26 +2,21 @@
 
 package rest
 
-type op interface {
-	adminOpID | defaultOpID | userOpID
-}
-
-type (
-	adminOpID   string
-	defaultOpID string
-	userOpID    string
-)
+type operationID string
 
 const (
 	// Operation IDs for the 'admin' tag.
-	adminPing adminOpID = "adminPing"
+
+	AdminPing operationID = "AdminPing"
 
 	// Operation IDs for the 'default' tag.
-	openapiYamlGet defaultOpID = "openapiYamlGet"
-	ping           defaultOpID = "ping"
+
+	OpenapiYamlGet operationID = "OpenapiYamlGet"
+	Ping           operationID = "Ping"
 
 	// Operation IDs for the 'user' tag.
-	deleteUser     userOpID = "deleteUser"
-	getCurrentUser userOpID = "getCurrentUser"
-	updateUser     userOpID = "updateUser"
+
+	DeleteUser     operationID = "DeleteUser"
+	GetCurrentUser operationID = "GetCurrentUser"
+	UpdateUser     operationID = "UpdateUser"
 )

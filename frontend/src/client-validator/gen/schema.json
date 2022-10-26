@@ -57,8 +57,20 @@
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "GetCurrentUserResponse": {
-      "description": "represents a user.",
+    "Organization": {
+      "title": "Organization",
+      "description": "Organization a user belongs to.",
+      "type": "string",
+      "x-db-enum": "org",
+      "enum": [
+        "team 1",
+        "team 2",
+        "team 3"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "GetCurrentUserRes": {
+      "description": "represents a user",
       "properties": {
         "user_id": {
           "format": "int64",
@@ -86,6 +98,12 @@
         },
         "role": {
           "$ref": "#/definitions/Role"
+        },
+        "orgs": {
+          "description": "are organizations a user belongs to",
+          "items": {
+            "$ref": "#/definitions/Organization"
+          }
         }
       },
       "title": "a User",
@@ -133,8 +151,11 @@
     "Role": {
       "$ref": "#/definitions/Role"
     },
-    "GetCurrentUserResponse": {
-      "$ref": "#/definitions/GetCurrentUserResponse"
+    "Organization": {
+      "$ref": "#/definitions/Organization"
+    },
+    "GetCurrentUserRes": {
+      "$ref": "#/definitions/GetCurrentUserRes"
     },
     "ValidationError": {
       "$ref": "#/definitions/ValidationError"

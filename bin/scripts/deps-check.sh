@@ -64,11 +64,11 @@ check.yq() {
   local vers
   vers=$(yq --version)
   minver=4
-  { [[ "$vers" =~ version[\ ]+([^\ \.]+) ]] &&
+  { [[ "$vers" =~ version[\ ]+([^\ \.]+) ]] && [[ "$vers" = *mikefarah/yq* ]] &&
     ((BASH_REMATCH[1] >= minver)) &&
     printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
     {
-      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver${OFF})"
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver of https://github.com/mikefarah/yq/)${OFF}"
       return 1
     }
 }
@@ -122,19 +122,6 @@ check.direnv() {
   minver=2
   { [[ "$vers" =~ ([0-9]+)[\.]{1} ]] &&
     ((BASH_REMATCH[1] >= minver)) &&
-    printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
-    {
-      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver${OFF})"
-      return 1
-    }
-}
-
-check.java() {
-  local vers
-  vers=$(java -version 2>&1 | head -1)
-  vers=${vers#*version \"}
-  vers=${vers%%\"*}
-  { [[ $vers =~ ^(1\.[89]|9\.|[1-9][0-9]+) ]] &&
     printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
     {
       echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver${OFF})"
