@@ -5,5 +5,3 @@ generate:
 output: internal/rest/openapi-server.gen.go
 output-options:
   skip-prune: true
-  user-templates:
-    gin/gin-register.tmpl: ./oapi-templates/gin/gin-register.tmpl

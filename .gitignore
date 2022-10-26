@@ -6,6 +6,7 @@ openapi-generator-cli.jar
 /post-generate-api
 /postgen
 /pregen
+/oapi-codegen
 .openapi-generator
 **/swagger-ui/**/*
 tmp
