@@ -708,8 +708,8 @@ x.gen.xo() {
     xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
       --src "$PG_REPO"/xo-templates \
       -o "$PG_REPO"/gen/db \
-      -e "*.created_at" \
-      -e "*.updated_at" || err "Failed xo generation"
+      --ignore "*.created_at" \
+      --ignore "*.updated_at" || err "Failed xo generation"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

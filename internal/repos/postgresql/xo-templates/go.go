@@ -639,7 +639,7 @@ func convertProc(ctx context.Context, overloadMap map[string][]Proc, order []str
 
 // convertTable converts a xo.Table to a Table.
 func convertTable(ctx context.Context, t xo.Table) (Table, error) {
-	var cols, pkCols, generatedCols []Field
+	var cols, pkCols, generatedCols, ignoredCols []Field
 	for _, z := range t.Columns {
 		f, err := convertField(ctx, camelExport, z)
 		if err != nil {
@@ -651,6 +651,9 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 		}
 		if f.IsGenerated {
 			generatedCols = append(generatedCols, f)
+		}
+		if f.IsIgnored {
+			ignoredCols = append(ignoredCols, f)
 		}
 	}
 	// custom manual override
@@ -667,6 +670,7 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 		Fields:      cols,
 		PrimaryKeys: pkCols,
 		Generated:   generatedCols,
+		Ignored:     ignoredCols,
 		Manual:      manual && t.Manual,
 	}, nil
 }
@@ -752,6 +756,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		Zero:        zero,
 		IsPrimary:   f.IsPrimary,
 		IsSequence:  f.IsSequence,
+		IsIgnored:   f.IsIgnored,
 		IsGenerated: strings.Contains(f.Default, "()") || f.IsSequence,
 	}, nil
 }
@@ -1196,22 +1201,20 @@ func (f *Funcs) db(name string, v ...interface{}) string {
 // db_prefix generates a db.<name>Context(ctx, sqlstr, <prefix>.param, ...).
 //
 // Will skip the specific parameters based on the type provided.
-func (f *Funcs) db_prefix(name string, skip bool, vs ...interface{}) string {
+func (f *Funcs) db_prefix(name string, includeGenerated bool, includeIgnored bool, vs ...interface{}) string {
 	var prefix string
 	var params []interface{}
 	for i, v := range vs {
-		var ignore []string
+		var ignore []interface{}
 		switch x := v.(type) {
 		case string:
 			params = append(params, x)
 		case Table:
 			prefix = f.short(x.GoName) + "."
-			// skip primary keys
-			if skip {
-				for _, field := range x.Fields {
-					if field.IsGenerated {
-						ignore = append(ignore, field.GoName)
-					}
+			// skip primary keys and ignored fields for insertion
+			for _, field := range x.Fields {
+				if (field.IsGenerated && !includeGenerated) || (field.IsIgnored && !includeIgnored) {
+					ignore = append(ignore, field.GoName)
 				}
 			}
 			p := f.names_ignore(prefix, v, ignore...)
@@ -1230,7 +1233,8 @@ func (f *Funcs) db_prefix(name string, skip bool, vs ...interface{}) string {
 // db_update generates a db.<name>Context(ctx, sqlstr, regularparams,
 // primaryparams)
 func (f *Funcs) db_update(name string, v interface{}) string {
-	var ignore, p []string
+	var ignore []interface{}
+	var p []string
 	switch x := v.(type) {
 	case Table:
 		prefix := f.short(x.GoName) + "."
@@ -1282,7 +1286,7 @@ func (f *Funcs) logf_pkeys(v interface{}) string {
 }
 
 func (f *Funcs) logf(v interface{}, ignore ...interface{}) string {
-	var ignoreNames []string
+	var ignoreNames []interface{}
 	p := []string{"sqlstr"}
 	// build ignore list
 	for i, x := range ignore {
@@ -1311,7 +1315,7 @@ func (f *Funcs) logf(v interface{}, ignore ...interface{}) string {
 }
 
 func (f *Funcs) logf_update(v interface{}) string {
-	var ignore []string
+	var ignore []interface{}
 	p := []string{"sqlstr"}
 	switch x := v.(type) {
 	case Table:
@@ -1376,11 +1380,17 @@ func (f *Funcs) names_all(prefix string, z ...interface{}) string {
 }
 
 // names_ignore generates a list of all names, ignoring fields that match the value in ignore.
-func (f *Funcs) names_ignore(prefix string, v interface{}, ignore ...string) string {
+func (f *Funcs) names_ignore(prefix string, v interface{}, ignore ...interface{}) string {
 	m := make(map[string]bool)
-	for _, n := range ignore {
-		m[n] = true
+	for _, v := range ignore {
+		switch x := v.(type) {
+		case string:
+			m[x] = true
+		case Field:
+			m[x.GoName] = true
+		}
 	}
+
 	var vals []Field
 	switch x := v.(type) {
 	case Table:
@@ -1469,7 +1479,7 @@ func (f *Funcs) sqlstr_insert_base(all bool, v interface{}) []string {
 		var n int
 		var fields, vals []string
 		for _, z := range x.Fields {
-			if z.IsGenerated && !all {
+			if z.IsGenerated && !all || z.IsIgnored {
 				continue
 			}
 			fields, vals = append(fields, f.colname(z)), append(vals, f.nth(n))
@@ -1531,7 +1541,7 @@ func (f *Funcs) sqlstr_update_base(prefix string, v interface{}) (int, []string)
 		var n int
 		var list []string
 		for _, z := range x.Fields {
-			if z.IsPrimary || z.IsGenerated {
+			if z.IsPrimary || z.IsGenerated || z.IsIgnored {
 				continue
 			}
 			name, param := f.colname(z), f.nth(n)
@@ -2223,6 +2233,7 @@ type Table struct {
 	Manual      bool
 	Comment     string
 	Generated   []Field
+	Ignored     []Field
 }
 
 // ForeignKey is a foreign key template.
@@ -2256,6 +2267,7 @@ type Field struct {
 	Zero        string
 	IsPrimary   bool
 	IsSequence  bool
+	IsIgnored   bool
 	Comment     string
 	IsGenerated bool
 }

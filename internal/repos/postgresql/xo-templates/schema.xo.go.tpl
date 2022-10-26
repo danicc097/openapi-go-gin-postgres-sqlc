@@ -189,21 +189,13 @@ func (err ErrInvalid{{ $e.GoName }}) Error() string {
 	var {{ check_name .GoName }} {{ type .Type }}
 {{- end }}
 	logf(sqlstr, {{ params $p.Params false }})
-{{- if and (driver "sqlserver" "oracle") (eq $p.Type "procedure")}}
-	if _, err := {{ db_named "Exec" $p }}; err != nil {
-{{- else }}
 	if err := {{ db "QueryRow" $p }}.Scan({{ names "&" $p.Returns }}); err != nil {
-{{- end }}
 		return {{ zero $p.Returns }}, logerror(err)
 	}
 	return {{ range $p.Returns }}{{ check_name .GoName }}, {{ end }}nil
 {{- else }}
 	logf(sqlstr)
-{{- if driver "sqlserver" "oracle" }}
-	if _, err := {{ db_named "Exec" $p }}; err != nil {
-{{- else }}
 	if _, err := {{ db "Exec" $p }}; err != nil {
-{{- end }}
 		return logerror(err)
 	}
 	return nil
@@ -296,41 +288,20 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	{{ sqlstr "insert_manual" $t }}
 	// run
 	{{ logf $t }}
-	if _, err := {{ db_prefix "Exec" false $t }}; err != nil {
+	if _, err := {{ db_prefix "Exec" false false $t }}; err != nil {
 		return logerror(err)
 	}
 {{- else -}}
 	// insert (primary key generated and returned by database)
 	{{ sqlstr "insert" $t }}
 	// run
-	{{ logf $t $t.Generated }}
+	{{ logf $t $t.Generated $t.Ignored }}
 {{ if (driver "postgres") -}}
-	if err := {{ db_prefix "QueryRow" true $t }}.Scan({{ names (print "&" (short $t) ".") $t.Generated }}); err != nil {
-		return logerror(err)
-	}
-{{- else if (driver "sqlserver") -}}
-	rows, err := {{ db_prefix "Query" true $t }}
-	if err != nil {
-		return logerror(err)
-	}
-	defer rows.Close()
-	// retrieve id
-	var id int64
-	for rows.Next() {
-		if err := rows.Scan(&id); err != nil {
-			return logerror(err)
-		}
-	}
-	if err := rows.Err(); err != nil {
-		return logerror(err)
-	}
-{{- else if (driver "oracle") -}}
-	var id int64
-	if _, err := {{ db_prefix "Exec" true $t (named "pk" "&id" true) }}; err != nil {
+	if err := {{ db_prefix "QueryRow" false false $t }}.Scan({{ names (print "&" (short $t) ".") $t.Generated }}); err != nil {
 		return logerror(err)
 	}
 {{- else -}}
-	res, err := {{ db_prefix "Exec" true $t }}
+	res, err := {{ db_prefix "Exec" false false $t }}
 	if err != nil {
 		return logerror(err)
 	}
@@ -413,8 +384,8 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	// upsert
 	{{ sqlstr "upsert" $t }}
 	// run
-	{{ logf $t }}
-	if _, err := {{ db_prefix "Exec" false $t }}; err != nil {
+	{{ logf $t $t.Ignored }}{{/* upsert will require generated fields, but exclude ignored fields */}}
+	if _, err := {{ db_prefix "Exec" true false $t }}; err != nil {
 		return logerror(err)
 	}
 	// set exists
