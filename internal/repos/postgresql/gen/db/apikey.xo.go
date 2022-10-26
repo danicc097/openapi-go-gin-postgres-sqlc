@@ -4,15 +4,17 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 // APIKey represents a row from 'public.api_keys'.
 type APIKey struct {
-	APIKeyID int       `json:"api_key_id"` // api_key_id
-	APIKey   string    `json:"api_key"`    // api_key
-	UserID   uuid.UUID `json:"user_id"`    // user_id
+	APIKeyID  int       `json:"api_key_id"` // api_key_id
+	APIKey    string    `json:"api_key"`    // api_key
+	UserID    uuid.UUID `json:"user_id"`    // user_id
+	ExpiresOn time.Time `json:"expires_on"` // expires_on
 	// xo fields
 	_exists, _deleted bool
 }
@@ -22,7 +24,7 @@ type APIKey struct {
 func GetMostRecentAPIKey(ctx context.Context, db DB, n int) ([]*APIKey, error) {
 	// list
 	const sqlstr = `SELECT ` +
-		`api_key_id, api_key, user_id ` +
+		`api_key_id, api_key, user_id, expires_on ` +
 		`FROM public.api_keys ` +
 		`ORDER BY created_at DESC LIMIT $1`
 	// run
@@ -41,7 +43,7 @@ func GetMostRecentAPIKey(ctx context.Context, db DB, n int) ([]*APIKey, error) {
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&ak.APIKeyID, &ak.APIKey, &ak.UserID); err != nil {
+		if err := rows.Scan(&ak.APIKeyID, &ak.APIKey, &ak.UserID, &ak.ExpiresOn); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &ak)
@@ -73,13 +75,13 @@ func (ak *APIKey) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	const sqlstr = `INSERT INTO public.api_keys (` +
-		`api_key, user_id` +
+		`api_key, user_id, expires_on` +
 		`) VALUES (` +
-		`$1, $2` +
+		`$1, $2, $3` +
 		`) RETURNING api_key_id`
 	// run
-	logf(sqlstr, ak.APIKey, ak.UserID)
-	if err := db.QueryRow(ctx, sqlstr, ak.APIKey, ak.UserID).Scan(&ak.APIKeyID); err != nil {
+	logf(sqlstr, ak.APIKey, ak.UserID, ak.ExpiresOn)
+	if err := db.QueryRow(ctx, sqlstr, ak.APIKey, ak.UserID, ak.ExpiresOn).Scan(&ak.APIKeyID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -97,11 +99,11 @@ func (ak *APIKey) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	const sqlstr = `UPDATE public.api_keys SET ` +
-		`api_key = $1, user_id = $2 ` +
-		`WHERE api_key_id = $3`
+		`api_key = $1, user_id = $2, expires_on = $3 ` +
+		`WHERE api_key_id = $4`
 	// run
-	logf(sqlstr, ak.APIKey, ak.UserID, ak.APIKeyID)
-	if _, err := db.Exec(ctx, sqlstr, ak.APIKey, ak.UserID, ak.APIKeyID); err != nil {
+	logf(sqlstr, ak.APIKey, ak.UserID, ak.ExpiresOn, ak.APIKeyID)
+	if _, err := db.Exec(ctx, sqlstr, ak.APIKey, ak.UserID, ak.ExpiresOn, ak.APIKeyID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -123,16 +125,16 @@ func (ak *APIKey) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	const sqlstr = `INSERT INTO public.api_keys (` +
-		`api_key_id, api_key, user_id` +
+		`api_key_id, api_key, user_id, expires_on` +
 		`) VALUES (` +
-		`$1, $2, $3` +
+		`$1, $2, $3, $4` +
 		`)` +
 		` ON CONFLICT (api_key_id) DO ` +
 		`UPDATE SET ` +
-		`api_key = EXCLUDED.api_key, user_id = EXCLUDED.user_id `
+		`api_key = EXCLUDED.api_key, user_id = EXCLUDED.user_id, expires_on = EXCLUDED.expires_on `
 	// run
-	logf(sqlstr, ak.APIKeyID, ak.APIKey, ak.UserID)
-	if _, err := db.Exec(ctx, sqlstr, ak.APIKeyID, ak.APIKey, ak.UserID); err != nil {
+	logf(sqlstr, ak.APIKeyID, ak.APIKey, ak.UserID, ak.ExpiresOn)
+	if _, err := db.Exec(ctx, sqlstr, ak.APIKeyID, ak.APIKey, ak.UserID, ak.ExpiresOn); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -167,7 +169,7 @@ func (ak *APIKey) Delete(ctx context.Context, db DB) error {
 func APIKeyByAPIKey(ctx context.Context, db DB, apiKey string) (*APIKey, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`api_key_id, api_key, user_id ` +
+		`api_key_id, api_key, user_id, expires_on ` +
 		`FROM public.api_keys ` +
 		`WHERE api_key = $1`
 	// run
@@ -175,7 +177,7 @@ func APIKeyByAPIKey(ctx context.Context, db DB, apiKey string) (*APIKey, error) 
 	ak := APIKey{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, apiKey).Scan(&ak.APIKeyID, &ak.APIKey, &ak.UserID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, apiKey).Scan(&ak.APIKeyID, &ak.APIKey, &ak.UserID, &ak.ExpiresOn); err != nil {
 		return nil, logerror(err)
 	}
 	return &ak, nil
@@ -187,7 +189,7 @@ func APIKeyByAPIKey(ctx context.Context, db DB, apiKey string) (*APIKey, error) 
 func APIKeyByAPIKeyID(ctx context.Context, db DB, apiKeyID int) (*APIKey, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`api_key_id, api_key, user_id ` +
+		`api_key_id, api_key, user_id, expires_on ` +
 		`FROM public.api_keys ` +
 		`WHERE api_key_id = $1`
 	// run
@@ -195,7 +197,7 @@ func APIKeyByAPIKeyID(ctx context.Context, db DB, apiKeyID int) (*APIKey, error)
 	ak := APIKey{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, apiKeyID).Scan(&ak.APIKeyID, &ak.APIKey, &ak.UserID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, apiKeyID).Scan(&ak.APIKeyID, &ak.APIKey, &ak.UserID, &ak.ExpiresOn); err != nil {
 		return nil, logerror(err)
 	}
 	return &ak, nil

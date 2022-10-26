@@ -187,8 +187,8 @@ components:
       title: Organization
       description: Organization a user belongs to.
       type: string
-      x-db-enum: org
-      enum: ["team 1", "team 2", "team 3"]
+      # x-db-enum: org
+      # enum: ["team 1", "team 2", "team 3"]
     # TODO generate adapter to convert db model -> this
     # based on matches of x-db-model: <...>'s json tags (both sqlc and xo generate them)
     # against parsed property names (kin) - when its a response object only (kin filter)

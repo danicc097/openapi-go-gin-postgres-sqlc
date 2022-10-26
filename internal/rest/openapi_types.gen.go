@@ -8,13 +8,6 @@ const (
 	Bearer_authScopes = "bearer_auth.Scopes"
 )
 
-// Defines values for Organization.
-const (
-	Team1 Organization = "team 1"
-	Team2 Organization = "team 2"
-	Team3 Organization = "team 3"
-)
-
 // Defines values for Role.
 const (
 	Admin   Role = "admin"
@@ -51,7 +44,7 @@ type HTTPValidationError struct {
 }
 
 // Organization Organization a user belongs to.
-type Organization string
+type Organization = string
 
 // Role User role.
 type Role string

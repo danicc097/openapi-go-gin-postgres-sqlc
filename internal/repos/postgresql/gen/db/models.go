@@ -13,67 +13,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type Org string
-
-const (
-	OrgTeam1 Org = "team 1"
-	OrgTeam2 Org = "team 2"
-	OrgTeam3 Org = "team 3"
-)
-
-func (e *Org) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = Org(s)
-	case string:
-		*e = Org(s)
-	default:
-		return fmt.Errorf("unsupported scan type for Org: %T", src)
-	}
-	return nil
-}
-
-type NullOrg struct {
-	Org   Org
-	Valid bool // Valid is true if String is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullOrg) Scan(value interface{}) error {
-	if value == nil {
-		ns.Org, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.Org.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullOrg) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return ns.Org, nil
-}
-
-func (e Org) Valid() bool {
-	switch e {
-	case OrgTeam1,
-		OrgTeam2,
-		OrgTeam3:
-		return true
-	}
-	return false
-}
-
-func AllOrgValues() []Org {
-	return []Org{
-		OrgTeam1,
-		OrgTeam2,
-		OrgTeam3,
-	}
-}
-
 type Role string
 
 const (
@@ -136,9 +75,10 @@ func AllRoleValues() []Role {
 }
 
 type ApiKeys struct {
-	ApiKeyID int32     `db:"api_key_id" json:"api_key_id"`
-	ApiKey   string    `db:"api_key" json:"api_key"`
-	UserID   uuid.UUID `db:"user_id" json:"user_id"`
+	ApiKeyID  int32     `db:"api_key_id" json:"api_key_id"`
+	ApiKey    string    `db:"api_key" json:"api_key"`
+	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	ExpiresOn time.Time `db:"expires_on" json:"expires_on"`
 }
 
 type Movies struct {
@@ -146,6 +86,16 @@ type Movies struct {
 	Title    string `db:"title" json:"title"`
 	Year     int32  `db:"year" json:"year"`
 	Synopsis string `db:"synopsis" json:"synopsis"`
+}
+
+type Organizations struct {
+	OrganizationID int32  `db:"organization_id" json:"organization_id"`
+	Name           string `db:"name" json:"name"`
+}
+
+type UserOrganization struct {
+	OrganizationID int32     `db:"organization_id" json:"organization_id"`
+	UserID         uuid.UUID `db:"user_id" json:"user_id"`
 }
 
 type Users struct {
@@ -157,7 +107,6 @@ type Users struct {
 	FullName    sql.NullString `db:"full_name" json:"full_name"`
 	ExternalID  string         `db:"external_id" json:"external_id"`
 	Role        Role           `db:"role" json:"role"`
-	Orgs        []Org          `db:"orgs" json:"orgs"`
 	IsSuperuser bool           `db:"is_superuser" json:"is_superuser"`
 	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
 	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`

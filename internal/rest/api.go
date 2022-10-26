@@ -19,6 +19,7 @@ type Handlers struct {
 }
 
 // NewHandlers returns an server implementation of an openapi specification.
+// TODO retry wrapper
 func NewHandlers(
 	logger *zap.Logger,
 	pool *pgxpool.Pool,

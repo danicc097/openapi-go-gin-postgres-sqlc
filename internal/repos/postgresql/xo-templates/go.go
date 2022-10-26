@@ -1652,7 +1652,9 @@ func (f *Funcs) sqlstr_index(v interface{}) []string {
 }
 
 // sqlstr_list builds a list fields.
-// TODO make generic.
+// TODO make generic. Also ignore if not created_at field.
+// TODO doesnt take updated_at into account either, see fastapi app for reference
+// we can generate based on event: is_update, is_create
 func (f *Funcs) sqlstr_list(v interface{}) []string {
 	switch x := v.(type) {
 	case Table:
