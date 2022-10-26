@@ -1,7 +1,6 @@
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
     BaseURL string
-    Middlewares []MiddlewareFunc
 }
 
 // RegisterHandlers creates http.Handler with routing matching OpenAPI spec.
@@ -13,7 +12,6 @@ func RegisterHandlers(router *gin.RouterGroup, si ServerInterface) *gin.RouterGr
 func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, options GinServerOptions) *gin.RouterGroup {
 {{if .}}wrapper := ServerInterfaceWrapper{
 Handler: si,
-HandlerMiddlewares: options.Middlewares,
 }
 {{end}}
 {{range .}}

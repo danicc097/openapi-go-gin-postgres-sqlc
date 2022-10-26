@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -16,11 +17,11 @@ Among the most gruesome horror movies of 2022, The Sadness lives up to its name 
 
 type User struct {
 	logger *zap.Logger
-	urepo  UserRepo
+	urepo  repos.User
 }
 
 // NewUser returns a new User service.
-func NewUser(urepo UserRepo, logger *zap.Logger) *User {
+func NewUser(urepo repos.User, logger *zap.Logger) *User {
 	return &User{
 		logger: logger,
 		urepo:  urepo,

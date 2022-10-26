@@ -37,20 +37,13 @@ type ServerInterface interface {
 
 // ServerInterfaceWrapper converts contexts to parameters.
 type ServerInterfaceWrapper struct {
-	Handler            ServerInterface
-	HandlerMiddlewares []MiddlewareFunc
+	Handler ServerInterface
 }
 
 type MiddlewareFunc func(c *gin.Context)
 
 // AdminPing operation middleware.
 func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
-
-	// TODO remove.
-	// apply global route group middlewares
-	for _, mw := range siw.HandlerMiddlewares {
-		mw(c)
-	}
 
 	// apply middlewares for operation "AdminPing".
 	for _, mw := range siw.Handler.middlewares(AdminPing) {
@@ -63,12 +56,6 @@ func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 // OpenapiYamlGet operation middleware.
 func (siw *ServerInterfaceWrapper) OpenapiYamlGet(c *gin.Context) {
 
-	// TODO remove.
-	// apply global route group middlewares
-	for _, mw := range siw.HandlerMiddlewares {
-		mw(c)
-	}
-
 	// apply middlewares for operation "OpenapiYamlGet".
 	for _, mw := range siw.Handler.middlewares(OpenapiYamlGet) {
 		mw(c)
@@ -79,12 +66,6 @@ func (siw *ServerInterfaceWrapper) OpenapiYamlGet(c *gin.Context) {
 
 // Ping operation middleware.
 func (siw *ServerInterfaceWrapper) Ping(c *gin.Context) {
-
-	// TODO remove.
-	// apply global route group middlewares
-	for _, mw := range siw.HandlerMiddlewares {
-		mw(c)
-	}
 
 	// apply middlewares for operation "Ping".
 	for _, mw := range siw.Handler.middlewares(Ping) {
@@ -100,12 +81,6 @@ func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
 	c.Set(Bearer_authScopes, []string{""})
 
 	c.Set(Api_keyScopes, []string{""})
-
-	// TODO remove.
-	// apply global route group middlewares
-	for _, mw := range siw.HandlerMiddlewares {
-		mw(c)
-	}
 
 	// apply middlewares for operation "GetCurrentUser".
 	for _, mw := range siw.Handler.middlewares(GetCurrentUser) {
@@ -133,12 +108,6 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 
 	c.Set(Api_keyScopes, []string{""})
 
-	// TODO remove.
-	// apply global route group middlewares
-	for _, mw := range siw.HandlerMiddlewares {
-		mw(c)
-	}
-
 	// apply middlewares for operation "DeleteUser".
 	for _, mw := range siw.Handler.middlewares(DeleteUser) {
 		mw(c)
@@ -165,12 +134,6 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 
 	c.Set(Api_keyScopes, []string{""})
 
-	// TODO remove.
-	// apply global route group middlewares
-	for _, mw := range siw.HandlerMiddlewares {
-		mw(c)
-	}
-
 	// apply middlewares for operation "UpdateUser".
 	for _, mw := range siw.Handler.middlewares(UpdateUser) {
 		mw(c)
@@ -181,8 +144,7 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
-	BaseURL     string
-	Middlewares []MiddlewareFunc
+	BaseURL string
 }
 
 // RegisterHandlers creates http.Handler with routing matching OpenAPI spec.
@@ -193,8 +155,7 @@ func RegisterHandlers(router *gin.RouterGroup, si ServerInterface) *gin.RouterGr
 // RegisterHandlersWithOptions creates http.Handler with additional options
 func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, options GinServerOptions) *gin.RouterGroup {
 	wrapper := ServerInterfaceWrapper{
-		Handler:            si,
-		HandlerMiddlewares: options.Middlewares,
+		Handler: si,
 	}
 
 	router.GET(options.BaseURL+"/admin/ping", wrapper.AdminPing)

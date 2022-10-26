@@ -31,11 +31,7 @@ export GO_POST_PROCESS_FILE="/usr/bin/env gofmt -w -s"
 export GENVERS=6.0.1
 
 readonly SPEC="openapi.yaml"
-readonly OPENAPI_GEN_OUT_DIR="internal"
-readonly OPENAPI_GEN_DIR="$OPENAPI_GEN_OUT_DIR/gen"
 readonly PROTO_DIR="internal/pb"
-readonly TEMPLATE_DIR="internal/go-gin-server-templates"
-readonly BIN_DIR=$(dirname "${BASH_SOURCE[0]}")
 readonly PG_REPO="internal/repos/postgresql"
 readonly MAX_COMMENT_LEN=88
 readonly MAX_FNAME_LOG_LEN=13
@@ -190,7 +186,6 @@ x.postgen() {
     mkdir -p "$cache"
     go build -o postgen "$PWD"/cmd/postgen/main.go
     ./postgen -cachedir="$cache" -env=".env.$env"
-    mv "$OPENAPI_GEN_DIR"/api_*.go "$cache/" 2>/dev/null || true
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -225,7 +220,7 @@ x.gen.counterfeiter() {
     cache="$1"
 
     envvar="internal/envvar/envvar.go"
-    repos="internal/services/repos.go"
+    repos="internal/repos/repos.go"
     tfidfpb="internal/pb/python-ml-app-protos/tfidf/v1/service_grpc.pb.go"
 
     echo "Running generation"
@@ -234,7 +229,7 @@ x.gen.counterfeiter() {
       echo "Recreating mocks"
       {
         counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
-        counterfeiter -o internal/services/servicestesting/user.gen.go $repos UserRepo &
+        counterfeiter -o internal/repos/repostesting/user.gen.go $repos User &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
         md5sum $envvar $repos $tfidfpb >"$cache/counterfeiter.md5" &
@@ -319,7 +314,6 @@ x.lint() {
 x.lint.go() {
   { { {
     files=$(find . \
-      -not -path "**/$OPENAPI_GEN_DIR/*" \
       -not -path "**/$PROTO_DIR/*" \
       -not -path "**/$PG_REPO/gen/*" \
       -not -path "**/testdata/*" \
@@ -394,7 +388,7 @@ x.run.backend-hr() {
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$OPENAPI_GEN_DIR,$PROTO_DIR,$PG_REPO/gen,**/testdata,frontend,*.cache" \
+    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO/gen,**/testdata,frontend,*.cache" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
