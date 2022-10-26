@@ -218,7 +218,7 @@ components:
         role:
           $ref: "#/components/schemas/Role"
         orgs:
-          description: organizations a user belongs to
+          description: are organizations a user belongs to
           items:
             $ref: "#/components/schemas/Organization"
       title: a User

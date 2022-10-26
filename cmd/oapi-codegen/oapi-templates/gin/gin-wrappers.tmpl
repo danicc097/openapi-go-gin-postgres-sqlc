@@ -8,7 +8,7 @@ type MiddlewareFunc func(c *gin.Context)
 
 {{range .}}{{$opid := .OperationId}}
 
-// {{$opid}} operation middleware
+// {{$opid}} operation middleware.
 func (siw *ServerInterfaceWrapper) {{$opid}}(c *gin.Context) {
 
   {{if or .RequiresParamObject (gt (len .PathParams) 0) }}
@@ -170,9 +170,16 @@ func (siw *ServerInterfaceWrapper) {{$opid}}(c *gin.Context) {
     {{end}}
   {{end}}
 
-  for _, middleware := range siw.HandlerMiddlewares {
-    middleware(c)
+  // TODO remove.
+  // apply global route group middlewares
+  for _, mw := range siw.HandlerMiddlewares {
+    mw(c)
   }
+
+  // apply middlewares for operation "{{$opid}}".
+	for _, mw := range siw.Handler.middlewares({{$opid}}) {
+		mw(c)
+	}
 
   siw.Handler.{{.OperationId}}(c{{genParamNames .PathParams}}{{if .RequiresParamObject}}, params{{end}})
 }

@@ -114,7 +114,6 @@ x.install-tools() {
     go install github.com/tufin/oasdiff@latest
     go install golang.org/x/tools/cmd/goimports@latest
     go install mvdan.cc/gofumpt@latest
-    go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
     go install github.com/danicc097/air@latest
     go install github.com/danicc097/xo@latest
 
@@ -240,20 +239,14 @@ x.gen.sqlc() {
 # Generate Go client and server.
 x.gen.client-server() {
   { { {
-    echo "Running generation"
-    oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
-    oapi-codegen --config internal/client/oapi-codegen-types.yaml "$SPEC" || err "Failed client generation"
-
-
     go build -o oapi-codegen "$PWD"/cmd/oapi-codegen
 
-    # for custom templates its a bit messy with new config, see
-    # https://github.com/deepmap/oapi-codegen/pull/707
+    echo "Running generation"
+    ./oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
+    ./oapi-codegen --config internal/client/oapi-codegen-types.yaml "$SPEC" || err "Failed client generation"
+
     ./oapi-codegen --config internal/rest/oapi-codegen-server.yaml "$SPEC" || err "Failed server generation"
     ./oapi-codegen --config internal/rest/oapi-codegen-types.yaml "$SPEC" || err "Failed server generation"
-
-    # TODO remove. will probably need to update templates anyway
-    # sed -i 's/\*gin.Engine/\*gin.RouterGroup/g' internal/rest/openapi-server.gen.go
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }

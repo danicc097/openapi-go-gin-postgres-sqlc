@@ -4,4 +4,6 @@ type ServerInterface interface {
 // ({{.Method}} {{.Path}})
 {{.OperationId}}(c *gin.Context{{genParamArgs .PathParams}}{{if .RequiresParamObject}}, params {{.OperationId}}Params{{end}})
 {{end}}
+
+middlewares(opID operationID) []gin.HandlerFunc
 }

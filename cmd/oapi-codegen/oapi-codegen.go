@@ -1,5 +1,7 @@
 package main
 
+// https://github.com/deepmap/oapi-codegen/pull/707
+
 import (
 	"context"
 	"embed"
@@ -85,7 +87,7 @@ func generate(spec *openapi3.T, config codegen.Configuration, templates embed.FS
 	if err != nil {
 		return "", err
 	}
-	// add local template functions
+	// include other template functions, if any
 	templateFunctions := template.FuncMap{}
 	for k, v := range templateFunctions {
 		codegen.TemplateFunctions[k] = v
