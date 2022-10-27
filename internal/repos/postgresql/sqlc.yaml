@@ -18,6 +18,8 @@ sql:
         emit_enum_valid_method: true
         emit_all_enum_values: true
         emit_methods_with_db_argument: true
+        # disable_emit_enums: true
+        disable_emit_table_structs: true
         # emit_prepared_queries: true # mutually exclusive with emit_methods_with_db_argument
         json_tags_case_style: snake
         rename:

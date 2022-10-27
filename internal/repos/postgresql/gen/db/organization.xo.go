@@ -10,6 +10,7 @@ import (
 type Organization struct {
 	OrganizationID int    `json:"organization_id"` // organization_id
 	Name           string `json:"name"`            // name
+	Metadata       []byte `json:"metadata"`        // metadata
 	// xo fields
 	_exists, _deleted bool
 }
@@ -19,7 +20,7 @@ type Organization struct {
 func GetMostRecentOrganization(ctx context.Context, db DB, n int) ([]*Organization, error) {
 	// list
 	const sqlstr = `SELECT ` +
-		`organization_id, name ` +
+		`organization_id, name, metadata ` +
 		`FROM public.organizations ` +
 		`ORDER BY created_at DESC LIMIT $1`
 	// run
@@ -38,7 +39,7 @@ func GetMostRecentOrganization(ctx context.Context, db DB, n int) ([]*Organizati
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&o.OrganizationID, &o.Name); err != nil {
+		if err := rows.Scan(&o.OrganizationID, &o.Name, &o.Metadata); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &o)
@@ -70,13 +71,13 @@ func (o *Organization) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	const sqlstr = `INSERT INTO public.organizations (` +
-		`name` +
+		`name, metadata` +
 		`) VALUES (` +
-		`$1` +
+		`$1, $2` +
 		`) RETURNING organization_id`
 	// run
-	logf(sqlstr, o.Name)
-	if err := db.QueryRow(ctx, sqlstr, o.Name).Scan(&o.OrganizationID); err != nil {
+	logf(sqlstr, o.Name, o.Metadata)
+	if err := db.QueryRow(ctx, sqlstr, o.Name, o.Metadata).Scan(&o.OrganizationID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -94,11 +95,11 @@ func (o *Organization) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	const sqlstr = `UPDATE public.organizations SET ` +
-		`name = $1 ` +
-		`WHERE organization_id = $2`
+		`name = $1, metadata = $2 ` +
+		`WHERE organization_id = $3`
 	// run
-	logf(sqlstr, o.Name, o.OrganizationID)
-	if _, err := db.Exec(ctx, sqlstr, o.Name, o.OrganizationID); err != nil {
+	logf(sqlstr, o.Name, o.Metadata, o.OrganizationID)
+	if _, err := db.Exec(ctx, sqlstr, o.Name, o.Metadata, o.OrganizationID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -120,16 +121,16 @@ func (o *Organization) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	const sqlstr = `INSERT INTO public.organizations (` +
-		`organization_id, name` +
+		`organization_id, name, metadata` +
 		`) VALUES (` +
-		`$1, $2` +
+		`$1, $2, $3` +
 		`)` +
 		` ON CONFLICT (organization_id) DO ` +
 		`UPDATE SET ` +
-		`name = EXCLUDED.name `
+		`name = EXCLUDED.name, metadata = EXCLUDED.metadata `
 	// run
-	logf(sqlstr, o.OrganizationID, o.Name)
-	if _, err := db.Exec(ctx, sqlstr, o.OrganizationID, o.Name); err != nil {
+	logf(sqlstr, o.OrganizationID, o.Name, o.Metadata)
+	if _, err := db.Exec(ctx, sqlstr, o.OrganizationID, o.Name, o.Metadata); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -164,7 +165,7 @@ func (o *Organization) Delete(ctx context.Context, db DB) error {
 func OrganizationByName(ctx context.Context, db DB, name string) (*Organization, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`organization_id, name ` +
+		`organization_id, name, metadata ` +
 		`FROM public.organizations ` +
 		`WHERE name = $1`
 	// run
@@ -172,7 +173,7 @@ func OrganizationByName(ctx context.Context, db DB, name string) (*Organization,
 	o := Organization{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, name).Scan(&o.OrganizationID, &o.Name); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, name).Scan(&o.OrganizationID, &o.Name, &o.Metadata); err != nil {
 		return nil, logerror(err)
 	}
 	return &o, nil
@@ -184,7 +185,7 @@ func OrganizationByName(ctx context.Context, db DB, name string) (*Organization,
 func OrganizationByOrganizationID(ctx context.Context, db DB, organizationID int) (*Organization, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`organization_id, name ` +
+		`organization_id, name, metadata ` +
 		`FROM public.organizations ` +
 		`WHERE organization_id = $1`
 	// run
@@ -192,7 +193,7 @@ func OrganizationByOrganizationID(ctx context.Context, db DB, organizationID int
 	o := Organization{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, organizationID).Scan(&o.OrganizationID, &o.Name); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, organizationID).Scan(&o.OrganizationID, &o.Name, &o.Metadata); err != nil {
 		return nil, logerror(err)
 	}
 	return &o, nil

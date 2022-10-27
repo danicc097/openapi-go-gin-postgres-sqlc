@@ -109,6 +109,40 @@ func (uo *UserOrganization) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// UserOrganizationByOrganizationID retrieves a row from 'public.user_organization' as a UserOrganization.
+//
+// Generated from index 'user_organization_organization_id_idx'.
+func UserOrganizationByOrganizationID(ctx context.Context, db DB, organizationID int) ([]*UserOrganization, error) {
+	// query
+	const sqlstr = `SELECT ` +
+		`organization_id, user_id ` +
+		`FROM public.user_organization ` +
+		`WHERE organization_id = $1`
+	// run
+	logf(sqlstr, organizationID)
+	rows, err := db.Query(ctx, sqlstr, organizationID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+	var res []*UserOrganization
+	for rows.Next() {
+		uo := UserOrganization{
+			_exists: true,
+		}
+		// scan
+		if err := rows.Scan(&uo.OrganizationID, &uo.UserID); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &uo)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}
+
 // UserOrganizationByUserIDOrganizationID retrieves a row from 'public.user_organization' as a UserOrganization.
 //
 // Generated from index 'user_organization_pkey'.
@@ -127,6 +161,40 @@ func UserOrganizationByUserIDOrganizationID(ctx context.Context, db DB, userID u
 		return nil, logerror(err)
 	}
 	return &uo, nil
+}
+
+// UserOrganizationByUserID retrieves a row from 'public.user_organization' as a UserOrganization.
+//
+// Generated from index 'user_organization_user_idx'.
+func UserOrganizationByUserID(ctx context.Context, db DB, userID uuid.UUID) ([]*UserOrganization, error) {
+	// query
+	const sqlstr = `SELECT ` +
+		`organization_id, user_id ` +
+		`FROM public.user_organization ` +
+		`WHERE user_id = $1`
+	// run
+	logf(sqlstr, userID)
+	rows, err := db.Query(ctx, sqlstr, userID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+	var res []*UserOrganization
+	for rows.Next() {
+		uo := UserOrganization{
+			_exists: true,
+		}
+		// scan
+		if err := rows.Scan(&uo.OrganizationID, &uo.UserID); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &uo)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
 }
 
 // Organization returns the Organization associated with the UserOrganization's (OrganizationID).

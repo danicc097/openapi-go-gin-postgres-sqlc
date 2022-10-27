@@ -102,7 +102,10 @@ x.install-tools() {
     set -o errexit -eo pipefail
 
     go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
-    go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.15.0
+    # go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.15.0
+    # TODO until merged
+    wget https://github.com/danicc097/sqlc/releases/download/v1.2-custom/sqlc -O $GOBIN/sqlc &&
+      chmod +x $GOBIN/sqlc
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
     go install github.com/joho/godotenv/cmd/godotenv@latest
     go install github.com/tufin/oasdiff@latest
