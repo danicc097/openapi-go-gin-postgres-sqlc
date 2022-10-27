@@ -4,13 +4,16 @@ package db
 
 import (
 	"context"
+	"time"
 )
 
 // Organization represents a row from 'public.organizations'.
 type Organization struct {
-	OrganizationID int    `json:"organization_id"` // organization_id
-	Name           string `json:"name"`            // name
-	Metadata       []byte `json:"metadata"`        // metadata
+	OrganizationID int       `json:"organization_id"` // organization_id
+	Name           string    `json:"name"`            // name
+	Metadata       []byte    `json:"metadata"`        // metadata
+	CreatedAt      time.Time `json:"created_at"`      // created_at
+	UpdatedAt      time.Time `json:"updated_at"`      // updated_at
 	// xo fields
 	_exists, _deleted bool
 }
@@ -20,7 +23,7 @@ type Organization struct {
 func GetMostRecentOrganization(ctx context.Context, db DB, n int) ([]*Organization, error) {
 	// list
 	const sqlstr = `SELECT ` +
-		`organization_id, name, metadata ` +
+		`organization_id, name, metadata, created_at, updated_at ` +
 		`FROM public.organizations ` +
 		`ORDER BY created_at DESC LIMIT $1`
 	// run
@@ -39,7 +42,7 @@ func GetMostRecentOrganization(ctx context.Context, db DB, n int) ([]*Organizati
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&o.OrganizationID, &o.Name, &o.Metadata); err != nil {
+		if err := rows.Scan(&o.OrganizationID, &o.Name, &o.Metadata, &o.CreatedAt, &o.UpdatedAt); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &o)
@@ -98,8 +101,8 @@ func (o *Organization) Update(ctx context.Context, db DB) error {
 		`name = $1, metadata = $2 ` +
 		`WHERE organization_id = $3`
 	// run
-	logf(sqlstr, o.Name, o.Metadata, o.OrganizationID)
-	if _, err := db.Exec(ctx, sqlstr, o.Name, o.Metadata, o.OrganizationID); err != nil {
+	logf(sqlstr, o.Name, o.Metadata, o.CreatedAt, o.UpdatedAt, o.OrganizationID)
+	if _, err := db.Exec(ctx, sqlstr, o.Name, o.Metadata, o.CreatedAt, o.UpdatedAt, o.OrganizationID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -165,7 +168,7 @@ func (o *Organization) Delete(ctx context.Context, db DB) error {
 func OrganizationByName(ctx context.Context, db DB, name string) (*Organization, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`organization_id, name, metadata ` +
+		`organization_id, name, metadata, created_at, updated_at ` +
 		`FROM public.organizations ` +
 		`WHERE name = $1`
 	// run
@@ -173,7 +176,7 @@ func OrganizationByName(ctx context.Context, db DB, name string) (*Organization,
 	o := Organization{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, name).Scan(&o.OrganizationID, &o.Name, &o.Metadata); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, name).Scan(&o.OrganizationID, &o.Name, &o.Metadata, &o.CreatedAt, &o.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &o, nil
@@ -185,7 +188,7 @@ func OrganizationByName(ctx context.Context, db DB, name string) (*Organization,
 func OrganizationByOrganizationID(ctx context.Context, db DB, organizationID int) (*Organization, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`organization_id, name, metadata ` +
+		`organization_id, name, metadata, created_at, updated_at ` +
 		`FROM public.organizations ` +
 		`WHERE organization_id = $1`
 	// run
@@ -193,7 +196,7 @@ func OrganizationByOrganizationID(ctx context.Context, db DB, organizationID int
 	o := Organization{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, organizationID).Scan(&o.OrganizationID, &o.Name, &o.Metadata); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, organizationID).Scan(&o.OrganizationID, &o.Name, &o.Metadata, &o.CreatedAt, &o.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &o, nil

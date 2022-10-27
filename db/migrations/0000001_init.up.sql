@@ -10,6 +10,8 @@ create table organizations (
   organization_id serial not null,
   name text not null,
   metadata json,
+  created_at timestamp without time zone default current_timestamp not null,
+  updated_at timestamp without time zone default current_timestamp not null,
   primary key (organization_id),
   unique (name)
 );
