@@ -1,4 +1,9 @@
 {{ define "db" -}}
+
+import (
+	"github.com/jackc/pgx/v4"
+)
+
 var (
 	// logf is used by generated code to log SQL queries.
 	logf = func(string, ...interface{}) {}
