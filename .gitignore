@@ -9,6 +9,7 @@ openapi-generator-cli.jar
 /oapi-codegen
 .openapi-generator
 **/swagger-ui/**/*
+/test.sql
 tmp
 /air-main
 go.work*

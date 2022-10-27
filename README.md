@@ -57,6 +57,8 @@ Simplified:
 
 ## TODOs
 
+- remove elasticsearch in favor of postgres with promscale (recent addition)
+
 - Meaningful project name.
 
 - System design docs/diagrams.

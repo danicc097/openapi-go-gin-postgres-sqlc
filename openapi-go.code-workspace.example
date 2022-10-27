@@ -5,7 +5,7 @@
     }
   ],
   "settings": {
-    "plpgsqlLanguageServer.database": "postgres",
+    "plpgsqlLanguageServer.database": "gen_db",
     "plpgsqlLanguageServer.user": "postgres",
     "plpgsqlLanguageServer.password": "postgres",
     "plpgsqlLanguageServer.host": "localhost",

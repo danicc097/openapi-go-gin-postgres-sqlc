@@ -1303,7 +1303,6 @@ func (f *Funcs) logf(v interface{}, ignore ...interface{}) string {
 			return fmt.Sprintf("[[ UNSUPPORTED TYPE 11 (%d): %T ]]", i, x)
 		}
 	}
-	fmt.Fprintf(os.Stdout, "Ignored names: %v\n", ignoreNames)
 	// add fields
 	switch x := v.(type) {
 	case Table:

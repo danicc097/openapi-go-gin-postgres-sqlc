@@ -321,6 +321,7 @@ x.lint.go() {
       -not -path "**/$PG_REPO/gen/*" \
       -not -path "**/testdata/*" \
       -not -path "**/*.cache/*" \
+      -not -path "**/*.gen.*" \
       -name "*.go")
 
     goimports -w $files
@@ -709,12 +710,26 @@ x.gen.xo() {
 
     mkdir -p $PG_REPO/gen/db
     # xo schema --help
-    xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
-      --src "$PG_REPO"/xo-templates \
-      -o "$PG_REPO"/gen/db \
+    xo_schema -o "$PG_REPO"/gen/db \
       --ignore "*.created_at" \
-      --ignore "*.updated_at" || err "Failed xo generation"
+      --ignore "*.updated_at" || err "Failed xo public schema generation"
+
+    # views
+    mkdir -p $PG_REPO/gen/db/v
+    xo_schema -o "$PG_REPO"/gen/db/v \
+      --schema v || err "Failed xo v schema generation"
+
+    # materialized views
+    mkdir -p $PG_REPO/gen/db/cache
+    xo_schema -o "$PG_REPO"/gen/db/cache \
+      --schema cache || err "Failed xo cache schema generation"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+xo_schema() {
+  xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
+    --src "$PG_REPO"/xo-templates \
+    "$@"
 }
 
 usage() {

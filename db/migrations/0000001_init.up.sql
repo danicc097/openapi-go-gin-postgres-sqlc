@@ -1,5 +1,7 @@
 -- https://dba.stackexchange.com/questions/59006/what-is-a-valid-use-case-for-using-timestamp-without-time-zone
 begin;
+create schema if not exists v;
+create schema if not exists cache;
 create type role as ENUM (
   'user',
   'manager',
@@ -39,6 +41,7 @@ create table user_organization (
   foreign key (user_id) references users (user_id) on delete cascade,
   foreign key (organization_id) references organizations (organization_id) on delete cascade
 );
+
 /*
 get org names for a given user_id, etc.
 with xo we would have to make a ton of different queries to get the same result.
@@ -68,7 +71,7 @@ and a type ***Res = db.Get...Row instead of oapi-codegen generated struct (eithe
 ~~(selectOrganizationWith<fk1>, ...) it should use that same query when we selectUserWithOrganizations.~~
 ~~we can select fields with a prefix to avoid clashes:~~
 ~~select organizations.name as organizations_name~~
-*/
+ */
 -- TODO rather useless, better off with sqlc or implement the above
 -- generate get orgs per user
 create index user_organization_user_idx on user_organization (user_id);
@@ -90,4 +93,35 @@ create table api_keys (
   unique (api_key),
   foreign key (user_id) references users (user_id) on delete cascade
 );
+create or replace view v.users as
+select
+  *
+from
+  users
+  join (
+    select
+      user_id,
+      ARRAY_AGG(o.name)::text[] as organizations
+    from
+      user_organization uo
+      join organizations o using (organization_id)
+    where
+      user_id in (
+        select
+          user_id
+        from
+          user_organization
+        where
+          organization_id = any (
+            select
+              organization_id
+            from
+              organizations))
+        group by
+          user_id) joined_organizations using (user_id);
+create materialized view if not exists cache.users as
+select
+  *
+from
+  v.users with no data;
 commit;
