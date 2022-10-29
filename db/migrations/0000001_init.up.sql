@@ -1,8 +1,6 @@
 -- https://dba.stackexchange.com/questions/59006/what-is-a-valid-use-case-for-using-timestamp-without-time-zone
-begin;
 create schema if not exists v;
-create schema if not exists
-cache;
+create schema if not exists cache;
 create type role as ENUM (
   'user',
   'manager',
@@ -127,7 +125,7 @@ from
   v.users with no data;
 insert into users (user_id, username, email, first_name, last_name, external_id,
   "role", is_superuser)
-  values ('79270107-1b9c-4f52-a578-7390d5b31513', 'user 1', 'user1@email.com', 'John',
+  values ('99270107-1b9c-4f52-a578-7390d5b31513', 'user 1', 'user1@email.com', 'John',
     'Doe', '1', 'user'::role, false);
 insert into users (user_id, username, email, first_name, last_name, external_id,
   "role", is_superuser)
@@ -138,7 +136,6 @@ insert into organizations ("name", metadata, created_at, updated_at)
 insert into organizations ("name", metadata, created_at, updated_at)
   values ('org 2', '{}', current_timestamp, current_timestamp);
 insert into user_organization (organization_id, user_id)
-  values (1, '79270107-1b9c-4f52-a578-7390d5b31513');
+  values (1, '99270107-1b9c-4f52-a578-7390d5b31513');
 insert into user_organization (organization_id, user_id)
-  values (2, '79270107-1b9c-4f52-a578-7390d5b31513');
-commit;
+  values (2, '99270107-1b9c-4f52-a578-7390d5b31513');

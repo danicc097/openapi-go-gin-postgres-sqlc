@@ -1,3 +1,5 @@
+-- plpgsql-language-server:use-keyword-query-parameters
+
 -- name: GetUser :one
 select
   username,
@@ -16,8 +18,8 @@ where (email = LOWER(sqlc.narg('email'))::text
   or sqlc.narg('email')::text is null)
 and (username = sqlc.narg('username')::text
   or sqlc.narg('username')::text is null)
-and (user_id = sqlc.narg('user_id')::int
-  or sqlc.narg('user_id')::int is null)
+and (user_id = sqlc.narg('user_id')::uuid
+  or sqlc.narg('user_id')::uuid is null)
 limit 1;
 
 -- name: UpdateUserById :exec
@@ -25,9 +27,10 @@ update
   users
 set
   username = COALESCE(sqlc.narg('username'), username),
-  email = COALESCE(LOWER(sqlc.narg('email')), email)
+  email = COALESCE(lower(sqlc.narg('email')), email)
 where
   user_id = @user_id;
+
 
 -- name: ListAllUsers :many
 select

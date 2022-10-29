@@ -32,6 +32,7 @@ export GENVERS=6.0.1
 
 readonly SPEC="openapi.yaml"
 readonly PROTO_DIR="internal/pb"
+readonly MIGRATIONS_DIR="db/migrations"
 readonly PG_REPO="internal/repos/postgresql"
 readonly MAX_COMMENT_LEN=88
 readonly MAX_FNAME_LOG_LEN=13
@@ -520,7 +521,7 @@ x.search-stopship() {
 x.migrate() {
   { { {
     migrate \
-      -path db/migrations/ \
+      -path $MIGRATIONS_DIR/ \
       -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
       "$@" 2>&1 # migrate outputs everything to stderr
 
@@ -541,7 +542,7 @@ x.migrate.create() {
     tmp="${tmp// /_}"
     name="${tmp,,}"
     [[ -z $name ]] && err "Please provide a migration name"
-    x.migrate create -ext sql -dir db/migrations/ -seq -digits 7 "$name"
+    x.migrate create -ext sql -dir $MIGRATIONS_DIR/ -seq -digits 7 "$name"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -569,6 +570,17 @@ x.db.recreate() {
 x.db.drop() {
   { { {
     drop_and_recreate_db "$POSTGRES_DB"
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Drop and recreate the database used for code generation up to N-1 revisions.
+# Useful to get correct analyses on the latest migration script.
+x.db.drop-gen() {
+  { { {
+    latest_rev=$(find $MIGRATIONS_DIR/*.sql -maxdepth 0 | wc -l)
+    second_latest_rev=$((latest_rev - 2)) # up+down
+    POSTGRES_DB=$GEN_POSTGRES_DB x.db.drop
+    POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up $second_latest_rev
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

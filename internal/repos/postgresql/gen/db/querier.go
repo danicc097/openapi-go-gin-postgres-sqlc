@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	// plpgsql-language-server:use-keyword-query-parameters
 	GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetUserRow, error)
 	ListAllUsers(ctx context.Context, db DBTX) ([]ListAllUsersRow, error)
 	UpdateUserById(ctx context.Context, db DBTX, arg UpdateUserByIdParams) error

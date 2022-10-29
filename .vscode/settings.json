@@ -76,4 +76,26 @@
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true, // using docker
   "python.formatting.provider": "black",
+  // TODO remove after extension testing
+  "plpgsqlLanguageServer.database": "gen_db",
+  "plpgsqlLanguageServer.user": "postgres",
+  "plpgsqlLanguageServer.password": "postgres",
+  "plpgsqlLanguageServer.host": "localhost",
+  "plpgsqlLanguageServer.port": 5656,
+  "plpgsqlLanguageServer.defaultSchema": "public",
+  "plpgsqlLanguageServer.definitionFiles": [
+    "**/*.psql",
+    "**/*.pgsql"
+  ],
+  "plpgsqlLanguageServer.enableExecuteFileQueryCommand": false,
+  // "plpgsqlLanguageServer.queryParameterPattern": ":[A-Za-z_][A-Za-z0-9_]*",
+  "plpgsqlLanguageServer.keywordQueryParameterPatterns": [
+    "@{keyword}",
+    "sqlc\\.arg\\('{keyword}'\\)",
+    "sqlc\\.narg\\('{keyword}'\\)",
+  ],
+  "plpgsqlLanguageServer.statementSeparatorPattern": "-- name:[\\s]+.*",
+  "files.associations": {
+    "*.sql": "postgres"
+  },
 }

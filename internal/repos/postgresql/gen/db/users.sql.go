@@ -14,6 +14,7 @@ import (
 )
 
 const GetUser = `-- name: GetUser :one
+
 select
   username,
   email,
@@ -31,15 +32,15 @@ where (email = LOWER($1)::text
   or $1::text is null)
 and (username = $2::text
   or $2::text is null)
-and (user_id = $3::int
-  or $3::int is null)
+and (user_id = $3::uuid
+  or $3::uuid is null)
 limit 1
 `
 
 type GetUserParams struct {
 	Email    sql.NullString `db:"email" json:"email"`
 	Username sql.NullString `db:"username" json:"username"`
-	UserID   sql.NullInt32  `db:"user_id" json:"user_id"`
+	UserID   uuid.NullUUID  `db:"user_id" json:"user_id"`
 }
 
 type GetUserRow struct {
@@ -52,6 +53,7 @@ type GetUserRow struct {
 	UserID      uuid.UUID `db:"user_id" json:"user_id"`
 }
 
+// plpgsql-language-server:use-keyword-query-parameters
 func (q *Queries) GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetUserRow, error) {
 	row := db.QueryRow(ctx, GetUser, arg.Email, arg.Username, arg.UserID)
 	var i GetUserRow
@@ -123,7 +125,7 @@ update
   users
 set
   username = COALESCE($1, username),
-  email = COALESCE(LOWER($2), email)
+  email = COALESCE(lower($2), email)
 where
   user_id = $3
 `

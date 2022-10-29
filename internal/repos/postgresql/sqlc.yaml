@@ -20,6 +20,7 @@ sql:
         emit_methods_with_db_argument: true
         # disable_emit_enums: true
         disable_emit_table_structs: true
+        # only necessary for stdlib, pgx automatically prepares and caches statements by default
         # emit_prepared_queries: true # mutually exclusive with emit_methods_with_db_argument
         json_tags_case_style: snake
         rename:
