@@ -57,8 +57,8 @@ export type ValidationError = {
 export type HttpValidationError = {
   detail?: ValidationError[]
 }
-export type Role = 'user' | 'manager' | 'admin'
-export type Organization = 'team 1' | 'team 2' | 'team 3'
+export type Role = 'guest' | 'user' | 'advanced user' | 'manager' | 'admin' | 'superadmin'
+export type Organization = string
 export type AUser = {
   user_id?: number
   username?: string

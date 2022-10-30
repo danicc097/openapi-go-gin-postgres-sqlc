@@ -38,7 +38,6 @@
     "Scope": {
       "title": "Scope",
       "type": "string",
-      "x-db-enum": "scope",
       "enum": [
         "scope1",
         "scope2"
@@ -51,9 +50,12 @@
       "type": "string",
       "x-db-enum": "role",
       "enum": [
+        "guest",
         "user",
+        "advanced user",
         "manager",
-        "admin"
+        "admin",
+        "superadmin"
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -61,12 +63,6 @@
       "title": "Organization",
       "description": "Organization a user belongs to.",
       "type": "string",
-      "x-db-enum": "org",
-      "enum": [
-        "team 1",
-        "team 2",
-        "team 3"
-      ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "GetCurrentUserRes": {

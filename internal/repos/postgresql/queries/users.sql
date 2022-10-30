@@ -1,14 +1,13 @@
 -- plpgsql-language-server:use-keyword-query-parameters
-
 -- name: GetUser :one
 select
-  username,
-  email,
-  role,
-  is_superuser,
-  created_at,
-  updated_at,
-  user_id
+  username
+  , email
+  , role
+  , is_superuser
+  , created_at
+  , updated_at
+  , user_id
   -- case when @get_db_data::boolean then
   --   (user_id)
   -- end as user_id, -- TODO sqlc.yaml overrides sql.NullInt64
@@ -26,20 +25,28 @@ limit 1;
 update
   users
 set
-  username = COALESCE(sqlc.narg('username'), username),
-  email = COALESCE(lower(sqlc.narg('email')), email)
+  username = COALESCE(sqlc.narg('username') , username)
+  , email = COALESCE(LOWER(sqlc.narg('email')) , email)
 where
   user_id = @user_id;
 
+-- -- name: Test :exec
+-- update
+--   users
+-- set
+--   username = '@test'
+--   , email = COALESCE(LOWER(sqlc.narg('email')) , email)
+-- where
+--   user_id = @user_id;
 
 -- name: ListAllUsers :many
 select
-  user_id,
-  username,
-  email,
-  role,
-  is_superuser,
-  created_at,
-  updated_at
+  user_id
+  , username
+  , email
+  , role
+  , is_superuser
+  , created_at
+  , updated_at
 from
   users;

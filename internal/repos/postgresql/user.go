@@ -27,14 +27,14 @@ func NewUser() *User {
 // 	// TODO logger needs to be passed down to repo as well
 // 	// environment.Logger.Sugar().Infof("users.Create.params: %v", params)
 // 	_, err := u.q.GetUser(ctx, db.GetUserParams{
-// 		Username: sql.NullString{String: params.Username, Valid: true},
+// 		Username: sql.NullString{String: params.Username},
 // 	})
 // 	if err == nil {
 // 		return models.CreateUserResponse{}, internal.WrapErrorf(err, internal.ErrorCodeAlreadyExists, fmt.Sprintf("username %s already exists", params.Username))
 // 	}
 
 // 	_, err = u.q.GetUser(ctx, db.GetUserParams{
-// 		Email: sql.NullString{String: params.Email, Valid: true},
+// 		Email: sql.NullString{String: params.Email},
 // 	})
 // 	if err == nil {
 // 		return models.CreateUserResponse{}, internal.WrapErrorf(err, internal.ErrorCodeAlreadyExists, fmt.Sprintf("email %s already exists", params.Email))
@@ -95,9 +95,9 @@ func (u *User) UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.Us
 // // Update inserts a new user record.
 // func (u *User) Update(ctx context.Context, d db.DBTX, params models.UpdateUserRequest) error {
 // 	err := u.q.UpdateUserById(ctx, db.UpdateUserByIdParams{
-// 		Username: sql.NullString{String: params.Username, Valid: true},
-// 		Email:    sql.NullString{String: params.Email, Valid: true},
-// 		Password: sql.NullString{String: params.Password, Valid: true},
+// 		Username: sql.NullString{String: params.Username},
+// 		Email:    sql.NullString{String: params.Email},
+// 		Password: sql.NullString{String: params.Password},
 // 	})
 // 	if err != nil {
 // 		return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "insert user")

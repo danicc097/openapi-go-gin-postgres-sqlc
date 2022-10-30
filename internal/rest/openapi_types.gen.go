@@ -10,9 +10,12 @@ const (
 
 // Defines values for Role.
 const (
-	Admin   Role = "admin"
-	Manager Role = "manager"
-	User    Role = "user"
+	Admin        Role = "admin"
+	AdvancedUser Role = "advanced user"
+	Guest        Role = "guest"
+	Manager      Role = "manager"
+	Superadmin   Role = "superadmin"
+	User         Role = "user"
 )
 
 // Defines values for Scope.

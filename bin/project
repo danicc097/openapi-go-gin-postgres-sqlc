@@ -345,6 +345,7 @@ x.lint.sql() {
         --keyword-case 1 \
         --placeholder "sqlc\\.(arg|narg)\\(:?[^)]*\\)" \
         --inplace \
+        --comma-start \
         $(find "$slq_dir" -maxdepth 3 -name '*.sql')
     done
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

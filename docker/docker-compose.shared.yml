@@ -8,6 +8,7 @@ x-logging: &default-logging
 # Debug config with docker-compose --env-file <...> config
 services:
   db:
+    #  sqlc depends on https://github.com/pganalyze/libpg_query (pg 13 support only)
     image: postgres:13-alpine
     container_name: postgres_db_${PROJECT_PREFIX:?not set}
     user: postgres

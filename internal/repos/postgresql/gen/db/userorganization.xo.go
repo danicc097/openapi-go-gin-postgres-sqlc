@@ -109,18 +109,18 @@ func (uo *UserOrganization) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// UserOrganizationByOrganizationID retrieves a row from 'public.user_organization' as a UserOrganization.
+// UserOrganizationByOrganizationIDUserID retrieves a row from 'public.user_organization' as a UserOrganization.
 //
-// Generated from index 'user_organization_organization_id_idx'.
-func UserOrganizationByOrganizationID(ctx context.Context, db DB, organizationID int) ([]*UserOrganization, error) {
+// Generated from index 'user_organization_organization_id_user_id_idx'.
+func UserOrganizationByOrganizationIDUserID(ctx context.Context, db DB, organizationID int, userID uuid.UUID) ([]*UserOrganization, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`organization_id, user_id ` +
 		`FROM public.user_organization ` +
-		`WHERE organization_id = $1`
+		`WHERE organization_id = $1 AND user_id = $2`
 	// run
-	logf(sqlstr, organizationID)
-	rows, err := db.Query(ctx, sqlstr, organizationID)
+	logf(sqlstr, organizationID, userID)
+	rows, err := db.Query(ctx, sqlstr, organizationID, userID)
 	if err != nil {
 		return nil, logerror(err)
 	}

@@ -13,12 +13,12 @@ export type Detail = ValidationError[]
 /**
  * User role.
  */
-export type Role = 'user' | 'manager' | 'admin'
+export type Role = 'guest' | 'user' | 'advanced user' | 'manager' | 'admin' | 'superadmin'
 export type Scope = 'scope1' | 'scope2'
 /**
  * Organization a user belongs to.
  */
-export type Organization = 'team 1' | 'team 2' | 'team 3'
+export type Organization = string
 
 export interface HTTPValidationError {
   detail?: Detail

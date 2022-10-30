@@ -14,15 +14,14 @@ import (
 )
 
 const GetUser = `-- name: GetUser :one
-
 select
-  username,
-  email,
-  role,
-  is_superuser,
-  created_at,
-  updated_at,
-  user_id
+  username
+  , email
+  , role
+  , is_superuser
+  , created_at
+  , updated_at
+  , user_id
   -- case when @get_db_data::boolean then
   --   (user_id)
   -- end as user_id, -- TODO sqlc.yaml overrides sql.NullInt64
@@ -46,7 +45,7 @@ type GetUserParams struct {
 type GetUserRow struct {
 	Username    string    `db:"username" json:"username"`
 	Email       string    `db:"email" json:"email"`
-	Role        Role      `db:"role" json:"role"`
+	Role        UserRole  `db:"role" json:"role"`
 	IsSuperuser bool      `db:"is_superuser" json:"is_superuser"`
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
@@ -70,14 +69,15 @@ func (q *Queries) GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetU
 }
 
 const ListAllUsers = `-- name: ListAllUsers :many
+
 select
-  user_id,
-  username,
-  email,
-  role,
-  is_superuser,
-  created_at,
-  updated_at
+  user_id
+  , username
+  , email
+  , role
+  , is_superuser
+  , created_at
+  , updated_at
 from
   users
 `
@@ -86,12 +86,25 @@ type ListAllUsersRow struct {
 	UserID      uuid.UUID `db:"user_id" json:"user_id"`
 	Username    string    `db:"username" json:"username"`
 	Email       string    `db:"email" json:"email"`
-	Role        Role      `db:"role" json:"role"`
+	Role        UserRole  `db:"role" json:"role"`
 	IsSuperuser bool      `db:"is_superuser" json:"is_superuser"`
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
+// -- name: Test :exec
+// update
+//
+//	users
+//
+// set
+//
+//	username = '@test'
+//	, email = COALESCE(LOWER(sqlc.narg('email')) , email)
+//
+// where
+//
+//	user_id = @user_id;
 func (q *Queries) ListAllUsers(ctx context.Context, db DBTX) ([]ListAllUsersRow, error) {
 	rows, err := db.Query(ctx, ListAllUsers)
 	if err != nil {
@@ -124,8 +137,8 @@ const UpdateUserById = `-- name: UpdateUserById :exec
 update
   users
 set
-  username = COALESCE($1, username),
-  email = COALESCE(lower($2), email)
+  username = COALESCE($1 , username)
+  , email = COALESCE(LOWER($2) , email)
 where
   user_id = $3
 `

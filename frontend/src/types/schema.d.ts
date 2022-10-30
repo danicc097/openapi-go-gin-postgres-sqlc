@@ -57,13 +57,12 @@ export interface components {
      * @description User role.
      * @enum {string}
      */
-    Role: 'user' | 'manager' | 'admin'
+    Role: 'guest' | 'user' | 'advanced user' | 'manager' | 'admin' | 'superadmin'
     /**
      * Organization
      * @description Organization a user belongs to.
-     * @enum {string}
      */
-    Organization: 'team 1' | 'team 2' | 'team 3'
+    Organization: string
     /**
      * a User
      * @description represents a user

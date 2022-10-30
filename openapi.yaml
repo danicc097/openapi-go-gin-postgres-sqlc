@@ -181,8 +181,8 @@ components:
       title: Role
       description: User role.
       type: string
-      x-db-enum: role
-      enum: ["user", "manager", "admin"]
+      x-db-enum: user_role
+      enum: ["guest", "user", "advanced user", "manager", "admin", "superadmin"]
     Organization:
       title: Organization
       description: Organization a user belongs to.

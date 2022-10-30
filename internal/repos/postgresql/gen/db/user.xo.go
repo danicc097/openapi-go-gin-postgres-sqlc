@@ -18,8 +18,8 @@ type User struct {
 	FirstName   sql.NullString `json:"first_name"`   // first_name
 	LastName    sql.NullString `json:"last_name"`    // last_name
 	FullName    sql.NullString `json:"full_name"`    // full_name
-	ExternalID  string         `json:"external_id"`  // external_id
-	Role        Role           `json:"role"`         // role
+	ExternalID  sql.NullString `json:"external_id"`  // external_id
+	Role        UserRole       `json:"role"`         // role
 	IsSuperuser bool           `json:"is_superuser"` // is_superuser
 	CreatedAt   time.Time      `json:"created_at"`   // created_at
 	UpdatedAt   time.Time      `json:"updated_at"`   // updated_at
@@ -172,6 +172,114 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// UserByUserIDExternalID retrieves a row from 'public.users' as a User.
+//
+// Generated from index 'external_id_2col_user_id_idx'.
+func UserByUserIDExternalID(ctx context.Context, db DB, userID uuid.UUID, externalID sql.NullString) (*User, error) {
+	// query
+	const sqlstr = `SELECT ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, created_at, updated_at, deleted_at ` +
+		`FROM public.users ` +
+		`WHERE user_id = $1 AND external_id = $2`
+	// run
+	logf(sqlstr, userID, externalID)
+	u := User{
+		_exists: true,
+	}
+	if err := db.QueryRow(ctx, sqlstr, userID, externalID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.IsSuperuser, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+		return nil, logerror(err)
+	}
+	return &u, nil
+}
+
+// UserByUserID retrieves a row from 'public.users' as a User.
+//
+// Generated from index 'external_id_user_id_idx'.
+func UserByUserID(ctx context.Context, db DB, userID uuid.UUID) (*User, error) {
+	// query
+	const sqlstr = `SELECT ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, created_at, updated_at, deleted_at ` +
+		`FROM public.users ` +
+		`WHERE user_id = $1`
+	// run
+	logf(sqlstr, userID)
+	u := User{
+		_exists: true,
+	}
+	if err := db.QueryRow(ctx, sqlstr, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.IsSuperuser, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+		return nil, logerror(err)
+	}
+	return &u, nil
+}
+
+// UsersByCreatedAt retrieves a row from 'public.users' as a User.
+//
+// Generated from index 'users_created_at_idx'.
+func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time) ([]*User, error) {
+	// query
+	const sqlstr = `SELECT ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, created_at, updated_at, deleted_at ` +
+		`FROM public.users ` +
+		`WHERE created_at = $1`
+	// run
+	logf(sqlstr, createdAt)
+	rows, err := db.Query(ctx, sqlstr, createdAt)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+	var res []*User
+	for rows.Next() {
+		u := User{
+			_exists: true,
+		}
+		// scan
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.IsSuperuser, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}
+
+// UsersByDeletedAt retrieves a row from 'public.users' as a User.
+//
+// Generated from index 'users_deleted_at_idx'.
+func UsersByDeletedAt(ctx context.Context, db DB, deletedAt sql.NullTime) ([]*User, error) {
+	// query
+	const sqlstr = `SELECT ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, created_at, updated_at, deleted_at ` +
+		`FROM public.users ` +
+		`WHERE deleted_at = $1`
+	// run
+	logf(sqlstr, deletedAt)
+	rows, err := db.Query(ctx, sqlstr, deletedAt)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+	var res []*User
+	for rows.Next() {
+		u := User{
+			_exists: true,
+		}
+		// scan
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.IsSuperuser, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}
+
 // UserByEmail retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_email_key'.
@@ -210,6 +318,40 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID) (*User, error) {
 		return nil, logerror(err)
 	}
 	return &u, nil
+}
+
+// UsersByUpdatedAt retrieves a row from 'public.users' as a User.
+//
+// Generated from index 'users_updated_at_idx'.
+func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time) ([]*User, error) {
+	// query
+	const sqlstr = `SELECT ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, created_at, updated_at, deleted_at ` +
+		`FROM public.users ` +
+		`WHERE updated_at = $1`
+	// run
+	logf(sqlstr, updatedAt)
+	rows, err := db.Query(ctx, sqlstr, updatedAt)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+	var res []*User
+	for rows.Next() {
+		u := User{
+			_exists: true,
+		}
+		// scan
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.IsSuperuser, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
 }
 
 // UserByUsername retrieves a row from 'public.users' as a User.
