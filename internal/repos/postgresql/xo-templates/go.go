@@ -685,12 +685,13 @@ func convertIndex(ctx context.Context, t Table, i xo.Index) (Index, error) {
 		fields = append(fields, f)
 	}
 	return Index{
-		SQLName:   i.Name,
-		Func:      camelExport(i.Func),
-		Table:     t,
-		Fields:    fields,
-		IsUnique:  i.IsUnique,
-		IsPrimary: i.IsPrimary,
+		SQLName:    i.Name,
+		Func:       camelExport(i.Func),
+		Table:      t,
+		Fields:     fields,
+		IsUnique:   i.IsUnique,
+		IsPrimary:  i.IsPrimary,
+		Definition: i.IndexDefinition,
 	}, nil
 }
 
@@ -762,22 +763,15 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 }
 
 func goType(ctx context.Context, typ xo.Type) (string, string, error) {
-	driver, _, schema := xo.DriverDbSchema(ctx)
+	_, _, schema := xo.DriverDbSchema(ctx)
 	var f func(xo.Type, string, string, string) (string, string, error)
-	switch driver {
-	case "postgres":
-		switch mode := ArrayMode(ctx); mode {
-		case "stdlib":
-			f = loader.StdlibPostgresGoType
-		case "pq", "":
-			f = loader.PQPostgresGoType
-		default:
-			return "", "", fmt.Errorf("unknown array mode: %q", mode)
-		}
-	case "sqlite3":
-		f = loader.Sqlite3GoType
+	switch mode := ArrayMode(ctx); mode {
+	case "stdlib":
+		f = loader.StdlibPostgresGoType
+	case "pq", "":
+		f = loader.PQPostgresGoType
 	default:
-		return "", "", fmt.Errorf("unknown driver %q", driver)
+		return "", "", fmt.Errorf("unknown array mode: %q", mode)
 	}
 	return f(typ, schema, Int32(ctx), Uint32(ctx))
 }
@@ -1049,6 +1043,9 @@ func (f *Funcs) func_name_context(v interface{}) string {
 		}
 		return n
 	case Index:
+		if _, _, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
+			return x.Func + "_" + x.SQLName
+		}
 		return x.Func
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 2: %T ]]", v)
@@ -1639,6 +1636,9 @@ func (f *Funcs) sqlstr_index(v interface{}) []string {
 		var list []string
 		for i, z := range x.Fields {
 			list = append(list, fmt.Sprintf("%s = %s", f.colname(z), f.nth(i)))
+		}
+		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
+			list = append(list, after)
 		}
 		return []string{
 			"SELECT ",
@@ -2251,13 +2251,14 @@ type ForeignKey struct {
 
 // Index is an index template.
 type Index struct {
-	SQLName   string
-	Func      string
-	Table     Table
-	Fields    []Field
-	IsUnique  bool
-	IsPrimary bool
-	Comment   string
+	SQLName    string
+	Func       string
+	Table      Table
+	Fields     []Field
+	IsUnique   bool
+	IsPrimary  bool
+	Comment    string
+	Definition string
 }
 
 // Field is a field template.

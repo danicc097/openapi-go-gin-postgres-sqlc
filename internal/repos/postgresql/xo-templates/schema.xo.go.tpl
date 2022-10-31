@@ -160,15 +160,6 @@ func (err ErrInvalid{{ $e.GoName }}) Error() string {
 {{- end }}
 }
 
-{{ if context_both -}}
-// {{ func_name $i }} retrieves a row from '{{ schema $i.Table.SQLName }}' as a {{ $i.Table.GoName }}.
-//
-// Generated from index '{{ $i.SQLName }}'.
-{{ func $i }} {
-	return {{ func_name_context $i }}({{ names "" "context.Background()" "db" $i }})
-}
-{{- end }}
-
 {{end}}
 
 {{ define "procs" }}

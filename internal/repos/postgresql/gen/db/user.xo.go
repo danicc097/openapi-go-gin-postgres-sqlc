@@ -172,15 +172,15 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// UserByUserIDExternalID retrieves a row from 'public.users' as a User.
+// UserByUserIDExternalID_external_id_2col_user_id_idx retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'external_id_2col_user_id_idx'.
-func UserByUserIDExternalID(ctx context.Context, db DB, userID uuid.UUID, externalID sql.NullString) (*User, error) {
+func UserByUserIDExternalID_external_id_2col_user_id_idx(ctx context.Context, db DB, userID uuid.UUID, externalID sql.NullString) (*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`WHERE user_id = $1 AND external_id = $2`
+		`WHERE user_id = $1 AND external_id = $2 AND (external_id IS NOT NULL)`
 	// run
 	logf(sqlstr, userID, externalID)
 	u := User{
@@ -192,15 +192,15 @@ func UserByUserIDExternalID(ctx context.Context, db DB, userID uuid.UUID, extern
 	return &u, nil
 }
 
-// UserByUserID retrieves a row from 'public.users' as a User.
+// UserByUserID_external_id_user_id_idx retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'external_id_user_id_idx'.
-func UserByUserID(ctx context.Context, db DB, userID uuid.UUID) (*User, error) {
+func UserByUserID_external_id_user_id_idx(ctx context.Context, db DB, userID uuid.UUID) (*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`WHERE user_id = $1`
+		`WHERE user_id = $1 AND (external_id IS NULL)`
 	// run
 	logf(sqlstr, userID)
 	u := User{
