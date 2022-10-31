@@ -19,6 +19,7 @@ type APIKey struct {
 	_exists, _deleted bool
 }
 
+// TODO only create if exists
 // GetMostRecentAPIKey returns n most recent rows from 'api_keys',
 // ordered by "created_at" in descending order.
 func GetMostRecentAPIKey(ctx context.Context, db DB, n int) ([]*APIKey, error) {

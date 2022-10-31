@@ -16,6 +16,7 @@ type Movie struct {
 	_exists, _deleted bool
 }
 
+// TODO only create if exists
 // GetMostRecentMovie returns n most recent rows from 'movies',
 // ordered by "created_at" in descending order.
 func GetMostRecentMovie(ctx context.Context, db DB, n int) ([]*Movie, error) {

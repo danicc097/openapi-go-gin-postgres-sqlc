@@ -14,6 +14,7 @@ type WorkItemTask struct {
 	_exists, _deleted bool
 }
 
+// TODO only create if exists
 // GetMostRecentWorkItemTask returns n most recent rows from 'work_item_task',
 // ordered by "created_at" in descending order.
 func GetMostRecentWorkItemTask(ctx context.Context, db DB, n int) ([]*WorkItemTask, error) {

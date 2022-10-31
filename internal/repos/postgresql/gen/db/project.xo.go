@@ -20,6 +20,7 @@ type Project struct {
 	_exists, _deleted bool
 }
 
+// TODO only create if exists
 // GetMostRecentProject returns n most recent rows from 'projects',
 // ordered by "created_at" in descending order.
 func GetMostRecentProject(ctx context.Context, db DB, n int) ([]*Project, error) {

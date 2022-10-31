@@ -20,6 +20,7 @@ type Task struct {
 	_exists, _deleted bool
 }
 
+// TODO only create if exists
 // GetMostRecentTask returns n most recent rows from 'tasks',
 // ordered by "created_at" in descending order.
 func GetMostRecentTask(ctx context.Context, db DB, n int) ([]*Task, error) {

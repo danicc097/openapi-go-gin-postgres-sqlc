@@ -220,6 +220,7 @@ type {{ $t.GoName }} struct {
 {{ end -}}
 }
 
+// TODO only create if exists
 // GetMostRecent{{ $t.GoName }} returns n most recent rows from '{{ $t.SQLName }}',
 // ordered by "created_at" in descending order.
 func GetMostRecent{{ $t.GoName }}(ctx context.Context, db DB, n int) ([]*{{ $t.GoName }}, error) {

@@ -19,6 +19,7 @@ type Organization struct {
 	_exists, _deleted bool
 }
 
+// TODO only create if exists
 // GetMostRecentOrganization returns n most recent rows from 'organizations',
 // ordered by "created_at" in descending order.
 func GetMostRecentOrganization(ctx context.Context, db DB, n int) ([]*Organization, error) {

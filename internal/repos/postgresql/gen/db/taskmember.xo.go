@@ -16,6 +16,7 @@ type TaskMember struct {
 	_exists, _deleted bool
 }
 
+// TODO only create if exists
 // GetMostRecentTaskMember returns n most recent rows from 'task_member',
 // ordered by "created_at" in descending order.
 func GetMostRecentTaskMember(ctx context.Context, db DB, n int) ([]*TaskMember, error) {
@@ -134,4 +135,11 @@ func TaskMemberByTaskIDMember(ctx context.Context, db DB, taskID int64, member u
 // Generated from foreign key 'task_member_member_fkey'.
 func (tm *TaskMember) User(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, tm.Member)
+}
+
+// Task returns the Task associated with the TaskMember's (TaskID).
+//
+// Generated from foreign key 'task_member_task_id_fkey'.
+func (tm *TaskMember) Task(ctx context.Context, db DB) (*Task, error) {
+	return TaskByTaskID(ctx, db, tm.TaskID)
 }

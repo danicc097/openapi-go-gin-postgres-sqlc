@@ -14,6 +14,7 @@ type SchemaMigration struct {
 	_exists, _deleted bool
 }
 
+// TODO only create if exists
 // GetMostRecentSchemaMigration returns n most recent rows from 'schema_migrations',
 // ordered by "created_at" in descending order.
 func GetMostRecentSchemaMigration(ctx context.Context, db DB, n int) ([]*SchemaMigration, error) {

@@ -28,6 +28,7 @@ type User struct {
 	_exists, _deleted bool
 }
 
+// TODO only create if exists
 // GetMostRecentUser returns n most recent rows from 'users',
 // ordered by "created_at" in descending order.
 func GetMostRecentUser(ctx context.Context, db DB, n int) ([]*User, error) {
