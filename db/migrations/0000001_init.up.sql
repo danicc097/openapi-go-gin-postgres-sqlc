@@ -18,8 +18,8 @@ create table organizations (
   , name text not null
   , description text not null
   , metadata json not null
-  , created_at timestamp without time zone default current_timestamp not null
-  , updated_at timestamp without time zone default current_timestamp not null
+  , created_at timestamp with time zone default current_timestamp not null
+  , updated_at timestamp with time zone default current_timestamp not null
   , primary key (organization_id)
   , unique (name)
 );
@@ -30,8 +30,8 @@ create table projects (
   , name text not null
   , description text not null
   , metadata json not null
-  , created_at timestamp without time zone default current_timestamp not null
-  , updated_at timestamp without time zone default current_timestamp not null
+  , created_at timestamp with time zone default current_timestamp not null
+  , updated_at timestamp with time zone default current_timestamp not null
   , primary key (project_id)
   , foreign key (organization_id) references organizations (organization_id) on delete cascade
   , unique (name)
@@ -48,22 +48,22 @@ create table users (
   , external_id text
   , role user_role default 'user' not null
   , is_superuser boolean default 'False' not null
-  , created_at timestamp without time zone default current_timestamp not null
-  , updated_at timestamp without time zone default current_timestamp not null
-  , deleted_at timestamp without time zone
+  , created_at timestamp with time zone default current_timestamp not null
+  , updated_at timestamp with time zone default current_timestamp not null
+  , deleted_at timestamp with time zone
   , primary key (user_id)
   , unique (email)
   , unique (username)
 );
 -- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
-CREATE UNIQUE INDEX external_id_2col_user_id_idx ON users (user_id, external_id)
+CREATE UNIQUE INDEX ON users (user_id, external_id)
 WHERE external_id IS NOT NULL;
-CREATE UNIQUE INDEX external_id_user_id_idx ON users (user_id)
+CREATE UNIQUE INDEX ON users (user_id)
 WHERE external_id IS NULL;
 
-create index users_deleted_at_idx on users (deleted_at);
-create index users_created_at_idx on users (created_at);
-create index users_updated_at_idx on users (updated_at);
+create index on users (deleted_at);
+create index on users (created_at);
+create index on users (updated_at);
 
 create table user_project (
   project_id int not null
@@ -72,7 +72,7 @@ create table user_project (
   , foreign key (user_id) references users (user_id) on delete cascade
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
-create index user_project_project_id_user_id_idx on user_project (project_id, user_id);
+create index on user_project (project_id, user_id);
 
 create table kanban_steps (
   kanban_step_id int not null
@@ -92,9 +92,9 @@ create table work_items (
   , metadata json not null
   , project_id int not null
   , kanban_step_id int not null
-  , created_at timestamp without time zone default current_timestamp not null
-  , updated_at timestamp without time zone default current_timestamp not null
-  , deleted_at timestamp without time zone
+  , created_at timestamp with time zone default current_timestamp not null
+  , updated_at timestamp with time zone default current_timestamp not null
+  , deleted_at timestamp with time zone
   , primary key (work_item_id)
   , foreign key (project_id) references projects (project_id) on delete cascade
   , foreign key (kanban_step_id) references kanban_steps (kanban_step_id) on delete cascade
@@ -117,15 +117,27 @@ create type work_item_role as ENUM (
 --   , foreign key (member) references users (user_id) on delete cascade
 -- );
 
+create table task_types (
+  task_type_id serial
+  , project_id bigint not null
+  , name text not null
+  , primary key (task_type_id)
+  , unique (project_id, name)
+  , foreign key (project_id) references projects (project_id) on delete cascade
+);
 
 create table tasks (
   task_id bigserial not null
+  , task_type_id int not null
   , title text not null
   , metadata json not null
-  , created_at timestamp without time zone default current_timestamp not null
-  , updated_at timestamp without time zone default current_timestamp not null
-  , deleted_at timestamp without time zone
+  , target_date timestamp without time zone not null
+  , target_date_timezone text not null
+  , created_at timestamp with time zone default current_timestamp not null
+  , updated_at timestamp with time zone default current_timestamp not null
+  , deleted_at timestamp with time zone
   , primary key (task_id)
+  , foreign key (task_type_id) references task_types (task_type_id) on delete cascade
 );
 
 create table task_member (
@@ -135,6 +147,7 @@ create table task_member (
   , foreign key (task_id) references tasks (task_id) on delete cascade
   , foreign key (member) references users (user_id) on delete cascade
 );
+create index on task_member (task_id, member);
 
 create table work_item_task (
   task_id bigint not null
@@ -143,7 +156,7 @@ create table work_item_task (
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
   , foreign key (task_id) references tasks (task_id) on delete cascade
 );
-create index work_item_task_task_id_work_item_id_idx on work_item_task (task_id, work_item_id);
+create index on work_item_task (task_id, work_item_id);
 
 
 /*

@@ -10,12 +10,15 @@ import (
 
 // Task represents a row from 'public.tasks'.
 type Task struct {
-	TaskID    int64        `json:"task_id"`    // task_id
-	Title     string       `json:"title"`      // title
-	Metadata  []byte       `json:"metadata"`   // metadata
-	CreatedAt time.Time    `json:"created_at"` // created_at
-	UpdatedAt time.Time    `json:"updated_at"` // updated_at
-	DeletedAt sql.NullTime `json:"deleted_at"` // deleted_at
+	TaskID             int64        `json:"task_id"`              // task_id
+	TaskTypeID         int          `json:"task_type_id"`         // task_type_id
+	Title              string       `json:"title"`                // title
+	Metadata           []byte       `json:"metadata"`             // metadata
+	TargetDate         time.Time    `json:"target_date"`          // target_date
+	TargetDateTimezone string       `json:"target_date_timezone"` // target_date_timezone
+	CreatedAt          time.Time    `json:"created_at"`           // created_at
+	UpdatedAt          time.Time    `json:"updated_at"`           // updated_at
+	DeletedAt          sql.NullTime `json:"deleted_at"`           // deleted_at
 	// xo fields
 	_exists, _deleted bool
 }
@@ -26,7 +29,7 @@ type Task struct {
 func GetMostRecentTask(ctx context.Context, db DB, n int) ([]*Task, error) {
 	// list
 	const sqlstr = `SELECT ` +
-		`task_id, title, metadata, created_at, updated_at, deleted_at ` +
+		`task_id, task_type_id, title, metadata, target_date, target_date_timezone, created_at, updated_at, deleted_at ` +
 		`FROM public.tasks ` +
 		`ORDER BY created_at DESC LIMIT $1`
 	// run
@@ -45,7 +48,7 @@ func GetMostRecentTask(ctx context.Context, db DB, n int) ([]*Task, error) {
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&t.TaskID, &t.Title, &t.Metadata, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt); err != nil {
+		if err := rows.Scan(&t.TaskID, &t.TaskTypeID, &t.Title, &t.Metadata, &t.TargetDate, &t.TargetDateTimezone, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &t)
@@ -77,13 +80,13 @@ func (t *Task) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	const sqlstr = `INSERT INTO public.tasks (` +
-		`title, metadata, deleted_at` +
+		`task_type_id, title, metadata, target_date, target_date_timezone, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3` +
+		`$1, $2, $3, $4, $5, $6` +
 		`) RETURNING task_id`
 	// run
-	logf(sqlstr, t.Title, t.Metadata, t.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, t.Title, t.Metadata, t.DeletedAt).Scan(&t.TaskID); err != nil {
+	logf(sqlstr, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt)
+	if err := db.QueryRow(ctx, sqlstr, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt).Scan(&t.TaskID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -101,11 +104,11 @@ func (t *Task) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	const sqlstr = `UPDATE public.tasks SET ` +
-		`title = $1, metadata = $2, deleted_at = $3 ` +
-		`WHERE task_id = $4`
+		`task_type_id = $1, title = $2, metadata = $3, target_date = $4, target_date_timezone = $5, deleted_at = $6 ` +
+		`WHERE task_id = $7`
 	// run
-	logf(sqlstr, t.Title, t.Metadata, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID)
-	if _, err := db.Exec(ctx, sqlstr, t.Title, t.Metadata, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID); err != nil {
+	logf(sqlstr, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID)
+	if _, err := db.Exec(ctx, sqlstr, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -127,16 +130,16 @@ func (t *Task) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	const sqlstr = `INSERT INTO public.tasks (` +
-		`task_id, title, metadata, deleted_at` +
+		`task_id, task_type_id, title, metadata, target_date, target_date_timezone, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4` +
+		`$1, $2, $3, $4, $5, $6, $7` +
 		`)` +
 		` ON CONFLICT (task_id) DO ` +
 		`UPDATE SET ` +
-		`title = EXCLUDED.title, metadata = EXCLUDED.metadata, deleted_at = EXCLUDED.deleted_at `
+		`task_type_id = EXCLUDED.task_type_id, title = EXCLUDED.title, metadata = EXCLUDED.metadata, target_date = EXCLUDED.target_date, target_date_timezone = EXCLUDED.target_date_timezone, deleted_at = EXCLUDED.deleted_at `
 	// run
-	logf(sqlstr, t.TaskID, t.Title, t.Metadata, t.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, t.TaskID, t.Title, t.Metadata, t.DeletedAt); err != nil {
+	logf(sqlstr, t.TaskID, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, t.TaskID, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -171,7 +174,7 @@ func (t *Task) Delete(ctx context.Context, db DB) error {
 func TaskByTaskID(ctx context.Context, db DB, taskID int64) (*Task, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`task_id, title, metadata, created_at, updated_at, deleted_at ` +
+		`task_id, task_type_id, title, metadata, target_date, target_date_timezone, created_at, updated_at, deleted_at ` +
 		`FROM public.tasks ` +
 		`WHERE task_id = $1`
 	// run
@@ -179,8 +182,15 @@ func TaskByTaskID(ctx context.Context, db DB, taskID int64) (*Task, error) {
 	t := Task{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, taskID).Scan(&t.TaskID, &t.Title, &t.Metadata, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, taskID).Scan(&t.TaskID, &t.TaskTypeID, &t.Title, &t.Metadata, &t.TargetDate, &t.TargetDateTimezone, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil
+}
+
+// TaskType returns the TaskType associated with the Task's (TaskTypeID).
+//
+// Generated from foreign key 'tasks_task_type_id_fkey'.
+func (t *Task) TaskType(ctx context.Context, db DB) (*TaskType, error) {
+	return TaskTypeByTaskTypeID(ctx, db, t.TaskTypeID)
 }

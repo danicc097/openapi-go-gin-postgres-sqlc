@@ -130,6 +130,40 @@ func TaskMemberByTaskIDMember(ctx context.Context, db DB, taskID int64, member u
 	return &tm, nil
 }
 
+// TaskMemberByTaskIDMember retrieves a row from 'public.task_member' as a TaskMember.
+//
+// Generated from index 'task_member_task_id_member_idx'.
+func TaskMemberByTaskIDMember(ctx context.Context, db DB, taskID int64, member uuid.UUID) ([]*TaskMember, error) {
+	// query
+	const sqlstr = `SELECT ` +
+		`task_id, member ` +
+		`FROM public.task_member ` +
+		`WHERE task_id = $1 AND member = $2`
+	// run
+	logf(sqlstr, taskID, member)
+	rows, err := db.Query(ctx, sqlstr, taskID, member)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+	var res []*TaskMember
+	for rows.Next() {
+		tm := TaskMember{
+			_exists: true,
+		}
+		// scan
+		if err := rows.Scan(&tm.TaskID, &tm.Member); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &tm)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}
+
 // User returns the User associated with the TaskMember's (Member).
 //
 // Generated from foreign key 'task_member_member_fkey'.
