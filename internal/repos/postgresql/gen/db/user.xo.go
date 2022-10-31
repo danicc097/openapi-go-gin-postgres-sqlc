@@ -84,13 +84,13 @@ func (u *User) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	const sqlstr = `INSERT INTO public.users (` +
-		`username, email, first_name, last_name, full_name, external_id, role, is_superuser, deleted_at` +
+		`username, email, first_name, last_name, external_id, role, is_superuser, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
-		`) RETURNING user_id`
+		`$1, $2, $3, $4, $5, $6, $7, $8` +
+		`) RETURNING user_id, full_name`
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt).Scan(&u.UserID); err != nil {
+	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt)
+	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt).Scan(&u.UserID, &u.FullName); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -108,11 +108,11 @@ func (u *User) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	const sqlstr = `UPDATE public.users SET ` +
-		`username = $1, email = $2, first_name = $3, last_name = $4, full_name = $5, external_id = $6, role = $7, is_superuser = $8, deleted_at = $9 ` +
-		`WHERE user_id = $10`
+		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, role = $6, is_superuser = $7, deleted_at = $8 ` +
+		`WHERE user_id = $9`
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
-	if _, err := db.Exec(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID); err != nil {
+	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.Role, u.IsSuperuser, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
+	if _, err := db.Exec(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.Role, u.IsSuperuser, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -140,7 +140,7 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (user_id) DO ` +
 		`UPDATE SET ` +
-		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, full_name = EXCLUDED.full_name, external_id = EXCLUDED.external_id, role = EXCLUDED.role, is_superuser = EXCLUDED.is_superuser, deleted_at = EXCLUDED.deleted_at `
+		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, role = EXCLUDED.role, is_superuser = EXCLUDED.is_superuser, deleted_at = EXCLUDED.deleted_at `
 	// run
 	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt)
 	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt); err != nil {

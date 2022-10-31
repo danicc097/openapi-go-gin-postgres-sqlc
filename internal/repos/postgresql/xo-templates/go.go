@@ -758,7 +758,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		IsPrimary:   f.IsPrimary,
 		IsSequence:  f.IsSequence,
 		IsIgnored:   f.IsIgnored,
-		IsGenerated: strings.Contains(f.Default, "()") || f.IsSequence,
+		IsGenerated: strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
 	}, nil
 }
 
