@@ -38,6 +38,7 @@ readonly MAX_COMMENT_LEN=88
 readonly MAX_FNAME_LOG_LEN=13
 readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
 readonly GEN_POSTGRES_DB="gen_db"
+readonly GOMOD_PKG="github.com/danicc097/openapi-go-gin-postgres-sqlc"
 
 pids=()
 env="dev"
@@ -151,7 +152,7 @@ x.pregen() {
     for enum in $(yq e ".. | select(has(\"$vext\")).$vext" $SPEC); do
       local db_enums=()
       path="$(enum_name=$enum yq e ".. | select(has(\"$vext\") and .$vext == env(enum_name)) | (path | join(\".\"))" $SPEC)"
-      mapfile -t db_enums < <(dockerdb psql -qtAX -d $GEN_POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
+      mapfile -t db_enums < <(dockerdb_psql -d $GEN_POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
 
       [[ ${#db_enums[@]} -gt 0 ]] || err "$vext: Enum '$enum' not found in database"
       enums=$(printf ",\"%s\"" "${db_enums[@]}")
@@ -210,7 +211,7 @@ x.gen.gowrap() {
     for iface in ${repo_interfaces[@]}; do
       gowrap gen \
         -g \
-        -p github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos \
+        -p $GOMOD_PKG/internal/repos \
         -i $iface \
         -t internal/gowrap-templates/otel-with-timeout.tmpl \
         -o internal/repos/${iface,,}_with_tracing_and_timeout.go
@@ -548,7 +549,7 @@ x.migrate() {
     if [[ "${*:1}" =~ up* ]]; then
       echo "Running post-migration scripts"
       for file in $(find db/post-migration -maxdepth 1 -name '*.sql' | sort); do
-        dockerdb psql --no-psqlrc -tA -U postgres -d "$POSTGRES_DB" <$file
+        dockerdb_psql -U postgres -d "$POSTGRES_DB" <$file
       done
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -571,8 +572,8 @@ x.migrate.create() {
 # Show active and max number of connections for the current environment.
 x.db.conns() {
   { { {
-    current_conns=$(dockerdb psql -qtAX -d $POSTGRES_DB -c "SELECT count(*) FROM pg_stat_activity WHERE datname = '$POSTGRES_DB';")
-    max_conns=$(dockerdb psql -qtAX -d $POSTGRES_DB -c "SHOW max_connections;")
+    current_conns=$(dockerdb_psql -d $POSTGRES_DB -c "SELECT count(*) FROM pg_stat_activity WHERE datname = '$POSTGRES_DB';")
+    max_conns=$(dockerdb_psql -d $POSTGRES_DB -c "SHOW max_connections;")
     echo "$current_conns/$max_conns active connections in '$POSTGRES_DB'"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -607,19 +608,19 @@ x.db.drop-gen() {
 # Backup the database for the current environment.
 x.db.dump() {
   { { {
-    running_dumps=$(dockerdb psql --no-psqlrc -P pager=off --quiet -tA -U postgres -d "postgres_$env" \
+    running_dumps=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$env" \
       -c "SELECT pid FROM pg_stat_activity WHERE application_name = 'pg_dump';")
     if [[ "$running_dumps" != "" ]]; then
       err "pg_dump is already running, aborting new dump"
     fi
 
     mkdir -p "$DUMPS_FOLDER"
-    schema_v=$(dockerdb psql --no-psqlrc -P pager=off --quiet -tA -U postgres -d "postgres_$env" \
+    schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$env" \
       -c "SELECT version FROM schema_migrations;")
     dump_file="${dump_prefix}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
 
     echo "Dumping database to $dump_file"
-    docker exec -i postgres_db_"$PROJECT_PREFIX" pg_dump -U postgres -d "postgres_$env" |
+    dockerdb pg_dump -U postgres -d "postgres_$env" |
       gzip >"$DUMPS_FOLDER/$dump_file"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -644,9 +645,9 @@ x.db.restore() {
     confirm "Do you want to restore ${YELLOW}$dump_file${OFF} in the ${RED}$env${OFF} environment?"
 
     x.db.drop
-    gunzip -c "$dump_file" | dockerdb psql --no-psqlrc -U postgres -d "postgres_$env"
+    gunzip -c "$dump_file" | dockerdb_psql -U postgres -d "postgres_$env"
     # sanity check, but probably better to do it before restoring...
-    dump_schema_v=$(dockerdb psql --no-psqlrc -P pager=off -qtAX -U postgres -d "postgres_$env" -c "SELECT version FROM schema_migrations;")
+    dump_schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$env" -c "SELECT version FROM schema_migrations;")
     file_schema_v=$(echo "$dump_file" | sed -E 's/.*_version([0-9]+)\..*/\1/')
     echo "Migration revision: $dump_schema_v"
     if [[ "$dump_schema_v" != "$file_schema_v" ]]; then
@@ -749,12 +750,16 @@ x.gen.xo() {
     # views
     mkdir -p $PG_REPO/gen/db/v
     xo_schema -o "$PG_REPO"/gen/db/v \
-      --schema v || err "Failed xo v schema generation"
+      --schema v \
+      --main-schema-pkg $GOMOD_PKG/$PG_REPO/gen/db ||
+      err "Failed xo v schema generation"
 
     # materialized views
     mkdir -p $PG_REPO/gen/db/cache
     xo_schema -o "$PG_REPO"/gen/db/cache \
-      --schema cache || err "Failed xo cache schema generation"
+      --schema cache \
+      --main-schema-pkg $GOMOD_PKG/$PG_REPO/gen/db ||
+      err "Failed xo cache schema generation"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

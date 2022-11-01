@@ -147,7 +147,7 @@ create table task_member (
   , foreign key (task_id) references tasks (task_id) on delete cascade
   , foreign key (member) references users (user_id) on delete cascade
 );
-create index on task_member (task_id, member);
+create index on task_member (member, task_id);
 
 create table work_item_task (
   task_id bigint not null

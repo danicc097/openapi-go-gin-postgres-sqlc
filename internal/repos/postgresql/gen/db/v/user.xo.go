@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/lib/pq"
 
 	"github.com/google/uuid"
@@ -20,7 +21,7 @@ type User struct {
 	LastName    sql.NullString  `json:"last_name"`    // last_name
 	FullName    sql.NullString  `json:"full_name"`    // full_name
 	ExternalID  sql.NullString  `json:"external_id"`  // external_id
-	Role        NullUserRole    `json:"role"`         // role
+	Role        db.NullUserRole `json:"role"`         // role
 	IsSuperuser sql.NullBool    `json:"is_superuser"` // is_superuser
 	CreatedAt   sql.NullTime    `json:"created_at"`   // created_at
 	UpdatedAt   sql.NullTime    `json:"updated_at"`   // updated_at

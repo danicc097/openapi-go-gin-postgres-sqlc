@@ -197,6 +197,10 @@ dockerdb() {
   docker exec -i postgres_db_"$PROJECT_PREFIX" "$@"
 }
 
+dockerdb_psql() {
+  docker exec -i postgres_db_"$PROJECT_PREFIX" psql -qtAX -v ON_ERROR_STOP=on "$@"
+}
+
 # Create database `db`.
 create_db_if_not_exists() {
   local db="$1"

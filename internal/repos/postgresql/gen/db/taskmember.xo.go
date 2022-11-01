@@ -110,38 +110,18 @@ func (tm *TaskMember) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// TaskMemberByTaskIDMember retrieves a row from 'public.task_member' as a TaskMember.
+// TaskMemberByMemberTaskID retrieves a row from 'public.task_member' as a TaskMember.
 //
-// Generated from index 'task_member_pkey'.
-func TaskMemberByTaskIDMember(ctx context.Context, db DB, taskID int64, member uuid.UUID) (*TaskMember, error) {
+// Generated from index 'task_member_member_task_id_idx'.
+func TaskMemberByMemberTaskID(ctx context.Context, db DB, member uuid.UUID, taskID int64) ([]*TaskMember, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`task_id, member ` +
 		`FROM public.task_member ` +
-		`WHERE task_id = $1 AND member = $2`
+		`WHERE member = $1 AND task_id = $2`
 	// run
-	logf(sqlstr, taskID, member)
-	tm := TaskMember{
-		_exists: true,
-	}
-	if err := db.QueryRow(ctx, sqlstr, taskID, member).Scan(&tm.TaskID, &tm.Member); err != nil {
-		return nil, logerror(err)
-	}
-	return &tm, nil
-}
-
-// TaskMemberByTaskIDMember retrieves a row from 'public.task_member' as a TaskMember.
-//
-// Generated from index 'task_member_task_id_member_idx'.
-func TaskMemberByTaskIDMember(ctx context.Context, db DB, taskID int64, member uuid.UUID) ([]*TaskMember, error) {
-	// query
-	const sqlstr = `SELECT ` +
-		`task_id, member ` +
-		`FROM public.task_member ` +
-		`WHERE task_id = $1 AND member = $2`
-	// run
-	logf(sqlstr, taskID, member)
-	rows, err := db.Query(ctx, sqlstr, taskID, member)
+	logf(sqlstr, member, taskID)
+	rows, err := db.Query(ctx, sqlstr, member, taskID)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -162,6 +142,26 @@ func TaskMemberByTaskIDMember(ctx context.Context, db DB, taskID int64, member u
 		return nil, logerror(err)
 	}
 	return res, nil
+}
+
+// TaskMemberByTaskIDMember retrieves a row from 'public.task_member' as a TaskMember.
+//
+// Generated from index 'task_member_pkey'.
+func TaskMemberByTaskIDMember(ctx context.Context, db DB, taskID int64, member uuid.UUID) (*TaskMember, error) {
+	// query
+	const sqlstr = `SELECT ` +
+		`task_id, member ` +
+		`FROM public.task_member ` +
+		`WHERE task_id = $1 AND member = $2`
+	// run
+	logf(sqlstr, taskID, member)
+	tm := TaskMember{
+		_exists: true,
+	}
+	if err := db.QueryRow(ctx, sqlstr, taskID, member).Scan(&tm.TaskID, &tm.Member); err != nil {
+		return nil, logerror(err)
+	}
+	return &tm, nil
 }
 
 // User returns the User associated with the TaskMember's (Member).

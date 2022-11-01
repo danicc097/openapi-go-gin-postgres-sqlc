@@ -565,27 +565,28 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 	return nil
 }
 
-// convertEnum converts a xo.Enum.
-func convertEnum(e xo.Enum) Enum {
-	var vals []EnumValue
-	goName := camelExport(e.Name)
-	for _, v := range e.Values {
-		name := camelExport(strings.ToLower(v.Name))
-		if strings.HasSuffix(name, goName) && goName != name {
-			name = strings.TrimSuffix(name, goName)
-		}
-		vals = append(vals, EnumValue{
-			GoName:     name,
-			SQLName:    v.Name,
-			ConstValue: *v.ConstValue,
-		})
-	}
-	return Enum{
-		GoName:  goName,
-		SQLName: e.Name,
-		Values:  vals,
-	}
-}
+// // convertEnum converts a xo.Enum.
+// func convertEnum(e xo.Enum) Enum {
+// 	var vals []EnumValue
+// 	goName := camelExport(e.Name)
+// 	for _, v := range e.Values {
+// 		name := camelExport(strings.ToLower(v.Name))
+// 		if strings.HasSuffix(name, goName) && goName != name {
+// 			name = strings.TrimSuffix(name, goName)
+// 		}
+// 		vals = append(vals, EnumValue{
+// 			GoName:     name,
+// 			SQLName:    v.Name,
+// 			ConstValue: *v.ConstValue,
+// 		})
+// 	}
+
+// 	return Enum{
+// 		GoName:  goName,
+// 		SQLName: e.Name,
+// 		Values:  vals,
+// 	}
+// }
 
 // convertProc converts a xo.Proc.
 func convertProc(ctx context.Context, overloadMap map[string][]Proc, order []string, p xo.Proc) ([]string, error) {
@@ -750,6 +751,10 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	if err != nil {
 		return Field{}, err
 	}
+	var enumPkg string
+	if f.Type.Enum != nil {
+		enumPkg = f.Type.Enum.EnumPkg
+	}
 	return Field{
 		Type:        typ,
 		GoName:      tf(f.Name),
@@ -758,6 +763,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		IsPrimary:   f.IsPrimary,
 		IsSequence:  f.IsSequence,
 		IsIgnored:   f.IsIgnored,
+		EnumPkg:     enumPkg,
 		IsGenerated: strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
 	}, nil
 }
@@ -1840,7 +1846,14 @@ func (f *Funcs) field(field Field) (string, error) {
 	if s := buf.String(); s != "" {
 		tag = " `" + s + "`"
 	}
-	return fmt.Sprintf("\t%s %s%s // %s", field.GoName, f.typefn(field.Type), tag, field.SQLName), nil
+	fieldType := f.typefn(field.Type)
+	if field.EnumPkg != "" {
+		p := field.EnumPkg[strings.LastIndex(field.EnumPkg, "/")+1:]
+		fieldType = p + "." + fieldType // TODO get from args MainSchemaPkg
+		fmt.Printf("enum %q using shared package %q\n", field.GoName, p)
+	}
+
+	return fmt.Sprintf("\t%s %s%s // %s", field.GoName, fieldType, tag, field.SQLName), nil
 }
 
 // short generates a safe Go identifier for typ. typ is first checked
@@ -2208,6 +2221,7 @@ type Enum struct {
 	SQLName string
 	Values  []EnumValue
 	Comment string
+	Pkg     string
 }
 
 // Proc is a stored procedure template.
@@ -2272,6 +2286,7 @@ type Field struct {
 	IsIgnored   bool
 	Comment     string
 	IsGenerated bool
+	EnumPkg     string
 }
 
 // QueryParam is a custom query parameter template.
