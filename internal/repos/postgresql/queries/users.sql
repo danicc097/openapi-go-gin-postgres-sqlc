@@ -4,7 +4,6 @@ select
   username
   , email
   , role
-  , is_superuser
   , created_at
   , updated_at
   , user_id
@@ -45,7 +44,6 @@ select
   , username
   , email
   , role
-  , is_superuser
   , created_at
   , updated_at
 from

@@ -358,6 +358,9 @@ func fileNames(ctx context.Context, mode string, set *xo.Set) (map[string]bool, 
 			for _, v := range schema.Views {
 				addFile(camelExport(singularize(v.Name)))
 			}
+			for _, v := range schema.MatViews {
+				addFile(camelExport(singularize(v.Name)))
+			}
 		}
 	case "query":
 		for _, query := range set.Queries {
@@ -521,7 +524,9 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		})
 	}
 	// emit tables
-	for _, t := range append(schema.Tables, schema.Views...) {
+	tt := append(schema.Tables, schema.Views...)
+	tt = append(tt, schema.MatViews...)
+	for _, t := range tt {
 		table, err := convertTable(ctx, t)
 		if err != nil {
 			return err

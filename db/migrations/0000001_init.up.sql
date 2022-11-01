@@ -47,7 +47,6 @@ create table users (
   , full_name text generated always as (((first_name) || ' ') || (last_name)) stored
   , external_id text
   , role user_role default 'user' not null
-  , is_superuser boolean default 'False' not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
@@ -214,13 +213,13 @@ select
   *
 from
   users
-  join (
+  left join (
     select
       user_id
       , ARRAY_AGG(projects.*) as projects
     from
       user_project uo
-      join projects using (project_id)
+      left join projects using (project_id)
     where
       user_id in (
         select
@@ -243,14 +242,14 @@ from
   v.users with no data;
 
 insert into users (user_id , username , email , first_name , last_name ,
-  "role" , is_superuser)
+  "role" )
   values ('99270107-1b9c-4f52-a578-7390d5b31513' , 'user 1' , 'user1@email.com' , 'John' ,
-    'Doe' , 'user'::user_role , false);
+    'Doe' , 'user'::user_role);
 
 insert into users (user_id , username , email , first_name , last_name ,
-  "role" , is_superuser)
+  "role" )
   values ('59270107-1b9c-4f52-a578-7390d5b31513' , 'user 2' , 'user2@email.com' , 'Jane' ,
-    'Doe' , 'user'::user_role , false);
+    'Doe' , 'user'::user_role);
 
 insert into organizations ("name" , description, metadata , created_at , updated_at)
   values ('org 1' , 'this is org 1', '{}' , current_timestamp , current_timestamp);
