@@ -240,6 +240,7 @@ select
   *
 from
   v.users with no data;
+create index on cache.users (external_id);
 
 insert into users (user_id , username , email , first_name , last_name ,
   "role" )

@@ -678,6 +678,7 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 		Generated:   generatedCols,
 		Ignored:     ignoredCols,
 		Manual:      manual && t.Manual,
+		Type:        t.Type,
 	}, nil
 }
 

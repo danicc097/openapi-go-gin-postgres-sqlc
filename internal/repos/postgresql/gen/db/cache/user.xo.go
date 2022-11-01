@@ -61,3 +61,35 @@ func GetMostRecentUser(ctx context.Context, db DB, n int) ([]*User, error) {
 	}
 	return res, nil
 }
+
+// UsersByExternalID retrieves a row from 'cache.users' as a User.
+//
+// Generated from index 'users_external_id_idx'.
+func UsersByExternalID(ctx context.Context, db DB, externalID sql.NullString) ([]*User, error) {
+	// query
+	const sqlstr = `SELECT ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at, projects ` +
+		`FROM cache.users ` +
+		`WHERE external_id = $1`
+	// run
+	logf(sqlstr, externalID)
+	rows, err := db.Query(ctx, sqlstr, externalID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+	var res []*User
+	for rows.Next() {
+		u := User{}
+		// scan
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Projects); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}

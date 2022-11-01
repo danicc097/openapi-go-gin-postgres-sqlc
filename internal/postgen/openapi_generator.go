@@ -185,8 +185,10 @@ type operationID string
 const ({{range $tag, $opIDs := .Operations}}
 // Operation IDs for the '{{$tag}}' tag.
 
-{{range $opIDs}}{{.}}                operationID = "{{.}}"
-{{end}}{{end}}
+{{range $opIDs -}}
+{{.}}                operationID = "{{.}}"
+{{end -}}
+{{end}}
 	)
 
 	`))
