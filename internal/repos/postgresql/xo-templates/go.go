@@ -223,7 +223,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 			return ctx
 		},
 		Order: func(ctx context.Context, mode string) []string {
-			base := []string{"header", "db"}
+			base := []string{"header", "db", "extra"}
 			switch mode {
 			case "query":
 				return append(base, "typedef", "query")
@@ -252,6 +252,18 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 					files["db.xo.go"] = true
 				}
 			}
+
+			if !NotFirst(ctx) && !Append(ctx) {
+				emit(xo.Template{
+					Partial: "extra",
+					Dest:    "extra.xo.go",
+				})
+				// If --single is provided, don't generate header for db.xo.go.
+				if xo.Single(ctx) == "" {
+					files["extra.xo.go"] = true
+				}
+			}
+
 			if Append(ctx) {
 				for filename := range files {
 					f, err := out.Open(filename)
