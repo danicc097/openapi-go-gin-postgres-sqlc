@@ -12,6 +12,8 @@ import (
 	"github.com/google/uuid"
 )
 
+type UserOrderBy = string
+
 // User represents a row from 'cache.users'.
 type User struct {
 	UserID     uuid.NullUUID   `json:"user_id"`     // user_id

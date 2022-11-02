@@ -8,6 +8,8 @@ import (
 	"github.com/google/uuid"
 )
 
+type TaskMemberOrderBy = string
+
 // TaskMember represents a row from 'public.task_member'.
 type TaskMember struct {
 	TaskID int64     `json:"task_id"` // task_id

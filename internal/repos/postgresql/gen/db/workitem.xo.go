@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+type WorkItemOrderBy = string
+
 // WorkItem represents a row from 'public.work_items'.
 type WorkItem struct {
 	WorkItemID   int64        `json:"work_item_id"`   // work_item_id

@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+type OrganizationOrderBy = string
+
 // Organization represents a row from 'public.organizations'.
 type Organization struct {
 	OrganizationID int       `json:"organization_id"` // organization_id

@@ -6,6 +6,8 @@ import (
 	"context"
 )
 
+type WorkItemTaskOrderBy = string
+
 // WorkItemTask represents a row from 'public.work_item_task'.
 type WorkItemTask struct {
 	TaskID     int64 `json:"task_id"`      // task_id

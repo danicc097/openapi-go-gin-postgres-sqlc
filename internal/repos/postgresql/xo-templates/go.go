@@ -762,15 +762,16 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		enumPkg = f.Type.Enum.EnumPkg
 	}
 	return Field{
-		Type:        typ,
-		GoName:      tf(f.Name),
-		SQLName:     f.Name,
-		Zero:        zero,
-		IsPrimary:   f.IsPrimary,
-		IsSequence:  f.IsSequence,
-		IsIgnored:   f.IsIgnored,
-		EnumPkg:     enumPkg,
-		IsGenerated: strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
+		Type:         typ,
+		GoName:       tf(f.Name),
+		SQLName:      f.Name,
+		Zero:         zero,
+		IsPrimary:    f.IsPrimary,
+		IsSequence:   f.IsSequence,
+		IsIgnored:    f.IsIgnored,
+		EnumPkg:      enumPkg,
+		IsDateOrTime: f.IsDateOrTime,
+		IsGenerated:  strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
 	}, nil
 }
 
@@ -1099,6 +1100,8 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
 			}
 		}
 	case Index:
+		// TODO include join options, order by and limit options struct here if any
+		orderbys(x, f)
 		// params
 		p = append(p, f.params(x.Fields, true))
 		// returns
@@ -1112,6 +1115,33 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
 	}
 	r = append(r, "error")
 	return fmt.Sprintf("func %s(%s) (%s)", name, strings.Join(p, ", "), strings.Join(r, ", "))
+}
+
+// TODO template function to create a struct of orderby for every date column
+//   - dynamic `orderBy UserOrderBy` options struct field if index found for
+//     timestamp column (Field.IsDateOrTime). Get appended after any select if present and can be
+//     combined:
+//     order by updated_at desc, created_at desc (join with ", ") + limit $limit if len>0
+//     `type UserOrderBy = string , UserCreatedAtDesc UserOrderBy = "UserCreatedAtDesc" `
+//     with a “limit *“ struct option appended .
+//
+// TODO low prio put note if it has no index
+func orderbys(x Index, f *Funcs) {
+	var filters, orderbys []string
+	for _, z := range x.Table.Fields {
+		if z.IsDateOrTime {
+			orderbys = append(orderbys, "ORDER BY "+f.colname(z))
+		}
+	}
+	var paramIdx int
+	for _, z := range x.Fields {
+		filters = append(filters, fmt.Sprintf("%s = %s", f.colname(z), f.nth(paramIdx)))
+		paramIdx++
+	}
+	if len(orderbys) > 0 {
+		orderbys = append(orderbys, "LIMIT "+f.nth(paramIdx))
+		paramIdx++
+	}
 }
 
 // func_context generates a func signature for v with context determined by the
@@ -1470,8 +1500,8 @@ func (f *Funcs) sqlstr(typ string, v interface{}) string {
 		lines = f.sqlstr_proc(v)
 	case "index":
 		lines = f.sqlstr_index(v)
-	case "list":
-		lines = f.sqlstr_list(v)
+	case "most_recent":
+		lines = f.sqlstr_most_recent(v)
 	default:
 		return fmt.Sprintf("const sqlstr = `UNKNOWN QUERY TYPE: %s`", typ)
 	}
@@ -1645,28 +1675,28 @@ func (f *Funcs) sqlstr_index(v interface{}) []string {
 			fields = append(fields, f.colname(z))
 		}
 		// index fields
-		var list []string
+		var filters []string
 		for i, z := range x.Fields {
-			list = append(list, fmt.Sprintf("%s = %s", f.colname(z), f.nth(i)))
+			filters = append(filters, fmt.Sprintf("%s = %s", f.colname(z), f.nth(i)))
 		}
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
-			list = append(list, after)
+			filters = append(filters, after)
 		}
 		return []string{
 			"SELECT ",
 			strings.Join(fields, ", ") + " ",
 			"FROM " + f.schemafn(x.Table.SQLName) + " ",
-			"WHERE " + strings.Join(list, " AND "),
+			"WHERE " + strings.Join(filters, " AND "),
 		}
 	}
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)}
 }
 
-// sqlstr_list builds a list fields.
+// sqlstr_most_recent builds a list fields.
 // TODO make generic. Also ignore if not created_at field.
 // TODO doesnt take updated_at into account either, see fastapi app for reference
 // we can generate based on event: is_update, is_create
-func (f *Funcs) sqlstr_list(v interface{}) []string {
+func (f *Funcs) sqlstr_most_recent(v interface{}) []string {
 	switch x := v.(type) {
 	case Table:
 		// build table fieldnames
@@ -2283,16 +2313,17 @@ type Index struct {
 
 // Field is a field template.
 type Field struct {
-	GoName      string
-	SQLName     string
-	Type        string
-	Zero        string
-	IsPrimary   bool
-	IsSequence  bool
-	IsIgnored   bool
-	Comment     string
-	IsGenerated bool
-	EnumPkg     string
+	GoName       string
+	SQLName      string
+	Type         string
+	Zero         string
+	IsPrimary    bool
+	IsSequence   bool
+	IsIgnored    bool
+	Comment      string
+	IsGenerated  bool
+	EnumPkg      string
+	IsDateOrTime bool
 }
 
 // QueryParam is a custom query parameter template.

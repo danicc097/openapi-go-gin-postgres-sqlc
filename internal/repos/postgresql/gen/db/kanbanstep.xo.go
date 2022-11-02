@@ -6,6 +6,8 @@ import (
 	"context"
 )
 
+type KanbanStepOrderBy = string
+
 // KanbanStep represents a row from 'public.kanban_steps'.
 type KanbanStep struct {
 	KanbanStepID  int    `json:"kanban_step_id"` // kanban_step_id

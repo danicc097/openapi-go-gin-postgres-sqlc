@@ -117,7 +117,9 @@
 
 {{ define "typedef" }}
 {{- $t := .Data -}}
-{{- if $t.Comment -}}
+type {{ $t.GoName }}OrderBy = string
+{{/* TODO orderbys func to generate e.g. UserCreatedAtDesc (camelcased dyn.) = "created_at desc" */}}
+{{if $t.Comment -}}
 // {{ $t.Comment | eval $t.GoName }}
 {{- else -}}
 // {{ $t.GoName }} represents a row from '{{ schema $t.SQLName }}'.
@@ -139,7 +141,7 @@ type {{ $t.GoName }} struct {
 // ordered by "created_at" in descending order.
 func GetMostRecent{{ $t.GoName }}(ctx context.Context, db DB, n int) ([]*{{ $t.GoName }}, error) {
     // list
-    {{ sqlstr "list" $t }}
+    {{ sqlstr "most_recent" $t }}
 	// run
 	logf(sqlstr, n)
 

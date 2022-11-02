@@ -6,6 +6,8 @@ import (
 	"context"
 )
 
+type TaskTypeOrderBy = string
+
 // TaskType represents a row from 'public.task_types'.
 type TaskType struct {
 	TaskTypeID int    `json:"task_type_id"` // task_type_id

@@ -6,6 +6,8 @@ import (
 	"context"
 )
 
+type SchemaMigrationOrderBy = string
+
 // SchemaMigration represents a row from 'public.schema_migrations'.
 type SchemaMigration struct {
 	Version int64 `json:"version"` // version

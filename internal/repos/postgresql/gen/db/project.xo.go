@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+type ProjectOrderBy = string
+
 // Project represents a row from 'public.projects'.
 type Project struct {
 	ProjectID      int       `json:"project_id"`      // project_id

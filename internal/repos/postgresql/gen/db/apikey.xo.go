@@ -9,6 +9,8 @@ import (
 	"github.com/google/uuid"
 )
 
+type APIKeyOrderBy = string
+
 // APIKey represents a row from 'public.api_keys'.
 type APIKey struct {
 	APIKeyID  int       `json:"api_key_id"` // api_key_id

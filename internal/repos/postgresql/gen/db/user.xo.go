@@ -10,6 +10,8 @@ import (
 	"github.com/google/uuid"
 )
 
+type UserOrderBy = string
+
 // User represents a row from 'public.users'.
 type User struct {
 	UserID     uuid.UUID      `json:"user_id"`     // user_id

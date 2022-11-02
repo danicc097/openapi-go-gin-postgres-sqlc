@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+type TaskOrderBy = string
+
 // Task represents a row from 'public.tasks'.
 type Task struct {
 	TaskID             int64        `json:"task_id"`              // task_id

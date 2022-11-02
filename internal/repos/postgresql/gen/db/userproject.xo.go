@@ -8,6 +8,8 @@ import (
 	"github.com/google/uuid"
 )
 
+type UserProjectOrderBy = string
+
 // UserProject represents a row from 'public.user_project'.
 type UserProject struct {
 	ProjectID int       `json:"project_id"` // project_id

@@ -6,6 +6,8 @@ import (
 	"context"
 )
 
+type MovieOrderBy = string
+
 // Movie represents a row from 'public.movies'.
 type Movie struct {
 	MovieID  int    `json:"movie_id"` // movie_id
