@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"unicode"
 
 	"github.com/danicc097/xo/loader"
 	xo "github.com/danicc097/xo/types"
@@ -26,6 +27,24 @@ import (
 )
 
 var ErrNoSingle = errors.New("in query exec mode, the --single or -S must be provided")
+
+func IsUpper(s string) bool {
+	for _, r := range s {
+		if !unicode.IsUpper(r) && unicode.IsLetter(r) {
+			return false
+		}
+	}
+	return true
+}
+
+func IsLower(s string) bool {
+	for _, r := range s {
+		if !unicode.IsLower(r) && unicode.IsLetter(r) {
+			return false
+		}
+	}
+	return true
+}
 
 // Init registers the template.
 func Init(ctx context.Context, f func(xo.TemplateType)) error {
@@ -889,13 +908,14 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 func (f *Funcs) FuncMap() template.FuncMap {
 	return template.FuncMap{
 		// general
-		"first":   f.firstfn,
-		"driver":  f.driverfn,
-		"schema":  f.schemafn,
-		"pkg":     f.pkgfn,
-		"tags":    f.tagsfn,
-		"imports": f.importsfn,
-		"inject":  f.injectfn,
+		"lowerFirst": f.lower_first,
+		"first":      f.firstfn,
+		"driver":     f.driverfn,
+		"schema":     f.schemafn,
+		"pkg":        f.pkgfn,
+		"tags":       f.tagsfn,
+		"imports":    f.importsfn,
+		"inject":     f.injectfn,
 		// context
 		"context":         f.contextfn,
 		"context_both":    f.context_both,
@@ -936,6 +956,25 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"add":           add,
 		"not_updatable": notUpdatable,
 	}
+}
+
+func (f *Funcs) lower_first(str string) string {
+	var b strings.Builder
+	i := 1
+	for IsUpper(string(str[i : i+1])) {
+		if i == len(str)-1 {
+			i = len(str) + 1
+			break
+		}
+		i++
+	}
+	if i == 1 {
+		i++ // first letter always lower
+	}
+	b.WriteString(strings.ToLower(string(str[0 : i-1])))
+	b.WriteString(string(str[i-1:]))
+
+	return b.String()
 }
 
 func (f *Funcs) firstfn() bool {

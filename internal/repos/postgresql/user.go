@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
@@ -18,6 +19,8 @@ func NewUser() *User {
 		q: db.New(),
 	}
 }
+
+var _ repos.User = (*User)(nil)
 
 // TODO use xo instead. need triggers
 // // Create inserts a new user record.

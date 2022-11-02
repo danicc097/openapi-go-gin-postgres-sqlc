@@ -127,7 +127,6 @@ type {{ $t.GoName }}SelectConfig struct {
 type {{ $t.GoName }}SelectConfigOption func(*{{ $t.GoName }}SelectConfig)
 
 
-{{/* TODO shared WithLimit and SelectConfig embedded in a config.xo.go file */}}
 // {{ $t.GoName }}WithLimit limits row selection.
 func {{ $t.GoName }}WithLimit(limit int) {{ $t.GoName }}SelectConfigOption {
 	return func(s *{{ $t.GoName }}SelectConfig) {

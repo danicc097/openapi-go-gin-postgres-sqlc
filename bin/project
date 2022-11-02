@@ -1,12 +1,15 @@
 #!/bin/bash
 # shellcheck disable=1091,2155,2068,2086,2031
 
+export PROC=$$
+
 source "${BASH_SOURCE%/*}/.helpers.sh"
 source "${BASH_SOURCE%/*}/scripts/deps-check.sh"
 
-set -Eeo pipefail
+set -Eeom pipefail
 
-trap killgroup SIGINT
+trap 'kill 0' SIGINT
+
 trap errtrap SIGUSR1
 
 killgroup() {
@@ -24,12 +27,6 @@ ensure_pwd_is_top_level
 
 source ".envrc"
 
-export PROC=$$
-export GIT_USER_ID=danicc097
-export GIT_REPO_ID=openapi-go-gin-postgres-sqlc
-export GO_POST_PROCESS_FILE="/usr/bin/env gofmt -w -s"
-export GENVERS=6.0.1
-
 readonly SPEC="openapi.yaml"
 readonly PROTO_DIR="internal/pb"
 readonly MIGRATIONS_DIR="db/migrations"
@@ -38,7 +35,8 @@ readonly MAX_COMMENT_LEN=88
 readonly MAX_FNAME_LOG_LEN=13
 readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
 readonly GEN_POSTGRES_DB="gen_db"
-readonly GOMOD_PKG="github.com/danicc097/openapi-go-gin-postgres-sqlc"
+pkg=$(head -1 go.mod)
+readonly GOMOD_PKG="${pkg#module*}"
 
 pids=()
 env="dev"
@@ -288,40 +286,33 @@ x.gen.proto() {
 x.gen() {
   { { {
     echo "Running code generation"
-    local _pids
+    local cache=".generate.cache"
 
     x.db.recreate
-
-    cache=".generate.cache"
 
     x.pregen
 
     rm -rf $PG_REPO/gen
 
+    # TODO try use gnu parallel and exit when anyone fails
+    # (with current setup the whole x.gen is executed and only then
+    # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
+
     go generate ./... &
-    _pids+=($!)
     x.gen.gowrap &
-    _pids+=($!)
     x.gen.sqlc &
-    _pids+=($!)
     # xo cannot use db files as input, needs an up-to-date schema
     # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
     # use a unique db to prevent cosmic accidents
     x.gen.xo &
-    _pids+=($!)
     x.gen.client-server &
-    _pids+=($!)
     x.gen.proto &
-    _pids+=($!)
+    wait
 
-    for pid in "${_pids[@]}"; do
-      wait "$pid"
-    done
-
-    x.postgen "$cache"
-
-    # delay since it depends on generated output
-    x.gen.counterfeiter "$cache"
+    x.postgen "$cache" &
+    # delay since it depends on generated output too
+    x.gen.counterfeiter "$cache" &
+    wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -501,13 +492,9 @@ x.stop-project() {
 x.release() {
   { { {
     x.search-stopship "STOPSHIP" &
-    pids+=($!)
     go mod verify &
-    pids+=($!)
 
-    for pid in "${pids[@]}"; do
-      wait "$pid"
-    done
+    wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -740,26 +727,26 @@ x.gen.xo() {
   #
   { { {
     echo "Running generation"
+    # xo schema --help
 
     mkdir -p $PG_REPO/gen/db
-    # xo schema --help
     xo_schema -o "$PG_REPO"/gen/db \
       --ignore "*.created_at" \
-      --ignore "*.updated_at" || err "Failed xo public schema generation"
+      --ignore "*.updated_at" || err "Failed xo public schema generation" &
 
-    # views
     mkdir -p $PG_REPO/gen/db/v
     xo_schema -o "$PG_REPO"/gen/db/v \
       --schema v \
       --main-schema-pkg $GOMOD_PKG/$PG_REPO/gen/db ||
-      err "Failed xo v schema generation"
+      err "Failed xo v schema generation" &
 
-    # materialized views
     mkdir -p $PG_REPO/gen/db/cache
     xo_schema -o "$PG_REPO"/gen/db/cache \
       --schema cache \
       --main-schema-pkg $GOMOD_PKG/$PG_REPO/gen/db ||
-      err "Failed xo cache schema generation"
+      err "Failed xo cache schema generation" &
+
+    wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
