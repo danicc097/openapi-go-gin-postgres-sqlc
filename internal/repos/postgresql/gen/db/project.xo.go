@@ -11,13 +11,12 @@ type ProjectOrderBy = string
 
 // Project represents a row from 'public.projects'.
 type Project struct {
-	ProjectID      int       `json:"project_id"`      // project_id
-	OrganizationID int       `json:"organization_id"` // organization_id
-	Name           string    `json:"name"`            // name
-	Description    string    `json:"description"`     // description
-	Metadata       []byte    `json:"metadata"`        // metadata
-	CreatedAt      time.Time `json:"created_at"`      // created_at
-	UpdatedAt      time.Time `json:"updated_at"`      // updated_at
+	ProjectID   int       `json:"project_id"`  // project_id
+	Name        string    `json:"name"`        // name
+	Description string    `json:"description"` // description
+	Metadata    []byte    `json:"metadata"`    // metadata
+	CreatedAt   time.Time `json:"created_at"`  // created_at
+	UpdatedAt   time.Time `json:"updated_at"`  // updated_at
 	// xo fields
 	_exists, _deleted bool
 }
@@ -28,7 +27,7 @@ type Project struct {
 func GetMostRecentProject(ctx context.Context, db DB, n int) ([]*Project, error) {
 	// list
 	const sqlstr = `SELECT ` +
-		`project_id, organization_id, name, description, metadata, created_at, updated_at ` +
+		`project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.projects ` +
 		`ORDER BY created_at DESC LIMIT $1`
 	// run
@@ -47,7 +46,7 @@ func GetMostRecentProject(ctx context.Context, db DB, n int) ([]*Project, error)
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&p.ProjectID, &p.OrganizationID, &p.Name, &p.Description, &p.Metadata, &p.CreatedAt, &p.UpdatedAt); err != nil {
+		if err := rows.Scan(&p.ProjectID, &p.Name, &p.Description, &p.Metadata, &p.CreatedAt, &p.UpdatedAt); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &p)
@@ -79,13 +78,13 @@ func (p *Project) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	const sqlstr = `INSERT INTO public.projects (` +
-		`organization_id, name, description, metadata` +
+		`name, description, metadata` +
 		`) VALUES (` +
-		`$1, $2, $3, $4` +
+		`$1, $2, $3` +
 		`) RETURNING project_id`
 	// run
-	logf(sqlstr, p.OrganizationID, p.Name, p.Description, p.Metadata)
-	if err := db.QueryRow(ctx, sqlstr, p.OrganizationID, p.Name, p.Description, p.Metadata).Scan(&p.ProjectID); err != nil {
+	logf(sqlstr, p.Name, p.Description, p.Metadata)
+	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.Metadata).Scan(&p.ProjectID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -103,11 +102,11 @@ func (p *Project) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	const sqlstr = `UPDATE public.projects SET ` +
-		`organization_id = $1, name = $2, description = $3, metadata = $4 ` +
-		`WHERE project_id = $5`
+		`name = $1, description = $2, metadata = $3 ` +
+		`WHERE project_id = $4`
 	// run
-	logf(sqlstr, p.OrganizationID, p.Name, p.Description, p.Metadata, p.CreatedAt, p.UpdatedAt, p.ProjectID)
-	if _, err := db.Exec(ctx, sqlstr, p.OrganizationID, p.Name, p.Description, p.Metadata, p.CreatedAt, p.UpdatedAt, p.ProjectID); err != nil {
+	logf(sqlstr, p.Name, p.Description, p.Metadata, p.CreatedAt, p.UpdatedAt, p.ProjectID)
+	if _, err := db.Exec(ctx, sqlstr, p.Name, p.Description, p.Metadata, p.CreatedAt, p.UpdatedAt, p.ProjectID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -129,16 +128,16 @@ func (p *Project) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	const sqlstr = `INSERT INTO public.projects (` +
-		`project_id, organization_id, name, description, metadata` +
+		`project_id, name, description, metadata` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
+		`$1, $2, $3, $4` +
 		`)` +
 		` ON CONFLICT (project_id) DO ` +
 		`UPDATE SET ` +
-		`organization_id = EXCLUDED.organization_id, name = EXCLUDED.name, description = EXCLUDED.description, metadata = EXCLUDED.metadata `
+		`name = EXCLUDED.name, description = EXCLUDED.description, metadata = EXCLUDED.metadata `
 	// run
-	logf(sqlstr, p.ProjectID, p.OrganizationID, p.Name, p.Description, p.Metadata)
-	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.OrganizationID, p.Name, p.Description, p.Metadata); err != nil {
+	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.Metadata)
+	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.Metadata); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -173,7 +172,7 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 func ProjectByName(ctx context.Context, db DB, name string) (*Project, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`project_id, organization_id, name, description, metadata, created_at, updated_at ` +
+		`project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.projects ` +
 		`WHERE name = $1`
 	// run
@@ -181,7 +180,7 @@ func ProjectByName(ctx context.Context, db DB, name string) (*Project, error) {
 	p := Project{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, name).Scan(&p.ProjectID, &p.OrganizationID, &p.Name, &p.Description, &p.Metadata, &p.CreatedAt, &p.UpdatedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, name).Scan(&p.ProjectID, &p.Name, &p.Description, &p.Metadata, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &p, nil
@@ -193,7 +192,7 @@ func ProjectByName(ctx context.Context, db DB, name string) (*Project, error) {
 func ProjectByProjectID(ctx context.Context, db DB, projectID int) (*Project, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`project_id, organization_id, name, description, metadata, created_at, updated_at ` +
+		`project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.projects ` +
 		`WHERE project_id = $1`
 	// run
@@ -201,15 +200,8 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID int) (*Project, er
 	p := Project{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, projectID).Scan(&p.ProjectID, &p.OrganizationID, &p.Name, &p.Description, &p.Metadata, &p.CreatedAt, &p.UpdatedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, projectID).Scan(&p.ProjectID, &p.Name, &p.Description, &p.Metadata, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &p, nil
-}
-
-// Organization returns the Organization associated with the Project's (OrganizationID).
-//
-// Generated from foreign key 'projects_organization_id_fkey'.
-func (p *Project) Organization(ctx context.Context, db DB) (*Organization, error) {
-	return OrganizationByOrganizationID(ctx, db, p.OrganizationID)
 }

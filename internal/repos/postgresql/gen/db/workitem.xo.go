@@ -15,7 +15,7 @@ type WorkItem struct {
 	WorkItemID   int64        `json:"work_item_id"`   // work_item_id
 	Title        string       `json:"title"`          // title
 	Metadata     []byte       `json:"metadata"`       // metadata
-	ProjectID    int          `json:"project_id"`     // project_id
+	TeamID       int          `json:"team_id"`        // team_id
 	KanbanStepID int          `json:"kanban_step_id"` // kanban_step_id
 	CreatedAt    time.Time    `json:"created_at"`     // created_at
 	UpdatedAt    time.Time    `json:"updated_at"`     // updated_at
@@ -30,7 +30,7 @@ type WorkItem struct {
 func GetMostRecentWorkItem(ctx context.Context, db DB, n int) ([]*WorkItem, error) {
 	// list
 	const sqlstr = `SELECT ` +
-		`work_item_id, title, metadata, project_id, kanban_step_id, created_at, updated_at, deleted_at ` +
+		`work_item_id, title, metadata, team_id, kanban_step_id, created_at, updated_at, deleted_at ` +
 		`FROM public.work_items ` +
 		`ORDER BY created_at DESC LIMIT $1`
 	// run
@@ -49,7 +49,7 @@ func GetMostRecentWorkItem(ctx context.Context, db DB, n int) ([]*WorkItem, erro
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&wi.WorkItemID, &wi.Title, &wi.Metadata, &wi.ProjectID, &wi.KanbanStepID, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt); err != nil {
+		if err := rows.Scan(&wi.WorkItemID, &wi.Title, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &wi)
@@ -81,13 +81,13 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	const sqlstr = `INSERT INTO public.work_items (` +
-		`title, metadata, project_id, kanban_step_id, deleted_at` +
+		`title, metadata, team_id, kanban_step_id, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5` +
 		`) RETURNING work_item_id`
 	// run
-	logf(sqlstr, wi.Title, wi.Metadata, wi.ProjectID, wi.KanbanStepID, wi.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, wi.Title, wi.Metadata, wi.ProjectID, wi.KanbanStepID, wi.DeletedAt).Scan(&wi.WorkItemID); err != nil {
+	logf(sqlstr, wi.Title, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.DeletedAt)
+	if err := db.QueryRow(ctx, sqlstr, wi.Title, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.DeletedAt).Scan(&wi.WorkItemID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -105,11 +105,11 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	const sqlstr = `UPDATE public.work_items SET ` +
-		`title = $1, metadata = $2, project_id = $3, kanban_step_id = $4, deleted_at = $5 ` +
+		`title = $1, metadata = $2, team_id = $3, kanban_step_id = $4, deleted_at = $5 ` +
 		`WHERE work_item_id = $6`
 	// run
-	logf(sqlstr, wi.Title, wi.Metadata, wi.ProjectID, wi.KanbanStepID, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
-	if _, err := db.Exec(ctx, sqlstr, wi.Title, wi.Metadata, wi.ProjectID, wi.KanbanStepID, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID); err != nil {
+	logf(sqlstr, wi.Title, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
+	if _, err := db.Exec(ctx, sqlstr, wi.Title, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -131,16 +131,16 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	const sqlstr = `INSERT INTO public.work_items (` +
-		`work_item_id, title, metadata, project_id, kanban_step_id, deleted_at` +
+		`work_item_id, title, metadata, team_id, kanban_step_id, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6` +
 		`)` +
 		` ON CONFLICT (work_item_id) DO ` +
 		`UPDATE SET ` +
-		`title = EXCLUDED.title, metadata = EXCLUDED.metadata, project_id = EXCLUDED.project_id, kanban_step_id = EXCLUDED.kanban_step_id, deleted_at = EXCLUDED.deleted_at `
+		`title = EXCLUDED.title, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, deleted_at = EXCLUDED.deleted_at `
 	// run
-	logf(sqlstr, wi.WorkItemID, wi.Title, wi.Metadata, wi.ProjectID, wi.KanbanStepID, wi.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Metadata, wi.ProjectID, wi.KanbanStepID, wi.DeletedAt); err != nil {
+	logf(sqlstr, wi.WorkItemID, wi.Title, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -175,7 +175,7 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64) (*WorkItem, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`work_item_id, title, metadata, project_id, kanban_step_id, created_at, updated_at, deleted_at ` +
+		`work_item_id, title, metadata, team_id, kanban_step_id, created_at, updated_at, deleted_at ` +
 		`FROM public.work_items ` +
 		`WHERE work_item_id = $1`
 	// run
@@ -183,7 +183,7 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64) (*WorkIt
 	wi := WorkItem{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Metadata, &wi.ProjectID, &wi.KanbanStepID, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &wi, nil
@@ -196,9 +196,9 @@ func (wi *WorkItem) KanbanStep(ctx context.Context, db DB) (*KanbanStep, error) 
 	return KanbanStepByKanbanStepID(ctx, db, wi.KanbanStepID)
 }
 
-// Project returns the Project associated with the WorkItem's (ProjectID).
+// Team returns the Team associated with the WorkItem's (TeamID).
 //
-// Generated from foreign key 'work_items_project_id_fkey'.
-func (wi *WorkItem) Project(ctx context.Context, db DB) (*Project, error) {
-	return ProjectByProjectID(ctx, db, wi.ProjectID)
+// Generated from foreign key 'work_items_team_id_fkey'.
+func (wi *WorkItem) Team(ctx context.Context, db DB) (*Team, error) {
+	return TeamByTeamID(ctx, db, wi.TeamID)
 }

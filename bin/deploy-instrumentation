@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# TODO promscale jaeger instead of es
+
+source "${BASH_SOURCE%/*}/.helpers.sh"
+
+ensure_pwd_is_top_level
+
+cd docker || exit
+docker-compose \
+  -p "$PROJECT_PREFIX" \
+  -f docker-compose.otel.yml \
+  --env-file .env \
+  "$@" 2>&1 # https://github.com/docker/compose/issues/7346
+cd - >/dev/null || exit

@@ -13,27 +13,27 @@ create type user_role as ENUM (
   , 'superadmin'
 );
 
-create table organizations (
-  organization_id serial not null
-  , name text not null
-  , description text not null
-  , metadata json not null
-  , created_at timestamp with time zone default current_timestamp not null
-  , updated_at timestamp with time zone default current_timestamp not null
-  , primary key (organization_id)
-  , unique (name)
-);
-
 create table projects (
   project_id serial not null
-  , organization_id int not null
   , name text not null
   , description text not null
   , metadata json not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , primary key (project_id)
-  , foreign key (organization_id) references organizations (organization_id) on delete cascade
+  , unique (name)
+);
+
+create table teams (
+  team_id serial not null
+  , project_id int not null
+  , name text not null
+  , description text not null
+  , metadata json not null
+  , created_at timestamp with time zone default current_timestamp not null
+  , updated_at timestamp with time zone default current_timestamp not null
+  , primary key (team_id)
+  , foreign key (project_id) references projects (project_id) on delete cascade
   , unique (name)
 );
 
@@ -64,38 +64,38 @@ create index on users (deleted_at);
 create index on users (created_at);
 create index on users (updated_at);
 
-create table user_project (
-  project_id int not null
+create table user_team (
+  team_id int not null
   , user_id uuid not null
-  , primary key (user_id , project_id)
+  , primary key (user_id , team_id)
   , foreign key (user_id) references users (user_id) on delete cascade
-  , foreign key (project_id) references projects (project_id) on delete cascade
+  , foreign key (team_id) references teams (team_id) on delete cascade
 );
-create index on user_project (project_id, user_id);
+create index on user_team (team_id, user_id);
 
 create table kanban_steps (
   kanban_step_id int not null
-  , project_id int not null
+  , team_id int not null
   , step_order smallint not null
   , name text not null
   , description text not null
   , time_trackable bool not null default false
   , disabled bool not null default false
   , primary key (kanban_step_id)
-  , foreign key (project_id) references projects (project_id) on delete cascade
+  , foreign key (team_id) references teams (team_id) on delete cascade
 );
 
 create table work_items (
   work_item_id bigserial not null
   , title text not null
   , metadata json not null
-  , project_id int not null
+  , team_id int not null
   , kanban_step_id int not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
   , primary key (work_item_id)
-  , foreign key (project_id) references projects (project_id) on delete cascade
+  , foreign key (team_id) references teams (team_id) on delete cascade
   , foreign key (kanban_step_id) references kanban_steps (kanban_step_id) on delete cascade
 );
 
@@ -118,11 +118,11 @@ create type work_item_role as ENUM (
 
 create table task_types (
   task_type_id serial
-  , project_id bigint not null
+  , team_id bigint not null
   , name text not null
   , primary key (task_type_id)
-  , unique (project_id, name)
-  , foreign key (project_id) references projects (project_id) on delete cascade
+  , unique (team_id, name)
+  , foreign key (team_id) references teams (team_id) on delete cascade
 );
 
 create table tasks (
@@ -163,32 +163,32 @@ get org names for a given user_id, etc.
 with xo we would have to make a ton of different queries to get the same result.
 alternative: tell xo when to inner join using (<fk>)
 user.xo.go could have a selectUserWith* query for each fk we tell it to join:
-e.g. selectUserWithOrganizations, which would join everything.
-we would specify an option in generation: public.users<user_project:name
-to indicate we want to use the lookup table to get an array aggregate of organization names
+e.g. selectUserWithprojects, which would join everything.
+we would specify an option in generation: public.users<user_team:name
+to indicate we want to use the lookup table to get an array aggregate of project names
 per user.
 we could have more than one of these:
-- public.users<user_project:name,
-- public.users<user_project:name
+- public.users<user_team:name,
+- public.users<user_team:name
 on the other hand we would have:
-public.organizations<user_project:email would give us an array of user emails per organization
+public.projects<user_team:email would give us an array of user emails per project
 UPDATE:
 or just join tables with json_agg: also supported in sqlc https://github.com/kyleconroy/sqlc/issues/1894
 that will generate the struct with a nested json object that is simply the same struct from another file,
 with json tags already solved.
 UPDATE 2: we will inner join and select every subfield `as <prefix>_...` then scan to nested struct
-Organizations Organizations `json:organizations,...`
+projects projects `json:projects,...`
 UPDATE 3: sqlc - we get exactly the fields we want -> struct Get...Row with json tags
 and our openapi spec has x-db-model: db.Get...Row so we create the schema properties automatically in the spec
 and a type ***Res = db.Get...Row instead of oapi-codegen generated struct (either hack into oapi or remove with sed)
 
-~~However organizations~~
+~~However projects~~
 ~~could have more fks that need to be joined. If we already told xo it should join those fk~~
-~~(selectOrganizationWith<fk1>, ...) it should use that same query when we selectUserWithOrganizations.~~
+~~(selectprojectWith<fk1>, ...) it should use that same query when we selectUserWithprojects.~~
 ~~we can select fields with a prefix to avoid clashes:~~
-~~select organizations.name as organizations_name~~
+~~select projects.name as projects_name~~
  */
-create index user_project_user_idx on user_project (user_id);
+create index user_team_user_idx on user_team (user_id);
 
 create table movies (
   movie_id serial not null
@@ -216,24 +216,24 @@ from
   left join (
     select
       user_id
-      , ARRAY_AGG(projects.*) as projects
+      , ARRAY_AGG(teams.*) as teams
     from
-      user_project uo
-      left join projects using (project_id)
+      user_team uo
+      left join teams using (team_id)
     where
       user_id in (
         select
           user_id
         from
-          user_project
+          user_team
         where
-          project_id = any (
+          team_id = any (
             select
-              project_id
+              team_id
             from
-              projects))
+              teams))
         group by
-          user_id) joined_projects using (user_id);
+          user_id) joined_teams using (user_id);
 
 create materialized view if not exists cache.users as
 select
@@ -252,22 +252,22 @@ insert into users (user_id , username , email , first_name , last_name ,
   values ('59270107-1b9c-4f52-a578-7390d5b31513' , 'user 2' , 'user2@email.com' , 'Jane' ,
     'Doe' , 'user'::user_role);
 
-insert into organizations ("name" , description, metadata , created_at , updated_at)
+insert into projects ("name" , description, metadata , created_at , updated_at)
   values ('org 1' , 'this is org 1', '{}' , current_timestamp , current_timestamp);
 
-insert into organizations ("name" , description, metadata , created_at , updated_at)
+insert into projects ("name" , description, metadata , created_at , updated_at)
   values ('org 2' ,  'this is org 2','{}' , current_timestamp , current_timestamp);
 
-insert into projects ("name" , organization_id, description, metadata , created_at , updated_at)
-  values ('project 1', 1 , 'this is project 1', '{}' , current_timestamp , current_timestamp);
+insert into teams ("name" , project_id, description, metadata , created_at , updated_at)
+  values ('team 1', 1 , 'this is team 1', '{}' , current_timestamp , current_timestamp);
 
-insert into projects ("name" , organization_id, description, metadata , created_at , updated_at)
-  values ('project 2', 1 ,  'this is project 2','{}' , current_timestamp , current_timestamp);
+insert into teams ("name" , project_id, description, metadata , created_at , updated_at)
+  values ('team 2', 1 ,  'this is team 2','{}' , current_timestamp , current_timestamp);
 
-insert into user_project (project_id , user_id)
+insert into user_team (team_id , user_id)
   values (1 , '99270107-1b9c-4f52-a578-7390d5b31513');
-insert into user_project (project_id , user_id)
+insert into user_team (team_id , user_id)
   values (1 , '59270107-1b9c-4f52-a578-7390d5b31513');
 
-insert into user_project (project_id , user_id)
+insert into user_team (team_id , user_id)
   values (2 , '99270107-1b9c-4f52-a578-7390d5b31513');

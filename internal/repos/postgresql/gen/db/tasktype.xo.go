@@ -11,7 +11,7 @@ type TaskTypeOrderBy = string
 // TaskType represents a row from 'public.task_types'.
 type TaskType struct {
 	TaskTypeID int    `json:"task_type_id"` // task_type_id
-	ProjectID  int64  `json:"project_id"`   // project_id
+	TeamID     int64  `json:"team_id"`      // team_id
 	Name       string `json:"name"`         // name
 	// xo fields
 	_exists, _deleted bool
@@ -23,7 +23,7 @@ type TaskType struct {
 func GetMostRecentTaskType(ctx context.Context, db DB, n int) ([]*TaskType, error) {
 	// list
 	const sqlstr = `SELECT ` +
-		`task_type_id, project_id, name ` +
+		`task_type_id, team_id, name ` +
 		`FROM public.task_types ` +
 		`ORDER BY created_at DESC LIMIT $1`
 	// run
@@ -42,7 +42,7 @@ func GetMostRecentTaskType(ctx context.Context, db DB, n int) ([]*TaskType, erro
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&tt.TaskTypeID, &tt.ProjectID, &tt.Name); err != nil {
+		if err := rows.Scan(&tt.TaskTypeID, &tt.TeamID, &tt.Name); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &tt)
@@ -74,13 +74,13 @@ func (tt *TaskType) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	const sqlstr = `INSERT INTO public.task_types (` +
-		`project_id, name` +
+		`team_id, name` +
 		`) VALUES (` +
 		`$1, $2` +
 		`) RETURNING task_type_id`
 	// run
-	logf(sqlstr, tt.ProjectID, tt.Name)
-	if err := db.QueryRow(ctx, sqlstr, tt.ProjectID, tt.Name).Scan(&tt.TaskTypeID); err != nil {
+	logf(sqlstr, tt.TeamID, tt.Name)
+	if err := db.QueryRow(ctx, sqlstr, tt.TeamID, tt.Name).Scan(&tt.TaskTypeID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -98,11 +98,11 @@ func (tt *TaskType) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	const sqlstr = `UPDATE public.task_types SET ` +
-		`project_id = $1, name = $2 ` +
+		`team_id = $1, name = $2 ` +
 		`WHERE task_type_id = $3`
 	// run
-	logf(sqlstr, tt.ProjectID, tt.Name, tt.TaskTypeID)
-	if _, err := db.Exec(ctx, sqlstr, tt.ProjectID, tt.Name, tt.TaskTypeID); err != nil {
+	logf(sqlstr, tt.TeamID, tt.Name, tt.TaskTypeID)
+	if _, err := db.Exec(ctx, sqlstr, tt.TeamID, tt.Name, tt.TaskTypeID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -124,16 +124,16 @@ func (tt *TaskType) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	const sqlstr = `INSERT INTO public.task_types (` +
-		`task_type_id, project_id, name` +
+		`task_type_id, team_id, name` +
 		`) VALUES (` +
 		`$1, $2, $3` +
 		`)` +
 		` ON CONFLICT (task_type_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name `
+		`team_id = EXCLUDED.team_id, name = EXCLUDED.name `
 	// run
-	logf(sqlstr, tt.TaskTypeID, tt.ProjectID, tt.Name)
-	if _, err := db.Exec(ctx, sqlstr, tt.TaskTypeID, tt.ProjectID, tt.Name); err != nil {
+	logf(sqlstr, tt.TaskTypeID, tt.TeamID, tt.Name)
+	if _, err := db.Exec(ctx, sqlstr, tt.TaskTypeID, tt.TeamID, tt.Name); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -168,7 +168,7 @@ func (tt *TaskType) Delete(ctx context.Context, db DB) error {
 func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int) (*TaskType, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`task_type_id, project_id, name ` +
+		`task_type_id, team_id, name ` +
 		`FROM public.task_types ` +
 		`WHERE task_type_id = $1`
 	// run
@@ -176,35 +176,35 @@ func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int) (*TaskType
 	tt := TaskType{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, taskTypeID).Scan(&tt.TaskTypeID, &tt.ProjectID, &tt.Name); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, taskTypeID).Scan(&tt.TaskTypeID, &tt.TeamID, &tt.Name); err != nil {
 		return nil, logerror(err)
 	}
 	return &tt, nil
 }
 
-// TaskTypeByProjectIDName retrieves a row from 'public.task_types' as a TaskType.
+// TaskTypeByTeamIDName retrieves a row from 'public.task_types' as a TaskType.
 //
-// Generated from index 'task_types_project_id_name_key'.
-func TaskTypeByProjectIDName(ctx context.Context, db DB, projectID int64, name string) (*TaskType, error) {
+// Generated from index 'task_types_team_id_name_key'.
+func TaskTypeByTeamIDName(ctx context.Context, db DB, teamID int64, name string) (*TaskType, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`task_type_id, project_id, name ` +
+		`task_type_id, team_id, name ` +
 		`FROM public.task_types ` +
-		`WHERE project_id = $1 AND name = $2`
+		`WHERE team_id = $1 AND name = $2`
 	// run
-	logf(sqlstr, projectID, name)
+	logf(sqlstr, teamID, name)
 	tt := TaskType{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, projectID, name).Scan(&tt.TaskTypeID, &tt.ProjectID, &tt.Name); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, teamID, name).Scan(&tt.TaskTypeID, &tt.TeamID, &tt.Name); err != nil {
 		return nil, logerror(err)
 	}
 	return &tt, nil
 }
 
-// Project returns the Project associated with the TaskType's (ProjectID).
+// Team returns the Team associated with the TaskType's (TeamID).
 //
-// Generated from foreign key 'task_types_project_id_fkey'.
-func (tt *TaskType) Project(ctx context.Context, db DB) (*Project, error) {
-	return ProjectByProjectID(ctx, db, int(tt.ProjectID))
+// Generated from foreign key 'task_types_team_id_fkey'.
+func (tt *TaskType) Team(ctx context.Context, db DB) (*Team, error) {
+	return TeamByTeamID(ctx, db, int(tt.TeamID))
 }

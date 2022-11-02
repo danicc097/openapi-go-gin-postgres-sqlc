@@ -27,7 +27,7 @@ type User struct {
 	CreatedAt  sql.NullTime    `json:"created_at"`  // created_at
 	UpdatedAt  sql.NullTime    `json:"updated_at"`  // updated_at
 	DeletedAt  sql.NullTime    `json:"deleted_at"`  // deleted_at
-	Projects   pq.GenericArray `json:"projects"`    // projects
+	Teams      pq.GenericArray `json:"teams"`       // teams
 }
 
 // TODO only create if exists
@@ -36,7 +36,7 @@ type User struct {
 func GetMostRecentUser(ctx context.Context, db DB, n int) ([]*User, error) {
 	// list
 	const sqlstr = `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at, projects ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at, teams ` +
 		`FROM v.users ` +
 		`ORDER BY created_at DESC LIMIT $1`
 	// run
@@ -53,7 +53,7 @@ func GetMostRecentUser(ctx context.Context, db DB, n int) ([]*User, error) {
 	for rows.Next() {
 		u := User{}
 		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Projects); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Teams); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &u)
