@@ -24,7 +24,7 @@ type UserSelectConfigOption func(*UserSelectConfig)
 // UserWithLimit limits row selection.
 func UserWithLimit(limit int) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 
@@ -60,6 +60,7 @@ type User struct {
 	UserID     uuid.NullUUID   `json:"user_id"`     // user_id
 	Username   sql.NullString  `json:"username"`    // username
 	Email      sql.NullString  `json:"email"`       // email
+	Scopes     pq.StringArray  `json:"scopes"`      // scopes
 	FirstName  sql.NullString  `json:"first_name"`  // first_name
 	LastName   sql.NullString  `json:"last_name"`   // last_name
 	FullName   sql.NullString  `json:"full_name"`   // full_name

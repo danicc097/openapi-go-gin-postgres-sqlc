@@ -42,6 +42,7 @@ create table users (
   user_id uuid default gen_random_uuid () not null
   , username text not null
   , email text not null
+  , scopes text[] default '{}' not null -- defined in spec only
   , first_name text
   , last_name text
   , full_name text generated always as (((first_name) || ' ') || (last_name)) stored
@@ -116,6 +117,7 @@ create type work_item_role as ENUM (
 --   , foreign key (member) references users (user_id) on delete cascade
 -- );
 
+-- only need different types for tasks. work items are all the same, just containers
 create table task_types (
   task_type_id serial
   , team_id bigint not null
@@ -123,6 +125,15 @@ create table task_types (
   , primary key (task_type_id)
   , unique (team_id, name)
   , foreign key (team_id) references teams (team_id) on delete cascade
+);
+
+-- customize keys per project only.
+-- these keys will be used to dynamically show data in ui, regardless of current project or team
+create table work_item_fields (
+  project_id bigint not null
+  , key text not null -- for work_items.metadata->"key" filtering (and we can dynamically create indeces on work_items.metadata when a new key is added)
+  , primary key (project_id, key)
+  , foreign key (project_id) references projects (project_id) on delete cascade
 );
 
 create table tasks (

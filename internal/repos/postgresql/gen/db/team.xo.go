@@ -20,7 +20,7 @@ type TeamSelectConfigOption func(*TeamSelectConfig)
 // TeamWithLimit limits row selection.
 func TeamWithLimit(limit int) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 
@@ -84,7 +84,7 @@ func (t *Team) Insert(ctx context.Context, db DB) error {
 		`project_id, name, description, metadata` +
 		`) VALUES (` +
 		`$1, $2, $3, $4` +
-		`) RETURNING team_id`
+		`) RETURNING team_id `
 	// run
 	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata)
 	if err := db.QueryRow(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata).Scan(&t.TeamID); err != nil {
@@ -106,7 +106,7 @@ func (t *Team) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.teams SET ` +
 		`project_id = $1, name = $2, description = $3, metadata = $4 ` +
-		`WHERE team_id = $5`
+		`WHERE team_id = $5 `
 	// run
 	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata, t.CreatedAt, t.UpdatedAt, t.TeamID)
 	if _, err := db.Exec(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata, t.CreatedAt, t.UpdatedAt, t.TeamID); err != nil {
@@ -137,7 +137,7 @@ func (t *Team) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (team_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, metadata = EXCLUDED.metadata `
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, metadata = EXCLUDED.metadata  `
 	// run
 	logf(sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.Metadata)
 	if _, err := db.Exec(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.Metadata); err != nil {
@@ -158,7 +158,7 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.teams ` +
-		`WHERE team_id = $1`
+		`WHERE team_id = $1 `
 	// run
 	logf(sqlstr, t.TeamID)
 	if _, err := db.Exec(ctx, sqlstr, t.TeamID); err != nil {
@@ -182,7 +182,7 @@ func TeamByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfi
 	sqlstr := `SELECT ` +
 		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.teams ` +
-		`WHERE name = $1`
+		`WHERE name = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -210,7 +210,7 @@ func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConf
 	sqlstr := `SELECT ` +
 		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.teams ` +
-		`WHERE team_id = $1`
+		`WHERE team_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

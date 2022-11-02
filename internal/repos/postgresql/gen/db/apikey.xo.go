@@ -22,7 +22,7 @@ type APIKeySelectConfigOption func(*APIKeySelectConfig)
 // APIKeyWithLimit limits row selection.
 func APIKeyWithLimit(limit int) APIKeySelectConfigOption {
 	return func(s *APIKeySelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 
@@ -79,7 +79,7 @@ func (ak *APIKey) Insert(ctx context.Context, db DB) error {
 		`api_key, user_id, expires_on` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) RETURNING api_key_id`
+		`) RETURNING api_key_id `
 	// run
 	logf(sqlstr, ak.APIKey, ak.UserID, ak.ExpiresOn)
 	if err := db.QueryRow(ctx, sqlstr, ak.APIKey, ak.UserID, ak.ExpiresOn).Scan(&ak.APIKeyID); err != nil {
@@ -101,7 +101,7 @@ func (ak *APIKey) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.api_keys SET ` +
 		`api_key = $1, user_id = $2, expires_on = $3 ` +
-		`WHERE api_key_id = $4`
+		`WHERE api_key_id = $4 `
 	// run
 	logf(sqlstr, ak.APIKey, ak.UserID, ak.ExpiresOn, ak.APIKeyID)
 	if _, err := db.Exec(ctx, sqlstr, ak.APIKey, ak.UserID, ak.ExpiresOn, ak.APIKeyID); err != nil {
@@ -132,7 +132,7 @@ func (ak *APIKey) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (api_key_id) DO ` +
 		`UPDATE SET ` +
-		`api_key = EXCLUDED.api_key, user_id = EXCLUDED.user_id, expires_on = EXCLUDED.expires_on `
+		`api_key = EXCLUDED.api_key, user_id = EXCLUDED.user_id, expires_on = EXCLUDED.expires_on  `
 	// run
 	logf(sqlstr, ak.APIKeyID, ak.APIKey, ak.UserID, ak.ExpiresOn)
 	if _, err := db.Exec(ctx, sqlstr, ak.APIKeyID, ak.APIKey, ak.UserID, ak.ExpiresOn); err != nil {
@@ -153,7 +153,7 @@ func (ak *APIKey) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.api_keys ` +
-		`WHERE api_key_id = $1`
+		`WHERE api_key_id = $1 `
 	// run
 	logf(sqlstr, ak.APIKeyID)
 	if _, err := db.Exec(ctx, sqlstr, ak.APIKeyID); err != nil {
@@ -177,7 +177,7 @@ func APIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...APIKeySel
 	sqlstr := `SELECT ` +
 		`api_key_id, api_key, user_id, expires_on ` +
 		`FROM public.api_keys ` +
-		`WHERE api_key = $1`
+		`WHERE api_key = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -205,7 +205,7 @@ func APIKeyByAPIKeyID(ctx context.Context, db DB, apiKeyID int, opts ...APIKeySe
 	sqlstr := `SELECT ` +
 		`api_key_id, api_key, user_id, expires_on ` +
 		`FROM public.api_keys ` +
-		`WHERE api_key_id = $1`
+		`WHERE api_key_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

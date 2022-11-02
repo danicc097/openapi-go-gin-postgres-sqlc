@@ -19,7 +19,7 @@ type KanbanStepSelectConfigOption func(*KanbanStepSelectConfig)
 // KanbanStepWithLimit limits row selection.
 func KanbanStepWithLimit(limit int) KanbanStepSelectConfigOption {
 	return func(s *KanbanStepSelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 
@@ -72,7 +72,7 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) error {
 		`kanban_step_id, team_id, step_order, name, description, time_trackable, disabled` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7` +
-		`)`
+		`) `
 	// run
 	logf(sqlstr, ks.KanbanStepID, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.TimeTrackable, ks.Disabled)
 	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.TimeTrackable, ks.Disabled); err != nil {
@@ -94,7 +94,7 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.kanban_steps SET ` +
 		`team_id = $1, step_order = $2, name = $3, description = $4, time_trackable = $5, disabled = $6 ` +
-		`WHERE kanban_step_id = $7`
+		`WHERE kanban_step_id = $7 `
 	// run
 	logf(sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID)
 	if _, err := db.Exec(ctx, sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID); err != nil {
@@ -125,7 +125,7 @@ func (ks *KanbanStep) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (kanban_step_id) DO ` +
 		`UPDATE SET ` +
-		`team_id = EXCLUDED.team_id, step_order = EXCLUDED.step_order, name = EXCLUDED.name, description = EXCLUDED.description, time_trackable = EXCLUDED.time_trackable, disabled = EXCLUDED.disabled `
+		`team_id = EXCLUDED.team_id, step_order = EXCLUDED.step_order, name = EXCLUDED.name, description = EXCLUDED.description, time_trackable = EXCLUDED.time_trackable, disabled = EXCLUDED.disabled  `
 	// run
 	logf(sqlstr, ks.KanbanStepID, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.TimeTrackable, ks.Disabled)
 	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.TimeTrackable, ks.Disabled); err != nil {
@@ -146,7 +146,7 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.kanban_steps ` +
-		`WHERE kanban_step_id = $1`
+		`WHERE kanban_step_id = $1 `
 	// run
 	logf(sqlstr, ks.KanbanStepID)
 	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID); err != nil {
@@ -170,7 +170,7 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts
 	sqlstr := `SELECT ` +
 		`kanban_step_id, team_id, step_order, name, description, time_trackable, disabled ` +
 		`FROM public.kanban_steps ` +
-		`WHERE kanban_step_id = $1`
+		`WHERE kanban_step_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

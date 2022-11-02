@@ -21,7 +21,7 @@ type TaskMemberSelectConfigOption func(*TaskMemberSelectConfig)
 // TaskMemberWithLimit limits row selection.
 func TaskMemberWithLimit(limit int) TaskMemberSelectConfigOption {
 	return func(s *TaskMemberSelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 
@@ -69,7 +69,7 @@ func (tm *TaskMember) Insert(ctx context.Context, db DB) error {
 		`task_id, member` +
 		`) VALUES (` +
 		`$1, $2` +
-		`)`
+		`) `
 	// run
 	logf(sqlstr, tm.TaskID, tm.Member)
 	if _, err := db.Exec(ctx, sqlstr, tm.TaskID, tm.Member); err != nil {
@@ -92,7 +92,7 @@ func (tm *TaskMember) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with composite primary key
 	sqlstr := `DELETE FROM public.task_member ` +
-		`WHERE task_id = $1 AND member = $2`
+		`WHERE task_id = $1 AND member = $2 `
 	// run
 	logf(sqlstr, tm.TaskID, tm.Member)
 	if _, err := db.Exec(ctx, sqlstr, tm.TaskID, tm.Member); err != nil {
@@ -116,7 +116,7 @@ func TaskMemberByMemberTaskID(ctx context.Context, db DB, member uuid.UUID, task
 	sqlstr := `SELECT ` +
 		`task_id, member ` +
 		`FROM public.task_member ` +
-		`WHERE member = $1 AND task_id = $2`
+		`WHERE member = $1 AND task_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -158,7 +158,7 @@ func TaskMemberByTaskIDMember(ctx context.Context, db DB, taskID int64, member u
 	sqlstr := `SELECT ` +
 		`task_id, member ` +
 		`FROM public.task_member ` +
-		`WHERE task_id = $1 AND member = $2`
+		`WHERE task_id = $1 AND member = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

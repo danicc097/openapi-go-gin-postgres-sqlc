@@ -19,7 +19,7 @@ type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
 // SchemaMigrationWithLimit limits row selection.
 func SchemaMigrationWithLimit(limit int) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 
@@ -67,7 +67,7 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) error {
 		`version, dirty` +
 		`) VALUES (` +
 		`$1, $2` +
-		`)`
+		`) `
 	// run
 	logf(sqlstr, sm.Version, sm.Dirty)
 	if _, err := db.Exec(ctx, sqlstr, sm.Version, sm.Dirty); err != nil {
@@ -89,7 +89,7 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.schema_migrations SET ` +
 		`dirty = $1 ` +
-		`WHERE version = $2`
+		`WHERE version = $2 `
 	// run
 	logf(sqlstr, sm.Dirty, sm.Version)
 	if _, err := db.Exec(ctx, sqlstr, sm.Dirty, sm.Version); err != nil {
@@ -120,7 +120,7 @@ func (sm *SchemaMigration) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (version) DO ` +
 		`UPDATE SET ` +
-		`dirty = EXCLUDED.dirty `
+		`dirty = EXCLUDED.dirty  `
 	// run
 	logf(sqlstr, sm.Version, sm.Dirty)
 	if _, err := db.Exec(ctx, sqlstr, sm.Version, sm.Dirty); err != nil {
@@ -141,7 +141,7 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.schema_migrations ` +
-		`WHERE version = $1`
+		`WHERE version = $1 `
 	// run
 	logf(sqlstr, sm.Version)
 	if _, err := db.Exec(ctx, sqlstr, sm.Version); err != nil {
@@ -165,7 +165,7 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ..
 	sqlstr := `SELECT ` +
 		`version, dirty ` +
 		`FROM public.schema_migrations ` +
-		`WHERE version = $1`
+		`WHERE version = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -21,7 +21,7 @@ type UserTeamSelectConfigOption func(*UserTeamSelectConfig)
 // UserTeamWithLimit limits row selection.
 func UserTeamWithLimit(limit int) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 
@@ -69,7 +69,7 @@ func (ut *UserTeam) Insert(ctx context.Context, db DB) error {
 		`team_id, user_id` +
 		`) VALUES (` +
 		`$1, $2` +
-		`)`
+		`) `
 	// run
 	logf(sqlstr, ut.TeamID, ut.UserID)
 	if _, err := db.Exec(ctx, sqlstr, ut.TeamID, ut.UserID); err != nil {
@@ -92,7 +92,7 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with composite primary key
 	sqlstr := `DELETE FROM public.user_team ` +
-		`WHERE team_id = $1 AND user_id = $2`
+		`WHERE team_id = $1 AND user_id = $2 `
 	// run
 	logf(sqlstr, ut.TeamID, ut.UserID)
 	if _, err := db.Exec(ctx, sqlstr, ut.TeamID, ut.UserID); err != nil {
@@ -116,7 +116,7 @@ func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID
 	sqlstr := `SELECT ` +
 		`team_id, user_id ` +
 		`FROM public.user_team ` +
-		`WHERE user_id = $1 AND team_id = $2`
+		`WHERE user_id = $1 AND team_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -144,7 +144,7 @@ func UserTeamByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.
 	sqlstr := `SELECT ` +
 		`team_id, user_id ` +
 		`FROM public.user_team ` +
-		`WHERE team_id = $1 AND user_id = $2`
+		`WHERE team_id = $1 AND user_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -186,7 +186,7 @@ func UserTeamByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...User
 	sqlstr := `SELECT ` +
 		`team_id, user_id ` +
 		`FROM public.user_team ` +
-		`WHERE user_id = $1`
+		`WHERE user_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

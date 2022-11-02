@@ -25,7 +25,7 @@ type UserSelectConfigOption func(*UserSelectConfig)
 // UserWithLimit limits row selection.
 func UserWithLimit(limit int) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 
@@ -61,6 +61,7 @@ type User struct {
 	UserID     uuid.NullUUID   `json:"user_id"`     // user_id
 	Username   sql.NullString  `json:"username"`    // username
 	Email      sql.NullString  `json:"email"`       // email
+	Scopes     pq.StringArray  `json:"scopes"`      // scopes
 	FirstName  sql.NullString  `json:"first_name"`  // first_name
 	LastName   sql.NullString  `json:"last_name"`   // last_name
 	FullName   sql.NullString  `json:"full_name"`   // full_name
@@ -83,9 +84,9 @@ func UsersByExternalID(ctx context.Context, db DB, externalID sql.NullString, op
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at, teams ` +
+		`user_id, username, email, scopes, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at, teams ` +
 		`FROM cache.users ` +
-		`WHERE external_id = $1`
+		`WHERE external_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -101,7 +102,7 @@ func UsersByExternalID(ctx context.Context, db DB, externalID sql.NullString, op
 	for rows.Next() {
 		u := User{}
 		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Teams); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.Scopes, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Teams); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &u)

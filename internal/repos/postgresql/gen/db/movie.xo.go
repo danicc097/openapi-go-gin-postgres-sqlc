@@ -19,7 +19,7 @@ type MovieSelectConfigOption func(*MovieSelectConfig)
 // MovieWithLimit limits row selection.
 func MovieWithLimit(limit int) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 
@@ -69,7 +69,7 @@ func (m *Movie) Insert(ctx context.Context, db DB) error {
 		`title, year, synopsis` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) RETURNING movie_id`
+		`) RETURNING movie_id `
 	// run
 	logf(sqlstr, m.Title, m.Year, m.Synopsis)
 	if err := db.QueryRow(ctx, sqlstr, m.Title, m.Year, m.Synopsis).Scan(&m.MovieID); err != nil {
@@ -91,7 +91,7 @@ func (m *Movie) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.movies SET ` +
 		`title = $1, year = $2, synopsis = $3 ` +
-		`WHERE movie_id = $4`
+		`WHERE movie_id = $4 `
 	// run
 	logf(sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID)
 	if _, err := db.Exec(ctx, sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID); err != nil {
@@ -122,7 +122,7 @@ func (m *Movie) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (movie_id) DO ` +
 		`UPDATE SET ` +
-		`title = EXCLUDED.title, year = EXCLUDED.year, synopsis = EXCLUDED.synopsis `
+		`title = EXCLUDED.title, year = EXCLUDED.year, synopsis = EXCLUDED.synopsis  `
 	// run
 	logf(sqlstr, m.MovieID, m.Title, m.Year, m.Synopsis)
 	if _, err := db.Exec(ctx, sqlstr, m.MovieID, m.Title, m.Year, m.Synopsis); err != nil {
@@ -143,7 +143,7 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.movies ` +
-		`WHERE movie_id = $1`
+		`WHERE movie_id = $1 `
 	// run
 	logf(sqlstr, m.MovieID)
 	if _, err := db.Exec(ctx, sqlstr, m.MovieID); err != nil {
@@ -167,7 +167,7 @@ func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelect
 	sqlstr := `SELECT ` +
 		`movie_id, title, year, synopsis ` +
 		`FROM public.movies ` +
-		`WHERE movie_id = $1`
+		`WHERE movie_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

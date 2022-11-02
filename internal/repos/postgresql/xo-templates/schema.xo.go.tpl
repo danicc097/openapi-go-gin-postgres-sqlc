@@ -138,7 +138,7 @@ type {{ $t.GoName }}SelectConfigOption func(*{{ $t.GoName }}SelectConfig)
 // {{ $t.GoName }}WithLimit limits row selection.
 func {{ $t.GoName }}WithLimit(limit int) {{ $t.GoName }}SelectConfigOption {
 	return func(s *{{ $t.GoName }}SelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 

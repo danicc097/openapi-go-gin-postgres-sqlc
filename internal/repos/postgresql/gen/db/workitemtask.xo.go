@@ -19,7 +19,7 @@ type WorkItemTaskSelectConfigOption func(*WorkItemTaskSelectConfig)
 // WorkItemTaskWithLimit limits row selection.
 func WorkItemTaskWithLimit(limit int) WorkItemTaskSelectConfigOption {
 	return func(s *WorkItemTaskSelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 
@@ -67,7 +67,7 @@ func (wit *WorkItemTask) Insert(ctx context.Context, db DB) error {
 		`task_id, work_item_id` +
 		`) VALUES (` +
 		`$1, $2` +
-		`)`
+		`) `
 	// run
 	logf(sqlstr, wit.TaskID, wit.WorkItemID)
 	if _, err := db.Exec(ctx, sqlstr, wit.TaskID, wit.WorkItemID); err != nil {
@@ -90,7 +90,7 @@ func (wit *WorkItemTask) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with composite primary key
 	sqlstr := `DELETE FROM public.work_item_task ` +
-		`WHERE task_id = $1 AND work_item_id = $2`
+		`WHERE task_id = $1 AND work_item_id = $2 `
 	// run
 	logf(sqlstr, wit.TaskID, wit.WorkItemID)
 	if _, err := db.Exec(ctx, sqlstr, wit.TaskID, wit.WorkItemID); err != nil {
@@ -114,7 +114,7 @@ func WorkItemTaskByWorkItemIDTaskID(ctx context.Context, db DB, workItemID, task
 	sqlstr := `SELECT ` +
 		`task_id, work_item_id ` +
 		`FROM public.work_item_task ` +
-		`WHERE work_item_id = $1 AND task_id = $2`
+		`WHERE work_item_id = $1 AND task_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -142,7 +142,7 @@ func WorkItemTaskByTaskIDWorkItemID(ctx context.Context, db DB, taskID, workItem
 	sqlstr := `SELECT ` +
 		`task_id, work_item_id ` +
 		`FROM public.work_item_task ` +
-		`WHERE task_id = $1 AND work_item_id = $2`
+		`WHERE task_id = $1 AND work_item_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -21,7 +21,7 @@ type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
 // WorkItemWithLimit limits row selection.
 func WorkItemWithLimit(limit int) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 
@@ -90,7 +90,7 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) error {
 		`title, metadata, team_id, kanban_step_id, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5` +
-		`) RETURNING work_item_id`
+		`) RETURNING work_item_id `
 	// run
 	logf(sqlstr, wi.Title, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.DeletedAt)
 	if err := db.QueryRow(ctx, sqlstr, wi.Title, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.DeletedAt).Scan(&wi.WorkItemID); err != nil {
@@ -112,7 +112,7 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_items SET ` +
 		`title = $1, metadata = $2, team_id = $3, kanban_step_id = $4, deleted_at = $5 ` +
-		`WHERE work_item_id = $6`
+		`WHERE work_item_id = $6 `
 	// run
 	logf(sqlstr, wi.Title, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
 	if _, err := db.Exec(ctx, sqlstr, wi.Title, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID); err != nil {
@@ -143,7 +143,7 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (work_item_id) DO ` +
 		`UPDATE SET ` +
-		`title = EXCLUDED.title, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, deleted_at = EXCLUDED.deleted_at `
+		`title = EXCLUDED.title, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, deleted_at = EXCLUDED.deleted_at  `
 	// run
 	logf(sqlstr, wi.WorkItemID, wi.Title, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.DeletedAt)
 	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.DeletedAt); err != nil {
@@ -164,7 +164,7 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.work_items ` +
-		`WHERE work_item_id = $1`
+		`WHERE work_item_id = $1 `
 	// run
 	logf(sqlstr, wi.WorkItemID)
 	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID); err != nil {
@@ -188,7 +188,7 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 	sqlstr := `SELECT ` +
 		`work_item_id, title, metadata, team_id, kanban_step_id, created_at, updated_at, deleted_at ` +
 		`FROM public.work_items ` +
-		`WHERE work_item_id = $1`
+		`WHERE work_item_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

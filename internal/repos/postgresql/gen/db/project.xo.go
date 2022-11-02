@@ -20,7 +20,7 @@ type ProjectSelectConfigOption func(*ProjectSelectConfig)
 // ProjectWithLimit limits row selection.
 func ProjectWithLimit(limit int) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 
@@ -83,7 +83,7 @@ func (p *Project) Insert(ctx context.Context, db DB) error {
 		`name, description, metadata` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) RETURNING project_id`
+		`) RETURNING project_id `
 	// run
 	logf(sqlstr, p.Name, p.Description, p.Metadata)
 	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.Metadata).Scan(&p.ProjectID); err != nil {
@@ -105,7 +105,7 @@ func (p *Project) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.projects SET ` +
 		`name = $1, description = $2, metadata = $3 ` +
-		`WHERE project_id = $4`
+		`WHERE project_id = $4 `
 	// run
 	logf(sqlstr, p.Name, p.Description, p.Metadata, p.CreatedAt, p.UpdatedAt, p.ProjectID)
 	if _, err := db.Exec(ctx, sqlstr, p.Name, p.Description, p.Metadata, p.CreatedAt, p.UpdatedAt, p.ProjectID); err != nil {
@@ -136,7 +136,7 @@ func (p *Project) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (project_id) DO ` +
 		`UPDATE SET ` +
-		`name = EXCLUDED.name, description = EXCLUDED.description, metadata = EXCLUDED.metadata `
+		`name = EXCLUDED.name, description = EXCLUDED.description, metadata = EXCLUDED.metadata  `
 	// run
 	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.Metadata)
 	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.Metadata); err != nil {
@@ -157,7 +157,7 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.projects ` +
-		`WHERE project_id = $1`
+		`WHERE project_id = $1 `
 	// run
 	logf(sqlstr, p.ProjectID)
 	if _, err := db.Exec(ctx, sqlstr, p.ProjectID); err != nil {
@@ -181,7 +181,7 @@ func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelec
 	sqlstr := `SELECT ` +
 		`project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.projects ` +
-		`WHERE name = $1`
+		`WHERE name = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -209,7 +209,7 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...Proje
 	sqlstr := `SELECT ` +
 		`project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.projects ` +
-		`WHERE project_id = $1`
+		`WHERE project_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

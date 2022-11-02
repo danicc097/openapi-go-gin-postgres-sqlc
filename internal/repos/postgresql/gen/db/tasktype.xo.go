@@ -19,7 +19,7 @@ type TaskTypeSelectConfigOption func(*TaskTypeSelectConfig)
 // TaskTypeWithLimit limits row selection.
 func TaskTypeWithLimit(limit int) TaskTypeSelectConfigOption {
 	return func(s *TaskTypeSelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 
@@ -68,7 +68,7 @@ func (tt *TaskType) Insert(ctx context.Context, db DB) error {
 		`team_id, name` +
 		`) VALUES (` +
 		`$1, $2` +
-		`) RETURNING task_type_id`
+		`) RETURNING task_type_id `
 	// run
 	logf(sqlstr, tt.TeamID, tt.Name)
 	if err := db.QueryRow(ctx, sqlstr, tt.TeamID, tt.Name).Scan(&tt.TaskTypeID); err != nil {
@@ -90,7 +90,7 @@ func (tt *TaskType) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.task_types SET ` +
 		`team_id = $1, name = $2 ` +
-		`WHERE task_type_id = $3`
+		`WHERE task_type_id = $3 `
 	// run
 	logf(sqlstr, tt.TeamID, tt.Name, tt.TaskTypeID)
 	if _, err := db.Exec(ctx, sqlstr, tt.TeamID, tt.Name, tt.TaskTypeID); err != nil {
@@ -121,7 +121,7 @@ func (tt *TaskType) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (task_type_id) DO ` +
 		`UPDATE SET ` +
-		`team_id = EXCLUDED.team_id, name = EXCLUDED.name `
+		`team_id = EXCLUDED.team_id, name = EXCLUDED.name  `
 	// run
 	logf(sqlstr, tt.TaskTypeID, tt.TeamID, tt.Name)
 	if _, err := db.Exec(ctx, sqlstr, tt.TaskTypeID, tt.TeamID, tt.Name); err != nil {
@@ -142,7 +142,7 @@ func (tt *TaskType) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.task_types ` +
-		`WHERE task_type_id = $1`
+		`WHERE task_type_id = $1 `
 	// run
 	logf(sqlstr, tt.TaskTypeID)
 	if _, err := db.Exec(ctx, sqlstr, tt.TaskTypeID); err != nil {
@@ -166,7 +166,7 @@ func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int, opts ...Ta
 	sqlstr := `SELECT ` +
 		`task_type_id, team_id, name ` +
 		`FROM public.task_types ` +
-		`WHERE task_type_id = $1`
+		`WHERE task_type_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -194,7 +194,7 @@ func TaskTypeByTeamIDName(ctx context.Context, db DB, teamID int64, name string,
 	sqlstr := `SELECT ` +
 		`task_type_id, team_id, name ` +
 		`FROM public.task_types ` +
-		`WHERE team_id = $1 AND name = $2`
+		`WHERE team_id = $1 AND name = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

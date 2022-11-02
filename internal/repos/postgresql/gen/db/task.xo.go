@@ -21,7 +21,7 @@ type TaskSelectConfigOption func(*TaskSelectConfig)
 // TaskWithLimit limits row selection.
 func TaskWithLimit(limit int) TaskSelectConfigOption {
 	return func(s *TaskSelectConfig) {
-		s.limit = fmt.Sprintf("limit %d", limit)
+		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
 }
 
@@ -95,7 +95,7 @@ func (t *Task) Insert(ctx context.Context, db DB) error {
 		`task_type_id, title, metadata, target_date, target_date_timezone, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6` +
-		`) RETURNING task_id`
+		`) RETURNING task_id `
 	// run
 	logf(sqlstr, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt)
 	if err := db.QueryRow(ctx, sqlstr, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt).Scan(&t.TaskID); err != nil {
@@ -117,7 +117,7 @@ func (t *Task) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.tasks SET ` +
 		`task_type_id = $1, title = $2, metadata = $3, target_date = $4, target_date_timezone = $5, deleted_at = $6 ` +
-		`WHERE task_id = $7`
+		`WHERE task_id = $7 `
 	// run
 	logf(sqlstr, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID)
 	if _, err := db.Exec(ctx, sqlstr, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID); err != nil {
@@ -148,7 +148,7 @@ func (t *Task) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (task_id) DO ` +
 		`UPDATE SET ` +
-		`task_type_id = EXCLUDED.task_type_id, title = EXCLUDED.title, metadata = EXCLUDED.metadata, target_date = EXCLUDED.target_date, target_date_timezone = EXCLUDED.target_date_timezone, deleted_at = EXCLUDED.deleted_at `
+		`task_type_id = EXCLUDED.task_type_id, title = EXCLUDED.title, metadata = EXCLUDED.metadata, target_date = EXCLUDED.target_date, target_date_timezone = EXCLUDED.target_date_timezone, deleted_at = EXCLUDED.deleted_at  `
 	// run
 	logf(sqlstr, t.TaskID, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt)
 	if _, err := db.Exec(ctx, sqlstr, t.TaskID, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt); err != nil {
@@ -169,7 +169,7 @@ func (t *Task) Delete(ctx context.Context, db DB) error {
 	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.tasks ` +
-		`WHERE task_id = $1`
+		`WHERE task_id = $1 `
 	// run
 	logf(sqlstr, t.TaskID)
 	if _, err := db.Exec(ctx, sqlstr, t.TaskID); err != nil {
@@ -193,7 +193,7 @@ func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectCo
 	sqlstr := `SELECT ` +
 		`task_id, task_type_id, title, metadata, target_date, target_date_timezone, created_at, updated_at, deleted_at ` +
 		`FROM public.tasks ` +
-		`WHERE task_id = $1`
+		`WHERE task_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
