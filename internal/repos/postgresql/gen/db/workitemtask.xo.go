@@ -4,11 +4,13 @@ package db
 
 import (
 	"context"
+	"fmt"
+	"strings"
 )
 
 type WorkItemTaskSelectConfig struct {
-	limit    *int
-	orderBy  []WorkItemTaskOrderBy
+	limit    string
+	orderBy  string
 	joinWith []WorkItemTaskJoinBy
 }
 
@@ -17,14 +19,14 @@ type WorkItemTaskSelectConfigOption func(*WorkItemTaskSelectConfig)
 // WorkItemTaskWithLimit limits row selection.
 func WorkItemTaskWithLimit(limit int) WorkItemTaskSelectConfigOption {
 	return func(s *WorkItemTaskSelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // WorkItemTaskWithOrderBy orders results by the given columns.
 func WorkItemTaskWithOrderBy(rows ...WorkItemTaskOrderBy) WorkItemTaskSelectConfigOption {
 	return func(s *WorkItemTaskSelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
@@ -61,7 +63,7 @@ func (wit *WorkItemTask) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (manual)
-	const sqlstr = `INSERT INTO public.work_item_task (` +
+	sqlstr := `INSERT INTO public.work_item_task (` +
 		`task_id, work_item_id` +
 		`) VALUES (` +
 		`$1, $2` +
@@ -87,7 +89,7 @@ func (wit *WorkItemTask) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with composite primary key
-	const sqlstr = `DELETE FROM public.work_item_task ` +
+	sqlstr := `DELETE FROM public.work_item_task ` +
 		`WHERE task_id = $1 AND work_item_id = $2`
 	// run
 	logf(sqlstr, wit.TaskID, wit.WorkItemID)
@@ -103,11 +105,19 @@ func (wit *WorkItemTask) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_task_pkey'.
 func WorkItemTaskByWorkItemIDTaskID(ctx context.Context, db DB, workItemID, taskID int64, opts ...WorkItemTaskSelectConfigOption) (*WorkItemTask, error) {
+	c := &WorkItemTaskSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`task_id, work_item_id ` +
 		`FROM public.work_item_task ` +
 		`WHERE work_item_id = $1 AND task_id = $2`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, workItemID, taskID)
 	wit := WorkItemTask{
@@ -123,11 +133,19 @@ func WorkItemTaskByWorkItemIDTaskID(ctx context.Context, db DB, workItemID, task
 //
 // Generated from index 'work_item_task_task_id_work_item_id_idx'.
 func WorkItemTaskByTaskIDWorkItemID(ctx context.Context, db DB, taskID, workItemID int64, opts ...WorkItemTaskSelectConfigOption) ([]*WorkItemTask, error) {
+	c := &WorkItemTaskSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`task_id, work_item_id ` +
 		`FROM public.work_item_task ` +
 		`WHERE task_id = $1 AND work_item_id = $2`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, taskID, workItemID)
 	rows, err := db.Query(ctx, sqlstr, taskID, workItemID)

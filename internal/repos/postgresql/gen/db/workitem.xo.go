@@ -5,12 +5,14 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"strings"
 	"time"
 )
 
 type WorkItemSelectConfig struct {
-	limit    *int
-	orderBy  []WorkItemOrderBy
+	limit    string
+	orderBy  string
 	joinWith []WorkItemJoinBy
 }
 
@@ -19,14 +21,14 @@ type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
 // WorkItemWithLimit limits row selection.
 func WorkItemWithLimit(limit int) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // WorkItemWithOrderBy orders results by the given columns.
 func WorkItemWithOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
@@ -84,7 +86,7 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
-	const sqlstr = `INSERT INTO public.work_items (` +
+	sqlstr := `INSERT INTO public.work_items (` +
 		`title, metadata, team_id, kanban_step_id, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5` +
@@ -108,7 +110,7 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) error {
 		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
-	const sqlstr = `UPDATE public.work_items SET ` +
+	sqlstr := `UPDATE public.work_items SET ` +
 		`title = $1, metadata = $2, team_id = $3, kanban_step_id = $4, deleted_at = $5 ` +
 		`WHERE work_item_id = $6`
 	// run
@@ -134,7 +136,7 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB) error {
 		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 	}
 	// upsert
-	const sqlstr = `INSERT INTO public.work_items (` +
+	sqlstr := `INSERT INTO public.work_items (` +
 		`work_item_id, title, metadata, team_id, kanban_step_id, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6` +
@@ -161,7 +163,7 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with single primary key
-	const sqlstr = `DELETE FROM public.work_items ` +
+	sqlstr := `DELETE FROM public.work_items ` +
 		`WHERE work_item_id = $1`
 	// run
 	logf(sqlstr, wi.WorkItemID)
@@ -177,11 +179,19 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_items_pkey'.
 func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
+	c := &WorkItemSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`work_item_id, title, metadata, team_id, kanban_step_id, created_at, updated_at, deleted_at ` +
 		`FROM public.work_items ` +
 		`WHERE work_item_id = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, workItemID)
 	wi := WorkItem{

@@ -5,6 +5,8 @@ package cache
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/lib/pq"
@@ -13,8 +15,8 @@ import (
 )
 
 type UserSelectConfig struct {
-	limit    *int
-	orderBy  []UserOrderBy
+	limit    string
+	orderBy  string
 	joinWith []UserJoinBy
 }
 
@@ -23,14 +25,14 @@ type UserSelectConfigOption func(*UserSelectConfig)
 // UserWithLimit limits row selection.
 func UserWithLimit(limit int) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // UserWithOrderBy orders results by the given columns.
 func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
@@ -74,11 +76,19 @@ type User struct {
 //
 // Generated from index 'users_external_id_idx'.
 func UsersByExternalID(ctx context.Context, db DB, externalID sql.NullString, opts ...UserSelectConfigOption) ([]*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at, teams ` +
 		`FROM cache.users ` +
 		`WHERE external_id = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, externalID)
 	rows, err := db.Query(ctx, sqlstr, externalID)

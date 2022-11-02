@@ -5,12 +5,14 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"strings"
 	"time"
 )
 
 type TaskSelectConfig struct {
-	limit    *int
-	orderBy  []TaskOrderBy
+	limit    string
+	orderBy  string
 	joinWith []TaskJoinBy
 }
 
@@ -19,14 +21,14 @@ type TaskSelectConfigOption func(*TaskSelectConfig)
 // TaskWithLimit limits row selection.
 func TaskWithLimit(limit int) TaskSelectConfigOption {
 	return func(s *TaskSelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // TaskWithOrderBy orders results by the given columns.
 func TaskWithOrderBy(rows ...TaskOrderBy) TaskSelectConfigOption {
 	return func(s *TaskSelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
@@ -89,7 +91,7 @@ func (t *Task) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
-	const sqlstr = `INSERT INTO public.tasks (` +
+	sqlstr := `INSERT INTO public.tasks (` +
 		`task_type_id, title, metadata, target_date, target_date_timezone, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6` +
@@ -113,7 +115,7 @@ func (t *Task) Update(ctx context.Context, db DB) error {
 		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
-	const sqlstr = `UPDATE public.tasks SET ` +
+	sqlstr := `UPDATE public.tasks SET ` +
 		`task_type_id = $1, title = $2, metadata = $3, target_date = $4, target_date_timezone = $5, deleted_at = $6 ` +
 		`WHERE task_id = $7`
 	// run
@@ -139,7 +141,7 @@ func (t *Task) Upsert(ctx context.Context, db DB) error {
 		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 	}
 	// upsert
-	const sqlstr = `INSERT INTO public.tasks (` +
+	sqlstr := `INSERT INTO public.tasks (` +
 		`task_id, task_type_id, title, metadata, target_date, target_date_timezone, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7` +
@@ -166,7 +168,7 @@ func (t *Task) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with single primary key
-	const sqlstr = `DELETE FROM public.tasks ` +
+	sqlstr := `DELETE FROM public.tasks ` +
 		`WHERE task_id = $1`
 	// run
 	logf(sqlstr, t.TaskID)
@@ -182,11 +184,19 @@ func (t *Task) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'tasks_pkey'.
 func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectConfigOption) (*Task, error) {
+	c := &TaskSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`task_id, task_type_id, title, metadata, target_date, target_date_timezone, created_at, updated_at, deleted_at ` +
 		`FROM public.tasks ` +
 		`WHERE task_id = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, taskID)
 	t := Task{

@@ -4,11 +4,13 @@ package db
 
 import (
 	"context"
+	"fmt"
+	"strings"
 )
 
 type KanbanStepSelectConfig struct {
-	limit    *int
-	orderBy  []KanbanStepOrderBy
+	limit    string
+	orderBy  string
 	joinWith []KanbanStepJoinBy
 }
 
@@ -17,14 +19,14 @@ type KanbanStepSelectConfigOption func(*KanbanStepSelectConfig)
 // KanbanStepWithLimit limits row selection.
 func KanbanStepWithLimit(limit int) KanbanStepSelectConfigOption {
 	return func(s *KanbanStepSelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // KanbanStepWithOrderBy orders results by the given columns.
 func KanbanStepWithOrderBy(rows ...KanbanStepOrderBy) KanbanStepSelectConfigOption {
 	return func(s *KanbanStepSelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
@@ -66,7 +68,7 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (manual)
-	const sqlstr = `INSERT INTO public.kanban_steps (` +
+	sqlstr := `INSERT INTO public.kanban_steps (` +
 		`kanban_step_id, team_id, step_order, name, description, time_trackable, disabled` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7` +
@@ -90,7 +92,7 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) error {
 		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
-	const sqlstr = `UPDATE public.kanban_steps SET ` +
+	sqlstr := `UPDATE public.kanban_steps SET ` +
 		`team_id = $1, step_order = $2, name = $3, description = $4, time_trackable = $5, disabled = $6 ` +
 		`WHERE kanban_step_id = $7`
 	// run
@@ -116,7 +118,7 @@ func (ks *KanbanStep) Upsert(ctx context.Context, db DB) error {
 		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 	}
 	// upsert
-	const sqlstr = `INSERT INTO public.kanban_steps (` +
+	sqlstr := `INSERT INTO public.kanban_steps (` +
 		`kanban_step_id, team_id, step_order, name, description, time_trackable, disabled` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7` +
@@ -143,7 +145,7 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with single primary key
-	const sqlstr = `DELETE FROM public.kanban_steps ` +
+	sqlstr := `DELETE FROM public.kanban_steps ` +
 		`WHERE kanban_step_id = $1`
 	// run
 	logf(sqlstr, ks.KanbanStepID)
@@ -159,11 +161,19 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'kanban_steps_pkey'.
 func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
+	c := &KanbanStepSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`kanban_step_id, team_id, step_order, name, description, time_trackable, disabled ` +
 		`FROM public.kanban_steps ` +
 		`WHERE kanban_step_id = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, kanbanStepID)
 	ks := KanbanStep{

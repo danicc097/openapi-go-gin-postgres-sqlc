@@ -4,14 +4,16 @@ package db
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type APIKeySelectConfig struct {
-	limit    *int
-	orderBy  []APIKeyOrderBy
+	limit    string
+	orderBy  string
 	joinWith []APIKeyJoinBy
 }
 
@@ -20,14 +22,14 @@ type APIKeySelectConfigOption func(*APIKeySelectConfig)
 // APIKeyWithLimit limits row selection.
 func APIKeyWithLimit(limit int) APIKeySelectConfigOption {
 	return func(s *APIKeySelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // APIKeyWithOrderBy orders results by the given columns.
 func APIKeyWithOrderBy(rows ...APIKeyOrderBy) APIKeySelectConfigOption {
 	return func(s *APIKeySelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
@@ -73,7 +75,7 @@ func (ak *APIKey) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
-	const sqlstr = `INSERT INTO public.api_keys (` +
+	sqlstr := `INSERT INTO public.api_keys (` +
 		`api_key, user_id, expires_on` +
 		`) VALUES (` +
 		`$1, $2, $3` +
@@ -97,7 +99,7 @@ func (ak *APIKey) Update(ctx context.Context, db DB) error {
 		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
-	const sqlstr = `UPDATE public.api_keys SET ` +
+	sqlstr := `UPDATE public.api_keys SET ` +
 		`api_key = $1, user_id = $2, expires_on = $3 ` +
 		`WHERE api_key_id = $4`
 	// run
@@ -123,7 +125,7 @@ func (ak *APIKey) Upsert(ctx context.Context, db DB) error {
 		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 	}
 	// upsert
-	const sqlstr = `INSERT INTO public.api_keys (` +
+	sqlstr := `INSERT INTO public.api_keys (` +
 		`api_key_id, api_key, user_id, expires_on` +
 		`) VALUES (` +
 		`$1, $2, $3, $4` +
@@ -150,7 +152,7 @@ func (ak *APIKey) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with single primary key
-	const sqlstr = `DELETE FROM public.api_keys ` +
+	sqlstr := `DELETE FROM public.api_keys ` +
 		`WHERE api_key_id = $1`
 	// run
 	logf(sqlstr, ak.APIKeyID)
@@ -166,11 +168,19 @@ func (ak *APIKey) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'api_keys_api_key_key'.
 func APIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...APIKeySelectConfigOption) (*APIKey, error) {
+	c := &APIKeySelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`api_key_id, api_key, user_id, expires_on ` +
 		`FROM public.api_keys ` +
 		`WHERE api_key = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, apiKey)
 	ak := APIKey{
@@ -186,11 +196,19 @@ func APIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...APIKeySel
 //
 // Generated from index 'api_keys_pkey'.
 func APIKeyByAPIKeyID(ctx context.Context, db DB, apiKeyID int, opts ...APIKeySelectConfigOption) (*APIKey, error) {
+	c := &APIKeySelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`api_key_id, api_key, user_id, expires_on ` +
 		`FROM public.api_keys ` +
 		`WHERE api_key_id = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, apiKeyID)
 	ak := APIKey{

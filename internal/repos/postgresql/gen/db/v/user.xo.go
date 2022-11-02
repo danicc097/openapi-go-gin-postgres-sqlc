@@ -4,6 +4,8 @@ package v
 
 import (
 	"database/sql"
+	"fmt"
+	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/lib/pq"
@@ -12,8 +14,8 @@ import (
 )
 
 type UserSelectConfig struct {
-	limit    *int
-	orderBy  []UserOrderBy
+	limit    string
+	orderBy  string
 	joinWith []UserJoinBy
 }
 
@@ -22,14 +24,14 @@ type UserSelectConfigOption func(*UserSelectConfig)
 // UserWithLimit limits row selection.
 func UserWithLimit(limit int) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // UserWithOrderBy orders results by the given columns.
 func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 

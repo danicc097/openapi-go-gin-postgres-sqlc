@@ -4,13 +4,15 @@ package db
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 )
 
 type TaskMemberSelectConfig struct {
-	limit    *int
-	orderBy  []TaskMemberOrderBy
+	limit    string
+	orderBy  string
 	joinWith []TaskMemberJoinBy
 }
 
@@ -19,14 +21,14 @@ type TaskMemberSelectConfigOption func(*TaskMemberSelectConfig)
 // TaskMemberWithLimit limits row selection.
 func TaskMemberWithLimit(limit int) TaskMemberSelectConfigOption {
 	return func(s *TaskMemberSelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // TaskMemberWithOrderBy orders results by the given columns.
 func TaskMemberWithOrderBy(rows ...TaskMemberOrderBy) TaskMemberSelectConfigOption {
 	return func(s *TaskMemberSelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
@@ -63,7 +65,7 @@ func (tm *TaskMember) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (manual)
-	const sqlstr = `INSERT INTO public.task_member (` +
+	sqlstr := `INSERT INTO public.task_member (` +
 		`task_id, member` +
 		`) VALUES (` +
 		`$1, $2` +
@@ -89,7 +91,7 @@ func (tm *TaskMember) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with composite primary key
-	const sqlstr = `DELETE FROM public.task_member ` +
+	sqlstr := `DELETE FROM public.task_member ` +
 		`WHERE task_id = $1 AND member = $2`
 	// run
 	logf(sqlstr, tm.TaskID, tm.Member)
@@ -105,11 +107,19 @@ func (tm *TaskMember) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'task_member_member_task_id_idx'.
 func TaskMemberByMemberTaskID(ctx context.Context, db DB, member uuid.UUID, taskID int64, opts ...TaskMemberSelectConfigOption) ([]*TaskMember, error) {
+	c := &TaskMemberSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`task_id, member ` +
 		`FROM public.task_member ` +
 		`WHERE member = $1 AND task_id = $2`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, member, taskID)
 	rows, err := db.Query(ctx, sqlstr, member, taskID)
@@ -139,11 +149,19 @@ func TaskMemberByMemberTaskID(ctx context.Context, db DB, member uuid.UUID, task
 //
 // Generated from index 'task_member_pkey'.
 func TaskMemberByTaskIDMember(ctx context.Context, db DB, taskID int64, member uuid.UUID, opts ...TaskMemberSelectConfigOption) (*TaskMember, error) {
+	c := &TaskMemberSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`task_id, member ` +
 		`FROM public.task_member ` +
 		`WHERE task_id = $1 AND member = $2`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, taskID, member)
 	tm := TaskMember{

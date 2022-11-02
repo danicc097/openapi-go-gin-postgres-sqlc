@@ -4,11 +4,13 @@ package db
 
 import (
 	"context"
+	"fmt"
+	"strings"
 )
 
 type TaskTypeSelectConfig struct {
-	limit    *int
-	orderBy  []TaskTypeOrderBy
+	limit    string
+	orderBy  string
 	joinWith []TaskTypeJoinBy
 }
 
@@ -17,14 +19,14 @@ type TaskTypeSelectConfigOption func(*TaskTypeSelectConfig)
 // TaskTypeWithLimit limits row selection.
 func TaskTypeWithLimit(limit int) TaskTypeSelectConfigOption {
 	return func(s *TaskTypeSelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // TaskTypeWithOrderBy orders results by the given columns.
 func TaskTypeWithOrderBy(rows ...TaskTypeOrderBy) TaskTypeSelectConfigOption {
 	return func(s *TaskTypeSelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
@@ -62,7 +64,7 @@ func (tt *TaskType) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
-	const sqlstr = `INSERT INTO public.task_types (` +
+	sqlstr := `INSERT INTO public.task_types (` +
 		`team_id, name` +
 		`) VALUES (` +
 		`$1, $2` +
@@ -86,7 +88,7 @@ func (tt *TaskType) Update(ctx context.Context, db DB) error {
 		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
-	const sqlstr = `UPDATE public.task_types SET ` +
+	sqlstr := `UPDATE public.task_types SET ` +
 		`team_id = $1, name = $2 ` +
 		`WHERE task_type_id = $3`
 	// run
@@ -112,7 +114,7 @@ func (tt *TaskType) Upsert(ctx context.Context, db DB) error {
 		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 	}
 	// upsert
-	const sqlstr = `INSERT INTO public.task_types (` +
+	sqlstr := `INSERT INTO public.task_types (` +
 		`task_type_id, team_id, name` +
 		`) VALUES (` +
 		`$1, $2, $3` +
@@ -139,7 +141,7 @@ func (tt *TaskType) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with single primary key
-	const sqlstr = `DELETE FROM public.task_types ` +
+	sqlstr := `DELETE FROM public.task_types ` +
 		`WHERE task_type_id = $1`
 	// run
 	logf(sqlstr, tt.TaskTypeID)
@@ -155,11 +157,19 @@ func (tt *TaskType) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'task_types_pkey'.
 func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int, opts ...TaskTypeSelectConfigOption) (*TaskType, error) {
+	c := &TaskTypeSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`task_type_id, team_id, name ` +
 		`FROM public.task_types ` +
 		`WHERE task_type_id = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, taskTypeID)
 	tt := TaskType{
@@ -175,11 +185,19 @@ func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int, opts ...Ta
 //
 // Generated from index 'task_types_team_id_name_key'.
 func TaskTypeByTeamIDName(ctx context.Context, db DB, teamID int64, name string, opts ...TaskTypeSelectConfigOption) (*TaskType, error) {
+	c := &TaskTypeSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`task_type_id, team_id, name ` +
 		`FROM public.task_types ` +
 		`WHERE team_id = $1 AND name = $2`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, teamID, name)
 	tt := TaskType{

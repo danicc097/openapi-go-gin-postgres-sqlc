@@ -9,7 +9,7 @@ import (
 // BeforeUpdateUpdatedAt calls the stored function 'public.before_update_updated_at() trigger' on db.
 func BeforeUpdateUpdatedAt(ctx context.Context, db DB) (Trigger, error) {
 	// call public.before_update_updated_at
-	const sqlstr = `SELECT * FROM public.before_update_updated_at()`
+	sqlstr := `SELECT * FROM public.before_update_updated_at()`
 	// run
 	var r0 Trigger
 	logf(sqlstr)

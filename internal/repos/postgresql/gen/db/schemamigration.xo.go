@@ -4,11 +4,13 @@ package db
 
 import (
 	"context"
+	"fmt"
+	"strings"
 )
 
 type SchemaMigrationSelectConfig struct {
-	limit    *int
-	orderBy  []SchemaMigrationOrderBy
+	limit    string
+	orderBy  string
 	joinWith []SchemaMigrationJoinBy
 }
 
@@ -17,14 +19,14 @@ type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
 // SchemaMigrationWithLimit limits row selection.
 func SchemaMigrationWithLimit(limit int) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // SchemaMigrationWithOrderBy orders results by the given columns.
 func SchemaMigrationWithOrderBy(rows ...SchemaMigrationOrderBy) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
@@ -61,7 +63,7 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (manual)
-	const sqlstr = `INSERT INTO public.schema_migrations (` +
+	sqlstr := `INSERT INTO public.schema_migrations (` +
 		`version, dirty` +
 		`) VALUES (` +
 		`$1, $2` +
@@ -85,7 +87,7 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) error {
 		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
-	const sqlstr = `UPDATE public.schema_migrations SET ` +
+	sqlstr := `UPDATE public.schema_migrations SET ` +
 		`dirty = $1 ` +
 		`WHERE version = $2`
 	// run
@@ -111,7 +113,7 @@ func (sm *SchemaMigration) Upsert(ctx context.Context, db DB) error {
 		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 	}
 	// upsert
-	const sqlstr = `INSERT INTO public.schema_migrations (` +
+	sqlstr := `INSERT INTO public.schema_migrations (` +
 		`version, dirty` +
 		`) VALUES (` +
 		`$1, $2` +
@@ -138,7 +140,7 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with single primary key
-	const sqlstr = `DELETE FROM public.schema_migrations ` +
+	sqlstr := `DELETE FROM public.schema_migrations ` +
 		`WHERE version = $1`
 	// run
 	logf(sqlstr, sm.Version)
@@ -154,11 +156,19 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'schema_migrations_pkey'.
 func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ...SchemaMigrationSelectConfigOption) (*SchemaMigration, error) {
+	c := &SchemaMigrationSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`version, dirty ` +
 		`FROM public.schema_migrations ` +
 		`WHERE version = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, version)
 	sm := SchemaMigration{

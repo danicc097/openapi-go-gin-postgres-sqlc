@@ -1563,7 +1563,7 @@ func (f *Funcs) sqlstr(typ string, v interface{}) string {
 	default:
 		return fmt.Sprintf("const sqlstr = `UNKNOWN QUERY TYPE: %s`", typ)
 	}
-	return fmt.Sprintf("const sqlstr = `%s`", strings.Join(lines, "` +\n\t`"))
+	return fmt.Sprintf("sqlstr := `%s`", strings.Join(lines, "` +\n\t`"))
 }
 
 // sqlstr_insert_base builds an INSERT query

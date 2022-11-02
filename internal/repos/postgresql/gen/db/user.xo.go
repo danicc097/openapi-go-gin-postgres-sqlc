@@ -5,14 +5,16 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type UserSelectConfig struct {
-	limit    *int
-	orderBy  []UserOrderBy
+	limit    string
+	orderBy  string
 	joinWith []UserJoinBy
 }
 
@@ -21,14 +23,14 @@ type UserSelectConfigOption func(*UserSelectConfig)
 // UserWithLimit limits row selection.
 func UserWithLimit(limit int) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // UserWithOrderBy orders results by the given columns.
 func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
@@ -89,7 +91,7 @@ func (u *User) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
-	const sqlstr = `INSERT INTO public.users (` +
+	sqlstr := `INSERT INTO public.users (` +
 		`username, email, first_name, last_name, external_id, role, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7` +
@@ -113,7 +115,7 @@ func (u *User) Update(ctx context.Context, db DB) error {
 		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
-	const sqlstr = `UPDATE public.users SET ` +
+	sqlstr := `UPDATE public.users SET ` +
 		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, role = $6, deleted_at = $7 ` +
 		`WHERE user_id = $8`
 	// run
@@ -139,7 +141,7 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 	}
 	// upsert
-	const sqlstr = `INSERT INTO public.users (` +
+	sqlstr := `INSERT INTO public.users (` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
@@ -166,7 +168,7 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with single primary key
-	const sqlstr = `DELETE FROM public.users ` +
+	sqlstr := `DELETE FROM public.users ` +
 		`WHERE user_id = $1`
 	// run
 	logf(sqlstr, u.UserID)
@@ -182,11 +184,19 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'users_created_at_idx'.
 func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
 		`WHERE created_at = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, createdAt)
 	rows, err := db.Query(ctx, sqlstr, createdAt)
@@ -216,11 +226,19 @@ func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...U
 //
 // Generated from index 'users_deleted_at_idx'.
 func UsersByDeletedAt(ctx context.Context, db DB, deletedAt sql.NullTime, opts ...UserSelectConfigOption) ([]*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
 		`WHERE deleted_at = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, deletedAt)
 	rows, err := db.Query(ctx, sqlstr, deletedAt)
@@ -250,11 +268,19 @@ func UsersByDeletedAt(ctx context.Context, db DB, deletedAt sql.NullTime, opts .
 //
 // Generated from index 'users_email_key'.
 func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectConfigOption) (*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
 		`WHERE email = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, email)
 	u := User{
@@ -270,11 +296,19 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 //
 // Generated from index 'users_pkey'.
 func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
 		`WHERE user_id = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, userID)
 	u := User{
@@ -290,11 +324,19 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 //
 // Generated from index 'users_updated_at_idx'.
 func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
 		`WHERE updated_at = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, updatedAt)
 	rows, err := db.Query(ctx, sqlstr, updatedAt)
@@ -324,11 +366,19 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 //
 // Generated from index 'users_user_id_external_id_idx'.
 func UserByUserIDExternalID_users_user_id_external_id_idx(ctx context.Context, db DB, userID uuid.UUID, externalID sql.NullString, opts ...UserSelectConfigOption) (*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
 		`WHERE user_id = $1 AND external_id = $2 AND (external_id IS NOT NULL)`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, userID, externalID)
 	u := User{
@@ -344,11 +394,19 @@ func UserByUserIDExternalID_users_user_id_external_id_idx(ctx context.Context, d
 //
 // Generated from index 'users_user_id_idx'.
 func UserByUserID_users_user_id_idx(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
 		`WHERE user_id = $1 AND (external_id IS NULL)`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, userID)
 	u := User{
@@ -364,11 +422,19 @@ func UserByUserID_users_user_id_idx(ctx context.Context, db DB, userID uuid.UUID
 //
 // Generated from index 'users_username_key'.
 func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSelectConfigOption) (*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
 		`WHERE username = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, username)
 	u := User{

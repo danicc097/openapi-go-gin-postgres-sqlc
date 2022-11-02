@@ -4,11 +4,13 @@ package db
 
 import (
 	"context"
+	"fmt"
+	"strings"
 )
 
 type MovieSelectConfig struct {
-	limit    *int
-	orderBy  []MovieOrderBy
+	limit    string
+	orderBy  string
 	joinWith []MovieJoinBy
 }
 
@@ -17,14 +19,14 @@ type MovieSelectConfigOption func(*MovieSelectConfig)
 // MovieWithLimit limits row selection.
 func MovieWithLimit(limit int) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // MovieWithOrderBy orders results by the given columns.
 func MovieWithOrderBy(rows ...MovieOrderBy) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
@@ -63,7 +65,7 @@ func (m *Movie) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
-	const sqlstr = `INSERT INTO public.movies (` +
+	sqlstr := `INSERT INTO public.movies (` +
 		`title, year, synopsis` +
 		`) VALUES (` +
 		`$1, $2, $3` +
@@ -87,7 +89,7 @@ func (m *Movie) Update(ctx context.Context, db DB) error {
 		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
-	const sqlstr = `UPDATE public.movies SET ` +
+	sqlstr := `UPDATE public.movies SET ` +
 		`title = $1, year = $2, synopsis = $3 ` +
 		`WHERE movie_id = $4`
 	// run
@@ -113,7 +115,7 @@ func (m *Movie) Upsert(ctx context.Context, db DB) error {
 		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 	}
 	// upsert
-	const sqlstr = `INSERT INTO public.movies (` +
+	sqlstr := `INSERT INTO public.movies (` +
 		`movie_id, title, year, synopsis` +
 		`) VALUES (` +
 		`$1, $2, $3, $4` +
@@ -140,7 +142,7 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with single primary key
-	const sqlstr = `DELETE FROM public.movies ` +
+	sqlstr := `DELETE FROM public.movies ` +
 		`WHERE movie_id = $1`
 	// run
 	logf(sqlstr, m.MovieID)
@@ -156,11 +158,19 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'movies_pkey'.
 func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) (*Movie, error) {
+	c := &MovieSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`movie_id, title, year, synopsis ` +
 		`FROM public.movies ` +
 		`WHERE movie_id = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, movieID)
 	m := Movie{

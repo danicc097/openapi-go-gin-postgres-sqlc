@@ -4,12 +4,14 @@ package db
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 )
 
 type ProjectSelectConfig struct {
-	limit    *int
-	orderBy  []ProjectOrderBy
+	limit    string
+	orderBy  string
 	joinWith []ProjectJoinBy
 }
 
@@ -18,14 +20,14 @@ type ProjectSelectConfigOption func(*ProjectSelectConfig)
 // ProjectWithLimit limits row selection.
 func ProjectWithLimit(limit int) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // ProjectWithOrderBy orders results by the given columns.
 func ProjectWithOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
@@ -77,7 +79,7 @@ func (p *Project) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
-	const sqlstr = `INSERT INTO public.projects (` +
+	sqlstr := `INSERT INTO public.projects (` +
 		`name, description, metadata` +
 		`) VALUES (` +
 		`$1, $2, $3` +
@@ -101,7 +103,7 @@ func (p *Project) Update(ctx context.Context, db DB) error {
 		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
-	const sqlstr = `UPDATE public.projects SET ` +
+	sqlstr := `UPDATE public.projects SET ` +
 		`name = $1, description = $2, metadata = $3 ` +
 		`WHERE project_id = $4`
 	// run
@@ -127,7 +129,7 @@ func (p *Project) Upsert(ctx context.Context, db DB) error {
 		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 	}
 	// upsert
-	const sqlstr = `INSERT INTO public.projects (` +
+	sqlstr := `INSERT INTO public.projects (` +
 		`project_id, name, description, metadata` +
 		`) VALUES (` +
 		`$1, $2, $3, $4` +
@@ -154,7 +156,7 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with single primary key
-	const sqlstr = `DELETE FROM public.projects ` +
+	sqlstr := `DELETE FROM public.projects ` +
 		`WHERE project_id = $1`
 	// run
 	logf(sqlstr, p.ProjectID)
@@ -170,11 +172,19 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'projects_name_key'.
 func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelectConfigOption) (*Project, error) {
+	c := &ProjectSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.projects ` +
 		`WHERE name = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, name)
 	p := Project{
@@ -190,11 +200,19 @@ func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelec
 //
 // Generated from index 'projects_pkey'.
 func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) (*Project, error) {
+	c := &ProjectSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.projects ` +
 		`WHERE project_id = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, projectID)
 	p := Project{

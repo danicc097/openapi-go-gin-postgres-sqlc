@@ -4,13 +4,15 @@ package db
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 )
 
 type UserTeamSelectConfig struct {
-	limit    *int
-	orderBy  []UserTeamOrderBy
+	limit    string
+	orderBy  string
 	joinWith []UserTeamJoinBy
 }
 
@@ -19,14 +21,14 @@ type UserTeamSelectConfigOption func(*UserTeamSelectConfig)
 // UserTeamWithLimit limits row selection.
 func UserTeamWithLimit(limit int) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // UserTeamWithOrderBy orders results by the given columns.
 func UserTeamWithOrderBy(rows ...UserTeamOrderBy) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
@@ -63,7 +65,7 @@ func (ut *UserTeam) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (manual)
-	const sqlstr = `INSERT INTO public.user_team (` +
+	sqlstr := `INSERT INTO public.user_team (` +
 		`team_id, user_id` +
 		`) VALUES (` +
 		`$1, $2` +
@@ -89,7 +91,7 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with composite primary key
-	const sqlstr = `DELETE FROM public.user_team ` +
+	sqlstr := `DELETE FROM public.user_team ` +
 		`WHERE team_id = $1 AND user_id = $2`
 	// run
 	logf(sqlstr, ut.TeamID, ut.UserID)
@@ -105,11 +107,19 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'user_team_pkey'.
 func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID int, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
+	c := &UserTeamSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`team_id, user_id ` +
 		`FROM public.user_team ` +
 		`WHERE user_id = $1 AND team_id = $2`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, userID, teamID)
 	ut := UserTeam{
@@ -125,11 +135,19 @@ func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID
 //
 // Generated from index 'user_team_team_id_user_id_idx'.
 func UserTeamByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+	c := &UserTeamSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`team_id, user_id ` +
 		`FROM public.user_team ` +
 		`WHERE team_id = $1 AND user_id = $2`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, teamID, userID)
 	rows, err := db.Query(ctx, sqlstr, teamID, userID)
@@ -159,11 +177,19 @@ func UserTeamByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.
 //
 // Generated from index 'user_team_user_idx'.
 func UserTeamByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+	c := &UserTeamSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`team_id, user_id ` +
 		`FROM public.user_team ` +
 		`WHERE user_id = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, userID)

@@ -4,12 +4,14 @@ package db
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 )
 
 type TeamSelectConfig struct {
-	limit    *int
-	orderBy  []TeamOrderBy
+	limit    string
+	orderBy  string
 	joinWith []TeamJoinBy
 }
 
@@ -18,14 +20,14 @@ type TeamSelectConfigOption func(*TeamSelectConfig)
 // TeamWithLimit limits row selection.
 func TeamWithLimit(limit int) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // TeamWithOrderBy orders results by the given columns.
 func TeamWithOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
@@ -78,7 +80,7 @@ func (t *Team) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
-	const sqlstr = `INSERT INTO public.teams (` +
+	sqlstr := `INSERT INTO public.teams (` +
 		`project_id, name, description, metadata` +
 		`) VALUES (` +
 		`$1, $2, $3, $4` +
@@ -102,7 +104,7 @@ func (t *Team) Update(ctx context.Context, db DB) error {
 		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
-	const sqlstr = `UPDATE public.teams SET ` +
+	sqlstr := `UPDATE public.teams SET ` +
 		`project_id = $1, name = $2, description = $3, metadata = $4 ` +
 		`WHERE team_id = $5`
 	// run
@@ -128,7 +130,7 @@ func (t *Team) Upsert(ctx context.Context, db DB) error {
 		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 	}
 	// upsert
-	const sqlstr = `INSERT INTO public.teams (` +
+	sqlstr := `INSERT INTO public.teams (` +
 		`team_id, project_id, name, description, metadata` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5` +
@@ -155,7 +157,7 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with single primary key
-	const sqlstr = `DELETE FROM public.teams ` +
+	sqlstr := `DELETE FROM public.teams ` +
 		`WHERE team_id = $1`
 	// run
 	logf(sqlstr, t.TeamID)
@@ -171,11 +173,19 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'teams_name_key'.
 func TeamByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfigOption) (*Team, error) {
+	c := &TeamSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.teams ` +
 		`WHERE name = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, name)
 	t := Team{
@@ -191,11 +201,19 @@ func TeamByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfi
 //
 // Generated from index 'teams_pkey'.
 func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) (*Team, error) {
+	c := &TeamSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.teams ` +
 		`WHERE team_id = $1`
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, teamID)
 	t := Team{

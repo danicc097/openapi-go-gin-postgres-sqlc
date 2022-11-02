@@ -27,8 +27,16 @@
 //
 // Generated from index '{{ $i.SQLName }}'.
 {{ func_context $i }} {
+	c := &{{ $i.Table.GoName }}SelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
 	{{ sqlstr "index" $i }}
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, {{ params $i.Fields false }})
 {{- if $i.IsUnique }}
@@ -119,8 +127,8 @@
 {{- $t := .Data -}}
 
 type {{ $t.GoName }}SelectConfig struct {
-	limit       *int
-	orderBy     []{{ $t.GoName }}OrderBy
+	limit       string
+	orderBy     string
   joinWith    []{{ $t.GoName }}JoinBy
 }
 
@@ -130,14 +138,14 @@ type {{ $t.GoName }}SelectConfigOption func(*{{ $t.GoName }}SelectConfig)
 // {{ $t.GoName }}WithLimit limits row selection.
 func {{ $t.GoName }}WithLimit(limit int) {{ $t.GoName }}SelectConfigOption {
 	return func(s *{{ $t.GoName }}SelectConfig) {
-		s.limit = &limit
+		s.limit = fmt.Sprintf("limit %d", limit)
 	}
 }
 
 // {{ $t.GoName }}WithOrderBy orders results by the given columns.
 func {{ $t.GoName }}WithOrderBy(rows ...{{ $t.GoName }}OrderBy) {{ $t.GoName }}SelectConfigOption {
 	return func(s *{{ $t.GoName }}SelectConfig) {
-		s.orderBy = rows
+		s.orderBy = strings.Join(rows, ", ")
 	}
 }
 
