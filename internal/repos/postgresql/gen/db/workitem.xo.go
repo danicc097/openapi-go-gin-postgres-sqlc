@@ -36,10 +36,10 @@ type (
 )
 
 const (
-	WorkItemCreatedAtAscNullsFirst  WorkItemOrderBy = "created_at ASC NULLS FIRST"
-	WorkItemCreatedAtAscNullsLast   WorkItemOrderBy = "created_at ASC NULLS LAST"
 	WorkItemCreatedAtDescNullsFirst WorkItemOrderBy = "created_at DESC NULLS FIRST"
 	WorkItemCreatedAtDescNullsLast  WorkItemOrderBy = "created_at DESC NULLS LAST"
+	WorkItemCreatedAtAscNullsFirst  WorkItemOrderBy = "created_at ASC NULLS FIRST"
+	WorkItemCreatedAtAscNullsLast   WorkItemOrderBy = "created_at ASC NULLS LAST"
 	WorkItemUpdatedAtDescNullsFirst WorkItemOrderBy = "updated_at DESC NULLS FIRST"
 	WorkItemUpdatedAtDescNullsLast  WorkItemOrderBy = "updated_at DESC NULLS LAST"
 	WorkItemUpdatedAtAscNullsFirst  WorkItemOrderBy = "updated_at ASC NULLS FIRST"

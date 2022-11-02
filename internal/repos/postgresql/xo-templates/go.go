@@ -1126,17 +1126,17 @@ func (f *Funcs) functype(name string, v interface{}) string {
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 3: %T ]]", v)
 	}
-	orderByOpts := map[string]string{
-		"DescNullsFirst": "DESC NULLS FIRST",
-		"DescNullsLast":  "DESC NULLS LAST",
-		"AscNullsFirst":  "ASC NULLS FIRST",
-		"AscNullsLast":   "ASC NULLS LAST",
+	orderByOpts := [][]string{
+		{"DescNullsFirst", "DESC NULLS FIRST"},
+		{"DescNullsLast", "DESC NULLS LAST"},
+		{"AscNullsFirst", "ASC NULLS FIRST"},
+		{"AscNullsLast", "ASC NULLS LAST"},
 	}
 	var buf strings.Builder
 	buf.WriteString("const (")
 	for _, ob := range orderbys {
-		for k, v := range orderByOpts {
-			buf.WriteString(fmt.Sprintf(`%s%s%s %sOrderBy = "%s %s"`, name, ob.GoName, k, name, ob.SQLName, v))
+		for _, opt := range orderByOpts {
+			buf.WriteString(fmt.Sprintf(`%s%s%s %sOrderBy = "%s %s"`, name, ob.GoName, opt[0], name, ob.SQLName, opt[1]))
 			buf.WriteString("\n")
 		}
 	}

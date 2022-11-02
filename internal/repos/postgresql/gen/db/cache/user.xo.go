@@ -40,18 +40,18 @@ type (
 )
 
 const (
+	UserCreatedAtDescNullsFirst UserOrderBy = "created_at DESC NULLS FIRST"
 	UserCreatedAtDescNullsLast  UserOrderBy = "created_at DESC NULLS LAST"
 	UserCreatedAtAscNullsFirst  UserOrderBy = "created_at ASC NULLS FIRST"
 	UserCreatedAtAscNullsLast   UserOrderBy = "created_at ASC NULLS LAST"
-	UserCreatedAtDescNullsFirst UserOrderBy = "created_at DESC NULLS FIRST"
-	UserUpdatedAtAscNullsLast   UserOrderBy = "updated_at ASC NULLS LAST"
 	UserUpdatedAtDescNullsFirst UserOrderBy = "updated_at DESC NULLS FIRST"
 	UserUpdatedAtDescNullsLast  UserOrderBy = "updated_at DESC NULLS LAST"
 	UserUpdatedAtAscNullsFirst  UserOrderBy = "updated_at ASC NULLS FIRST"
-	UserDeletedAtAscNullsFirst  UserOrderBy = "deleted_at ASC NULLS FIRST"
-	UserDeletedAtAscNullsLast   UserOrderBy = "deleted_at ASC NULLS LAST"
+	UserUpdatedAtAscNullsLast   UserOrderBy = "updated_at ASC NULLS LAST"
 	UserDeletedAtDescNullsFirst UserOrderBy = "deleted_at DESC NULLS FIRST"
 	UserDeletedAtDescNullsLast  UserOrderBy = "deleted_at DESC NULLS LAST"
+	UserDeletedAtAscNullsFirst  UserOrderBy = "deleted_at ASC NULLS FIRST"
+	UserDeletedAtAscNullsLast   UserOrderBy = "deleted_at ASC NULLS LAST"
 )
 
 // User represents a row from 'cache.users'.
