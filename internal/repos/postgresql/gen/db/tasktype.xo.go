@@ -6,7 +6,32 @@ import (
 	"context"
 )
 
-type TaskTypeOrderBy = string
+type TaskTypeSelectConfig struct {
+	limit    *int
+	orderBy  []TaskTypeOrderBy
+	joinWith []TaskTypeJoinBy
+}
+
+type TaskTypeSelectConfigOption func(*TaskTypeSelectConfig)
+
+// TaskTypeWithLimit limits row selection.
+func TaskTypeWithLimit(limit int) TaskTypeSelectConfigOption {
+	return func(s *TaskTypeSelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// TaskTypeWithOrderBy orders results by the given columns.
+func TaskTypeWithOrderBy(rows ...TaskTypeOrderBy) TaskTypeSelectConfigOption {
+	return func(s *TaskTypeSelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type (
+	TaskTypeJoinBy  = string
+	TaskTypeOrderBy = string
+)
 
 // TaskType represents a row from 'public.task_types'.
 type TaskType struct {
@@ -15,42 +40,6 @@ type TaskType struct {
 	Name       string `json:"name"`         // name
 	// xo fields
 	_exists, _deleted bool
-}
-
-// TODO only create if exists
-// GetMostRecentTaskType returns n most recent rows from 'task_types',
-// ordered by "created_at" in descending order.
-func GetMostRecentTaskType(ctx context.Context, db DB, n int) ([]*TaskType, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`task_type_id, team_id, name ` +
-		`FROM public.task_types ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*TaskType
-	for rows.Next() {
-		tt := TaskType{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&tt.TaskTypeID, &tt.TeamID, &tt.Name); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &tt)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
 }
 
 // Exists returns true when the TaskType exists in the database.
@@ -165,7 +154,7 @@ func (tt *TaskType) Delete(ctx context.Context, db DB) error {
 // TaskTypeByTaskTypeID retrieves a row from 'public.task_types' as a TaskType.
 //
 // Generated from index 'task_types_pkey'.
-func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int) (*TaskType, error) {
+func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int, opts ...TaskTypeSelectConfigOption) (*TaskType, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`task_type_id, team_id, name ` +
@@ -185,7 +174,7 @@ func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int) (*TaskType
 // TaskTypeByTeamIDName retrieves a row from 'public.task_types' as a TaskType.
 //
 // Generated from index 'task_types_team_id_name_key'.
-func TaskTypeByTeamIDName(ctx context.Context, db DB, teamID int64, name string) (*TaskType, error) {
+func TaskTypeByTeamIDName(ctx context.Context, db DB, teamID int64, name string, opts ...TaskTypeSelectConfigOption) (*TaskType, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`task_type_id, team_id, name ` +

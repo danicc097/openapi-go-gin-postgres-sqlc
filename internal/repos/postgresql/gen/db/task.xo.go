@@ -8,7 +8,51 @@ import (
 	"time"
 )
 
-type TaskOrderBy = string
+type TaskSelectConfig struct {
+	limit    *int
+	orderBy  []TaskOrderBy
+	joinWith []TaskJoinBy
+}
+
+type TaskSelectConfigOption func(*TaskSelectConfig)
+
+// TaskWithLimit limits row selection.
+func TaskWithLimit(limit int) TaskSelectConfigOption {
+	return func(s *TaskSelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// TaskWithOrderBy orders results by the given columns.
+func TaskWithOrderBy(rows ...TaskOrderBy) TaskSelectConfigOption {
+	return func(s *TaskSelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type (
+	TaskJoinBy  = string
+	TaskOrderBy = string
+)
+
+const (
+	TaskTargetDateDescNullsFirst TaskOrderBy = "target_date DESC NULLS FIRST"
+	TaskTargetDateDescNullsLast  TaskOrderBy = "target_date DESC NULLS LAST"
+	TaskTargetDateAscNullsFirst  TaskOrderBy = "target_date ASC NULLS FIRST"
+	TaskTargetDateAscNullsLast   TaskOrderBy = "target_date ASC NULLS LAST"
+	TaskCreatedAtDescNullsFirst  TaskOrderBy = "created_at DESC NULLS FIRST"
+	TaskCreatedAtDescNullsLast   TaskOrderBy = "created_at DESC NULLS LAST"
+	TaskCreatedAtAscNullsFirst   TaskOrderBy = "created_at ASC NULLS FIRST"
+	TaskCreatedAtAscNullsLast    TaskOrderBy = "created_at ASC NULLS LAST"
+	TaskUpdatedAtDescNullsFirst  TaskOrderBy = "updated_at DESC NULLS FIRST"
+	TaskUpdatedAtDescNullsLast   TaskOrderBy = "updated_at DESC NULLS LAST"
+	TaskUpdatedAtAscNullsFirst   TaskOrderBy = "updated_at ASC NULLS FIRST"
+	TaskUpdatedAtAscNullsLast    TaskOrderBy = "updated_at ASC NULLS LAST"
+	TaskDeletedAtDescNullsFirst  TaskOrderBy = "deleted_at DESC NULLS FIRST"
+	TaskDeletedAtDescNullsLast   TaskOrderBy = "deleted_at DESC NULLS LAST"
+	TaskDeletedAtAscNullsFirst   TaskOrderBy = "deleted_at ASC NULLS FIRST"
+	TaskDeletedAtAscNullsLast    TaskOrderBy = "deleted_at ASC NULLS LAST"
+)
 
 // Task represents a row from 'public.tasks'.
 type Task struct {
@@ -23,42 +67,6 @@ type Task struct {
 	DeletedAt          sql.NullTime `json:"deleted_at"`           // deleted_at
 	// xo fields
 	_exists, _deleted bool
-}
-
-// TODO only create if exists
-// GetMostRecentTask returns n most recent rows from 'tasks',
-// ordered by "created_at" in descending order.
-func GetMostRecentTask(ctx context.Context, db DB, n int) ([]*Task, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`task_id, task_type_id, title, metadata, target_date, target_date_timezone, created_at, updated_at, deleted_at ` +
-		`FROM public.tasks ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*Task
-	for rows.Next() {
-		t := Task{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&t.TaskID, &t.TaskTypeID, &t.Title, &t.Metadata, &t.TargetDate, &t.TargetDateTimezone, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &t)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
 }
 
 // Exists returns true when the Task exists in the database.
@@ -173,7 +181,7 @@ func (t *Task) Delete(ctx context.Context, db DB) error {
 // TaskByTaskID retrieves a row from 'public.tasks' as a Task.
 //
 // Generated from index 'tasks_pkey'.
-func TaskByTaskID(ctx context.Context, db DB, taskID int64) (*Task, error) {
+func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectConfigOption) (*Task, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`task_id, task_type_id, title, metadata, target_date, target_date_timezone, created_at, updated_at, deleted_at ` +

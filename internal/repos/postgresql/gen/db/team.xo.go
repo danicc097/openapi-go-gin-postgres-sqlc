@@ -7,7 +7,43 @@ import (
 	"time"
 )
 
-type TeamOrderBy = string
+type TeamSelectConfig struct {
+	limit    *int
+	orderBy  []TeamOrderBy
+	joinWith []TeamJoinBy
+}
+
+type TeamSelectConfigOption func(*TeamSelectConfig)
+
+// TeamWithLimit limits row selection.
+func TeamWithLimit(limit int) TeamSelectConfigOption {
+	return func(s *TeamSelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// TeamWithOrderBy orders results by the given columns.
+func TeamWithOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
+	return func(s *TeamSelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type (
+	TeamJoinBy  = string
+	TeamOrderBy = string
+)
+
+const (
+	TeamCreatedAtDescNullsFirst TeamOrderBy = "created_at DESC NULLS FIRST"
+	TeamCreatedAtDescNullsLast  TeamOrderBy = "created_at DESC NULLS LAST"
+	TeamCreatedAtAscNullsFirst  TeamOrderBy = "created_at ASC NULLS FIRST"
+	TeamCreatedAtAscNullsLast   TeamOrderBy = "created_at ASC NULLS LAST"
+	TeamUpdatedAtAscNullsFirst  TeamOrderBy = "updated_at ASC NULLS FIRST"
+	TeamUpdatedAtAscNullsLast   TeamOrderBy = "updated_at ASC NULLS LAST"
+	TeamUpdatedAtDescNullsFirst TeamOrderBy = "updated_at DESC NULLS FIRST"
+	TeamUpdatedAtDescNullsLast  TeamOrderBy = "updated_at DESC NULLS LAST"
+)
 
 // Team represents a row from 'public.teams'.
 type Team struct {
@@ -20,42 +56,6 @@ type Team struct {
 	UpdatedAt   time.Time `json:"updated_at"`  // updated_at
 	// xo fields
 	_exists, _deleted bool
-}
-
-// TODO only create if exists
-// GetMostRecentTeam returns n most recent rows from 'teams',
-// ordered by "created_at" in descending order.
-func GetMostRecentTeam(ctx context.Context, db DB, n int) ([]*Team, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
-		`FROM public.teams ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*Team
-	for rows.Next() {
-		t := Team{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &t)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
 }
 
 // Exists returns true when the Team exists in the database.
@@ -170,7 +170,7 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 // TeamByName retrieves a row from 'public.teams' as a Team.
 //
 // Generated from index 'teams_name_key'.
-func TeamByName(ctx context.Context, db DB, name string) (*Team, error) {
+func TeamByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfigOption) (*Team, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
@@ -190,7 +190,7 @@ func TeamByName(ctx context.Context, db DB, name string) (*Team, error) {
 // TeamByTeamID retrieves a row from 'public.teams' as a Team.
 //
 // Generated from index 'teams_pkey'.
-func TeamByTeamID(ctx context.Context, db DB, teamID int) (*Team, error) {
+func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) (*Team, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`team_id, project_id, name, description, metadata, created_at, updated_at ` +

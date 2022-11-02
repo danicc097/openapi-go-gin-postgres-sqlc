@@ -8,7 +8,47 @@ import (
 	"time"
 )
 
-type WorkItemOrderBy = string
+type WorkItemSelectConfig struct {
+	limit    *int
+	orderBy  []WorkItemOrderBy
+	joinWith []WorkItemJoinBy
+}
+
+type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
+
+// WorkItemWithLimit limits row selection.
+func WorkItemWithLimit(limit int) WorkItemSelectConfigOption {
+	return func(s *WorkItemSelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// WorkItemWithOrderBy orders results by the given columns.
+func WorkItemWithOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
+	return func(s *WorkItemSelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type (
+	WorkItemJoinBy  = string
+	WorkItemOrderBy = string
+)
+
+const (
+	WorkItemCreatedAtAscNullsFirst  WorkItemOrderBy = "created_at ASC NULLS FIRST"
+	WorkItemCreatedAtAscNullsLast   WorkItemOrderBy = "created_at ASC NULLS LAST"
+	WorkItemCreatedAtDescNullsFirst WorkItemOrderBy = "created_at DESC NULLS FIRST"
+	WorkItemCreatedAtDescNullsLast  WorkItemOrderBy = "created_at DESC NULLS LAST"
+	WorkItemUpdatedAtDescNullsFirst WorkItemOrderBy = "updated_at DESC NULLS FIRST"
+	WorkItemUpdatedAtDescNullsLast  WorkItemOrderBy = "updated_at DESC NULLS LAST"
+	WorkItemUpdatedAtAscNullsFirst  WorkItemOrderBy = "updated_at ASC NULLS FIRST"
+	WorkItemUpdatedAtAscNullsLast   WorkItemOrderBy = "updated_at ASC NULLS LAST"
+	WorkItemDeletedAtDescNullsFirst WorkItemOrderBy = "deleted_at DESC NULLS FIRST"
+	WorkItemDeletedAtDescNullsLast  WorkItemOrderBy = "deleted_at DESC NULLS LAST"
+	WorkItemDeletedAtAscNullsFirst  WorkItemOrderBy = "deleted_at ASC NULLS FIRST"
+	WorkItemDeletedAtAscNullsLast   WorkItemOrderBy = "deleted_at ASC NULLS LAST"
+)
 
 // WorkItem represents a row from 'public.work_items'.
 type WorkItem struct {
@@ -22,42 +62,6 @@ type WorkItem struct {
 	DeletedAt    sql.NullTime `json:"deleted_at"`     // deleted_at
 	// xo fields
 	_exists, _deleted bool
-}
-
-// TODO only create if exists
-// GetMostRecentWorkItem returns n most recent rows from 'work_items',
-// ordered by "created_at" in descending order.
-func GetMostRecentWorkItem(ctx context.Context, db DB, n int) ([]*WorkItem, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`work_item_id, title, metadata, team_id, kanban_step_id, created_at, updated_at, deleted_at ` +
-		`FROM public.work_items ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*WorkItem
-	for rows.Next() {
-		wi := WorkItem{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&wi.WorkItemID, &wi.Title, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &wi)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
 }
 
 // Exists returns true when the WorkItem exists in the database.
@@ -172,7 +176,7 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 // WorkItemByWorkItemID retrieves a row from 'public.work_items' as a WorkItem.
 //
 // Generated from index 'work_items_pkey'.
-func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64) (*WorkItem, error) {
+func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`work_item_id, title, metadata, team_id, kanban_step_id, created_at, updated_at, deleted_at ` +

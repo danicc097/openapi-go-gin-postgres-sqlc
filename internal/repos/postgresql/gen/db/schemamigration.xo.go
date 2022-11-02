@@ -6,7 +6,32 @@ import (
 	"context"
 )
 
-type SchemaMigrationOrderBy = string
+type SchemaMigrationSelectConfig struct {
+	limit    *int
+	orderBy  []SchemaMigrationOrderBy
+	joinWith []SchemaMigrationJoinBy
+}
+
+type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
+
+// SchemaMigrationWithLimit limits row selection.
+func SchemaMigrationWithLimit(limit int) SchemaMigrationSelectConfigOption {
+	return func(s *SchemaMigrationSelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// SchemaMigrationWithOrderBy orders results by the given columns.
+func SchemaMigrationWithOrderBy(rows ...SchemaMigrationOrderBy) SchemaMigrationSelectConfigOption {
+	return func(s *SchemaMigrationSelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type (
+	SchemaMigrationJoinBy  = string
+	SchemaMigrationOrderBy = string
+)
 
 // SchemaMigration represents a row from 'public.schema_migrations'.
 type SchemaMigration struct {
@@ -14,42 +39,6 @@ type SchemaMigration struct {
 	Dirty   bool  `json:"dirty"`   // dirty
 	// xo fields
 	_exists, _deleted bool
-}
-
-// TODO only create if exists
-// GetMostRecentSchemaMigration returns n most recent rows from 'schema_migrations',
-// ordered by "created_at" in descending order.
-func GetMostRecentSchemaMigration(ctx context.Context, db DB, n int) ([]*SchemaMigration, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`version, dirty ` +
-		`FROM public.schema_migrations ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*SchemaMigration
-	for rows.Next() {
-		sm := SchemaMigration{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&sm.Version, &sm.Dirty); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &sm)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
 }
 
 // Exists returns true when the SchemaMigration exists in the database.
@@ -164,7 +153,7 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 // SchemaMigrationByVersion retrieves a row from 'public.schema_migrations' as a SchemaMigration.
 //
 // Generated from index 'schema_migrations_pkey'.
-func SchemaMigrationByVersion(ctx context.Context, db DB, version int64) (*SchemaMigration, error) {
+func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ...SchemaMigrationSelectConfigOption) (*SchemaMigration, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`version, dirty ` +

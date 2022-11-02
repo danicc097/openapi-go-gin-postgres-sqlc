@@ -8,7 +8,32 @@ import (
 	"github.com/google/uuid"
 )
 
-type TaskMemberOrderBy = string
+type TaskMemberSelectConfig struct {
+	limit    *int
+	orderBy  []TaskMemberOrderBy
+	joinWith []TaskMemberJoinBy
+}
+
+type TaskMemberSelectConfigOption func(*TaskMemberSelectConfig)
+
+// TaskMemberWithLimit limits row selection.
+func TaskMemberWithLimit(limit int) TaskMemberSelectConfigOption {
+	return func(s *TaskMemberSelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// TaskMemberWithOrderBy orders results by the given columns.
+func TaskMemberWithOrderBy(rows ...TaskMemberOrderBy) TaskMemberSelectConfigOption {
+	return func(s *TaskMemberSelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type (
+	TaskMemberJoinBy  = string
+	TaskMemberOrderBy = string
+)
 
 // TaskMember represents a row from 'public.task_member'.
 type TaskMember struct {
@@ -16,42 +41,6 @@ type TaskMember struct {
 	Member uuid.UUID `json:"member"`  // member
 	// xo fields
 	_exists, _deleted bool
-}
-
-// TODO only create if exists
-// GetMostRecentTaskMember returns n most recent rows from 'task_member',
-// ordered by "created_at" in descending order.
-func GetMostRecentTaskMember(ctx context.Context, db DB, n int) ([]*TaskMember, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`task_id, member ` +
-		`FROM public.task_member ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*TaskMember
-	for rows.Next() {
-		tm := TaskMember{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&tm.TaskID, &tm.Member); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &tm)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
 }
 
 // Exists returns true when the TaskMember exists in the database.
@@ -115,7 +104,7 @@ func (tm *TaskMember) Delete(ctx context.Context, db DB) error {
 // TaskMemberByMemberTaskID retrieves a row from 'public.task_member' as a TaskMember.
 //
 // Generated from index 'task_member_member_task_id_idx'.
-func TaskMemberByMemberTaskID(ctx context.Context, db DB, member uuid.UUID, taskID int64) ([]*TaskMember, error) {
+func TaskMemberByMemberTaskID(ctx context.Context, db DB, member uuid.UUID, taskID int64, opts ...TaskMemberSelectConfigOption) ([]*TaskMember, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`task_id, member ` +
@@ -149,7 +138,7 @@ func TaskMemberByMemberTaskID(ctx context.Context, db DB, member uuid.UUID, task
 // TaskMemberByTaskIDMember retrieves a row from 'public.task_member' as a TaskMember.
 //
 // Generated from index 'task_member_pkey'.
-func TaskMemberByTaskIDMember(ctx context.Context, db DB, taskID int64, member uuid.UUID) (*TaskMember, error) {
+func TaskMemberByTaskIDMember(ctx context.Context, db DB, taskID int64, member uuid.UUID, opts ...TaskMemberSelectConfigOption) (*TaskMember, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`task_id, member ` +

@@ -892,6 +892,7 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"func_name_context":   f.func_name_context,
 		"func_name":           f.func_name_none,
 		"func_context":        f.func_context,
+		"functype":            f.functype,
 		"func":                f.func_none,
 		"recv_context":        f.recv_context,
 		"recv":                f.recv_none,
@@ -1066,55 +1067,81 @@ func (f *Funcs) func_name_context(v interface{}) string {
 
 // funcfn builds a func definition.
 func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
-	var p, r []string
+	var params, returns []string
 	if context {
-		p = append(p, "ctx context.Context")
+		params = append(params, "ctx context.Context")
 	}
-	p = append(p, "db DB")
+	params = append(params, "db DB")
 	switch x := v.(type) {
 	case Query:
-		// params
 		for _, z := range x.Params {
-			p = append(p, fmt.Sprintf("%s %s", z.Name, z.Type))
+			params = append(params, fmt.Sprintf("%s %s", z.Name, z.Type))
 		}
-		// returns
 		switch {
 		case x.Exec:
-			r = append(r, "sql.Result")
+			returns = append(returns, "sql.Result")
 		case x.Flat:
 			for _, z := range x.Type.Fields {
-				r = append(r, f.typefn(z.Type))
+				returns = append(returns, f.typefn(z.Type))
 			}
 		case x.One:
-			r = append(r, "*"+x.Type.GoName)
+			returns = append(returns, "*"+x.Type.GoName)
 		default:
-			r = append(r, "[]*"+x.Type.GoName)
+			returns = append(returns, "[]*"+x.Type.GoName)
 		}
 	case Proc:
-		// params
-		p = append(p, f.params(x.Params, true))
-		// returns
+		params = append(params, f.params(x.Params, true))
 		if !x.Void {
 			for _, ret := range x.Returns {
-				r = append(r, f.typefn(ret.Type))
+				returns = append(returns, f.typefn(ret.Type))
 			}
 		}
 	case Index:
 		// TODO include join options, order by and limit options struct here if any
-		orderbys(x, f)
-		// params
-		p = append(p, f.params(x.Fields, true))
-		// returns
+		// better: func opts so we extend with basically anything (joins, orderbys, limits...)
+		params = append(params, f.params(x.Fields, true))
+		params = append(params, "opts ..."+x.Table.GoName+"SelectConfigOption")
 		rt := "*" + x.Table.GoName
 		if !x.IsUnique {
 			rt = "[]" + rt
 		}
-		r = append(r, rt)
+		returns = append(returns, rt)
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 3: %T ]]", v)
 	}
-	r = append(r, "error")
-	return fmt.Sprintf("func %s(%s) (%s)", name, strings.Join(p, ", "), strings.Join(r, ", "))
+	returns = append(returns, "error")
+	return fmt.Sprintf("func %s(%s) (%s)", name, strings.Join(params, ", "), strings.Join(returns, ", "))
+}
+
+// funcfn builds a type definition.
+func (f *Funcs) functype(name string, v interface{}) string {
+	var orderbys []Field
+	switch x := v.(type) {
+	case Table:
+		for _, z := range x.Fields {
+			if z.IsDateOrTime {
+				orderbys = append(orderbys, z)
+			}
+		}
+	default:
+		return fmt.Sprintf("[[ UNSUPPORTED TYPE 3: %T ]]", v)
+	}
+	orderByOpts := map[string]string{
+		"DescNullsFirst": "DESC NULLS FIRST",
+		"DescNullsLast":  "DESC NULLS LAST",
+		"AscNullsFirst":  "ASC NULLS FIRST",
+		"AscNullsLast":   "ASC NULLS LAST",
+	}
+	var buf strings.Builder
+	buf.WriteString("const (")
+	for _, ob := range orderbys {
+		for k, v := range orderByOpts {
+			buf.WriteString(fmt.Sprintf(`%s%s%s %sOrderBy = "%s %s"`, name, ob.GoName, k, name, ob.SQLName, v))
+			buf.WriteString("\n")
+		}
+	}
+	buf.WriteString(")")
+	return buf.String()
 }
 
 // TODO template function to create a struct of orderby for every date column
@@ -1126,23 +1153,6 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
 //     with a “limit *“ struct option appended .
 //
 // TODO low prio put note if it has no index
-func orderbys(x Index, f *Funcs) {
-	var filters, orderbys []string
-	for _, z := range x.Table.Fields {
-		if z.IsDateOrTime {
-			orderbys = append(orderbys, "ORDER BY "+f.colname(z))
-		}
-	}
-	var paramIdx int
-	for _, z := range x.Fields {
-		filters = append(filters, fmt.Sprintf("%s = %s", f.colname(z), f.nth(paramIdx)))
-		paramIdx++
-	}
-	if len(orderbys) > 0 {
-		orderbys = append(orderbys, "LIMIT "+f.nth(paramIdx))
-		paramIdx++
-	}
-}
 
 // func_context generates a func signature for v with context determined by the
 // context mode.
@@ -1258,7 +1268,6 @@ func (f *Funcs) db_prefix(name string, includeGenerated bool, includeIgnored boo
 			}
 			p := f.names_ignore(prefix, v, ignore...)
 			// p is "" when no columns are present except for primary key
-			// params
 			if p != "" {
 				params = append(params, p)
 			}
@@ -1500,8 +1509,6 @@ func (f *Funcs) sqlstr(typ string, v interface{}) string {
 		lines = f.sqlstr_proc(v)
 	case "index":
 		lines = f.sqlstr_index(v)
-	case "most_recent":
-		lines = f.sqlstr_most_recent(v)
 	default:
 		return fmt.Sprintf("const sqlstr = `UNKNOWN QUERY TYPE: %s`", typ)
 	}
@@ -1687,33 +1694,6 @@ func (f *Funcs) sqlstr_index(v interface{}) []string {
 			strings.Join(fields, ", ") + " ",
 			"FROM " + f.schemafn(x.Table.SQLName) + " ",
 			"WHERE " + strings.Join(filters, " AND "),
-		}
-	}
-	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)}
-}
-
-// sqlstr_most_recent builds a list fields.
-// TODO make generic. Also ignore if not created_at field.
-// TODO doesnt take updated_at into account either, see fastapi app for reference
-// we can generate based on event: is_update, is_create
-func (f *Funcs) sqlstr_most_recent(v interface{}) []string {
-	switch x := v.(type) {
-	case Table:
-		// build table fieldnames
-		var fields []string
-		for _, z := range x.Fields {
-			fields = append(fields, f.colname(z))
-		}
-		// index fields
-		var list []string
-		for i, z := range x.Fields {
-			list = append(list, fmt.Sprintf("%s = %s", f.colname(z), f.nth(i)))
-		}
-		return []string{
-			"SELECT ",
-			strings.Join(fields, ", ") + " ",
-			"FROM " + f.schemafn(x.SQLName) + " ",
-			"ORDER BY created_at DESC LIMIT $1",
 		}
 	}
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)}

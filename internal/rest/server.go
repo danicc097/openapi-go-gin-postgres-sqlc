@@ -81,7 +81,7 @@ type server struct {
 type serverOption func(*server)
 
 // WithMiddlewares adds the given middlewares before registering the main routers.
-func WithMiddlewares(mws []gin.HandlerFunc) serverOption {
+func WithMiddlewares(mws ...gin.HandlerFunc) serverOption {
 	return func(s *server) {
 		s.middlewares = mws
 	}

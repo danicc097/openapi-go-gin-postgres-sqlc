@@ -169,8 +169,12 @@ components:
           pattern: "^[ a-zA-Z0-9_-]+$"
       title: a User
       type: object
-    # TODO bookstack style rbac or https://incidentio.notion.site/Proposal-Product-RBAC-265201563d884ec5aeecbb246c02ddc6
-    # which is also hierarchical but allows per-org (project in our case) settings
+    # TODO bookstack style ABAC
+    # allow per user global list of scopes in token
+    # so we can use openapi scopes security as well. Then internally
+    # check if other conditions met via middleware, etc.
+    # e.g. invoicing/billing scopes should be extremely specific so RBAC is
+    # not an option
     Scope:
       title: Scope
       type: string

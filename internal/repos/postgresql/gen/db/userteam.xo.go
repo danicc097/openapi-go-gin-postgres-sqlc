@@ -8,7 +8,32 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserTeamOrderBy = string
+type UserTeamSelectConfig struct {
+	limit    *int
+	orderBy  []UserTeamOrderBy
+	joinWith []UserTeamJoinBy
+}
+
+type UserTeamSelectConfigOption func(*UserTeamSelectConfig)
+
+// UserTeamWithLimit limits row selection.
+func UserTeamWithLimit(limit int) UserTeamSelectConfigOption {
+	return func(s *UserTeamSelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// UserTeamWithOrderBy orders results by the given columns.
+func UserTeamWithOrderBy(rows ...UserTeamOrderBy) UserTeamSelectConfigOption {
+	return func(s *UserTeamSelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type (
+	UserTeamJoinBy  = string
+	UserTeamOrderBy = string
+)
 
 // UserTeam represents a row from 'public.user_team'.
 type UserTeam struct {
@@ -16,42 +41,6 @@ type UserTeam struct {
 	UserID uuid.UUID `json:"user_id"` // user_id
 	// xo fields
 	_exists, _deleted bool
-}
-
-// TODO only create if exists
-// GetMostRecentUserTeam returns n most recent rows from 'user_team',
-// ordered by "created_at" in descending order.
-func GetMostRecentUserTeam(ctx context.Context, db DB, n int) ([]*UserTeam, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`team_id, user_id ` +
-		`FROM public.user_team ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*UserTeam
-	for rows.Next() {
-		ut := UserTeam{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&ut.TeamID, &ut.UserID); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &ut)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
 }
 
 // Exists returns true when the UserTeam exists in the database.
@@ -115,7 +104,7 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 // UserTeamByUserIDTeamID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_pkey'.
-func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID int) (*UserTeam, error) {
+func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID int, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`team_id, user_id ` +
@@ -135,7 +124,7 @@ func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID
 // UserTeamByTeamIDUserID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_team_id_user_id_idx'.
-func UserTeamByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID) ([]*UserTeam, error) {
+func UserTeamByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`team_id, user_id ` +
@@ -169,7 +158,7 @@ func UserTeamByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.
 // UserTeamByUserID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_user_idx'.
-func UserTeamByUserID(ctx context.Context, db DB, userID uuid.UUID) ([]*UserTeam, error) {
+func UserTeamByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`team_id, user_id ` +

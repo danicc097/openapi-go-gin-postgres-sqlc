@@ -6,7 +6,32 @@ import (
 	"context"
 )
 
-type KanbanStepOrderBy = string
+type KanbanStepSelectConfig struct {
+	limit    *int
+	orderBy  []KanbanStepOrderBy
+	joinWith []KanbanStepJoinBy
+}
+
+type KanbanStepSelectConfigOption func(*KanbanStepSelectConfig)
+
+// KanbanStepWithLimit limits row selection.
+func KanbanStepWithLimit(limit int) KanbanStepSelectConfigOption {
+	return func(s *KanbanStepSelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// KanbanStepWithOrderBy orders results by the given columns.
+func KanbanStepWithOrderBy(rows ...KanbanStepOrderBy) KanbanStepSelectConfigOption {
+	return func(s *KanbanStepSelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type (
+	KanbanStepJoinBy  = string
+	KanbanStepOrderBy = string
+)
 
 // KanbanStep represents a row from 'public.kanban_steps'.
 type KanbanStep struct {
@@ -19,42 +44,6 @@ type KanbanStep struct {
 	Disabled      bool   `json:"disabled"`       // disabled
 	// xo fields
 	_exists, _deleted bool
-}
-
-// TODO only create if exists
-// GetMostRecentKanbanStep returns n most recent rows from 'kanban_steps',
-// ordered by "created_at" in descending order.
-func GetMostRecentKanbanStep(ctx context.Context, db DB, n int) ([]*KanbanStep, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`kanban_step_id, team_id, step_order, name, description, time_trackable, disabled ` +
-		`FROM public.kanban_steps ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*KanbanStep
-	for rows.Next() {
-		ks := KanbanStep{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&ks.KanbanStepID, &ks.TeamID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.TimeTrackable, &ks.Disabled); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &ks)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
 }
 
 // Exists returns true when the KanbanStep exists in the database.
@@ -169,7 +158,7 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 // KanbanStepByKanbanStepID retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_pkey'.
-func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int) (*KanbanStep, error) {
+func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`kanban_step_id, team_id, step_order, name, description, time_trackable, disabled ` +

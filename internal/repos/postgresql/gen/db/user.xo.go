@@ -10,7 +10,47 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserOrderBy = string
+type UserSelectConfig struct {
+	limit    *int
+	orderBy  []UserOrderBy
+	joinWith []UserJoinBy
+}
+
+type UserSelectConfigOption func(*UserSelectConfig)
+
+// UserWithLimit limits row selection.
+func UserWithLimit(limit int) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// UserWithOrderBy orders results by the given columns.
+func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type (
+	UserJoinBy  = string
+	UserOrderBy = string
+)
+
+const (
+	UserCreatedAtAscNullsFirst  UserOrderBy = "created_at ASC NULLS FIRST"
+	UserCreatedAtAscNullsLast   UserOrderBy = "created_at ASC NULLS LAST"
+	UserCreatedAtDescNullsFirst UserOrderBy = "created_at DESC NULLS FIRST"
+	UserCreatedAtDescNullsLast  UserOrderBy = "created_at DESC NULLS LAST"
+	UserUpdatedAtAscNullsFirst  UserOrderBy = "updated_at ASC NULLS FIRST"
+	UserUpdatedAtAscNullsLast   UserOrderBy = "updated_at ASC NULLS LAST"
+	UserUpdatedAtDescNullsFirst UserOrderBy = "updated_at DESC NULLS FIRST"
+	UserUpdatedAtDescNullsLast  UserOrderBy = "updated_at DESC NULLS LAST"
+	UserDeletedAtAscNullsLast   UserOrderBy = "deleted_at ASC NULLS LAST"
+	UserDeletedAtDescNullsFirst UserOrderBy = "deleted_at DESC NULLS FIRST"
+	UserDeletedAtDescNullsLast  UserOrderBy = "deleted_at DESC NULLS LAST"
+	UserDeletedAtAscNullsFirst  UserOrderBy = "deleted_at ASC NULLS FIRST"
+)
 
 // User represents a row from 'public.users'.
 type User struct {
@@ -27,42 +67,6 @@ type User struct {
 	DeletedAt  sql.NullTime   `json:"deleted_at"`  // deleted_at
 	// xo fields
 	_exists, _deleted bool
-}
-
-// TODO only create if exists
-// GetMostRecentUser returns n most recent rows from 'users',
-// ordered by "created_at" in descending order.
-func GetMostRecentUser(ctx context.Context, db DB, n int) ([]*User, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
-		`FROM public.users ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*User
-	for rows.Next() {
-		u := User{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &u)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
 }
 
 // Exists returns true when the User exists in the database.
@@ -177,7 +181,7 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 // UsersByCreatedAt retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_created_at_idx'.
-func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time) ([]*User, error) {
+func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
@@ -211,7 +215,7 @@ func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time) ([]*User,
 // UsersByDeletedAt retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_deleted_at_idx'.
-func UsersByDeletedAt(ctx context.Context, db DB, deletedAt sql.NullTime) ([]*User, error) {
+func UsersByDeletedAt(ctx context.Context, db DB, deletedAt sql.NullTime, opts ...UserSelectConfigOption) ([]*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
@@ -245,7 +249,7 @@ func UsersByDeletedAt(ctx context.Context, db DB, deletedAt sql.NullTime) ([]*Us
 // UserByEmail retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_email_key'.
-func UserByEmail(ctx context.Context, db DB, email string) (*User, error) {
+func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectConfigOption) (*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
@@ -265,7 +269,7 @@ func UserByEmail(ctx context.Context, db DB, email string) (*User, error) {
 // UserByUserID retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_pkey'.
-func UserByUserID(ctx context.Context, db DB, userID uuid.UUID) (*User, error) {
+func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
@@ -285,7 +289,7 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID) (*User, error) {
 // UsersByUpdatedAt retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_updated_at_idx'.
-func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time) ([]*User, error) {
+func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
@@ -319,7 +323,7 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time) ([]*User,
 // UserByUserIDExternalID_users_user_id_external_id_idx retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_user_id_external_id_idx'.
-func UserByUserIDExternalID_users_user_id_external_id_idx(ctx context.Context, db DB, userID uuid.UUID, externalID sql.NullString) (*User, error) {
+func UserByUserIDExternalID_users_user_id_external_id_idx(ctx context.Context, db DB, userID uuid.UUID, externalID sql.NullString, opts ...UserSelectConfigOption) (*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
@@ -339,7 +343,7 @@ func UserByUserIDExternalID_users_user_id_external_id_idx(ctx context.Context, d
 // UserByUserID_users_user_id_idx retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_user_id_idx'.
-func UserByUserID_users_user_id_idx(ctx context.Context, db DB, userID uuid.UUID) (*User, error) {
+func UserByUserID_users_user_id_idx(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +
@@ -359,7 +363,7 @@ func UserByUserID_users_user_id_idx(ctx context.Context, db DB, userID uuid.UUID
 // UserByUsername retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_username_key'.
-func UserByUsername(ctx context.Context, db DB, username string) (*User, error) {
+func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSelectConfigOption) (*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at ` +

@@ -6,7 +6,32 @@ import (
 	"context"
 )
 
-type WorkItemTaskOrderBy = string
+type WorkItemTaskSelectConfig struct {
+	limit    *int
+	orderBy  []WorkItemTaskOrderBy
+	joinWith []WorkItemTaskJoinBy
+}
+
+type WorkItemTaskSelectConfigOption func(*WorkItemTaskSelectConfig)
+
+// WorkItemTaskWithLimit limits row selection.
+func WorkItemTaskWithLimit(limit int) WorkItemTaskSelectConfigOption {
+	return func(s *WorkItemTaskSelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// WorkItemTaskWithOrderBy orders results by the given columns.
+func WorkItemTaskWithOrderBy(rows ...WorkItemTaskOrderBy) WorkItemTaskSelectConfigOption {
+	return func(s *WorkItemTaskSelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type (
+	WorkItemTaskJoinBy  = string
+	WorkItemTaskOrderBy = string
+)
 
 // WorkItemTask represents a row from 'public.work_item_task'.
 type WorkItemTask struct {
@@ -14,42 +39,6 @@ type WorkItemTask struct {
 	WorkItemID int64 `json:"work_item_id"` // work_item_id
 	// xo fields
 	_exists, _deleted bool
-}
-
-// TODO only create if exists
-// GetMostRecentWorkItemTask returns n most recent rows from 'work_item_task',
-// ordered by "created_at" in descending order.
-func GetMostRecentWorkItemTask(ctx context.Context, db DB, n int) ([]*WorkItemTask, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`task_id, work_item_id ` +
-		`FROM public.work_item_task ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*WorkItemTask
-	for rows.Next() {
-		wit := WorkItemTask{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&wit.TaskID, &wit.WorkItemID); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &wit)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
 }
 
 // Exists returns true when the WorkItemTask exists in the database.
@@ -113,7 +102,7 @@ func (wit *WorkItemTask) Delete(ctx context.Context, db DB) error {
 // WorkItemTaskByWorkItemIDTaskID retrieves a row from 'public.work_item_task' as a WorkItemTask.
 //
 // Generated from index 'work_item_task_pkey'.
-func WorkItemTaskByWorkItemIDTaskID(ctx context.Context, db DB, workItemID, taskID int64) (*WorkItemTask, error) {
+func WorkItemTaskByWorkItemIDTaskID(ctx context.Context, db DB, workItemID, taskID int64, opts ...WorkItemTaskSelectConfigOption) (*WorkItemTask, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`task_id, work_item_id ` +
@@ -133,7 +122,7 @@ func WorkItemTaskByWorkItemIDTaskID(ctx context.Context, db DB, workItemID, task
 // WorkItemTaskByTaskIDWorkItemID retrieves a row from 'public.work_item_task' as a WorkItemTask.
 //
 // Generated from index 'work_item_task_task_id_work_item_id_idx'.
-func WorkItemTaskByTaskIDWorkItemID(ctx context.Context, db DB, taskID, workItemID int64) ([]*WorkItemTask, error) {
+func WorkItemTaskByTaskIDWorkItemID(ctx context.Context, db DB, taskID, workItemID int64, opts ...WorkItemTaskSelectConfigOption) ([]*WorkItemTask, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`task_id, work_item_id ` +

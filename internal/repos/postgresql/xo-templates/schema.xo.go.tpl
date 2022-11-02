@@ -117,7 +117,36 @@
 
 {{ define "typedef" }}
 {{- $t := .Data -}}
+
+type {{ $t.GoName }}SelectConfig struct {
+	limit       *int
+	orderBy     []{{ $t.GoName }}OrderBy
+  joinWith    []{{ $t.GoName }}JoinBy
+}
+
+type {{ $t.GoName }}SelectConfigOption func(*{{ $t.GoName }}SelectConfig)
+
+
+{{/* TODO shared WithLimit and SelectConfig embedded in a config.xo.go file */}}
+// {{ $t.GoName }}WithLimit limits row selection.
+func {{ $t.GoName }}WithLimit(limit int) {{ $t.GoName }}SelectConfigOption {
+	return func(s *{{ $t.GoName }}SelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// {{ $t.GoName }}WithOrderBy orders results by the given columns.
+func {{ $t.GoName }}WithOrderBy(rows ...{{ $t.GoName }}OrderBy) {{ $t.GoName }}SelectConfigOption {
+	return func(s *{{ $t.GoName }}SelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type {{ $t.GoName }}JoinBy = string
 type {{ $t.GoName }}OrderBy = string
+
+{{ functype $t.GoName $t }}
+
 {{/* TODO orderbys func to generate e.g. UserCreatedAtDesc (camelcased dyn.) = "created_at desc" */}}
 {{if $t.Comment -}}
 // {{ $t.Comment | eval $t.GoName }}
@@ -132,43 +161,6 @@ type {{ $t.GoName }} struct {
 	// xo fields
 	_exists, _deleted bool
 {{ end -}}
-}
-
-{{/* custom queries */}}
-
-// TODO only create if exists
-// GetMostRecent{{ $t.GoName }} returns n most recent rows from '{{ $t.SQLName }}',
-// ordered by "created_at" in descending order.
-func GetMostRecent{{ $t.GoName }}(ctx context.Context, db DB, n int) ([]*{{ $t.GoName }}, error) {
-    // list
-    {{ sqlstr "most_recent" $t }}
-	// run
-	logf(sqlstr, n)
-
-    rows, err := {{ db "Query" "n" }}
-    if err != nil {
-        return nil, logerror(err)
-    }
-    defer rows.Close()
-
-    // load results
-    var res []*{{ $t.GoName }}
-    for rows.Next() {
-        {{ short $t }} := {{ $t.GoName }}{
-        {{- if $t.PrimaryKeys }}
-            _exists: true,
-        {{ end -}}
-        }
-        // scan
-        if err := rows.Scan({{ names (print "&" (short $t) ".") $t.Fields }}); err != nil {
-            return nil, logerror(err)
-        }
-        res = append(res, &{{ short $t }})
-    }
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-    return res, nil
 }
 
 {{/* regular queries for a table. Ignored for mat views or views.

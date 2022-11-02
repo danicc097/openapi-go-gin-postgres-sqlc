@@ -9,7 +9,39 @@ import (
 	"github.com/google/uuid"
 )
 
-type APIKeyOrderBy = string
+type APIKeySelectConfig struct {
+	limit    *int
+	orderBy  []APIKeyOrderBy
+	joinWith []APIKeyJoinBy
+}
+
+type APIKeySelectConfigOption func(*APIKeySelectConfig)
+
+// APIKeyWithLimit limits row selection.
+func APIKeyWithLimit(limit int) APIKeySelectConfigOption {
+	return func(s *APIKeySelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// APIKeyWithOrderBy orders results by the given columns.
+func APIKeyWithOrderBy(rows ...APIKeyOrderBy) APIKeySelectConfigOption {
+	return func(s *APIKeySelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type (
+	APIKeyJoinBy  = string
+	APIKeyOrderBy = string
+)
+
+const (
+	APIKeyExpiresOnDescNullsFirst APIKeyOrderBy = "expires_on DESC NULLS FIRST"
+	APIKeyExpiresOnDescNullsLast  APIKeyOrderBy = "expires_on DESC NULLS LAST"
+	APIKeyExpiresOnAscNullsFirst  APIKeyOrderBy = "expires_on ASC NULLS FIRST"
+	APIKeyExpiresOnAscNullsLast   APIKeyOrderBy = "expires_on ASC NULLS LAST"
+)
 
 // APIKey represents a row from 'public.api_keys'.
 type APIKey struct {
@@ -19,42 +51,6 @@ type APIKey struct {
 	ExpiresOn time.Time `json:"expires_on"` // expires_on
 	// xo fields
 	_exists, _deleted bool
-}
-
-// TODO only create if exists
-// GetMostRecentAPIKey returns n most recent rows from 'api_keys',
-// ordered by "created_at" in descending order.
-func GetMostRecentAPIKey(ctx context.Context, db DB, n int) ([]*APIKey, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`api_key_id, api_key, user_id, expires_on ` +
-		`FROM public.api_keys ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*APIKey
-	for rows.Next() {
-		ak := APIKey{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&ak.APIKeyID, &ak.APIKey, &ak.UserID, &ak.ExpiresOn); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &ak)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
 }
 
 // Exists returns true when the APIKey exists in the database.
@@ -169,7 +165,7 @@ func (ak *APIKey) Delete(ctx context.Context, db DB) error {
 // APIKeyByAPIKey retrieves a row from 'public.api_keys' as a APIKey.
 //
 // Generated from index 'api_keys_api_key_key'.
-func APIKeyByAPIKey(ctx context.Context, db DB, apiKey string) (*APIKey, error) {
+func APIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...APIKeySelectConfigOption) (*APIKey, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`api_key_id, api_key, user_id, expires_on ` +
@@ -189,7 +185,7 @@ func APIKeyByAPIKey(ctx context.Context, db DB, apiKey string) (*APIKey, error) 
 // APIKeyByAPIKeyID retrieves a row from 'public.api_keys' as a APIKey.
 //
 // Generated from index 'api_keys_pkey'.
-func APIKeyByAPIKeyID(ctx context.Context, db DB, apiKeyID int) (*APIKey, error) {
+func APIKeyByAPIKeyID(ctx context.Context, db DB, apiKeyID int, opts ...APIKeySelectConfigOption) (*APIKey, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`api_key_id, api_key, user_id, expires_on ` +

@@ -12,7 +12,47 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserOrderBy = string
+type UserSelectConfig struct {
+	limit    *int
+	orderBy  []UserOrderBy
+	joinWith []UserJoinBy
+}
+
+type UserSelectConfigOption func(*UserSelectConfig)
+
+// UserWithLimit limits row selection.
+func UserWithLimit(limit int) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// UserWithOrderBy orders results by the given columns.
+func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type (
+	UserJoinBy  = string
+	UserOrderBy = string
+)
+
+const (
+	UserCreatedAtDescNullsLast  UserOrderBy = "created_at DESC NULLS LAST"
+	UserCreatedAtAscNullsFirst  UserOrderBy = "created_at ASC NULLS FIRST"
+	UserCreatedAtAscNullsLast   UserOrderBy = "created_at ASC NULLS LAST"
+	UserCreatedAtDescNullsFirst UserOrderBy = "created_at DESC NULLS FIRST"
+	UserUpdatedAtAscNullsLast   UserOrderBy = "updated_at ASC NULLS LAST"
+	UserUpdatedAtDescNullsFirst UserOrderBy = "updated_at DESC NULLS FIRST"
+	UserUpdatedAtDescNullsLast  UserOrderBy = "updated_at DESC NULLS LAST"
+	UserUpdatedAtAscNullsFirst  UserOrderBy = "updated_at ASC NULLS FIRST"
+	UserDeletedAtAscNullsFirst  UserOrderBy = "deleted_at ASC NULLS FIRST"
+	UserDeletedAtAscNullsLast   UserOrderBy = "deleted_at ASC NULLS LAST"
+	UserDeletedAtDescNullsFirst UserOrderBy = "deleted_at DESC NULLS FIRST"
+	UserDeletedAtDescNullsLast  UserOrderBy = "deleted_at DESC NULLS LAST"
+)
 
 // User represents a row from 'cache.users'.
 type User struct {
@@ -30,44 +70,10 @@ type User struct {
 	Teams      pq.GenericArray `json:"teams"`       // teams
 }
 
-// TODO only create if exists
-// GetMostRecentUser returns n most recent rows from 'users',
-// ordered by "created_at" in descending order.
-func GetMostRecentUser(ctx context.Context, db DB, n int) ([]*User, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at, teams ` +
-		`FROM cache.users ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*User
-	for rows.Next() {
-		u := User{}
-		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Teams); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &u)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-}
-
 // UsersByExternalID retrieves a row from 'cache.users' as a User.
 //
 // Generated from index 'users_external_id_idx'.
-func UsersByExternalID(ctx context.Context, db DB, externalID sql.NullString) ([]*User, error) {
+func UsersByExternalID(ctx context.Context, db DB, externalID sql.NullString, opts ...UserSelectConfigOption) ([]*User, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at, teams ` +

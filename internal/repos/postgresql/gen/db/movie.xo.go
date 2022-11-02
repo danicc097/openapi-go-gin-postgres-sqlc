@@ -6,7 +6,32 @@ import (
 	"context"
 )
 
-type MovieOrderBy = string
+type MovieSelectConfig struct {
+	limit    *int
+	orderBy  []MovieOrderBy
+	joinWith []MovieJoinBy
+}
+
+type MovieSelectConfigOption func(*MovieSelectConfig)
+
+// MovieWithLimit limits row selection.
+func MovieWithLimit(limit int) MovieSelectConfigOption {
+	return func(s *MovieSelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// MovieWithOrderBy orders results by the given columns.
+func MovieWithOrderBy(rows ...MovieOrderBy) MovieSelectConfigOption {
+	return func(s *MovieSelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type (
+	MovieJoinBy  = string
+	MovieOrderBy = string
+)
 
 // Movie represents a row from 'public.movies'.
 type Movie struct {
@@ -16,42 +41,6 @@ type Movie struct {
 	Synopsis string `json:"synopsis"` // synopsis
 	// xo fields
 	_exists, _deleted bool
-}
-
-// TODO only create if exists
-// GetMostRecentMovie returns n most recent rows from 'movies',
-// ordered by "created_at" in descending order.
-func GetMostRecentMovie(ctx context.Context, db DB, n int) ([]*Movie, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`movie_id, title, year, synopsis ` +
-		`FROM public.movies ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*Movie
-	for rows.Next() {
-		m := Movie{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&m.MovieID, &m.Title, &m.Year, &m.Synopsis); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &m)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
 }
 
 // Exists returns true when the Movie exists in the database.
@@ -166,7 +155,7 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 // MovieByMovieID retrieves a row from 'public.movies' as a Movie.
 //
 // Generated from index 'movies_pkey'.
-func MovieByMovieID(ctx context.Context, db DB, movieID int) (*Movie, error) {
+func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) (*Movie, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`movie_id, title, year, synopsis ` +

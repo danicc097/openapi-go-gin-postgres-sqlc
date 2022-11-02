@@ -85,7 +85,7 @@ func runTestServer(t *testing.T, pool *pgxpool.Pool, middlewares []gin.HandlerFu
 		Logger:         logger,
 		SpecPath:       "../../openapi.yaml",
 		MovieSvcClient: &v1testing.FakeMovieGenreClient{},
-	}, WithMiddlewares(middlewares))
+	}, WithMiddlewares(middlewares...))
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "New")
 	}

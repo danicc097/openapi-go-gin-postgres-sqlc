@@ -7,7 +7,43 @@ import (
 	"time"
 )
 
-type ProjectOrderBy = string
+type ProjectSelectConfig struct {
+	limit    *int
+	orderBy  []ProjectOrderBy
+	joinWith []ProjectJoinBy
+}
+
+type ProjectSelectConfigOption func(*ProjectSelectConfig)
+
+// ProjectWithLimit limits row selection.
+func ProjectWithLimit(limit int) ProjectSelectConfigOption {
+	return func(s *ProjectSelectConfig) {
+		s.limit = &limit
+	}
+}
+
+// ProjectWithOrderBy orders results by the given columns.
+func ProjectWithOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
+	return func(s *ProjectSelectConfig) {
+		s.orderBy = rows
+	}
+}
+
+type (
+	ProjectJoinBy  = string
+	ProjectOrderBy = string
+)
+
+const (
+	ProjectCreatedAtAscNullsFirst  ProjectOrderBy = "created_at ASC NULLS FIRST"
+	ProjectCreatedAtAscNullsLast   ProjectOrderBy = "created_at ASC NULLS LAST"
+	ProjectCreatedAtDescNullsFirst ProjectOrderBy = "created_at DESC NULLS FIRST"
+	ProjectCreatedAtDescNullsLast  ProjectOrderBy = "created_at DESC NULLS LAST"
+	ProjectUpdatedAtDescNullsLast  ProjectOrderBy = "updated_at DESC NULLS LAST"
+	ProjectUpdatedAtAscNullsFirst  ProjectOrderBy = "updated_at ASC NULLS FIRST"
+	ProjectUpdatedAtAscNullsLast   ProjectOrderBy = "updated_at ASC NULLS LAST"
+	ProjectUpdatedAtDescNullsFirst ProjectOrderBy = "updated_at DESC NULLS FIRST"
+)
 
 // Project represents a row from 'public.projects'.
 type Project struct {
@@ -19,42 +55,6 @@ type Project struct {
 	UpdatedAt   time.Time `json:"updated_at"`  // updated_at
 	// xo fields
 	_exists, _deleted bool
-}
-
-// TODO only create if exists
-// GetMostRecentProject returns n most recent rows from 'projects',
-// ordered by "created_at" in descending order.
-func GetMostRecentProject(ctx context.Context, db DB, n int) ([]*Project, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`project_id, name, description, metadata, created_at, updated_at ` +
-		`FROM public.projects ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*Project
-	for rows.Next() {
-		p := Project{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&p.ProjectID, &p.Name, &p.Description, &p.Metadata, &p.CreatedAt, &p.UpdatedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &p)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
 }
 
 // Exists returns true when the Project exists in the database.
@@ -169,7 +169,7 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 // ProjectByName retrieves a row from 'public.projects' as a Project.
 //
 // Generated from index 'projects_name_key'.
-func ProjectByName(ctx context.Context, db DB, name string) (*Project, error) {
+func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelectConfigOption) (*Project, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`project_id, name, description, metadata, created_at, updated_at ` +
@@ -189,7 +189,7 @@ func ProjectByName(ctx context.Context, db DB, name string) (*Project, error) {
 // ProjectByProjectID retrieves a row from 'public.projects' as a Project.
 //
 // Generated from index 'projects_pkey'.
-func ProjectByProjectID(ctx context.Context, db DB, projectID int) (*Project, error) {
+func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) (*Project, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`project_id, name, description, metadata, created_at, updated_at ` +
