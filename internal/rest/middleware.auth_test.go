@@ -16,29 +16,29 @@ import (
 func TestAuthorizationMiddleware(t *testing.T) {
 	testCases := []struct {
 		name         string
-		role         db.Role
-		requiredRole db.Role
+		role         db.UserRole
+		requiredRole db.UserRole
 		status       int
 		body         string
 	}{
 		{
 			name:         "unauthorized_user",
-			role:         db.RoleUser,
-			requiredRole: db.RoleAdmin,
+			role:         db.UserRoleUser,
+			requiredRole: db.UserRoleAdmin,
 			status:       http.StatusForbidden,
 			body:         "Unauthorized.",
 		},
 		{
 			name:         "unauthorized_manager",
-			role:         db.RoleManager,
-			requiredRole: db.RoleAdmin,
+			role:         db.UserRoleManager,
+			requiredRole: db.UserRoleAdmin,
 			status:       http.StatusForbidden,
 			body:         "Unauthorized.",
 		},
 		{
 			name:         "authorized",
-			role:         db.RoleAdmin,
-			requiredRole: db.RoleAdmin,
+			role:         db.UserRoleAdmin,
+			requiredRole: db.UserRoleAdmin,
 			status:       http.StatusOK,
 			body:         "ok",
 		},

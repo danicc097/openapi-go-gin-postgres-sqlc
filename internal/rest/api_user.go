@@ -87,7 +87,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 	// }
 
 	// // TODO extract to helper
-	// var role db.Role
+	// var role db.UserRole
 
 	// err = role.Scan([]byte(body.Role))
 	// if err != nil {

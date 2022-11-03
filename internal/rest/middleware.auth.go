@@ -58,7 +58,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 // EnsureAuthorized checks whether the client is authorized.
 // TODO use authorization service, which in turn uses the user service to check role
 // based on token -> email -> GetUserByEmail -> role
-func (a *authMiddleware) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc {
+func (a *authMiddleware) EnsureAuthorized(requiredRole db.UserRole) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authzsvc := services.NewAuthorization(a.logger)
 		user := getUserFromCtx(c)

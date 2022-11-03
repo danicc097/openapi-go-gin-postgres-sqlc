@@ -41,24 +41,24 @@ services:
     restart: always
     logging: *default-logging
 
-  vault:
-    image: vault:1.9.8
-    container_name: vault_${PROJECT_PREFIX:?not set}
-    # ports:
-    #   - "8300:8300"
-    cap_add:
-      - IPC_LOCK
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 150M # TODO envvar
-    networks:
-      - traefik-net
-    environment:
-      VAULT_DEV_ROOT_TOKEN_ID: myroot
-      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8300"
-    logging: *default-logging
+  # vault:
+  #   image: vault:1.9.8
+  #   container_name: vault_${PROJECT_PREFIX:?not set}
+  #   # ports:
+  #   #   - "8300:8300"
+  #   cap_add:
+  #     - IPC_LOCK
+  #   restart: unless-stopped
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 150M # TODO envvar
+  #   networks:
+  #     - traefik-net
+  #   environment:
+  #     VAULT_DEV_ROOT_TOKEN_ID: myroot
+  #     VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8300"
+  #   logging: *default-logging
 
   jaeger:
     image: jaegertracing/all-in-one:1.38

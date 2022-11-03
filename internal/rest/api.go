@@ -41,17 +41,17 @@ func (h *Handlers) middlewares(opID operationID) []gin.HandlerFunc {
 	case DeleteUser:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
-			h.authmw.EnsureAuthorized(db.RoleAdmin),
+			h.authmw.EnsureAuthorized(db.UserRoleAdmin),
 		}
 	case UpdateUser:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
-			h.authmw.EnsureAuthorized(db.RoleAdmin),
+			h.authmw.EnsureAuthorized(db.UserRoleAdmin),
 		}
 	case AdminPing:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
-			h.authmw.EnsureAuthorized(db.RoleAdmin),
+			h.authmw.EnsureAuthorized(db.UserRoleAdmin),
 		}
 	default:
 		return []gin.HandlerFunc{}

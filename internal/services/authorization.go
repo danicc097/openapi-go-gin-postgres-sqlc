@@ -7,10 +7,10 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var roles = map[db.Role][]db.Role{
-	db.RoleUser:    {db.RoleUser},
-	db.RoleManager: {db.RoleUser, db.RoleManager},
-	db.RoleAdmin:   {db.RoleUser, db.RoleManager, db.RoleAdmin},
+var roles = map[db.UserRole][]db.UserRole{
+	db.UserRoleUser:    {db.UserRoleUser},
+	db.UserRoleManager: {db.UserRoleUser, db.UserRoleManager},
+	db.UserRoleAdmin:   {db.UserRoleUser, db.UserRoleManager, db.UserRoleAdmin},
 }
 
 // Authorization represents a service for authorization.
@@ -32,11 +32,11 @@ func NewAuthorization(logger *zap.Logger) *Authorization {
 // load policy from db: https://github.com/casbin/casbin-pg-adapter
 
 // RolePermissions returns access levels per role.
-func (a Authorization) RolePermissions() map[db.Role][]db.Role {
+func (a Authorization) RolePermissions() map[db.UserRole][]db.UserRole {
 	return roles
 }
 
-func (a Authorization) IsAuthorized(role, requiredRole db.Role) error {
+func (a Authorization) IsAuthorized(role, requiredRole db.UserRole) error {
 	roles := a.RolePermissions()[role]
 
 	if !slices.Contains(roles, requiredRole) {
