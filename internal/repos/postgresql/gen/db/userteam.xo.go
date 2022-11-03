@@ -5,10 +5,17 @@ package db
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/google/uuid"
 )
+
+// UserTeam represents a row from 'public.user_team'.
+type UserTeam struct {
+	TeamID int       `json:"team_id"` // team_id
+	UserID uuid.UUID `json:"user_id"` // user_id
+	// xo fields
+	_exists, _deleted bool
+}
 
 type UserTeamSelectConfig struct {
 	limit    string
@@ -25,25 +32,9 @@ func UserTeamWithLimit(limit int) UserTeamSelectConfigOption {
 	}
 }
 
-// UserTeamWithOrderBy orders results by the given columns.
-func UserTeamWithOrderBy(rows ...UserTeamOrderBy) UserTeamSelectConfigOption {
-	return func(s *UserTeamSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
-	}
-}
+type UserTeamOrderBy = string
 
-type (
-	UserTeamJoinBy  = string
-	UserTeamOrderBy = string
-)
-
-// UserTeam represents a row from 'public.user_team'.
-type UserTeam struct {
-	TeamID int       `json:"team_id"` // team_id
-	UserID uuid.UUID `json:"user_id"` // user_id
-	// xo fields
-	_exists, _deleted bool
-}
+type UserTeamJoinBy = string
 
 // Exists returns true when the UserTeam exists in the database.
 func (ut *UserTeam) Exists() bool {

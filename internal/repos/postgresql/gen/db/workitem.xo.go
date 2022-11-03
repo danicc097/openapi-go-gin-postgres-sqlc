@@ -10,6 +10,20 @@ import (
 	"time"
 )
 
+// WorkItem represents a row from 'public.work_items'.
+type WorkItem struct {
+	WorkItemID   int64        `json:"work_item_id"`   // work_item_id
+	Title        string       `json:"title"`          // title
+	Metadata     []byte       `json:"metadata"`       // metadata
+	TeamID       int          `json:"team_id"`        // team_id
+	KanbanStepID int          `json:"kanban_step_id"` // kanban_step_id
+	CreatedAt    time.Time    `json:"created_at"`     // created_at
+	UpdatedAt    time.Time    `json:"updated_at"`     // updated_at
+	DeletedAt    sql.NullTime `json:"deleted_at"`     // deleted_at
+	// xo fields
+	_exists, _deleted bool
+}
+
 type WorkItemSelectConfig struct {
 	limit    string
 	orderBy  string
@@ -25,6 +39,23 @@ func WorkItemWithLimit(limit int) WorkItemSelectConfigOption {
 	}
 }
 
+type WorkItemOrderBy = string
+
+const (
+	WorkItemCreatedAtDescNullsFirst WorkItemOrderBy = "CreatedAt DescNullsFirst"
+	WorkItemCreatedAtDescNullsLast  WorkItemOrderBy = "CreatedAt DescNullsLast"
+	WorkItemCreatedAtAscNullsFirst  WorkItemOrderBy = "CreatedAt AscNullsFirst"
+	WorkItemCreatedAtAscNullsLast   WorkItemOrderBy = "CreatedAt AscNullsLast"
+	WorkItemUpdatedAtDescNullsFirst WorkItemOrderBy = "UpdatedAt DescNullsFirst"
+	WorkItemUpdatedAtDescNullsLast  WorkItemOrderBy = "UpdatedAt DescNullsLast"
+	WorkItemUpdatedAtAscNullsFirst  WorkItemOrderBy = "UpdatedAt AscNullsFirst"
+	WorkItemUpdatedAtAscNullsLast   WorkItemOrderBy = "UpdatedAt AscNullsLast"
+	WorkItemDeletedAtDescNullsFirst WorkItemOrderBy = "DeletedAt DescNullsFirst"
+	WorkItemDeletedAtDescNullsLast  WorkItemOrderBy = "DeletedAt DescNullsLast"
+	WorkItemDeletedAtAscNullsFirst  WorkItemOrderBy = "DeletedAt AscNullsFirst"
+	WorkItemDeletedAtAscNullsLast   WorkItemOrderBy = "DeletedAt AscNullsLast"
+)
+
 // WorkItemWithOrderBy orders results by the given columns.
 func WorkItemWithOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
@@ -32,39 +63,7 @@ func WorkItemWithOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 	}
 }
 
-type (
-	WorkItemJoinBy  = string
-	WorkItemOrderBy = string
-)
-
-const (
-	WorkItemCreatedAtDescNullsFirst WorkItemOrderBy = "created_at DESC NULLS FIRST"
-	WorkItemCreatedAtDescNullsLast  WorkItemOrderBy = "created_at DESC NULLS LAST"
-	WorkItemCreatedAtAscNullsFirst  WorkItemOrderBy = "created_at ASC NULLS FIRST"
-	WorkItemCreatedAtAscNullsLast   WorkItemOrderBy = "created_at ASC NULLS LAST"
-	WorkItemUpdatedAtDescNullsFirst WorkItemOrderBy = "updated_at DESC NULLS FIRST"
-	WorkItemUpdatedAtDescNullsLast  WorkItemOrderBy = "updated_at DESC NULLS LAST"
-	WorkItemUpdatedAtAscNullsFirst  WorkItemOrderBy = "updated_at ASC NULLS FIRST"
-	WorkItemUpdatedAtAscNullsLast   WorkItemOrderBy = "updated_at ASC NULLS LAST"
-	WorkItemDeletedAtDescNullsFirst WorkItemOrderBy = "deleted_at DESC NULLS FIRST"
-	WorkItemDeletedAtDescNullsLast  WorkItemOrderBy = "deleted_at DESC NULLS LAST"
-	WorkItemDeletedAtAscNullsFirst  WorkItemOrderBy = "deleted_at ASC NULLS FIRST"
-	WorkItemDeletedAtAscNullsLast   WorkItemOrderBy = "deleted_at ASC NULLS LAST"
-)
-
-// WorkItem represents a row from 'public.work_items'.
-type WorkItem struct {
-	WorkItemID   int64        `json:"work_item_id"`   // work_item_id
-	Title        string       `json:"title"`          // title
-	Metadata     []byte       `json:"metadata"`       // metadata
-	TeamID       int          `json:"team_id"`        // team_id
-	KanbanStepID int          `json:"kanban_step_id"` // kanban_step_id
-	CreatedAt    time.Time    `json:"created_at"`     // created_at
-	UpdatedAt    time.Time    `json:"updated_at"`     // updated_at
-	DeletedAt    sql.NullTime `json:"deleted_at"`     // deleted_at
-	// xo fields
-	_exists, _deleted bool
-}
+type WorkItemJoinBy = string
 
 // Exists returns true when the WorkItem exists in the database.
 func (wi *WorkItem) Exists() bool {

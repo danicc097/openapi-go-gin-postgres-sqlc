@@ -5,10 +5,17 @@ package db
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/google/uuid"
 )
+
+// TaskMember represents a row from 'public.task_member'.
+type TaskMember struct {
+	TaskID int64     `json:"task_id"` // task_id
+	Member uuid.UUID `json:"member"`  // member
+	// xo fields
+	_exists, _deleted bool
+}
 
 type TaskMemberSelectConfig struct {
 	limit    string
@@ -25,25 +32,9 @@ func TaskMemberWithLimit(limit int) TaskMemberSelectConfigOption {
 	}
 }
 
-// TaskMemberWithOrderBy orders results by the given columns.
-func TaskMemberWithOrderBy(rows ...TaskMemberOrderBy) TaskMemberSelectConfigOption {
-	return func(s *TaskMemberSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
-	}
-}
+type TaskMemberOrderBy = string
 
-type (
-	TaskMemberJoinBy  = string
-	TaskMemberOrderBy = string
-)
-
-// TaskMember represents a row from 'public.task_member'.
-type TaskMember struct {
-	TaskID int64     `json:"task_id"` // task_id
-	Member uuid.UUID `json:"member"`  // member
-	// xo fields
-	_exists, _deleted bool
-}
+type TaskMemberJoinBy = string
 
 // Exists returns true when the TaskMember exists in the database.
 func (tm *TaskMember) Exists() bool {

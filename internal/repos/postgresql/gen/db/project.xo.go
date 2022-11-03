@@ -9,6 +9,18 @@ import (
 	"time"
 )
 
+// Project represents a row from 'public.projects'.
+type Project struct {
+	ProjectID   int       `json:"project_id"`  // project_id
+	Name        string    `json:"name"`        // name
+	Description string    `json:"description"` // description
+	Metadata    []byte    `json:"metadata"`    // metadata
+	CreatedAt   time.Time `json:"created_at"`  // created_at
+	UpdatedAt   time.Time `json:"updated_at"`  // updated_at
+	// xo fields
+	_exists, _deleted bool
+}
+
 type ProjectSelectConfig struct {
 	limit    string
 	orderBy  string
@@ -24,6 +36,19 @@ func ProjectWithLimit(limit int) ProjectSelectConfigOption {
 	}
 }
 
+type ProjectOrderBy = string
+
+const (
+	ProjectCreatedAtDescNullsFirst ProjectOrderBy = "CreatedAt DescNullsFirst"
+	ProjectCreatedAtDescNullsLast  ProjectOrderBy = "CreatedAt DescNullsLast"
+	ProjectCreatedAtAscNullsFirst  ProjectOrderBy = "CreatedAt AscNullsFirst"
+	ProjectCreatedAtAscNullsLast   ProjectOrderBy = "CreatedAt AscNullsLast"
+	ProjectUpdatedAtDescNullsFirst ProjectOrderBy = "UpdatedAt DescNullsFirst"
+	ProjectUpdatedAtDescNullsLast  ProjectOrderBy = "UpdatedAt DescNullsLast"
+	ProjectUpdatedAtAscNullsFirst  ProjectOrderBy = "UpdatedAt AscNullsFirst"
+	ProjectUpdatedAtAscNullsLast   ProjectOrderBy = "UpdatedAt AscNullsLast"
+)
+
 // ProjectWithOrderBy orders results by the given columns.
 func ProjectWithOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
@@ -31,33 +56,7 @@ func ProjectWithOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 	}
 }
 
-type (
-	ProjectJoinBy  = string
-	ProjectOrderBy = string
-)
-
-const (
-	ProjectCreatedAtDescNullsFirst ProjectOrderBy = "created_at DESC NULLS FIRST"
-	ProjectCreatedAtDescNullsLast  ProjectOrderBy = "created_at DESC NULLS LAST"
-	ProjectCreatedAtAscNullsFirst  ProjectOrderBy = "created_at ASC NULLS FIRST"
-	ProjectCreatedAtAscNullsLast   ProjectOrderBy = "created_at ASC NULLS LAST"
-	ProjectUpdatedAtDescNullsFirst ProjectOrderBy = "updated_at DESC NULLS FIRST"
-	ProjectUpdatedAtDescNullsLast  ProjectOrderBy = "updated_at DESC NULLS LAST"
-	ProjectUpdatedAtAscNullsFirst  ProjectOrderBy = "updated_at ASC NULLS FIRST"
-	ProjectUpdatedAtAscNullsLast   ProjectOrderBy = "updated_at ASC NULLS LAST"
-)
-
-// Project represents a row from 'public.projects'.
-type Project struct {
-	ProjectID   int       `json:"project_id"`  // project_id
-	Name        string    `json:"name"`        // name
-	Description string    `json:"description"` // description
-	Metadata    []byte    `json:"metadata"`    // metadata
-	CreatedAt   time.Time `json:"created_at"`  // created_at
-	UpdatedAt   time.Time `json:"updated_at"`  // updated_at
-	// xo fields
-	_exists, _deleted bool
-}
+type ProjectJoinBy = string
 
 // Exists returns true when the Project exists in the database.
 func (p *Project) Exists() bool {

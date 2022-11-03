@@ -11,6 +11,16 @@ import (
 	"github.com/google/uuid"
 )
 
+// APIKey represents a row from 'public.api_keys'.
+type APIKey struct {
+	APIKeyID  int       `json:"api_key_id"` // api_key_id
+	APIKey    string    `json:"api_key"`    // api_key
+	UserID    uuid.UUID `json:"user_id"`    // user_id
+	ExpiresOn time.Time `json:"expires_on"` // expires_on
+	// xo fields
+	_exists, _deleted bool
+}
+
 type APIKeySelectConfig struct {
 	limit    string
 	orderBy  string
@@ -26,6 +36,15 @@ func APIKeyWithLimit(limit int) APIKeySelectConfigOption {
 	}
 }
 
+type APIKeyOrderBy = string
+
+const (
+	APIKeyExpiresOnDescNullsFirst APIKeyOrderBy = "ExpiresOn DescNullsFirst"
+	APIKeyExpiresOnDescNullsLast  APIKeyOrderBy = "ExpiresOn DescNullsLast"
+	APIKeyExpiresOnAscNullsFirst  APIKeyOrderBy = "ExpiresOn AscNullsFirst"
+	APIKeyExpiresOnAscNullsLast   APIKeyOrderBy = "ExpiresOn AscNullsLast"
+)
+
 // APIKeyWithOrderBy orders results by the given columns.
 func APIKeyWithOrderBy(rows ...APIKeyOrderBy) APIKeySelectConfigOption {
 	return func(s *APIKeySelectConfig) {
@@ -33,27 +52,7 @@ func APIKeyWithOrderBy(rows ...APIKeyOrderBy) APIKeySelectConfigOption {
 	}
 }
 
-type (
-	APIKeyJoinBy  = string
-	APIKeyOrderBy = string
-)
-
-const (
-	APIKeyExpiresOnDescNullsFirst APIKeyOrderBy = "expires_on DESC NULLS FIRST"
-	APIKeyExpiresOnDescNullsLast  APIKeyOrderBy = "expires_on DESC NULLS LAST"
-	APIKeyExpiresOnAscNullsFirst  APIKeyOrderBy = "expires_on ASC NULLS FIRST"
-	APIKeyExpiresOnAscNullsLast   APIKeyOrderBy = "expires_on ASC NULLS LAST"
-)
-
-// APIKey represents a row from 'public.api_keys'.
-type APIKey struct {
-	APIKeyID  int       `json:"api_key_id"` // api_key_id
-	APIKey    string    `json:"api_key"`    // api_key
-	UserID    uuid.UUID `json:"user_id"`    // user_id
-	ExpiresOn time.Time `json:"expires_on"` // expires_on
-	// xo fields
-	_exists, _deleted bool
-}
+type APIKeyJoinBy = string
 
 // Exists returns true when the APIKey exists in the database.
 func (ak *APIKey) Exists() bool {

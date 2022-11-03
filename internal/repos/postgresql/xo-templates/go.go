@@ -924,7 +924,7 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"func_name_context":   f.func_name_context,
 		"func_name":           f.func_name_none,
 		"func_context":        f.func_context,
-		"functype":            f.functype,
+		"extratypes":          f.extratypes,
 		"func":                f.func_none,
 		"recv_context":        f.recv_context,
 		"recv":                f.recv_none,
@@ -1165,7 +1165,8 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
 }
 
 // funcfn builds a type definition.
-func (f *Funcs) functype(name string, v interface{}) string {
+func (f *Funcs) extratypes(name string, v interface{}) string {
+	// -- emit ORDER BY opts
 	var orderbys []Field
 	switch x := v.(type) {
 	case Table:
@@ -1184,14 +1185,31 @@ func (f *Funcs) functype(name string, v interface{}) string {
 		{"AscNullsLast", "ASC NULLS LAST"},
 	}
 	var buf strings.Builder
+	buf.WriteString(fmt.Sprintf(`type %sOrderBy = string
+	`, name))
 	buf.WriteString("const (")
 	for _, ob := range orderbys {
 		for _, opt := range orderByOpts {
-			buf.WriteString(fmt.Sprintf(`%s%s%s %sOrderBy = "%s %s"`, name, ob.GoName, opt[0], name, ob.SQLName, opt[1]))
-			buf.WriteString("\n")
+			buf.WriteString(fmt.Sprintf(`%[1]s%s%s %[1]sOrderBy = "%s %s"
+			`, name, ob.GoName, opt[0], ob.SQLName, opt[1]))
 		}
 	}
 	buf.WriteString(")")
+
+	if len(orderbys) > 0 {
+		buf.WriteString(fmt.Sprintf(`
+	// %[1]sWithOrderBy orders results by the given columns.
+func %[1]sWithOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
+	return func(s *%[1]sSelectConfig) {
+		s.orderBy = strings.Join(rows, ", ")
+	}
+}
+	`, name))
+	}
+
+	// TODO
+	// -- emit JOIN BY opts
+
 	return buf.String()
 }
 
@@ -1722,6 +1740,33 @@ func (f *Funcs) sqlstr_delete(v interface{}) []string {
 	}
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 25: %T ]]", v)}
 }
+
+// TODO generate o2m,m2o, m2m, o2o
+// see PostgresTableForeignKeys query
+// TODO ref_column_name_pk_table : e.g. ref_column_name is project_id -->
+// find origin table where pk is project_id (need a new join with
+//  foreign key [not foreign_key_name] in ref_table_name where column is ref_column_name)
+// `left join (
+// 	select
+// 		%column_name
+// 		, ARRAY_AGG(%ref_column_name_pk_table.*) as %ref_column_name_pk_table
+// 	from
+// 		%ref_table_name uo
+// 		left join %ref_column_name_pk_table using (%ref_column_name)
+// 	where
+// 		%column_name in (
+// 			select
+// 				%column_name
+// 			from
+// 				%ref_table_name
+// 			where
+// 				%ref_column_name = any (
+// 					select
+// 						%ref_column_name
+// 					from
+// 						%ref_column_name_pk_table))
+// 			group by
+// 				%column_name) joined_projects using (%column_name)`
 
 // sqlstr_index builds a index fields.
 func (f *Funcs) sqlstr_index(v interface{}) []string {

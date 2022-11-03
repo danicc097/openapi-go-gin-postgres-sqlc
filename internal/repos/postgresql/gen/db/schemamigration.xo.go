@@ -5,8 +5,15 @@ package db
 import (
 	"context"
 	"fmt"
-	"strings"
 )
+
+// SchemaMigration represents a row from 'public.schema_migrations'.
+type SchemaMigration struct {
+	Version int64 `json:"version"` // version
+	Dirty   bool  `json:"dirty"`   // dirty
+	// xo fields
+	_exists, _deleted bool
+}
 
 type SchemaMigrationSelectConfig struct {
 	limit    string
@@ -23,25 +30,9 @@ func SchemaMigrationWithLimit(limit int) SchemaMigrationSelectConfigOption {
 	}
 }
 
-// SchemaMigrationWithOrderBy orders results by the given columns.
-func SchemaMigrationWithOrderBy(rows ...SchemaMigrationOrderBy) SchemaMigrationSelectConfigOption {
-	return func(s *SchemaMigrationSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
-	}
-}
+type SchemaMigrationOrderBy = string
 
-type (
-	SchemaMigrationJoinBy  = string
-	SchemaMigrationOrderBy = string
-)
-
-// SchemaMigration represents a row from 'public.schema_migrations'.
-type SchemaMigration struct {
-	Version int64 `json:"version"` // version
-	Dirty   bool  `json:"dirty"`   // dirty
-	// xo fields
-	_exists, _deleted bool
-}
+type SchemaMigrationJoinBy = string
 
 // Exists returns true when the SchemaMigration exists in the database.
 func (sm *SchemaMigration) Exists() bool {

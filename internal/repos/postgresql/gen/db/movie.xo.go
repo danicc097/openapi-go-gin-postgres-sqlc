@@ -5,8 +5,17 @@ package db
 import (
 	"context"
 	"fmt"
-	"strings"
 )
+
+// Movie represents a row from 'public.movies'.
+type Movie struct {
+	MovieID  int    `json:"movie_id"` // movie_id
+	Title    string `json:"title"`    // title
+	Year     int    `json:"year"`     // year
+	Synopsis string `json:"synopsis"` // synopsis
+	// xo fields
+	_exists, _deleted bool
+}
 
 type MovieSelectConfig struct {
 	limit    string
@@ -23,27 +32,9 @@ func MovieWithLimit(limit int) MovieSelectConfigOption {
 	}
 }
 
-// MovieWithOrderBy orders results by the given columns.
-func MovieWithOrderBy(rows ...MovieOrderBy) MovieSelectConfigOption {
-	return func(s *MovieSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
-	}
-}
+type MovieOrderBy = string
 
-type (
-	MovieJoinBy  = string
-	MovieOrderBy = string
-)
-
-// Movie represents a row from 'public.movies'.
-type Movie struct {
-	MovieID  int    `json:"movie_id"` // movie_id
-	Title    string `json:"title"`    // title
-	Year     int    `json:"year"`     // year
-	Synopsis string `json:"synopsis"` // synopsis
-	// xo fields
-	_exists, _deleted bool
-}
+type MovieJoinBy = string
 
 // Exists returns true when the Movie exists in the database.
 func (m *Movie) Exists() bool {

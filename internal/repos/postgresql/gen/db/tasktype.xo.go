@@ -5,8 +5,16 @@ package db
 import (
 	"context"
 	"fmt"
-	"strings"
 )
+
+// TaskType represents a row from 'public.task_types'.
+type TaskType struct {
+	TaskTypeID int    `json:"task_type_id"` // task_type_id
+	TeamID     int64  `json:"team_id"`      // team_id
+	Name       string `json:"name"`         // name
+	// xo fields
+	_exists, _deleted bool
+}
 
 type TaskTypeSelectConfig struct {
 	limit    string
@@ -23,26 +31,9 @@ func TaskTypeWithLimit(limit int) TaskTypeSelectConfigOption {
 	}
 }
 
-// TaskTypeWithOrderBy orders results by the given columns.
-func TaskTypeWithOrderBy(rows ...TaskTypeOrderBy) TaskTypeSelectConfigOption {
-	return func(s *TaskTypeSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
-	}
-}
+type TaskTypeOrderBy = string
 
-type (
-	TaskTypeJoinBy  = string
-	TaskTypeOrderBy = string
-)
-
-// TaskType represents a row from 'public.task_types'.
-type TaskType struct {
-	TaskTypeID int    `json:"task_type_id"` // task_type_id
-	TeamID     int64  `json:"team_id"`      // team_id
-	Name       string `json:"name"`         // name
-	// xo fields
-	_exists, _deleted bool
-}
+type TaskTypeJoinBy = string
 
 // Exists returns true when the TaskType exists in the database.
 func (tt *TaskType) Exists() bool {

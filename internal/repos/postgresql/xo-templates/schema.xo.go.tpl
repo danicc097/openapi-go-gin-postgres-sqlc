@@ -126,35 +126,6 @@
 {{ define "typedef" }}
 {{- $t := .Data -}}
 
-type {{ $t.GoName }}SelectConfig struct {
-	limit       string
-	orderBy     string
-  joinWith    []{{ $t.GoName }}JoinBy
-}
-
-type {{ $t.GoName }}SelectConfigOption func(*{{ $t.GoName }}SelectConfig)
-
-
-// {{ $t.GoName }}WithLimit limits row selection.
-func {{ $t.GoName }}WithLimit(limit int) {{ $t.GoName }}SelectConfigOption {
-	return func(s *{{ $t.GoName }}SelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
-	}
-}
-
-// {{ $t.GoName }}WithOrderBy orders results by the given columns.
-func {{ $t.GoName }}WithOrderBy(rows ...{{ $t.GoName }}OrderBy) {{ $t.GoName }}SelectConfigOption {
-	return func(s *{{ $t.GoName }}SelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
-	}
-}
-
-type {{ $t.GoName }}JoinBy = string
-type {{ $t.GoName }}OrderBy = string
-
-{{ functype $t.GoName $t }}
-
-{{/* TODO orderbys func to generate e.g. UserCreatedAtDesc (camelcased dyn.) = "created_at desc" */}}
 {{if $t.Comment -}}
 // {{ $t.Comment | eval $t.GoName }}
 {{- else -}}
@@ -169,6 +140,26 @@ type {{ $t.GoName }} struct {
 	_exists, _deleted bool
 {{ end -}}
 }
+
+
+type {{ $t.GoName }}SelectConfig struct {
+	limit       string
+	orderBy     string
+  joinWith    []{{ $t.GoName }}JoinBy
+}
+
+type {{ $t.GoName }}SelectConfigOption func(*{{ $t.GoName }}SelectConfig)
+
+// {{ $t.GoName }}WithLimit limits row selection.
+func {{ $t.GoName }}WithLimit(limit int) {{ $t.GoName }}SelectConfigOption {
+	return func(s *{{ $t.GoName }}SelectConfig) {
+		s.limit = fmt.Sprintf(" limit %d ", limit)
+	}
+}
+
+{{ extratypes $t.GoName $t }}
+
+type {{ $t.GoName }}JoinBy = string
 
 {{/* regular queries for a table. Ignored for mat views or views.
  */}}

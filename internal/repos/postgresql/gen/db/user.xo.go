@@ -14,48 +14,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []UserJoinBy
-}
-
-type UserSelectConfigOption func(*UserSelectConfig)
-
-// UserWithLimit limits row selection.
-func UserWithLimit(limit int) UserSelectConfigOption {
-	return func(s *UserSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
-	}
-}
-
-// UserWithOrderBy orders results by the given columns.
-func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
-	return func(s *UserSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
-	}
-}
-
-type (
-	UserJoinBy  = string
-	UserOrderBy = string
-)
-
-const (
-	UserCreatedAtDescNullsFirst UserOrderBy = "created_at DESC NULLS FIRST"
-	UserCreatedAtDescNullsLast  UserOrderBy = "created_at DESC NULLS LAST"
-	UserCreatedAtAscNullsFirst  UserOrderBy = "created_at ASC NULLS FIRST"
-	UserCreatedAtAscNullsLast   UserOrderBy = "created_at ASC NULLS LAST"
-	UserUpdatedAtDescNullsFirst UserOrderBy = "updated_at DESC NULLS FIRST"
-	UserUpdatedAtDescNullsLast  UserOrderBy = "updated_at DESC NULLS LAST"
-	UserUpdatedAtAscNullsFirst  UserOrderBy = "updated_at ASC NULLS FIRST"
-	UserUpdatedAtAscNullsLast   UserOrderBy = "updated_at ASC NULLS LAST"
-	UserDeletedAtDescNullsFirst UserOrderBy = "deleted_at DESC NULLS FIRST"
-	UserDeletedAtDescNullsLast  UserOrderBy = "deleted_at DESC NULLS LAST"
-	UserDeletedAtAscNullsFirst  UserOrderBy = "deleted_at ASC NULLS FIRST"
-	UserDeletedAtAscNullsLast   UserOrderBy = "deleted_at ASC NULLS LAST"
-)
-
 // User represents a row from 'public.users'.
 type User struct {
 	UserID     uuid.UUID      `json:"user_id"`     // user_id
@@ -73,6 +31,47 @@ type User struct {
 	// xo fields
 	_exists, _deleted bool
 }
+
+type UserSelectConfig struct {
+	limit    string
+	orderBy  string
+	joinWith []UserJoinBy
+}
+
+type UserSelectConfigOption func(*UserSelectConfig)
+
+// UserWithLimit limits row selection.
+func UserWithLimit(limit int) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.limit = fmt.Sprintf(" limit %d ", limit)
+	}
+}
+
+type UserOrderBy = string
+
+const (
+	UserCreatedAtDescNullsFirst UserOrderBy = "CreatedAt DescNullsFirst"
+	UserCreatedAtDescNullsLast  UserOrderBy = "CreatedAt DescNullsLast"
+	UserCreatedAtAscNullsFirst  UserOrderBy = "CreatedAt AscNullsFirst"
+	UserCreatedAtAscNullsLast   UserOrderBy = "CreatedAt AscNullsLast"
+	UserUpdatedAtDescNullsFirst UserOrderBy = "UpdatedAt DescNullsFirst"
+	UserUpdatedAtDescNullsLast  UserOrderBy = "UpdatedAt DescNullsLast"
+	UserUpdatedAtAscNullsFirst  UserOrderBy = "UpdatedAt AscNullsFirst"
+	UserUpdatedAtAscNullsLast   UserOrderBy = "UpdatedAt AscNullsLast"
+	UserDeletedAtDescNullsFirst UserOrderBy = "DeletedAt DescNullsFirst"
+	UserDeletedAtDescNullsLast  UserOrderBy = "DeletedAt DescNullsLast"
+	UserDeletedAtAscNullsFirst  UserOrderBy = "DeletedAt AscNullsFirst"
+	UserDeletedAtAscNullsLast   UserOrderBy = "DeletedAt AscNullsLast"
+)
+
+// UserWithOrderBy orders results by the given columns.
+func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.orderBy = strings.Join(rows, ", ")
+	}
+}
+
+type UserJoinBy = string
 
 // Exists returns true when the User exists in the database.
 func (u *User) Exists() bool {

@@ -10,6 +10,21 @@ import (
 	"time"
 )
 
+// Task represents a row from 'public.tasks'.
+type Task struct {
+	TaskID             int64        `json:"task_id"`              // task_id
+	TaskTypeID         int          `json:"task_type_id"`         // task_type_id
+	Title              string       `json:"title"`                // title
+	Metadata           []byte       `json:"metadata"`             // metadata
+	TargetDate         time.Time    `json:"target_date"`          // target_date
+	TargetDateTimezone string       `json:"target_date_timezone"` // target_date_timezone
+	CreatedAt          time.Time    `json:"created_at"`           // created_at
+	UpdatedAt          time.Time    `json:"updated_at"`           // updated_at
+	DeletedAt          sql.NullTime `json:"deleted_at"`           // deleted_at
+	// xo fields
+	_exists, _deleted bool
+}
+
 type TaskSelectConfig struct {
 	limit    string
 	orderBy  string
@@ -25,6 +40,27 @@ func TaskWithLimit(limit int) TaskSelectConfigOption {
 	}
 }
 
+type TaskOrderBy = string
+
+const (
+	TaskTargetDateDescNullsFirst TaskOrderBy = "TargetDate DescNullsFirst"
+	TaskTargetDateDescNullsLast  TaskOrderBy = "TargetDate DescNullsLast"
+	TaskTargetDateAscNullsFirst  TaskOrderBy = "TargetDate AscNullsFirst"
+	TaskTargetDateAscNullsLast   TaskOrderBy = "TargetDate AscNullsLast"
+	TaskCreatedAtDescNullsFirst  TaskOrderBy = "CreatedAt DescNullsFirst"
+	TaskCreatedAtDescNullsLast   TaskOrderBy = "CreatedAt DescNullsLast"
+	TaskCreatedAtAscNullsFirst   TaskOrderBy = "CreatedAt AscNullsFirst"
+	TaskCreatedAtAscNullsLast    TaskOrderBy = "CreatedAt AscNullsLast"
+	TaskUpdatedAtDescNullsFirst  TaskOrderBy = "UpdatedAt DescNullsFirst"
+	TaskUpdatedAtDescNullsLast   TaskOrderBy = "UpdatedAt DescNullsLast"
+	TaskUpdatedAtAscNullsFirst   TaskOrderBy = "UpdatedAt AscNullsFirst"
+	TaskUpdatedAtAscNullsLast    TaskOrderBy = "UpdatedAt AscNullsLast"
+	TaskDeletedAtDescNullsFirst  TaskOrderBy = "DeletedAt DescNullsFirst"
+	TaskDeletedAtDescNullsLast   TaskOrderBy = "DeletedAt DescNullsLast"
+	TaskDeletedAtAscNullsFirst   TaskOrderBy = "DeletedAt AscNullsFirst"
+	TaskDeletedAtAscNullsLast    TaskOrderBy = "DeletedAt AscNullsLast"
+)
+
 // TaskWithOrderBy orders results by the given columns.
 func TaskWithOrderBy(rows ...TaskOrderBy) TaskSelectConfigOption {
 	return func(s *TaskSelectConfig) {
@@ -32,44 +68,7 @@ func TaskWithOrderBy(rows ...TaskOrderBy) TaskSelectConfigOption {
 	}
 }
 
-type (
-	TaskJoinBy  = string
-	TaskOrderBy = string
-)
-
-const (
-	TaskTargetDateDescNullsFirst TaskOrderBy = "target_date DESC NULLS FIRST"
-	TaskTargetDateDescNullsLast  TaskOrderBy = "target_date DESC NULLS LAST"
-	TaskTargetDateAscNullsFirst  TaskOrderBy = "target_date ASC NULLS FIRST"
-	TaskTargetDateAscNullsLast   TaskOrderBy = "target_date ASC NULLS LAST"
-	TaskCreatedAtDescNullsFirst  TaskOrderBy = "created_at DESC NULLS FIRST"
-	TaskCreatedAtDescNullsLast   TaskOrderBy = "created_at DESC NULLS LAST"
-	TaskCreatedAtAscNullsFirst   TaskOrderBy = "created_at ASC NULLS FIRST"
-	TaskCreatedAtAscNullsLast    TaskOrderBy = "created_at ASC NULLS LAST"
-	TaskUpdatedAtDescNullsFirst  TaskOrderBy = "updated_at DESC NULLS FIRST"
-	TaskUpdatedAtDescNullsLast   TaskOrderBy = "updated_at DESC NULLS LAST"
-	TaskUpdatedAtAscNullsFirst   TaskOrderBy = "updated_at ASC NULLS FIRST"
-	TaskUpdatedAtAscNullsLast    TaskOrderBy = "updated_at ASC NULLS LAST"
-	TaskDeletedAtDescNullsFirst  TaskOrderBy = "deleted_at DESC NULLS FIRST"
-	TaskDeletedAtDescNullsLast   TaskOrderBy = "deleted_at DESC NULLS LAST"
-	TaskDeletedAtAscNullsFirst   TaskOrderBy = "deleted_at ASC NULLS FIRST"
-	TaskDeletedAtAscNullsLast    TaskOrderBy = "deleted_at ASC NULLS LAST"
-)
-
-// Task represents a row from 'public.tasks'.
-type Task struct {
-	TaskID             int64        `json:"task_id"`              // task_id
-	TaskTypeID         int          `json:"task_type_id"`         // task_type_id
-	Title              string       `json:"title"`                // title
-	Metadata           []byte       `json:"metadata"`             // metadata
-	TargetDate         time.Time    `json:"target_date"`          // target_date
-	TargetDateTimezone string       `json:"target_date_timezone"` // target_date_timezone
-	CreatedAt          time.Time    `json:"created_at"`           // created_at
-	UpdatedAt          time.Time    `json:"updated_at"`           // updated_at
-	DeletedAt          sql.NullTime `json:"deleted_at"`           // deleted_at
-	// xo fields
-	_exists, _deleted bool
-}
+type TaskJoinBy = string
 
 // Exists returns true when the Task exists in the database.
 func (t *Task) Exists() bool {

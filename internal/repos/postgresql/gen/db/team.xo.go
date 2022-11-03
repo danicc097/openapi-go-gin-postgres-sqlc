@@ -9,6 +9,19 @@ import (
 	"time"
 )
 
+// Team represents a row from 'public.teams'.
+type Team struct {
+	TeamID      int       `json:"team_id"`     // team_id
+	ProjectID   int       `json:"project_id"`  // project_id
+	Name        string    `json:"name"`        // name
+	Description string    `json:"description"` // description
+	Metadata    []byte    `json:"metadata"`    // metadata
+	CreatedAt   time.Time `json:"created_at"`  // created_at
+	UpdatedAt   time.Time `json:"updated_at"`  // updated_at
+	// xo fields
+	_exists, _deleted bool
+}
+
 type TeamSelectConfig struct {
 	limit    string
 	orderBy  string
@@ -24,6 +37,19 @@ func TeamWithLimit(limit int) TeamSelectConfigOption {
 	}
 }
 
+type TeamOrderBy = string
+
+const (
+	TeamCreatedAtDescNullsFirst TeamOrderBy = "CreatedAt DescNullsFirst"
+	TeamCreatedAtDescNullsLast  TeamOrderBy = "CreatedAt DescNullsLast"
+	TeamCreatedAtAscNullsFirst  TeamOrderBy = "CreatedAt AscNullsFirst"
+	TeamCreatedAtAscNullsLast   TeamOrderBy = "CreatedAt AscNullsLast"
+	TeamUpdatedAtDescNullsFirst TeamOrderBy = "UpdatedAt DescNullsFirst"
+	TeamUpdatedAtDescNullsLast  TeamOrderBy = "UpdatedAt DescNullsLast"
+	TeamUpdatedAtAscNullsFirst  TeamOrderBy = "UpdatedAt AscNullsFirst"
+	TeamUpdatedAtAscNullsLast   TeamOrderBy = "UpdatedAt AscNullsLast"
+)
+
 // TeamWithOrderBy orders results by the given columns.
 func TeamWithOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
@@ -31,34 +57,7 @@ func TeamWithOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 	}
 }
 
-type (
-	TeamJoinBy  = string
-	TeamOrderBy = string
-)
-
-const (
-	TeamCreatedAtDescNullsFirst TeamOrderBy = "created_at DESC NULLS FIRST"
-	TeamCreatedAtDescNullsLast  TeamOrderBy = "created_at DESC NULLS LAST"
-	TeamCreatedAtAscNullsFirst  TeamOrderBy = "created_at ASC NULLS FIRST"
-	TeamCreatedAtAscNullsLast   TeamOrderBy = "created_at ASC NULLS LAST"
-	TeamUpdatedAtDescNullsFirst TeamOrderBy = "updated_at DESC NULLS FIRST"
-	TeamUpdatedAtDescNullsLast  TeamOrderBy = "updated_at DESC NULLS LAST"
-	TeamUpdatedAtAscNullsFirst  TeamOrderBy = "updated_at ASC NULLS FIRST"
-	TeamUpdatedAtAscNullsLast   TeamOrderBy = "updated_at ASC NULLS LAST"
-)
-
-// Team represents a row from 'public.teams'.
-type Team struct {
-	TeamID      int       `json:"team_id"`     // team_id
-	ProjectID   int       `json:"project_id"`  // project_id
-	Name        string    `json:"name"`        // name
-	Description string    `json:"description"` // description
-	Metadata    []byte    `json:"metadata"`    // metadata
-	CreatedAt   time.Time `json:"created_at"`  // created_at
-	UpdatedAt   time.Time `json:"updated_at"`  // updated_at
-	// xo fields
-	_exists, _deleted bool
-}
+type TeamJoinBy = string
 
 // Exists returns true when the Team exists in the database.
 func (t *Team) Exists() bool {

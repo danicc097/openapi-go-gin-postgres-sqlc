@@ -5,8 +5,20 @@ package db
 import (
 	"context"
 	"fmt"
-	"strings"
 )
+
+// KanbanStep represents a row from 'public.kanban_steps'.
+type KanbanStep struct {
+	KanbanStepID  int    `json:"kanban_step_id"` // kanban_step_id
+	TeamID        int    `json:"team_id"`        // team_id
+	StepOrder     int16  `json:"step_order"`     // step_order
+	Name          string `json:"name"`           // name
+	Description   string `json:"description"`    // description
+	TimeTrackable bool   `json:"time_trackable"` // time_trackable
+	Disabled      bool   `json:"disabled"`       // disabled
+	// xo fields
+	_exists, _deleted bool
+}
 
 type KanbanStepSelectConfig struct {
 	limit    string
@@ -23,30 +35,9 @@ func KanbanStepWithLimit(limit int) KanbanStepSelectConfigOption {
 	}
 }
 
-// KanbanStepWithOrderBy orders results by the given columns.
-func KanbanStepWithOrderBy(rows ...KanbanStepOrderBy) KanbanStepSelectConfigOption {
-	return func(s *KanbanStepSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
-	}
-}
+type KanbanStepOrderBy = string
 
-type (
-	KanbanStepJoinBy  = string
-	KanbanStepOrderBy = string
-)
-
-// KanbanStep represents a row from 'public.kanban_steps'.
-type KanbanStep struct {
-	KanbanStepID  int    `json:"kanban_step_id"` // kanban_step_id
-	TeamID        int    `json:"team_id"`        // team_id
-	StepOrder     int16  `json:"step_order"`     // step_order
-	Name          string `json:"name"`           // name
-	Description   string `json:"description"`    // description
-	TimeTrackable bool   `json:"time_trackable"` // time_trackable
-	Disabled      bool   `json:"disabled"`       // disabled
-	// xo fields
-	_exists, _deleted bool
-}
+type KanbanStepJoinBy = string
 
 // Exists returns true when the KanbanStep exists in the database.
 func (ks *KanbanStep) Exists() bool {

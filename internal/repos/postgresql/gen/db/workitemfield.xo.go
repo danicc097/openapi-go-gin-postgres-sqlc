@@ -5,8 +5,15 @@ package db
 import (
 	"context"
 	"fmt"
-	"strings"
 )
+
+// WorkItemField represents a row from 'public.work_item_fields'.
+type WorkItemField struct {
+	ProjectID int64  `json:"project_id"` // project_id
+	Key       string `json:"key"`        // key
+	// xo fields
+	_exists, _deleted bool
+}
 
 type WorkItemFieldSelectConfig struct {
 	limit    string
@@ -23,25 +30,9 @@ func WorkItemFieldWithLimit(limit int) WorkItemFieldSelectConfigOption {
 	}
 }
 
-// WorkItemFieldWithOrderBy orders results by the given columns.
-func WorkItemFieldWithOrderBy(rows ...WorkItemFieldOrderBy) WorkItemFieldSelectConfigOption {
-	return func(s *WorkItemFieldSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
-	}
-}
+type WorkItemFieldOrderBy = string
 
-type (
-	WorkItemFieldJoinBy  = string
-	WorkItemFieldOrderBy = string
-)
-
-// WorkItemField represents a row from 'public.work_item_fields'.
-type WorkItemField struct {
-	ProjectID int64  `json:"project_id"` // project_id
-	Key       string `json:"key"`        // key
-	// xo fields
-	_exists, _deleted bool
-}
+type WorkItemFieldJoinBy = string
 
 // Exists returns true when the WorkItemField exists in the database.
 func (wif *WorkItemField) Exists() bool {

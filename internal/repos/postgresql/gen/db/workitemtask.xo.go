@@ -5,8 +5,15 @@ package db
 import (
 	"context"
 	"fmt"
-	"strings"
 )
+
+// WorkItemTask represents a row from 'public.work_item_task'.
+type WorkItemTask struct {
+	TaskID     int64 `json:"task_id"`      // task_id
+	WorkItemID int64 `json:"work_item_id"` // work_item_id
+	// xo fields
+	_exists, _deleted bool
+}
 
 type WorkItemTaskSelectConfig struct {
 	limit    string
@@ -23,25 +30,9 @@ func WorkItemTaskWithLimit(limit int) WorkItemTaskSelectConfigOption {
 	}
 }
 
-// WorkItemTaskWithOrderBy orders results by the given columns.
-func WorkItemTaskWithOrderBy(rows ...WorkItemTaskOrderBy) WorkItemTaskSelectConfigOption {
-	return func(s *WorkItemTaskSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
-	}
-}
+type WorkItemTaskOrderBy = string
 
-type (
-	WorkItemTaskJoinBy  = string
-	WorkItemTaskOrderBy = string
-)
-
-// WorkItemTask represents a row from 'public.work_item_task'.
-type WorkItemTask struct {
-	TaskID     int64 `json:"task_id"`      // task_id
-	WorkItemID int64 `json:"work_item_id"` // work_item_id
-	// xo fields
-	_exists, _deleted bool
-}
+type WorkItemTaskJoinBy = string
 
 // Exists returns true when the WorkItemTask exists in the database.
 func (wit *WorkItemTask) Exists() bool {
