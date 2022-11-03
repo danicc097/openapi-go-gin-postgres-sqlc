@@ -970,10 +970,18 @@ if [[ -n $COMP_LINE ]]; then
   exit
 fi
 
+declare CMD="$1"
+
 # First comment lines automatically added to usage docs.
 set +e
 while [[ "$#" -gt 0 ]]; do
   case $1 in
+  --x-help)
+    # Show help for a particular x function.
+    COMMANDS=("$CMD")
+    usage
+    exit
+    ;;
   --x-force-regen) # this comment should be ignored
     # Removes generation cache, forcing a new run.
     force_regen=1
@@ -1008,7 +1016,6 @@ source ".env.$env"
 
 # handle executing x functions
 if [[ -n "$1" ]]; then
-  declare CMD="$1"
   shift
   for c in "${COMMANDS[@]}"; do
     declare cmd=$(command -v "x.$c")

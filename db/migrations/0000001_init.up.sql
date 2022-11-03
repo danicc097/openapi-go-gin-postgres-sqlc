@@ -74,6 +74,7 @@ create table user_team (
 );
 create index on user_team (team_id, user_id);
 comment on column user_team.user_id is 'cardinality:M2M';
+comment on column user_team.team_id is 'cardinality:M2M';
 
 create table kanban_steps (
   kanban_step_id int not null
@@ -159,6 +160,8 @@ create table task_member (
   , foreign key (member) references users (user_id) on delete cascade
 );
 create index on task_member (member, task_id);
+comment on column task_member.task_id is 'cardinality:M2M';
+comment on column task_member.member is 'cardinality:M2M';
 
 create table work_item_task (
   task_id bigint not null
@@ -218,6 +221,7 @@ create table user_api_key (
   , unique (user_id) -- already know it's O2O
   , foreign key (user_id) references users (user_id) on delete cascade -- generates GetUserByAPIKey
 );
+comment on column user_api_key.user_id is 'cardinality:O2O';
 
 create or replace view v.users as
 select

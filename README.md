@@ -20,6 +20,12 @@ calls tracking:
 
 ![](.github/logging.png)
 
+And help for any `x` function is easily searchable when the app inevitably grows
+with `--x-help`:
+
+![](.github/help-x-function.png)
+
+
 ## What's this for?
 
 Your OpenAPI v3 spec becomes a real single source of truth for the full stack. Any
