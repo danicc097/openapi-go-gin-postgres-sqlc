@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/lib/pq"
 
 	"github.com/google/uuid"

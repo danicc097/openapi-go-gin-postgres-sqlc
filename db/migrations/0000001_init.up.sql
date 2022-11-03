@@ -68,11 +68,12 @@ create index on users (updated_at);
 create table user_team (
   team_id int not null
   , user_id uuid not null
-  , primary key (user_id , team_id)
+  , primary key (user_id , team_id) -- M2M, user can be in multple teams. teams can have multiple users (same as book authors example)
   , foreign key (user_id) references users (user_id) on delete cascade
   , foreign key (team_id) references teams (team_id) on delete cascade
 );
 create index on user_team (team_id, user_id);
+comment on column user_team.user_id is 'cardinality:M2M';
 
 create table kanban_steps (
   kanban_step_id int not null
@@ -209,14 +210,13 @@ create table movies (
   , primary key (movie_id)
 );
 
-create table api_keys (
-  api_key_id serial not null
-  , api_key text not null
+create table user_api_key (
+  api_key text not null
   , user_id uuid not null
   , expires_on timestamp without time zone not null
-  , primary key (api_key_id)
-  , unique (api_key)
-  , foreign key (user_id) references users (user_id) on delete cascade
+  , primary key (api_key) -- read bearer -> hash -> GetAPIKeyByAPIKey -> exists? -> GetUserByAPIKey
+  , unique (user_id) -- already know it's O2O
+  , foreign key (user_id) references users (user_id) on delete cascade -- generates GetUserByAPIKey
 );
 
 create or replace view v.users as
