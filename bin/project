@@ -362,7 +362,7 @@ x.lint.sql() {
         --nogrouping \
         --keep-newline \
         --comma-start \
-        $(find "$slq_dir" -maxdepth 3 -name '*.sql')
+        $(find "$slq_dir" -maxdepth 3 -name '*.*sql')
     done
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -586,9 +586,9 @@ x.db.drop() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Drop and recreate the database used for code generation up to N or N-1 revisions.
-# Useful to get correct analyses on the latest migration script.
-# Args: {up|up-1}
+# Drop and recreate the database used for code generation up to N, N-1 revisions or none.
+# Useful to get correct analyses on migration scripts.
+# Args: {up|up-1|drop}
 x.db.gen() {
   { { {
     latest_rev=$(find $MIGRATIONS_DIR/*.sql -maxdepth 0 | wc -l)
@@ -602,10 +602,25 @@ x.db.gen() {
     up-1)
       POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up $second_latest_rev
       ;;
+    drop) ;;
     *)
       err "Unrecognized option: $1"
       ;;
     esac
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Seed gen database.
+x.db.gen.initial-data() {
+  { { {
+    POSTGRES_DB=$GEN_POSTGRES_DB x.db.initial-data
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Seed gen database.
+x.db.initial-data() {
+  { { {
+    dockerdb_psql -d $POSTGRES_DB <./db/initial-data.pgsql
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
