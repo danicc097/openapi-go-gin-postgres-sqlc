@@ -15,13 +15,12 @@ create type user_role as ENUM (
 
 create table projects (
   project_id serial not null
-  , name text not null
+  , name text not null unique
   , description text not null
   , metadata jsonb not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , primary key (project_id)
-  , unique (name)
 );
 
 create table teams (
@@ -39,8 +38,8 @@ create table teams (
 
 create table users (
   user_id uuid default gen_random_uuid () not null
-  , username text not null
-  , email text not null
+  , username text not null unique
+  , email text not null unique
   , scopes text[] default '{}' not null -- defined in spec only
   , first_name text
   , last_name text
@@ -57,8 +56,6 @@ create table users (
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
   , primary key (user_id)
-  , unique (email)
-  , unique (username)
 );
 
 -- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
@@ -136,10 +133,9 @@ create index on work_item_comments (work_item_id);
 
 create table work_item_tags (
   work_item_tag_id serial not null
-  , name text not null
+  , name text not null unique
   , description text not null
   , primary key (work_item_tag_id)
-  , unique (name)
 );
 
 create table work_item_work_item_tag (
@@ -219,11 +215,10 @@ comment on column task_member.member is 'cardinality:M2M';
 -- must be completely dynamic on a team basis
 create table activities (
   activity_id serial not null
-  , name text not null
+  , name text not null unique
   , description text not null
   , is_productive boolean not null
   , primary key (activity_id)
-  , unique (name)
   -- , foreign key (team_id) references teams (team_id) on delete cascade --not needed, shared for all teams and projects
   -- and managed by admin
 );
@@ -311,10 +306,9 @@ create table movies (
 -- comment on column user_api_keys.user_id IS 'cardinality:O2O';
 create table user_api_keys (
   user_id uuid not null
-  , api_key text not null
+  , api_key text not null unique
   , expires_on timestamp without time zone not null
   , primary key (user_id)
-  , unique (api_key)
   , foreign key (user_id) references users (user_id) on delete cascade -- generates GetUserByAPIKey
 );
 
