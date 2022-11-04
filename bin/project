@@ -6,9 +6,10 @@ export PROC=$$
 source "${BASH_SOURCE%/*}/.helpers.sh"
 source "${BASH_SOURCE%/*}/scripts/deps-check.sh"
 
-set -Eeom pipefail
+# FIXME m flag will prevent background process killing with ctrl-c
+set -Eeo pipefail
 
-trap 'kill 0' SIGINT
+trap killgroup SIGINT
 
 trap errtrap SIGUSR1
 
@@ -212,7 +213,7 @@ x.gen.gowrap() {
         -p $GOMOD_PKG/internal/repos \
         -i $iface \
         -t internal/gowrap-templates/otel-with-timeout.tmpl \
-        -o internal/repos/${iface,,}_with_tracing_and_timeout.go
+        -o internal/repos/${iface,,}_with_tracing_and_timeout.gen.go
     done
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -452,7 +453,7 @@ x.run-dev() {
 
           for pid in "${pids[@]}"; do
             # air and vite spawn processes as well, need to kill those (whose parent is pid), kill $pid will not kill children. pkill -P would also work
-            kill $(list_descendants $pid)
+            kill "$(list_descendants $pid)"
           done
           pids=()
 

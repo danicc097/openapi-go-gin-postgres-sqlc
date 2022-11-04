@@ -48,7 +48,7 @@
       "title": "Role",
       "description": "User role.",
       "type": "string",
-      "x-db-enum": "role",
+      "x-db-enum": "user_role",
       "enum": [
         "guest",
         "user",

@@ -54,10 +54,8 @@ func (_d UserWrapped) Create(ctx context.Context, d db.DBTX, user *db.User) (err
 			_d._spanDecorator(_span, map[string]interface{}{
 				"ctx":  ctx,
 				"d":    d,
-				"user": user,
-			}, map[string]interface{}{
-				"err": err,
-			})
+				"user": user}, map[string]interface{}{
+				"err": err})
 		} else if err != nil {
 			_span.RecordError(err)
 			_span.SetAttributes(
@@ -88,10 +86,8 @@ func (_d UserWrapped) Upsert(ctx context.Context, d db.DBTX, user *db.User) (err
 			_d._spanDecorator(_span, map[string]interface{}{
 				"ctx":  ctx,
 				"d":    d,
-				"user": user,
-			}, map[string]interface{}{
-				"err": err,
-			})
+				"user": user}, map[string]interface{}{
+				"err": err})
 		} else if err != nil {
 			_span.RecordError(err)
 			_span.SetAttributes(
@@ -122,11 +118,9 @@ func (_d UserWrapped) UserByEmail(ctx context.Context, d db.DBTX, email string) 
 			_d._spanDecorator(_span, map[string]interface{}{
 				"ctx":   ctx,
 				"d":     d,
-				"email": email,
-			}, map[string]interface{}{
+				"email": email}, map[string]interface{}{
 				"up1": up1,
-				"err": err,
-			})
+				"err": err})
 		} else if err != nil {
 			_span.RecordError(err)
 			_span.SetAttributes(

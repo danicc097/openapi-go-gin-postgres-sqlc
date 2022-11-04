@@ -64,7 +64,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 450M # TODO envvar
+          memory: 850M # TODO envvar
     environment:
       - discovery.type=single-node
     restart: unless-stopped

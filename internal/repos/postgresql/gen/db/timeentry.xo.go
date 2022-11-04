@@ -19,7 +19,7 @@ type TimeEntry struct {
 	ActivityID      int           `json:"activity_id"`      // activity_id
 	TeamID          int           `json:"team_id"`          // team_id
 	UserID          uuid.UUID     `json:"user_id"`          // user_id
-	Message         string        `json:"message"`          // message
+	Comment         string        `json:"comment"`          // comment
 	Start           time.Time     `json:"start"`            // start
 	DurationMinutes sql.NullInt64 `json:"duration_minutes"` // duration_minutes
 	// xo fields
@@ -80,13 +80,13 @@ func (te *TimeEntry) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.time_entries (` +
-		`task_id, activity_id, team_id, user_id, message, start, duration_minutes` +
+		`task_id, activity_id, team_id, user_id, comment, start, duration_minutes` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7` +
 		`) RETURNING time_entry_id `
 	// run
-	logf(sqlstr, te.TaskID, te.ActivityID, te.TeamID, te.UserID, te.Message, te.Start, te.DurationMinutes)
-	if err := db.QueryRow(ctx, sqlstr, te.TaskID, te.ActivityID, te.TeamID, te.UserID, te.Message, te.Start, te.DurationMinutes).Scan(&te.TimeEntryID); err != nil {
+	logf(sqlstr, te.TaskID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
+	if err := db.QueryRow(ctx, sqlstr, te.TaskID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes).Scan(&te.TimeEntryID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -104,11 +104,11 @@ func (te *TimeEntry) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.time_entries SET ` +
-		`task_id = $1, activity_id = $2, team_id = $3, user_id = $4, message = $5, start = $6, duration_minutes = $7 ` +
+		`task_id = $1, activity_id = $2, team_id = $3, user_id = $4, comment = $5, start = $6, duration_minutes = $7 ` +
 		`WHERE time_entry_id = $8 `
 	// run
-	logf(sqlstr, te.TaskID, te.ActivityID, te.TeamID, te.UserID, te.Message, te.Start, te.DurationMinutes, te.TimeEntryID)
-	if _, err := db.Exec(ctx, sqlstr, te.TaskID, te.ActivityID, te.TeamID, te.UserID, te.Message, te.Start, te.DurationMinutes, te.TimeEntryID); err != nil {
+	logf(sqlstr, te.TaskID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID)
+	if _, err := db.Exec(ctx, sqlstr, te.TaskID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -130,16 +130,16 @@ func (te *TimeEntry) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.time_entries (` +
-		`time_entry_id, task_id, activity_id, team_id, user_id, message, start, duration_minutes` +
+		`time_entry_id, task_id, activity_id, team_id, user_id, comment, start, duration_minutes` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7, $8` +
 		`)` +
 		` ON CONFLICT (time_entry_id) DO ` +
 		`UPDATE SET ` +
-		`task_id = EXCLUDED.task_id, activity_id = EXCLUDED.activity_id, team_id = EXCLUDED.team_id, user_id = EXCLUDED.user_id, message = EXCLUDED.message, start = EXCLUDED.start, duration_minutes = EXCLUDED.duration_minutes  `
+		`task_id = EXCLUDED.task_id, activity_id = EXCLUDED.activity_id, team_id = EXCLUDED.team_id, user_id = EXCLUDED.user_id, comment = EXCLUDED.comment, start = EXCLUDED.start, duration_minutes = EXCLUDED.duration_minutes  `
 	// run
-	logf(sqlstr, te.TimeEntryID, te.TaskID, te.ActivityID, te.TeamID, te.UserID, te.Message, te.Start, te.DurationMinutes)
-	if _, err := db.Exec(ctx, sqlstr, te.TimeEntryID, te.TaskID, te.ActivityID, te.TeamID, te.UserID, te.Message, te.Start, te.DurationMinutes); err != nil {
+	logf(sqlstr, te.TimeEntryID, te.TaskID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
+	if _, err := db.Exec(ctx, sqlstr, te.TimeEntryID, te.TaskID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -179,7 +179,7 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts 
 
 	// query
 	sqlstr := `SELECT ` +
-		`time_entry_id, task_id, activity_id, team_id, user_id, message, start, duration_minutes ` +
+		`time_entry_id, task_id, activity_id, team_id, user_id, comment, start, duration_minutes ` +
 		`FROM public.time_entries ` +
 		`WHERE time_entry_id = $1 `
 	sqlstr += c.orderBy
@@ -190,7 +190,7 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts 
 	te := TimeEntry{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, timeEntryID).Scan(&te.TimeEntryID, &te.TaskID, &te.ActivityID, &te.TeamID, &te.UserID, &te.Message, &te.Start, &te.DurationMinutes); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, timeEntryID).Scan(&te.TimeEntryID, &te.TaskID, &te.ActivityID, &te.TeamID, &te.UserID, &te.Comment, &te.Start, &te.DurationMinutes); err != nil {
 		return nil, logerror(err)
 	}
 	return &te, nil
@@ -207,7 +207,7 @@ func TimeEntriesByTaskIDTeamID(ctx context.Context, db DB, taskID sql.NullInt64,
 
 	// query
 	sqlstr := `SELECT ` +
-		`time_entry_id, task_id, activity_id, team_id, user_id, message, start, duration_minutes ` +
+		`time_entry_id, task_id, activity_id, team_id, user_id, comment, start, duration_minutes ` +
 		`FROM public.time_entries ` +
 		`WHERE task_id = $1 AND team_id = $2 `
 	sqlstr += c.orderBy
@@ -227,7 +227,7 @@ func TimeEntriesByTaskIDTeamID(ctx context.Context, db DB, taskID sql.NullInt64,
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&te.TimeEntryID, &te.TaskID, &te.ActivityID, &te.TeamID, &te.UserID, &te.Message, &te.Start, &te.DurationMinutes); err != nil {
+		if err := rows.Scan(&te.TimeEntryID, &te.TaskID, &te.ActivityID, &te.TeamID, &te.UserID, &te.Comment, &te.Start, &te.DurationMinutes); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &te)
@@ -249,7 +249,7 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, tea
 
 	// query
 	sqlstr := `SELECT ` +
-		`time_entry_id, task_id, activity_id, team_id, user_id, message, start, duration_minutes ` +
+		`time_entry_id, task_id, activity_id, team_id, user_id, comment, start, duration_minutes ` +
 		`FROM public.time_entries ` +
 		`WHERE user_id = $1 AND team_id = $2 `
 	sqlstr += c.orderBy
@@ -269,7 +269,7 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, tea
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&te.TimeEntryID, &te.TaskID, &te.ActivityID, &te.TeamID, &te.UserID, &te.Message, &te.Start, &te.DurationMinutes); err != nil {
+		if err := rows.Scan(&te.TimeEntryID, &te.TaskID, &te.ActivityID, &te.TeamID, &te.UserID, &te.Comment, &te.Start, &te.DurationMinutes); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &te)

@@ -55,15 +55,15 @@ func (a *Activity) Insert(ctx context.Context, db DB) error {
 	case a._deleted: // deleted
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
-	// insert (manual)
+	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.activities (` +
-		`activity_id, name, description, is_productive` +
+		`name, description, is_productive` +
 		`) VALUES (` +
-		`$1, $2, $3, $4` +
-		`) `
+		`$1, $2, $3` +
+		`) RETURNING activity_id `
 	// run
-	logf(sqlstr, a.ActivityID, a.Name, a.Description, a.IsProductive)
-	if _, err := db.Exec(ctx, sqlstr, a.ActivityID, a.Name, a.Description, a.IsProductive); err != nil {
+	logf(sqlstr, a.Name, a.Description, a.IsProductive)
+	if err := db.QueryRow(ctx, sqlstr, a.Name, a.Description, a.IsProductive).Scan(&a.ActivityID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -143,6 +143,34 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 	// set deleted
 	a._deleted = true
 	return nil
+}
+
+// ActivityByName retrieves a row from 'public.activities' as a Activity.
+//
+// Generated from index 'activities_name_key'.
+func ActivityByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) (*Activity, error) {
+	c := &ActivitySelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`activity_id, name, description, is_productive ` +
+		`FROM public.activities ` +
+		`WHERE name = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, name)
+	a := Activity{
+		_exists: true,
+	}
+	if err := db.QueryRow(ctx, sqlstr, name).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive); err != nil {
+		return nil, logerror(err)
+	}
+	return &a, nil
 }
 
 // ActivityByActivityID retrieves a row from 'public.activities' as a Activity.
