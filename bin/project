@@ -604,7 +604,7 @@ x.db.gen() {
       ;;
     drop) ;;
     *)
-      err "Unrecognized option: $1"
+      err "Valid options {up|up-1|drop}, got: $1"
       ;;
     esac
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -620,7 +620,11 @@ x.db.gen.initial-data() {
 # Seed gen database.
 x.db.initial-data() {
   { { {
-    dockerdb_psql -d $POSTGRES_DB <./db/initial-data.pgsql
+    [[ $env = "prod" ]] && confirm "This will drop all database data. Continue?"
+    x.db.drop
+    x.migrate up
+    echo "Loading initial data to $POSTGRES_DB"
+    dockerdb_psql -d $POSTGRES_DB <./db/initial_data.pgsql
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
