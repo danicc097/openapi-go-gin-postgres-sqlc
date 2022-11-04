@@ -91,14 +91,15 @@ comment on column user_team.user_id is 'cardinality:M2M';
 comment on column user_team.team_id is 'cardinality:M2M';
 
 create table kanban_steps (
-  kanban_step_id int not null
+  kanban_step_id serial not null
   , team_id int not null
-  , step_order smallint not null
+  , step_order smallint
   , name text not null
   , description text not null
   , time_trackable bool not null default false
   , disabled bool not null default false
   , primary key (kanban_step_id)
+  , unique (team_id , step_order)
   , foreign key (team_id) references teams (team_id) on delete cascade
 );
 
@@ -198,8 +199,7 @@ create table tasks (
   , deleted_at timestamp with time zone
   , primary key (task_id)
   , foreign key (task_type_id) references task_types (task_type_id) on delete cascade
-  , foreign key (work_item_id) references work_items (work_item_id) on delete
-    cascade -- not unique, many tasks for the same work_item_id
+  , foreign key (work_item_id) references work_items (work_item_id) on delete cascade -- not unique, many tasks for the same work_item_id
 );
 
 create table task_member (
@@ -218,11 +218,12 @@ comment on column task_member.member is 'cardinality:M2M';
 
 -- must be completely dynamic on a team basis
 create table activities (
-  activity_id int not null
+  activity_id serial not null
   , name text not null
   , description text not null
   , is_productive boolean not null
   , primary key (activity_id)
+  , unique (name)
   -- , foreign key (team_id) references teams (team_id) on delete cascade --not needed, shared for all teams and projects
   -- and managed by admin
 );
@@ -234,7 +235,7 @@ create table time_entries (
   , activity_id int not null
   , team_id int not null
   , user_id uuid not null
-  , message text not null
+  , comment text not null
   , start timestamp with time zone default current_timestamp not null
   , duration_minutes int -- NULL -> active
   , primary key (time_entry_id)
@@ -265,16 +266,7 @@ create index on time_entries (user_id , team_id);
 -- show user his timelog based on what projects are selected
 create index on time_entries (task_id , team_id);
 
--- for joins aggregating time spent on any task by any user
--- FIXME this makes no sense. its not M2M its o2m. a given task_id can only be in one work_item
--- create table work_item_task (
---   task_id bigint not null
---   , work_item_id bigint not null
---   , primary key (work_item_id , task_id)
---   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
---   , foreign key (task_id) references tasks (task_id) on delete cascade
--- );
--- create index on work_item_task (task_id , work_item_id);
+
 /*
 get org names for a given user_id, etc.
 with xo we would have to make a ton of different queries to get the same result.

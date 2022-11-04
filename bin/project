@@ -354,7 +354,7 @@ x.lint.sql() {
     for slq_dir in ${SQL_DIRS[@]}; do
       pg_format \
         --spaces 2 \
-        --wrap-limit 88 \
+        --wrap-limit 130 \
         --function-case 2 \
         --keyword-case 1 \
         --placeholder "sqlc\\.(arg|narg)\\(:?[^)]*\\)" \
