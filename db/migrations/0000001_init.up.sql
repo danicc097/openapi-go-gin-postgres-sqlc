@@ -34,7 +34,7 @@ create table teams (
   , updated_at timestamp with time zone default current_timestamp not null
   , primary key (team_id)
   , foreign key (project_id) references projects (project_id) on delete cascade
-  , unique (name)
+  , unique (name , project_id)
 );
 
 create table users (
@@ -132,6 +132,24 @@ comment on column work_item_comments.work_item_id is 'cardinality:O2M';
 
 -- no unique index on it -> O2M
 create index on work_item_comments (work_item_id);
+
+create table work_item_tags (
+  work_item_tag_id serial not null
+  , name text not null
+  , description text not null
+  , primary key (work_item_tag_id)
+  , unique (name)
+);
+
+create table work_item_work_item_tag (
+  work_item_tag_id int not null
+  , work_item_id bigint not null
+  , primary key (work_item_id , work_item_tag_id) -- M2M, work_item can have multple tags. tags can be in multiple work_items (same as book authors example)
+  , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
+  , foreign key (work_item_tag_id) references work_item_tags (work_item_tag_id) on delete cascade
+);
+
+create index on work_item_work_item_tag (work_item_tag_id , work_item_id);
 
 -- dont need to index by user_id, there's no use case to filter by user_id
 -- create type work_item_role as ENUM (
@@ -343,35 +361,42 @@ from
 
 create index on cache.users (external_id);
 
-insert into users (user_id , username , email , first_name , last_name , "role")
-  values ('99270107-1b9c-4f52-a578-7390d5b31513' , 'user 1' , 'user1@email.com' , 'John' ,
-    'Doe' , 'user'::user_role);
+do $BODY$
+declare
+  user_1_id uuid := '99270107-1b9c-4f52-a578-7390d5b31513';
+  user_2_id uuid := '59270107-1b9c-4f52-a578-7390d5b31513';
+begin
+  insert into users (user_id , username , email , first_name , last_name , role)
+    values (user_1_id , 'user 1' , 'user1@email.com' , 'John' ,
+      'Doe' , 'user');
 
-insert into users (user_id , username , email , first_name , last_name , "role")
-  values ('59270107-1b9c-4f52-a578-7390d5b31513' , 'user 2' , 'user2@email.com' , 'Jane' ,
-    'Doe' , 'user'::user_role);
+  insert into users (user_id , username , email , first_name , last_name , role)
+    values (user_2_id , 'user 2' , 'user2@email.com' , 'Jane' ,
+      'Doe' , 'user');
 
-insert into projects ("name" , description , metadata , created_at , updated_at)
-  values ('org 1' , 'this is org 1' , '{}' , current_timestamp ,
-    current_timestamp);
+  insert into projects (name , description , metadata)
+    values ('project 1' , 'This is project 1' , '{}');
 
-insert into projects ("name" , description , metadata , created_at , updated_at)
-  values ('org 2' , 'this is org 2' , '{}' , current_timestamp ,
-    current_timestamp);
+  insert into projects (name , description , metadata)
+    values ('project 2' , 'This is project 2' , '{}');
 
-insert into teams ("name" , project_id , description , metadata , created_at , updated_at)
-  values ('team 1' , 1 , 'this is team 1' , '{}' , current_timestamp ,
-    current_timestamp);
+  insert into teams (name , project_id , description , metadata)
+    values ('team 1' , 1 , 'This is team 1 in project 1' , '{}');
 
-insert into teams ("name" , project_id , description , metadata , created_at , updated_at)
-  values ('team 2' , 1 , 'this is team 2' , '{}' , current_timestamp ,
-    current_timestamp);
+  insert into teams (name , project_id , description , metadata)
+    values ('team 2' , 1 , 'This is team 2 in project 1' , '{}');
 
-insert into user_team (team_id , user_id)
-  values (1 , '99270107-1b9c-4f52-a578-7390d5b31513');
+  insert into teams (name , project_id , description , metadata)
+    values ('team 1' , 2 , 'This is team 1 in project 2' , '{}');
 
-insert into user_team (team_id , user_id)
-  values (1 , '59270107-1b9c-4f52-a578-7390d5b31513');
+  insert into user_team (team_id , user_id)
+    values (1 , user_1_id);
 
-insert into user_team (team_id , user_id)
-  values (2 , '99270107-1b9c-4f52-a578-7390d5b31513');
+  insert into user_team (team_id , user_id)
+    values (1 , user_2_id);
+
+  insert into user_team (team_id , user_id)
+    values (2 , user_1_id);
+end;
+$BODY$
+language plpgsql;

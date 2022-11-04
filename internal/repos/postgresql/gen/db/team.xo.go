@@ -168,10 +168,10 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// TeamByName retrieves a row from 'public.teams' as a Team.
+// TeamByNameProjectID retrieves a row from 'public.teams' as a Team.
 //
-// Generated from index 'teams_name_key'.
-func TeamByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfigOption) (*Team, error) {
+// Generated from index 'teams_name_project_id_key'.
+func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...TeamSelectConfigOption) (*Team, error) {
 	c := &TeamSelectConfig{}
 	for _, o := range opts {
 		o(c)
@@ -181,16 +181,16 @@ func TeamByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfi
 	sqlstr := `SELECT ` +
 		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.teams ` +
-		`WHERE name = $1 `
+		`WHERE name = $1 AND project_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	logf(sqlstr, name, projectID)
 	t := Team{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, name).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, name, projectID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil

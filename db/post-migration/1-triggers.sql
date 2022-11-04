@@ -19,7 +19,7 @@ language plpgsql;
 do $BODY$
 declare
   t text;
-  declare s text;
+  s text;
 begin
   for t
   , s in
