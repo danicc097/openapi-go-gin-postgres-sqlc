@@ -11,10 +11,10 @@ import (
 	"github.com/google/uuid"
 )
 
-// UserAPIKey represents a row from 'public.user_api_key'.
+// UserAPIKey represents a row from 'public.user_api_keys'.
 type UserAPIKey struct {
-	APIKey    string    `json:"api_key"`    // api_key
 	UserID    uuid.UUID `json:"user_id"`    // user_id
+	APIKey    string    `json:"api_key"`    // api_key
 	ExpiresOn time.Time `json:"expires_on"` // expires_on
 	// xo fields
 	_exists, _deleted bool
@@ -73,14 +73,14 @@ func (uak *UserAPIKey) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (manual)
-	sqlstr := `INSERT INTO public.user_api_key (` +
-		`api_key, user_id, expires_on` +
+	sqlstr := `INSERT INTO public.user_api_keys (` +
+		`user_id, api_key, expires_on` +
 		`) VALUES (` +
 		`$1, $2, $3` +
 		`) `
 	// run
-	logf(sqlstr, uak.APIKey, uak.UserID, uak.ExpiresOn)
-	if _, err := db.Exec(ctx, sqlstr, uak.APIKey, uak.UserID, uak.ExpiresOn); err != nil {
+	logf(sqlstr, uak.UserID, uak.APIKey, uak.ExpiresOn)
+	if _, err := db.Exec(ctx, sqlstr, uak.UserID, uak.APIKey, uak.ExpiresOn); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -97,12 +97,12 @@ func (uak *UserAPIKey) Update(ctx context.Context, db DB) error {
 		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
-	sqlstr := `UPDATE public.user_api_key SET ` +
-		`user_id = $1, expires_on = $2 ` +
-		`WHERE api_key = $3 `
+	sqlstr := `UPDATE public.user_api_keys SET ` +
+		`api_key = $1, expires_on = $2 ` +
+		`WHERE user_id = $3 `
 	// run
-	logf(sqlstr, uak.UserID, uak.ExpiresOn, uak.APIKey)
-	if _, err := db.Exec(ctx, sqlstr, uak.UserID, uak.ExpiresOn, uak.APIKey); err != nil {
+	logf(sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID)
+	if _, err := db.Exec(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -123,17 +123,17 @@ func (uak *UserAPIKey) Upsert(ctx context.Context, db DB) error {
 		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 	}
 	// upsert
-	sqlstr := `INSERT INTO public.user_api_key (` +
-		`api_key, user_id, expires_on` +
+	sqlstr := `INSERT INTO public.user_api_keys (` +
+		`user_id, api_key, expires_on` +
 		`) VALUES (` +
 		`$1, $2, $3` +
 		`)` +
-		` ON CONFLICT (api_key) DO ` +
+		` ON CONFLICT (user_id) DO ` +
 		`UPDATE SET ` +
-		`user_id = EXCLUDED.user_id, expires_on = EXCLUDED.expires_on  `
+		`api_key = EXCLUDED.api_key, expires_on = EXCLUDED.expires_on  `
 	// run
-	logf(sqlstr, uak.APIKey, uak.UserID, uak.ExpiresOn)
-	if _, err := db.Exec(ctx, sqlstr, uak.APIKey, uak.UserID, uak.ExpiresOn); err != nil {
+	logf(sqlstr, uak.UserID, uak.APIKey, uak.ExpiresOn)
+	if _, err := db.Exec(ctx, sqlstr, uak.UserID, uak.APIKey, uak.ExpiresOn); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -150,11 +150,11 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.user_api_key ` +
-		`WHERE api_key = $1 `
+	sqlstr := `DELETE FROM public.user_api_keys ` +
+		`WHERE user_id = $1 `
 	// run
-	logf(sqlstr, uak.APIKey)
-	if _, err := db.Exec(ctx, sqlstr, uak.APIKey); err != nil {
+	logf(sqlstr, uak.UserID)
+	if _, err := db.Exec(ctx, sqlstr, uak.UserID); err != nil {
 		return logerror(err)
 	}
 	// set deleted
@@ -162,9 +162,9 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// UserAPIKeyByAPIKey retrieves a row from 'public.user_api_key' as a UserAPIKey.
+// UserAPIKeyByAPIKey retrieves a row from 'public.user_api_keys' as a UserAPIKey.
 //
-// Generated from index 'user_api_key_pkey'.
+// Generated from index 'user_api_keys_api_key_key'.
 func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
 	c := &UserAPIKeySelectConfig{}
 	for _, o := range opts {
@@ -173,8 +173,8 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 
 	// query
 	sqlstr := `SELECT ` +
-		`api_key, user_id, expires_on ` +
-		`FROM public.user_api_key ` +
+		`user_id, api_key, expires_on ` +
+		`FROM public.user_api_keys ` +
 		`WHERE api_key = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -184,15 +184,15 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 	uak := UserAPIKey{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, apiKey).Scan(&uak.APIKey, &uak.UserID, &uak.ExpiresOn); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, apiKey).Scan(&uak.UserID, &uak.APIKey, &uak.ExpiresOn); err != nil {
 		return nil, logerror(err)
 	}
 	return &uak, nil
 }
 
-// UserAPIKeyByUserID retrieves a row from 'public.user_api_key' as a UserAPIKey.
+// UserAPIKeyByUserID retrieves a row from 'public.user_api_keys' as a UserAPIKey.
 //
-// Generated from index 'user_api_key_user_id_key'.
+// Generated from index 'user_api_keys_pkey'.
 func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
 	c := &UserAPIKeySelectConfig{}
 	for _, o := range opts {
@@ -201,8 +201,8 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 
 	// query
 	sqlstr := `SELECT ` +
-		`api_key, user_id, expires_on ` +
-		`FROM public.user_api_key ` +
+		`user_id, api_key, expires_on ` +
+		`FROM public.user_api_keys ` +
 		`WHERE user_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -212,7 +212,7 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 	uak := UserAPIKey{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, userID).Scan(&uak.APIKey, &uak.UserID, &uak.ExpiresOn); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, userID).Scan(&uak.UserID, &uak.APIKey, &uak.ExpiresOn); err != nil {
 		return nil, logerror(err)
 	}
 	return &uak, nil
@@ -220,7 +220,7 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 
 // User returns the User associated with the UserAPIKey's (UserID).
 //
-// Generated from foreign key 'user_api_key_user_id_fkey'.
+// Generated from foreign key 'user_api_keys_user_id_fkey'.
 func (uak *UserAPIKey) User(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, uak.UserID)
 }

@@ -120,9 +120,10 @@ to_pascal() {
 
 err() {
   echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
+  sleep 0.1 # while processing xerr in background
+  # kill -s SIGUSR1 $PROC
   # FIXME parallel (sub-)subshell management instead of force killing
   kill 0
-  # kill -s SIGUSR1 $PROC
   exit 1 # if not using trap
 }
 

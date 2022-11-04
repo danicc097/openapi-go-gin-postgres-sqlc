@@ -14,6 +14,7 @@ import (
 type Task struct {
 	TaskID             int64        `json:"task_id"`              // task_id
 	TaskTypeID         int          `json:"task_type_id"`         // task_type_id
+	WorkItemID         int64        `json:"work_item_id"`         // work_item_id
 	Title              string       `json:"title"`                // title
 	Metadata           []byte       `json:"metadata"`             // metadata
 	TargetDate         time.Time    `json:"target_date"`          // target_date
@@ -91,13 +92,13 @@ func (t *Task) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.tasks (` +
-		`task_type_id, title, metadata, target_date, target_date_timezone, deleted_at` +
+		`task_type_id, work_item_id, title, metadata, target_date, target_date_timezone, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6` +
+		`$1, $2, $3, $4, $5, $6, $7` +
 		`) RETURNING task_id `
 	// run
-	logf(sqlstr, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt).Scan(&t.TaskID); err != nil {
+	logf(sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt)
+	if err := db.QueryRow(ctx, sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt).Scan(&t.TaskID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -115,11 +116,11 @@ func (t *Task) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.tasks SET ` +
-		`task_type_id = $1, title = $2, metadata = $3, target_date = $4, target_date_timezone = $5, deleted_at = $6 ` +
-		`WHERE task_id = $7 `
+		`task_type_id = $1, work_item_id = $2, title = $3, metadata = $4, target_date = $5, target_date_timezone = $6, deleted_at = $7 ` +
+		`WHERE task_id = $8 `
 	// run
-	logf(sqlstr, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID)
-	if _, err := db.Exec(ctx, sqlstr, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID); err != nil {
+	logf(sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID)
+	if _, err := db.Exec(ctx, sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -141,16 +142,16 @@ func (t *Task) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.tasks (` +
-		`task_id, task_type_id, title, metadata, target_date, target_date_timezone, deleted_at` +
+		`task_id, task_type_id, work_item_id, title, metadata, target_date, target_date_timezone, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7` +
+		`$1, $2, $3, $4, $5, $6, $7, $8` +
 		`)` +
 		` ON CONFLICT (task_id) DO ` +
 		`UPDATE SET ` +
-		`task_type_id = EXCLUDED.task_type_id, title = EXCLUDED.title, metadata = EXCLUDED.metadata, target_date = EXCLUDED.target_date, target_date_timezone = EXCLUDED.target_date_timezone, deleted_at = EXCLUDED.deleted_at  `
+		`task_type_id = EXCLUDED.task_type_id, work_item_id = EXCLUDED.work_item_id, title = EXCLUDED.title, metadata = EXCLUDED.metadata, target_date = EXCLUDED.target_date, target_date_timezone = EXCLUDED.target_date_timezone, deleted_at = EXCLUDED.deleted_at  `
 	// run
-	logf(sqlstr, t.TaskID, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, t.TaskID, t.TaskTypeID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt); err != nil {
+	logf(sqlstr, t.TaskID, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, t.TaskID, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -190,7 +191,7 @@ func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectCo
 
 	// query
 	sqlstr := `SELECT ` +
-		`task_id, task_type_id, title, metadata, target_date, target_date_timezone, created_at, updated_at, deleted_at ` +
+		`task_id, task_type_id, work_item_id, title, metadata, target_date, target_date_timezone, created_at, updated_at, deleted_at ` +
 		`FROM public.tasks ` +
 		`WHERE task_id = $1 `
 	sqlstr += c.orderBy
@@ -201,7 +202,7 @@ func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectCo
 	t := Task{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, taskID).Scan(&t.TaskID, &t.TaskTypeID, &t.Title, &t.Metadata, &t.TargetDate, &t.TargetDateTimezone, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, taskID).Scan(&t.TaskID, &t.TaskTypeID, &t.WorkItemID, &t.Title, &t.Metadata, &t.TargetDate, &t.TargetDateTimezone, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil
@@ -212,4 +213,11 @@ func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectCo
 // Generated from foreign key 'tasks_task_type_id_fkey'.
 func (t *Task) TaskType(ctx context.Context, db DB) (*TaskType, error) {
 	return TaskTypeByTaskTypeID(ctx, db, t.TaskTypeID)
+}
+
+// WorkItem returns the WorkItem associated with the Task's (WorkItemID).
+//
+// Generated from foreign key 'tasks_work_item_id_fkey'.
+func (t *Task) WorkItem(ctx context.Context, db DB) (*WorkItem, error) {
+	return WorkItemByWorkItemID(ctx, db, t.WorkItemID)
 }

@@ -17,7 +17,7 @@ create table projects (
   project_id serial not null
   , name text not null
   , description text not null
-  , metadata json not null
+  , metadata jsonb not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , primary key (project_id)
@@ -29,7 +29,7 @@ create table teams (
   , project_id int not null
   , name text not null
   , description text not null
-  , metadata json not null
+  , metadata jsonb not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , primary key (team_id)
@@ -37,7 +37,6 @@ create table teams (
   , unique (name)
 );
 
--- TODO postgres 15 for nulls not distinct in external_id
 create table users (
   user_id uuid default gen_random_uuid () not null
   , username text not null
@@ -45,7 +44,13 @@ create table users (
   , scopes text[] default '{}' not null -- defined in spec only
   , first_name text
   , last_name text
-  , full_name text generated always as (((first_name) || ' ') || (last_name)) stored
+  , full_name text generated always as ( case when first_name is null then
+    last_name
+  when last_name is null then
+    first_name
+  else
+    first_name || ' ' || last_name
+  end) stored
   , external_id text
   , role user_role default 'user' not null
   , created_at timestamp with time zone default current_timestamp not null
@@ -55,14 +60,20 @@ create table users (
   , unique (email)
   , unique (username)
 );
+
 -- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
-CREATE UNIQUE INDEX ON users (user_id, external_id)
-WHERE external_id IS NOT NULL;
-CREATE UNIQUE INDEX ON users (user_id)
-WHERE external_id IS NULL;
+create unique index on users (user_id , external_id)
+where
+  external_id is not null;
+
+create unique index on users (user_id)
+where
+  external_id is null;
 
 create index on users (deleted_at);
+
 create index on users (created_at);
+
 create index on users (updated_at);
 
 create table user_team (
@@ -72,8 +83,11 @@ create table user_team (
   , foreign key (user_id) references users (user_id) on delete cascade
   , foreign key (team_id) references teams (team_id) on delete cascade
 );
-create index on user_team (team_id, user_id);
+
+create index on user_team (team_id , user_id);
+
 comment on column user_team.user_id is 'cardinality:M2M';
+
 comment on column user_team.team_id is 'cardinality:M2M';
 
 create table kanban_steps (
@@ -91,7 +105,7 @@ create table kanban_steps (
 create table work_items (
   work_item_id bigserial not null
   , title text not null
-  , metadata json not null
+  , metadata jsonb not null
   , team_id int not null
   , kanban_step_id int not null
   , created_at timestamp with time zone default current_timestamp not null
@@ -102,15 +116,31 @@ create table work_items (
   , foreign key (kanban_step_id) references kanban_steps (kanban_step_id) on delete cascade
 );
 
-create type work_item_role as ENUM (
-  'preparer'
-  , 'reviewer'
+create table work_item_comments (
+  work_item_comment_id bigserial not null
+  , work_item_id bigint not null
+  , user_id uuid not null
+  , message text not null
+  , created_at timestamp with time zone default current_timestamp not null
+  , updated_at timestamp with time zone default current_timestamp not null
+  , primary key (work_item_comment_id) -- work_item can have multiple comments. a comment is for a single work_item
+  , foreign key (user_id) references users (user_id) on delete cascade
+  , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
 );
 
+comment on column work_item_comments.work_item_id is 'cardinality:O2M';
+
+-- no unique index on it -> O2M
+create index on work_item_comments (work_item_id);
+
+-- dont need to index by user_id, there's no use case to filter by user_id
+-- create type work_item_role as ENUM (
+--   'preparer'
+--   , 'reviewer'
+-- );
 -- we can aggregate members from tasks
--- but need a role for the work_item and every member
+-- but do we need a role for the work_item and every member
 -- or can we ignore members per work_item?
--- need timelog for every task but thats saved elsewhere
 -- create table work_item_member (
 --   work_item_id bigint not null
 --   , member uuid not null
@@ -118,14 +148,13 @@ create type work_item_role as ENUM (
 --   , primary key (work_item_id, member)
 --   , foreign key (member) references users (user_id) on delete cascade
 -- );
-
 -- only need different types for tasks. work items are all the same, just containers
 create table task_types (
   task_type_id serial
   , team_id bigint not null
   , name text not null
   , primary key (task_type_id)
-  , unique (team_id, name)
+  , unique (team_id , name)
   , foreign key (team_id) references teams (team_id) on delete cascade
 );
 
@@ -134,15 +163,16 @@ create table task_types (
 create table work_item_fields (
   project_id bigint not null
   , key text not null -- for work_items.metadata->"key" filtering (and we can dynamically create indeces on work_items.metadata when a new key is added)
-  , primary key (project_id, key)
+  , primary key (project_id , key)
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
 
 create table tasks (
   task_id bigserial not null
   , task_type_id int not null
+  , work_item_id bigint not null
   , title text not null
-  , metadata json not null
+  , metadata jsonb not null
   , target_date timestamp without time zone not null
   , target_date_timezone text not null
   , created_at timestamp with time zone default current_timestamp not null
@@ -150,29 +180,83 @@ create table tasks (
   , deleted_at timestamp with time zone
   , primary key (task_id)
   , foreign key (task_type_id) references task_types (task_type_id) on delete cascade
+  , foreign key (work_item_id) references work_items (work_item_id) on delete
+    cascade -- not unique, many tasks for the same work_item_id
 );
 
 create table task_member (
   task_id bigint not null
   , member uuid not null
-  , primary key (task_id, member)
+  , primary key (task_id , member)
   , foreign key (task_id) references tasks (task_id) on delete cascade
   , foreign key (member) references users (user_id) on delete cascade
 );
-create index on task_member (member, task_id);
+
+create index on task_member (member , task_id);
+
 comment on column task_member.task_id is 'cardinality:M2M';
+
 comment on column task_member.member is 'cardinality:M2M';
 
-create table work_item_task (
-  task_id bigint not null
-  , work_item_id bigint not null
-  , primary key (work_item_id , task_id)
-  , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
-  , foreign key (task_id) references tasks (task_id) on delete cascade
+-- must be completely dynamic on a team basis
+create table activities (
+  activity_id int not null
+  , name text not null
+  , description text not null
+  , is_productive boolean not null
+  , primary key (activity_id)
+  -- , foreign key (team_id) references teams (team_id) on delete cascade --not needed, shared for all teams and projects
+  -- and managed by admin
 );
-create index on work_item_task (task_id, work_item_id);
 
+-- no unique indexes at all
+create table time_entries (
+  time_entry_id bigserial not null
+  , task_id bigint
+  , activity_id int not null
+  , team_id int not null
+  , user_id uuid not null
+  , message text not null
+  , start timestamp with time zone default current_timestamp not null
+  , duration_minutes int -- NULL -> active
+  , primary key (time_entry_id)
+  , foreign key (user_id) references users (user_id) on delete cascade
+  , foreign key (task_id) references tasks (task_id) on delete cascade
+  , foreign key (activity_id) references activities (activity_id) on delete cascade -- need to know where we're allocating time
+  , foreign key (team_id) references teams (team_id) on delete cascade -- need to know where we're allocating time
+);
 
+-- TODO revisit all comments and fix.
+-- We need cardinality comments only on FK columns, never base tables.
+-- cardinality will be different for every table making use of a pk.
+-- it would be O2O for these below if we had unique indexes for every single one of them.
+-- in that case we would simply apply a join using (fk_name).
+-- if not, FK by definition allows duplicates --> O2M -> need 2 nested joins to get an agg
+comment on column time_entries.task_id is 'cardinality:O2M';
+
+comment on column time_entries.team_id is 'cardinality:O2M';
+
+comment on column time_entries.activity_id is 'cardinality:O2M';
+
+comment on column time_entries.user_id is 'cardinality:O2M';
+
+-- A multicolumn B-tree index can be used with query conditions that involve any subset of the index's
+-- columns, but the index is most efficient when there are constraints on the leading (leftmost) columns.
+create index on time_entries (user_id , team_id);
+
+-- show user his timelog based on what projects are selected
+create index on time_entries (task_id , team_id);
+
+-- for joins aggregating time spent on any task by any user
+-- FIXME this makes no sense. its not M2M its o2m. a given task_id can only be in one work_item
+-- create table work_item_task (
+--   task_id bigint not null
+--   , work_item_id bigint not null
+--   , primary key (work_item_id , task_id)
+--   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
+--   , foreign key (task_id) references tasks (task_id) on delete cascade
+-- );
+-- create index on work_item_task (task_id , work_item_id);
 /*
 get org names for a given user_id, etc.
 with xo we would have to make a ton of different queries to get the same result.
@@ -213,15 +297,16 @@ create table movies (
   , primary key (movie_id)
 );
 
-create table user_api_key (
-  api_key text not null
-  , user_id uuid not null
+-- we can infer O2O for the user_id fk since PK and FK in a given table are the same
+-- comment on column user_api_keys.user_id IS 'cardinality:O2O';
+create table user_api_keys (
+  user_id uuid not null
+  , api_key text not null
   , expires_on timestamp without time zone not null
-  , primary key (api_key) -- read bearer -> hash -> GetAPIKeyByAPIKey -> exists? -> GetUserByAPIKey
-  , unique (user_id) -- already know it's O2O
+  , primary key (user_id)
+  , unique (api_key)
   , foreign key (user_id) references users (user_id) on delete cascade -- generates GetUserByAPIKey
 );
-comment on column user_api_key.user_id is 'cardinality:O2O';
 
 create or replace view v.users as
 select
@@ -255,32 +340,36 @@ select
   *
 from
   v.users with no data;
+
 create index on cache.users (external_id);
 
-insert into users (user_id , username , email , first_name , last_name ,
-  "role" )
+insert into users (user_id , username , email , first_name , last_name , "role")
   values ('99270107-1b9c-4f52-a578-7390d5b31513' , 'user 1' , 'user1@email.com' , 'John' ,
     'Doe' , 'user'::user_role);
 
-insert into users (user_id , username , email , first_name , last_name ,
-  "role" )
+insert into users (user_id , username , email , first_name , last_name , "role")
   values ('59270107-1b9c-4f52-a578-7390d5b31513' , 'user 2' , 'user2@email.com' , 'Jane' ,
     'Doe' , 'user'::user_role);
 
-insert into projects ("name" , description, metadata , created_at , updated_at)
-  values ('org 1' , 'this is org 1', '{}' , current_timestamp , current_timestamp);
+insert into projects ("name" , description , metadata , created_at , updated_at)
+  values ('org 1' , 'this is org 1' , '{}' , current_timestamp ,
+    current_timestamp);
 
-insert into projects ("name" , description, metadata , created_at , updated_at)
-  values ('org 2' ,  'this is org 2','{}' , current_timestamp , current_timestamp);
+insert into projects ("name" , description , metadata , created_at , updated_at)
+  values ('org 2' , 'this is org 2' , '{}' , current_timestamp ,
+    current_timestamp);
 
-insert into teams ("name" , project_id, description, metadata , created_at , updated_at)
-  values ('team 1', 1 , 'this is team 1', '{}' , current_timestamp , current_timestamp);
+insert into teams ("name" , project_id , description , metadata , created_at , updated_at)
+  values ('team 1' , 1 , 'this is team 1' , '{}' , current_timestamp ,
+    current_timestamp);
 
-insert into teams ("name" , project_id, description, metadata , created_at , updated_at)
-  values ('team 2', 1 ,  'this is team 2','{}' , current_timestamp , current_timestamp);
+insert into teams ("name" , project_id , description , metadata , created_at , updated_at)
+  values ('team 2' , 1 , 'this is team 2' , '{}' , current_timestamp ,
+    current_timestamp);
 
 insert into user_team (team_id , user_id)
   values (1 , '99270107-1b9c-4f52-a578-7390d5b31513');
+
 insert into user_team (team_id , user_id)
   values (1 , '59270107-1b9c-4f52-a578-7390d5b31513');
 

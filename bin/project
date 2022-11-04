@@ -314,6 +314,8 @@ x.gen() {
 
     wait
 
+    x.lint
+
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -357,6 +359,8 @@ x.lint.sql() {
         --keyword-case 1 \
         --placeholder "sqlc\\.(arg|narg)\\(:?[^)]*\\)" \
         --inplace \
+        --nogrouping \
+        --keep-newline \
         --comma-start \
         $(find "$slq_dir" -maxdepth 3 -name '*.sql')
     done

@@ -66,7 +66,6 @@ func (q *Queries) GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetU
 }
 
 const ListAllUsers = `-- name: ListAllUsers :many
-
 select
   user_id
   , username

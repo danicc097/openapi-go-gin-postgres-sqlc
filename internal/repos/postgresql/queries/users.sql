@@ -37,7 +37,6 @@ where
 --   , email = COALESCE(LOWER(sqlc.narg('email')) , email)
 -- where
 --   user_id = @user_id;
-
 -- name: ListAllUsers :many
 select
   user_id
