@@ -619,12 +619,13 @@ x.db.gen.initial-data() {
 
 # Seed gen database.
 x.db.initial-data() {
+  # xlog eats up read -p (prompt)
+  [[ $env = "prod" ]] && confirm "This will drop all database data. Continue?"
   { { {
-    [[ $env = "prod" ]] && confirm "This will drop all database data. Continue?"
     x.db.drop
     x.migrate up
     echo "Loading initial data to $POSTGRES_DB"
-    dockerdb_psql -d $POSTGRES_DB <./db/initial_data.pgsql
+    dockerdb_psql -d $POSTGRES_DB <"./db/initial_data_$env.pgsql"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -651,32 +652,31 @@ x.db.dump() {
 # Restore the database with the latest dump or `file` for the current environment.
 # Args: [file]
 x.db.restore() {
-  { { {
-    dump_file="$1"
-    if [[ -n $dump_file ]]; then
-      [[ ! -f $dump_file ]] && err "$dump_file does not exist"
-      [[ "$dump_file" != *"$dump_prefix"* ]] && confirm "${RED}Dump doesn't match prefix '$dump_prefix'. Continue?${OFF}"
-    else
-      mkdir -p "$DUMPS_FOLDER"
-      latest_dump_file=$(find "$DUMPS_FOLDER"/ -name "$dump_prefix*.gz" | sort -r | head -n 1)
-      if [[ -z "$latest_dump_file" ]]; then
-        err "No $dump_prefix* file found in $DUMPS_FOLDER"
-      fi
-      dump_file="$latest_dump_file"
+  # xlog eats up read -p (prompt)
+  dump_file="$1"
+  if [[ -n $dump_file ]]; then
+    [[ ! -f $dump_file ]] && err "$dump_file does not exist"
+    [[ "$dump_file" != *"$dump_prefix"* ]] && confirm "${RED}Dump doesn't match prefix '$dump_prefix'. Continue?${OFF}"
+  else
+    mkdir -p "$DUMPS_FOLDER"
+    latest_dump_file=$(find "$DUMPS_FOLDER"/ -name "$dump_prefix*.gz" | sort -r | head -n 1)
+    if [[ -z "$latest_dump_file" ]]; then
+      err "No $dump_prefix* file found in $DUMPS_FOLDER"
     fi
+    dump_file="$latest_dump_file"
+  fi
 
-    confirm "Do you want to restore ${YELLOW}$dump_file${OFF} in the ${RED}$env${OFF} environment?"
+  confirm "Do you want to restore ${YELLOW}$dump_file${OFF} in the ${RED}$env${OFF} environment?"
 
-    x.db.drop
-    gunzip -c "$dump_file" | dockerdb_psql -U postgres -d "postgres_$env"
-    # sanity check, but probably better to do it before restoring...
-    dump_schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$env" -c "SELECT version FROM schema_migrations;")
-    file_schema_v=$(echo "$dump_file" | sed -E 's/.*_version([0-9]+)\..*/\1/')
-    echo "Migration revision: $dump_schema_v"
-    if [[ "$dump_schema_v" != "$file_schema_v" ]]; then
-      err "Schema version mismatch: dump $dump_schema_v != file $file_schema_v"
-    fi
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  x.db.drop
+  gunzip -c "$dump_file" | dockerdb_psql -U postgres -d "postgres_$env"
+  # sanity check, but probably better to do it before restoring...
+  dump_schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$env" -c "SELECT version FROM schema_migrations;")
+  file_schema_v=$(echo "$dump_file" | sed -E 's/.*_version([0-9]+)\..*/\1/')
+  echo "Migration revision: $dump_schema_v"
+  if [[ "$dump_schema_v" != "$file_schema_v" ]]; then
+    err "Schema version mismatch: dump $dump_schema_v != file $file_schema_v"
+  fi
 }
 
 ########################## e2e ##########################
