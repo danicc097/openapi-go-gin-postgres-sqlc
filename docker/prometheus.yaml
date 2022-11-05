@@ -18,3 +18,12 @@ scrape_configs:
     static_configs:
       # access localhost from container
       - targets: ["host.docker.internal:8090"]
+  - job_name: promscale
+    static_configs:
+      - targets: ["promscale:9201"]
+
+remote_write:
+  - url: "http://promscale:9201/write"
+remote_read:
+  - url: "http://promscale:9201/read"
+    read_recent: true
