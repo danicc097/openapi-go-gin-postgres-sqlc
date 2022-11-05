@@ -39,7 +39,8 @@ change to it is validated and cascades down to:
   that ensures compatibility.
 
 Additionally, it features OpenTelemetry in both browser (automatic and
-manual instrumentation) and backend services (manual instrumentation).
+manual instrumentation) and backend services (manual instrumentation) via
+Jaeger, TimescaleDB and Promscale (certified storage backend).
 
 ## Architecture
 

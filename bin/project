@@ -15,6 +15,9 @@ trap errtrap SIGUSR1
 
 killgroup() {
   printf "\nkilling spawned processes...\n"
+
+  kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
+
   kill 0
   exit 1
 }
@@ -125,7 +128,7 @@ x.install-tools() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Fetch latest swagger ui bundle.
+# Fetch latest Swagger UI bundle.
 x.fetch.swagger-ui() {
   { { {
     name="$(curl --silent "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
@@ -453,6 +456,7 @@ x.run-dev() {
 
           for pid in "${pids[@]}"; do
             # air and vite spawn processes as well, need to kill those (whose parent is pid), kill $pid will not kill children. pkill -P would also work
+            echo "$(list_descendants $pid)"
             kill "$(list_descendants $pid)"
           done
           pids=()
@@ -582,6 +586,7 @@ x.db.recreate() {
 
 # Drop and recreate the database in the current environment.
 x.db.drop() {
+  [[ $env = "prod" ]] && confirm "This will drop all database data. Continue?"
   { { {
     drop_and_recreate_db "$POSTGRES_DB"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -596,6 +601,7 @@ x.db.gen() {
     second_latest_rev=$((latest_rev - 2)) # up+down
     POSTGRES_DB=$GEN_POSTGRES_DB x.db.drop
     # TODO should be able to autocomplete x function nested cases
+    # if it's called as $CMD
     case $1 in
     up)
       POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up
@@ -621,7 +627,6 @@ x.db.gen.initial-data() {
 # Seed gen database.
 x.db.initial-data() {
   # xlog eats up read -p (prompt)
-  [[ $env = "prod" ]] && confirm "This will drop all database data. Continue?"
   { { {
     x.db.drop
     x.migrate up

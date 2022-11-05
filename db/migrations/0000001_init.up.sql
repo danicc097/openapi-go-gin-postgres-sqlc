@@ -228,7 +228,7 @@ create table time_entries (
   time_entry_id bigserial not null
   , task_id bigint
   , activity_id int not null
-  , team_id int not null
+  , team_id int
   , user_id uuid not null
   , comment text not null
   , start timestamp with time zone default current_timestamp not null
@@ -238,6 +238,7 @@ create table time_entries (
   , foreign key (task_id) references tasks (task_id) on delete cascade
   , foreign key (activity_id) references activities (activity_id) on delete cascade -- need to know where we're allocating time
   , foreign key (team_id) references teams (team_id) on delete cascade -- need to know where we're allocating time
+  , check (num_nonnulls (team_id , task_id) = 1) -- team_id null when a task id is associated and viceversa
 );
 
 -- TODO revisit all comments and fix.

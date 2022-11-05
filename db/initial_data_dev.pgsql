@@ -19,7 +19,7 @@ begin
   -- https://stackoverflow.com/questions/41772518/pl-pgsql-accessing-fields-of-an-element-of-an-array-of-custom-type
   -- create type pg_temp.AUX_TYPE as (field int, another_field text);
   -- users
-  FOREACH i in array array[1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9 , 10] loop
+  FOR i IN 1..10 LOOP
     insert into users (username , email , first_name , last_name , "role")
       values ('user_' || i , 'user_' || i || '@email.com' , 'Name ' || i , 'Surname ' || i , 'user'::user_role)
     returning
@@ -27,7 +27,7 @@ begin
     user_ids[i] = ui;
   end loop;
   insert into users (user_id , username , email , first_name , last_name , "role")
-    values (admin_id , 'superadmin' , 'superadmin@email.com' , 'Admin' , 'Doe' , 'superadmin'::user_role);
+    values (admin_id , 'superadmin' , 'superadmin@email.com' , 'Admin' , '' , 'superadmin'::user_role);
   insert into users (user_id , username , email , first_name , last_name , "role")
     values (manager_1_id , 'manager 1' , 'manager1@email.com' , 'Mr.Manager' , 'Smith' , 'manager'::user_role);
   -- projects
@@ -146,9 +146,11 @@ begin
   insert into time_entries (task_id , activity_id , team_id , user_id , comment , "start" , duration_minutes)
     values (null , 1 , 1 , user_ids[1] , 'Sleeping time' , NOW() , random_between (10 , 20));
   insert into time_entries (task_id , activity_id , team_id , user_id , comment , "start" , duration_minutes)
-    values (1 , 2 , 1 , user_ids[1] , 'Working on important task 1' , NOW() , 10);
+    values (1 , 2 , null , user_ids[1] , 'Working on important task 1' , NOW() , 10);
   insert into time_entries (task_id , activity_id , team_id , user_id , comment , "start" , duration_minutes)
-    values (1 , 2 , 1 , user_ids[2] , '' , NOW() , 20);
+    values (1 , 2 , null , user_ids[2] , '' , NOW() , 20);
+  insert into time_entries (task_id , activity_id , team_id , user_id , comment , "start" , duration_minutes)
+    values (1 , 2 , null , user_ids[3] , '' , NOW() , 20);
   -- api keys
   insert into user_api_keys (user_id , api_key , expires_on)
     values (admin_id , 'admin-key-hashed' , NOW() + interval '100 days');

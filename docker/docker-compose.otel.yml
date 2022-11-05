@@ -9,9 +9,9 @@ x-logging: &default-logging
 services:
   jaeger:
     image: jaegertracing/all-in-one:1.38
-    container_name: jaeger
     networks:
       - traefik-net
+      - otel-network
     ports:
       - 16686:16686 # Jaeger UI
       - 14268:14268 # spans directly from clients in jaeger.thrift format over binary thrift protocol
@@ -37,7 +37,6 @@ services:
     logging: *default-logging
 
   prometheus:
-    container_name: prometheus
     image: prom/prometheus:latest
     volumes:
       # TODO have prometheus.template.yml with $ENVVAR
@@ -57,10 +56,16 @@ services:
     image: timescale/timescaledb-ha:pg14-latest
     ports:
       - 5432:5432/tcp
+    networks:
+      # else service name clashes if db already exists in a network
+      - otel-network
     environment:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: postgres
       TSTUNE_PROFILE: promscale
+    restart: unless-stopped
+    volumes:
+      - timescale_otel_data:/home/postgres/pgdata/data
 
   # TODO alertmanager
   # alertmanager:
@@ -75,6 +80,8 @@ services:
       - 9201:9201/tcp
       - 9202:9202/tcp
     restart: unless-stopped
+    networks:
+      - otel-network
     depends_on:
       - db
     volumes:
@@ -89,15 +96,20 @@ services:
       PROMSCALE_METRICS_RULES_CONFIG_FILE: /prometheus.yml
 
   # TODO exporter for linux server status
-  node_exporter:
-    image: quay.io/prometheus/node-exporter
-    ports:
-      - "9100:9100"
+  # node_exporter:
+  #   image: quay.io/prometheus/node-exporter
+  #   ports:
+  #     - "9100:9100"
+  #   restart: unless-stopped
 
 networks:
   traefik-net:
     name: traefik-net
     external: true
+  otel-network:
+    internal: true
 
 volumes:
-  openapi_elasticsearch_data:
+  timescale_otel_data:
+  # in order not to have project prefix we would use
+  # name: timescale_otel_data

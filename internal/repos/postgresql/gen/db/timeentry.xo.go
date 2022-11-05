@@ -17,7 +17,7 @@ type TimeEntry struct {
 	TimeEntryID     int64         `json:"time_entry_id"`    // time_entry_id
 	TaskID          sql.NullInt64 `json:"task_id"`          // task_id
 	ActivityID      int           `json:"activity_id"`      // activity_id
-	TeamID          int           `json:"team_id"`          // team_id
+	TeamID          sql.NullInt64 `json:"team_id"`          // team_id
 	UserID          uuid.UUID     `json:"user_id"`          // user_id
 	Comment         string        `json:"comment"`          // comment
 	Start           time.Time     `json:"start"`            // start
@@ -199,7 +199,7 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts 
 // TimeEntriesByTaskIDTeamID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_task_id_team_id_idx'.
-func TimeEntriesByTaskIDTeamID(ctx context.Context, db DB, taskID sql.NullInt64, teamID int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
+func TimeEntriesByTaskIDTeamID(ctx context.Context, db DB, taskID, teamID sql.NullInt64, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
 	c := &TimeEntrySelectConfig{}
 	for _, o := range opts {
 		o(c)
@@ -241,7 +241,7 @@ func TimeEntriesByTaskIDTeamID(ctx context.Context, db DB, taskID sql.NullInt64,
 // TimeEntriesByUserIDTeamID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_user_id_team_id_idx'.
-func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
+func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID sql.NullInt64, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
 	c := &TimeEntrySelectConfig{}
 	for _, o := range opts {
 		o(c)
@@ -298,7 +298,7 @@ func (te *TimeEntry) Task(ctx context.Context, db DB) (*Task, error) {
 //
 // Generated from foreign key 'time_entries_team_id_fkey'.
 func (te *TimeEntry) Team(ctx context.Context, db DB) (*Team, error) {
-	return TeamByTeamID(ctx, db, te.TeamID)
+	return TeamByTeamID(ctx, db, int(te.TeamID.Int64))
 }
 
 // User returns the User associated with the TimeEntry's (UserID).
