@@ -9,9 +9,9 @@ import (
 
 // TaskType represents a row from 'public.task_types'.
 type TaskType struct {
-	TaskTypeID int    `json:"task_type_id"` // task_type_id
-	TeamID     int64  `json:"team_id"`      // team_id
-	Name       string `json:"name"`         // name
+	TaskTypeID int    `json:"taskTypeID" db:"task_type_id"` // task_type_id
+	TeamID     int64  `json:"teamID" db:"team_id"`          // team_id
+	Name       string `json:"name" db:"name"`               // name
 	// xo fields
 	_exists, _deleted bool
 }

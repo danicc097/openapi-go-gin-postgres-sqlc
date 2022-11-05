@@ -12,14 +12,14 @@ import (
 
 // WorkItem represents a row from 'public.work_items'.
 type WorkItem struct {
-	WorkItemID   int64        `json:"work_item_id"`   // work_item_id
-	Title        string       `json:"title"`          // title
-	Metadata     []byte       `json:"metadata"`       // metadata
-	TeamID       int          `json:"team_id"`        // team_id
-	KanbanStepID int          `json:"kanban_step_id"` // kanban_step_id
-	CreatedAt    time.Time    `json:"created_at"`     // created_at
-	UpdatedAt    time.Time    `json:"updated_at"`     // updated_at
-	DeletedAt    sql.NullTime `json:"deleted_at"`     // deleted_at
+	WorkItemID   int64        `json:"workItemID" db:"work_item_id"`     // work_item_id
+	Title        string       `json:"title" db:"title"`                 // title
+	Metadata     []byte       `json:"metadata" db:"metadata"`           // metadata
+	TeamID       int          `json:"teamID" db:"team_id"`              // team_id
+	KanbanStepID int          `json:"kanbanStepID" db:"kanban_step_id"` // kanban_step_id
+	CreatedAt    time.Time    `json:"createdAt" db:"created_at"`        // created_at
+	UpdatedAt    time.Time    `json:"updatedAt" db:"updated_at"`        // updated_at
+	DeletedAt    sql.NullTime `json:"deletedAt" db:"deleted_at"`        // deleted_at
 	// xo fields
 	_exists, _deleted bool
 }

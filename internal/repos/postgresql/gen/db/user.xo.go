@@ -16,18 +16,18 @@ import (
 
 // User represents a row from 'public.users'.
 type User struct {
-	UserID     uuid.UUID      `json:"user_id"`     // user_id
-	Username   string         `json:"username"`    // username
-	Email      string         `json:"email"`       // email
-	Scopes     pq.StringArray `json:"scopes"`      // scopes
-	FirstName  sql.NullString `json:"first_name"`  // first_name
-	LastName   sql.NullString `json:"last_name"`   // last_name
-	FullName   sql.NullString `json:"full_name"`   // full_name
-	ExternalID sql.NullString `json:"external_id"` // external_id
-	Role       UserRole       `json:"role"`        // role
-	CreatedAt  time.Time      `json:"created_at"`  // created_at
-	UpdatedAt  time.Time      `json:"updated_at"`  // updated_at
-	DeletedAt  sql.NullTime   `json:"deleted_at"`  // deleted_at
+	UserID     uuid.UUID      `json:"userID" db:"user_id"`         // user_id
+	Username   string         `json:"username" db:"username"`      // username
+	Email      string         `json:"email" db:"email"`            // email
+	Scopes     pq.StringArray `json:"scopes" db:"scopes"`          // scopes
+	FirstName  sql.NullString `json:"firstName" db:"first_name"`   // first_name
+	LastName   sql.NullString `json:"lastName" db:"last_name"`     // last_name
+	FullName   sql.NullString `json:"fullName" db:"full_name"`     // full_name
+	ExternalID sql.NullString `json:"externalID" db:"external_id"` // external_id
+	Role       UserRole       `json:"role" db:"role"`              // role
+	CreatedAt  time.Time      `json:"createdAt" db:"created_at"`   // created_at
+	UpdatedAt  time.Time      `json:"updatedAt" db:"updated_at"`   // updated_at
+	DeletedAt  sql.NullTime   `json:"deletedAt" db:"deleted_at"`   // deleted_at
 	// xo fields
 	_exists, _deleted bool
 }

@@ -9,10 +9,10 @@ import (
 
 // Activity represents a row from 'public.activities'.
 type Activity struct {
-	ActivityID   int    `json:"activity_id"`   // activity_id
-	Name         string `json:"name"`          // name
-	Description  string `json:"description"`   // description
-	IsProductive bool   `json:"is_productive"` // is_productive
+	ActivityID   int    `json:"activityID" db:"activity_id"`     // activity_id
+	Name         string `json:"name" db:"name"`                  // name
+	Description  string `json:"description" db:"description"`    // description
+	IsProductive bool   `json:"isProductive" db:"is_productive"` // is_productive
 	// xo fields
 	_exists, _deleted bool
 }

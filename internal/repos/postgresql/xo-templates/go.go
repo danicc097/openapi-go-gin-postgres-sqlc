@@ -198,7 +198,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Type:       "string",
 				Desc:       "field tag",
 				Short:      "g",
-				Default:    `json:"{{ .SQLName }}"`,
+				Default:    `json:"{{ camel .GoName }}" db:"{{ .SQLName }}"`,
 			},
 			{
 				ContextKey: ContextKey,
@@ -864,7 +864,7 @@ type Funcs struct {
 func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 	first := !NotFirst(ctx)
 	// parse field tag template
-	fieldtag, err := template.New("fieldtag").Parse(FieldTag(ctx))
+	fieldtag, err := template.New("fieldtag").Funcs(template.FuncMap{"camel": camel}).Parse(FieldTag(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -904,10 +904,15 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 	return funcs.FuncMap(), nil
 }
 
+func (f *Funcs) camel(names ...string) string {
+	return snaker.ForceLowerCamelIdentifier(strings.Join(names, "_"))
+}
+
 // FuncMap returns the func map.
 func (f *Funcs) FuncMap() template.FuncMap {
 	return template.FuncMap{
 		// general
+		"camel":      f.camel,
 		"lowerFirst": f.lower_first,
 		"first":      f.firstfn,
 		"driver":     f.driverfn,
@@ -1285,6 +1290,11 @@ func (f *Funcs) foreign_key_context(v interface{}) string {
 		// }
 		// add params
 		p = append(p, "db", f.convertTypes(x))
+		// TODO add opt params for foreign key functions generated from other tables as well
+		// although it's not essential because we can call WorkItemByWorkItemID directly it's a nice-to-have
+		// func (t *Task) WorkItem(ctx context.Context, db DB <, opts ...TaskSelectConfigOption>) (*WorkItem, error) {
+		// 	return WorkItemByWorkItemID(ctx, db, t.WorkItemID <, opts>)
+		// }
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 6: %T ]]", v)
 	}
@@ -1961,7 +1971,7 @@ func (f *Funcs) field(field Field) (string, error) {
 	fieldType := f.typefn(field.Type)
 	if field.EnumPkg != "" {
 		p := field.EnumPkg[strings.LastIndex(field.EnumPkg, "/")+1:]
-		fieldType = p + "." + fieldType // TODO get from args MainSchemaPkg
+		fieldType = p + "." + fieldType
 		fmt.Printf("enum %q using shared package %q\n", field.GoName, p)
 	}
 

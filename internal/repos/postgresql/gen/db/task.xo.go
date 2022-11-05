@@ -12,16 +12,16 @@ import (
 
 // Task represents a row from 'public.tasks'.
 type Task struct {
-	TaskID             int64        `json:"task_id"`              // task_id
-	TaskTypeID         int          `json:"task_type_id"`         // task_type_id
-	WorkItemID         int64        `json:"work_item_id"`         // work_item_id
-	Title              string       `json:"title"`                // title
-	Metadata           []byte       `json:"metadata"`             // metadata
-	TargetDate         time.Time    `json:"target_date"`          // target_date
-	TargetDateTimezone string       `json:"target_date_timezone"` // target_date_timezone
-	CreatedAt          time.Time    `json:"created_at"`           // created_at
-	UpdatedAt          time.Time    `json:"updated_at"`           // updated_at
-	DeletedAt          sql.NullTime `json:"deleted_at"`           // deleted_at
+	TaskID             int64        `json:"taskID" db:"task_id"`                          // task_id
+	TaskTypeID         int          `json:"taskTypeID" db:"task_type_id"`                 // task_type_id
+	WorkItemID         int64        `json:"workItemID" db:"work_item_id"`                 // work_item_id
+	Title              string       `json:"title" db:"title"`                             // title
+	Metadata           []byte       `json:"metadata" db:"metadata"`                       // metadata
+	TargetDate         time.Time    `json:"targetDate" db:"target_date"`                  // target_date
+	TargetDateTimezone string       `json:"targetDateTimezone" db:"target_date_timezone"` // target_date_timezone
+	CreatedAt          time.Time    `json:"createdAt" db:"created_at"`                    // created_at
+	UpdatedAt          time.Time    `json:"updatedAt" db:"updated_at"`                    // updated_at
+	DeletedAt          sql.NullTime `json:"deletedAt" db:"deleted_at"`                    // deleted_at
 	// xo fields
 	_exists, _deleted bool
 }

@@ -19,7 +19,7 @@ begin
   -- https://stackoverflow.com/questions/41772518/pl-pgsql-accessing-fields-of-an-element-of-an-array-of-custom-type
   -- create type pg_temp.AUX_TYPE as (field int, another_field text);
   -- users
-  FOR i IN 1..10 LOOP
+  for i in 1..10 loop
     insert into users (username , email , first_name , last_name , "role")
       values ('user_' || i , 'user_' || i || '@email.com' , 'Name ' || i , 'Surname ' || i , 'user'::user_role)
     returning

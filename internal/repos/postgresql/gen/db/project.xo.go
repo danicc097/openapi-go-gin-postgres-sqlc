@@ -11,12 +11,12 @@ import (
 
 // Project represents a row from 'public.projects'.
 type Project struct {
-	ProjectID   int       `json:"project_id"`  // project_id
-	Name        string    `json:"name"`        // name
-	Description string    `json:"description"` // description
-	Metadata    []byte    `json:"metadata"`    // metadata
-	CreatedAt   time.Time `json:"created_at"`  // created_at
-	UpdatedAt   time.Time `json:"updated_at"`  // updated_at
+	ProjectID   int       `json:"projectID" db:"project_id"`    // project_id
+	Name        string    `json:"name" db:"name"`               // name
+	Description string    `json:"description" db:"description"` // description
+	Metadata    []byte    `json:"metadata" db:"metadata"`       // metadata
+	CreatedAt   time.Time `json:"createdAt" db:"created_at"`    // created_at
+	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at"`    // updated_at
 	// xo fields
 	_exists, _deleted bool
 }

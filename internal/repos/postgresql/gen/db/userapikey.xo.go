@@ -13,9 +13,9 @@ import (
 
 // UserAPIKey represents a row from 'public.user_api_keys'.
 type UserAPIKey struct {
-	UserID    uuid.UUID `json:"user_id"`    // user_id
-	APIKey    string    `json:"api_key"`    // api_key
-	ExpiresOn time.Time `json:"expires_on"` // expires_on
+	UserID    uuid.UUID `json:"userID" db:"user_id"`       // user_id
+	APIKey    string    `json:"apiKey" db:"api_key"`       // api_key
+	ExpiresOn time.Time `json:"expiresOn" db:"expires_on"` // expires_on
 	// xo fields
 	_exists, _deleted bool
 }

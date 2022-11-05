@@ -9,10 +9,10 @@ import (
 
 // Movie represents a row from 'public.movies'.
 type Movie struct {
-	MovieID  int    `json:"movie_id"` // movie_id
-	Title    string `json:"title"`    // title
-	Year     int    `json:"year"`     // year
-	Synopsis string `json:"synopsis"` // synopsis
+	MovieID  int    `json:"movieID" db:"movie_id"`  // movie_id
+	Title    string `json:"title" db:"title"`       // title
+	Year     int    `json:"year" db:"year"`         // year
+	Synopsis string `json:"synopsis" db:"synopsis"` // synopsis
 	// xo fields
 	_exists, _deleted bool
 }
