@@ -55,9 +55,16 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	}
 }
 
+// TODO EnsureAuthorizedRole and EnsureAuthorizedScopes(scopes ...Scopes)
+// 1. x-required-scopes read by yq in spec
+// 2. generate a JSON file for frontend and backend to use: {<operationID>: [<...scopes>], ...}.
+// 3.  new method authMiddleware.EnsureAuthorizedScopes(opID operationID, user *db.User), which
+// 4. uses the loaded JSON to check if operationIDScopes[opID] exists, in which case
+// checks if user.scopes contains the required scopes as per spec
+// it belongs here, not in a service since this is specific to rest.
+type operationIDScopes = map[operationID][]string
+
 // EnsureAuthorized checks whether the client is authorized.
-// TODO use authorization service, which in turn uses the user service to check role
-// based on token -> email -> GetUserByEmail -> role
 func (a *authMiddleware) EnsureAuthorized(requiredRole db.UserRole) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authzsvc := services.NewAuthorization(a.logger)

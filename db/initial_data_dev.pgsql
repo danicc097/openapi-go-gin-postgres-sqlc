@@ -12,7 +12,6 @@ do $BODY$
 declare
   admin_id uuid := '19270107-1b9c-4f52-a578-7390d5b31513';
   manager_1_id uuid := '29270107-1b9c-4f52-a578-7390d5b31513';
-  i int;
   ui uuid;
   user_ids uuid[];
 begin

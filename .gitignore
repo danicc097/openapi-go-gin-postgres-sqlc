@@ -32,3 +32,4 @@ file-to-watch
 
 openapi-go.code-workspace
 frontend/vite.config.ts.timestamp-*.mjs
+test-spec.yaml

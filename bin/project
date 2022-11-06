@@ -150,6 +150,7 @@ x.pregen() {
 
     POSTGRES_DB=$GEN_POSTGRES_DB x.db.drop
     POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up
+
     vext="x-db-enum"
     for enum in $(yq e ".. | select(has(\"$vext\")).$vext" $SPEC); do
       local db_enums=()
@@ -171,6 +172,22 @@ x.pregen() {
       escaped_path="$(join_yq_paths paths)"
       new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" -i $SPEC
     done
+
+    # https://mikefarah.gitbook.io/yq/operators/reduce
+    # TODO before saving,ensure x-required-scopes exist in x-scopes, and roles exist in roles (at this point we
+    # are reading the spec with roles updated from db)
+    # TODO role as role: {name: ?, value: 1-*}
+    # for that replace user_roles enum with table user_roles.(name unique, rank unique unsinged smallint, description)
+    # read-only table https://stackoverflow.com/questions/51367069/how-do-i-make-a-table-read-only-in-postgresql
+    # and add them on migrations (read only table). 0001 guest,..., superadmin; 0002 realize need something in the middle -> migrate all rows accordingly (update set rank = rank + 1 where rank > new rank) and then insert new role ('mynewrole', new_rank::int, 'mynewrole is awesome')
+    # then at this point we do dockerdb_psql mapfile again, query all user_roles.name and ensure every name exists as we do above.
+    # For scopes we don't want this since a user can have multiple scopes and it's not worth having M2M instead of a simple []string.
+    # Scopes source of truth will remain the spec itself
+    yq -o=json e "
+    .paths[][]
+    | {.operationId: { \"scopes\": .x-required-scopes, \"role\": .x-required-role}}
+    | select(.[]) as \$i ireduce ({}; . + \$i)
+  " openapi.yaml >authorizationSchema.json
 
     # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
