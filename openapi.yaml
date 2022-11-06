@@ -1,15 +1,15 @@
-# NOTE: Prefer automatic schema validation from dedicated tools instead, but as an example:
-# x-go-custom-tag: binding:"required[,customValidator]" [key:val ]
-# # Special case for ``format: date-time`` fields
-# # form data only:
-# x-go-custom-tag: time_format:"2006-01-02"
-# # the rest require custom unmarshalling if time is not RFC3339:
-# # see https://github.com/gin-gonic/gin/issues/1193
-# # there are some quirks to take into account as well:
-# # see https://segmentfault.com/a/1190000022264001
-# x-go-custom-tag: binding:"required"
-# ```
 x-uuid-pattern: &uuid-pattern "^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}"
+x-scopes: &scopes
+  - users:read
+  - users:write
+  - scopes:write
+  - settings:write
+  - work-item:review
+x-path-security: &path-security
+  security:
+    - bearer_auth: []
+    - api_key: []
+#############################################################
 openapi: 3.0.2
 info:
   description: "This is a sample server Petstore server. For this sample, you can use the api key `special-key` to test the authorization filters."
@@ -60,6 +60,7 @@ paths:
                 format: binary
   /admin/ping:
     get:
+      !!merge <<: *path-security
       summary: Ping pongs
       operationId: AdminPing
       responses:
@@ -80,6 +81,7 @@ paths:
         - admin
   /user/me:
     get:
+      !!merge <<: *path-security
       summary: returns the logged in user
       operationId: GetCurrentUser
       responses:
@@ -89,13 +91,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/GetCurrentUserRes"
           description: successful operation
-      security:
-        - bearer_auth: []
-        - api_key: []
       tags:
         - user
   /user/{id}:
     delete:
+      !!merge <<: *path-security
       summary: deletes the user by id
       operationId: DeleteUser
       parameters:
@@ -110,12 +110,10 @@ paths:
       responses:
         "404":
           description: User not found
-      security:
-        - bearer_auth: []
-        - api_key: []
       tags:
         - user
     put:
+      !!merge <<: *path-security
       summary: updates the user by id
       operationId: UpdateUser
       parameters:
@@ -138,9 +136,6 @@ paths:
       responses:
         "404":
           description: User not found
-      security:
-        - bearer_auth: []
-        - api_key: []
       tags:
         - user
 components:
@@ -180,15 +175,11 @@ components:
     # we don't need an x-enum and get them from db, we can have users.scopes []text
     # and let it be dynamic as it should be. we can have scopes in the spec and are
     # perfectly generated in back/front
+    # TODO verify security.[*] items are valid enums
     Scope:
       title: Scope
       type: string
-      enum:
-        - users:read
-        - users:write
-        - scopes:write
-        - settings:write
-        - work-item:review
+      enum: *scopes
     Role:
       title: Role
       description: User role.

@@ -45,6 +45,10 @@ type MiddlewareFunc func(c *gin.Context)
 // AdminPing operation middleware.
 func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 
+	c.Set(Bearer_authScopes, []string{""})
+
+	c.Set(Api_keyScopes, []string{""})
+
 	// apply middlewares for operation "AdminPing".
 	for _, mw := range siw.Handler.middlewares(AdminPing) {
 		mw(c)

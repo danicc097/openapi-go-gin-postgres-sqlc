@@ -39,8 +39,11 @@
       "title": "Scope",
       "type": "string",
       "enum": [
-        "scope1",
-        "scope2"
+        "users:read",
+        "users:write",
+        "scopes:write",
+        "settings:write",
+        "work-item:review"
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },

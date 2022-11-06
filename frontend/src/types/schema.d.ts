@@ -51,7 +51,7 @@ export interface components {
      * Scope
      * @enum {string}
      */
-    Scope: 'scope1' | 'scope2'
+    Scope: 'users:read' | 'users:write' | 'scopes:write' | 'settings:write' | 'work-item:review'
     /**
      * Role
      * @description User role.

@@ -20,6 +20,7 @@ const (
 
 // Defines values for Scope.
 const (
+	ScopeScopesWrite    Scope = "scopes:write"
 	ScopeSettingsWrite  Scope = "settings:write"
 	ScopeUsersRead      Scope = "users:read"
 	ScopeUsersWrite     Scope = "users:write"
