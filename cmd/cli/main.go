@@ -83,10 +83,11 @@ type User struct {
 	UpdatedAt  time.Time      `json:"updated_at"`  // updated_at
 	DeletedAt  null.Time      `json:"deleted_at"`  // deleted_at
 
-	Tasks       []*Task      `json:"tasks"`
-	Teams       []*Team      `json:"teams"`
-	UserApiKey  *UserAPIKey  `json:"user_api_key"`
-	TimeEntries []*TimeEntry `json:"time_entries"`
+	// omitempty to get explicit [] or no field at all later
+	Tasks       *[]*Task      `json:"tasks,omitempty"`
+	Teams       *[]*Team      `json:"teams,omitempty"`
+	UserApiKey  *UserAPIKey   `json:"user_api_key,omitempty"`
+	TimeEntries *[]*TimeEntry `json:"time_entries,omitempty"`
 
 	// xo fields
 	_exists, _deleted bool
@@ -100,6 +101,7 @@ const query = `
 	  , (case when $4::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries
 	  , users.user_id
 	  , users.username
+	  , users.role
 	from
 	  users
 	left join (
@@ -153,7 +155,8 @@ const query = `
 	   group by
 	        user_id) joined_time_entries using (user_id)
 	left join user_api_keys using (user_id)
-	where username = $5;
+	-- where username = $5
+	;
 		`
 
 func main() {
@@ -174,22 +177,22 @@ func main() {
 
 	// username := "user_1"
 	// username := "doesntexist" // User should be nil
-	username := "superadmin"
-	joinTasks := false
+	// username := "superadmin"
+	joinTasks := true
 	joinTeams := true
 	joinUserApiKeys := true
-	joinTimeEntries := true
+	joinTimeEntries := false
 
 	fmt.Printf(`
 joinTasks:= %t
 joinTeams:= %t
 joinUserApiKeys:= %t
 joinTimeEntries:= %t
-username := %s
 --------------------------
-`, joinTasks, joinTeams, joinUserApiKeys, joinTimeEntries, username)
+`, joinTasks, joinTeams, joinUserApiKeys, joinTimeEntries)
 
-	rows, err := pool.Query(context.Background(), query, joinTasks, joinTeams, joinUserApiKeys, joinTimeEntries, username)
+	// .Query --> Rows --- .QueryRow -> Row
+	rows, err := pool.Query(context.Background(), query, joinTasks, joinTeams, joinUserApiKeys, joinTimeEntries)
 	if err != nil {
 		log.Fatalf("pool.Query: %s\n", err)
 	}
@@ -197,31 +200,58 @@ username := %s
 
 	// https://stackoverflow.com/questions/63785376/inserting-empty-string-or-null-into-postgres-as-null-using-jackc-pgx
 	// https://rodrigo.red/blog/go-lang-not-so-simple/
-	user := User{}
-
-	tasks := []Task{}
-	teams := []Team{}
-	userApiKey := UserAPIKey{}
-	timeEntries := []TimeEntry{}
-
+	users := make([]User, 0)
 	for rows.Next() {
+		var tasks []*Task
+		var teams []*Team
+		var userApiKey *UserAPIKey
+		var timeEntries []*TimeEntry
+		var u User
 		// https://github.com/jackc/pgx/issues/180 cast as jsonb
-		err := rows.Scan(&tasks, &teams, &userApiKey, &timeEntries, &user.UserID, &user.Username)
+		err := rows.Scan(&tasks, &teams, &userApiKey, &timeEntries, &u.UserID, &u.Username, &u.Role) // etc.
 		if err != nil {
 			log.Fatalf("rows.Scan: %s\n", err)
 		}
-		// var t Task
-	}
-	// TODO distinguish no joins found vs empty list for many to many?
-	fmt.Printf(`
-tasks:= %v
-teams:= %v
-userApiKey:= %v
-timeEntries:= %v
---------------------------
-`, tasks, teams, userApiKey, timeEntries)
 
-	PrintJSON(user)
+		if u.UserID == uuid.Nil {
+			fmt.Println("no row was found")
+			return
+		}
+
+		fmt.Printf("tasks: %v\n", tasks)
+		fmt.Printf("teams: %v\n", teams)
+		fmt.Printf("timeEntries: %v\n", timeEntries)
+
+		u.UserApiKey = userApiKey
+
+		if len(tasks) > 0 {
+			fmt.Println("len(tasks) > 0")
+			u.Tasks = &tasks
+		}
+		if len(teams) > 0 {
+			u.Teams = &teams
+		}
+		if len(timeEntries) > 0 {
+			u.TimeEntries = &timeEntries
+		}
+
+		// TODO surely there are better ways to do this
+		if joinTasks && u.Tasks == nil {
+			fmt.Println("joinTasks && u.Tasks == nil")
+			u.Tasks = &[]*Task{}
+		}
+		if joinTeams && u.Teams == nil {
+			fmt.Println("joinTeams && u.Teams == nil")
+			u.Teams = &[]*Team{}
+		}
+		if joinTimeEntries && u.TimeEntries == nil {
+			fmt.Println("joinTimeEntries && u.TimeEntries == nil")
+			u.TimeEntries = &[]*TimeEntry{}
+		}
+		users = append(users, u)
+	}
+
+	PrintJSON(users)
 }
 
 func PrintJSON(obj interface{}) {
