@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
@@ -24,10 +23,10 @@ type Task struct {
 	WorkItemID         int64        `json:"work_item_id" db:"work_item_id"`                 // work_item_id
 	Title              string       `json:"title" db:"title"`                               // title
 	Metadata           pgtype.JSONB `json:"metadata" db:"metadata"`                         // metadata
-	TargetDate         time.Time    `json:"target_date" db:"target_date"`                   // target_date
+	TargetDate         null.Time    `json:"target_date" db:"target_date"`                   // target_date
 	TargetDateTimezone string       `json:"target_date_timezone" db:"target_date_timezone"` // target_date_timezone
-	CreatedAt          time.Time    `json:"created_at" db:"created_at"`                     // created_at
-	UpdatedAt          time.Time    `json:"updated_at" db:"updated_at"`                     // updated_at
+	CreatedAt          null.Time    `json:"created_at" db:"created_at"`                     // created_at
+	UpdatedAt          null.Time    `json:"updated_at" db:"updated_at"`                     // updated_at
 	DeletedAt          null.Time    `json:"deleted_at" db:"deleted_at"`                     // deleted_at
 	// xo fields
 	_exists, _deleted bool
@@ -40,8 +39,8 @@ type Team struct {
 	Name        string       `json:"name" db:"name"`               // name
 	Description string       `json:"description" db:"description"` // description
 	Metadata    pgtype.JSONB `json:"metadata" db:"metadata"`       // metadata
-	CreatedAt   time.Time    `json:"created_at" db:"created_at"`   // created_at
-	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at"`   // updated_at
+	CreatedAt   null.Time    `json:"created_at" db:"created_at"`   // created_at
+	UpdatedAt   null.Time    `json:"updated_at" db:"updated_at"`   // updated_at
 	// xo fields
 	_exists, _deleted bool
 }
@@ -50,7 +49,7 @@ type Team struct {
 type UserAPIKey struct {
 	UserID    uuid.UUID `json:"user_id" db:"user_id"`       // user_id
 	APIKey    string    `json:"api_key" db:"api_key"`       // api_key
-	ExpiresOn time.Time `json:"expires_on" db:"expires_on"` // expires_on
+	ExpiresOn null.Time `json:"expires_on" db:"expires_on"` // expires_on
 	// xo fields
 	_exists, _deleted bool
 }
@@ -63,7 +62,7 @@ type TimeEntry struct {
 	TeamID          null.Int  `json:"team_id" db:"team_id"`                   // team_id
 	UserID          uuid.UUID `json:"user_id" db:"user_id"`                   // user_id
 	Comment         string    `json:"comment" db:"comment"`                   // comment
-	Start           time.Time `json:"start" db:"start"`                       // start
+	Start           null.Time `json:"start" db:"start"`                       // start
 	DurationMinutes null.Int  `json:"duration_minutes" db:"duration_minutes"` // duration_minutes
 	// xo fields
 	_exists, _deleted bool
@@ -79,15 +78,14 @@ type User struct {
 	FullName   null.String    `json:"full_name"`   // full_name
 	ExternalID null.String    `json:"external_id"` // external_id
 	Role       db.UserRole    `json:"role"`        // role
-	CreatedAt  time.Time      `json:"created_at"`  // created_at
-	UpdatedAt  time.Time      `json:"updated_at"`  // updated_at
+	CreatedAt  null.Time      `json:"created_at"`  // created_at
+	UpdatedAt  null.Time      `json:"updated_at"`  // updated_at
 	DeletedAt  null.Time      `json:"deleted_at"`  // deleted_at
 
-	// omitempty to get explicit [] or no field at all later
-	Tasks       *[]*Task      `json:"tasks,omitempty"`
-	Teams       *[]*Team      `json:"teams,omitempty"`
-	UserApiKey  *UserAPIKey   `json:"user_api_key,omitempty"`
-	TimeEntries *[]*TimeEntry `json:"time_entries,omitempty"`
+	Tasks       []*Task      `json:"tasks,omitempty"`
+	Teams       []*Team      `json:"teams,omitempty"`
+	UserApiKey  *UserAPIKey  `json:"user_api_key,omitempty"`
+	TimeEntries []*TimeEntry `json:"time_entries,omitempty"`
 
 	// xo fields
 	_exists, _deleted bool
@@ -202,13 +200,9 @@ joinTimeEntries:= %t
 	// https://rodrigo.red/blog/go-lang-not-so-simple/
 	users := make([]User, 0)
 	for rows.Next() {
-		var tasks []*Task
-		var teams []*Team
-		var userApiKey *UserAPIKey
-		var timeEntries []*TimeEntry
 		var u User
 		// https://github.com/jackc/pgx/issues/180 cast as jsonb
-		err := rows.Scan(&tasks, &teams, &userApiKey, &timeEntries, &u.UserID, &u.Username, &u.Role) // etc.
+		err := rows.Scan(&u.Tasks, &u.Teams, &u.UserApiKey, &u.TimeEntries, &u.UserID, &u.Username, &u.Role) // etc.
 		if err != nil {
 			log.Fatalf("rows.Scan: %s\n", err)
 		}
@@ -218,36 +212,14 @@ joinTimeEntries:= %t
 			return
 		}
 
-		fmt.Printf("tasks: %v\n", tasks)
-		fmt.Printf("teams: %v\n", teams)
-		fmt.Printf("timeEntries: %v\n", timeEntries)
+		// NOTE: Consumer, e.g. frontend will not care the slightest and
+		// will simply check if the key exists (openapi fields tasks, teams, ... will be nullable)
+		// TODO For internal backend use, we should probably have pointers to any Join field
+		// in case we don't set the JoinXXX flag and explicitly set to nil if the flag is not set,
+		// else we get empty array and mistake it for no values
+		// when in reality we forgot to add the flag
+		// but this won't work for o2o since zero value of struct is nil as well...
 
-		u.UserApiKey = userApiKey
-
-		if len(tasks) > 0 {
-			fmt.Println("len(tasks) > 0")
-			u.Tasks = &tasks
-		}
-		if len(teams) > 0 {
-			u.Teams = &teams
-		}
-		if len(timeEntries) > 0 {
-			u.TimeEntries = &timeEntries
-		}
-
-		// TODO surely there are better ways to do this
-		if joinTasks && u.Tasks == nil {
-			fmt.Println("joinTasks && u.Tasks == nil")
-			u.Tasks = &[]*Task{}
-		}
-		if joinTeams && u.Teams == nil {
-			fmt.Println("joinTeams && u.Teams == nil")
-			u.Teams = &[]*Team{}
-		}
-		if joinTimeEntries && u.TimeEntries == nil {
-			fmt.Println("joinTimeEntries && u.TimeEntries == nil")
-			u.TimeEntries = &[]*TimeEntry{}
-		}
 		users = append(users, u)
 	}
 
