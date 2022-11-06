@@ -184,8 +184,11 @@ components:
       title: Scope
       type: string
       enum:
-        - scope1
-        - scope2
+        - users:read
+        - users:write
+        - scopes:write
+        - settings:write
+        - work-item:review
     Role:
       title: Role
       description: User role.

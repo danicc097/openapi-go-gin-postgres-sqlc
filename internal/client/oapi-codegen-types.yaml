@@ -3,5 +3,7 @@ package: client
 generate:
   models: true
 output: internal/client/openapi_types.gen.go
+compatibility:
+  always-prefix-enum-values: true
 output-options:
   skip-prune: true

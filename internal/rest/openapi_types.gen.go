@@ -10,18 +10,20 @@ const (
 
 // Defines values for Role.
 const (
-	Admin        Role = "admin"
-	AdvancedUser Role = "advanced user"
-	Guest        Role = "guest"
-	Manager      Role = "manager"
-	Superadmin   Role = "superadmin"
-	User         Role = "user"
+	RoleAdmin        Role = "admin"
+	RoleAdvancedUser Role = "advanced user"
+	RoleGuest        Role = "guest"
+	RoleManager      Role = "manager"
+	RoleSuperadmin   Role = "superadmin"
+	RoleUser         Role = "user"
 )
 
 // Defines values for Scope.
 const (
-	Scope1 Scope = "scope1"
-	Scope2 Scope = "scope2"
+	ScopeSettingsWrite  Scope = "settings:write"
+	ScopeUsersRead      Scope = "users:read"
+	ScopeUsersWrite     Scope = "users:write"
+	ScopeWorkItemReview Scope = "work-item:review"
 )
 
 // GetCurrentUserRes represents a user

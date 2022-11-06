@@ -3,5 +3,7 @@ package: rest
 generate:
   models: true
 output: internal/rest/openapi_types.gen.go
+compatibility:
+  always-prefix-enum-values: true
 output-options:
   skip-prune: true
