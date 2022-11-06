@@ -68,64 +68,83 @@ func (q *Queries) GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetU
 
 const GetUsersWithJoins = `-- name: GetUsersWithJoins :many
 select
-  (case when $1::boolean = true then joined_tasks.tasks end)::jsonb as tasks -- if M2M
-  , (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams -- if M2M
-  , (case when $3::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key -- if O2O
-  , (case when $4::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries -- if O2M
+  (
+    case when $1::boolean = true then
+      joined_tasks.tasks
+    end)::jsonb as tasks -- if M2M
+  , (
+    case when $2::boolean = true then
+      joined_teams.teams
+    end)::jsonb as teams -- if M2M
+  , (
+    case when $3::boolean = true then
+      ROW_TO_JSON(user_api_keys.*)
+    end)::jsonb as user_api_key -- if O2O
+  , (
+    case when $4::boolean = true then
+      joined_time_entries.time_entries
+    end)::jsonb as time_entries -- if O2M
   , users.user_id, users.username, users.email, users.scopes, users.first_name, users.last_name, users.full_name, users.external_id, users.role, users.created_at, users.updated_at, users.deleted_at
 from
   users
-left join (
-  select
-    member as tasks_user_id
-    , json_agg(tasks.*) as tasks
-  from
-    task_member uo
-    join tasks using (task_id)
-  where
-    member in (
-      select
-        member
-      from
-        task_member
-      where
-        task_id = any (
-          select
-            task_id
-          from
-            tasks))
-      group by
-        member) joined_tasks on joined_tasks.tasks_user_id = users.user_id
-left join (
-  select
-    user_id as teams_user_id
-    , json_agg(teams.*) as teams
-  from
-    user_team uo
-    join teams using (team_id)
-  where
-    user_id in (
-      select
-        user_id
-      from
-        user_team
-      where
-        team_id = any (
-          select
-            team_id
-          from
-            teams))
-      group by
-        user_id) joined_teams on joined_teams.teams_user_id = users.user_id
-left join (
-  select
-  user_id
-    , json_agg(time_entries.*) as time_entries
-  from
-    time_entries
-   group by
-        user_id) joined_time_entries using (user_id)
-left join user_api_keys using (user_id)
+  ------------------------------
+  left join (
+    select
+      member as tasks_user_id
+      , JSON_AGG(tasks.*) as tasks
+    from
+      task_member uo
+      join tasks using (task_id)
+    where
+      member in (
+        select
+          member
+        from
+          task_member
+        where
+          task_id = any (
+            select
+              task_id
+            from
+              tasks))
+        group by
+          member) joined_tasks on joined_tasks.tasks_user_id = users.user_id
+  ------------------------------
+  left join (
+    select
+      user_id as teams_user_id
+      , JSON_AGG(teams.*) as teams
+    from
+      user_team uo
+      join teams using (team_id)
+    where
+      user_id in (
+        select
+          user_id
+        from
+          user_team
+        where
+          team_id = any (
+            select
+              team_id
+            from
+              teams))
+        group by
+          user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+  ------------------------------
+  -- this below would be O2M (we return an array agg)
+  -- same as with work_item comments when selecting work_items
+  -- since work_item_id is not unique in work_item_comments
+  -- we assume cardinality:O2M. to distinguish O2M and M2M, cardinality:M2M comment, else O2M is assumed
+  left join (
+    select
+      user_id
+      , JSON_AGG(time_entries.*) as time_entries
+    from
+      time_entries
+    group by
+      user_id) joined_time_entries using (user_id)
+  left join user_api_keys using (user_id)
 `
 
 type GetUsersWithJoinsParams struct {
@@ -154,13 +173,6 @@ type GetUsersWithJoinsRow struct {
 	DeletedAt   sql.NullTime   `db:"deleted_at" json:"deleted_at"`
 }
 
-// ----------------------------
-// ----------------------------
-// ----------------------------
-// this below would be O2M (we return an array agg)
-// same as with work_item comments when selecting work_items
-// since work_item_id is not unique in work_item_comments
-// we assume cardinality:O2M. to distinguish O2M and M2M, cardinality:M2M comment, else O2M is assumed
 // ----------------------------
 // this below would be O2O
 func (q *Queries) GetUsersWithJoins(ctx context.Context, db DBTX, arg GetUsersWithJoinsParams) ([]GetUsersWithJoinsRow, error) {
@@ -267,8 +279,6 @@ func (q *Queries) ListAllUsers(ctx context.Context, db DBTX) ([]ListAllUsersRow,
 }
 
 const UpdateUserById = `-- name: UpdateUserById :exec
-
-
 update
   users
 set

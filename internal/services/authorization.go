@@ -7,11 +7,47 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var roles = map[db.UserRole][]db.UserRole{
-	db.UserRoleUser:    {db.UserRoleUser},
-	db.UserRoleManager: {db.UserRoleUser, db.UserRoleManager},
-	db.UserRoleAdmin:   {db.UserRoleUser, db.UserRoleManager, db.UserRoleAdmin},
+// Role represents a predefined role that may be required
+// for specific actions regardless of scopes assigned to a user.
+// It is also associated with a collection of scopes that get assigned/revoked upon role change.
+type Role struct {
+	Name        db.UserRole
+	Description string
+	Rank        uint
 }
+
+var (
+	RoleGuest = Role{
+		Name:        db.UserRoleGuest,
+		Description: "Users with limited read-only permissions.",
+		Rank:        1,
+	}
+	RoleUser = Role{
+		Name:        db.UserRoleUser,
+		Description: "Regular users, with no special permissions.",
+		Rank:        2,
+	}
+	RoleAdvancedUser = Role{
+		Name:        db.UserRoleAdvanceduser,
+		Description: "Users with additional permissions.",
+		Rank:        3,
+	}
+	RoleManager = Role{
+		Name:        db.UserRoleManager,
+		Description: "Managers have privileged access for team management.",
+		Rank:        4,
+	}
+	RoleAdmin = Role{
+		Name:        db.UserRoleAdmin,
+		Description: "Admins can manage all settings on a per-project basis.",
+		Rank:        5,
+	}
+	RoleOwner = Role{
+		Name:        db.UserRoleSuperadmin,
+		Description: "Superadmins have unrestricted access to any project.",
+		Rank:        6,
+	}
+)
 
 // Authorization represents a service for authorization.
 type Authorization struct {

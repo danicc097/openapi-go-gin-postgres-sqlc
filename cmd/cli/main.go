@@ -12,7 +12,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgtype"
-	"github.com/lib/pq"
 	"gopkg.in/guregu/null.v4"
 )
 
@@ -69,18 +68,18 @@ type TimeEntry struct {
 }
 
 type User struct {
-	UserID     uuid.UUID      `json:"user_id"`     // user_id
-	Username   string         `json:"username"`    // username
-	Email      string         `json:"email"`       // email
-	Scopes     pq.StringArray `json:"scopes"`      // scopes
-	FirstName  null.String    `json:"first_name"`  // first_name
-	LastName   null.String    `json:"last_name"`   // last_name
-	FullName   null.String    `json:"full_name"`   // full_name
-	ExternalID null.String    `json:"external_id"` // external_id
-	Role       db.UserRole    `json:"role"`        // role
-	CreatedAt  null.Time      `json:"created_at"`  // created_at
-	UpdatedAt  null.Time      `json:"updated_at"`  // updated_at
-	DeletedAt  null.Time      `json:"deleted_at"`  // deleted_at
+	UserID     uuid.UUID   `json:"user_id"`     // user_id
+	Username   string      `json:"username"`    // username
+	Email      string      `json:"email"`       // email
+	Scopes     []string    `json:"scopes"`      // scopes
+	FirstName  null.String `json:"first_name"`  // first_name
+	LastName   null.String `json:"last_name"`   // last_name
+	FullName   null.String `json:"full_name"`   // full_name
+	ExternalID null.String `json:"external_id"` // external_id
+	Role       db.UserRole `json:"role"`        // role
+	CreatedAt  null.Time   `json:"created_at"`  // created_at
+	UpdatedAt  null.Time   `json:"updated_at"`  // updated_at
+	DeletedAt  null.Time   `json:"deleted_at"`  // deleted_at
 
 	Tasks       []*Task      `json:"tasks,omitempty"`
 	Teams       []*Team      `json:"teams,omitempty"`
@@ -100,6 +99,7 @@ const query = `
 	  , users.user_id
 	  , users.username
 	  , users.role
+	  , users.scopes
 	from
 	  users
 	left join (
@@ -202,7 +202,7 @@ joinTimeEntries:= %t
 	for rows.Next() {
 		var u User
 		// https://github.com/jackc/pgx/issues/180 cast as jsonb
-		err := rows.Scan(&u.Tasks, &u.Teams, &u.UserApiKey, &u.TimeEntries, &u.UserID, &u.Username, &u.Role) // etc.
+		err := rows.Scan(&u.Tasks, &u.Teams, &u.UserApiKey, &u.TimeEntries, &u.UserID, &u.Username, &u.Role, &u.Scopes) // etc.
 		if err != nil {
 			log.Fatalf("rows.Scan: %s\n", err)
 		}
@@ -212,6 +212,10 @@ joinTimeEntries:= %t
 			return
 		}
 
+		// TODO xo:
+		// pq stirngarray --> []string is suppported by pgx
+		// []byte --> jsonb, json etc.
+		// time.Time --> null.Time, same for rest of  NullXXX
 		// NOTE: Consumer, e.g. frontend will not care the slightest and
 		// will simply check if the key exists (openapi fields tasks, teams, ... will be nullable)
 		// TODO For internal backend use, we should probably have pointers to any Join field

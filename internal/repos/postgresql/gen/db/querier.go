@@ -12,13 +12,6 @@ type Querier interface {
 	// plpgsql-language-server:use-keyword-query-parameters
 	GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetUserRow, error)
 	//----------------------------
-	//----------------------------
-	//----------------------------
-	// this below would be O2M (we return an array agg)
-	// same as with work_item comments when selecting work_items
-	// since work_item_id is not unique in work_item_comments
-	// we assume cardinality:O2M. to distinguish O2M and M2M, cardinality:M2M comment, else O2M is assumed
-	//----------------------------
 	// this below would be O2O
 	GetUsersWithJoins(ctx context.Context, db DBTX, arg GetUsersWithJoinsParams) ([]GetUsersWithJoinsRow, error)
 	// -- name: Test :exec

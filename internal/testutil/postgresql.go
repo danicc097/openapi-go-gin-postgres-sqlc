@@ -8,7 +8,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -18,13 +17,7 @@ import (
 
 // NewDB returns a new testing Postgres pool.
 func NewDB() (*pgxpool.Pool, error) {
-	provider, err := vault.New()
-	if err != nil {
-		fmt.Printf("Couldn't create provider: %s", err)
-		return nil, err
-	}
-
-	conf := envvar.New(provider)
+	conf := envvar.New()
 	pool, err := postgresql.New(conf)
 	if err != nil {
 		fmt.Printf("Couldn't create pool: %s", err)

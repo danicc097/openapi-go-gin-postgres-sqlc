@@ -20,8 +20,9 @@ begin
   -- create type pg_temp.AUX_TYPE as (field int, another_field text);
   -- users
   for i in 1..10 loop
-    insert into users (username , email , first_name , last_name , "role")
-      values ('user_' || i , 'user_' || i || '@email.com' , 'Name ' || i , 'Surname ' || i , 'user'::user_role)
+    insert into users (username , email , first_name , last_name , "role" , scopes)
+      values ('user_' || i , 'user_' || i || '@email.com' , 'Name ' || i , 'Surname ' || i ,
+	'user'::user_role , '{users:read}')
     returning
       user_id into ui;
     user_ids[i] = ui;
