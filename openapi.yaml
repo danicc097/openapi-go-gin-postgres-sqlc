@@ -9,7 +9,7 @@ x-path-security: &path-security
   security:
     - bearer_auth: []
     - api_key: []
-#############################################################
+#######################################
 openapi: 3.0.2
 info:
   description: "This is a sample server Petstore server. For this sample, you can use the api key `special-key` to test the authorization filters."
@@ -60,7 +60,7 @@ paths:
                 format: binary
   /admin/ping:
     get:
-      !!merge <<: *path-security
+      <<: *path-security
       summary: Ping pongs
       operationId: AdminPing
       responses:
@@ -81,7 +81,7 @@ paths:
         - admin
   /user/me:
     get:
-      !!merge <<: *path-security
+      <<: *path-security
       summary: returns the logged in user
       operationId: GetCurrentUser
       responses:
@@ -95,7 +95,7 @@ paths:
         - user
   /user/{id}:
     delete:
-      !!merge <<: *path-security
+      <<: *path-security
       summary: deletes the user by id
       operationId: DeleteUser
       parameters:
@@ -113,7 +113,7 @@ paths:
       tags:
         - user
     put:
-      !!merge <<: *path-security
+      <<: *path-security
       summary: updates the user by id
       operationId: UpdateUser
       parameters:

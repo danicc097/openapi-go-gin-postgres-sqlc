@@ -5,6 +5,13 @@
     }
   ],
   "settings": {
+    "yaml.schemas": {
+      "https://raw.githubusercontent.com/docker/cli/master/cli/compose/schema/data/config_schema_v3.8.json": "*compose*.yml",
+    },
+    "yaml.customTags": [
+      "!merge",
+      "!!merge",
+    ],
     "plpgsqlLanguageServer.database": "gen_db",
     "plpgsqlLanguageServer.user": "postgres",
     "plpgsqlLanguageServer.password": "postgres",

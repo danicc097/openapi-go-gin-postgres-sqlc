@@ -172,6 +172,10 @@ x.pregen() {
       new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" -i $SPEC
     done
 
+    # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
+    # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
+    sed -i 's/!!merge //' $SPEC
+
     # go build -o pregen "$PWD"/cmd/pregen/main.go
     # ./pregen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
