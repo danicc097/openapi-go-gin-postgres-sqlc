@@ -11,8 +11,8 @@ import (
 
 // TaskMember represents a row from 'public.task_member'.
 type TaskMember struct {
-	TaskID int64     `json:"taskID" db:"task_id"` // task_id
-	Member uuid.UUID `json:"member" db:"member"`  // member
+	TaskID int64     `json:"task_id" db:"task_id"` // task_id
+	Member uuid.UUID `json:"member" db:"member"`   // member
 	// xo fields
 	_exists, _deleted bool
 }

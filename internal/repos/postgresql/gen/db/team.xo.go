@@ -11,13 +11,13 @@ import (
 
 // Team represents a row from 'public.teams'.
 type Team struct {
-	TeamID      int       `json:"teamID" db:"team_id"`          // team_id
-	ProjectID   int       `json:"projectID" db:"project_id"`    // project_id
+	TeamID      int       `json:"team_id" db:"team_id"`         // team_id
+	ProjectID   int       `json:"project_id" db:"project_id"`   // project_id
 	Name        string    `json:"name" db:"name"`               // name
 	Description string    `json:"description" db:"description"` // description
 	Metadata    []byte    `json:"metadata" db:"metadata"`       // metadata
-	CreatedAt   time.Time `json:"createdAt" db:"created_at"`    // created_at
-	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at"`    // updated_at
+	CreatedAt   time.Time `json:"created_at" db:"created_at"`   // created_at
+	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`   // updated_at
 	// xo fields
 	_exists, _deleted bool
 }

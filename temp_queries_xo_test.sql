@@ -25,11 +25,11 @@ select
   -- what we also want is for xo models to have `json` tags be SQLName exactly as db, so that we can unmarshal directly.
   -- (low prio if all works fine) Then we can easily generate the same models in every xo.go file but all structs get `Response` appended and json tags
   -- use {{camel GoName}}. Each struct has a single one-way convert method to Response (almost 1-1 except struct name changes, should have small overhead).
+  -- also checkout https://github.com/georgysavva/scany for direct scans
+  -- https://github.com/georgysavva/scany/issues/16
 
   -- alternative in case the above marshalling json row results doesn't work (although pgx has full support for jsonb and json
   -- ): https://github.com/jackc/pgx/issues/760
-  -- also checkout https://github.com/georgysavva/scany for direct scans
-  -- https://github.com/georgysavva/scany/issues/16
   (case when @joinTasks = true then joined_tasks.tasks end) as tasks -- if M2M
   , (case when @joinTeams = true then joined_teams.teams end) as teams -- if M2M
   , (case when @joinUserApiKeys = true then row_to_json(user_api_keys.*) end) as user_api_key -- if O2O

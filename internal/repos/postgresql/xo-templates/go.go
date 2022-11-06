@@ -198,7 +198,9 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Type:       "string",
 				Desc:       "field tag",
 				Short:      "g",
-				Default:    `json:"{{ camel .GoName }}" db:"{{ .SQLName }}"`,
+				// migrate to camel once Response structs and adapters done
+				// Default:    `json:"{{ camel .GoName }}" db:"{{ .SQLName }}"`,
+				Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
 			},
 			{
 				ContextKey: ContextKey,

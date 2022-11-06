@@ -3,6 +3,7 @@
 linters:
   enable-all: true
   disable:
+    - json(camel)
     - wsl
     - nosnakecase
     - godox # marks TODO, FIX, ...

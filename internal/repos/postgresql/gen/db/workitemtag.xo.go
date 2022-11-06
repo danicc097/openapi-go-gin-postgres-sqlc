@@ -9,9 +9,9 @@ import (
 
 // WorkItemTag represents a row from 'public.work_item_tags'.
 type WorkItemTag struct {
-	WorkItemTagID int    `json:"workItemTagID" db:"work_item_tag_id"` // work_item_tag_id
-	Name          string `json:"name" db:"name"`                      // name
-	Description   string `json:"description" db:"description"`        // description
+	WorkItemTagID int    `json:"work_item_tag_id" db:"work_item_tag_id"` // work_item_tag_id
+	Name          string `json:"name" db:"name"`                         // name
+	Description   string `json:"description" db:"description"`           // description
 	// xo fields
 	_exists, _deleted bool
 }

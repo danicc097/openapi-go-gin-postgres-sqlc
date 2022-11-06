@@ -16,19 +16,19 @@ import (
 
 // User represents a row from 'cache.users'.
 type User struct {
-	UserID     uuid.NullUUID   `json:"userID" db:"user_id"`         // user_id
-	Username   sql.NullString  `json:"username" db:"username"`      // username
-	Email      sql.NullString  `json:"email" db:"email"`            // email
-	Scopes     pq.StringArray  `json:"scopes" db:"scopes"`          // scopes
-	FirstName  sql.NullString  `json:"firstName" db:"first_name"`   // first_name
-	LastName   sql.NullString  `json:"lastName" db:"last_name"`     // last_name
-	FullName   sql.NullString  `json:"fullName" db:"full_name"`     // full_name
-	ExternalID sql.NullString  `json:"externalID" db:"external_id"` // external_id
-	Role       db.NullUserRole `json:"role" db:"role"`              // role
-	CreatedAt  sql.NullTime    `json:"createdAt" db:"created_at"`   // created_at
-	UpdatedAt  sql.NullTime    `json:"updatedAt" db:"updated_at"`   // updated_at
-	DeletedAt  sql.NullTime    `json:"deletedAt" db:"deleted_at"`   // deleted_at
-	Teams      pq.GenericArray `json:"teams" db:"teams"`            // teams
+	UserID     uuid.NullUUID   `json:"user_id" db:"user_id"`         // user_id
+	Username   sql.NullString  `json:"username" db:"username"`       // username
+	Email      sql.NullString  `json:"email" db:"email"`             // email
+	Scopes     pq.StringArray  `json:"scopes" db:"scopes"`           // scopes
+	FirstName  sql.NullString  `json:"first_name" db:"first_name"`   // first_name
+	LastName   sql.NullString  `json:"last_name" db:"last_name"`     // last_name
+	FullName   sql.NullString  `json:"full_name" db:"full_name"`     // full_name
+	ExternalID sql.NullString  `json:"external_id" db:"external_id"` // external_id
+	Role       db.NullUserRole `json:"role" db:"role"`               // role
+	CreatedAt  sql.NullTime    `json:"created_at" db:"created_at"`   // created_at
+	UpdatedAt  sql.NullTime    `json:"updated_at" db:"updated_at"`   // updated_at
+	DeletedAt  sql.NullTime    `json:"deleted_at" db:"deleted_at"`   // deleted_at
+	Teams      pq.GenericArray `json:"teams" db:"teams"`             // teams
 }
 
 type UserSelectConfig struct {

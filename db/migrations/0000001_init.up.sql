@@ -188,7 +188,8 @@ create table tasks (
   , work_item_id bigint not null
   , title text not null
   , metadata jsonb not null
-  , target_date timestamp without time zone not null
+  , target_date timestamp with time zone not null
+    --, target_date timestamp without time zone not null
   , target_date_timezone text not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
@@ -308,7 +309,8 @@ create table movies (
 create table user_api_keys (
   user_id uuid not null
   , api_key text not null unique
-  , expires_on timestamp without time zone not null
+  , expires_on timestamp with time zone not null
+    --, expires_on timestamp without time zone not null
   , primary key (user_id)
   , foreign key (user_id) references users (user_id) on delete cascade -- generates GetUserByAPIKey
 );
