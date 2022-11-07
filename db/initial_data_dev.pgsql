@@ -20,8 +20,7 @@ begin
   -- users
   for i in 1..10 loop
     insert into users (username , email , first_name , last_name , role_rank , scopes)
-      values ('user_' || i , 'user_' || i || '@email.com' , 'Name ' || i , 'Surname ' || i ,
-	1 , '{users:read}')
+      values ('user_' || i , 'user_' || i || '@email.com' , 'Name ' || i , 'Surname ' || i , 1 , '{users:read}')
     returning
       user_id into ui;
     user_ids[i] = ui;

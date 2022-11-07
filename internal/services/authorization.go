@@ -70,6 +70,36 @@ func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string)
 // for frontend https://casbin.org/docs/en/frontend
 // load policy from db: https://github.com/casbin/casbin-pg-adapter
 
+// TODO public get role by name
+// TODO public get scope by name
+
+func (a *Authorization) Role(role string) (Role, error) {
+	rl, ok := a.roles[models.Role(role)]
+	if !ok {
+		return Role{}, internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown role %s", role)
+	}
+
+	return rl, nil
+}
+
+func (a *Authorization) RoleByRank(rank int16) (Role, bool) {
+	for _, r := range a.roles {
+		if r.Rank == rank {
+			return r, true
+		}
+	}
+	return Role{}, false
+}
+
+func (a *Authorization) Scope(scope string) (Scope, error) {
+	s, ok := a.scopes[models.Scope(scope)]
+	if !ok {
+		return Scope{}, internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown scope %s", scope)
+	}
+
+	return s, nil
+}
+
 func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) error {
 	rl, ok := a.roles[requiredRole]
 	if !ok {

@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -79,7 +80,11 @@ func (a *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 			return
 		}
 
-		if err := a.authzsvc.HasRequiredRole(user.RoleRank, config.MinimumRole); err != nil {
+		userRole, ok := a.authzsvc.RoleByRank(user.RoleRank)
+		if !ok {
+			renderErrorResponse(c, fmt.Sprintf("Unknown rank value: %d", user.RoleRank), errors.New("unknown rank"))
+		}
+		if err := a.authzsvc.HasRequiredRole(userRole, config.MinimumRole); err != nil {
 			renderErrorResponse(c, "Unauthorized.", err)
 
 			return

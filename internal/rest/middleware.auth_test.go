@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -16,29 +17,29 @@ import (
 func TestAuthorizationMiddleware(t *testing.T) {
 	testCases := []struct {
 		name         string
-		role         db.UserRole
-		requiredRole db.UserRole
+		role         models.Role
+		requiredRole models.Role
 		status       int
 		body         string
 	}{
 		{
 			name:         "unauthorized_user",
-			role:         db.UserRoleUser,
-			requiredRole: db.UserRoleAdmin,
+			role:         models.RoleUser,
+			requiredRole: models.RoleAdmin,
 			status:       http.StatusForbidden,
 			body:         "Unauthorized.",
 		},
 		{
 			name:         "unauthorized_manager",
-			role:         db.UserRoleManager,
-			requiredRole: db.UserRoleAdmin,
+			role:         models.RoleManager,
+			requiredRole: models.RoleAdmin,
 			status:       http.StatusForbidden,
 			body:         "Unauthorized.",
 		},
 		{
 			name:         "authorized",
-			role:         db.UserRoleAdmin,
-			requiredRole: db.UserRoleAdmin,
+			role:         models.RoleAdmin,
+			requiredRole: models.RoleAdmin,
 			status:       http.StatusOK,
 			body:         "ok",
 		},
