@@ -182,18 +182,6 @@ components:
       type: string
       # will be updated from scopes.json
       enum:
-        - guest
-        - user
-        - advancedUser
-        - manager
-        - admin
-        - superAdmin
-    Role:
-      title: Role
-      description: User role.
-      type: string
-      # will be updated from roles.json
-      enum:
         - test-scope
         - users:read
         - users:write
@@ -201,6 +189,18 @@ components:
         - team-settings:write
         - project-settings:write
         - work-item:review
+    Role:
+      title: Role
+      description: User role.
+      type: string
+      # will be updated from roles.json
+      enum:
+        - guest
+        - user
+        - advancedUser
+        - manager
+        - admin
+        - superAdmin
     Organization:
       title: Organization
       description: Organization a user belongs to.

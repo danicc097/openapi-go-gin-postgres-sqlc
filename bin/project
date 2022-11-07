@@ -183,31 +183,39 @@ x.pregen() {
     | select(.[]) as \$i ireduce ({}; . + \$i)
   " openapi.yaml >>$opid_auth
 
-    # frontend scopes: 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right) and show aggregated
     [[ $(yq e '.components.schemas | has("Role")' $SPEC) = "false" ]] && err "Role schema not found in $SPEC"
-    scopes_file="scopes.json"
-    scopes=$(yq -P '.[] | key' $scopes_file)
-    readarray -t scopes <<<$scopes
-    scopes_arr=$(printf ",\"%s\"" "${scopes[@]}")
-    scopes_arr="[${scopes_arr:1}]"
-    echo "Replacing scopes in $SPEC with $scopes_file"
-    scopes_arr=$scopes_arr yq e ".components.schemas.Role.enum = env(scopes_arr)" -i $SPEC
-    for scope in ${scopes[@]}; do
-      echo "Found scope $scope"
-      # TODO ensure x-required-scopes values exist
-    done
-
-    [[ $(yq e '.components.schemas | has("Scope")' $SPEC) = "false" ]] && err "Scope schema not found in $SPEC"
     roles_file="roles.json"
     roles=$(yq -P '.[] | key' $roles_file)
     readarray -t roles <<<$roles
     roles_arr=$(printf ",\"%s\"" "${roles[@]}")
     roles_arr="[${roles_arr:1}]"
     echo "Replacing roles in $SPEC with $roles_file"
-    roles_arr=$roles_arr yq e ".components.schemas.Scope.enum = env(roles_arr)" -i $SPEC
+    roles_arr=$roles_arr yq e ".components.schemas.Role.enum = env(roles_arr)" -i $SPEC
     for role in ${roles[@]}; do
       echo "Found role $role"
-      # TODO ensure x-required-role values exist
+      # TODO ensure x-required-role value exists
+    done
+
+    # frontend scopes: 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right) and show aggregated
+    [[ $(yq e '.components.schemas | has("Scope")' $SPEC) = "false" ]] && err "Scope schema not found in $SPEC"
+    scopes_file="scopes.json"
+    scopes=$(yq -P '.[] | key' $scopes_file)
+    readarray -t scopes <<<$scopes
+    scopes_arr=$(printf ",\"%s\"" "${scopes[@]}")
+    scopes_arr="[${scopes_arr:1}]"
+    mapfile -t clean_scopes < <(printf "\"%s\"\n" ${scopes[*]})
+    echo "Replacing scopes in $SPEC with $scopes_file"
+    scopes_arr=$scopes_arr yq e ".components.schemas.Scope.enum = env(scopes_arr)" -i $SPEC
+    readarray spec_scopes < <(yq e ".paths[][].x-required-scopes | select(length > 0)" openapi.yaml)
+    spec_scopes=("${spec_scopes[*]//- /}")
+    mapfile -t clean_spec_scopes < <(printf "\"%s\"\n" ${spec_scopes[*]})
+    echo "Spec scopes: ${clean_spec_scopes[*]}"
+    echo "Existing scopes:  ${clean_scopes[*]}"
+
+    # working
+    for spec_scope in "${clean_spec_scopes[@]}"; do
+      echo "spec scope is $spec_scope"
+      [[ ! " ${clean_scopes[*]} " =~ " ${spec_scope} " ]] && err "$spec_scope is not a valid scope"
     done
 
     yq --prettyPrint -i $SPEC
@@ -225,8 +233,15 @@ x.pregen() {
 join_yq_paths() {
   declare -n arr="$1"
   arr=("${arr[*]//- /}")
-  mapfile arr < <(printf "\"%s\"\n" ${arr[*]})
+  mapfile -t arr < <(printf "\"%s\"\n" ${arr[*]})
   join_by "." ${arr[*]}
+}
+
+clean_yq_array() {
+  declare -n arr="$1"
+  arr=("${arr[*]//- /}")
+  mapfile -t arr < <(printf "\"%s\"\n" ${arr[*]})
+  echo ${arr[@]}
 }
 
 # Run post-generation scripts in the internal package.
