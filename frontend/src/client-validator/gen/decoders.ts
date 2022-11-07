@@ -12,6 +12,7 @@ import {
   UpdateUserRequest,
   Scope,
   Role,
+  TaskRole,
   Organization,
   GetCurrentUserRes,
   ValidationError,
@@ -69,6 +70,18 @@ export const RoleDecoder: Decoder<Role> = {
       throw new Error(`Schema ${RoleDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, RoleDecoder.definitionName)
+  },
+}
+export const TaskRoleDecoder: Decoder<TaskRole> = {
+  definitionName: 'TaskRole',
+  schemaRef: '#/definitions/TaskRole',
+
+  decode(json: unknown): TaskRole {
+    const schema = ajv.getSchema(TaskRoleDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${TaskRoleDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, TaskRoleDecoder.definitionName)
   },
 }
 export const OrganizationDecoder: Decoder<Organization> = {

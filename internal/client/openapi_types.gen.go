@@ -11,20 +11,28 @@ const (
 // Defines values for Role.
 const (
 	RoleAdmin        Role = "admin"
-	RoleAdvancedUser Role = "advanced user"
+	RoleAdvancedUser Role = "advancedUser"
 	RoleGuest        Role = "guest"
 	RoleManager      Role = "manager"
-	RoleSuperadmin   Role = "superadmin"
+	RoleSuperAdmin   Role = "superAdmin"
 	RoleUser         Role = "user"
 )
 
 // Defines values for Scope.
 const (
-	ScopeScopesWrite    Scope = "scopes:write"
-	ScopeSettingsWrite  Scope = "settings:write"
-	ScopeUsersRead      Scope = "users:read"
-	ScopeUsersWrite     Scope = "users:write"
-	ScopeWorkItemReview Scope = "work-item:review"
+	ScopeProjectSettingsWrite Scope = "project-settings:write"
+	ScopeScopesWrite          Scope = "scopes:write"
+	ScopeTeamSettingsWrite    Scope = "team-settings:write"
+	ScopeTestScope            Scope = "test-scope"
+	ScopeUsersRead            Scope = "users:read"
+	ScopeUsersWrite           Scope = "users:write"
+	ScopeWorkItemReview       Scope = "work-item:review"
+)
+
+// Defines values for TaskRole.
+const (
+	TaskRolePreparer TaskRole = "preparer"
+	TaskRoleReviewer TaskRole = "reviewer"
 )
 
 // GetCurrentUserRes represents a user
@@ -38,7 +46,7 @@ type GetCurrentUserRes struct {
 	Password *string      `json:"password,omitempty"`
 	Phone    *string      `json:"phone,omitempty"`
 
-	// Role User role.
+	// Role Role automatically generated from roles.json
 	Role     *Role   `json:"role,omitempty"`
 	UserId   *int64  `json:"user_id,omitempty"`
 	Username *string `json:"username,omitempty"`
@@ -52,18 +60,21 @@ type HTTPValidationError struct {
 // Organization Organization a user belongs to.
 type Organization = string
 
-// Role User role.
+// Role Role automatically generated from roles.json
 type Role string
 
-// Scope defines model for Scope.
+// Scope Scope automatically generated from scopes.json
 type Scope string
+
+// TaskRole Role in task for a member.
+type TaskRole string
 
 // UpdateUserRequest represents User data to update
 type UpdateUserRequest struct {
 	FirstName *string `json:"first_name,omitempty"`
 	LastName  *string `json:"last_name,omitempty"`
 
-	// Role User role.
+	// Role Role automatically generated from roles.json
 	Role *Role `json:"role,omitempty"`
 }
 

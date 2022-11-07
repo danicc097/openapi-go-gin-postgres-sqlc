@@ -149,10 +149,11 @@ create table work_item_work_item_tag (
 create index on work_item_work_item_tag (work_item_tag_id , work_item_id);
 
 -- dont need to index by user_id, there's no use case to filter by user_id
--- create type work_item_role as ENUM (
---   'preparer'
---   , 'reviewer'
--- );
+create type task_role as ENUM (
+  'preparer'
+  , 'reviewer'
+);
+
 -- we can aggregate members from tasks
 -- but do we need a role for the work_item and every member
 -- or can we ignore members per work_item?

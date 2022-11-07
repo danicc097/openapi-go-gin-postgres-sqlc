@@ -11,13 +11,24 @@ export type Message = string
 export type ErrorType = string
 export type Detail = ValidationError[]
 /**
- * User role.
+ * Role automatically generated from roles.json
  */
-export type Role = 'guest' | 'user' | 'advanced user' | 'manager' | 'admin' | 'superadmin'
+export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 /**
- * User scope.
+ * Scope automatically generated from scopes.json
  */
-export type Scope = 'test-scope' | 'users:read' | 'users:write' | 'scopes:write' | 'settings:write' | 'work-item:review'
+export type Scope =
+  | 'test-scope'
+  | 'users:read'
+  | 'users:write'
+  | 'scopes:write'
+  | 'team-settings:write'
+  | 'project-settings:write'
+  | 'work-item:review'
+/**
+ * Role in task for a member.
+ */
+export type TaskRole = 'preparer' | 'reviewer'
 /**
  * Organization a user belongs to.
  */

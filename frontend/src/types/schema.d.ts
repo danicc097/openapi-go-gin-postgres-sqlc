@@ -49,17 +49,28 @@ export interface components {
       last_name?: string
     }
     /**
-     * Scope
-     * @description User scope.
+     * @description Scope automatically generated from scopes.json
      * @enum {string}
      */
-    Scope: 'test-scope' | 'users:read' | 'users:write' | 'scopes:write' | 'settings:write' | 'work-item:review'
+    Scope:
+      | 'test-scope'
+      | 'users:read'
+      | 'users:write'
+      | 'scopes:write'
+      | 'team-settings:write'
+      | 'project-settings:write'
+      | 'work-item:review'
     /**
-     * Role
-     * @description User role.
+     * @description Role automatically generated from roles.json
      * @enum {string}
      */
-    Role: 'guest' | 'user' | 'advanced user' | 'manager' | 'admin' | 'superadmin'
+    Role: 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
+    /**
+     * Task role
+     * @description Role in task for a member.
+     * @enum {string}
+     */
+    TaskRole: 'preparer' | 'reviewer'
     /**
      * Organization
      * @description Organization a user belongs to.

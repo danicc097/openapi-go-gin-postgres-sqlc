@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
@@ -11,42 +12,17 @@ import (
 // for specific actions regardless of scopes assigned to a user.
 // It is also associated with a collection of scopes that get assigned/revoked upon role change.
 type Role struct {
-	Name        db.UserRole
-	Description string
-	Rank        uint
+	Description string `yaml:description`
+	Rank        uint   `yaml:rank`
 }
 
-var (
-	RoleGuest = Role{
-		Name:        db.UserRoleGuest,
-		Description: "Users with limited read-only permissions.",
-		Rank:        1,
-	}
-	RoleUser = Role{
-		Name:        db.UserRoleUser,
-		Description: "Regular users, with no special permissions.",
-		Rank:        2,
-	}
-	RoleAdvancedUser = Role{
-		Name:        db.UserRoleAdvanceduser,
-		Description: "Users with additional permissions.",
-		Rank:        3,
-	}
-	RoleManager = Role{
-		Name:        db.UserRoleManager,
-		Description: "Managers have privileged access for team management.",
-		Rank:        4,
-	}
-	RoleAdmin = Role{
-		Name:        db.UserRoleAdmin,
-		Description: "Admins can manage all settings on a per-project basis.",
-		Rank:        5,
-	}
-	RoleOwner = Role{
-		Name:        db.UserRoleSuperadmin,
-		Description: "Superadmins have unrestricted access to any project.",
-		Rank:        6,
-	}
+type Scope struct {
+	Description string `yaml:description`
+}
+
+type (
+	UserRoles  = map[models.Role]Role
+	UserScopes = map[models.Scope]Scope
 )
 
 // Authorization represents a service for authorization.

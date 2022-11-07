@@ -1,3 +1,13 @@
+#
+# Vendor extensions
+# -----------------
+#
+# Schema enums:
+#   - `x-db-enum` refers to a Postgres enum type and syncs its values.
+# Path operations:
+#   - `x-required-scopes` is an array of required scope keys from scopes.json
+#   - `x-required-role` is a required role name from role.json
+#
 x-uuid-pattern: &uuid-pattern ^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}
 # merge so that openapi validator middleware does a header precheck before going deeper
 x-path-security: &path-security
@@ -5,7 +15,7 @@ x-path-security: &path-security
     - bearer_auth: []
     - api_key: []
 #######################################
-openapi: 3.0.2
+openapi: 3.0.3
 info:
   description: This is a sample server Petstore server. For this sample, you can use the api key `special-key` to test the authorization filters.
   license:
@@ -177,10 +187,8 @@ components:
     # not an option
     # used as x-required-role: ?? (rank-based, at most one)
     Scope:
-      title: Scope
-      description: User scope.
+      description: Scope automatically generated from scopes.json
       type: string
-      # will be updated from scopes.json
       enum:
         - test-scope
         - users:read
@@ -190,10 +198,8 @@ components:
         - project-settings:write
         - work-item:review
     Role:
-      title: Role
-      description: User role.
+      description: Role automatically generated from roles.json
       type: string
-      # will be updated from roles.json
       enum:
         - guest
         - user
@@ -201,6 +207,14 @@ components:
         - manager
         - admin
         - superAdmin
+    TaskRole:
+      title: Task role
+      description: Role in task for a member.
+      type: string
+      x-db-enum: task_role
+      enum:
+        - preparer
+        - reviewer
     Organization:
       title: Organization
       description: Organization a user belongs to.

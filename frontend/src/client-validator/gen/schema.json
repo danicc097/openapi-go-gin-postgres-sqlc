@@ -36,30 +36,40 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Scope": {
-      "title": "Scope",
-      "description": "User scope.",
+      "description": "Scope automatically generated from scopes.json",
       "type": "string",
       "enum": [
         "test-scope",
         "users:read",
         "users:write",
         "scopes:write",
-        "settings:write",
+        "team-settings:write",
+        "project-settings:write",
         "work-item:review"
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Role": {
-      "title": "Role",
-      "description": "User role.",
+      "description": "Role automatically generated from roles.json",
       "type": "string",
       "enum": [
         "guest",
         "user",
-        "advanced user",
+        "advancedUser",
         "manager",
         "admin",
-        "superadmin"
+        "superAdmin"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "TaskRole": {
+      "title": "Task role",
+      "description": "Role in task for a member.",
+      "type": "string",
+      "x-db-enum": "task_role",
+      "enum": [
+        "preparer",
+        "reviewer"
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -150,6 +160,9 @@
     },
     "Role": {
       "$ref": "#/definitions/Role"
+    },
+    "TaskRole": {
+      "$ref": "#/definitions/TaskRole"
     },
     "Organization": {
       "$ref": "#/definitions/Organization"

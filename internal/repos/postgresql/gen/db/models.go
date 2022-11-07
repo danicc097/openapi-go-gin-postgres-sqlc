@@ -9,6 +9,64 @@ import (
 	"fmt"
 )
 
+type TaskRole string
+
+const (
+	TaskRolePreparer TaskRole = "preparer"
+	TaskRoleReviewer TaskRole = "reviewer"
+)
+
+func (e *TaskRole) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = TaskRole(s)
+	case string:
+		*e = TaskRole(s)
+	default:
+		return fmt.Errorf("unsupported scan type for TaskRole: %T", src)
+	}
+	return nil
+}
+
+type NullTaskRole struct {
+	TaskRole TaskRole
+	Valid    bool // Valid is true if TaskRole is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullTaskRole) Scan(value interface{}) error {
+	if value == nil {
+		ns.TaskRole, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.TaskRole.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullTaskRole) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return ns.TaskRole, nil
+}
+
+func (e TaskRole) Valid() bool {
+	switch e {
+	case TaskRolePreparer,
+		TaskRoleReviewer:
+		return true
+	}
+	return false
+}
+
+func AllTaskRoleValues() []TaskRole {
+	return []TaskRole{
+		TaskRolePreparer,
+		TaskRoleReviewer,
+	}
+}
+
 type UserRole string
 
 const (
