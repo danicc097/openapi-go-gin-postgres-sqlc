@@ -4,10 +4,12 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgtype"
+	"gopkg.in/guregu/null.v4"
 )
 
 // Task represents a row from 'public.tasks'.
@@ -16,12 +18,12 @@ type Task struct {
 	TaskTypeID         int          `json:"task_type_id" db:"task_type_id"`                 // task_type_id
 	WorkItemID         int64        `json:"work_item_id" db:"work_item_id"`                 // work_item_id
 	Title              string       `json:"title" db:"title"`                               // title
-	Metadata           []byte       `json:"metadata" db:"metadata"`                         // metadata
+	Metadata           pgtype.JSONB `json:"metadata" db:"metadata"`                         // metadata
 	TargetDate         time.Time    `json:"target_date" db:"target_date"`                   // target_date
 	TargetDateTimezone string       `json:"target_date_timezone" db:"target_date_timezone"` // target_date_timezone
 	CreatedAt          time.Time    `json:"created_at" db:"created_at"`                     // created_at
 	UpdatedAt          time.Time    `json:"updated_at" db:"updated_at"`                     // updated_at
-	DeletedAt          sql.NullTime `json:"deleted_at" db:"deleted_at"`                     // deleted_at
+	DeletedAt          null.Time    `json:"deleted_at" db:"deleted_at"`                     // deleted_at
 	// xo fields
 	_exists, _deleted bool
 }

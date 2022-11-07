@@ -19,17 +19,17 @@ begin
   -- create type pg_temp.AUX_TYPE as (field int, another_field text);
   -- users
   for i in 1..10 loop
-    insert into users (username , email , first_name , last_name , "role" , scopes)
+    insert into users (username , email , first_name , last_name , role_rank , scopes)
       values ('user_' || i , 'user_' || i || '@email.com' , 'Name ' || i , 'Surname ' || i ,
-	'user'::user_role , '{users:read}')
+	1 , '{users:read}')
     returning
       user_id into ui;
     user_ids[i] = ui;
   end loop;
-  insert into users (user_id , username , email , first_name , last_name , "role")
-    values (admin_id , 'superadmin' , 'superadmin@email.com' , 'Admin' , '' , 'superadmin'::user_role);
-  insert into users (user_id , username , email , first_name , last_name , "role")
-    values (manager_1_id , 'manager 1' , 'manager1@email.com' , 'Mr.Manager' , 'Smith' , 'manager'::user_role);
+  insert into users (user_id , username , email , first_name , last_name , role_rank)
+    values (admin_id , 'superadmin' , 'superadmin@email.com' , 'Admin' , '' , 6);
+  insert into users (user_id , username , email , first_name , last_name , role_rank)
+    values (manager_1_id , 'manager 1' , 'manager1@email.com' , 'Mr.Manager' , 'Smith' , 4);
   -- projects
   insert into projects ("name" , description , metadata)
     values ('project 1' , 'This is project 1' , '{}');

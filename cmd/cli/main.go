@@ -2,88 +2,24 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/gofrs/uuid"
-	"github.com/jackc/pgtype"
-	"gopkg.in/guregu/null.v4"
+	"github.com/google/uuid"
 )
 
-type WorkItem struct {
-	WorkItemID   int64        `json:"work_item_id" db:"work_item_id"`     // work_item_id
-	Title        string       `json:"title" db:"title"`                   // title
-	Metadata     pgtype.JSONB `json:"metadata" db:"metadata"`             // metadata
-	TeamID       int          `json:"team_id" db:"team_id"`               // team_id
-	KanbanStepID int          `json:"kanban_step_id" db:"kanban_step_id"` // kanban_step_id
-	CreatedAt    time.Time    `json:"created_at" db:"created_at"`         // created_at
-	UpdatedAt    time.Time    `json:"updated_at" db:"updated_at"`         // updated_at
-	DeletedAt    sql.NullTime `json:"deleted_at" db:"deleted_at"`         // deleted_at
-	// xo fields
-	_exists, _deleted bool
-}
-
-// Team represents a row from 'public.teams'.
-type Team struct {
-	TeamID      int          `json:"team_id" db:"team_id"`         // team_id
-	ProjectID   int          `json:"project_id" db:"project_id"`   // project_id
-	Name        string       `json:"name" db:"name"`               // name
-	Description string       `json:"description" db:"description"` // description
-	Metadata    pgtype.JSONB `json:"metadata" db:"metadata"`       // metadata
-	CreatedAt   null.Time    `json:"created_at" db:"created_at"`   // created_at
-	UpdatedAt   null.Time    `json:"updated_at" db:"updated_at"`   // updated_at
-	// xo fields
-	_exists, _deleted bool
-}
-
-// UserAPIKey represents a row from 'public.user_api_keys'.
-type UserAPIKey struct {
-	UserID    uuid.UUID `json:"user_id" db:"user_id"`       // user_id
-	APIKey    string    `json:"api_key" db:"api_key"`       // api_key
-	ExpiresOn null.Time `json:"expires_on" db:"expires_on"` // expires_on
-	// xo fields
-	_exists, _deleted bool
-}
-
-// TimeEntry represents a row from 'public.time_entries'.
-type TimeEntry struct {
-	TimeEntryID     int64     `json:"time_entry_id" db:"time_entry_id"`       // time_entry_id
-	TaskID          null.Int  `json:"task_id" db:"task_id"`                   // task_id
-	ActivityID      int       `json:"activity_id" db:"activity_id"`           // activity_id
-	TeamID          null.Int  `json:"team_id" db:"team_id"`                   // team_id
-	UserID          uuid.UUID `json:"user_id" db:"user_id"`                   // user_id
-	Comment         string    `json:"comment" db:"comment"`                   // comment
-	Start           null.Time `json:"start" db:"start"`                       // start
-	DurationMinutes null.Int  `json:"duration_minutes" db:"duration_minutes"` // duration_minutes
-	// xo fields
-	_exists, _deleted bool
-}
-
 type User struct {
-	UserID     uuid.UUID   `json:"user_id"`     // user_id
-	Username   string      `json:"username"`    // username
-	Email      string      `json:"email"`       // email
-	Scopes     []string    `json:"scopes"`      // scopes
-	FirstName  null.String `json:"first_name"`  // first_name
-	LastName   null.String `json:"last_name"`   // last_name
-	FullName   null.String `json:"full_name"`   // full_name
-	ExternalID null.String `json:"external_id"` // external_id
-	Role       db.UserRole `json:"role"`        // role
-	CreatedAt  null.Time   `json:"created_at"`  // created_at
-	UpdatedAt  null.Time   `json:"updated_at"`  // updated_at
-	DeletedAt  null.Time   `json:"deleted_at"`  // deleted_at
+	db.User
 
-	WorkItems   []*WorkItem  `json:"work_items,omitempty"`
-	Teams       []*Team      `json:"teams,omitempty"`
-	UserApiKey  *UserAPIKey  `json:"user_api_key,omitempty"`
-	TimeEntries []*TimeEntry `json:"time_entries,omitempty"`
+	WorkItems   []*db.WorkItem  `json:"work_items,omitempty"`
+	Teams       []*db.Team      `json:"teams,omitempty"`
+	UserApiKey  *db.UserAPIKey  `json:"user_api_key,omitempty"`
+	TimeEntries []*db.TimeEntry `json:"time_entries,omitempty"`
 
 	// xo fields
 	_exists, _deleted bool
@@ -97,7 +33,7 @@ const query = `
 	  , (case when $4::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries
 	  , users.user_id
 	  , users.username
-	  , users.role
+	  , users.role_rank
 	  , users.scopes
 	from
 	  users
@@ -201,7 +137,7 @@ joinTimeEntries:= %t
 	for rows.Next() {
 		var u User
 		// https://github.com/jackc/pgx/issues/180 cast as jsonb
-		err := rows.Scan(&u.WorkItems, &u.Teams, &u.UserApiKey, &u.TimeEntries, &u.UserID, &u.Username, &u.Role, &u.Scopes) // etc.
+		err := rows.Scan(&u.WorkItems, &u.Teams, &u.UserApiKey, &u.TimeEntries, &u.UserID, &u.Username, &u.RoleRank, &u.Scopes) // etc.
 		if err != nil {
 			log.Fatalf("rows.Scan: %s\n", err)
 		}

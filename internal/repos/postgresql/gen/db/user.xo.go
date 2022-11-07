@@ -4,30 +4,29 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/lib/pq"
+	"gopkg.in/guregu/null.v4"
 
 	"github.com/google/uuid"
 )
 
 // User represents a row from 'public.users'.
 type User struct {
-	UserID     uuid.UUID      `json:"user_id" db:"user_id"`         // user_id
-	Username   string         `json:"username" db:"username"`       // username
-	Email      string         `json:"email" db:"email"`             // email
-	Scopes     pq.StringArray `json:"scopes" db:"scopes"`           // scopes
-	FirstName  sql.NullString `json:"first_name" db:"first_name"`   // first_name
-	LastName   sql.NullString `json:"last_name" db:"last_name"`     // last_name
-	FullName   sql.NullString `json:"full_name" db:"full_name"`     // full_name
-	ExternalID sql.NullString `json:"external_id" db:"external_id"` // external_id
-	RoleRank   int16          `json:"role_rank" db:"role_rank"`     // role_rank
-	CreatedAt  time.Time      `json:"created_at" db:"created_at"`   // created_at
-	UpdatedAt  time.Time      `json:"updated_at" db:"updated_at"`   // updated_at
-	DeletedAt  sql.NullTime   `json:"deleted_at" db:"deleted_at"`   // deleted_at
+	UserID     uuid.UUID   `json:"user_id" db:"user_id"`         // user_id
+	Username   string      `json:"username" db:"username"`       // username
+	Email      string      `json:"email" db:"email"`             // email
+	Scopes     []string    `json:"scopes" db:"scopes"`           // scopes
+	FirstName  null.String `json:"first_name" db:"first_name"`   // first_name
+	LastName   null.String `json:"last_name" db:"last_name"`     // last_name
+	FullName   null.String `json:"full_name" db:"full_name"`     // full_name
+	ExternalID null.String `json:"external_id" db:"external_id"` // external_id
+	RoleRank   int16       `json:"role_rank" db:"role_rank"`     // role_rank
+	CreatedAt  time.Time   `json:"created_at" db:"created_at"`   // created_at
+	UpdatedAt  time.Time   `json:"updated_at" db:"updated_at"`   // updated_at
+	DeletedAt  null.Time   `json:"deleted_at" db:"deleted_at"`   // deleted_at
 	// xo fields
 	_exists, _deleted bool
 }
@@ -227,7 +226,7 @@ func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...U
 // UsersByDeletedAt retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_deleted_at_idx'.
-func UsersByDeletedAt(ctx context.Context, db DB, deletedAt sql.NullTime, opts ...UserSelectConfigOption) ([]*User, error) {
+func UsersByDeletedAt(ctx context.Context, db DB, deletedAt null.Time, opts ...UserSelectConfigOption) ([]*User, error) {
 	c := &UserSelectConfig{}
 	for _, o := range opts {
 		o(c)
@@ -367,7 +366,7 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 // UserByUserIDExternalID_users_user_id_external_id_idx retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_user_id_external_id_idx'.
-func UserByUserIDExternalID_users_user_id_external_id_idx(ctx context.Context, db DB, userID uuid.UUID, externalID sql.NullString, opts ...UserSelectConfigOption) (*User, error) {
+func UserByUserIDExternalID_users_user_id_external_id_idx(ctx context.Context, db DB, userID uuid.UUID, externalID null.String, opts ...UserSelectConfigOption) (*User, error) {
 	c := &UserSelectConfig{}
 	for _, o := range opts {
 		o(c)

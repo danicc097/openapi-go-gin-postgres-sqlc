@@ -4,19 +4,20 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+
+	"gopkg.in/guregu/null.v4"
 )
 
 // KanbanStep represents a row from 'public.kanban_steps'.
 type KanbanStep struct {
-	KanbanStepID  int           `json:"kanban_step_id" db:"kanban_step_id"` // kanban_step_id
-	TeamID        int           `json:"team_id" db:"team_id"`               // team_id
-	StepOrder     sql.NullInt64 `json:"step_order" db:"step_order"`         // step_order
-	Name          string        `json:"name" db:"name"`                     // name
-	Description   string        `json:"description" db:"description"`       // description
-	TimeTrackable bool          `json:"time_trackable" db:"time_trackable"` // time_trackable
-	Disabled      bool          `json:"disabled" db:"disabled"`             // disabled
+	KanbanStepID  int      `json:"kanban_step_id" db:"kanban_step_id"` // kanban_step_id
+	TeamID        int      `json:"team_id" db:"team_id"`               // team_id
+	StepOrder     null.Int `json:"step_order" db:"step_order"`         // step_order
+	Name          string   `json:"name" db:"name"`                     // name
+	Description   string   `json:"description" db:"description"`       // description
+	TimeTrackable bool     `json:"time_trackable" db:"time_trackable"` // time_trackable
+	Disabled      bool     `json:"disabled" db:"disabled"`             // disabled
 	// xo fields
 	_exists, _deleted bool
 }
@@ -180,7 +181,7 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts
 // KanbanStepByTeamIDStepOrder retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_team_id_step_order_key'.
-func KanbanStepByTeamIDStepOrder(ctx context.Context, db DB, teamID int, stepOrder sql.NullInt64, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
+func KanbanStepByTeamIDStepOrder(ctx context.Context, db DB, teamID int, stepOrder null.Int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
 	c := &KanbanStepSelectConfig{}
 	for _, o := range opts {
 		o(c)

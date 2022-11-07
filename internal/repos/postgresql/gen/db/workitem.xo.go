@@ -4,22 +4,24 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgtype"
+	"gopkg.in/guregu/null.v4"
 )
 
 // WorkItem represents a row from 'public.work_items'.
 type WorkItem struct {
 	WorkItemID   int64        `json:"work_item_id" db:"work_item_id"`     // work_item_id
 	Title        string       `json:"title" db:"title"`                   // title
-	Metadata     []byte       `json:"metadata" db:"metadata"`             // metadata
+	Metadata     pgtype.JSONB `json:"metadata" db:"metadata"`             // metadata
 	TeamID       int          `json:"team_id" db:"team_id"`               // team_id
 	KanbanStepID int          `json:"kanban_step_id" db:"kanban_step_id"` // kanban_step_id
 	CreatedAt    time.Time    `json:"created_at" db:"created_at"`         // created_at
 	UpdatedAt    time.Time    `json:"updated_at" db:"updated_at"`         // updated_at
-	DeletedAt    sql.NullTime `json:"deleted_at" db:"deleted_at"`         // deleted_at
+	DeletedAt    null.Time    `json:"deleted_at" db:"deleted_at"`         // deleted_at
 	// xo fields
 	_exists, _deleted bool
 }

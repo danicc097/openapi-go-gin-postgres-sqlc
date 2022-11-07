@@ -7,17 +7,19 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgtype"
 )
 
 // Team represents a row from 'public.teams'.
 type Team struct {
-	TeamID      int       `json:"team_id" db:"team_id"`         // team_id
-	ProjectID   int       `json:"project_id" db:"project_id"`   // project_id
-	Name        string    `json:"name" db:"name"`               // name
-	Description string    `json:"description" db:"description"` // description
-	Metadata    []byte    `json:"metadata" db:"metadata"`       // metadata
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`   // created_at
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`   // updated_at
+	TeamID      int          `json:"team_id" db:"team_id"`         // team_id
+	ProjectID   int          `json:"project_id" db:"project_id"`   // project_id
+	Name        string       `json:"name" db:"name"`               // name
+	Description string       `json:"description" db:"description"` // description
+	Metadata    pgtype.JSONB `json:"metadata" db:"metadata"`       // metadata
+	CreatedAt   time.Time    `json:"created_at" db:"created_at"`   // created_at
+	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at"`   // updated_at
 	// xo fields
 	_exists, _deleted bool
 }

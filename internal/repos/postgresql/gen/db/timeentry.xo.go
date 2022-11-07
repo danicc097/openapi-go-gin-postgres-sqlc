@@ -4,24 +4,25 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 	"time"
+
+	"gopkg.in/guregu/null.v4"
 
 	"github.com/google/uuid"
 )
 
 // TimeEntry represents a row from 'public.time_entries'.
 type TimeEntry struct {
-	TimeEntryID     int64         `json:"time_entry_id" db:"time_entry_id"`       // time_entry_id
-	TaskID          sql.NullInt64 `json:"task_id" db:"task_id"`                   // task_id
-	ActivityID      int           `json:"activity_id" db:"activity_id"`           // activity_id
-	TeamID          sql.NullInt64 `json:"team_id" db:"team_id"`                   // team_id
-	UserID          uuid.UUID     `json:"user_id" db:"user_id"`                   // user_id
-	Comment         string        `json:"comment" db:"comment"`                   // comment
-	Start           time.Time     `json:"start" db:"start"`                       // start
-	DurationMinutes sql.NullInt64 `json:"duration_minutes" db:"duration_minutes"` // duration_minutes
+	TimeEntryID     int64     `json:"time_entry_id" db:"time_entry_id"`       // time_entry_id
+	TaskID          null.Int  `json:"task_id" db:"task_id"`                   // task_id
+	ActivityID      int       `json:"activity_id" db:"activity_id"`           // activity_id
+	TeamID          null.Int  `json:"team_id" db:"team_id"`                   // team_id
+	UserID          uuid.UUID `json:"user_id" db:"user_id"`                   // user_id
+	Comment         string    `json:"comment" db:"comment"`                   // comment
+	Start           time.Time `json:"start" db:"start"`                       // start
+	DurationMinutes null.Int  `json:"duration_minutes" db:"duration_minutes"` // duration_minutes
 	// xo fields
 	_exists, _deleted bool
 }
@@ -199,7 +200,7 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts 
 // TimeEntriesByTaskIDTeamID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_task_id_team_id_idx'.
-func TimeEntriesByTaskIDTeamID(ctx context.Context, db DB, taskID, teamID sql.NullInt64, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
+func TimeEntriesByTaskIDTeamID(ctx context.Context, db DB, taskID, teamID null.Int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
 	c := &TimeEntrySelectConfig{}
 	for _, o := range opts {
 		o(c)
@@ -241,7 +242,7 @@ func TimeEntriesByTaskIDTeamID(ctx context.Context, db DB, taskID, teamID sql.Nu
 // TimeEntriesByUserIDTeamID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_user_id_team_id_idx'.
-func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID sql.NullInt64, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
+func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID null.Int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
 	c := &TimeEntrySelectConfig{}
 	for _, o := range opts {
 		o(c)
