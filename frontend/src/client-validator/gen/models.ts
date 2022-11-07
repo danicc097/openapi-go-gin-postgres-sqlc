@@ -14,7 +14,10 @@ export type Detail = ValidationError[]
  * User role.
  */
 export type Role = 'guest' | 'user' | 'advanced user' | 'manager' | 'admin' | 'superadmin'
-export type Scope = 'users:read' | 'users:write' | 'scopes:write' | 'settings:write' | 'work-item:review'
+/**
+ * User scope.
+ */
+export type Scope = 'test-scope' | 'users:read' | 'users:write' | 'scopes:write' | 'settings:write' | 'work-item:review'
 /**
  * Organization a user belongs to.
  */

@@ -37,8 +37,10 @@
     },
     "Scope": {
       "title": "Scope",
+      "description": "User scope.",
       "type": "string",
       "enum": [
+        "test-scope",
         "users:read",
         "users:write",
         "scopes:write",
@@ -51,7 +53,6 @@
       "title": "Role",
       "description": "User role.",
       "type": "string",
-      "x-db-enum": "user_role",
       "enum": [
         "guest",
         "user",

@@ -8,7 +8,7 @@
     "tsc": "tsc ",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "generate": "./generate.bash",
+    "generate": "./generate",
     "lint": "eslint --config ./.eslintrc.json --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx ./src",
     "lint:fix": "eslint --config ./.eslintrc.json --ext .js,.jsx,.ts,.tsx --fix ./src",
     "test": "vitest watch",

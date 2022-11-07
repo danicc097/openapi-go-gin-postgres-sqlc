@@ -1,0 +1,25 @@
+// 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right)
+// and show aggregated
+{
+  "test-scope": {
+    "description": "A test scope."
+  },
+  "users:read": {
+    "description": "Can read other users data."
+  },
+  "users:write": {
+    "description": "Can edit user data."
+  },
+  "scopes:write": {
+    "description": "Can change other user scopes up to its own scopes."
+  },
+  "team-settings:write": {
+    "description": "Can change teams settings the user is member of."
+  },
+  "project-settings:write": {
+    "description": "Can change project settings for all underlying teams."
+  },
+  "work-item:review": {
+    "description": "Can be part of a task in a work item with reviewer role."
+  }
+}
