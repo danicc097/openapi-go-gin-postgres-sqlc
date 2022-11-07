@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-gonic/gin"
@@ -64,8 +64,13 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 // it belongs here, not in a service since this is specific to rest.
 type operationIDScopes = map[operationID][]string
 
+type AuthRestriction struct {
+	MinimumRole    models.Role
+	RequiredScopes []models.Scope
+}
+
 // EnsureAuthorized checks whether the client is authorized.
-func (a *authMiddleware) EnsureAuthorized(requiredRole db.UserRole) gin.HandlerFunc {
+func (a *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := getUserFromCtx(c)
 		if user == nil {
@@ -73,8 +78,14 @@ func (a *authMiddleware) EnsureAuthorized(requiredRole db.UserRole) gin.HandlerF
 
 			return
 		}
-		err := a.authzsvc.IsAuthorized(user.Role, requiredRole)
-		if err != nil {
+
+		if err := a.authzsvc.HasRequiredRole(user.RoleRank, config.MinimumRole); err != nil {
+			renderErrorResponse(c, "Unauthorized.", err)
+
+			return
+		}
+
+		if err := a.authzsvc.HasRequiredScopes(user.Scopes, config.RequiredScopes); err != nil {
 			renderErrorResponse(c, "Unauthorized.", err)
 
 			return

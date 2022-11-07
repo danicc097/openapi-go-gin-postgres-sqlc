@@ -197,7 +197,7 @@ x.pregen() {
       readarray -t enums <<<$enums
 
       echo "Replacing '$enum' enum in $SPEC with $src_file"
-      yq e ".components.schemas.$enum.description = \"$enum automatically generated from $src_file\"" -i $SPEC
+      yq e ".components.schemas.$enum.description = \"$enum automatically generated from $src_file keys\"" -i $SPEC
       enums_arr=$(printf ",\"%s\"" "${enums[@]}")
       enums_arr="[${enums_arr:1}]"
       enums_arr=$enums_arr yq e ".components.schemas.$enum.enum = env(enums_arr)" -i $SPEC
@@ -293,7 +293,6 @@ x.gen.client-server() {
     ./oapi-codegen --config internal/client/oapi-codegen-types.yaml "$SPEC" || err "Failed client generation"
 
     ./oapi-codegen --config internal/rest/oapi-codegen-server.yaml "$SPEC" || err "Failed server generation"
-    ./oapi-codegen --config internal/rest/oapi-codegen-types.yaml "$SPEC" || err "Failed server generation"
 
     ./oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC" || err "Failed server generation"
 

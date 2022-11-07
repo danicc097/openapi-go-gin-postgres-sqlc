@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 )
 
 // Role represents a predefined role that may be required
@@ -48,11 +49,11 @@ func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string)
 	if err != nil {
 		return nil, fmt.Errorf("role policy: %w", err)
 	}
-	if err := json.Unmarshal([]byte(roleBlob), &roles); err != nil {
-		return nil, fmt.Errorf("role policy: %w", err)
-	}
 	if err := json.Unmarshal([]byte(scopeBlob), &scopes); err != nil {
 		return nil, fmt.Errorf("scope policy: %w", err)
+	}
+	if err := json.Unmarshal([]byte(roleBlob), &roles); err != nil {
+		return nil, fmt.Errorf("role policy: %w", err)
 	}
 
 	return &Authorization{
@@ -69,10 +70,24 @@ func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string)
 // for frontend https://casbin.org/docs/en/frontend
 // load policy from db: https://github.com/casbin/casbin-pg-adapter
 
-func (a Authorization) IsAuthorized(role, requiredRole db.UserRole) error {
-	// if !slices.Contains(roles, requiredRole) {
-	// 	return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted")
-	// }
+func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) error {
+	rl, ok := a.roles[requiredRole]
+	if !ok {
+		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown role %s", requiredRole)
+	}
+	if role.Rank < rl.Rank {
+		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted")
+	}
+
+	return nil
+}
+
+func (a *Authorization) HasRequiredScopes(scopes []string, requiredScopes []models.Scope) error {
+	for _, rs := range requiredScopes {
+		if !slices.Contains(scopes, string(rs)) {
+			return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted")
+		}
+	}
 
 	return nil
 }

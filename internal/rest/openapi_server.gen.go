@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/gin-gonic/gin"
 )
@@ -45,9 +46,9 @@ type MiddlewareFunc func(c *gin.Context)
 // AdminPing operation middleware.
 func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 
-	c.Set(Bearer_authScopes, []string{""})
+	c.Set(models.Bearer_authScopes, []string{""})
 
-	c.Set(Api_keyScopes, []string{""})
+	c.Set(models.Api_keyScopes, []string{""})
 
 	// apply middlewares for operation "AdminPing".
 	for _, mw := range siw.Handler.middlewares(AdminPing) {
@@ -82,9 +83,9 @@ func (siw *ServerInterfaceWrapper) Ping(c *gin.Context) {
 // GetCurrentUser operation middleware.
 func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
 
-	c.Set(Bearer_authScopes, []string{""})
+	c.Set(models.Bearer_authScopes, []string{""})
 
-	c.Set(Api_keyScopes, []string{""})
+	c.Set(models.Api_keyScopes, []string{""})
 
 	// apply middlewares for operation "GetCurrentUser".
 	for _, mw := range siw.Handler.middlewares(GetCurrentUser) {
@@ -108,9 +109,9 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	c.Set(Bearer_authScopes, []string{""})
+	c.Set(models.Bearer_authScopes, []string{""})
 
-	c.Set(Api_keyScopes, []string{""})
+	c.Set(models.Api_keyScopes, []string{""})
 
 	// apply middlewares for operation "DeleteUser".
 	for _, mw := range siw.Handler.middlewares(DeleteUser) {
@@ -134,9 +135,9 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	c.Set(Bearer_authScopes, []string{""})
+	c.Set(models.Bearer_authScopes, []string{""})
 
-	c.Set(Api_keyScopes, []string{""})
+	c.Set(models.Api_keyScopes, []string{""})
 
 	// apply middlewares for operation "UpdateUser".
 	for _, mw := range siw.Handler.middlewares(UpdateUser) {

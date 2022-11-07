@@ -187,7 +187,7 @@ components:
     # not an option
     # used as x-required-role: ?? (rank-based, at most one)
     Scope:
-      description: Scope automatically generated from scopes.json
+      description: Scope automatically generated from scopes.json keys
       type: string
       enum:
         - test-scope
@@ -198,7 +198,7 @@ components:
         - project-settings:write
         - work-item:review
     Role:
-      description: Role automatically generated from roles.json
+      description: Role automatically generated from roles.json keys
       type: string
       enum:
         - guest

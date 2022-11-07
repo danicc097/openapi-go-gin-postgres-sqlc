@@ -46,7 +46,7 @@ type GetCurrentUserRes struct {
 	Password *string      `json:"password,omitempty"`
 	Phone    *string      `json:"phone,omitempty"`
 
-	// Role Role automatically generated from roles.json
+	// Role Role automatically generated from roles.json keys
 	Role     *Role   `json:"role,omitempty"`
 	UserId   *int64  `json:"user_id,omitempty"`
 	Username *string `json:"username,omitempty"`
@@ -60,10 +60,10 @@ type HTTPValidationError struct {
 // Organization Organization a user belongs to.
 type Organization = string
 
-// Role Role automatically generated from roles.json
+// Role Role automatically generated from roles.json keys
 type Role string
 
-// Scope Scope automatically generated from scopes.json
+// Scope Scope automatically generated from scopes.json keys
 type Scope string
 
 // TaskRole Role in task for a member.
@@ -74,7 +74,7 @@ type UpdateUserRequest struct {
 	FirstName *string `json:"first_name,omitempty"`
 	LastName  *string `json:"last_name,omitempty"`
 
-	// Role Role automatically generated from roles.json
+	// Role Role automatically generated from roles.json keys
 	Role *Role `json:"role,omitempty"`
 }
 
