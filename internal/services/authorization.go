@@ -15,7 +15,7 @@ import (
 // It is also associated with a collection of scopes that get assigned/revoked upon role change.
 type Role struct {
 	Description string `json:description`
-	Rank        uint8  `json:rank`
+	Rank        int16  `json:rank` // to avoid casting. postgres smallint with check > 0
 }
 
 type Scope struct {

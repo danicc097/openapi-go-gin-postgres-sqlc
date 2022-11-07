@@ -3,7 +3,7 @@
 select
   username
   , email
-  , role
+  , role_rank
   , created_at
   , updated_at
   , user_id
@@ -125,7 +125,7 @@ select
   user_id
   , username
   , email
-  , role
+  , role_rank
   , created_at
   , updated_at
 from

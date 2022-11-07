@@ -18,7 +18,7 @@ const GetUser = `-- name: GetUser :one
 select
   username
   , email
-  , role
+  , role_rank
   , created_at
   , updated_at
   , user_id
@@ -45,7 +45,7 @@ type GetUserParams struct {
 type GetUserRow struct {
 	Username  string    `db:"username" json:"username"`
 	Email     string    `db:"email" json:"email"`
-	Role      UserRole  `db:"role" json:"role"`
+	RoleRank  int16     `db:"role_rank" json:"role_rank"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 	UserID    uuid.UUID `db:"user_id" json:"user_id"`
@@ -58,7 +58,7 @@ func (q *Queries) GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetU
 	err := row.Scan(
 		&i.Username,
 		&i.Email,
-		&i.Role,
+		&i.RoleRank,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UserID,
@@ -84,7 +84,7 @@ select
     case when $4::boolean = true then
       joined_time_entries.time_entries
     end)::jsonb as time_entries -- if O2M
-  , users.user_id, users.username, users.email, users.scopes, users.first_name, users.last_name, users.full_name, users.external_id, users.role, users.created_at, users.updated_at, users.deleted_at
+  , users.user_id, users.username, users.email, users.scopes, users.first_name, users.last_name, users.full_name, users.external_id, users.role_rank, users.created_at, users.updated_at, users.deleted_at
 from
   users
   ------------------------------
@@ -167,7 +167,7 @@ type GetUsersWithJoinsRow struct {
 	LastName    sql.NullString `db:"last_name" json:"last_name"`
 	FullName    sql.NullString `db:"full_name" json:"full_name"`
 	ExternalID  sql.NullString `db:"external_id" json:"external_id"`
-	Role        UserRole       `db:"role" json:"role"`
+	RoleRank    int16          `db:"role_rank" json:"role_rank"`
 	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
 	UpdatedAt   time.Time      `db:"updated_at" json:"updated_at"`
 	DeletedAt   sql.NullTime   `db:"deleted_at" json:"deleted_at"`
@@ -202,7 +202,7 @@ func (q *Queries) GetUsersWithJoins(ctx context.Context, db DBTX, arg GetUsersWi
 			&i.LastName,
 			&i.FullName,
 			&i.ExternalID,
-			&i.Role,
+			&i.RoleRank,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -222,7 +222,7 @@ select
   user_id
   , username
   , email
-  , role
+  , role_rank
   , created_at
   , updated_at
 from
@@ -233,7 +233,7 @@ type ListAllUsersRow struct {
 	UserID    uuid.UUID `db:"user_id" json:"user_id"`
 	Username  string    `db:"username" json:"username"`
 	Email     string    `db:"email" json:"email"`
-	Role      UserRole  `db:"role" json:"role"`
+	RoleRank  int16     `db:"role_rank" json:"role_rank"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
@@ -264,7 +264,7 @@ func (q *Queries) ListAllUsers(ctx context.Context, db DBTX) ([]ListAllUsersRow,
 			&i.UserID,
 			&i.Username,
 			&i.Email,
-			&i.Role,
+			&i.RoleRank,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/lib/pq"
 
 	"github.com/google/uuid"
@@ -24,7 +23,7 @@ type User struct {
 	LastName   sql.NullString  `json:"last_name" db:"last_name"`     // last_name
 	FullName   sql.NullString  `json:"full_name" db:"full_name"`     // full_name
 	ExternalID sql.NullString  `json:"external_id" db:"external_id"` // external_id
-	Role       db.NullUserRole `json:"role" db:"role"`               // role
+	RoleRank   sql.NullInt64   `json:"role_rank" db:"role_rank"`     // role_rank
 	CreatedAt  sql.NullTime    `json:"created_at" db:"created_at"`   // created_at
 	UpdatedAt  sql.NullTime    `json:"updated_at" db:"updated_at"`   // updated_at
 	DeletedAt  sql.NullTime    `json:"deleted_at" db:"deleted_at"`   // deleted_at
@@ -83,7 +82,7 @@ func UsersByExternalID(ctx context.Context, db DB, externalID sql.NullString, op
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id, username, email, scopes, first_name, last_name, full_name, external_id, role, created_at, updated_at, deleted_at, teams ` +
+		`user_id, username, email, scopes, first_name, last_name, full_name, external_id, role_rank, created_at, updated_at, deleted_at, teams ` +
 		`FROM cache.users ` +
 		`WHERE external_id = $1 `
 	sqlstr += c.orderBy
@@ -101,7 +100,7 @@ func UsersByExternalID(ctx context.Context, db DB, externalID sql.NullString, op
 	for rows.Next() {
 		u := User{}
 		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.Scopes, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Teams); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.Scopes, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Teams); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &u)

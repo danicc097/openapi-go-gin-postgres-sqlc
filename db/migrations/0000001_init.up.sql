@@ -4,15 +4,6 @@ create schema if not exists v;
 create schema if not exists
 cache;
 
-create type user_role as ENUM (
-  'guest'
-  , 'user'
-  , 'advanced user'
-  , 'manager'
-  , 'admin'
-  , 'superadmin'
-);
-
 create table projects (
   project_id serial not null
   , name text not null unique
@@ -51,7 +42,13 @@ create table users (
     first_name || ' ' || last_name
   end) stored
   , external_id text
-  , role user_role default 'user' not null
+  , role_rank smallint default 1 not null check (role_rank > 0)
+  -- so that later on we can (1) append scopes and remove duplicates:
+  --    update users
+  --    set    scopes = (select array_agg(distinct e) from unnest(scopes || '{"newscope-1","newscope-2"}') e)
+  --    where  not scopes @> '{"newscope-1","newscope-2"}' and role_rank >= @minimum_role_rank
+  -- and also (2) easily update if we add a new role:
+  --    update ... set rank = rank +1 where rank >= @new_role_rank
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone

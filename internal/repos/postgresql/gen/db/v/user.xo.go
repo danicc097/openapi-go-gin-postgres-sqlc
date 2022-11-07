@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/lib/pq"
 
 	"github.com/google/uuid"
@@ -23,7 +22,7 @@ type User struct {
 	LastName   sql.NullString  `json:"last_name" db:"last_name"`     // last_name
 	FullName   sql.NullString  `json:"full_name" db:"full_name"`     // full_name
 	ExternalID sql.NullString  `json:"external_id" db:"external_id"` // external_id
-	Role       db.NullUserRole `json:"role" db:"role"`               // role
+	RoleRank   sql.NullInt64   `json:"role_rank" db:"role_rank"`     // role_rank
 	CreatedAt  sql.NullTime    `json:"created_at" db:"created_at"`   // created_at
 	UpdatedAt  sql.NullTime    `json:"updated_at" db:"updated_at"`   // updated_at
 	DeletedAt  sql.NullTime    `json:"deleted_at" db:"deleted_at"`   // deleted_at
