@@ -1,5 +1,3 @@
-// 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right)
-// and show aggregated
 {
   "test-scope": {
     "description": "A test scope."

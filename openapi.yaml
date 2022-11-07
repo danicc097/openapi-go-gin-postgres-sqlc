@@ -1,4 +1,4 @@
-x-uuid-pattern: &uuid-pattern "^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}"
+x-uuid-pattern: &uuid-pattern ^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}
 # merge so that openapi validator middleware does a header precheck before going deeper
 x-path-security: &path-security
   security:
@@ -7,7 +7,7 @@ x-path-security: &path-security
 #######################################
 openapi: 3.0.2
 info:
-  description: "This is a sample server Petstore server. For this sample, you can use the api key `special-key` to test the authorization filters."
+  description: This is a sample server Petstore server. For this sample, you can use the api key `special-key` to test the authorization filters.
   license:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
@@ -40,7 +40,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
   /openapi.yaml:
     get:
       summary: Returns this very OpenAPI spec.
@@ -71,7 +71,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
       tags:
         - admin
       x-required-scopes:
@@ -87,7 +87,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetCurrentUserRes"
+                $ref: '#/components/schemas/GetCurrentUserRes'
           description: successful operation
       tags:
         - user
@@ -132,7 +132,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateUserRequest"
+              $ref: '#/components/schemas/UpdateUserRequest'
         description: Updated user object
         required: true
       responses:
@@ -151,7 +151,7 @@ components:
           title: Detail
           type: array
           items:
-            $ref: "#/components/schemas/ValidationError"
+            $ref: '#/components/schemas/ValidationError'
     UpdateUserRequest:
       description: represents User data to update
       example:
@@ -160,13 +160,13 @@ components:
         last_name: Doe
       properties:
         role:
-          $ref: "#/components/schemas/Role"
+          $ref: '#/components/schemas/Role'
         first_name:
           type: string
-          pattern: "^[ a-zA-Z0-9_-]+$"
+          pattern: ^[ a-zA-Z0-9_-]+$
         last_name:
           type: string
-          pattern: "^[ a-zA-Z0-9_-]+$"
+          pattern: ^[ a-zA-Z0-9_-]+$
       title: a User
       type: object
     # TODO bookstack style ABAC
@@ -182,18 +182,25 @@ components:
       type: string
       # will be updated from scopes.json
       enum:
-        - test-scope
-        - users:read
-        - users:write
-        - scopes:write
-        - settings:write
-        - work-item:review
+        - guest
+        - user
+        - advancedUser
+        - manager
+        - admin
+        - superAdmin
     Role:
       title: Role
       description: User role.
       type: string
       # will be updated from roles.json
-      enum: ["guest", "user", "advanced user", "manager", "admin", "superadmin"]
+      enum:
+        - test-scope
+        - users:read
+        - users:write
+        - scopes:write
+        - team-settings:write
+        - project-settings:write
+        - work-item:review
     Organization:
       title: Organization
       description: Organization a user belongs to.
@@ -226,11 +233,11 @@ components:
         phone:
           type: string
         role:
-          $ref: "#/components/schemas/Role"
+          $ref: '#/components/schemas/Role'
         orgs:
           description: are organizations a user belongs to
           items:
-            $ref: "#/components/schemas/Organization"
+            $ref: '#/components/schemas/Organization'
       title: a User
       type: object
       xml:
