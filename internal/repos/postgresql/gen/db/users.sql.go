@@ -70,8 +70,8 @@ const GetUsersWithJoins = `-- name: GetUsersWithJoins :many
 select
   (
     case when $1::boolean = true then
-      joined_tasks.tasks
-    end)::jsonb as tasks -- if M2M
+      joined_work_items.work_items
+    end)::jsonb as work_items -- if M2M
   , (
     case when $2::boolean = true then
       joined_teams.teams
@@ -90,25 +90,25 @@ from
   ------------------------------
   left join (
     select
-      member as tasks_user_id
-      , JSON_AGG(tasks.*) as tasks
+      member as work_items_user_id
+      , JSON_AGG(work_items.*) as work_items
     from
-      task_member uo
-      join tasks using (task_id)
+      work_item_member uo
+      join work_items using (work_item_id)
     where
       member in (
         select
           member
         from
-          task_member
+          work_item_member
         where
-          task_id = any (
+          work_item_id = any (
             select
-              task_id
+              work_item_id
             from
-              tasks))
+              work_items))
         group by
-          member) joined_tasks on joined_tasks.tasks_user_id = users.user_id
+          member) joined_work_items on joined_work_items.work_items_user_id = users.user_id
   ------------------------------
   left join (
     select
@@ -148,14 +148,14 @@ from
 `
 
 type GetUsersWithJoinsParams struct {
-	JoinTasks       bool `db:"join_tasks" json:"join_tasks"`
+	JoinWorkItems   bool `db:"join_work_items" json:"join_work_items"`
 	JoinTeams       bool `db:"join_teams" json:"join_teams"`
 	JoinUserApiKeys bool `db:"join_user_api_keys" json:"join_user_api_keys"`
 	JoinTimeEntries bool `db:"join_time_entries" json:"join_time_entries"`
 }
 
 type GetUsersWithJoinsRow struct {
-	Tasks       pgtype.JSONB   `db:"tasks" json:"tasks"`
+	WorkItems   pgtype.JSONB   `db:"work_items" json:"work_items"`
 	Teams       pgtype.JSONB   `db:"teams" json:"teams"`
 	UserApiKey  pgtype.JSONB   `db:"user_api_key" json:"user_api_key"`
 	TimeEntries pgtype.JSONB   `db:"time_entries" json:"time_entries"`
@@ -177,7 +177,7 @@ type GetUsersWithJoinsRow struct {
 // this below would be O2O
 func (q *Queries) GetUsersWithJoins(ctx context.Context, db DBTX, arg GetUsersWithJoinsParams) ([]GetUsersWithJoinsRow, error) {
 	rows, err := db.Query(ctx, GetUsersWithJoins,
-		arg.JoinTasks,
+		arg.JoinWorkItems,
 		arg.JoinTeams,
 		arg.JoinUserApiKeys,
 		arg.JoinTimeEntries,
@@ -190,7 +190,7 @@ func (q *Queries) GetUsersWithJoins(ctx context.Context, db DBTX, arg GetUsersWi
 	for rows.Next() {
 		var i GetUsersWithJoinsRow
 		if err := rows.Scan(
-			&i.Tasks,
+			&i.WorkItems,
 			&i.Teams,
 			&i.UserApiKey,
 			&i.TimeEntries,

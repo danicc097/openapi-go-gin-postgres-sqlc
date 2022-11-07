@@ -24,6 +24,7 @@ func TestAdminPingRoute(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/admin/ping", nil)
+	req.Header.Add("x-api-key", "dummy-key")
 
 	srv.Handler.ServeHTTP(resp, req)
 

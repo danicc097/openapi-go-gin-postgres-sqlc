@@ -30,7 +30,7 @@ select
 
   -- alternative in case the above marshalling json row results doesn't work (although pgx has full support for jsonb and json
   -- ): https://github.com/jackc/pgx/issues/760
-  (case when @joinTasks = true then joined_tasks.tasks end) as tasks -- if M2M
+  (case when @joinwork_items = true then joined_work_items.work_items end) as work_items -- if M2M
   , (case when @joinTeams = true then joined_teams.teams end) as teams -- if M2M
   , (case when @joinUserApiKeys = true then row_to_json(user_api_keys.*) end) as user_api_key -- if O2O
   , (case when @joinTimeEntries = true then joined_time_entries.time_entries end) as time_entries -- if O2M
@@ -41,11 +41,11 @@ from
 ------------------------------
 left join (
   select
-    member as tasks_user_id
-    , json_agg(tasks.*) as tasks
+    member as work_items_user_id
+    , json_agg(work_items.*) as work_items
   from
     task_member uo
-    join tasks using (task_id)
+    join work_items using (task_id)
   where
     member in (
       select
@@ -57,9 +57,9 @@ left join (
           select
             task_id
           from
-            tasks))
+            work_items))
       group by
-        member) joined_tasks on joined_tasks.tasks_user_id = users.user_id
+        member) joined_work_items on joined_work_items.work_items_user_id = users.user_id
 ------------------------------
 left join (
   select

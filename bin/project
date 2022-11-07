@@ -35,6 +35,7 @@ readonly SPEC="openapi.yaml"
 readonly PROTO_DIR="internal/pb"
 readonly MIGRATIONS_DIR="db/migrations"
 readonly PG_REPO="internal/repos/postgresql"
+readonly PG_REPO_GEN="internal/repos/postgresql/gen"
 readonly MAX_COMMENT_LEN=88
 readonly MAX_FNAME_LOG_LEN=13
 readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
@@ -355,11 +356,13 @@ x.gen() {
     echo "Running code generation"
     local cache=".generate.cache"
 
+    mkdir -p "$cache"
+
     x.db.recreate
 
     POSTGRES_DB=$GEN_POSTGRES_DB x.pregen
 
-    rm -rf $PG_REPO/gen
+    rm -rf "$PG_REPO_GEN"
 
     # TODO try use gnu parallel and exit when anyone fails
     # (with current setup the whole x.gen is executed and only then
@@ -400,7 +403,7 @@ x.lint.go() {
   { { {
     files=$(find . \
       -not -path "**/$PROTO_DIR/*" \
-      -not -path "**/$PG_REPO/gen/*" \
+      -not -path "**/"$PG_REPO_GEN"/*" \
       -not -path "**/testdata/*" \
       -not -path "**/*.cache/*" \
       -not -path "**/*.gen.*" \
@@ -477,7 +480,7 @@ x.run.backend-hr() {
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO/gen,**/testdata,frontend,*.cache" \
+    --build.exclude_dir ".git,tmp,$PROTO_DIR,"$PG_REPO_GEN",**/testdata,frontend,*.cache" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
@@ -834,21 +837,21 @@ x.gen.xo() {
     echo "Running generation"
     # xo schema --help
 
-    mkdir -p $PG_REPO/gen/db
-    xo_schema -o "$PG_REPO"/gen/db \
+    mkdir -p "$PG_REPO_GEN"/db
+    xo_schema -o "$PG_REPO_GEN"/db \
       --ignore "*.created_at" \
       --ignore "*.updated_at" || err "Failed xo public schema generation" &
 
-    mkdir -p $PG_REPO/gen/db/v
-    xo_schema -o "$PG_REPO"/gen/db/v \
+    mkdir -p "$PG_REPO_GEN"/db/v
+    xo_schema -o "$PG_REPO_GEN"/db/v \
       --schema v \
-      --main-schema-pkg $GOMOD_PKG/$PG_REPO/gen/db ||
+      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
       err "Failed xo v schema generation" &
 
-    mkdir -p $PG_REPO/gen/db/cache
-    xo_schema -o "$PG_REPO"/gen/db/cache \
+    mkdir -p "$PG_REPO_GEN"/db/cache
+    xo_schema -o "$PG_REPO_GEN"/db/cache \
       --schema cache \
-      --main-schema-pkg $GOMOD_PKG/$PG_REPO/gen/db ||
+      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
       err "Failed xo cache schema generation" &
 
     wait

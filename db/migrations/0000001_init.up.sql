@@ -154,16 +154,6 @@ create type task_role as ENUM (
   , 'reviewer'
 );
 
--- we can aggregate members from tasks
--- but do we need a role for the work_item and every member
--- or can we ignore members per work_item?
--- create table work_item_member (
---   work_item_id bigint not null
---   , member uuid not null
---   , role work_item_role not null
---   , primary key (work_item_id, member)
---   , foreign key (member) references users (user_id) on delete cascade
--- );
 -- only need different types for tasks. work items are all the same, just containers
 create table task_types (
   task_type_id serial
@@ -200,19 +190,19 @@ create table tasks (
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade -- not unique, many tasks for the same work_item_id
 );
 
-create table task_member (
-  task_id bigint not null
+create table work_item_member (
+  work_item_id bigint not null
   , member uuid not null
-  , primary key (task_id , member)
-  , foreign key (task_id) references tasks (task_id) on delete cascade
+  , primary key (work_item_id , member)
+  , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
   , foreign key (member) references users (user_id) on delete cascade
 );
 
-create index on task_member (member , task_id);
+create index on work_item_member (member , work_item_id);
 
-comment on column task_member.task_id is 'cardinality:M2M';
+comment on column work_item_member.work_item_id is 'cardinality:M2M';
 
-comment on column task_member.member is 'cardinality:M2M';
+comment on column work_item_member.member is 'cardinality:M2M';
 
 -- must be completely dynamic on a team basis
 create table activities (

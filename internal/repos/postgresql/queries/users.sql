@@ -23,9 +23,9 @@ limit 1;
 -- name: GetUsersWithJoins :many
 select
   (
-    case when @join_tasks::boolean = true then
-      joined_tasks.tasks
-    end)::jsonb as tasks -- if M2M
+    case when @join_work_items::boolean = true then
+      joined_work_items.work_items
+    end)::jsonb as work_items -- if M2M
   , (
     case when @join_teams::boolean = true then
       joined_teams.teams
@@ -44,25 +44,25 @@ from
   ------------------------------
   left join (
     select
-      member as tasks_user_id
-      , JSON_AGG(tasks.*) as tasks
+      member as work_items_user_id
+      , JSON_AGG(work_items.*) as work_items
     from
-      task_member uo
-      join tasks using (task_id)
+      work_item_member uo
+      join work_items using (work_item_id)
     where
       member in (
         select
           member
         from
-          task_member
+          work_item_member
         where
-          task_id = any (
+          work_item_id = any (
             select
-              task_id
+              work_item_id
             from
-              tasks))
+              work_items))
         group by
-          member) joined_tasks on joined_tasks.tasks_user_id = users.user_id
+          member) joined_work_items on joined_work_items.work_items_user_id = users.user_id
   ------------------------------
   left join (
     select

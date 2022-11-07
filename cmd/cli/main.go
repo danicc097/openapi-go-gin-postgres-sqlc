@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
@@ -15,18 +17,15 @@ import (
 	"gopkg.in/guregu/null.v4"
 )
 
-// Task represents a row from 'public.tasks'.
-type Task struct {
-	TaskID             int64        `json:"task_id" db:"task_id"`                           // task_id
-	TaskTypeID         int          `json:"task_type_id" db:"task_type_id"`                 // task_type_id
-	WorkItemID         int64        `json:"work_item_id" db:"work_item_id"`                 // work_item_id
-	Title              string       `json:"title" db:"title"`                               // title
-	Metadata           pgtype.JSONB `json:"metadata" db:"metadata"`                         // metadata
-	TargetDate         null.Time    `json:"target_date" db:"target_date"`                   // target_date
-	TargetDateTimezone string       `json:"target_date_timezone" db:"target_date_timezone"` // target_date_timezone
-	CreatedAt          null.Time    `json:"created_at" db:"created_at"`                     // created_at
-	UpdatedAt          null.Time    `json:"updated_at" db:"updated_at"`                     // updated_at
-	DeletedAt          null.Time    `json:"deleted_at" db:"deleted_at"`                     // deleted_at
+type WorkItem struct {
+	WorkItemID   int64        `json:"work_item_id" db:"work_item_id"`     // work_item_id
+	Title        string       `json:"title" db:"title"`                   // title
+	Metadata     pgtype.JSONB `json:"metadata" db:"metadata"`             // metadata
+	TeamID       int          `json:"team_id" db:"team_id"`               // team_id
+	KanbanStepID int          `json:"kanban_step_id" db:"kanban_step_id"` // kanban_step_id
+	CreatedAt    time.Time    `json:"created_at" db:"created_at"`         // created_at
+	UpdatedAt    time.Time    `json:"updated_at" db:"updated_at"`         // updated_at
+	DeletedAt    sql.NullTime `json:"deleted_at" db:"deleted_at"`         // deleted_at
 	// xo fields
 	_exists, _deleted bool
 }
@@ -81,7 +80,7 @@ type User struct {
 	UpdatedAt  null.Time   `json:"updated_at"`  // updated_at
 	DeletedAt  null.Time   `json:"deleted_at"`  // deleted_at
 
-	Tasks       []*Task      `json:"tasks,omitempty"`
+	WorkItems   []*WorkItem  `json:"work_items,omitempty"`
 	Teams       []*Team      `json:"teams,omitempty"`
 	UserApiKey  *UserAPIKey  `json:"user_api_key,omitempty"`
 	TimeEntries []*TimeEntry `json:"time_entries,omitempty"`
@@ -92,7 +91,7 @@ type User struct {
 
 const query = `
 		select
-	  (case when $1::boolean = true then joined_tasks.tasks end)::jsonb as tasks
+	  (case when $1::boolean = true then joined_work_items.work_items end)::jsonb as work_items
 	  , (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams
 	  , (case when $3::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key
 	  , (case when $4::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries
@@ -104,25 +103,25 @@ const query = `
 	  users
 	left join (
 	  select
-	    member as tasks_user_id
-	    , json_agg(tasks.*) as tasks
+	    member as work_items_user_id
+	    , json_agg(work_items.*) as work_items
 	  from
-	    task_member uo
-	    join tasks using (task_id)
+	    work_item_member uo
+	    join work_items using (work_item_id)
 	  where
 	    member in (
 	      select
 	        member
 	      from
-	        task_member
+	        work_item_member
 	      where
-	        task_id = any (
+	        work_item_id = any (
 	          select
-	            task_id
+	            work_item_id
 	          from
-	            tasks))
+	            work_items))
 	      group by
-	        member) joined_tasks on joined_tasks.tasks_user_id = users.user_id
+	        member) joined_work_items on joined_work_items.work_items_user_id = users.user_id
 	left join (
 	  select
 	    user_id as teams_user_id
@@ -176,21 +175,21 @@ func main() {
 	// username := "user_1"
 	// username := "doesntexist" // User should be nil
 	// username := "superadmin"
-	joinTasks := true
+	joinWorkItems := true
 	joinTeams := true
 	joinUserApiKeys := true
 	joinTimeEntries := false
 
 	fmt.Printf(`
-joinTasks:= %t
+joinWorkItems:= %t
 joinTeams:= %t
 joinUserApiKeys:= %t
 joinTimeEntries:= %t
 --------------------------
-`, joinTasks, joinTeams, joinUserApiKeys, joinTimeEntries)
+`, joinWorkItems, joinTeams, joinUserApiKeys, joinTimeEntries)
 
 	// .Query --> Rows --- .QueryRow -> Row
-	rows, err := pool.Query(context.Background(), query, joinTasks, joinTeams, joinUserApiKeys, joinTimeEntries)
+	rows, err := pool.Query(context.Background(), query, joinWorkItems, joinTeams, joinUserApiKeys, joinTimeEntries)
 	if err != nil {
 		log.Fatalf("pool.Query: %s\n", err)
 	}
@@ -202,7 +201,7 @@ joinTimeEntries:= %t
 	for rows.Next() {
 		var u User
 		// https://github.com/jackc/pgx/issues/180 cast as jsonb
-		err := rows.Scan(&u.Tasks, &u.Teams, &u.UserApiKey, &u.TimeEntries, &u.UserID, &u.Username, &u.Role, &u.Scopes) // etc.
+		err := rows.Scan(&u.WorkItems, &u.Teams, &u.UserApiKey, &u.TimeEntries, &u.UserID, &u.Username, &u.Role, &u.Scopes) // etc.
 		if err != nil {
 			log.Fatalf("rows.Scan: %s\n", err)
 		}
@@ -215,9 +214,9 @@ joinTimeEntries:= %t
 		// TODO xo:
 		// pq stirngarray --> []string is suppported by pgx
 		// []byte --> jsonb, json etc.
-		// time.Time --> null.Time, same for rest of  NullXXX
+		// sql.NullTime --> null.Time, same for rest of NullXXX
 		// NOTE: Consumer, e.g. frontend will not care the slightest and
-		// will simply check if the key exists (openapi fields tasks, teams, ... will be nullable)
+		// will simply check if the key exists (openapi fields WorkItems, teams, ... will be nullable)
 		// TODO For internal backend use, we should probably have pointers to any Join field
 		// in case we don't set the JoinXXX flag and explicitly set to nil if the flag is not set,
 		// else we get empty array and mistake it for no values

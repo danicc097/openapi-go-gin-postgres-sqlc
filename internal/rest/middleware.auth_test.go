@@ -50,8 +50,10 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		_, engine := gin.CreateTestContext(resp)
 
 		usvc := services.NewUser(postgresql.NewUser(), logger)
-		// # TODO testdata files for scope and roles
-		authzsvc, _ := services.NewAuthorization(logger, "", "")
+		authzsvc, err := services.NewAuthorization(logger, "testdata/scopes.json", "testdata/roles.json")
+		if err != nil {
+			t.Fatalf("services.NewAuthorization: %v", err)
+		}
 		authnsvc := services.NewAuthentication(logger, usvc)
 
 		authMw := newAuthMiddleware(logger, pool, authnsvc, authzsvc, usvc)

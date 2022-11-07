@@ -127,19 +127,23 @@ begin
   insert into tasks (task_type_id , work_item_id , title , metadata , target_date , target_date_timezone , deleted_at)
     values (2 , 1 , '(deleted) Task with restore possibility' , '{}' , NOW() + interval '2 hour' , '' , NOW());
 
-  insert into task_member (task_id , "member")
+  insert into work_item_member (work_item_id , "member")
     values (1 , user_ids[1]);
-  insert into task_member (task_id , "member")
+  insert into work_item_member (work_item_id , "member")
     values (1 , user_ids[2]);
-  insert into task_member (task_id , "member")
+  -- work item 2
+  insert into work_items (title , metadata , team_id , kanban_step_id , deleted_at)
+    values ('Work item 2' , '{}' , 1 , 1 , null);
+  -- work item tags
+  insert into work_item_work_item_tag (work_item_tag_id , work_item_id)
+    values (1 , 2);
+  insert into work_item_work_item_tag (work_item_tag_id , work_item_id)
+    values (2 , 2);
+
+  insert into work_item_member (work_item_id , "member")
     values (2 , user_ids[1]);
-  insert into task_member (task_id , "member")
+  insert into work_item_member (work_item_id , "member")
     values (2 , user_ids[3]);
-  insert into task_member (task_id , "member")
-    values (3 , user_ids[3]);
-  -- deleted task
-  insert into task_member (task_id , "member")
-    values (4 , user_ids[3]);
   -- work item 2, 3... 20
   -- use loops and randomize. edge cases done explicitly later on
   -- time entries
