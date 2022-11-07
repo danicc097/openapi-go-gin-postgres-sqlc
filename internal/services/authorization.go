@@ -1,23 +1,25 @@
 package services
 
 import (
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"encoding/json"
+	"fmt"
+	"os"
+
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
 )
 
 // Role represents a predefined role that may be required
 // for specific actions regardless of scopes assigned to a user.
 // It is also associated with a collection of scopes that get assigned/revoked upon role change.
 type Role struct {
-	Description string `yaml:description`
-	Rank        uint   `yaml:rank`
+	Description string `json:description`
+	Rank        uint8  `json:rank`
 }
 
 type Scope struct {
-	Description string `yaml:description`
+	Description string `json:description`
 }
 
 type (
@@ -28,12 +30,36 @@ type (
 // Authorization represents a service for authorization.
 type Authorization struct {
 	logger *zap.Logger
+	roles  UserRoles
+	scopes UserScopes
 }
 
-func NewAuthorization(logger *zap.Logger) *Authorization {
+// NewAuthorization returns a new Authorization service.
+// Existing roles and scopes will be loaded from the given policy JSON file paths.
+func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string) (*Authorization, error) {
+	roles := make(UserRoles)
+	scopes := make(UserScopes)
+
+	scopeBlob, err := os.ReadFile(scopePolicy)
+	if err != nil {
+		return nil, fmt.Errorf("scope policy: %w", err)
+	}
+	roleBlob, err := os.ReadFile(rolePolicy)
+	if err != nil {
+		return nil, fmt.Errorf("role policy: %w", err)
+	}
+	if err := json.Unmarshal([]byte(roleBlob), &roles); err != nil {
+		return nil, fmt.Errorf("role policy: %w", err)
+	}
+	if err := json.Unmarshal([]byte(scopeBlob), &scopes); err != nil {
+		return nil, fmt.Errorf("scope policy: %w", err)
+	}
+
 	return &Authorization{
 		logger: logger,
-	}
+		roles:  roles,
+		scopes: scopes,
+	}, nil
 }
 
 // TODO ABAC:
@@ -43,17 +69,10 @@ func NewAuthorization(logger *zap.Logger) *Authorization {
 // for frontend https://casbin.org/docs/en/frontend
 // load policy from db: https://github.com/casbin/casbin-pg-adapter
 
-// RolePermissions returns access levels per role.
-func (a Authorization) RolePermissions() map[db.UserRole][]db.UserRole {
-	return roles
-}
-
 func (a Authorization) IsAuthorized(role, requiredRole db.UserRole) error {
-	roles := a.RolePermissions()[role]
-
-	if !slices.Contains(roles, requiredRole) {
-		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted")
-	}
+	// if !slices.Contains(roles, requiredRole) {
+	// 	return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted")
+	// }
 
 	return nil
 }

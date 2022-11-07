@@ -67,14 +67,13 @@ type operationIDScopes = map[operationID][]string
 // EnsureAuthorized checks whether the client is authorized.
 func (a *authMiddleware) EnsureAuthorized(requiredRole db.UserRole) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authzsvc := services.NewAuthorization(a.logger)
 		user := getUserFromCtx(c)
 		if user == nil {
 			renderErrorResponse(c, "Could not get user from context.", nil)
 
 			return
 		}
-		err := authzsvc.IsAuthorized(user.Role, requiredRole)
+		err := a.authzsvc.IsAuthorized(user.Role, requiredRole)
 		if err != nil {
 			renderErrorResponse(c, "Unauthorized.", err)
 
