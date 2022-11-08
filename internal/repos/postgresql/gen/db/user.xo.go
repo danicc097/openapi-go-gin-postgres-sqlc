@@ -4,64 +4,73 @@ package db
 
 import (
 	"context"
-	"database/sql"
+	"fmt"
+	"strings"
 	"time"
+
+	"gopkg.in/guregu/null.v4"
 
 	"github.com/google/uuid"
 )
 
 // User represents a row from 'public.users'.
 type User struct {
-	UserID      uuid.UUID      `json:"user_id"`      // user_id
-	Username    string         `json:"username"`     // username
-	Email       string         `json:"email"`        // email
-	FirstName   sql.NullString `json:"first_name"`   // first_name
-	LastName    sql.NullString `json:"last_name"`    // last_name
-	FullName    sql.NullString `json:"full_name"`    // full_name
-	ExternalID  string         `json:"external_id"`  // external_id
-	Role        Role           `json:"role"`         // role
-	IsSuperuser bool           `json:"is_superuser"` // is_superuser
-	CreatedAt   time.Time      `json:"created_at"`   // created_at
-	UpdatedAt   time.Time      `json:"updated_at"`   // updated_at
-	DeletedAt   sql.NullTime   `json:"deleted_at"`   // deleted_at
+	UserID     uuid.UUID   `json:"user_id" db:"user_id"`         // user_id
+	Username   string      `json:"username" db:"username"`       // username
+	Email      string      `json:"email" db:"email"`             // email
+	FirstName  null.String `json:"first_name" db:"first_name"`   // first_name
+	LastName   null.String `json:"last_name" db:"last_name"`     // last_name
+	FullName   null.String `json:"full_name" db:"full_name"`     // full_name
+	ExternalID null.String `json:"external_id" db:"external_id"` // external_id
+	Scopes     []string    `json:"scopes" db:"scopes"`           // scopes
+	RoleRank   int16       `json:"role_rank" db:"role_rank"`     // role_rank
+	CreatedAt  time.Time   `json:"created_at" db:"created_at"`   // created_at
+	UpdatedAt  time.Time   `json:"updated_at" db:"updated_at"`   // updated_at
+	DeletedAt  null.Time   `json:"deleted_at" db:"deleted_at"`   // deleted_at
 	// xo fields
 	_exists, _deleted bool
 }
 
-// GetMostRecentUser returns n most recent rows from 'users',
-// ordered by "created_at" in descending order.
-func GetMostRecentUser(ctx context.Context, db DB, n int) ([]*User, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, created_at, updated_at, deleted_at ` +
-		`FROM public.users ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*User
-	for rows.Next() {
-		u := User{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.IsSuperuser, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &u)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
+type UserSelectConfig struct {
+	limit    string
+	orderBy  string
+	joinWith []UserJoinBy
 }
+
+type UserSelectConfigOption func(*UserSelectConfig)
+
+// UserWithLimit limits row selection.
+func UserWithLimit(limit int) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.limit = fmt.Sprintf(" limit %d ", limit)
+	}
+}
+
+type UserOrderBy = string
+
+const (
+	UserCreatedAtDescNullsFirst UserOrderBy = "CreatedAt DescNullsFirst"
+	UserCreatedAtDescNullsLast  UserOrderBy = "CreatedAt DescNullsLast"
+	UserCreatedAtAscNullsFirst  UserOrderBy = "CreatedAt AscNullsFirst"
+	UserCreatedAtAscNullsLast   UserOrderBy = "CreatedAt AscNullsLast"
+	UserUpdatedAtDescNullsFirst UserOrderBy = "UpdatedAt DescNullsFirst"
+	UserUpdatedAtDescNullsLast  UserOrderBy = "UpdatedAt DescNullsLast"
+	UserUpdatedAtAscNullsFirst  UserOrderBy = "UpdatedAt AscNullsFirst"
+	UserUpdatedAtAscNullsLast   UserOrderBy = "UpdatedAt AscNullsLast"
+	UserDeletedAtDescNullsFirst UserOrderBy = "DeletedAt DescNullsFirst"
+	UserDeletedAtDescNullsLast  UserOrderBy = "DeletedAt DescNullsLast"
+	UserDeletedAtAscNullsFirst  UserOrderBy = "DeletedAt AscNullsFirst"
+	UserDeletedAtAscNullsLast   UserOrderBy = "DeletedAt AscNullsLast"
+)
+
+// UserWithOrderBy orders results by the given columns.
+func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.orderBy = strings.Join(rows, ", ")
+	}
+}
+
+type UserJoinBy = string
 
 // Exists returns true when the User exists in the database.
 func (u *User) Exists() bool {
@@ -83,14 +92,14 @@ func (u *User) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
-	const sqlstr = `INSERT INTO public.users (` +
-		`username, email, first_name, last_name, full_name, external_id, role, is_superuser, deleted_at` +
+	sqlstr := `INSERT INTO public.users (` +
+		`username, email, first_name, last_name, external_id, scopes, role_rank, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
-		`) RETURNING user_id`
+		`$1, $2, $3, $4, $5, $6, $7, $8` +
+		`) RETURNING user_id, full_name `
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt).Scan(&u.UserID); err != nil {
+	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.Scopes, u.RoleRank, u.DeletedAt)
+	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.Scopes, u.RoleRank, u.DeletedAt).Scan(&u.UserID, &u.FullName); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -107,12 +116,12 @@ func (u *User) Update(ctx context.Context, db DB) error {
 		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
-	const sqlstr = `UPDATE public.users SET ` +
-		`username = $1, email = $2, first_name = $3, last_name = $4, full_name = $5, external_id = $6, role = $7, is_superuser = $8, deleted_at = $9 ` +
-		`WHERE user_id = $10`
+	sqlstr := `UPDATE public.users SET ` +
+		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, scopes = $6, role_rank = $7, deleted_at = $8 ` +
+		`WHERE user_id = $9 `
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
-	if _, err := db.Exec(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID); err != nil {
+	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.Scopes, u.RoleRank, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
+	if _, err := db.Exec(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.Scopes, u.RoleRank, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -133,17 +142,17 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 	}
 	// upsert
-	const sqlstr = `INSERT INTO public.users (` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, deleted_at` +
+	sqlstr := `INSERT INTO public.users (` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10` +
 		`)` +
 		` ON CONFLICT (user_id) DO ` +
 		`UPDATE SET ` +
-		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, full_name = EXCLUDED.full_name, external_id = EXCLUDED.external_id, role = EXCLUDED.role, is_superuser = EXCLUDED.is_superuser, deleted_at = EXCLUDED.deleted_at `
+		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, deleted_at = EXCLUDED.deleted_at  `
 	// run
-	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Role, u.IsSuperuser, u.DeletedAt); err != nil {
+	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Scopes, u.RoleRank, u.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.Scopes, u.RoleRank, u.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -160,8 +169,8 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with single primary key
-	const sqlstr = `DELETE FROM public.users ` +
-		`WHERE user_id = $1`
+	sqlstr := `DELETE FROM public.users ` +
+		`WHERE user_id = $1 `
 	// run
 	logf(sqlstr, u.UserID)
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
@@ -172,21 +181,113 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// UsersByCreatedAt retrieves a row from 'public.users' as a User.
+//
+// Generated from index 'users_created_at_idx'.
+func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
+		`FROM public.users ` +
+		`WHERE created_at = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, createdAt)
+	rows, err := db.Query(ctx, sqlstr, createdAt)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+	var res []*User
+	for rows.Next() {
+		u := User{
+			_exists: true,
+		}
+		// scan
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}
+
+// UsersByDeletedAt retrieves a row from 'public.users' as a User.
+//
+// Generated from index 'users_deleted_at_idx'.
+func UsersByDeletedAt(ctx context.Context, db DB, deletedAt null.Time, opts ...UserSelectConfigOption) ([]*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
+		`FROM public.users ` +
+		`WHERE deleted_at = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, deletedAt)
+	rows, err := db.Query(ctx, sqlstr, deletedAt)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+	var res []*User
+	for rows.Next() {
+		u := User{
+			_exists: true,
+		}
+		// scan
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}
+
 // UserByEmail retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_email_key'.
-func UserByEmail(ctx context.Context, db DB, email string) (*User, error) {
+func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectConfigOption) (*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, created_at, updated_at, deleted_at ` +
+	sqlstr := `SELECT ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`WHERE email = $1`
+		`WHERE email = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, email)
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.IsSuperuser, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -195,18 +296,124 @@ func UserByEmail(ctx context.Context, db DB, email string) (*User, error) {
 // UserByUserID retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_pkey'.
-func UserByUserID(ctx context.Context, db DB, userID uuid.UUID) (*User, error) {
+func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, created_at, updated_at, deleted_at ` +
+	sqlstr := `SELECT ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`WHERE user_id = $1`
+		`WHERE user_id = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, userID)
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.IsSuperuser, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+		return nil, logerror(err)
+	}
+	return &u, nil
+}
+
+// UsersByUpdatedAt retrieves a row from 'public.users' as a User.
+//
+// Generated from index 'users_updated_at_idx'.
+func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
+		`FROM public.users ` +
+		`WHERE updated_at = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, updatedAt)
+	rows, err := db.Query(ctx, sqlstr, updatedAt)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+	var res []*User
+	for rows.Next() {
+		u := User{
+			_exists: true,
+		}
+		// scan
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}
+
+// UserByUserIDExternalID_users_user_id_external_id_idx retrieves a row from 'public.users' as a User.
+//
+// Generated from index 'users_user_id_external_id_idx'.
+func UserByUserIDExternalID_users_user_id_external_id_idx(ctx context.Context, db DB, userID uuid.UUID, externalID null.String, opts ...UserSelectConfigOption) (*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
+		`FROM public.users ` +
+		`WHERE user_id = $1 AND external_id = $2 AND (external_id IS NOT NULL) `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, userID, externalID)
+	u := User{
+		_exists: true,
+	}
+	if err := db.QueryRow(ctx, sqlstr, userID, externalID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+		return nil, logerror(err)
+	}
+	return &u, nil
+}
+
+// UserByUserID_users_user_id_idx retrieves a row from 'public.users' as a User.
+//
+// Generated from index 'users_user_id_idx'.
+func UserByUserID_users_user_id_idx(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
+		`FROM public.users ` +
+		`WHERE user_id = $1 AND (external_id IS NULL) `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, userID)
+	u := User{
+		_exists: true,
+	}
+	if err := db.QueryRow(ctx, sqlstr, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -215,18 +422,26 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID) (*User, error) {
 // UserByUsername retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_username_key'.
-func UserByUsername(ctx context.Context, db DB, username string) (*User, error) {
+func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSelectConfigOption) (*User, error) {
+	c := &UserSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, role, is_superuser, created_at, updated_at, deleted_at ` +
+	sqlstr := `SELECT ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`WHERE username = $1`
+		`WHERE username = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, username)
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Role, &u.IsSuperuser, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil

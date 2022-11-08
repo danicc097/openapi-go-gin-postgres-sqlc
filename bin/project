@@ -1,16 +1,23 @@
 #!/bin/bash
 # shellcheck disable=1091,2155,2068,2086,2031
 
+export PROC=$$
+
 source "${BASH_SOURCE%/*}/.helpers.sh"
 source "${BASH_SOURCE%/*}/scripts/deps-check.sh"
 
+# FIXME m flag will prevent background process killing with ctrl-c
 set -Eeo pipefail
 
 trap killgroup SIGINT
+
 trap errtrap SIGUSR1
 
 killgroup() {
   printf "\nkilling spawned processes...\n"
+
+  kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
+
   kill 0
   exit 1
 }
@@ -24,20 +31,17 @@ ensure_pwd_is_top_level
 
 source ".envrc"
 
-export PROC=$$
-export GIT_USER_ID=danicc097
-export GIT_REPO_ID=openapi-go-gin-postgres-sqlc
-export GO_POST_PROCESS_FILE="/usr/bin/env gofmt -w -s"
-export GENVERS=6.0.1
-
 readonly SPEC="openapi.yaml"
 readonly PROTO_DIR="internal/pb"
 readonly MIGRATIONS_DIR="db/migrations"
 readonly PG_REPO="internal/repos/postgresql"
+readonly PG_REPO_GEN="internal/repos/postgresql/gen"
 readonly MAX_COMMENT_LEN=88
 readonly MAX_FNAME_LOG_LEN=13
 readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
 readonly GEN_POSTGRES_DB="gen_db"
+pkg=$(head -1 go.mod)
+readonly GOMOD_PKG="${pkg#module*}"
 
 pids=()
 env="dev"
@@ -115,8 +119,9 @@ x.install-tools() {
     go install github.com/danicc097/air@latest
     go install github.com/danicc097/xo@latest
     go install github.com/mikefarah/yq/v4@v4.27.2
+    go install github.com/hexdigest/gowrap/cmd/gowrap@latest
 
-    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
     go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@v0.2.0
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
@@ -124,7 +129,7 @@ x.install-tools() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Fetch latest swagger ui bundle.
+# Fetch latest Swagger UI bundle.
 x.fetch.swagger-ui() {
   { { {
     name="$(curl --silent "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
@@ -139,34 +144,88 @@ x.fetch.swagger-ui() {
 
 # Run pre-generation scripts in the internal package.
 x.pregen() {
-  # Openapi spec:
-  # - `x-db-enum` field syncs the spec enum with the given database enum.
   { { {
     echo "Running generation"
 
-    POSTGRES_DB=$GEN_POSTGRES_DB x.db.drop
-    POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up
+    x.db.drop
+    x.migrate up
+
+    ######## Sync enums from db with spec
+    # example: `x-db-enum: user_role` will use the db's "user_role" enum
     vext="x-db-enum"
     for enum in $(yq e ".. | select(has(\"$vext\")).$vext" $SPEC); do
       local db_enums=()
       path="$(enum_name=$enum yq e ".. | select(has(\"$vext\") and .$vext == env(enum_name)) | (path | join(\".\"))" $SPEC)"
-      mapfile -t db_enums < <(dockerdb psql -qtAX -d $GEN_POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
+      mapfile -t db_enums < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
 
-      [[ ${#db_enums[@]} -gt 0 ]] || err "$vext: Enum '$enum' not found in database"
+      [[ ${#db_enums[@]} -gt 0 ]] || err "$vext: Enum '$enum' not found in database $POSTGRES_DB"
       enums=$(printf ",\"%s\"" "${db_enums[@]}")
       enums="[${enums:1}]"
       echo "Replacing enum '$enum' in $SPEC with: $enums"
       enums=$enums yq e ".$path.enum = env(enums)" -i $SPEC
     done
 
+    ######## Ensure consistent style for future codegen
     echo "Applying PascalCase to operation IDs in $SPEC"
     for opid in $(yq e ".. | select(has(\"operationId\")).operationId" $SPEC); do
       new_opid="$(to_pascal $opid)"
       paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" $SPEC)
-      mapfile paths <<<$paths
+      readarray -t paths <<<$paths
       escaped_path="$(join_yq_paths paths)"
       new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" -i $SPEC
     done
+
+    ######## Sync enums with external sources and validate
+    # frontend scopes: 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right) and show aggregated
+    # arrays can't be nested
+    declare -A enum_src_files=(
+      [Scope]="scopes.json"
+      [Role]="roles.json"
+    )
+    declare -A enum_vext=(
+      [Scope]="x-required-scopes"
+      [Role]="x-required-role"
+    )
+    for enum in ${!enum_src_files[@]}; do
+      [[ $(yq e ".components.schemas | has(\"$enum\")" $SPEC) = "false" ]] &&
+        yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC
+
+      src_file="${enum_src_files[$enum]}"
+      vext="${enum_vext[$enum]}"
+
+      enums=$(yq -P '.[] | key' $src_file)
+      readarray -t enums <<<$enums
+
+      echo "Replacing '$enum' enum in $SPEC with $src_file"
+      yq e ".components.schemas.$enum.description = \"$enum automatically generated from $src_file keys\"" -i $SPEC
+      enums_arr=$(printf ",\"%s\"" "${enums[@]}")
+      enums_arr="[${enums_arr:1}]"
+      enums_arr=$enums_arr yq e ".components.schemas.$enum.enum = env(enums_arr)" -i $SPEC
+
+      readarray spec_enums < <(yq e ".paths[][].$vext | select(length > 0)" openapi.yaml)
+      spec_enums=("${spec_enums[*]//- /}")
+      mapfile -t spec_enums < <(printf "\"%s\"\n" ${spec_enums[*]})
+      mapfile -t clean_enums < <(printf "\"%s\"\n" ${enums[*]})
+      for spec_enum in "${spec_enums[@]}"; do
+        [[ ! " ${clean_enums[*]} " =~ " ${spec_enum} " ]] && err "$spec_enum is not a valid '$enum'"
+      done
+    done
+
+    ######## Generate shared policies once the spec has been validated
+    # https://mikefarah.gitbook.io/yq/operators/reduce
+    opid_auth="operationAuthorization.gen.json"
+    echo "Writing shared auth policies"
+    echo "// Code generated by '$(basename $0) ${FUNCNAME[0]##*.}'. DO NOT EDIT." >$opid_auth
+    yq -o=json e "
+    .paths[][]
+    | {.operationId: { \"scopes\": .x-required-scopes, \"role\": .x-required-role}}
+    | select(.[]) as \$i ireduce ({}; . + \$i)
+  " openapi.yaml >>$opid_auth
+
+    yq --prettyPrint '.. style="single"' -i $SPEC
+    # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
+    # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
+    sed -i 's/!!merge //' $SPEC
 
     # go build -o pregen "$PWD"/cmd/pregen/main.go
     # ./pregen -env=".env.$env"
@@ -178,8 +237,15 @@ x.pregen() {
 join_yq_paths() {
   declare -n arr="$1"
   arr=("${arr[*]//- /}")
-  mapfile arr < <(printf "\"%s\"\n" ${arr[*]})
+  mapfile -t arr < <(printf "\"%s\"\n" ${arr[*]})
   join_by "." ${arr[*]}
+}
+
+clean_yq_array() {
+  declare -n arr="$1"
+  arr=("${arr[*]//- /}")
+  mapfile -t arr < <(printf "\"%s\"\n" ${arr[*]})
+  echo ${arr[@]}
 }
 
 # Run post-generation scripts in the internal package.
@@ -201,6 +267,22 @@ x.gen.sqlc() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
+# Generate interface wrappers with common logic: tracing, timeout...
+x.gen.gowrap() {
+  { { {
+    echo "Running generation"
+    repo_interfaces="User"
+    for iface in ${repo_interfaces[@]}; do
+      gowrap gen \
+        -g \
+        -p $GOMOD_PKG/internal/repos \
+        -i $iface \
+        -t internal/gowrap-templates/otel-with-timeout.tmpl \
+        -o internal/repos/${iface,,}_with_tracing_and_timeout.gen.go
+    done
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
 # Generate Go client and server.
 x.gen.client-server() {
   { { {
@@ -211,7 +293,8 @@ x.gen.client-server() {
     ./oapi-codegen --config internal/client/oapi-codegen-types.yaml "$SPEC" || err "Failed client generation"
 
     ./oapi-codegen --config internal/rest/oapi-codegen-server.yaml "$SPEC" || err "Failed server generation"
-    ./oapi-codegen --config internal/rest/oapi-codegen-types.yaml "$SPEC" || err "Failed server generation"
+
+    ./oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC" || err "Failed server generation"
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -270,38 +353,38 @@ x.gen.proto() {
 x.gen() {
   { { {
     echo "Running code generation"
-    local _pids
+    local cache=".generate.cache"
+
+    mkdir -p "$cache"
 
     x.db.recreate
 
-    cache=".generate.cache"
+    POSTGRES_DB=$GEN_POSTGRES_DB x.pregen
 
-    x.pregen
+    rm -rf "$PG_REPO_GEN"
 
-    rm -rf $PG_REPO/gen
+    # TODO try use gnu parallel and exit when anyone fails
+    # (with current setup the whole x.gen is executed and only then
+    # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
 
     go generate ./... &
-    _pids+=($!)
+    x.gen.gowrap &
     x.gen.sqlc &
-    _pids+=($!)
     # xo cannot use db files as input, needs an up-to-date schema
     # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
     # use a unique db to prevent cosmic accidents
     x.gen.xo &
-    _pids+=($!)
     x.gen.client-server &
-    _pids+=($!)
     x.gen.proto &
-    _pids+=($!)
+    wait
 
-    for pid in "${_pids[@]}"; do
-      wait "$pid"
-    done
+    x.postgen "$cache" &
+    x.gen.counterfeiter "$cache" & # delay since it depends on generated output too
 
-    x.postgen "$cache"
+    wait
 
-    # delay since it depends on generated output
-    x.gen.counterfeiter "$cache"
+    x.lint
+
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -319,7 +402,7 @@ x.lint.go() {
   { { {
     files=$(find . \
       -not -path "**/$PROTO_DIR/*" \
-      -not -path "**/$PG_REPO/gen/*" \
+      -not -path "**/"$PG_REPO_GEN"/*" \
       -not -path "**/testdata/*" \
       -not -path "**/*.cache/*" \
       -not -path "**/*.gen.*" \
@@ -340,12 +423,15 @@ x.lint.sql() {
     for slq_dir in ${SQL_DIRS[@]}; do
       pg_format \
         --spaces 2 \
-        --wrap-limit 88 \
+        --wrap-limit 130 \
         --function-case 2 \
         --keyword-case 1 \
         --placeholder "sqlc\\.(arg|narg)\\(:?[^)]*\\)" \
         --inplace \
-        $(find "$slq_dir" -maxdepth 3 -name '*.sql')
+        --nogrouping \
+        --keep-newline \
+        --comma-start \
+        $(find "$slq_dir" -maxdepth 3 -name '*.*sql')
     done
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -393,7 +479,7 @@ x.run.backend-hr() {
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO/gen,**/testdata,frontend,*.cache" \
+    --build.exclude_dir ".git,tmp,$PROTO_DIR,"$PG_REPO_GEN",**/testdata,frontend,*.cache" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
@@ -435,7 +521,8 @@ x.run-dev() {
 
           for pid in "${pids[@]}"; do
             # air and vite spawn processes as well, need to kill those (whose parent is pid), kill $pid will not kill children. pkill -P would also work
-            kill $(list_descendants $pid)
+            echo "$(list_descendants $pid)"
+            kill "$(list_descendants $pid)"
           done
           pids=()
 
@@ -480,13 +567,9 @@ x.stop-project() {
 x.release() {
   { { {
     x.search-stopship "STOPSHIP" &
-    pids+=($!)
     go mod verify &
-    pids+=($!)
 
-    for pid in "${pids[@]}"; do
-      wait "$pid"
-    done
+    wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -528,7 +611,7 @@ x.migrate() {
     if [[ "${*:1}" =~ up* ]]; then
       echo "Running post-migration scripts"
       for file in $(find db/post-migration -maxdepth 1 -name '*.sql' | sort); do
-        dockerdb psql --no-psqlrc -tA -U postgres -d "$POSTGRES_DB" <$file
+        dockerdb_psql -U postgres -d "$POSTGRES_DB" <$file
       done
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -551,8 +634,8 @@ x.migrate.create() {
 # Show active and max number of connections for the current environment.
 x.db.conns() {
   { { {
-    current_conns=$(dockerdb psql -qtAX -d $POSTGRES_DB -c "SELECT count(*) FROM pg_stat_activity WHERE datname = '$POSTGRES_DB';")
-    max_conns=$(dockerdb psql -qtAX -d $POSTGRES_DB -c "SHOW max_connections;")
+    current_conns=$(dockerdb_psql -d $POSTGRES_DB -c "SELECT count(*) FROM pg_stat_activity WHERE datname = '$POSTGRES_DB';")
+    max_conns=$(dockerdb_psql -d $POSTGRES_DB -c "SHOW max_connections;")
     echo "$current_conns/$max_conns active connections in '$POSTGRES_DB'"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -568,38 +651,71 @@ x.db.recreate() {
 
 # Drop and recreate the database in the current environment.
 x.db.drop() {
+  [[ $env = "prod" ]] && confirm "This will drop all database data. Continue?"
   { { {
     drop_and_recreate_db "$POSTGRES_DB"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Drop and recreate the database used for code generation up to N-1 revisions.
-# Useful to get correct analyses on the latest migration script.
-x.db.drop-gen() {
+# Drop and recreate the database used for code generation up to N, N-1 revisions or none.
+# Useful to get correct analyses on migration scripts.
+# Args: {up|up-1|drop}
+x.db.gen() {
   { { {
     latest_rev=$(find $MIGRATIONS_DIR/*.sql -maxdepth 0 | wc -l)
     second_latest_rev=$((latest_rev - 2)) # up+down
     POSTGRES_DB=$GEN_POSTGRES_DB x.db.drop
-    POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up $second_latest_rev
+    # TODO should be able to autocomplete x function nested cases
+    # if it's called as $CMD
+    case $1 in
+    up)
+      POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up
+      ;;
+    up-1)
+      POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up $second_latest_rev
+      ;;
+    drop) ;;
+    *)
+      err "Valid options {up|up-1|drop}, got: $1"
+      ;;
+    esac
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Seed gen database.
+x.db.gen.initial-data() {
+  { { {
+    POSTGRES_DB=$GEN_POSTGRES_DB x.db.initial-data
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Seed gen database.
+x.db.initial-data() {
+  # xlog eats up read -p (prompt)
+  { { {
+    x.db.drop
+    x.migrate up
+    echo "Loading initial data to $POSTGRES_DB"
+    dockerdb_psql -d $POSTGRES_DB <"./db/initial_data_$env.pgsql"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 # Backup the database for the current environment.
 x.db.dump() {
   { { {
-    running_dumps=$(dockerdb psql --no-psqlrc -P pager=off --quiet -tA -U postgres -d "postgres_$env" \
+    running_dumps=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$env" \
       -c "SELECT pid FROM pg_stat_activity WHERE application_name = 'pg_dump';")
     if [[ "$running_dumps" != "" ]]; then
       err "pg_dump is already running, aborting new dump"
     fi
 
     mkdir -p "$DUMPS_FOLDER"
-    schema_v=$(dockerdb psql --no-psqlrc -P pager=off --quiet -tA -U postgres -d "postgres_$env" \
+    schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$env" \
       -c "SELECT version FROM schema_migrations;")
     dump_file="${dump_prefix}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
 
     echo "Dumping database to $dump_file"
-    docker exec -i postgres_db_"$PROJECT_PREFIX" pg_dump -U postgres -d "postgres_$env" |
+    dockerdb pg_dump -U postgres -d "postgres_$env" |
       gzip >"$DUMPS_FOLDER/$dump_file"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -607,32 +723,31 @@ x.db.dump() {
 # Restore the database with the latest dump or `file` for the current environment.
 # Args: [file]
 x.db.restore() {
-  { { {
-    dump_file="$1"
-    if [[ -n $dump_file ]]; then
-      [[ ! -f $dump_file ]] && err "$dump_file does not exist"
-      [[ "$dump_file" != *"$dump_prefix"* ]] && confirm "${RED}Dump doesn't match prefix '$dump_prefix'. Continue?${OFF}"
-    else
-      mkdir -p "$DUMPS_FOLDER"
-      latest_dump_file=$(find "$DUMPS_FOLDER"/ -name "$dump_prefix*.gz" | sort -r | head -n 1)
-      if [[ -z "$latest_dump_file" ]]; then
-        err "No $dump_prefix* file found in $DUMPS_FOLDER"
-      fi
-      dump_file="$latest_dump_file"
+  # xlog eats up read -p (prompt)
+  dump_file="$1"
+  if [[ -n $dump_file ]]; then
+    [[ ! -f $dump_file ]] && err "$dump_file does not exist"
+    [[ "$dump_file" != *"$dump_prefix"* ]] && confirm "${RED}Dump doesn't match prefix '$dump_prefix'. Continue?${OFF}"
+  else
+    mkdir -p "$DUMPS_FOLDER"
+    latest_dump_file=$(find "$DUMPS_FOLDER"/ -name "$dump_prefix*.gz" | sort -r | head -n 1)
+    if [[ -z "$latest_dump_file" ]]; then
+      err "No $dump_prefix* file found in $DUMPS_FOLDER"
     fi
+    dump_file="$latest_dump_file"
+  fi
 
-    confirm "Do you want to restore ${YELLOW}$dump_file${OFF} in the ${RED}$env${OFF} environment?"
+  confirm "Do you want to restore ${YELLOW}$dump_file${OFF} in the ${RED}$env${OFF} environment?"
 
-    x.db.drop
-    gunzip -c "$dump_file" | dockerdb psql --no-psqlrc -U postgres -d "postgres_$env"
-    # sanity check, but probably better to do it before restoring...
-    dump_schema_v=$(dockerdb psql --no-psqlrc -P pager=off -qtAX -U postgres -d "postgres_$env" -c "SELECT version FROM schema_migrations;")
-    file_schema_v=$(echo "$dump_file" | sed -E 's/.*_version([0-9]+)\..*/\1/')
-    echo "Migration revision: $dump_schema_v"
-    if [[ "$dump_schema_v" != "$file_schema_v" ]]; then
-      err "Schema version mismatch: dump $dump_schema_v != file $file_schema_v"
-    fi
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  x.db.drop
+  gunzip -c "$dump_file" | dockerdb_psql -U postgres -d "postgres_$env"
+  # sanity check, but probably better to do it before restoring...
+  dump_schema_v=$(dockerdb_psql -P pager=off -U postgres -d "postgres_$env" -c "SELECT version FROM schema_migrations;")
+  file_schema_v=$(echo "$dump_file" | sed -E 's/.*_version([0-9]+)\..*/\1/')
+  echo "Migration revision: $dump_schema_v"
+  if [[ "$dump_schema_v" != "$file_schema_v" ]]; then
+    err "Schema version mismatch: dump $dump_schema_v != file $file_schema_v"
+  fi
 }
 
 ########################## e2e ##########################
@@ -719,22 +834,26 @@ x.gen.xo() {
   #
   { { {
     echo "Running generation"
-
-    mkdir -p $PG_REPO/gen/db
     # xo schema --help
-    xo_schema -o "$PG_REPO"/gen/db \
+
+    mkdir -p "$PG_REPO_GEN"/db
+    xo_schema -o "$PG_REPO_GEN"/db \
       --ignore "*.created_at" \
-      --ignore "*.updated_at" || err "Failed xo public schema generation"
+      --ignore "*.updated_at" || err "Failed xo public schema generation" &
 
-    # views
-    mkdir -p $PG_REPO/gen/db/v
-    xo_schema -o "$PG_REPO"/gen/db/v \
-      --schema v || err "Failed xo v schema generation"
+    mkdir -p "$PG_REPO_GEN"/db/v
+    xo_schema -o "$PG_REPO_GEN"/db/v \
+      --schema v \
+      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
+      err "Failed xo v schema generation" &
 
-    # materialized views
-    mkdir -p $PG_REPO/gen/db/cache
-    xo_schema -o "$PG_REPO"/gen/db/cache \
-      --schema cache || err "Failed xo cache schema generation"
+    mkdir -p "$PG_REPO_GEN"/db/cache
+    xo_schema -o "$PG_REPO_GEN"/db/cache \
+      --schema cache \
+      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
+      err "Failed xo cache schema generation" &
+
+    wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -945,10 +1064,18 @@ if [[ -n $COMP_LINE ]]; then
   exit
 fi
 
+declare CMD="$1"
+
 # First comment lines automatically added to usage docs.
 set +e
 while [[ "$#" -gt 0 ]]; do
   case $1 in
+  --x-help)
+    # Show help for a particular x function.
+    COMMANDS=("$CMD")
+    usage
+    exit
+    ;;
   --x-force-regen) # this comment should be ignored
     # Removes generation cache, forcing a new run.
     force_regen=1
@@ -983,7 +1110,6 @@ source ".env.$env"
 
 # handle executing x functions
 if [[ -n "$1" ]]; then
-  declare CMD="$1"
   shift
   for c in "${COMMANDS[@]}"; do
     declare cmd=$(command -v "x.$c")

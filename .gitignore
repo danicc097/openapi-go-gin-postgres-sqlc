@@ -11,6 +11,7 @@ openapi-generator-cli.jar
 **/swagger-ui/**/*
 /test.sql
 tmp
+/*.session.sql
 /air-main
 go.work*
 *.log
@@ -30,3 +31,6 @@ file-to-watch
 .env.development
 
 openapi-go.code-workspace
+frontend/vite.config.ts.timestamp-*.mjs
+test-spec.yaml
+rest-server

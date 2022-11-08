@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"unicode"
 
 	"github.com/danicc097/xo/loader"
 	xo "github.com/danicc097/xo/types"
@@ -26,6 +27,24 @@ import (
 )
 
 var ErrNoSingle = errors.New("in query exec mode, the --single or -S must be provided")
+
+func IsUpper(s string) bool {
+	for _, r := range s {
+		if !unicode.IsUpper(r) && unicode.IsLetter(r) {
+			return false
+		}
+	}
+	return true
+}
+
+func IsLower(s string) bool {
+	for _, r := range s {
+		if !unicode.IsLower(r) && unicode.IsLetter(r) {
+			return false
+		}
+	}
+	return true
+}
 
 // Init registers the template.
 func Init(ctx context.Context, f func(xo.TemplateType)) error {
@@ -179,7 +198,9 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Type:       "string",
 				Desc:       "field tag",
 				Short:      "g",
-				Default:    `json:"{{ .SQLName }}"`,
+				// migrate to camel once Response structs and adapters done
+				// Default:    `json:"{{ camel .GoName }}" db:"{{ .SQLName }}"`,
+				Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
 			},
 			{
 				ContextKey: ContextKey,
@@ -223,7 +244,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 			return ctx
 		},
 		Order: func(ctx context.Context, mode string) []string {
-			base := []string{"header", "db"}
+			base := []string{"header", "db", "extra"}
 			switch mode {
 			case "query":
 				return append(base, "typedef", "query")
@@ -252,6 +273,18 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 					files["db.xo.go"] = true
 				}
 			}
+
+			if !NotFirst(ctx) && !Append(ctx) {
+				emit(xo.Template{
+					Partial: "extra",
+					Dest:    "extra.xo.go",
+				})
+				// If --single is provided, don't generate header for db.xo.go.
+				if xo.Single(ctx) == "" {
+					files["extra.xo.go"] = true
+				}
+			}
+
 			if Append(ctx) {
 				for filename := range files {
 					f, err := out.Open(filename)
@@ -356,6 +389,9 @@ func fileNames(ctx context.Context, mode string, set *xo.Set) (map[string]bool, 
 				addFile(camelExport(singularize(t.Name)))
 			}
 			for _, v := range schema.Views {
+				addFile(camelExport(singularize(v.Name)))
+			}
+			for _, v := range schema.MatViews {
 				addFile(camelExport(singularize(v.Name)))
 			}
 		}
@@ -521,7 +557,9 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		})
 	}
 	// emit tables
-	for _, t := range append(schema.Tables, schema.Views...) {
+	tt := append(schema.Tables, schema.Views...)
+	tt = append(tt, schema.MatViews...)
+	for _, t := range tt {
 		table, err := convertTable(ctx, t)
 		if err != nil {
 			return err
@@ -565,27 +603,28 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 	return nil
 }
 
-// convertEnum converts a xo.Enum.
-func convertEnum(e xo.Enum) Enum {
-	var vals []EnumValue
-	goName := camelExport(e.Name)
-	for _, v := range e.Values {
-		name := camelExport(strings.ToLower(v.Name))
-		if strings.HasSuffix(name, goName) && goName != name {
-			name = strings.TrimSuffix(name, goName)
-		}
-		vals = append(vals, EnumValue{
-			GoName:     name,
-			SQLName:    v.Name,
-			ConstValue: *v.ConstValue,
-		})
-	}
-	return Enum{
-		GoName:  goName,
-		SQLName: e.Name,
-		Values:  vals,
-	}
-}
+// // convertEnum converts a xo.Enum.
+// func convertEnum(e xo.Enum) Enum {
+// 	var vals []EnumValue
+// 	goName := camelExport(e.Name)
+// 	for _, v := range e.Values {
+// 		name := camelExport(strings.ToLower(v.Name))
+// 		if strings.HasSuffix(name, goName) && goName != name {
+// 			name = strings.TrimSuffix(name, goName)
+// 		}
+// 		vals = append(vals, EnumValue{
+// 			GoName:     name,
+// 			SQLName:    v.Name,
+// 			ConstValue: *v.ConstValue,
+// 		})
+// 	}
+
+// 	return Enum{
+// 		GoName:  goName,
+// 		SQLName: e.Name,
+// 		Values:  vals,
+// 	}
+// }
 
 // convertProc converts a xo.Proc.
 func convertProc(ctx context.Context, overloadMap map[string][]Proc, order []string, p xo.Proc) ([]string, error) {
@@ -672,6 +711,7 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 		Generated:   generatedCols,
 		Ignored:     ignoredCols,
 		Manual:      manual && t.Manual,
+		Type:        t.Type,
 	}, nil
 }
 
@@ -685,12 +725,13 @@ func convertIndex(ctx context.Context, t Table, i xo.Index) (Index, error) {
 		fields = append(fields, f)
 	}
 	return Index{
-		SQLName:   i.Name,
-		Func:      camelExport(i.Func),
-		Table:     t,
-		Fields:    fields,
-		IsUnique:  i.IsUnique,
-		IsPrimary: i.IsPrimary,
+		SQLName:    i.Name,
+		Func:       camelExport(i.Func),
+		Table:      t,
+		Fields:     fields,
+		IsUnique:   i.IsUnique,
+		IsPrimary:  i.IsPrimary,
+		Definition: i.IndexDefinition,
 	}, nil
 }
 
@@ -749,35 +790,34 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	if err != nil {
 		return Field{}, err
 	}
+	var enumPkg string
+	if f.Type.Enum != nil {
+		enumPkg = f.Type.Enum.EnumPkg
+	}
 	return Field{
-		Type:        typ,
-		GoName:      tf(f.Name),
-		SQLName:     f.Name,
-		Zero:        zero,
-		IsPrimary:   f.IsPrimary,
-		IsSequence:  f.IsSequence,
-		IsIgnored:   f.IsIgnored,
-		IsGenerated: strings.Contains(f.Default, "()") || f.IsSequence,
+		Type:         typ,
+		GoName:       tf(f.Name),
+		SQLName:      f.Name,
+		Zero:         zero,
+		IsPrimary:    f.IsPrimary,
+		IsSequence:   f.IsSequence,
+		IsIgnored:    f.IsIgnored,
+		EnumPkg:      enumPkg,
+		IsDateOrTime: f.IsDateOrTime,
+		IsGenerated:  strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
 	}, nil
 }
 
 func goType(ctx context.Context, typ xo.Type) (string, string, error) {
-	driver, _, schema := xo.DriverDbSchema(ctx)
+	_, _, schema := xo.DriverDbSchema(ctx)
 	var f func(xo.Type, string, string, string) (string, string, error)
-	switch driver {
-	case "postgres":
-		switch mode := ArrayMode(ctx); mode {
-		case "stdlib":
-			f = loader.StdlibPostgresGoType
-		case "pq", "":
-			f = loader.PQPostgresGoType
-		default:
-			return "", "", fmt.Errorf("unknown array mode: %q", mode)
-		}
-	case "sqlite3":
-		f = loader.Sqlite3GoType
+	switch mode := ArrayMode(ctx); mode {
+	case "stdlib":
+		f = loader.StdlibPostgresGoType
+	case "pq", "":
+		f = loader.PQPostgresGoType
 	default:
-		return "", "", fmt.Errorf("unknown driver %q", driver)
+		return "", "", fmt.Errorf("unknown array mode: %q", mode)
 	}
 	return f(typ, schema, Int32(ctx), Uint32(ctx))
 }
@@ -826,7 +866,7 @@ type Funcs struct {
 func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 	first := !NotFirst(ctx)
 	// parse field tag template
-	fieldtag, err := template.New("fieldtag").Parse(FieldTag(ctx))
+	fieldtag, err := template.New("fieldtag").Funcs(template.FuncMap{"camel": camel}).Parse(FieldTag(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -866,17 +906,23 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 	return funcs.FuncMap(), nil
 }
 
+func (f *Funcs) camel(names ...string) string {
+	return snaker.ForceLowerCamelIdentifier(strings.Join(names, "_"))
+}
+
 // FuncMap returns the func map.
 func (f *Funcs) FuncMap() template.FuncMap {
 	return template.FuncMap{
 		// general
-		"first":   f.firstfn,
-		"driver":  f.driverfn,
-		"schema":  f.schemafn,
-		"pkg":     f.pkgfn,
-		"tags":    f.tagsfn,
-		"imports": f.importsfn,
-		"inject":  f.injectfn,
+		"camel":      f.camel,
+		"lowerFirst": f.lower_first,
+		"first":      f.firstfn,
+		"driver":     f.driverfn,
+		"schema":     f.schemafn,
+		"pkg":        f.pkgfn,
+		"tags":       f.tagsfn,
+		"imports":    f.importsfn,
+		"inject":     f.injectfn,
 		// context
 		"context":         f.contextfn,
 		"context_both":    f.context_both,
@@ -885,6 +931,7 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"func_name_context":   f.func_name_context,
 		"func_name":           f.func_name_none,
 		"func_context":        f.func_context,
+		"extratypes":          f.extratypes,
 		"func":                f.func_none,
 		"recv_context":        f.recv_context,
 		"recv":                f.recv_none,
@@ -916,6 +963,25 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"add":           add,
 		"not_updatable": notUpdatable,
 	}
+}
+
+func (f *Funcs) lower_first(str string) string {
+	var b strings.Builder
+	i := 1
+	for IsUpper(string(str[i : i+1])) {
+		if i == len(str)-1 {
+			i = len(str) + 1
+			break
+		}
+		i++
+	}
+	if i == 1 {
+		i++ // first letter always lower
+	}
+	b.WriteString(strings.ToLower(string(str[0 : i-1])))
+	b.WriteString(string(str[i-1:]))
+
+	return b.String()
 }
 
 func (f *Funcs) firstfn() bool {
@@ -1049,6 +1115,9 @@ func (f *Funcs) func_name_context(v interface{}) string {
 		}
 		return n
 	case Index:
+		if _, _, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
+			return x.Func + "_" + x.SQLName
+		}
 		return x.Func
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 2: %T ]]", v)
@@ -1056,54 +1125,110 @@ func (f *Funcs) func_name_context(v interface{}) string {
 
 // funcfn builds a func definition.
 func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
-	var p, r []string
+	var params, returns []string
 	if context {
-		p = append(p, "ctx context.Context")
+		params = append(params, "ctx context.Context")
 	}
-	p = append(p, "db DB")
+	params = append(params, "db DB")
 	switch x := v.(type) {
 	case Query:
-		// params
 		for _, z := range x.Params {
-			p = append(p, fmt.Sprintf("%s %s", z.Name, z.Type))
+			params = append(params, fmt.Sprintf("%s %s", z.Name, z.Type))
 		}
-		// returns
 		switch {
 		case x.Exec:
-			r = append(r, "sql.Result")
+			returns = append(returns, "sql.Result")
 		case x.Flat:
 			for _, z := range x.Type.Fields {
-				r = append(r, f.typefn(z.Type))
+				returns = append(returns, f.typefn(z.Type))
 			}
 		case x.One:
-			r = append(r, "*"+x.Type.GoName)
+			returns = append(returns, "*"+x.Type.GoName)
 		default:
-			r = append(r, "[]*"+x.Type.GoName)
+			returns = append(returns, "[]*"+x.Type.GoName)
 		}
 	case Proc:
-		// params
-		p = append(p, f.params(x.Params, true))
-		// returns
+		params = append(params, f.params(x.Params, true))
 		if !x.Void {
 			for _, ret := range x.Returns {
-				r = append(r, f.typefn(ret.Type))
+				returns = append(returns, f.typefn(ret.Type))
 			}
 		}
 	case Index:
-		// params
-		p = append(p, f.params(x.Fields, true))
-		// returns
+		// TODO include join options, order by and limit options struct here if any
+		// better: func opts so we extend with basically anything (joins, orderbys, limits...)
+		params = append(params, f.params(x.Fields, true))
+		params = append(params, "opts ..."+x.Table.GoName+"SelectConfigOption")
 		rt := "*" + x.Table.GoName
 		if !x.IsUnique {
 			rt = "[]" + rt
 		}
-		r = append(r, rt)
+		returns = append(returns, rt)
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 3: %T ]]", v)
 	}
-	r = append(r, "error")
-	return fmt.Sprintf("func %s(%s) (%s)", name, strings.Join(p, ", "), strings.Join(r, ", "))
+	returns = append(returns, "error")
+	return fmt.Sprintf("func %s(%s) (%s)", name, strings.Join(params, ", "), strings.Join(returns, ", "))
 }
+
+// funcfn builds a type definition.
+func (f *Funcs) extratypes(name string, v interface{}) string {
+	// -- emit ORDER BY opts
+	var orderbys []Field
+	switch x := v.(type) {
+	case Table:
+		for _, z := range x.Fields {
+			if z.IsDateOrTime {
+				orderbys = append(orderbys, z)
+			}
+		}
+	default:
+		return fmt.Sprintf("[[ UNSUPPORTED TYPE 3: %T ]]", v)
+	}
+	orderByOpts := [][]string{
+		{"DescNullsFirst", "DESC NULLS FIRST"},
+		{"DescNullsLast", "DESC NULLS LAST"},
+		{"AscNullsFirst", "ASC NULLS FIRST"},
+		{"AscNullsLast", "ASC NULLS LAST"},
+	}
+	var buf strings.Builder
+	buf.WriteString(fmt.Sprintf(`type %sOrderBy = string
+	`, name))
+	buf.WriteString("const (")
+	for _, ob := range orderbys {
+		for _, opt := range orderByOpts {
+			buf.WriteString(fmt.Sprintf(`%[1]s%s%s %[1]sOrderBy = "%s %s"
+			`, name, ob.GoName, opt[0], ob.SQLName, opt[1]))
+		}
+	}
+	buf.WriteString(")")
+
+	if len(orderbys) > 0 {
+		buf.WriteString(fmt.Sprintf(`
+	// %[1]sWithOrderBy orders results by the given columns.
+func %[1]sWithOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
+	return func(s *%[1]sSelectConfig) {
+		s.orderBy = strings.Join(rows, ", ")
+	}
+}
+	`, name))
+	}
+
+	// TODO
+	// -- emit JOIN BY opts
+
+	return buf.String()
+}
+
+// TODO template function to create a struct of orderby for every date column
+//   - dynamic `orderBy UserOrderBy` options struct field if index found for
+//     timestamp column (Field.IsDateOrTime). Get appended after any select if present and can be
+//     combined:
+//     order by updated_at desc, created_at desc (join with ", ") + limit $limit if len>0
+//     `type UserOrderBy = string , UserCreatedAtDesc UserOrderBy = "UserCreatedAtDesc" `
+//     with a “limit *“ struct option appended .
+//
+// TODO low prio put note if it has no index
 
 // func_context generates a func signature for v with context determined by the
 // context mode.
@@ -1167,6 +1292,11 @@ func (f *Funcs) foreign_key_context(v interface{}) string {
 		// }
 		// add params
 		p = append(p, "db", f.convertTypes(x))
+		// TODO add opt params for foreign key functions generated from other tables as well
+		// although it's not essential because we can call WorkItemByWorkItemID directly it's a nice-to-have
+		// func (t *Task) WorkItem(ctx context.Context, db DB <, opts ...TaskSelectConfigOption>) (*WorkItem, error) {
+		// 	return WorkItemByWorkItemID(ctx, db, t.WorkItemID <, opts>)
+		// }
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 6: %T ]]", v)
 	}
@@ -1219,7 +1349,6 @@ func (f *Funcs) db_prefix(name string, includeGenerated bool, includeIgnored boo
 			}
 			p := f.names_ignore(prefix, v, ignore...)
 			// p is "" when no columns are present except for primary key
-			// params
 			if p != "" {
 				params = append(params, p)
 			}
@@ -1461,12 +1590,10 @@ func (f *Funcs) sqlstr(typ string, v interface{}) string {
 		lines = f.sqlstr_proc(v)
 	case "index":
 		lines = f.sqlstr_index(v)
-	case "list":
-		lines = f.sqlstr_list(v)
 	default:
 		return fmt.Sprintf("const sqlstr = `UNKNOWN QUERY TYPE: %s`", typ)
 	}
-	return fmt.Sprintf("const sqlstr = `%s`", strings.Join(lines, "` +\n\t`"))
+	return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
 }
 
 // sqlstr_insert_base builds an INSERT query
@@ -1626,6 +1753,33 @@ func (f *Funcs) sqlstr_delete(v interface{}) []string {
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 25: %T ]]", v)}
 }
 
+// TODO generate o2m,m2o, m2m, o2o
+// see PostgresTableForeignKeys query
+// TODO ref_column_name_pk_table : e.g. ref_column_name is project_id -->
+// find origin table where pk is project_id (need a new join with
+//  foreign key [not foreign_key_name] in ref_table_name where column is ref_column_name)
+// `left join (
+// 	select
+// 		%column_name
+// 		, ARRAY_AGG(%ref_column_name_pk_table.*) as %ref_column_name_pk_table
+// 	from
+// 		%ref_table_name uo
+// 		left join %ref_column_name_pk_table using (%ref_column_name)
+// 	where
+// 		%column_name in (
+// 			select
+// 				%column_name
+// 			from
+// 				%ref_table_name
+// 			where
+// 				%ref_column_name = any (
+// 					select
+// 						%ref_column_name
+// 					from
+// 						%ref_column_name_pk_table))
+// 			group by
+// 				%column_name) joined_projects using (%column_name)`
+
 // sqlstr_index builds a index fields.
 func (f *Funcs) sqlstr_index(v interface{}) []string {
 	switch x := v.(type) {
@@ -1636,42 +1790,18 @@ func (f *Funcs) sqlstr_index(v interface{}) []string {
 			fields = append(fields, f.colname(z))
 		}
 		// index fields
-		var list []string
+		var filters []string
 		for i, z := range x.Fields {
-			list = append(list, fmt.Sprintf("%s = %s", f.colname(z), f.nth(i)))
+			filters = append(filters, fmt.Sprintf("%s = %s", f.colname(z), f.nth(i)))
+		}
+		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
+			filters = append(filters, after)
 		}
 		return []string{
 			"SELECT ",
 			strings.Join(fields, ", ") + " ",
 			"FROM " + f.schemafn(x.Table.SQLName) + " ",
-			"WHERE " + strings.Join(list, " AND "),
-		}
-	}
-	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)}
-}
-
-// sqlstr_list builds a list fields.
-// TODO make generic. Also ignore if not created_at field.
-// TODO doesnt take updated_at into account either, see fastapi app for reference
-// we can generate based on event: is_update, is_create
-func (f *Funcs) sqlstr_list(v interface{}) []string {
-	switch x := v.(type) {
-	case Table:
-		// build table fieldnames
-		var fields []string
-		for _, z := range x.Fields {
-			fields = append(fields, f.colname(z))
-		}
-		// index fields
-		var list []string
-		for i, z := range x.Fields {
-			list = append(list, fmt.Sprintf("%s = %s", f.colname(z), f.nth(i)))
-		}
-		return []string{
-			"SELECT ",
-			strings.Join(fields, ", ") + " ",
-			"FROM " + f.schemafn(x.SQLName) + " ",
-			"ORDER BY created_at DESC LIMIT $1",
+			"WHERE " + strings.Join(filters, " AND "),
 		}
 	}
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)}
@@ -1740,9 +1870,13 @@ func (f *Funcs) convertTypes(fkey ForeignKey) string {
 		}
 		// convert types
 		typ, refType := field.Type, refField.Type
-		if strings.HasPrefix(typ, "sql.Null") {
-			expr = expr + "." + typ[8:]
-			typ = strings.ToLower(typ[8:])
+		if strings.HasPrefix(typ, "null.") {
+			_typ := typ[5:]
+			if strings.HasPrefix("Int", _typ) {
+				_typ += "64"
+			}
+			expr = expr + "." + _typ
+			typ = strings.ToLower(_typ)
 		}
 		if strings.ToLower(refType) != typ {
 			expr = refType + "(" + expr + ")"
@@ -1840,7 +1974,14 @@ func (f *Funcs) field(field Field) (string, error) {
 	if s := buf.String(); s != "" {
 		tag = " `" + s + "`"
 	}
-	return fmt.Sprintf("\t%s %s%s // %s", field.GoName, f.typefn(field.Type), tag, field.SQLName), nil
+	fieldType := f.typefn(field.Type)
+	if field.EnumPkg != "" {
+		p := field.EnumPkg[strings.LastIndex(field.EnumPkg, "/")+1:]
+		fieldType = p + "." + fieldType
+		fmt.Printf("enum %q using shared package %q\n", field.GoName, p)
+	}
+
+	return fmt.Sprintf("\t%s %s%s // %s", field.GoName, fieldType, tag, field.SQLName), nil
 }
 
 // short generates a safe Go identifier for typ. typ is first checked
@@ -2208,6 +2349,7 @@ type Enum struct {
 	SQLName string
 	Values  []EnumValue
 	Comment string
+	Pkg     string
 }
 
 // Proc is a stored procedure template.
@@ -2251,26 +2393,29 @@ type ForeignKey struct {
 
 // Index is an index template.
 type Index struct {
-	SQLName   string
-	Func      string
-	Table     Table
-	Fields    []Field
-	IsUnique  bool
-	IsPrimary bool
-	Comment   string
+	SQLName    string
+	Func       string
+	Table      Table
+	Fields     []Field
+	IsUnique   bool
+	IsPrimary  bool
+	Comment    string
+	Definition string
 }
 
 // Field is a field template.
 type Field struct {
-	GoName      string
-	SQLName     string
-	Type        string
-	Zero        string
-	IsPrimary   bool
-	IsSequence  bool
-	IsIgnored   bool
-	Comment     string
-	IsGenerated bool
+	GoName       string
+	SQLName      string
+	Type         string
+	Zero         string
+	IsPrimary    bool
+	IsSequence   bool
+	IsIgnored    bool
+	Comment      string
+	IsGenerated  bool
+	EnumPkg      string
+	IsDateOrTime bool
 }
 
 // QueryParam is a custom query parameter template.
@@ -2610,9 +2755,13 @@ func addLegacyFuncs(ctx context.Context, funcs template.FuncMap) {
 			return expr
 		}
 		ft := f.Type
-		if strings.HasPrefix(ft, "sql.Null") {
-			expr = expr + "." + f.Type[8:]
-			ft = strings.ToLower(f.Type[8:])
+		if strings.HasPrefix(ft, "null.") {
+			typ := f.Type[5:]
+			if strings.HasPrefix("Int", typ) {
+				typ += "64"
+			}
+			expr = expr + "." + typ
+			ft = strings.ToLower(typ)
 		}
 		if t.Type != ft {
 			expr = t.Type + "(" + expr + ")"

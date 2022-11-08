@@ -1,8 +1,4 @@
 {
-  "yaml.schemas": {
-    "https://raw.githubusercontent.com/docker/cli/master/cli/compose/schema/data/config_schema_v3.8.json": "*compose*.yml",
-    ".vscode/schema.json": "openapi.yaml"
-  },
   // --
   "go.lintTool": "golangci-lint",
   "go.lintFlags": [
@@ -39,18 +35,21 @@
   // https://github.com/microsoft/pylance-release/issues/2533
   "python.analysis.indexing": true,
   "python.analysis.packageIndexDepths": [
-    [
-      "src",
-      6
-    ],
-    [
-      ".",
-      6
-    ],
-    [
-      "",
-      6
-    ],
+    {
+      "name": "src",
+      "depth": 6,
+      "includeAllSymbols": true
+    },
+    {
+      "name": ".",
+      "depth": 6,
+      "includeAllSymbols": true
+    },
+    {
+      "name": "",
+      "depth": 6,
+      "includeAllSymbols": true
+    },
   ],
   "python.linting.pylintArgs": [
     "--init-hook='import sys; sys.path.append(\"/workspace\")'"
@@ -88,6 +87,7 @@
     "**/*.pgsql"
   ],
   "plpgsqlLanguageServer.enableExecuteFileQueryCommand": false,
+  "plpgsqlLanguageServer.migrationsFolder": "./db/migrations/",
   // "plpgsqlLanguageServer.queryParameterPattern": ":[A-Za-z_][A-Za-z0-9_]*",
   "plpgsqlLanguageServer.keywordQueryParameterPatterns": [
     "@{keyword}",

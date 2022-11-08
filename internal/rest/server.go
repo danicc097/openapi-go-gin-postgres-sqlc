@@ -30,7 +30,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/vault"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -46,8 +45,10 @@ type Config struct {
 	Redis   *rv8.Client
 	Logger  *zap.Logger
 	// SpecPath is the OpenAPI spec filepath.
-	SpecPath       string
-	MovieSvcClient v1.MovieGenreClient
+	SpecPath        string
+	MovieSvcClient  v1.MovieGenreClient
+	ScopePolicyPath string
+	RolePolicyPath  string
 }
 
 func (c *Config) validate() error {
@@ -56,6 +57,12 @@ func (c *Config) validate() error {
 	}
 	if c.SpecPath == "" {
 		return fmt.Errorf("no openapi spec path provided")
+	}
+	if c.ScopePolicyPath == "" {
+		return fmt.Errorf("no scope policy path provided")
+	}
+	if c.RolePolicyPath == "" {
+		return fmt.Errorf("no role policy path provided")
 	}
 	if c.Pool == nil {
 		return fmt.Errorf("no Postgres pool provided")
@@ -81,7 +88,7 @@ type server struct {
 type serverOption func(*server)
 
 // WithMiddlewares adds the given middlewares before registering the main routers.
-func WithMiddlewares(mws []gin.HandlerFunc) serverOption {
+func WithMiddlewares(mws ...gin.HandlerFunc) serverOption {
 	return func(s *server) {
 		s.middlewares = mws
 	}
@@ -91,7 +98,7 @@ func WithMiddlewares(mws []gin.HandlerFunc) serverOption {
 func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	err := conf.validate()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("server config validation: %w", err)
 	}
 
 	srv := &server{}
@@ -137,17 +144,17 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	schemaBlob, err := os.ReadFile(conf.SpecPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("openapi spec: %w", err)
 	}
 	sl := openapi3.NewLoader()
 
 	openapi, err := sl.LoadFromData(schemaBlob)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("openapi spec: %w", err)
 	}
 
 	if err = openapi.Validate(sl.Context); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("openapi validation: %w", err)
 	}
 
 	options := OAValidatorOptions{
@@ -198,7 +205,10 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	}
 
 	usvc := services.NewUser(postgresql.NewUser(), conf.Logger)
-	authzsvc := services.NewAuthorization(conf.Logger)
+	authzsvc, err := services.NewAuthorization(conf.Logger, conf.ScopePolicyPath, conf.RolePolicyPath)
+	if err != nil {
+		return nil, fmt.Errorf("NewAuthorization: %w", err)
+	}
 	authnsvc := services.NewAuthentication(conf.Logger, usvc)
 
 	vg.Use(oasMw.RequestValidatorWithOptions(&options))
@@ -222,17 +232,12 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 }
 
 // Run configures a server and underlying services with the given configuration.
-func Run(env, address, specPath string) (<-chan error, error) {
+func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, error) {
 	if err := envvar.Load(env); err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
 	}
 
-	provider, err := vault.New()
-	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "internal.NewVaultProvider")
-	}
-
-	conf := envvar.New(provider)
+	conf := envvar.New()
 
 	pool, err := postgresql.New(conf)
 	if err != nil {
@@ -276,12 +281,14 @@ func Run(env, address, specPath string) (<-chan error, error) {
 	}
 
 	srv, err := NewServer(Config{
-		Address:        address,
-		Pool:           pool,
-		Redis:          rdb,
-		Logger:         logger,
-		SpecPath:       specPath,
-		MovieSvcClient: v1.NewMovieGenreClient(movieSvcConn),
+		Address:         address,
+		Pool:            pool,
+		Redis:           rdb,
+		Logger:          logger,
+		SpecPath:        specPath,
+		ScopePolicyPath: scopePolicyPath,
+		RolePolicyPath:  rolePolicyPath,
+		MovieSvcClient:  v1.NewMovieGenreClient(movieSvcConn),
 	})
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "NewServer")

@@ -1,17 +1,23 @@
-# NOTE: Prefer automatic schema validation from dedicated tools instead, but as an example:
-# x-go-custom-tag: binding:"required[,customValidator]" [key:val ]
-# # Special case for ``format: date-time`` fields
-# # form data only:
-# x-go-custom-tag: time_format:"2006-01-02"
-# # the rest require custom unmarshalling if time is not RFC3339:
-# # see https://github.com/gin-gonic/gin/issues/1193
-# # there are some quirks to take into account as well:
-# # see https://segmentfault.com/a/1190000022264001
-# x-go-custom-tag: binding:"required"
-# ```
-openapi: 3.0.2
+#
+# Vendor extensions
+# -----------------
+#
+# Schema enums:
+#   - `x-db-enum` refers to a Postgres enum type and syncs its values.
+# Path operations:
+#   - `x-required-scopes` is an array of required scope keys from scopes.json
+#   - `x-required-role` is a required role name from role.json
+#
+x-uuid-pattern: &uuid-pattern ^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}
+# merge so that openapi validator middleware does a header precheck before going deeper
+x-path-security: &path-security
+  security:
+    - bearer_auth: []
+    - api_key: []
+#######################################
+openapi: 3.0.3
 info:
-  description: "This is a sample server Petstore server. For this sample, you can use the api key `special-key` to test the authorization filters."
+  description: This is a sample server Petstore server. For this sample, you can use the api key `special-key` to test the authorization filters.
   license:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
@@ -44,7 +50,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
   /openapi.yaml:
     get:
       summary: Returns this very OpenAPI spec.
@@ -59,6 +65,7 @@ paths:
                 format: binary
   /admin/ping:
     get:
+      <<: *path-security
       summary: Ping pongs
       operationId: AdminPing
       responses:
@@ -74,11 +81,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HTTPValidationError"
+                $ref: '#/components/schemas/HTTPValidationError'
       tags:
         - admin
+      x-required-scopes:
+        - test-scope
+      x-required-role: admin
   /user/me:
     get:
+      <<: *path-security
       summary: returns the logged in user
       operationId: GetCurrentUser
       responses:
@@ -86,15 +97,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetCurrentUserRes"
+                $ref: '#/components/schemas/GetCurrentUserRes'
           description: successful operation
-      security:
-        - bearer_auth: []
-        - api_key: []
       tags:
         - user
   /user/{id}:
     delete:
+      <<: *path-security
       summary: deletes the user by id
       operationId: DeleteUser
       parameters:
@@ -109,12 +118,14 @@ paths:
       responses:
         "404":
           description: User not found
-      security:
-        - bearer_auth: []
-        - api_key: []
       tags:
         - user
+      x-required-scopes:
+        - test-scope
+        - users:write
+      x-required-role: admin
     put:
+      <<: *path-security
       summary: updates the user by id
       operationId: UpdateUser
       parameters:
@@ -125,22 +136,21 @@ paths:
           required: true
           schema:
             type: string
+            pattern: *uuid-pattern
           style: simple
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateUserRequest"
+              $ref: '#/components/schemas/UpdateUserRequest'
         description: Updated user object
         required: true
       responses:
         "404":
           description: User not found
-      security:
-        - bearer_auth: []
-        - api_key: []
       tags:
         - user
+      x-required-role: user
 components:
   schemas:
     HTTPValidationError:
@@ -151,7 +161,7 @@ components:
           title: Detail
           type: array
           items:
-            $ref: "#/components/schemas/ValidationError"
+            $ref: '#/components/schemas/ValidationError'
     UpdateUserRequest:
       description: represents User data to update
       example:
@@ -160,29 +170,51 @@ components:
         last_name: Doe
       properties:
         role:
-          $ref: "#/components/schemas/Role"
+          $ref: '#/components/schemas/Role'
         first_name:
           type: string
-          pattern: "^[ a-zA-Z0-9_-]+$"
+          pattern: ^[ a-zA-Z0-9_-]+$
         last_name:
           type: string
-          pattern: "^[ a-zA-Z0-9_-]+$"
+          pattern: ^[ a-zA-Z0-9_-]+$
       title: a User
       type: object
-    # TODO bookstack style rbac or https://incidentio.notion.site/Proposal-Product-RBAC-265201563d884ec5aeecbb246c02ddc6
-    # which is also hierarchical but allows per-org (project in our case) settings
+    # TODO bookstack style ABAC
+    # allow per user global list of scopes in token
+    # so we can use openapi scopes security as well. Then internally
+    # check if other conditions met via middleware, etc.
+    # e.g. invoicing/billing scopes should be extremely specific so RBAC is
+    # not an option
+    # used as x-required-role: ?? (rank-based, at most one)
     Scope:
-      title: Scope
+      description: Scope automatically generated from scopes.json keys
       type: string
       enum:
-        - scope1
-        - scope2
+        - test-scope
+        - users:read
+        - users:write
+        - scopes:write
+        - team-settings:write
+        - project-settings:write
+        - work-item:review
     Role:
-      title: Role
-      description: User role.
+      description: Role automatically generated from roles.json keys
       type: string
-      x-db-enum: role
-      enum: ["user", "manager", "admin"]
+      enum:
+        - guest
+        - user
+        - advancedUser
+        - manager
+        - admin
+        - superAdmin
+    TaskRole:
+      title: Task role
+      description: Role in task for a member.
+      type: string
+      x-db-enum: task_role
+      enum:
+        - preparer
+        - reviewer
     Organization:
       title: Organization
       description: Organization a user belongs to.
@@ -215,11 +247,11 @@ components:
         phone:
           type: string
         role:
-          $ref: "#/components/schemas/Role"
+          $ref: '#/components/schemas/Role'
         orgs:
           description: are organizations a user belongs to
           items:
-            $ref: "#/components/schemas/Organization"
+            $ref: '#/components/schemas/Organization'
       title: a User
       type: object
       xml:

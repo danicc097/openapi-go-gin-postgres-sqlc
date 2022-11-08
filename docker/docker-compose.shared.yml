@@ -8,6 +8,7 @@ x-logging: &default-logging
 # Debug config with docker-compose --env-file <...> config
 services:
   db:
+    #  sqlc depends on https://github.com/pganalyze/libpg_query (pg 13 support only)
     image: postgres:13-alpine
     container_name: postgres_db_${PROJECT_PREFIX:?not set}
     user: postgres
@@ -40,98 +41,6 @@ services:
     restart: always
     logging: *default-logging
 
-  vault:
-    image: vault:1.9.8
-    container_name: vault_${PROJECT_PREFIX:?not set}
-    # ports:
-    #   - "8300:8300"
-    cap_add:
-      - IPC_LOCK
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 150M # TODO envvar
-    networks:
-      - traefik-net
-    environment:
-      VAULT_DEV_ROOT_TOKEN_ID: myroot
-      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8300"
-    logging: *default-logging
-
-  jaeger:
-    image: jaegertracing/all-in-one:1.38
-    container_name: jaeger
-    networks:
-      - traefik-net
-    ports:
-      - 16686:16686 # Jaeger UI
-      - 14268:14268 # spans directly from clients in jaeger.thrift format over binary thrift protocol
-      # https://www.jaegertracing.io/docs/1.23/apis/#grpcprotobuf-stable
-      - 16685:16685
-      - 14250:14250
-      - "6831:6831/udp"
-      - 4318:4318 # otlp collector
-      - 9411:9411 # Zipkin collector compatible endpoint
-      - "6832:6832/udp" # jaeger.thrift via UDP (binary)
-    # https://www.jaegertracing.io/docs/1.14/cli/#jaeger-all-in-one-elasticsearch
-    command: --log-level=debug --es.server-urls=http://host.docker.internal:9200 --collector.zipkin.allowed-origins="*" --collector.zipkin.allowed-headers="*"
-    environment:
-      # ADMIN_HTTP_TLS_ENABLED: "false"
-      COLLECTOR_ZIPKIN_HOST_PORT: "9411"
-      # COLLECTOR_OTLP_ENABLED: "true"
-      SPAN_STORAGE_TYPE: elasticsearch
-      # ES_SERVER_URLS: http://elasticsearch:9200
-    depends_on:
-      - elasticsearch
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    restart: unless-stopped
-    logging: *default-logging
-
-  # zipkin:
-  #   image: openzipkin/zipkin:latest
-  #   ports:
-  #     - 9411:9411
-  #   networks:
-  #     - traefik-net
-  #   restart: unless-stopped
-  #   logging: *default-logging
-
-  prometheus:
-    container_name: prometheus
-    image: prom/prometheus:latest
-    volumes:
-      # TODO have prometheus.template.yml with $ENVVAR
-      # and run replace-envvars.sh as in frontend's generate
-      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
-      - ${HOME}/.local/share/mkcert/rootCA.pem:/mkcert-rootCA.pem
-    ports:
-      - "9090:9090"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    depends_on:
-      - jaeger
-    restart: unless-stopped
-    # network_mode: host
-
-  elasticsearch:
-    # limited by jaeger as of now
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.22
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    # 1GB memory if unrestricted
-    deploy:
-      resources:
-        limits:
-          memory: 450M # TODO envvar
-    environment:
-      - discovery.type=single-node
-    restart: unless-stopped
-    volumes:
-      - openapi_elasticsearch_data:/usr/share/elasticsearch/data
-
 networks:
   traefik-net:
     name: traefik-net
@@ -141,4 +50,3 @@ volumes:
   openapi_pg_data:
   # in order not to have project prefix we would use
   # name: openapi_pg_data
-  openapi_elasticsearch_data:

@@ -19,13 +19,13 @@ language plpgsql;
 do $BODY$
 declare
   t text;
-  declare s text;
+  s text;
 begin
-  for t,
-  s in
+  for t
+  , s in
   select
-    table_name,
-    table_schema
+    table_name
+    , table_schema
   from
     information_schema.columns
   where (column_name = 'updated_at'
@@ -41,7 +41,7 @@ begin
             CREATE TRIGGER before_update_updated_at_%s_%s
             BEFORE UPDATE ON %I
             FOR EACH ROW EXECUTE PROCEDURE before_update_updated_at();
-        ', s, t, t);
+        ' , s , t , t);
     end loop;
 end;
 $BODY$

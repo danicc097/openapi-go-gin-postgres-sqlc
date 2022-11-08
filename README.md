@@ -20,6 +20,12 @@ calls tracking:
 
 ![](.github/logging.png)
 
+And help for any `x` function is easily searchable when the app inevitably grows
+with `--x-help`:
+
+![](.github/help-x-function.png)
+
+
 ## What's this for?
 
 Your OpenAPI v3 spec becomes a real single source of truth for the full stack. Any
@@ -33,7 +39,8 @@ change to it is validated and cascades down to:
   that ensures compatibility.
 
 Additionally, it features OpenTelemetry in both browser (automatic and
-manual instrumentation) and backend services (manual instrumentation).
+manual instrumentation) and backend services (manual instrumentation) via
+Jaeger, TimescaleDB and Promscale (certified storage backend).
 
 ## Architecture
 

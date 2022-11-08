@@ -20,9 +20,7 @@ type Provider interface {
 }
 
 // Configuration ...
-type Configuration struct {
-	provider Provider
-}
+type Configuration struct{}
 
 // Load reads the env filename and loads it into ENV for the current process.
 func Load(filename string) error {
@@ -34,26 +32,14 @@ func Load(filename string) error {
 }
 
 // New ...
-func New(provider Provider) *Configuration {
-	return &Configuration{
-		provider: provider,
-	}
+func New() *Configuration {
+	return &Configuration{}
 }
 
 // Get returns the value from environment variable `<key>`. When an environment variable `<key>_SECURE` exists
 // the provider is used for getting the value.
 func (c *Configuration) Get(key string) (string, error) {
 	res := os.Getenv(key)
-	valSecret := os.Getenv(fmt.Sprintf("%s_SECURE", key))
-
-	if valSecret != "" {
-		valSecretRes, err := c.provider.Get(valSecret)
-		if err != nil {
-			return "", internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "provider.Get")
-		}
-
-		res = valSecretRes
-	}
 
 	return res, nil
 }
@@ -65,6 +51,7 @@ func GetenvStr(key string) (string, error) {
 	if v == "" {
 		return v, errors.Wrap(errEnvVarEmpty, key)
 	}
+
 	return v, nil
 }
 
@@ -77,6 +64,7 @@ func GetenvBool(key string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	return v, nil
 }
 
@@ -85,5 +73,6 @@ func GetEnv(key, dft string) string {
 	if len(v) == 0 {
 		return dft
 	}
+
 	return v
 }

@@ -4,52 +4,37 @@ package db
 
 import (
 	"context"
+	"fmt"
 )
 
 // Movie represents a row from 'public.movies'.
 type Movie struct {
-	MovieID  int    `json:"movie_id"` // movie_id
-	Title    string `json:"title"`    // title
-	Year     int    `json:"year"`     // year
-	Synopsis string `json:"synopsis"` // synopsis
+	MovieID  int    `json:"movie_id" db:"movie_id"` // movie_id
+	Title    string `json:"title" db:"title"`       // title
+	Year     int    `json:"year" db:"year"`         // year
+	Synopsis string `json:"synopsis" db:"synopsis"` // synopsis
 	// xo fields
 	_exists, _deleted bool
 }
 
-// GetMostRecentMovie returns n most recent rows from 'movies',
-// ordered by "created_at" in descending order.
-func GetMostRecentMovie(ctx context.Context, db DB, n int) ([]*Movie, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`movie_id, title, year, synopsis ` +
-		`FROM public.movies ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*Movie
-	for rows.Next() {
-		m := Movie{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&m.MovieID, &m.Title, &m.Year, &m.Synopsis); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &m)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
+type MovieSelectConfig struct {
+	limit    string
+	orderBy  string
+	joinWith []MovieJoinBy
 }
+
+type MovieSelectConfigOption func(*MovieSelectConfig)
+
+// MovieWithLimit limits row selection.
+func MovieWithLimit(limit int) MovieSelectConfigOption {
+	return func(s *MovieSelectConfig) {
+		s.limit = fmt.Sprintf(" limit %d ", limit)
+	}
+}
+
+type MovieOrderBy = string
+
+type MovieJoinBy = string
 
 // Exists returns true when the Movie exists in the database.
 func (m *Movie) Exists() bool {
@@ -71,11 +56,11 @@ func (m *Movie) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
-	const sqlstr = `INSERT INTO public.movies (` +
+	sqlstr := `INSERT INTO public.movies (` +
 		`title, year, synopsis` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) RETURNING movie_id`
+		`) RETURNING movie_id `
 	// run
 	logf(sqlstr, m.Title, m.Year, m.Synopsis)
 	if err := db.QueryRow(ctx, sqlstr, m.Title, m.Year, m.Synopsis).Scan(&m.MovieID); err != nil {
@@ -95,9 +80,9 @@ func (m *Movie) Update(ctx context.Context, db DB) error {
 		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
-	const sqlstr = `UPDATE public.movies SET ` +
+	sqlstr := `UPDATE public.movies SET ` +
 		`title = $1, year = $2, synopsis = $3 ` +
-		`WHERE movie_id = $4`
+		`WHERE movie_id = $4 `
 	// run
 	logf(sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID)
 	if _, err := db.Exec(ctx, sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID); err != nil {
@@ -121,14 +106,14 @@ func (m *Movie) Upsert(ctx context.Context, db DB) error {
 		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 	}
 	// upsert
-	const sqlstr = `INSERT INTO public.movies (` +
+	sqlstr := `INSERT INTO public.movies (` +
 		`movie_id, title, year, synopsis` +
 		`) VALUES (` +
 		`$1, $2, $3, $4` +
 		`)` +
 		` ON CONFLICT (movie_id) DO ` +
 		`UPDATE SET ` +
-		`title = EXCLUDED.title, year = EXCLUDED.year, synopsis = EXCLUDED.synopsis `
+		`title = EXCLUDED.title, year = EXCLUDED.year, synopsis = EXCLUDED.synopsis  `
 	// run
 	logf(sqlstr, m.MovieID, m.Title, m.Year, m.Synopsis)
 	if _, err := db.Exec(ctx, sqlstr, m.MovieID, m.Title, m.Year, m.Synopsis); err != nil {
@@ -148,8 +133,8 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with single primary key
-	const sqlstr = `DELETE FROM public.movies ` +
-		`WHERE movie_id = $1`
+	sqlstr := `DELETE FROM public.movies ` +
+		`WHERE movie_id = $1 `
 	// run
 	logf(sqlstr, m.MovieID)
 	if _, err := db.Exec(ctx, sqlstr, m.MovieID); err != nil {
@@ -163,12 +148,20 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 // MovieByMovieID retrieves a row from 'public.movies' as a Movie.
 //
 // Generated from index 'movies_pkey'.
-func MovieByMovieID(ctx context.Context, db DB, movieID int) (*Movie, error) {
+func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) (*Movie, error) {
+	c := &MovieSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`movie_id, title, year, synopsis ` +
 		`FROM public.movies ` +
-		`WHERE movie_id = $1`
+		`WHERE movie_id = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, movieID)
 	m := Movie{

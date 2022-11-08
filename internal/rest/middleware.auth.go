@@ -2,11 +2,12 @@ package rest
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-gonic/gin"
@@ -55,20 +56,41 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	}
 }
 
+// TODO EnsureAuthorizedRole and EnsureAuthorizedScopes(scopes ...Scopes)
+// 1. x-required-scopes read by yq in spec
+// 2. generate a JSON file for frontend and backend to use: {<operationID>: [<...scopes>], ...}.
+// 3.  new method authMiddleware.EnsureAuthorizedScopes(opID operationID, user *db.User), which
+// 4. uses the loaded JSON to check if operationIDScopes[opID] exists, in which case
+// checks if user.scopes contains the required scopes as per spec
+// it belongs here, not in a service since this is specific to rest.
+type operationIDScopes = map[operationID][]string
+
+type AuthRestriction struct {
+	MinimumRole    models.Role
+	RequiredScopes []models.Scope
+}
+
 // EnsureAuthorized checks whether the client is authorized.
-// TODO use authorization service, which in turn uses the user service to check role
-// based on token -> email -> GetUserByEmail -> role
-func (a *authMiddleware) EnsureAuthorized(requiredRole db.Role) gin.HandlerFunc {
+func (a *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authzsvc := services.NewAuthorization(a.logger)
 		user := getUserFromCtx(c)
 		if user == nil {
 			renderErrorResponse(c, "Could not get user from context.", nil)
 
 			return
 		}
-		err := authzsvc.IsAuthorized(user.Role, requiredRole)
-		if err != nil {
+
+		userRole, ok := a.authzsvc.RoleByRank(user.RoleRank)
+		if !ok {
+			renderErrorResponse(c, fmt.Sprintf("Unknown rank value: %d", user.RoleRank), errors.New("unknown rank"))
+		}
+		if err := a.authzsvc.HasRequiredRole(userRole, config.MinimumRole); err != nil {
+			renderErrorResponse(c, "Unauthorized.", err)
+
+			return
+		}
+
+		if err := a.authzsvc.HasRequiredScopes(user.Scopes, config.RequiredScopes); err != nil {
 			renderErrorResponse(c, "Unauthorized.", err)
 
 			return

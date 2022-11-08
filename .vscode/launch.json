@@ -21,6 +21,17 @@
       "args": [
         "-env=.env.dev"
       ]
+    },
+    {
+      "name": "Launch CLI",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "cwd": ".",
+      "program": "cmd/cli/main.go",
+      "args": [
+        "-env=.env.dev"
+      ]
     }
   ]
 }

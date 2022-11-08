@@ -1,0 +1,115 @@
+version: "3.8"
+x-logging: &default-logging
+  options:
+    max-size: "10m"
+    max-file: "2"
+  driver: json-file
+
+# Debug config with docker-compose --env-file <...> config
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.38
+    networks:
+      - traefik-net
+      - otel-network
+    ports:
+      - 16686:16686 # Jaeger UI
+      - 14268:14268 # spans directly from clients in jaeger.thrift format over binary thrift protocol
+      # https://www.jaegertracing.io/docs/1.23/apis/#grpcprotobuf-stable
+      - 16685:16685
+      - 14250:14250
+      - "6831:6831/udp"
+      - 4318:4318 # otlp collector
+      - 4317:4317 # grpc collector
+      - 9411:9411 # Zipkin collector compatible endpoint
+      - "6832:6832/udp" # jaeger.thrift via UDP (binary)
+    # https://www.jaegertracing.io/docs/1.14/cli/#jaeger-all-in-one-elasticsearch
+    depends_on:
+      - promscale
+    command: --log-level=debug #--collector.zipkin.allowed-origins="*" --collector.zipkin.allowed-headers="*"
+    environment:
+      # COLLECTOR_ZIPKIN_HOST_PORT: 9411
+      SPAN_STORAGE_TYPE: grpc-plugin
+      GRPC_STORAGE_SERVER: "promscale:9202"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    logging: *default-logging
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      # TODO have prometheus.template.yml with $ENVVAR
+      # and run replace-envvars.sh as in frontend's generate
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+      - ${HOME}/.local/share/mkcert/rootCA.pem:/mkcert-rootCA.pem
+    ports:
+      - "9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - jaeger
+    restart: unless-stopped
+    # network_mode: host
+
+  db:
+    image: timescale/timescaledb-ha:pg14-latest
+    ports:
+      - 5432:5432/tcp
+    networks:
+      # else service name clashes if db already exists in a network
+      - otel-network
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+      TSTUNE_PROFILE: promscale
+    restart: unless-stopped
+    volumes:
+      - timescale_otel_data:/home/postgres/pgdata/data
+
+  # TODO alertmanager
+  # alertmanager:
+  #   image: prom/alertmanager:latest
+  #   ports:
+  #     - 9093:9093/tcp
+
+  # see https://github.com/timescale/promscale/tree/master/docker-compose
+  promscale:
+    image: timescale/promscale:latest
+    ports:
+      - 9201:9201/tcp
+      - 9202:9202/tcp
+    restart: unless-stopped
+    networks:
+      - otel-network
+    depends_on:
+      - db
+    volumes:
+      - ./promscale_prometheus.yml:/prometheus.yml
+      - ./rules.yml:/rules.yml
+      - ./alerts.yml:/alerts.yml
+    environment:
+      PROMSCALE_DB_URI: postgres://postgres:password@db:5432/postgres?sslmode=allow
+      PROMSCALE_TRACING_OTLP_SERVER_ADDRESS: ":9202"
+      # PROMSCALE_TELEMETRY_TRACE_OTEL_ENDPOINT: "jaeger:4317"
+      # PROMSCALE_TELEMETRY_TRACE_SAMPLING_RATIO: "0.1"
+      PROMSCALE_METRICS_RULES_CONFIG_FILE: /prometheus.yml
+
+  # TODO exporter for linux server status
+  # node_exporter:
+  #   image: quay.io/prometheus/node-exporter
+  #   ports:
+  #     - "9100:9100"
+  #   restart: unless-stopped
+
+networks:
+  traefik-net:
+    name: traefik-net
+    external: true
+  otel-network:
+    internal: true
+
+volumes:
+  timescale_otel_data:
+  # in order not to have project prefix we would use
+  # name: timescale_otel_data

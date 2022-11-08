@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -16,29 +17,29 @@ import (
 func TestAuthorizationMiddleware(t *testing.T) {
 	testCases := []struct {
 		name         string
-		role         db.Role
-		requiredRole db.Role
+		role         models.Role
+		requiredRole models.Role
 		status       int
 		body         string
 	}{
 		{
 			name:         "unauthorized_user",
-			role:         db.RoleUser,
-			requiredRole: db.RoleAdmin,
+			role:         models.RoleUser,
+			requiredRole: models.RoleAdmin,
 			status:       http.StatusForbidden,
 			body:         "Unauthorized.",
 		},
 		{
 			name:         "unauthorized_manager",
-			role:         db.RoleManager,
-			requiredRole: db.RoleAdmin,
+			role:         models.RoleManager,
+			requiredRole: models.RoleAdmin,
 			status:       http.StatusForbidden,
 			body:         "Unauthorized.",
 		},
 		{
 			name:         "authorized",
-			role:         db.RoleAdmin,
-			requiredRole: db.RoleAdmin,
+			role:         models.RoleAdmin,
+			requiredRole: models.RoleAdmin,
 			status:       http.StatusOK,
 			body:         "ok",
 		},
@@ -50,7 +51,10 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		_, engine := gin.CreateTestContext(resp)
 
 		usvc := services.NewUser(postgresql.NewUser(), logger)
-		authzsvc := services.NewAuthorization(logger)
+		authzsvc, err := services.NewAuthorization(logger, "testdata/scopes.json", "testdata/roles.json")
+		if err != nil {
+			t.Fatalf("services.NewAuthorization: %v", err)
+		}
 		authnsvc := services.NewAuthentication(logger, usvc)
 
 		authMw := newAuthMiddleware(logger, pool, authnsvc, authzsvc, usvc)
@@ -58,9 +62,14 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		req, _ := http.NewRequest(http.MethodGet, "/", nil)
 
 		engine.Use(func(c *gin.Context) {
-			ctxWithUser(c, &db.User{Role: tc.role})
+			r, err := authzsvc.RoleByName(string(tc.role))
+			if err != nil {
+				t.Fatalf("authzsvc.RoleByName: %v", err)
+			}
+			ctxWithUser(c, &db.User{RoleRank: r.Rank})
 		})
-		engine.Use(authMw.EnsureAuthorized(tc.requiredRole))
+
+		engine.Use(authMw.EnsureAuthorized(AuthRestriction{MinimumRole: tc.requiredRole}))
 		engine.GET("/", func(ctx *gin.Context) {
 			ctx.String(http.StatusOK, "ok")
 		})

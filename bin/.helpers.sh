@@ -120,7 +120,10 @@ to_pascal() {
 
 err() {
   echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
-  kill -s SIGUSR1 $PROC
+  sleep 0.1 # while processing xerr in background
+  # kill -s SIGUSR1 $PROC
+  # FIXME parallel (sub-)subshell management instead of force killing
+  kill 0
   exit 1 # if not using trap
 }
 
@@ -195,6 +198,10 @@ drop_and_recreate_db() {
 # (should work via bash -c "...")
 dockerdb() {
   docker exec -i postgres_db_"$PROJECT_PREFIX" "$@"
+}
+
+dockerdb_psql() {
+  docker exec -i postgres_db_"$PROJECT_PREFIX" psql -qtAX -v ON_ERROR_STOP=on "$@"
 }
 
 # Create database `db`.

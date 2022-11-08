@@ -1,0 +1,26 @@
+{
+  "guest": {
+    "description": "Users with limited read-only permissions.",
+    "rank": 1
+  },
+  "user": {
+    "description": "Regular users, with no special permissions.",
+    "rank": 2
+  },
+  "advancedUser": {
+    "description": "Users with additional permissions.",
+    "rank": 3
+  },
+  "manager": {
+    "description": "Managers have privileged access for team management.",
+    "rank": 4
+  },
+  "admin": {
+    "description": "Admins can manage all settings on a per-project basis.",
+    "rank": 5
+  },
+  "superAdmin": {
+    "description": "Superadmins have unrestricted access to any project.",
+    "rank": 6
+  }
+}

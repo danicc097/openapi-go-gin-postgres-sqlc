@@ -36,24 +36,40 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Scope": {
-      "title": "Scope",
+      "description": "Scope automatically generated from scopes.json",
       "type": "string",
-      "x-db-enum": "scope",
       "enum": [
-        "scope1",
-        "scope2"
+        "test-scope",
+        "users:read",
+        "users:write",
+        "scopes:write",
+        "team-settings:write",
+        "project-settings:write",
+        "work-item:review"
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Role": {
-      "title": "Role",
-      "description": "User role.",
+      "description": "Role automatically generated from roles.json",
       "type": "string",
-      "x-db-enum": "role",
       "enum": [
+        "guest",
         "user",
+        "advancedUser",
         "manager",
-        "admin"
+        "admin",
+        "superAdmin"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "TaskRole": {
+      "title": "Task role",
+      "description": "Role in task for a member.",
+      "type": "string",
+      "x-db-enum": "task_role",
+      "enum": [
+        "preparer",
+        "reviewer"
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -61,12 +77,6 @@
       "title": "Organization",
       "description": "Organization a user belongs to.",
       "type": "string",
-      "x-db-enum": "org",
-      "enum": [
-        "team 1",
-        "team 2",
-        "team 3"
-      ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "GetCurrentUserRes": {
@@ -150,6 +160,9 @@
     },
     "Role": {
       "$ref": "#/definitions/Role"
+    },
+    "TaskRole": {
+      "$ref": "#/definitions/TaskRole"
     },
     "Organization": {
       "$ref": "#/definitions/Organization"

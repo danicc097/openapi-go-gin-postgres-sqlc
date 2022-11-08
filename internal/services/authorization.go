@@ -1,44 +1,123 @@
 package services
 
 import (
+	"encoding/json"
+	"fmt"
+	"os"
+
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
 
-var roles = map[db.Role][]db.Role{
-	db.RoleUser:    {db.RoleUser},
-	db.RoleManager: {db.RoleUser, db.RoleManager},
-	db.RoleAdmin:   {db.RoleUser, db.RoleManager, db.RoleAdmin},
+// Role represents a predefined role that may be required
+// for specific actions regardless of scopes assigned to a user.
+// It is also associated with a collection of scopes that get assigned/revoked upon role change.
+type Role struct {
+	Description string `json:description`
+	Rank        int16  `json:rank` // to avoid casting. postgres smallint with check > 0
 }
+
+type Scope struct {
+	Description string `json:description`
+}
+
+type (
+	UserRoles  = map[models.Role]Role
+	UserScopes = map[models.Scope]Scope
+)
 
 // Authorization represents a service for authorization.
 type Authorization struct {
 	logger *zap.Logger
+	roles  UserRoles
+	scopes UserScopes
 }
 
-func NewAuthorization(logger *zap.Logger) *Authorization {
+// NewAuthorization returns a new Authorization service.
+// Existing roles and scopes will be loaded from the given policy JSON file paths.
+func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string) (*Authorization, error) {
+	roles := make(UserRoles)
+	scopes := make(UserScopes)
+
+	scopeBlob, err := os.ReadFile(scopePolicy)
+	if err != nil {
+		return nil, fmt.Errorf("scope policy: %w", err)
+	}
+	roleBlob, err := os.ReadFile(rolePolicy)
+	if err != nil {
+		return nil, fmt.Errorf("role policy: %w", err)
+	}
+	if err := json.Unmarshal([]byte(scopeBlob), &scopes); err != nil {
+		return nil, fmt.Errorf("scope policy: %w", err)
+	}
+	if err := json.Unmarshal([]byte(roleBlob), &roles); err != nil {
+		return nil, fmt.Errorf("role policy: %w", err)
+	}
+
 	return &Authorization{
 		logger: logger,
-	}
+		roles:  roles,
+		scopes: scopes,
+	}, nil
 }
 
-// TODO RBAC: https://incidentio.notion.site/Proposal-Product-RBAC-265201563d884ec5aeecbb246c02ddc6
+// TODO ABAC:
+// for scope structure references (not roles logic obv) see:
+// https://incidentio.notion.site/Proposal-Product-RBAC-265201563d884ec5aeecbb246c02ddc6
 // last resort: casbin. too much scope, poor docs, maintenance
 // for frontend https://casbin.org/docs/en/frontend
 // load policy from db: https://github.com/casbin/casbin-pg-adapter
 
-// RolePermissions returns access levels per role.
-func (a Authorization) RolePermissions() map[db.Role][]db.Role {
-	return roles
+// TODO public get role by name
+// TODO public get scope by name
+
+func (a *Authorization) RoleByName(role string) (Role, error) {
+	rl, ok := a.roles[models.Role(role)]
+	if !ok {
+		return Role{}, internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown role %s", role)
+	}
+
+	return rl, nil
 }
 
-func (a Authorization) IsAuthorized(role, requiredRole db.Role) error {
-	roles := a.RolePermissions()[role]
+func (a *Authorization) RoleByRank(rank int16) (Role, bool) {
+	for _, r := range a.roles {
+		if r.Rank == rank {
+			return r, true
+		}
+	}
 
-	if !slices.Contains(roles, requiredRole) {
+	return Role{}, false
+}
+
+func (a *Authorization) ScopeByName(scope string) (Scope, error) {
+	s, ok := a.scopes[models.Scope(scope)]
+	if !ok {
+		return Scope{}, internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown scope %s", scope)
+	}
+
+	return s, nil
+}
+
+func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) error {
+	rl, ok := a.roles[requiredRole]
+	if !ok {
+		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown role %s", requiredRole)
+	}
+	if role.Rank < rl.Rank {
 		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted")
+	}
+
+	return nil
+}
+
+func (a *Authorization) HasRequiredScopes(scopes []string, requiredScopes []models.Scope) error {
+	for _, rs := range requiredScopes {
+		if !slices.Contains(scopes, string(rs)) {
+			return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted")
+		}
 	}
 
 	return nil

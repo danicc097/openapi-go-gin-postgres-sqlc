@@ -79,13 +79,15 @@ func runTestServer(t *testing.T, pool *pgxpool.Pool, middlewares []gin.HandlerFu
 	}
 
 	srv, err := NewServer(Config{
-		Address:        ":0", // random next available for each test server
-		Pool:           pool,
-		Redis:          rdb,
-		Logger:         logger,
-		SpecPath:       "../../openapi.yaml",
-		MovieSvcClient: &v1testing.FakeMovieGenreClient{},
-	}, WithMiddlewares(middlewares))
+		Address:         ":0", // random next available for each test server
+		Pool:            pool,
+		Redis:           rdb,
+		Logger:          logger,
+		SpecPath:        "../../openapi.yaml",
+		MovieSvcClient:  &v1testing.FakeMovieGenreClient{},
+		ScopePolicyPath: "../../scopes.json",
+		RolePolicyPath:  "../../roles.json",
+	}, WithMiddlewares(middlewares...))
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "New")
 	}

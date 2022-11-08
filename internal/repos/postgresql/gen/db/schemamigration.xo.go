@@ -4,50 +4,35 @@ package db
 
 import (
 	"context"
+	"fmt"
 )
 
 // SchemaMigration represents a row from 'public.schema_migrations'.
 type SchemaMigration struct {
-	Version int64 `json:"version"` // version
-	Dirty   bool  `json:"dirty"`   // dirty
+	Version int64 `json:"version" db:"version"` // version
+	Dirty   bool  `json:"dirty" db:"dirty"`     // dirty
 	// xo fields
 	_exists, _deleted bool
 }
 
-// GetMostRecentSchemaMigration returns n most recent rows from 'schema_migrations',
-// ordered by "created_at" in descending order.
-func GetMostRecentSchemaMigration(ctx context.Context, db DB, n int) ([]*SchemaMigration, error) {
-	// list
-	const sqlstr = `SELECT ` +
-		`version, dirty ` +
-		`FROM public.schema_migrations ` +
-		`ORDER BY created_at DESC LIMIT $1`
-	// run
-	logf(sqlstr, n)
-
-	rows, err := db.Query(ctx, sqlstr, n)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-
-	// load results
-	var res []*SchemaMigration
-	for rows.Next() {
-		sm := SchemaMigration{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&sm.Version, &sm.Dirty); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &sm)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
+type SchemaMigrationSelectConfig struct {
+	limit    string
+	orderBy  string
+	joinWith []SchemaMigrationJoinBy
 }
+
+type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
+
+// SchemaMigrationWithLimit limits row selection.
+func SchemaMigrationWithLimit(limit int) SchemaMigrationSelectConfigOption {
+	return func(s *SchemaMigrationSelectConfig) {
+		s.limit = fmt.Sprintf(" limit %d ", limit)
+	}
+}
+
+type SchemaMigrationOrderBy = string
+
+type SchemaMigrationJoinBy = string
 
 // Exists returns true when the SchemaMigration exists in the database.
 func (sm *SchemaMigration) Exists() bool {
@@ -69,11 +54,11 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) error {
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (manual)
-	const sqlstr = `INSERT INTO public.schema_migrations (` +
+	sqlstr := `INSERT INTO public.schema_migrations (` +
 		`version, dirty` +
 		`) VALUES (` +
 		`$1, $2` +
-		`)`
+		`) `
 	// run
 	logf(sqlstr, sm.Version, sm.Dirty)
 	if _, err := db.Exec(ctx, sqlstr, sm.Version, sm.Dirty); err != nil {
@@ -93,9 +78,9 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) error {
 		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
-	const sqlstr = `UPDATE public.schema_migrations SET ` +
+	sqlstr := `UPDATE public.schema_migrations SET ` +
 		`dirty = $1 ` +
-		`WHERE version = $2`
+		`WHERE version = $2 `
 	// run
 	logf(sqlstr, sm.Dirty, sm.Version)
 	if _, err := db.Exec(ctx, sqlstr, sm.Dirty, sm.Version); err != nil {
@@ -119,14 +104,14 @@ func (sm *SchemaMigration) Upsert(ctx context.Context, db DB) error {
 		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
 	}
 	// upsert
-	const sqlstr = `INSERT INTO public.schema_migrations (` +
+	sqlstr := `INSERT INTO public.schema_migrations (` +
 		`version, dirty` +
 		`) VALUES (` +
 		`$1, $2` +
 		`)` +
 		` ON CONFLICT (version) DO ` +
 		`UPDATE SET ` +
-		`dirty = EXCLUDED.dirty `
+		`dirty = EXCLUDED.dirty  `
 	// run
 	logf(sqlstr, sm.Version, sm.Dirty)
 	if _, err := db.Exec(ctx, sqlstr, sm.Version, sm.Dirty); err != nil {
@@ -146,8 +131,8 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 		return nil
 	}
 	// delete with single primary key
-	const sqlstr = `DELETE FROM public.schema_migrations ` +
-		`WHERE version = $1`
+	sqlstr := `DELETE FROM public.schema_migrations ` +
+		`WHERE version = $1 `
 	// run
 	logf(sqlstr, sm.Version)
 	if _, err := db.Exec(ctx, sqlstr, sm.Version); err != nil {
@@ -161,12 +146,20 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 // SchemaMigrationByVersion retrieves a row from 'public.schema_migrations' as a SchemaMigration.
 //
 // Generated from index 'schema_migrations_pkey'.
-func SchemaMigrationByVersion(ctx context.Context, db DB, version int64) (*SchemaMigration, error) {
+func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ...SchemaMigrationSelectConfigOption) (*SchemaMigration, error) {
+	c := &SchemaMigrationSelectConfig{}
+	for _, o := range opts {
+		o(c)
+	}
+
 	// query
-	const sqlstr = `SELECT ` +
+	sqlstr := `SELECT ` +
 		`version, dirty ` +
 		`FROM public.schema_migrations ` +
-		`WHERE version = $1`
+		`WHERE version = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
 	// run
 	logf(sqlstr, version)
 	sm := SchemaMigration{

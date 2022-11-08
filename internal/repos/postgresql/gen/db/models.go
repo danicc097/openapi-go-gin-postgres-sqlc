@@ -9,63 +9,60 @@ import (
 	"fmt"
 )
 
-type Role string
+type TaskRole string
 
 const (
-	RoleUser    Role = "user"
-	RoleManager Role = "manager"
-	RoleAdmin   Role = "admin"
+	TaskRolePreparer TaskRole = "preparer"
+	TaskRoleReviewer TaskRole = "reviewer"
 )
 
-func (e *Role) Scan(src interface{}) error {
+func (e *TaskRole) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
-		*e = Role(s)
+		*e = TaskRole(s)
 	case string:
-		*e = Role(s)
+		*e = TaskRole(s)
 	default:
-		return fmt.Errorf("unsupported scan type for Role: %T", src)
+		return fmt.Errorf("unsupported scan type for TaskRole: %T", src)
 	}
 	return nil
 }
 
-type NullRole struct {
-	Role  Role
-	Valid bool // Valid is true if Role is not NULL
+type NullTaskRole struct {
+	TaskRole TaskRole
+	Valid    bool // Valid is true if TaskRole is not NULL
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullRole) Scan(value interface{}) error {
+func (ns *NullTaskRole) Scan(value interface{}) error {
 	if value == nil {
-		ns.Role, ns.Valid = "", false
+		ns.TaskRole, ns.Valid = "", false
 		return nil
 	}
 	ns.Valid = true
-	return ns.Role.Scan(value)
+	return ns.TaskRole.Scan(value)
 }
 
 // Value implements the driver Valuer interface.
-func (ns NullRole) Value() (driver.Value, error) {
+func (ns NullTaskRole) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return ns.Role, nil
+	return ns.TaskRole, nil
 }
 
-func (e Role) Valid() bool {
+func (e TaskRole) Valid() bool {
 	switch e {
-	case RoleUser,
-		RoleManager,
-		RoleAdmin:
+	case TaskRolePreparer,
+		TaskRoleReviewer:
 		return true
 	}
 	return false
 }
 
-func AllRoleValues() []Role {
-	return []Role{
-		RoleUser,
-		RoleManager,
-		RoleAdmin,
+func AllTaskRoleValues() []TaskRole {
+	return []TaskRole{
+		TaskRolePreparer,
+		TaskRoleReviewer,
 	}
 }
