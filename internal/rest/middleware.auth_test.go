@@ -62,9 +62,14 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		req, _ := http.NewRequest(http.MethodGet, "/", nil)
 
 		engine.Use(func(c *gin.Context) {
-			ctxWithUser(c, &db.User{RoleRank: tc.role})
+			r, err := authzsvc.RoleByName(string(tc.role))
+			if err != nil {
+				t.Fatalf("authzsvc.RoleByName: %v", err)
+			}
+			ctxWithUser(c, &db.User{RoleRank: r.Rank})
 		})
-		engine.Use(authMw.EnsureAuthorized(tc.requiredRole))
+
+		engine.Use(authMw.EnsureAuthorized(AuthRestriction{MinimumRole: tc.requiredRole}))
 		engine.GET("/", func(ctx *gin.Context) {
 			ctx.String(http.StatusOK, "ok")
 		})

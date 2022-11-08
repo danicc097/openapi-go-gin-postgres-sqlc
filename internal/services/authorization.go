@@ -73,7 +73,7 @@ func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string)
 // TODO public get role by name
 // TODO public get scope by name
 
-func (a *Authorization) Role(role string) (Role, error) {
+func (a *Authorization) RoleByName(role string) (Role, error) {
 	rl, ok := a.roles[models.Role(role)]
 	if !ok {
 		return Role{}, internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown role %s", role)
@@ -88,10 +88,11 @@ func (a *Authorization) RoleByRank(rank int16) (Role, bool) {
 			return r, true
 		}
 	}
+
 	return Role{}, false
 }
 
-func (a *Authorization) Scope(scope string) (Scope, error) {
+func (a *Authorization) ScopeByName(scope string) (Scope, error) {
 	s, ok := a.scopes[models.Scope(scope)]
 	if !ok {
 		return Scope{}, internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown scope %s", scope)

@@ -31,7 +31,6 @@ create table users (
   user_id uuid default gen_random_uuid () not null
   , username text not null unique
   , email text not null unique
-  , scopes text[] default '{}' not null -- defined in spec only
   , first_name text
   , last_name text
   , full_name text generated always as ( case when first_name is null then
@@ -42,6 +41,7 @@ create table users (
     first_name || ' ' || last_name
   end) stored
   , external_id text
+  , scopes text[] default '{}' not null
   , role_rank smallint default 1 not null check (role_rank > 0)
   -- so that later on we can (1) append scopes and remove duplicates:
   --    update users
@@ -103,6 +103,7 @@ create table work_items (
   , metadata jsonb not null
   , team_id int not null
   , kanban_step_id int not null
+  , closed bool default false not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone

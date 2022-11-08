@@ -17,11 +17,11 @@ type User struct {
 	UserID     uuid.NullUUID `json:"user_id" db:"user_id"`         // user_id
 	Username   null.String   `json:"username" db:"username"`       // username
 	Email      null.String   `json:"email" db:"email"`             // email
-	Scopes     []string      `json:"scopes" db:"scopes"`           // scopes
 	FirstName  null.String   `json:"first_name" db:"first_name"`   // first_name
 	LastName   null.String   `json:"last_name" db:"last_name"`     // last_name
 	FullName   null.String   `json:"full_name" db:"full_name"`     // full_name
 	ExternalID null.String   `json:"external_id" db:"external_id"` // external_id
+	Scopes     []string      `json:"scopes" db:"scopes"`           // scopes
 	RoleRank   null.Int      `json:"role_rank" db:"role_rank"`     // role_rank
 	CreatedAt  null.Time     `json:"created_at" db:"created_at"`   // created_at
 	UpdatedAt  null.Time     `json:"updated_at" db:"updated_at"`   // updated_at
@@ -81,7 +81,7 @@ func UsersByExternalID(ctx context.Context, db DB, externalID null.String, opts 
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id, username, email, scopes, first_name, last_name, full_name, external_id, role_rank, created_at, updated_at, deleted_at, teams ` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at, teams ` +
 		`FROM cache.users ` +
 		`WHERE external_id = $1 `
 	sqlstr += c.orderBy
@@ -99,7 +99,7 @@ func UsersByExternalID(ctx context.Context, db DB, externalID null.String, opts 
 	for rows.Next() {
 		u := User{}
 		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.Scopes, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Teams); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Teams); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &u)
