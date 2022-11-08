@@ -17,7 +17,7 @@ import (
 func TestAdminPingRoute(t *testing.T) {
 	t.Parallel()
 
-	authzsvc, err := services.NewAuthorization(zaptest.NewLogger(t), "testdata/scopes.json", "testdata/roles.json")
+	authzsvc, err := services.NewAuthorization(zaptest.NewLogger(t), "../../scopes.json", "../../roles.json")
 	if err != nil {
 		t.Fatalf("services.NewAuthorization: %v", err)
 	}

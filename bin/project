@@ -443,7 +443,7 @@ x.test.backend-setup() {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts
     run_shared_services up -d --remove-orphans
-    x.gen
+    [[ -z $NO_GEN ]] && x.gen
     drop_and_recreate_db "postgres_test"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1083,6 +1083,10 @@ while [[ "$#" -gt 0 ]]; do
   --x-no-confirmation)
     # Bypasses confirmation messages.
     export NO_CONFIRMATION=1
+    ;;
+  --x-no-gen)
+    # Skips code generation steps.
+    export NO_GEN=1
     ;;
   --x-env=*)
     # Environment to run commands in. Defaults to "dev".

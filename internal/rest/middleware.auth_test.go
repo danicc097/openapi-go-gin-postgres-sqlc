@@ -51,7 +51,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		_, engine := gin.CreateTestContext(resp)
 
 		usvc := services.NewUser(postgresql.NewUser(), logger)
-		authzsvc, err := services.NewAuthorization(logger, "testdata/scopes.json", "testdata/roles.json")
+		authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
 		if err != nil {
 			t.Fatalf("services.NewAuthorization: %v", err)
 		}
