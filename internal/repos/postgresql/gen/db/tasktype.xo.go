@@ -9,9 +9,11 @@ import (
 
 // TaskType represents a row from 'public.task_types'.
 type TaskType struct {
-	TaskTypeID int    `json:"task_type_id" db:"task_type_id"` // task_type_id
-	TeamID     int64  `json:"team_id" db:"team_id"`           // team_id
-	Name       string `json:"name" db:"name"`                 // name
+	TaskTypeID  int    `json:"task_type_id" db:"task_type_id"` // task_type_id
+	TeamID      int64  `json:"team_id" db:"team_id"`           // team_id
+	Name        string `json:"name" db:"name"`                 // name
+	Description string `json:"description" db:"description"`   // description
+	Color       string `json:"color" db:"color"`               // color
 	// xo fields
 	_exists, _deleted bool
 }
@@ -56,13 +58,13 @@ func (tt *TaskType) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.task_types (` +
-		`team_id, name` +
+		`team_id, name, description, color` +
 		`) VALUES (` +
-		`$1, $2` +
+		`$1, $2, $3, $4` +
 		`) RETURNING task_type_id `
 	// run
-	logf(sqlstr, tt.TeamID, tt.Name)
-	if err := db.QueryRow(ctx, sqlstr, tt.TeamID, tt.Name).Scan(&tt.TaskTypeID); err != nil {
+	logf(sqlstr, tt.TeamID, tt.Name, tt.Description, tt.Color)
+	if err := db.QueryRow(ctx, sqlstr, tt.TeamID, tt.Name, tt.Description, tt.Color).Scan(&tt.TaskTypeID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -80,11 +82,11 @@ func (tt *TaskType) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.task_types SET ` +
-		`team_id = $1, name = $2 ` +
-		`WHERE task_type_id = $3 `
+		`team_id = $1, name = $2, description = $3, color = $4 ` +
+		`WHERE task_type_id = $5 `
 	// run
-	logf(sqlstr, tt.TeamID, tt.Name, tt.TaskTypeID)
-	if _, err := db.Exec(ctx, sqlstr, tt.TeamID, tt.Name, tt.TaskTypeID); err != nil {
+	logf(sqlstr, tt.TeamID, tt.Name, tt.Description, tt.Color, tt.TaskTypeID)
+	if _, err := db.Exec(ctx, sqlstr, tt.TeamID, tt.Name, tt.Description, tt.Color, tt.TaskTypeID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -106,16 +108,16 @@ func (tt *TaskType) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.task_types (` +
-		`task_type_id, team_id, name` +
+		`task_type_id, team_id, name, description, color` +
 		`) VALUES (` +
-		`$1, $2, $3` +
+		`$1, $2, $3, $4, $5` +
 		`)` +
 		` ON CONFLICT (task_type_id) DO ` +
 		`UPDATE SET ` +
-		`team_id = EXCLUDED.team_id, name = EXCLUDED.name  `
+		`team_id = EXCLUDED.team_id, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color  `
 	// run
-	logf(sqlstr, tt.TaskTypeID, tt.TeamID, tt.Name)
-	if _, err := db.Exec(ctx, sqlstr, tt.TaskTypeID, tt.TeamID, tt.Name); err != nil {
+	logf(sqlstr, tt.TaskTypeID, tt.TeamID, tt.Name, tt.Description, tt.Color)
+	if _, err := db.Exec(ctx, sqlstr, tt.TaskTypeID, tt.TeamID, tt.Name, tt.Description, tt.Color); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -155,7 +157,7 @@ func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int, opts ...Ta
 
 	// query
 	sqlstr := `SELECT ` +
-		`task_type_id, team_id, name ` +
+		`task_type_id, team_id, name, description, color ` +
 		`FROM public.task_types ` +
 		`WHERE task_type_id = $1 `
 	sqlstr += c.orderBy
@@ -166,7 +168,7 @@ func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int, opts ...Ta
 	tt := TaskType{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, taskTypeID).Scan(&tt.TaskTypeID, &tt.TeamID, &tt.Name); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, taskTypeID).Scan(&tt.TaskTypeID, &tt.TeamID, &tt.Name, &tt.Description, &tt.Color); err != nil {
 		return nil, logerror(err)
 	}
 	return &tt, nil
@@ -183,7 +185,7 @@ func TaskTypeByTeamIDName(ctx context.Context, db DB, teamID int64, name string,
 
 	// query
 	sqlstr := `SELECT ` +
-		`task_type_id, team_id, name ` +
+		`task_type_id, team_id, name, description, color ` +
 		`FROM public.task_types ` +
 		`WHERE team_id = $1 AND name = $2 `
 	sqlstr += c.orderBy
@@ -194,7 +196,7 @@ func TaskTypeByTeamIDName(ctx context.Context, db DB, teamID int64, name string,
 	tt := TaskType{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, teamID, name).Scan(&tt.TaskTypeID, &tt.TeamID, &tt.Name); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, teamID, name).Scan(&tt.TaskTypeID, &tt.TeamID, &tt.Name, &tt.Description, &tt.Color); err != nil {
 		return nil, logerror(err)
 	}
 	return &tt, nil

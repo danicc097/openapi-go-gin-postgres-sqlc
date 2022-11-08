@@ -16,6 +16,7 @@ type KanbanStep struct {
 	StepOrder     null.Int `json:"step_order" db:"step_order"`         // step_order
 	Name          string   `json:"name" db:"name"`                     // name
 	Description   string   `json:"description" db:"description"`       // description
+	Color         string   `json:"color" db:"color"`                   // color
 	TimeTrackable bool     `json:"time_trackable" db:"time_trackable"` // time_trackable
 	Disabled      bool     `json:"disabled" db:"disabled"`             // disabled
 	// xo fields
@@ -62,13 +63,13 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.kanban_steps (` +
-		`team_id, step_order, name, description, time_trackable, disabled` +
+		`team_id, step_order, name, description, color, time_trackable, disabled` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6` +
+		`$1, $2, $3, $4, $5, $6, $7` +
 		`) RETURNING kanban_step_id `
 	// run
-	logf(sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.TimeTrackable, ks.Disabled)
-	if err := db.QueryRow(ctx, sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.TimeTrackable, ks.Disabled).Scan(&ks.KanbanStepID); err != nil {
+	logf(sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled)
+	if err := db.QueryRow(ctx, sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled).Scan(&ks.KanbanStepID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -86,11 +87,11 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.kanban_steps SET ` +
-		`team_id = $1, step_order = $2, name = $3, description = $4, time_trackable = $5, disabled = $6 ` +
-		`WHERE kanban_step_id = $7 `
+		`team_id = $1, step_order = $2, name = $3, description = $4, color = $5, time_trackable = $6, disabled = $7 ` +
+		`WHERE kanban_step_id = $8 `
 	// run
-	logf(sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID)
-	if _, err := db.Exec(ctx, sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID); err != nil {
+	logf(sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID)
+	if _, err := db.Exec(ctx, sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -112,16 +113,16 @@ func (ks *KanbanStep) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.kanban_steps (` +
-		`kanban_step_id, team_id, step_order, name, description, time_trackable, disabled` +
+		`kanban_step_id, team_id, step_order, name, description, color, time_trackable, disabled` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7` +
+		`$1, $2, $3, $4, $5, $6, $7, $8` +
 		`)` +
 		` ON CONFLICT (kanban_step_id) DO ` +
 		`UPDATE SET ` +
-		`team_id = EXCLUDED.team_id, step_order = EXCLUDED.step_order, name = EXCLUDED.name, description = EXCLUDED.description, time_trackable = EXCLUDED.time_trackable, disabled = EXCLUDED.disabled  `
+		`team_id = EXCLUDED.team_id, step_order = EXCLUDED.step_order, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color, time_trackable = EXCLUDED.time_trackable, disabled = EXCLUDED.disabled  `
 	// run
-	logf(sqlstr, ks.KanbanStepID, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.TimeTrackable, ks.Disabled)
-	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.TimeTrackable, ks.Disabled); err != nil {
+	logf(sqlstr, ks.KanbanStepID, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled)
+	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -161,7 +162,7 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts
 
 	// query
 	sqlstr := `SELECT ` +
-		`kanban_step_id, team_id, step_order, name, description, time_trackable, disabled ` +
+		`kanban_step_id, team_id, step_order, name, description, color, time_trackable, disabled ` +
 		`FROM public.kanban_steps ` +
 		`WHERE kanban_step_id = $1 `
 	sqlstr += c.orderBy
@@ -172,7 +173,7 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts
 	ks := KanbanStep{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, kanbanStepID).Scan(&ks.KanbanStepID, &ks.TeamID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.TimeTrackable, &ks.Disabled); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, kanbanStepID).Scan(&ks.KanbanStepID, &ks.TeamID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
 		return nil, logerror(err)
 	}
 	return &ks, nil
@@ -189,7 +190,7 @@ func KanbanStepByTeamIDStepOrder(ctx context.Context, db DB, teamID int, stepOrd
 
 	// query
 	sqlstr := `SELECT ` +
-		`kanban_step_id, team_id, step_order, name, description, time_trackable, disabled ` +
+		`kanban_step_id, team_id, step_order, name, description, color, time_trackable, disabled ` +
 		`FROM public.kanban_steps ` +
 		`WHERE team_id = $1 AND step_order = $2 `
 	sqlstr += c.orderBy
@@ -200,7 +201,7 @@ func KanbanStepByTeamIDStepOrder(ctx context.Context, db DB, teamID int, stepOrd
 	ks := KanbanStep{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, teamID, stepOrder).Scan(&ks.KanbanStepID, &ks.TeamID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.TimeTrackable, &ks.Disabled); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, teamID, stepOrder).Scan(&ks.KanbanStepID, &ks.TeamID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
 		return nil, logerror(err)
 	}
 	return &ks, nil

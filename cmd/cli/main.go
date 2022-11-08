@@ -147,10 +147,6 @@ joinTimeEntries:= %t
 			return
 		}
 
-		// TODO xo:
-		// pq stirngarray --> []string is suppported by pgx
-		// []byte --> jsonb, json etc.
-		// sql.NullTime --> null.Time, same for rest of NullXXX
 		// NOTE: Consumer, e.g. frontend will not care the slightest and
 		// will simply check if the key exists (openapi fields WorkItems, teams, ... will be nullable)
 		// TODO For internal backend use, we should probably have pointers to any Join field

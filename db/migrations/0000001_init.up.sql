@@ -90,6 +90,7 @@ create table kanban_steps (
   , step_order smallint
   , name text not null
   , description text not null
+  , color text not null
   , time_trackable bool not null default false
   , disabled bool not null default false
   , primary key (kanban_step_id)
@@ -133,6 +134,7 @@ create table work_item_tags (
   work_item_tag_id serial not null
   , name text not null unique
   , description text not null
+  , color text not null
   , primary key (work_item_tag_id)
 );
 
@@ -157,20 +159,22 @@ create table task_types (
   task_type_id serial
   , team_id bigint not null
   , name text not null
+  , description text not null
+  , color text not null
   , primary key (task_type_id)
   , unique (team_id , name)
   , foreign key (team_id) references teams (team_id) on delete cascade
 );
 
+-- NOTE: will not use. Everything hardcoded.
 -- customize keys per project only.
 -- these keys will be used to dynamically show data in ui, regardless of current project or team
-create table work_item_fields (
-  project_id bigint not null
-  , key text not null -- for work_items.metadata->"key" filtering (and we can dynamically create indeces on work_items.metadata when a new key is added)
-  , primary key (project_id , key)
-  , foreign key (project_id) references projects (project_id) on delete cascade
-);
-
+-- create table work_item_fields (
+--   project_id bigint not null
+--   , key text not null -- for work_items.metadata->"key" filtering (and we can dynamically create indeces on work_items.metadata when a new key is added)
+--   , primary key (project_id , key)
+--   , foreign key (project_id) references projects (project_id) on delete cascade
+-- );
 create table tasks (
   task_id bigserial not null
   , task_type_id int not null

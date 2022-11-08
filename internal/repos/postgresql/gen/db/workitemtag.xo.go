@@ -12,6 +12,7 @@ type WorkItemTag struct {
 	WorkItemTagID int    `json:"work_item_tag_id" db:"work_item_tag_id"` // work_item_tag_id
 	Name          string `json:"name" db:"name"`                         // name
 	Description   string `json:"description" db:"description"`           // description
+	Color         string `json:"color" db:"color"`                       // color
 	// xo fields
 	_exists, _deleted bool
 }
@@ -56,13 +57,13 @@ func (wit *WorkItemTag) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_tags (` +
-		`name, description` +
+		`name, description, color` +
 		`) VALUES (` +
-		`$1, $2` +
+		`$1, $2, $3` +
 		`) RETURNING work_item_tag_id `
 	// run
-	logf(sqlstr, wit.Name, wit.Description)
-	if err := db.QueryRow(ctx, sqlstr, wit.Name, wit.Description).Scan(&wit.WorkItemTagID); err != nil {
+	logf(sqlstr, wit.Name, wit.Description, wit.Color)
+	if err := db.QueryRow(ctx, sqlstr, wit.Name, wit.Description, wit.Color).Scan(&wit.WorkItemTagID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -80,11 +81,11 @@ func (wit *WorkItemTag) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_tags SET ` +
-		`name = $1, description = $2 ` +
-		`WHERE work_item_tag_id = $3 `
+		`name = $1, description = $2, color = $3 ` +
+		`WHERE work_item_tag_id = $4 `
 	// run
-	logf(sqlstr, wit.Name, wit.Description, wit.WorkItemTagID)
-	if _, err := db.Exec(ctx, sqlstr, wit.Name, wit.Description, wit.WorkItemTagID); err != nil {
+	logf(sqlstr, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID)
+	if _, err := db.Exec(ctx, sqlstr, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -106,16 +107,16 @@ func (wit *WorkItemTag) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_item_tags (` +
-		`work_item_tag_id, name, description` +
+		`work_item_tag_id, name, description, color` +
 		`) VALUES (` +
-		`$1, $2, $3` +
+		`$1, $2, $3, $4` +
 		`)` +
 		` ON CONFLICT (work_item_tag_id) DO ` +
 		`UPDATE SET ` +
-		`name = EXCLUDED.name, description = EXCLUDED.description  `
+		`name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color  `
 	// run
-	logf(sqlstr, wit.WorkItemTagID, wit.Name, wit.Description)
-	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTagID, wit.Name, wit.Description); err != nil {
+	logf(sqlstr, wit.WorkItemTagID, wit.Name, wit.Description, wit.Color)
+	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTagID, wit.Name, wit.Description, wit.Color); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -155,7 +156,7 @@ func WorkItemTagByName(ctx context.Context, db DB, name string, opts ...WorkItem
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_tag_id, name, description ` +
+		`work_item_tag_id, name, description, color ` +
 		`FROM public.work_item_tags ` +
 		`WHERE name = $1 `
 	sqlstr += c.orderBy
@@ -166,7 +167,7 @@ func WorkItemTagByName(ctx context.Context, db DB, name string, opts ...WorkItem
 	wit := WorkItemTag{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, name).Scan(&wit.WorkItemTagID, &wit.Name, &wit.Description); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, name).Scan(&wit.WorkItemTagID, &wit.Name, &wit.Description, &wit.Color); err != nil {
 		return nil, logerror(err)
 	}
 	return &wit, nil
@@ -183,7 +184,7 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, o
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_tag_id, name, description ` +
+		`work_item_tag_id, name, description, color ` +
 		`FROM public.work_item_tags ` +
 		`WHERE work_item_tag_id = $1 `
 	sqlstr += c.orderBy
@@ -194,7 +195,7 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, o
 	wit := WorkItemTag{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, workItemTagID).Scan(&wit.WorkItemTagID, &wit.Name, &wit.Description); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, workItemTagID).Scan(&wit.WorkItemTagID, &wit.Name, &wit.Description, &wit.Color); err != nil {
 		return nil, logerror(err)
 	}
 	return &wit, nil
