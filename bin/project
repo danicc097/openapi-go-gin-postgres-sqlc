@@ -292,7 +292,7 @@ x.gen.client-server() {
     ./oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
     ./oapi-codegen --config internal/client/oapi-codegen-types.yaml "$SPEC" || err "Failed client generation"
 
-    ./oapi-codegen --config internal/rest/oapi-codegen-server.yaml "$SPEC" || err "Failed server generation"
+    ./oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$SPEC" || err "Failed server generation"
 
     ./oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC" || err "Failed server generation"
 

@@ -31,10 +31,11 @@ var templates embed.FS
 
 func main() {
 	log.SetFlags(0)
-	var cfgpath string
-	flag.StringVar(&cfgpath, "config", "", "path to config file")
+	var cfgPath, modelsPkg string
+	flag.StringVar(&cfgPath, "config", "", "path to config file")
+	flag.StringVar(&modelsPkg, "models-pkg", "models", "package containing models")
 	flag.Parse()
-	if cfgpath == "" {
+	if cfgPath == "" {
 		log.Fatal("--config is required")
 	}
 	if flag.NArg() < 1 {
@@ -53,7 +54,7 @@ func main() {
 	}
 
 	// loading configuration
-	cfgdata, err := os.ReadFile(cfgpath)
+	cfgdata, err := os.ReadFile(cfgPath)
 	if err != nil {
 		log.Fatalf("error reading config file: %s", err)
 	}
@@ -64,7 +65,7 @@ func main() {
 	}
 
 	// generating output
-	output, err := generate(spec, cfg.Configuration, templates)
+	output, err := generate(spec, cfg.Configuration, templates, modelsPkg)
 	if err != nil {
 		log.Fatalf("error generating code: %v", err)
 	}
@@ -81,14 +82,18 @@ func main() {
 	outFile.Close()
 }
 
-func generate(spec *openapi3.T, config codegen.Configuration, templates embed.FS) (string, error) {
+func generate(spec *openapi3.T, config codegen.Configuration, templates embed.FS, modelsPkg string) (string, error) {
 	var err error
 	config, err = addTemplateOverrides(config, templates)
 	if err != nil {
 		return "", err
 	}
 	// include other template functions, if any
-	templateFunctions := template.FuncMap{}
+	templateFunctions := template.FuncMap{
+		"modelsPkg": func() string {
+			return modelsPkg + "."
+		},
+	}
 	for k, v := range templateFunctions {
 		codegen.TemplateFunctions[k] = v
 	}
