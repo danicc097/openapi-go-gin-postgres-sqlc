@@ -28,9 +28,8 @@ func main() {
 	// TODO	messy, could all be done with docker exec and yq...
 
 	var stderr bytes.Buffer
-	og := pregen.New(&stderr, spec)
-
-	if err := og.Generate(); err != nil {
+	pg := pregen.New(&stderr, spec)
+	if err := pg.Generate(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		fmt.Fprintln(os.Stderr, stderr.String())
 		os.Exit(1)

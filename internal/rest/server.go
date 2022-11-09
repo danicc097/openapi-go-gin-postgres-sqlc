@@ -11,7 +11,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-contrib/cors"
 	ginzap "github.com/gin-contrib/zap"
@@ -142,22 +141,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	vg := router.Group(os.Getenv("API_VERSION"))
 	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
 
-	schemaBlob, err := os.ReadFile(conf.SpecPath)
-	if err != nil {
-		return nil, fmt.Errorf("openapi spec: %w", err)
-	}
-	sl := openapi3.NewLoader()
-
-	openapi, err := sl.LoadFromData(schemaBlob)
-	if err != nil {
-		return nil, fmt.Errorf("openapi spec: %w", err)
-	}
-
-	if err = openapi.Validate(sl.Context); err != nil {
-		return nil, fmt.Errorf("openapi validation: %w", err)
-	}
-
-	options := OAValidatorOptions{
+	oaOptions := OAValidatorOptions{
 		Options: openapi3filter.Options{
 			ExcludeRequestBody:    false,
 			ExcludeResponseBody:   false,
@@ -168,6 +152,11 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 		// MultiErrorHandler: func(me openapi3.MultiError) error {
 		// 	return fmt.Errorf("multiple errors:  %s", me.Error())
 		// },
+	}
+
+	openapi, err := ReadOpenAPI(conf.SpecPath)
+	if err != nil {
+		return nil, err
 	}
 
 	oasMw := newOpenapiMiddleware(conf.Logger, openapi)
@@ -211,7 +200,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	}
 	authnsvc := services.NewAuthentication(conf.Logger, usvc)
 
-	vg.Use(oasMw.RequestValidatorWithOptions(&options))
+	vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))
 
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 
