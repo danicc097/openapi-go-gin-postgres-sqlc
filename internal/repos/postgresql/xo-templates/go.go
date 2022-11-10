@@ -375,6 +375,9 @@ func fileNames(ctx context.Context, mode string, set *xo.Set) (map[string]bool, 
 	case "schema":
 		for _, schema := range set.Schemas {
 			for _, e := range schema.Enums {
+				if e.EnumPkg != "" || (e.Schema == "public" && schema.Name != "public") {
+					continue // will share enums with public, no need to emit
+				}
 				addFile(camelExport(e.Name))
 			}
 			for _, p := range schema.Procs {
@@ -516,17 +519,18 @@ func buildQueryName(query xo.Query) string {
 
 // emitSchema emits the xo schema for the template set.
 func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) error {
-	// will use sqlc
-	// // emit enums
-	// for _, e := range schema.Enums {
-	// 	enum := convertEnum(e)
-	// 	emit(xo.Template{
-	// 		Partial:  "enum",
-	// 		Dest:     strings.ToLower(enum.GoName) + ext,
-	// 		SortName: enum.GoName,
-	// 		Data:     enum,
-	// 	})
-	// }
+	for _, e := range schema.Enums {
+		if e.EnumPkg != "" || (e.Schema == "public" && schema.Name != "public") {
+			continue // will share enums with public, no need to emit
+		}
+		enum := convertEnum(e)
+		emit(xo.Template{
+			Partial:  "enum",
+			Dest:     strings.ToLower(enum.GoName) + ext,
+			SortName: enum.GoName,
+			Data:     enum,
+		})
+	}
 	// build procs
 	overloadMap := make(map[string][]Proc)
 	// procOrder ensures procs are always emitted in alphabetic order for
@@ -603,28 +607,28 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 	return nil
 }
 
-// // convertEnum converts a xo.Enum.
-// func convertEnum(e xo.Enum) Enum {
-// 	var vals []EnumValue
-// 	goName := camelExport(e.Name)
-// 	for _, v := range e.Values {
-// 		name := camelExport(strings.ToLower(v.Name))
-// 		if strings.HasSuffix(name, goName) && goName != name {
-// 			name = strings.TrimSuffix(name, goName)
-// 		}
-// 		vals = append(vals, EnumValue{
-// 			GoName:     name,
-// 			SQLName:    v.Name,
-// 			ConstValue: *v.ConstValue,
-// 		})
-// 	}
+// convertEnum converts a xo.Enum.
+func convertEnum(e xo.Enum) Enum {
+	var vals []EnumValue
+	goName := camelExport(e.Name)
+	for _, v := range e.Values {
+		name := camelExport(strings.ToLower(v.Name))
+		if strings.HasSuffix(name, goName) && goName != name {
+			name = strings.TrimSuffix(name, goName)
+		}
+		vals = append(vals, EnumValue{
+			GoName:     name,
+			SQLName:    v.Name,
+			ConstValue: *v.ConstValue,
+		})
+	}
 
-// 	return Enum{
-// 		GoName:  goName,
-// 		SQLName: e.Name,
-// 		Values:  vals,
-// 	}
-// }
+	return Enum{
+		GoName:  goName,
+		SQLName: e.Name,
+		Values:  vals,
+	}
+}
 
 // convertProc converts a xo.Proc.
 func convertProc(ctx context.Context, overloadMap map[string][]Proc, order []string, p xo.Proc) ([]string, error) {

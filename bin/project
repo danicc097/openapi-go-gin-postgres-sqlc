@@ -227,7 +227,7 @@ x.pregen() {
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
     sed -i 's/!!merge //' $SPEC
 
-    go build -o pregen "$PWD"/cmd/pregen/main.go
+    go build -o pregen "$PWD"/cmd/pregen/main.go || echo "Could not rebuild pregen" >&2
     ./pregen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -373,10 +373,13 @@ x.gen() {
     # xo cannot use db files as input, needs an up-to-date schema
     # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
     # use a unique db to prevent cosmic accidents
-    x.gen.xo &
     x.gen.client-server &
     x.gen.proto &
     wait
+
+    rm "$PG_REPO_GEN"/db/models.go # sqlc enums
+
+    x.gen.xo
 
     x.postgen "$cache" &
     x.gen.counterfeiter "$cache" & # delay since it depends on generated output too
