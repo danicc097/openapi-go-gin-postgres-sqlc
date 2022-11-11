@@ -245,14 +245,16 @@ create table time_entries (
 -- think of user api. For joins: we want to provide possibilities to:
 -- user.xo.go:
 -- select for time_entries that joins with:
-
 -- a task can be associated to many time entries, and any time entry is linked back to only one task: O2M
 -- another way to see it: one task shares many time_entries, and time_entries are part of only one task.
 comment on column time_entries.task_id is 'cardinality:O2M';
+
 -- a team can be associated to many time entries, and any time entry is linked back to only one team: O2M
 comment on column time_entries.team_id is 'cardinality:O2M';
+
 -- an activity can be associated to many time entries, and any time entry is linked back to only one activity: O2M
 comment on column time_entries.activity_id is 'cardinality:O2M';
+
 -- a user can be associated to many time entries, and any time entry is linked back to only one user: O2M
 comment on column time_entries.user_id is 'cardinality:O2M';
 

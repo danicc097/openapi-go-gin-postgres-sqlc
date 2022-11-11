@@ -1801,6 +1801,11 @@ func (f *Funcs) sqlstr_index(v interface{}) []string {
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
 			filters = append(filters, after)
 		}
+		/**   -- for openapi requests we can have manual or generated adapters to convert request bodies to xo models.
+		  -- For responses use a struct as is, that can be generated: see https://github.com/swaggest/rest/ -> we could generate
+		  -- openapi schema refs from xo models (we just care about types, this will be used for responses only)
+		  -- so we could easily respond with whatever json object.
+		  -- specifically see https://github.com/swaggest/openapi-go (Type-based reflection of Go structures to OpenAPI 3 schema.) */
 		return []string{
 			"SELECT ",
 			strings.Join(fields, ", ") + " ",
