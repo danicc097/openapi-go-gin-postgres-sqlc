@@ -45,10 +45,10 @@ func TimeEntryWithLimit(limit int) TimeEntrySelectConfigOption {
 type TimeEntryOrderBy = string
 
 const (
-	TimeEntryStartDescNullsFirst TimeEntryOrderBy = "Start DescNullsFirst"
-	TimeEntryStartDescNullsLast  TimeEntryOrderBy = "Start DescNullsLast"
-	TimeEntryStartAscNullsFirst  TimeEntryOrderBy = "Start AscNullsFirst"
-	TimeEntryStartAscNullsLast   TimeEntryOrderBy = "Start AscNullsLast"
+	TimeEntryStartDescNullsFirst TimeEntryOrderBy = "start DESC NULLS FIRST"
+	TimeEntryStartDescNullsLast  TimeEntryOrderBy = "start DESC NULLS LAST"
+	TimeEntryStartAscNullsFirst  TimeEntryOrderBy = "start ASC NULLS FIRST"
+	TimeEntryStartAscNullsLast   TimeEntryOrderBy = "start ASC NULLS LAST"
 )
 
 // TimeEntryWithOrderBy orders results by the given columns.

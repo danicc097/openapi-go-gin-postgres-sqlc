@@ -1201,8 +1201,8 @@ func (f *Funcs) extratypes(name string, v interface{}) string {
 	buf.WriteString("const (")
 	for _, ob := range orderbys {
 		for _, opt := range orderByOpts {
-			buf.WriteString(fmt.Sprintf(`%[1]s%s%s %[1]sOrderBy = "%s %s"
-			`, name, ob.GoName, opt[0], ob.SQLName, opt[1]))
+			buf.WriteString(fmt.Sprintf(`%s%s%s %sOrderBy = "%s %s"
+			`, name, ob.GoName, opt[0], name, ob.SQLName, opt[1]))
 		}
 	}
 	buf.WriteString(")")

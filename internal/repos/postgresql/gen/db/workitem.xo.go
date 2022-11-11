@@ -45,18 +45,18 @@ func WorkItemWithLimit(limit int) WorkItemSelectConfigOption {
 type WorkItemOrderBy = string
 
 const (
-	WorkItemCreatedAtDescNullsFirst WorkItemOrderBy = "CreatedAt DescNullsFirst"
-	WorkItemCreatedAtDescNullsLast  WorkItemOrderBy = "CreatedAt DescNullsLast"
-	WorkItemCreatedAtAscNullsFirst  WorkItemOrderBy = "CreatedAt AscNullsFirst"
-	WorkItemCreatedAtAscNullsLast   WorkItemOrderBy = "CreatedAt AscNullsLast"
-	WorkItemUpdatedAtDescNullsFirst WorkItemOrderBy = "UpdatedAt DescNullsFirst"
-	WorkItemUpdatedAtDescNullsLast  WorkItemOrderBy = "UpdatedAt DescNullsLast"
-	WorkItemUpdatedAtAscNullsFirst  WorkItemOrderBy = "UpdatedAt AscNullsFirst"
-	WorkItemUpdatedAtAscNullsLast   WorkItemOrderBy = "UpdatedAt AscNullsLast"
-	WorkItemDeletedAtDescNullsFirst WorkItemOrderBy = "DeletedAt DescNullsFirst"
-	WorkItemDeletedAtDescNullsLast  WorkItemOrderBy = "DeletedAt DescNullsLast"
-	WorkItemDeletedAtAscNullsFirst  WorkItemOrderBy = "DeletedAt AscNullsFirst"
-	WorkItemDeletedAtAscNullsLast   WorkItemOrderBy = "DeletedAt AscNullsLast"
+	WorkItemCreatedAtDescNullsFirst WorkItemOrderBy = "created_at DESC NULLS FIRST"
+	WorkItemCreatedAtDescNullsLast  WorkItemOrderBy = "created_at DESC NULLS LAST"
+	WorkItemCreatedAtAscNullsFirst  WorkItemOrderBy = "created_at ASC NULLS FIRST"
+	WorkItemCreatedAtAscNullsLast   WorkItemOrderBy = "created_at ASC NULLS LAST"
+	WorkItemUpdatedAtDescNullsFirst WorkItemOrderBy = "updated_at DESC NULLS FIRST"
+	WorkItemUpdatedAtDescNullsLast  WorkItemOrderBy = "updated_at DESC NULLS LAST"
+	WorkItemUpdatedAtAscNullsFirst  WorkItemOrderBy = "updated_at ASC NULLS FIRST"
+	WorkItemUpdatedAtAscNullsLast   WorkItemOrderBy = "updated_at ASC NULLS LAST"
+	WorkItemDeletedAtDescNullsFirst WorkItemOrderBy = "deleted_at DESC NULLS FIRST"
+	WorkItemDeletedAtDescNullsLast  WorkItemOrderBy = "deleted_at DESC NULLS LAST"
+	WorkItemDeletedAtAscNullsFirst  WorkItemOrderBy = "deleted_at ASC NULLS FIRST"
+	WorkItemDeletedAtAscNullsLast   WorkItemOrderBy = "deleted_at ASC NULLS LAST"
 )
 
 // WorkItemWithOrderBy orders results by the given columns.

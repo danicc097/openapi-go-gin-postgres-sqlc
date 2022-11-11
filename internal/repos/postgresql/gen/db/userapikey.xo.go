@@ -38,10 +38,10 @@ func UserAPIKeyWithLimit(limit int) UserAPIKeySelectConfigOption {
 type UserAPIKeyOrderBy = string
 
 const (
-	UserAPIKeyExpiresOnDescNullsFirst UserAPIKeyOrderBy = "ExpiresOn DescNullsFirst"
-	UserAPIKeyExpiresOnDescNullsLast  UserAPIKeyOrderBy = "ExpiresOn DescNullsLast"
-	UserAPIKeyExpiresOnAscNullsFirst  UserAPIKeyOrderBy = "ExpiresOn AscNullsFirst"
-	UserAPIKeyExpiresOnAscNullsLast   UserAPIKeyOrderBy = "ExpiresOn AscNullsLast"
+	UserAPIKeyExpiresOnDescNullsFirst UserAPIKeyOrderBy = "expires_on DESC NULLS FIRST"
+	UserAPIKeyExpiresOnDescNullsLast  UserAPIKeyOrderBy = "expires_on DESC NULLS LAST"
+	UserAPIKeyExpiresOnAscNullsFirst  UserAPIKeyOrderBy = "expires_on ASC NULLS FIRST"
+	UserAPIKeyExpiresOnAscNullsLast   UserAPIKeyOrderBy = "expires_on ASC NULLS LAST"
 )
 
 // UserAPIKeyWithOrderBy orders results by the given columns.
