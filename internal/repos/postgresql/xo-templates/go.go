@@ -5,6 +5,7 @@ package gotpl
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -25,6 +26,11 @@ import (
 	"golang.org/x/tools/imports"
 	"mvdan.cc/gofumpt/format"
 )
+
+func PrintJSON(obj interface{}) string {
+	bytes, _ := json.MarshalIndent(obj, "  ", "  ")
+	return string(bytes)
+}
 
 var ErrNoSingle = errors.New("in query exec mode, the --single or -S must be provided")
 
@@ -576,6 +582,7 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			Data:     table,
 		})
 		// emit indexes
+		constraints := convertConstraints(ctx, schema.Constraints)
 		for _, i := range t.Indexes {
 			index, err := convertIndex(ctx, table, i)
 			if err != nil {
@@ -586,7 +593,10 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 				Partial:  "index",
 				SortType: table.Type,
 				SortName: index.SQLName,
-				Data:     index,
+				Data: struct {
+					Index       interface{}
+					Constraints interface{}
+				}{Index: index, Constraints: constraints},
 			})
 		}
 		// emit fkeys
@@ -737,6 +747,23 @@ func convertIndex(ctx context.Context, t Table, i xo.Index) (Index, error) {
 		IsPrimary:  i.IsPrimary,
 		Definition: i.IndexDefinition,
 	}, nil
+}
+
+func convertConstraints(ctx context.Context, constraints []xo.Constraint) []Constraint {
+	cc := make([]Constraint, len(constraints))
+	for i, constraint := range constraints {
+		cc[i] = Constraint{
+			Type:          constraint.Type,
+			Cardinality:   constraint.Cardinality,
+			Name:          constraint.Name,
+			TableName:     constraint.TableName,
+			RefTableName:  constraint.RefTableName,
+			ColumnName:    constraint.ColumnName,
+			RefColumnName: constraint.RefColumnName,
+		}
+	}
+
+	return cc
 }
 
 func convertFKey(ctx context.Context, t Table, fk xo.ForeignKey) (ForeignKey, error) {
@@ -959,8 +986,9 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"field":        f.field,
 		"short":        f.short,
 		// sqlstr funcs
-		"querystr": f.querystr,
-		"sqlstr":   f.sqlstr,
+		"querystr":     f.querystr,
+		"sqlstr":       f.sqlstr,
+		"sqlstr_index": f.sqlstr_index,
 		// helpers
 		"check_name":    checkName,
 		"eval":          eval,
@@ -1219,7 +1247,7 @@ func %[1]sWithOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	}
 
 	// TODO
-	// -- emit JOIN BY opts
+	// -- emit JOIN BY opts only
 
 	return buf.String()
 }
@@ -1592,8 +1620,6 @@ func (f *Funcs) sqlstr(typ string, v interface{}) string {
 		lines = f.sqlstr_delete(v)
 	case "proc":
 		lines = f.sqlstr_proc(v)
-	case "index":
-		lines = f.sqlstr_index(v)
 	default:
 		return fmt.Sprintf("const sqlstr = `UNKNOWN QUERY TYPE: %s`", typ)
 	}
@@ -1757,63 +1783,143 @@ func (f *Funcs) sqlstr_delete(v interface{}) []string {
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 25: %T ]]", v)}
 }
 
-// TODO generate o2m,m2o, m2m, o2o
-// see PostgresTableForeignKeys query
-// TODO ref_column_name_pk_table : e.g. ref_column_name is project_id -->
-// find origin table where pk is project_id (need a new join with
-//  foreign key [not foreign_key_name] in ref_table_name where column is ref_column_name)
-// `left join (
-// 	select
-// 		%column_name
-// 		, ARRAY_AGG(%ref_column_name_pk_table.*) as %ref_column_name_pk_table
-// 	from
-// 		%ref_table_name uo
-// 		left join %ref_column_name_pk_table using (%ref_column_name)
-// 	where
-// 		%column_name in (
-// 			select
-// 				%column_name
-// 			from
-// 				%ref_table_name
-// 			where
-// 				%ref_column_name = any (
-// 					select
-// 						%ref_column_name
-// 					from
-// 						%ref_column_name_pk_table))
-// 			group by
-// 				%column_name) joined_projects using (%column_name)`
+// (case when <f.nth(i)>::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end)::jsonb as {{.JoinTable}}
+// , (case when <f.nth(i)>::boolean = true then joined_teams.teams end)::jsonb as teams
+// ,
+// , (case when <f.nth(i)>::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries
+
+const (
+	M2MField = `(case when <f.nth(i)>::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end)::jsonb as {{.JoinTable}}`
+	O2MField = M2MField
+	O2OField = `(case when <f.nth(i)>::boolean = true then row_to_json({{.JoinTable}}.*) end)::jsonb as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
+)
+
+const (
+	M2MJoin = `
+left join (
+	select
+		{{.FKColumn}} as {{.JoinTable}}_{{.FKRefColumn}}
+		, json_agg({{.JoinTable}}.*) as {{.JoinTable}}
+	from
+		<lookup_table>
+		join {{.JoinTable}} using ({{.JoinTablePK}})
+	where
+		{{.FKColumn}} in (
+			select
+				{{.FKColumn}}
+			from
+				<lookup_table>
+			where
+				{{.JoinTablePK}} = any (
+					select
+						{{.JoinTablePK}}
+					from
+						{{.JoinTable}}))
+			group by
+				{{.FKColumn}}) joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.JoinTable}}_{{.FKRefColumn}} = {{.CurrentTable}}.{{.FKRefColumn}}
+`
+	M2OJoin = `
+left join (
+  select
+  {{.FKColumn}} as {{.JoinTable}}_{{.FKRefColumn}}
+    , json_agg({{.JoinTable}}.*) as {{.JoinTable}}
+  from
+    {{.JoinTable}}
+   group by
+        {{.FKColumn}}) joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.JoinTable}}_{{.FKRefColumn}} = {{.CurrentTable}}.{{.FKRefColumn}}
+`
+	O2MJoin = M2OJoin
+	O2OJoin = `
+left join {{.JoinTable}} on {{.JoinTable}}.{{.FKColumn}} = {{.CurrentTable}}.{{.FKRefColumn}}
+`
+)
 
 // sqlstr_index builds a index fields.
-func (f *Funcs) sqlstr_index(v interface{}) []string {
+func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 	switch x := v.(type) {
 	case Index:
+		var filters, fields []string
+		var tableConstraints []Constraint
+		switch cc := constraints.(type) {
+		case []Constraint:
+			for _, c := range cc {
+				// TODO craft select rows and join's
+				// 1. get relevant constraints for the current index
+				// 2. see temp_queries_xo_test.sql for creating a helper function accepting params cardinality string, params ConstraintParams
+				if c.RefTableName == x.Table.SQLName && c.Cardinality != "" && c.Type == "foreign_key" {
+					if c.Cardinality == "M2M" {
+						// assumes lookup table links 2 tables
+						for _, c1 := range cc {
+							if c1.TableName == c.TableName && c1.ColumnName != c.ColumnName && c1.Type == "foreign_key" {
+								// found the other table in the lookup table: c1.RefTableName
+								tableConstraints = append(tableConstraints, c1)
+								// 	for _, c2 := range cc {
+								// if c2.Type == "primary_key" && c1.RefTableName == c2.TableName {
+								// 	tableConstraints = append(tableConstraints, c1)
+								// 	break
+								// }
+							}
+						}
+					} else {
+						tableConstraints = append(tableConstraints, c)
+					}
+				}
+			}
+			if len(tableConstraints) > 0 {
+				fmt.Printf("Constraints for %q (%q):\n%v\n", x.Table.SQLName, x.SQLName, PrintJSON(tableConstraints))
+			}
+		default:
+			break
+		}
 		// build table fieldnames
-		var fields []string
 		for _, z := range x.Table.Fields {
+			// add joins
+			// TODO
+
+			// var n int
+			// funcs := template.FuncMap{
+			// 	"singularize": singularize,
+			// }
+			// tpl := O2OField
+			// t := template.Must(template.New("").Funcs(funcs).Parse(tpl))
+			// buf := &bytes.Buffer{}
+			// params := map[string]interface{}{
+			// 	"nth": f.nth(n),
+			// }
+			// if err := t.Execute(buf, params); err != nil {
+			// 	panic(fmt.Sprintf("could not execute template: %s", err))
+			// }
+			// n++
+
+			// add current table fields
 			fields = append(fields, f.colname(z))
 		}
 		// index fields
-		var filters []string
 		for i, z := range x.Fields {
 			filters = append(filters, fmt.Sprintf("%s = %s", f.colname(z), f.nth(i)))
 		}
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
 			filters = append(filters, after)
 		}
+
 		/**   -- for openapi requests we can have manual or generated adapters to convert request bodies to xo models.
 		  -- For responses use a struct as is, that can be generated: see https://github.com/swaggest/rest/ -> we could generate
 		  -- openapi schema refs from xo models (we just care about types, this will be used for responses only)
 		  -- so we could easily respond with whatever json object.
 		  -- specifically see https://github.com/swaggest/openapi-go (Type-based reflection of Go structures to OpenAPI 3 schema.) */
-		return []string{
+		// TODO here we join with []Constrains. no need to be dynamic, if a join is not specified in opts postgres wont waste time on it.
+		lines := []string{
 			"SELECT ",
 			strings.Join(fields, ", ") + " ",
 			"FROM " + f.schemafn(x.Table.SQLName) + " ",
+			// TODO create and add joins themselves to filters based on the current table
+			// (all generated index queries will have these joins available as opts)
+			// makeJoins(x.Table, ...)
 			"WHERE " + strings.Join(filters, " AND "),
 		}
+		return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
 	}
-	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)}
+	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
 }
 
 // sqlstr_proc builds a stored procedure call.
@@ -2410,6 +2516,20 @@ type Index struct {
 	IsPrimary  bool
 	Comment    string
 	Definition string
+}
+
+// Constraint is a table constraint.
+type Constraint struct {
+	// "unique" "check" "primary_key" "foreign_key"
+	Type string
+	// "M2M" "O2M" "M2O" "O2O"
+	Cardinality string
+	// Key name
+	Name          string
+	TableName     string
+	ColumnName    string
+	RefTableName  string
+	RefColumnName string
 }
 
 // Field is a field template.

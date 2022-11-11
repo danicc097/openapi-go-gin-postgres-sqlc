@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/google/uuid"
@@ -158,10 +158,5 @@ joinTimeEntries:= %t
 		users = append(users, u)
 	}
 
-	PrintJSON(users)
-}
-
-func PrintJSON(obj interface{}) {
-	bytes, _ := json.MarshalIndent(obj, "  ", "  ")
-	fmt.Println(string(bytes))
+	format.PrintJSON(users)
 }
