@@ -387,6 +387,7 @@ x.gen() {
 
     wait
 
+    pkill gopls
     x.lint
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
