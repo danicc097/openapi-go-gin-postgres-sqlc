@@ -18,13 +18,13 @@ sql:
         emit_enum_valid_method: true
         emit_all_enum_values: true
         emit_methods_with_db_argument: true
-        # disable_emit_enums: true
+        disable_emit_enums: true
         disable_emit_table_structs: true
         # only necessary for stdlib, pgx automatically prepares and caches statements by default
         # emit_prepared_queries: true # mutually exclusive with emit_methods_with_db_argument
         json_tags_case_style: snake
         # TODO new flag on main branch to not use sql.Null when using pgx
-        # emit_pointers_for_null_types
+        emit_pointers_for_null_types: true
         rename:
         # Customize the name of generated struct fields.
         # https://docs.sqlc.dev/en/stable/reference/config.html?highlight=Renaming%20fields#renaming-fields

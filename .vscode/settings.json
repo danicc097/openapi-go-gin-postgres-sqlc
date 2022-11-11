@@ -15,7 +15,7 @@
     // source-path doesnt work per script
     // but it does here (checks outside source-path remain broken)
     // "--source-path=../.",
-    "--external-sources",
+    "--external-sources"
   ],
   // --
   "typescript.tsdk": "frontend/node_modules/typescript/lib",
@@ -25,12 +25,8 @@
   "python.analysis.useLibraryCodeForTypes": true,
   "python.analysis.typeCheckingMode": "basic", // better off until pydantic/pyright fixed https://github.com/samuelcolvin/pydantic/issues/3753
   "python.analysis.diagnosticSeverityOverrides": {},
-  "python.analysis.extraPaths": [
-    "e2e",
-  ],
-  "python.analysis.ignore": [
-    "python-ml-app"
-  ],
+  "python.analysis.extraPaths": ["e2e"],
+  "python.analysis.ignore": ["python-ml-app"],
   // CRUCIAL to fix auto import suggestions. currently undocumented.
   // https://github.com/microsoft/pylance-release/issues/2533
   "python.analysis.indexing": true,
@@ -49,19 +45,15 @@
       "name": "",
       "depth": 6,
       "includeAllSymbols": true
-    },
+    }
   ],
-  "python.linting.pylintArgs": [
-    "--init-hook='import sys; sys.path.append(\"/workspace\")'"
-  ],
+  "python.linting.pylintArgs": ["--init-hook='import sys; sys.path.append(\"/workspace\")'"],
   "python.defaultInterpreterPath": "./e2e/.venv/bin/python",
   "python.linting.flake8Path": "./e2e/.venv/bin/flake8",
   "python.sortImports.path": "./e2e/.venv/bin/isort",
   "python.linting.mypyEnabled": true,
   "python.linting.flake8Enabled": true,
-  "python.linting.flake8Args": [
-    "--config=e2e/tox.ini"
-  ],
+  "python.linting.flake8Args": ["--config=e2e/tox.ini"],
   "python.formatting.blackPath": "./e2e/.venv/bin/black",
   "python.linting.mypyPath": "./e2e/.venv/bin/mypy",
   "pytest.pythonPath": "./e2e/.venv/bin/python",
@@ -82,20 +74,17 @@
   "plpgsqlLanguageServer.host": "localhost",
   "plpgsqlLanguageServer.port": 5656,
   "plpgsqlLanguageServer.defaultSchema": "public",
-  "plpgsqlLanguageServer.definitionFiles": [
-    "**/*.psql",
-    "**/*.pgsql"
-  ],
+  "plpgsqlLanguageServer.definitionFiles": ["**/*.psql", "**/*.pgsql"],
   "plpgsqlLanguageServer.enableExecuteFileQueryCommand": false,
   "plpgsqlLanguageServer.migrationsFolder": "./db/migrations/",
   // "plpgsqlLanguageServer.queryParameterPattern": ":[A-Za-z_][A-Za-z0-9_]*",
-  "plpgsqlLanguageServer.keywordQueryParameterPatterns": [
+  "plpgsqlLanguageServer.keywordQueryParameterPattern": [
     "@{keyword}",
     "sqlc\\.arg\\('{keyword}'\\)",
-    "sqlc\\.narg\\('{keyword}'\\)",
+    "sqlc\\.narg\\('{keyword}'\\)"
   ],
   "plpgsqlLanguageServer.statementSeparatorPattern": "-- name:[\\s]+.*",
   "files.associations": {
     "*.sql": "postgres"
-  },
+  }
 }
