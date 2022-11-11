@@ -127,7 +127,11 @@ create table work_item_comments (
 
 comment on column work_item_comments.work_item_id is 'cardinality:O2M';
 
--- no unique index on it -> O2M
+-- we want to generate the following:
+-- work_items.xo.go --> joinComments (pluralize) to return all comments associated to a workitem
+-- already done by xo: WorkItemCommentsByWorkItemID (returns []*WorkItemComment)
+-- work_item_comments.xo.go --> joinWorkItem (singularize) to return the workitem object every time is useless in this case.
+-- work_item_comments acts as a link table
 create index on work_item_comments (work_item_id);
 
 create table work_item_tags (
@@ -238,15 +242,18 @@ create table time_entries (
 -- TODO revisit all comments and fix.
 -- We need cardinality comments only on FK columns, never base tables.
 -- cardinality will be different for every table making use of a pk.
--- it would be O2O for these below if we had unique indexes for every single one of them.
--- in that case we would simply apply a join using (fk_name).
--- if not, FK by definition allows duplicates --> O2M -> need 2 nested joins to get an agg
+-- think of user api. For joins: we want to provide possibilities to:
+-- user.xo.go:
+-- select for time_entries that joins with:
+
+-- a task can be associated to many time entries, and any time entry is linked back to only one task: O2M
+-- another way to see it: one task shares many time_entries, and time_entries are part of only one task.
 comment on column time_entries.task_id is 'cardinality:O2M';
-
+-- a team can be associated to many time entries, and any time entry is linked back to only one team: O2M
 comment on column time_entries.team_id is 'cardinality:O2M';
-
+-- an activity can be associated to many time entries, and any time entry is linked back to only one activity: O2M
 comment on column time_entries.activity_id is 'cardinality:O2M';
-
+-- a user can be associated to many time entries, and any time entry is linked back to only one user: O2M
 comment on column time_entries.user_id is 'cardinality:O2M';
 
 -- A multicolumn B-tree index can be used with query conditions that involve any subset of the index's
@@ -297,16 +304,23 @@ create table movies (
   , primary key (movie_id)
 );
 
--- we can infer O2O for the user_id fk since PK and FK in a given table are the same
--- comment on column user_api_keys.user_id IS 'cardinality:O2O';
 create table user_api_keys (
   user_id uuid not null
   , api_key text not null unique
   , expires_on timestamp with time zone not null
   --, expires_on timestamp without time zone not null
   , primary key (user_id)
-  , foreign key (user_id) references users (user_id) on delete cascade -- generates GetUserByAPIKey
+  , foreign key (user_id) references users (user_id) on delete cascade
 );
+
+-- we can infer O2O for the user_id fk since PK and FK in a given table are the same
+-- but better be explicit. O2O when we don't want to clutter the original table with information,
+-- two cases:
+--  1) e.g. users and computers we could have users.computer_id and join using user_computers.computer_id
+-- and have a unique computers.user_id column to ensure O2O.
+-- Or 2) like done above let user_id be both pk and fk. Like stated before, better be explicit and have cardinality:O2O
+-- comment on the FK (user_computers.computer_id in (1), user_computers.user_id in (2))
+comment on column user_api_keys.user_id is 'cardinality:O2O';
 
 create or replace view v.users as
 select
