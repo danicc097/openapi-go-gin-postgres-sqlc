@@ -13,6 +13,7 @@ import (
 type UserTeam struct {
 	TeamID int       `json:"team_id" db:"team_id"` // team_id
 	UserID uuid.UUID `json:"user_id" db:"user_id"` // user_id
+
 	// xo fields
 	_exists, _deleted bool
 }

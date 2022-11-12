@@ -241,6 +241,7 @@ type {{ $t.GoName }} struct {
 {{ range $t.Fields -}}
 	{{ field . }}
 {{ end }}
+{{ join_fields $t.SQLName $constraints }}
 {{- if $t.PrimaryKeys -}}
 	// xo fields
 	_exists, _deleted bool

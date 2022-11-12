@@ -19,6 +19,7 @@ type WorkItemComment struct {
 	Message           string    `json:"message" db:"message"`                           // message
 	CreatedAt         time.Time `json:"created_at" db:"created_at"`                     // created_at
 	UpdatedAt         time.Time `json:"updated_at" db:"updated_at"`                     // updated_at
+
 	// xo fields
 	_exists, _deleted bool
 }

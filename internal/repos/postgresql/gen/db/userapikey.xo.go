@@ -16,6 +16,7 @@ type UserAPIKey struct {
 	UserID    uuid.UUID `json:"user_id" db:"user_id"`       // user_id
 	APIKey    string    `json:"api_key" db:"api_key"`       // api_key
 	ExpiresOn time.Time `json:"expires_on" db:"expires_on"` // expires_on
+
 	// xo fields
 	_exists, _deleted bool
 }

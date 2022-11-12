@@ -14,6 +14,7 @@ type TaskType struct {
 	Name        string `json:"name" db:"name"`                 // name
 	Description string `json:"description" db:"description"`   // description
 	Color       string `json:"color" db:"color"`               // color
+
 	// xo fields
 	_exists, _deleted bool
 }

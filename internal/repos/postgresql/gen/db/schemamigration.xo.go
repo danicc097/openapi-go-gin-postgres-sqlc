@@ -11,6 +11,7 @@ import (
 type SchemaMigration struct {
 	Version int64 `json:"version" db:"version"` // version
 	Dirty   bool  `json:"dirty" db:"dirty"`     // dirty
+
 	// xo fields
 	_exists, _deleted bool
 }

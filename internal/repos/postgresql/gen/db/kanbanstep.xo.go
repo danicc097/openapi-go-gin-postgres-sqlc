@@ -19,6 +19,7 @@ type KanbanStep struct {
 	Color         string   `json:"color" db:"color"`                   // color
 	TimeTrackable bool     `json:"time_trackable" db:"time_trackable"` // time_trackable
 	Disabled      bool     `json:"disabled" db:"disabled"`             // disabled
+
 	// xo fields
 	_exists, _deleted bool
 }

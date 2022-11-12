@@ -993,6 +993,7 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"zero":         f.zero,
 		"type":         f.typefn,
 		"field":        f.field,
+		"join_fields":  f.join_fields,
 		"short":        f.short,
 		// sqlstr funcs
 		"querystr":     f.querystr,
@@ -1971,6 +1972,9 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 
 // loadConstraints saves possible joins for a table based on constraints to tableConstraints
 func (f *Funcs) loadConstraints(cc []Constraint, table string) {
+	if _, ok := f.tableConstraints[table]; ok {
+		return // don't duplicate
+	}
 	for _, c := range cc {
 		if c.RefTableName == table && c.Cardinality != "" && c.Type == "foreign_key" {
 			if c.Cardinality == "M2M" {
@@ -2216,6 +2220,47 @@ func (f *Funcs) field(field Field) (string, error) {
 	}
 
 	return fmt.Sprintf("\t%s %s%s // %s", field.GoName, fieldType, tag, field.SQLName), nil
+}
+
+// join_fields generates a field definition from join constraints
+func (f *Funcs) join_fields(sqlname string, constraints interface{}) (string, error) {
+	switch x := constraints.(type) {
+	case []Constraint:
+		if len(x) > 0 {
+			f.loadConstraints(x, sqlname)
+		}
+	default:
+		break
+	}
+
+	cc, ok := f.tableConstraints[sqlname]
+	if !ok {
+		return "", nil
+	}
+	var buf strings.Builder
+
+	var goName, tag string
+	for _, c := range cc {
+		switch c.Cardinality {
+		case "M2M":
+			goName = camelExport(singularize(c.RefTableName))
+			tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(snaker.CamelToSnake(goName)))
+			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), goName, tag, c.Cardinality))
+		case "O2M", "M2O":
+			goName = camelExport(singularize(c.TableName))
+			// TODO revisit. O2M and M2O from different viewpoints.
+			tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(snaker.CamelToSnake(goName)))
+			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), goName, tag, c.Cardinality))
+		case "O2O":
+			goName = camelExport(singularize(c.TableName))
+			tag = fmt.Sprintf("`json:\"%s\"`", snaker.CamelToSnake(goName))
+			buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, goName, tag, c.Cardinality))
+		default:
+			continue
+		}
+	}
+
+	return buf.String(), nil
 }
 
 // short generates a safe Go identifier for typ. typ is first checked

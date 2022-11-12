@@ -19,6 +19,7 @@ type Project struct {
 	Metadata    pgtype.JSONB `json:"metadata" db:"metadata"`       // metadata
 	CreatedAt   time.Time    `json:"created_at" db:"created_at"`   // created_at
 	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at"`   // updated_at
+
 	// xo fields
 	_exists, _deleted bool
 }

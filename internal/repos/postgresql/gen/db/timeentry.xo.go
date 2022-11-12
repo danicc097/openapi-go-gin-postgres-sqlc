@@ -23,6 +23,7 @@ type TimeEntry struct {
 	Comment         string    `json:"comment" db:"comment"`                   // comment
 	Start           time.Time `json:"start" db:"start"`                       // start
 	DurationMinutes null.Int  `json:"duration_minutes" db:"duration_minutes"` // duration_minutes
+
 	// xo fields
 	_exists, _deleted bool
 }

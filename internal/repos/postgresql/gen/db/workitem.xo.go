@@ -23,6 +23,9 @@ type WorkItem struct {
 	CreatedAt    time.Time    `json:"created_at" db:"created_at"`         // created_at
 	UpdatedAt    time.Time    `json:"updated_at" db:"updated_at"`         // updated_at
 	DeletedAt    null.Time    `json:"deleted_at" db:"deleted_at"`         // deleted_at
+
+	WorkItemComments *[]WorkItemComment `json:"work_item_comments"` // O2M
+	Users            *[]User            `json:"users"`              // M2M
 	// xo fields
 	_exists, _deleted bool
 }

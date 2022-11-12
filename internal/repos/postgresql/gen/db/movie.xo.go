@@ -13,6 +13,7 @@ type Movie struct {
 	Title    string `json:"title" db:"title"`       // title
 	Year     int    `json:"year" db:"year"`         // year
 	Synopsis string `json:"synopsis" db:"synopsis"` // synopsis
+
 	// xo fields
 	_exists, _deleted bool
 }

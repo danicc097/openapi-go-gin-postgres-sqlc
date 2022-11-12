@@ -13,6 +13,7 @@ import (
 type WorkItemMember struct {
 	WorkItemID int64     `json:"work_item_id" db:"work_item_id"` // work_item_id
 	Member     uuid.UUID `json:"member" db:"member"`             // member
+
 	// xo fields
 	_exists, _deleted bool
 }
