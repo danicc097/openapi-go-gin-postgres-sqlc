@@ -69,27 +69,6 @@ left join (
             work_items))
       group by
         member) joined_work_items on joined_work_items.work_items_user_id = users.user_id
-left join (
-  select
-    member as work_items_user_id
-    , json_agg(work_items.*) as work_items
-  from
-    work_item_member
-    join work_items using (work_item_id)
-  where
-    member in (
-      select
-        member
-      from
-        work_item_member
-      where
-        work_item_id = any (
-          select
-            work_item_id
-          from
-            work_items))
-      group by
-        member) joined_work_items on joined_work_items.work_items_user_id = users.user_id
 -- O2M (specific when caridnality commment == "O2M" or "M2O")
 left join (
   select

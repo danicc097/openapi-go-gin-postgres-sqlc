@@ -1820,15 +1820,15 @@ left join (
 	M2OJoin = `
 left join (
   select
-  {{.LookupColumn}} as {{.JoinTable}}_{{.LookupRefColumn}}
+  {{.JoinColumn}} as {{.JoinTable}}_{{.JoinRefColumn}}
     , json_agg({{.JoinTable}}.*) as {{.JoinTable}}
   from
     {{.JoinTable}}
    group by
-        {{.LookupColumn}}) joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.JoinTable}}_{{.LookupRefColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}`
+        {{.JoinColumn}}) joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.JoinTable}}_{{.JoinRefColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
 	O2MJoin = M2OJoin
 	O2OJoin = `
-left join {{.JoinTable}} on {{.JoinTable}}.{{.LookupColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}`
+left join {{.JoinTable}} on {{.JoinTable}}.{{.JoinColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
 )
 
 // sqlstr_index builds a index fields.
@@ -1863,8 +1863,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		}
 		// build table fieldnames
 		for _, z := range x.Table.Fields {
-			// add joins
-			// TODO add selects for joined tables
+			// TODO add optional join selects parameterized
 			// var n int
 			// funcs := template.FuncMap{
 			// 	"singularize": singularize,
@@ -1885,32 +1884,11 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			fields = append(fields, f.colname(z))
 		}
 		// create joins for constraints
+		funcs := template.FuncMap{
+			"singularize": singularize,
+		}
 		for _, c := range tableConstraints {
-			funcs := template.FuncMap{
-				"singularize": singularize,
-			}
-
-			var joinTpl string
-			buf := &bytes.Buffer{}
-			fmt.Fprintf(buf, "// join generated from %q", c.Name)
-			params := make(map[string]interface{})
-
-			switch c.Cardinality {
-			case "M2M":
-				joinTpl = M2MJoin
-
-				params["LookupColumn"] = c.LookupColumn
-				params["JoinTable"] = c.RefTableName
-				params["LookupRefColumn"] = c.LookupRefColumn
-				params["JoinTablePK"] = c.RefColumnName
-				params["CurrentTable"] = x.Table.SQLName
-				params["LookupTable"] = c.TableName
-			default:
-			}
-			t := template.Must(template.New("").Funcs(funcs).Parse(joinTpl))
-			if err := t.Execute(buf, params); err != nil {
-				panic(fmt.Sprintf("could not execute template: %s", err))
-			}
+			buf := createJoinStatement(c, x, funcs)
 			joins = append(joins, buf.String())
 		}
 		// index fields
@@ -1940,6 +1918,45 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
+}
+
+func createJoinStatement(c Constraint, x Index, funcs template.FuncMap) *bytes.Buffer {
+	var joinTpl string
+	buf := &bytes.Buffer{}
+	fmt.Fprintf(buf, "-- join generated from %q", c.Name)
+	params := make(map[string]interface{})
+
+	switch c.Cardinality {
+	case "M2M":
+		joinTpl = M2MJoin
+
+		params["LookupColumn"] = c.LookupColumn
+		params["JoinTable"] = c.RefTableName
+		params["LookupRefColumn"] = c.LookupRefColumn
+		params["JoinTablePK"] = c.RefColumnName
+		params["CurrentTable"] = x.Table.SQLName
+		params["LookupTable"] = c.TableName
+	case "O2M", "M2O":
+		joinTpl = O2MJoin
+
+		params["JoinColumn"] = c.ColumnName
+		params["JoinTable"] = c.RefTableName
+		params["JoinRefColumn"] = c.RefColumnName
+		params["CurrentTable"] = x.Table.SQLName
+	case "O2O":
+		joinTpl = O2OJoin
+
+		params["JoinColumn"] = c.ColumnName
+		params["JoinTable"] = c.TableName
+		params["JoinRefColumn"] = c.RefColumnName
+		params["CurrentTable"] = x.Table.SQLName
+	default:
+	}
+	t := template.Must(template.New("").Funcs(funcs).Parse(joinTpl))
+	if err := t.Execute(buf, params); err != nil {
+		panic(fmt.Sprintf("could not execute template: %s", err))
+	}
+	return buf
 }
 
 // sqlstr_proc builds a stored procedure call.

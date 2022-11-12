@@ -194,9 +194,18 @@ func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...U
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`// join generated from "time_entries_user_id_fkey"
-// join generated from "user_api_keys_user_id_fkey"
-// join generated from "user_team_team_id_fkey"
+		`-- join generated from "time_entries_user_id_fkey"
+left join (
+  select
+  user_id as users_user_id
+    , json_agg(users.*) as users
+  from
+    users
+   group by
+        user_id) joined_users on joined_users.users_user_id = users.user_id
+-- join generated from "user_api_keys_user_id_fkey"
+left join user_api_keys on user_api_keys.user_id = users.user_id
+-- join generated from "user_team_team_id_fkey"
 left join (
 	select
 		user_id as teams_user_id
@@ -218,7 +227,7 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
-// join generated from "work_item_member_work_item_id_fkey"
+-- join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
 		member as work_items_user_id
@@ -282,9 +291,18 @@ func UsersByDeletedAt(ctx context.Context, db DB, deletedAt null.Time, opts ...U
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`// join generated from "time_entries_user_id_fkey"
-// join generated from "user_api_keys_user_id_fkey"
-// join generated from "user_team_team_id_fkey"
+		`-- join generated from "time_entries_user_id_fkey"
+left join (
+  select
+  user_id as users_user_id
+    , json_agg(users.*) as users
+  from
+    users
+   group by
+        user_id) joined_users on joined_users.users_user_id = users.user_id
+-- join generated from "user_api_keys_user_id_fkey"
+left join user_api_keys on user_api_keys.user_id = users.user_id
+-- join generated from "user_team_team_id_fkey"
 left join (
 	select
 		user_id as teams_user_id
@@ -306,7 +324,7 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
-// join generated from "work_item_member_work_item_id_fkey"
+-- join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
 		member as work_items_user_id
@@ -370,9 +388,18 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`// join generated from "time_entries_user_id_fkey"
-// join generated from "user_api_keys_user_id_fkey"
-// join generated from "user_team_team_id_fkey"
+		`-- join generated from "time_entries_user_id_fkey"
+left join (
+  select
+  user_id as users_user_id
+    , json_agg(users.*) as users
+  from
+    users
+   group by
+        user_id) joined_users on joined_users.users_user_id = users.user_id
+-- join generated from "user_api_keys_user_id_fkey"
+left join user_api_keys on user_api_keys.user_id = users.user_id
+-- join generated from "user_team_team_id_fkey"
 left join (
 	select
 		user_id as teams_user_id
@@ -394,7 +421,7 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
-// join generated from "work_item_member_work_item_id_fkey"
+-- join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
 		member as work_items_user_id
@@ -444,9 +471,18 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`// join generated from "time_entries_user_id_fkey"
-// join generated from "user_api_keys_user_id_fkey"
-// join generated from "user_team_team_id_fkey"
+		`-- join generated from "time_entries_user_id_fkey"
+left join (
+  select
+  user_id as users_user_id
+    , json_agg(users.*) as users
+  from
+    users
+   group by
+        user_id) joined_users on joined_users.users_user_id = users.user_id
+-- join generated from "user_api_keys_user_id_fkey"
+left join user_api_keys on user_api_keys.user_id = users.user_id
+-- join generated from "user_team_team_id_fkey"
 left join (
 	select
 		user_id as teams_user_id
@@ -468,7 +504,7 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
-// join generated from "work_item_member_work_item_id_fkey"
+-- join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
 		member as work_items_user_id
@@ -518,9 +554,18 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`// join generated from "time_entries_user_id_fkey"
-// join generated from "user_api_keys_user_id_fkey"
-// join generated from "user_team_team_id_fkey"
+		`-- join generated from "time_entries_user_id_fkey"
+left join (
+  select
+  user_id as users_user_id
+    , json_agg(users.*) as users
+  from
+    users
+   group by
+        user_id) joined_users on joined_users.users_user_id = users.user_id
+-- join generated from "user_api_keys_user_id_fkey"
+left join user_api_keys on user_api_keys.user_id = users.user_id
+-- join generated from "user_team_team_id_fkey"
 left join (
 	select
 		user_id as teams_user_id
@@ -542,7 +587,7 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
-// join generated from "work_item_member_work_item_id_fkey"
+-- join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
 		member as work_items_user_id
@@ -606,9 +651,18 @@ func UserByUserIDExternalID_users_user_id_external_id_idx(ctx context.Context, d
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`// join generated from "time_entries_user_id_fkey"
-// join generated from "user_api_keys_user_id_fkey"
-// join generated from "user_team_team_id_fkey"
+		`-- join generated from "time_entries_user_id_fkey"
+left join (
+  select
+  user_id as users_user_id
+    , json_agg(users.*) as users
+  from
+    users
+   group by
+        user_id) joined_users on joined_users.users_user_id = users.user_id
+-- join generated from "user_api_keys_user_id_fkey"
+left join user_api_keys on user_api_keys.user_id = users.user_id
+-- join generated from "user_team_team_id_fkey"
 left join (
 	select
 		user_id as teams_user_id
@@ -630,7 +684,7 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
-// join generated from "work_item_member_work_item_id_fkey"
+-- join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
 		member as work_items_user_id
@@ -680,9 +734,18 @@ func UserByUserID_users_user_id_idx(ctx context.Context, db DB, userID uuid.UUID
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`// join generated from "time_entries_user_id_fkey"
-// join generated from "user_api_keys_user_id_fkey"
-// join generated from "user_team_team_id_fkey"
+		`-- join generated from "time_entries_user_id_fkey"
+left join (
+  select
+  user_id as users_user_id
+    , json_agg(users.*) as users
+  from
+    users
+   group by
+        user_id) joined_users on joined_users.users_user_id = users.user_id
+-- join generated from "user_api_keys_user_id_fkey"
+left join user_api_keys on user_api_keys.user_id = users.user_id
+-- join generated from "user_team_team_id_fkey"
 left join (
 	select
 		user_id as teams_user_id
@@ -704,7 +767,7 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
-// join generated from "work_item_member_work_item_id_fkey"
+-- join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
 		member as work_items_user_id
@@ -754,9 +817,18 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`// join generated from "time_entries_user_id_fkey"
-// join generated from "user_api_keys_user_id_fkey"
-// join generated from "user_team_team_id_fkey"
+		`-- join generated from "time_entries_user_id_fkey"
+left join (
+  select
+  user_id as users_user_id
+    , json_agg(users.*) as users
+  from
+    users
+   group by
+        user_id) joined_users on joined_users.users_user_id = users.user_id
+-- join generated from "user_api_keys_user_id_fkey"
+left join user_api_keys on user_api_keys.user_id = users.user_id
+-- join generated from "user_team_team_id_fkey"
 left join (
 	select
 		user_id as teams_user_id
@@ -778,7 +850,7 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
-// join generated from "work_item_member_work_item_id_fkey"
+-- join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
 		member as work_items_user_id

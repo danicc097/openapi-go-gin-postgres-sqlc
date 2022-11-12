@@ -158,7 +158,15 @@ func ActivityByName(ctx context.Context, db DB, name string, opts ...ActivitySel
 	sqlstr := `SELECT ` +
 		`activity_id, name, description, is_productive ` +
 		`FROM public.activities ` +
-		`// join generated from "time_entries_activity_id_fkey"` +
+		`-- join generated from "time_entries_activity_id_fkey"
+left join (
+  select
+  activity_id as activities_activity_id
+    , json_agg(activities.*) as activities
+  from
+    activities
+   group by
+        activity_id) joined_activities on joined_activities.activities_activity_id = activities.activity_id` +
 		` WHERE name = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -187,7 +195,15 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...Ac
 	sqlstr := `SELECT ` +
 		`activity_id, name, description, is_productive ` +
 		`FROM public.activities ` +
-		`// join generated from "time_entries_activity_id_fkey"` +
+		`-- join generated from "time_entries_activity_id_fkey"
+left join (
+  select
+  activity_id as activities_activity_id
+    , json_agg(activities.*) as activities
+  from
+    activities
+   group by
+        activity_id) joined_activities on joined_activities.activities_activity_id = activities.activity_id` +
 		` WHERE activity_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
