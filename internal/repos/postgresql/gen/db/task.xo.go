@@ -195,15 +195,15 @@ func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectCo
 	sqlstr := `SELECT ` +
 		`task_id, task_type_id, work_item_id, title, metadata, target_date, target_date_timezone, created_at, updated_at, deleted_at ` +
 		`FROM public.tasks ` +
-		`-- join generated from "time_entries_task_id_fkey"
+		`-- O2M join generated from "time_entries_task_id_fkey"
 left join (
   select
-  task_id as tasks_task_id
-    , json_agg(tasks.*) as tasks
+  task_id as time_entries_task_id
+    , json_agg(time_entries.*) as time_entries
   from
-    tasks
+    time_entries
    group by
-        task_id) joined_tasks on joined_tasks.tasks_task_id = tasks.task_id` +
+        task_id) joined_time_entries on joined_time_entries.time_entries_task_id = tasks.task_id` +
 		` WHERE task_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

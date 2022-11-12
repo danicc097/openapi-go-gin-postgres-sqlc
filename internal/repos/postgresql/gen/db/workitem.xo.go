@@ -190,16 +190,16 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 	sqlstr := `SELECT ` +
 		`work_item_id, title, metadata, team_id, kanban_step_id, closed, created_at, updated_at, deleted_at ` +
 		`FROM public.work_items ` +
-		`-- join generated from "work_item_comments_work_item_id_fkey"
+		`-- O2M join generated from "work_item_comments_work_item_id_fkey"
 left join (
   select
-  work_item_id as work_items_work_item_id
-    , json_agg(work_items.*) as work_items
+  work_item_id as work_item_comments_work_item_id
+    , json_agg(work_item_comments.*) as work_item_comments
   from
-    work_items
+    work_item_comments
    group by
-        work_item_id) joined_work_items on joined_work_items.work_items_work_item_id = work_items.work_item_id
--- join generated from "work_item_member_member_fkey"
+        work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
+-- M2M join generated from "work_item_member_member_fkey"
 left join (
 	select
 		work_item_id as users_work_item_id

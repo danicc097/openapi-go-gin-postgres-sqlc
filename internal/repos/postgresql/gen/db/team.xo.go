@@ -183,16 +183,16 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int,
 	sqlstr := `SELECT ` +
 		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.teams ` +
-		`-- join generated from "time_entries_team_id_fkey"
+		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
   select
-  team_id as teams_team_id
-    , json_agg(teams.*) as teams
+  team_id as time_entries_team_id
+    , json_agg(time_entries.*) as time_entries
   from
-    teams
+    time_entries
    group by
-        team_id) joined_teams on joined_teams.teams_team_id = teams.team_id
--- join generated from "user_team_user_id_fkey"
+        team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
+-- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
 		team_id as users_team_id
@@ -242,16 +242,16 @@ func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConf
 	sqlstr := `SELECT ` +
 		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.teams ` +
-		`-- join generated from "time_entries_team_id_fkey"
+		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
   select
-  team_id as teams_team_id
-    , json_agg(teams.*) as teams
+  team_id as time_entries_team_id
+    , json_agg(time_entries.*) as time_entries
   from
-    teams
+    time_entries
    group by
-        team_id) joined_teams on joined_teams.teams_team_id = teams.team_id
--- join generated from "user_team_user_id_fkey"
+        team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
+-- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
 		team_id as users_team_id

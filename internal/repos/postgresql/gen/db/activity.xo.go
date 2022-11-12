@@ -158,15 +158,15 @@ func ActivityByName(ctx context.Context, db DB, name string, opts ...ActivitySel
 	sqlstr := `SELECT ` +
 		`activity_id, name, description, is_productive ` +
 		`FROM public.activities ` +
-		`-- join generated from "time_entries_activity_id_fkey"
+		`-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
   select
-  activity_id as activities_activity_id
-    , json_agg(activities.*) as activities
+  activity_id as time_entries_activity_id
+    , json_agg(time_entries.*) as time_entries
   from
-    activities
+    time_entries
    group by
-        activity_id) joined_activities on joined_activities.activities_activity_id = activities.activity_id` +
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
 		` WHERE name = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -195,15 +195,15 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...Ac
 	sqlstr := `SELECT ` +
 		`activity_id, name, description, is_productive ` +
 		`FROM public.activities ` +
-		`-- join generated from "time_entries_activity_id_fkey"
+		`-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
   select
-  activity_id as activities_activity_id
-    , json_agg(activities.*) as activities
+  activity_id as time_entries_activity_id
+    , json_agg(time_entries.*) as time_entries
   from
-    activities
+    time_entries
    group by
-        activity_id) joined_activities on joined_activities.activities_activity_id = activities.activity_id` +
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
 		` WHERE activity_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

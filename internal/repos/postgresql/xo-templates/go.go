@@ -1923,8 +1923,8 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 func createJoinStatement(c Constraint, x Index, funcs template.FuncMap) *bytes.Buffer {
 	var joinTpl string
 	buf := &bytes.Buffer{}
-	fmt.Fprintf(buf, "-- join generated from %q", c.Name)
 	params := make(map[string]interface{})
+	fmt.Fprintf(buf, "-- %s join generated from %q", c.Cardinality, c.Name)
 
 	switch c.Cardinality {
 	case "M2M":
@@ -1940,7 +1940,7 @@ func createJoinStatement(c Constraint, x Index, funcs template.FuncMap) *bytes.B
 		joinTpl = O2MJoin
 
 		params["JoinColumn"] = c.ColumnName
-		params["JoinTable"] = c.RefTableName
+		params["JoinTable"] = c.TableName
 		params["JoinRefColumn"] = c.RefColumnName
 		params["CurrentTable"] = x.Table.SQLName
 	case "O2O":
