@@ -195,7 +195,8 @@ func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectCo
 	sqlstr := `SELECT ` +
 		`task_id, task_type_id, work_item_id, title, metadata, target_date, target_date_timezone, created_at, updated_at, deleted_at ` +
 		`FROM public.tasks ` +
-		`WHERE task_id = $1 `
+		`// join generated from "time_entries_task_id_fkey"` +
+		` WHERE task_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

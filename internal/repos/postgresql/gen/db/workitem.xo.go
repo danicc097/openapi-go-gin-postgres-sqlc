@@ -190,7 +190,30 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 	sqlstr := `SELECT ` +
 		`work_item_id, title, metadata, team_id, kanban_step_id, closed, created_at, updated_at, deleted_at ` +
 		`FROM public.work_items ` +
-		`WHERE work_item_id = $1 `
+		`// join generated from "work_item_comments_work_item_id_fkey"
+// join generated from "work_item_member_member_fkey"
+left join (
+	select
+		work_item_id as users_work_item_id
+		, json_agg(users.*) as users
+	from
+		work_item_member
+		join users using (user_id)
+	where
+		work_item_id in (
+			select
+				work_item_id
+			from
+				work_item_member
+			where
+				user_id = any (
+					select
+						user_id
+					from
+						users))
+			group by
+				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id` +
+		` WHERE work_item_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

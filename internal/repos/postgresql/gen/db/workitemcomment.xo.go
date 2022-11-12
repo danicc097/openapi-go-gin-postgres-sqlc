@@ -182,7 +182,8 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 	sqlstr := `SELECT ` +
 		`work_item_comment_id, work_item_id, user_id, message, created_at, updated_at ` +
 		`FROM public.work_item_comments ` +
-		`WHERE work_item_comment_id = $1 `
+		`` +
+		` WHERE work_item_comment_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -210,7 +211,8 @@ func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, 
 	sqlstr := `SELECT ` +
 		`work_item_comment_id, work_item_id, user_id, message, created_at, updated_at ` +
 		`FROM public.work_item_comments ` +
-		`WHERE work_item_id = $1 `
+		`` +
+		` WHERE work_item_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

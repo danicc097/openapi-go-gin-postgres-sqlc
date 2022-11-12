@@ -1789,26 +1789,26 @@ func (f *Funcs) sqlstr_delete(v interface{}) []string {
 // , (case when <f.nth(i)>::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries
 
 const (
-	M2MField = `(case when <f.nth(i)>::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end)::jsonb as {{.JoinTable}}`
+	M2MField = `(case when {{.Nth}}::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end)::jsonb as {{.JoinTable}}`
 	O2MField = M2MField
-	O2OField = `(case when <f.nth(i)>::boolean = true then row_to_json({{.JoinTable}}.*) end)::jsonb as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
+	O2OField = `(case when {{.Nth}}::boolean = true then row_to_json({{.JoinTable}}.*) end)::jsonb as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
 )
 
 const (
 	M2MJoin = `
 left join (
 	select
-		{{.FKColumn}} as {{.JoinTable}}_{{.FKRefColumn}}
+		{{.LookupColumn}} as {{.JoinTable}}_{{.LookupRefColumn}}
 		, json_agg({{.JoinTable}}.*) as {{.JoinTable}}
 	from
-		<lookup_table>
+		{{.LookupTable}}
 		join {{.JoinTable}} using ({{.JoinTablePK}})
 	where
-		{{.FKColumn}} in (
+		{{.LookupColumn}} in (
 			select
-				{{.FKColumn}}
+				{{.LookupColumn}}
 			from
-				<lookup_table>
+				{{.LookupTable}}
 			where
 				{{.JoinTablePK}} = any (
 					select
@@ -1816,48 +1816,38 @@ left join (
 					from
 						{{.JoinTable}}))
 			group by
-				{{.FKColumn}}) joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.JoinTable}}_{{.FKRefColumn}} = {{.CurrentTable}}.{{.FKRefColumn}}
-`
+				{{.LookupColumn}}) joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.JoinTable}}_{{.LookupRefColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}`
 	M2OJoin = `
 left join (
   select
-  {{.FKColumn}} as {{.JoinTable}}_{{.FKRefColumn}}
+  {{.LookupColumn}} as {{.JoinTable}}_{{.LookupRefColumn}}
     , json_agg({{.JoinTable}}.*) as {{.JoinTable}}
   from
     {{.JoinTable}}
    group by
-        {{.FKColumn}}) joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.JoinTable}}_{{.FKRefColumn}} = {{.CurrentTable}}.{{.FKRefColumn}}
-`
+        {{.LookupColumn}}) joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.JoinTable}}_{{.LookupRefColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}`
 	O2MJoin = M2OJoin
 	O2OJoin = `
-left join {{.JoinTable}} on {{.JoinTable}}.{{.FKColumn}} = {{.CurrentTable}}.{{.FKRefColumn}}
-`
+left join {{.JoinTable}} on {{.JoinTable}}.{{.LookupColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}`
 )
 
 // sqlstr_index builds a index fields.
 func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 	switch x := v.(type) {
 	case Index:
-		var filters, fields []string
+		var filters, fields, joins []string
 		var tableConstraints []Constraint
 		switch cc := constraints.(type) {
 		case []Constraint:
 			for _, c := range cc {
-				// TODO craft select rows and join's
-				// 1. get relevant constraints for the current index
-				// 2. see temp_queries_xo_test.sql for creating a helper function accepting params cardinality string, params ConstraintParams
 				if c.RefTableName == x.Table.SQLName && c.Cardinality != "" && c.Type == "foreign_key" {
 					if c.Cardinality == "M2M" {
 						// assumes lookup table links 2 tables
 						for _, c1 := range cc {
 							if c1.TableName == c.TableName && c1.ColumnName != c.ColumnName && c1.Type == "foreign_key" {
-								// found the other table in the lookup table: c1.RefTableName
+								c1.LookupColumn = c.ColumnName
+								c1.LookupRefColumn = c.RefColumnName
 								tableConstraints = append(tableConstraints, c1)
-								// 	for _, c2 := range cc {
-								// if c2.Type == "primary_key" && c1.RefTableName == c2.TableName {
-								// 	tableConstraints = append(tableConstraints, c1)
-								// 	break
-								// }
 							}
 						}
 					} else {
@@ -1874,8 +1864,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		// build table fieldnames
 		for _, z := range x.Table.Fields {
 			// add joins
-			// TODO
-
+			// TODO add selects for joined tables
 			// var n int
 			// funcs := template.FuncMap{
 			// 	"singularize": singularize,
@@ -1884,7 +1873,8 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			// t := template.Must(template.New("").Funcs(funcs).Parse(tpl))
 			// buf := &bytes.Buffer{}
 			// params := map[string]interface{}{
-			// 	"nth": f.nth(n),
+			// 	"Nth": f.nth(n),
+			// 	"JoinTable": ...
 			// }
 			// if err := t.Execute(buf, params); err != nil {
 			// 	panic(fmt.Sprintf("could not execute template: %s", err))
@@ -1893,6 +1883,35 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 
 			// add current table fields
 			fields = append(fields, f.colname(z))
+		}
+		// create joins for constraints
+		for _, c := range tableConstraints {
+			funcs := template.FuncMap{
+				"singularize": singularize,
+			}
+
+			var joinTpl string
+			buf := &bytes.Buffer{}
+			fmt.Fprintf(buf, "// join generated from %q", c.Name)
+			params := make(map[string]interface{})
+
+			switch c.Cardinality {
+			case "M2M":
+				joinTpl = M2MJoin
+
+				params["LookupColumn"] = c.LookupColumn
+				params["JoinTable"] = c.RefTableName
+				params["LookupRefColumn"] = c.LookupRefColumn
+				params["JoinTablePK"] = c.RefColumnName
+				params["CurrentTable"] = x.Table.SQLName
+				params["LookupTable"] = c.TableName
+			default:
+			}
+			t := template.Must(template.New("").Funcs(funcs).Parse(joinTpl))
+			if err := t.Execute(buf, params); err != nil {
+				panic(fmt.Sprintf("could not execute template: %s", err))
+			}
+			joins = append(joins, buf.String())
 		}
 		// index fields
 		for i, z := range x.Fields {
@@ -1915,7 +1934,8 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			// TODO create and add joins themselves to filters based on the current table
 			// (all generated index queries will have these joins available as opts)
 			// makeJoins(x.Table, ...)
-			"WHERE " + strings.Join(filters, " AND "),
+			strings.Join(joins, "\n"),
+			" WHERE " + strings.Join(filters, " AND "),
 		}
 		return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
 	}
@@ -2525,11 +2545,13 @@ type Constraint struct {
 	// "M2M" "O2M" "M2O" "O2O"
 	Cardinality string
 	// Key name
-	Name          string
-	TableName     string
-	ColumnName    string
-	RefTableName  string
-	RefColumnName string
+	Name            string
+	TableName       string
+	ColumnName      string
+	RefTableName    string
+	RefColumnName   string
+	LookupColumn    string // lookup table column
+	LookupRefColumn string // the referenced PK by LookupColumn
 }
 
 // Field is a field template.

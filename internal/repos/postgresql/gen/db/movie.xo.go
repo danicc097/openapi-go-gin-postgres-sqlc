@@ -158,7 +158,8 @@ func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelect
 	sqlstr := `SELECT ` +
 		`movie_id, title, year, synopsis ` +
 		`FROM public.movies ` +
-		`WHERE movie_id = $1 `
+		`` +
+		` WHERE movie_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

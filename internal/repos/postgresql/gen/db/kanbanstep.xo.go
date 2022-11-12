@@ -164,7 +164,8 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts
 	sqlstr := `SELECT ` +
 		`kanban_step_id, team_id, step_order, name, description, color, time_trackable, disabled ` +
 		`FROM public.kanban_steps ` +
-		`WHERE kanban_step_id = $1 `
+		`` +
+		` WHERE kanban_step_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -192,7 +193,8 @@ func KanbanStepByTeamIDStepOrder(ctx context.Context, db DB, teamID int, stepOrd
 	sqlstr := `SELECT ` +
 		`kanban_step_id, team_id, step_order, name, description, color, time_trackable, disabled ` +
 		`FROM public.kanban_steps ` +
-		`WHERE team_id = $1 AND step_order = $2 `
+		`` +
+		` WHERE team_id = $1 AND step_order = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

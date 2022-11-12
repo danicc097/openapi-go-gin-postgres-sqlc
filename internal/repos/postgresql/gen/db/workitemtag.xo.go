@@ -158,7 +158,8 @@ func WorkItemTagByName(ctx context.Context, db DB, name string, opts ...WorkItem
 	sqlstr := `SELECT ` +
 		`work_item_tag_id, name, description, color ` +
 		`FROM public.work_item_tags ` +
-		`WHERE name = $1 `
+		`` +
+		` WHERE name = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -186,7 +187,8 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, o
 	sqlstr := `SELECT ` +
 		`work_item_tag_id, name, description, color ` +
 		`FROM public.work_item_tags ` +
-		`WHERE work_item_tag_id = $1 `
+		`` +
+		` WHERE work_item_tag_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -158,7 +158,8 @@ func ActivityByName(ctx context.Context, db DB, name string, opts ...ActivitySel
 	sqlstr := `SELECT ` +
 		`activity_id, name, description, is_productive ` +
 		`FROM public.activities ` +
-		`WHERE name = $1 `
+		`// join generated from "time_entries_activity_id_fkey"` +
+		` WHERE name = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -186,7 +187,8 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...Ac
 	sqlstr := `SELECT ` +
 		`activity_id, name, description, is_productive ` +
 		`FROM public.activities ` +
-		`WHERE activity_id = $1 `
+		`// join generated from "time_entries_activity_id_fkey"` +
+		` WHERE activity_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -83,7 +83,8 @@ func UsersByExternalID(ctx context.Context, db DB, externalID null.String, opts 
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at, teams ` +
 		`FROM cache.users ` +
-		`WHERE external_id = $1 `
+		`` +
+		` WHERE external_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -182,7 +182,8 @@ func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelec
 	sqlstr := `SELECT ` +
 		`project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.projects ` +
-		`WHERE name = $1 `
+		`` +
+		` WHERE name = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -210,7 +211,8 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...Proje
 	sqlstr := `SELECT ` +
 		`project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.projects ` +
-		`WHERE project_id = $1 `
+		`` +
+		` WHERE project_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

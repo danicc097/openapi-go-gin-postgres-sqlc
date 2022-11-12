@@ -183,7 +183,30 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int,
 	sqlstr := `SELECT ` +
 		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.teams ` +
-		`WHERE name = $1 AND project_id = $2 `
+		`// join generated from "time_entries_team_id_fkey"
+// join generated from "user_team_user_id_fkey"
+left join (
+	select
+		team_id as users_team_id
+		, json_agg(users.*) as users
+	from
+		user_team
+		join users using (user_id)
+	where
+		team_id in (
+			select
+				team_id
+			from
+				user_team
+			where
+				user_id = any (
+					select
+						user_id
+					from
+						users))
+			group by
+				team_id) joined_users on joined_users.users_team_id = teams.team_id` +
+		` WHERE name = $1 AND project_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -211,7 +234,30 @@ func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConf
 	sqlstr := `SELECT ` +
 		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
 		`FROM public.teams ` +
-		`WHERE team_id = $1 `
+		`// join generated from "time_entries_team_id_fkey"
+// join generated from "user_team_user_id_fkey"
+left join (
+	select
+		team_id as users_team_id
+		, json_agg(users.*) as users
+	from
+		user_team
+		join users using (user_id)
+	where
+		team_id in (
+			select
+				team_id
+			from
+				user_team
+			where
+				user_id = any (
+					select
+						user_id
+					from
+						users))
+			group by
+				team_id) joined_users on joined_users.users_team_id = teams.team_id` +
+		` WHERE team_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -182,7 +182,8 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts 
 	sqlstr := `SELECT ` +
 		`time_entry_id, task_id, activity_id, team_id, user_id, comment, start, duration_minutes ` +
 		`FROM public.time_entries ` +
-		`WHERE time_entry_id = $1 `
+		`` +
+		` WHERE time_entry_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -210,7 +211,8 @@ func TimeEntriesByTaskIDTeamID(ctx context.Context, db DB, taskID, teamID null.I
 	sqlstr := `SELECT ` +
 		`time_entry_id, task_id, activity_id, team_id, user_id, comment, start, duration_minutes ` +
 		`FROM public.time_entries ` +
-		`WHERE task_id = $1 AND team_id = $2 `
+		`` +
+		` WHERE task_id = $1 AND team_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -252,7 +254,8 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, tea
 	sqlstr := `SELECT ` +
 		`time_entry_id, task_id, activity_id, team_id, user_id, comment, start, duration_minutes ` +
 		`FROM public.time_entries ` +
-		`WHERE user_id = $1 AND team_id = $2 `
+		`` +
+		` WHERE user_id = $1 AND team_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

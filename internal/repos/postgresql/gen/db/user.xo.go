@@ -194,7 +194,53 @@ func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...U
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`WHERE created_at = $1 `
+		`// join generated from "time_entries_user_id_fkey"
+// join generated from "user_api_keys_user_id_fkey"
+// join generated from "user_team_team_id_fkey"
+left join (
+	select
+		user_id as teams_user_id
+		, json_agg(teams.*) as teams
+	from
+		user_team
+		join teams using (team_id)
+	where
+		user_id in (
+			select
+				user_id
+			from
+				user_team
+			where
+				team_id = any (
+					select
+						team_id
+					from
+						teams))
+			group by
+				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+// join generated from "work_item_member_work_item_id_fkey"
+left join (
+	select
+		member as work_items_user_id
+		, json_agg(work_items.*) as work_items
+	from
+		work_item_member
+		join work_items using (work_item_id)
+	where
+		member in (
+			select
+				member
+			from
+				work_item_member
+			where
+				work_item_id = any (
+					select
+						work_item_id
+					from
+						work_items))
+			group by
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
+		` WHERE created_at = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -236,7 +282,53 @@ func UsersByDeletedAt(ctx context.Context, db DB, deletedAt null.Time, opts ...U
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`WHERE deleted_at = $1 `
+		`// join generated from "time_entries_user_id_fkey"
+// join generated from "user_api_keys_user_id_fkey"
+// join generated from "user_team_team_id_fkey"
+left join (
+	select
+		user_id as teams_user_id
+		, json_agg(teams.*) as teams
+	from
+		user_team
+		join teams using (team_id)
+	where
+		user_id in (
+			select
+				user_id
+			from
+				user_team
+			where
+				team_id = any (
+					select
+						team_id
+					from
+						teams))
+			group by
+				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+// join generated from "work_item_member_work_item_id_fkey"
+left join (
+	select
+		member as work_items_user_id
+		, json_agg(work_items.*) as work_items
+	from
+		work_item_member
+		join work_items using (work_item_id)
+	where
+		member in (
+			select
+				member
+			from
+				work_item_member
+			where
+				work_item_id = any (
+					select
+						work_item_id
+					from
+						work_items))
+			group by
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
+		` WHERE deleted_at = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -278,7 +370,53 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`WHERE email = $1 `
+		`// join generated from "time_entries_user_id_fkey"
+// join generated from "user_api_keys_user_id_fkey"
+// join generated from "user_team_team_id_fkey"
+left join (
+	select
+		user_id as teams_user_id
+		, json_agg(teams.*) as teams
+	from
+		user_team
+		join teams using (team_id)
+	where
+		user_id in (
+			select
+				user_id
+			from
+				user_team
+			where
+				team_id = any (
+					select
+						team_id
+					from
+						teams))
+			group by
+				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+// join generated from "work_item_member_work_item_id_fkey"
+left join (
+	select
+		member as work_items_user_id
+		, json_agg(work_items.*) as work_items
+	from
+		work_item_member
+		join work_items using (work_item_id)
+	where
+		member in (
+			select
+				member
+			from
+				work_item_member
+			where
+				work_item_id = any (
+					select
+						work_item_id
+					from
+						work_items))
+			group by
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
+		` WHERE email = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -306,7 +444,53 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`WHERE user_id = $1 `
+		`// join generated from "time_entries_user_id_fkey"
+// join generated from "user_api_keys_user_id_fkey"
+// join generated from "user_team_team_id_fkey"
+left join (
+	select
+		user_id as teams_user_id
+		, json_agg(teams.*) as teams
+	from
+		user_team
+		join teams using (team_id)
+	where
+		user_id in (
+			select
+				user_id
+			from
+				user_team
+			where
+				team_id = any (
+					select
+						team_id
+					from
+						teams))
+			group by
+				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+// join generated from "work_item_member_work_item_id_fkey"
+left join (
+	select
+		member as work_items_user_id
+		, json_agg(work_items.*) as work_items
+	from
+		work_item_member
+		join work_items using (work_item_id)
+	where
+		member in (
+			select
+				member
+			from
+				work_item_member
+			where
+				work_item_id = any (
+					select
+						work_item_id
+					from
+						work_items))
+			group by
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
+		` WHERE user_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -334,7 +518,53 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`WHERE updated_at = $1 `
+		`// join generated from "time_entries_user_id_fkey"
+// join generated from "user_api_keys_user_id_fkey"
+// join generated from "user_team_team_id_fkey"
+left join (
+	select
+		user_id as teams_user_id
+		, json_agg(teams.*) as teams
+	from
+		user_team
+		join teams using (team_id)
+	where
+		user_id in (
+			select
+				user_id
+			from
+				user_team
+			where
+				team_id = any (
+					select
+						team_id
+					from
+						teams))
+			group by
+				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+// join generated from "work_item_member_work_item_id_fkey"
+left join (
+	select
+		member as work_items_user_id
+		, json_agg(work_items.*) as work_items
+	from
+		work_item_member
+		join work_items using (work_item_id)
+	where
+		member in (
+			select
+				member
+			from
+				work_item_member
+			where
+				work_item_id = any (
+					select
+						work_item_id
+					from
+						work_items))
+			group by
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
+		` WHERE updated_at = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -376,7 +606,53 @@ func UserByUserIDExternalID_users_user_id_external_id_idx(ctx context.Context, d
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`WHERE user_id = $1 AND external_id = $2 AND (external_id IS NOT NULL) `
+		`// join generated from "time_entries_user_id_fkey"
+// join generated from "user_api_keys_user_id_fkey"
+// join generated from "user_team_team_id_fkey"
+left join (
+	select
+		user_id as teams_user_id
+		, json_agg(teams.*) as teams
+	from
+		user_team
+		join teams using (team_id)
+	where
+		user_id in (
+			select
+				user_id
+			from
+				user_team
+			where
+				team_id = any (
+					select
+						team_id
+					from
+						teams))
+			group by
+				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+// join generated from "work_item_member_work_item_id_fkey"
+left join (
+	select
+		member as work_items_user_id
+		, json_agg(work_items.*) as work_items
+	from
+		work_item_member
+		join work_items using (work_item_id)
+	where
+		member in (
+			select
+				member
+			from
+				work_item_member
+			where
+				work_item_id = any (
+					select
+						work_item_id
+					from
+						work_items))
+			group by
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
+		` WHERE user_id = $1 AND external_id = $2 AND (external_id IS NOT NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -404,7 +680,53 @@ func UserByUserID_users_user_id_idx(ctx context.Context, db DB, userID uuid.UUID
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`WHERE user_id = $1 AND (external_id IS NULL) `
+		`// join generated from "time_entries_user_id_fkey"
+// join generated from "user_api_keys_user_id_fkey"
+// join generated from "user_team_team_id_fkey"
+left join (
+	select
+		user_id as teams_user_id
+		, json_agg(teams.*) as teams
+	from
+		user_team
+		join teams using (team_id)
+	where
+		user_id in (
+			select
+				user_id
+			from
+				user_team
+			where
+				team_id = any (
+					select
+						team_id
+					from
+						teams))
+			group by
+				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+// join generated from "work_item_member_work_item_id_fkey"
+left join (
+	select
+		member as work_items_user_id
+		, json_agg(work_items.*) as work_items
+	from
+		work_item_member
+		join work_items using (work_item_id)
+	where
+		member in (
+			select
+				member
+			from
+				work_item_member
+			where
+				work_item_id = any (
+					select
+						work_item_id
+					from
+						work_items))
+			group by
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
+		` WHERE user_id = $1 AND (external_id IS NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -432,7 +754,53 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 	sqlstr := `SELECT ` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
 		`FROM public.users ` +
-		`WHERE username = $1 `
+		`// join generated from "time_entries_user_id_fkey"
+// join generated from "user_api_keys_user_id_fkey"
+// join generated from "user_team_team_id_fkey"
+left join (
+	select
+		user_id as teams_user_id
+		, json_agg(teams.*) as teams
+	from
+		user_team
+		join teams using (team_id)
+	where
+		user_id in (
+			select
+				user_id
+			from
+				user_team
+			where
+				team_id = any (
+					select
+						team_id
+					from
+						teams))
+			group by
+				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+// join generated from "work_item_member_work_item_id_fkey"
+left join (
+	select
+		member as work_items_user_id
+		, json_agg(work_items.*) as work_items
+	from
+		work_item_member
+		join work_items using (work_item_id)
+	where
+		member in (
+			select
+				member
+			from
+				work_item_member
+			where
+				work_item_id = any (
+					select
+						work_item_id
+					from
+						work_items))
+			group by
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
+		` WHERE username = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
