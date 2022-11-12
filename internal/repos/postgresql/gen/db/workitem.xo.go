@@ -188,7 +188,17 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_id, title, metadata, team_id, kanban_step_id, closed, created_at, updated_at, deleted_at ` +
+		`work_item_id,
+title,
+metadata,
+team_id,
+kanban_step_id,
+closed,
+created_at,
+updated_at,
+deleted_at,
+(case when $1::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
+(case when $2::boolean = true then joined_users.users end)::jsonb as users ` +
 		`FROM public.work_items ` +
 		`-- O2M join generated from "work_item_comments_work_item_id_fkey"
 left join (
@@ -221,7 +231,7 @@ left join (
 						users))
 			group by
 				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id` +
-		` WHERE work_item_id = $1 `
+		` WHERE work_item_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

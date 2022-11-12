@@ -150,7 +150,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 		_exists: true,
 	{{ end -}}
 	}
-	if err := {{ db "QueryRow"  $i }}.Scan({{ names (print "&" (short $i.Table) ".") $i.Table }}); err != nil {
+	if err := {{ db "QueryRow" $i }}.Scan({{ names (print "&" (short $i.Table) ".") $i.Table }}); err != nil {
 		return nil, logerror(err)
 	}
 	return &{{ short $i.Table }}, nil

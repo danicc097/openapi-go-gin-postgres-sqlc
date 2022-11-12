@@ -193,7 +193,17 @@ func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectCo
 
 	// query
 	sqlstr := `SELECT ` +
-		`task_id, task_type_id, work_item_id, title, metadata, target_date, target_date_timezone, created_at, updated_at, deleted_at ` +
+		`task_id,
+task_type_id,
+work_item_id,
+title,
+metadata,
+target_date,
+target_date_timezone,
+created_at,
+updated_at,
+deleted_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
 		`FROM public.tasks ` +
 		`-- O2M join generated from "time_entries_task_id_fkey"
 left join (
@@ -204,7 +214,7 @@ left join (
     time_entries
    group by
         task_id) joined_time_entries on joined_time_entries.time_entries_task_id = tasks.task_id` +
-		` WHERE task_id = $1 `
+		` WHERE task_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -173,7 +173,9 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id, api_key, expires_on ` +
+		`user_id,
+api_key,
+expires_on ` +
 		`FROM public.user_api_keys ` +
 		`` +
 		` WHERE api_key = $1 `
@@ -202,7 +204,9 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id, api_key, expires_on ` +
+		`user_id,
+api_key,
+expires_on ` +
 		`FROM public.user_api_keys ` +
 		`` +
 		` WHERE user_id = $1 `

@@ -156,7 +156,10 @@ func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelect
 
 	// query
 	sqlstr := `SELECT ` +
-		`movie_id, title, year, synopsis ` +
+		`movie_id,
+title,
+year,
+synopsis ` +
 		`FROM public.movies ` +
 		`` +
 		` WHERE movie_id = $1 `

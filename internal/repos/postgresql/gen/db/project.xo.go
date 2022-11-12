@@ -180,7 +180,12 @@ func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelec
 
 	// query
 	sqlstr := `SELECT ` +
-		`project_id, name, description, metadata, created_at, updated_at ` +
+		`project_id,
+name,
+description,
+metadata,
+created_at,
+updated_at ` +
 		`FROM public.projects ` +
 		`` +
 		` WHERE name = $1 `
@@ -209,7 +214,12 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...Proje
 
 	// query
 	sqlstr := `SELECT ` +
-		`project_id, name, description, metadata, created_at, updated_at ` +
+		`project_id,
+name,
+description,
+metadata,
+created_at,
+updated_at ` +
 		`FROM public.projects ` +
 		`` +
 		` WHERE project_id = $1 `

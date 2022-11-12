@@ -157,7 +157,11 @@ func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int, opts ...Ta
 
 	// query
 	sqlstr := `SELECT ` +
-		`task_type_id, team_id, name, description, color ` +
+		`task_type_id,
+team_id,
+name,
+description,
+color ` +
 		`FROM public.task_types ` +
 		`` +
 		` WHERE task_type_id = $1 `
@@ -186,7 +190,11 @@ func TaskTypeByTeamIDName(ctx context.Context, db DB, teamID int64, name string,
 
 	// query
 	sqlstr := `SELECT ` +
-		`task_type_id, team_id, name, description, color ` +
+		`task_type_id,
+team_id,
+name,
+description,
+color ` +
 		`FROM public.task_types ` +
 		`` +
 		` WHERE team_id = $1 AND name = $2 `

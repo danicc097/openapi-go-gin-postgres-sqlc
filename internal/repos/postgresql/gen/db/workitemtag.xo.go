@@ -156,7 +156,10 @@ func WorkItemTagByName(ctx context.Context, db DB, name string, opts ...WorkItem
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_tag_id, name, description, color ` +
+		`work_item_tag_id,
+name,
+description,
+color ` +
 		`FROM public.work_item_tags ` +
 		`` +
 		` WHERE name = $1 `
@@ -185,7 +188,10 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, o
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_tag_id, name, description, color ` +
+		`work_item_tag_id,
+name,
+description,
+color ` +
 		`FROM public.work_item_tags ` +
 		`` +
 		` WHERE work_item_tag_id = $1 `

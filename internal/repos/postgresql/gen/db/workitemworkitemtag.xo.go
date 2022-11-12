@@ -103,7 +103,8 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_tag_id, work_item_id ` +
+		`work_item_tag_id,
+work_item_id ` +
 		`FROM public.work_item_work_item_tag ` +
 		`` +
 		` WHERE work_item_id = $1 AND work_item_tag_id = $2 `
@@ -132,7 +133,8 @@ func WorkItemWorkItemTagByWorkItemTagIDWorkItemID(ctx context.Context, db DB, wo
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_tag_id, work_item_id ` +
+		`work_item_tag_id,
+work_item_id ` +
 		`FROM public.work_item_work_item_tag ` +
 		`` +
 		` WHERE work_item_tag_id = $1 AND work_item_id = $2 `

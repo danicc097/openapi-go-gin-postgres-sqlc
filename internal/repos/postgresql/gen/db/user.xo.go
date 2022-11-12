@@ -192,7 +192,22 @@ func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...U
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
+		`user_id,
+username,
+email,
+first_name,
+last_name,
+full_name,
+external_id,
+scopes,
+role_rank,
+created_at,
+updated_at,
+deleted_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
+(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -249,7 +264,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE created_at = $1 `
+		` WHERE created_at = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -289,7 +304,22 @@ func UsersByDeletedAt(ctx context.Context, db DB, deletedAt null.Time, opts ...U
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
+		`user_id,
+username,
+email,
+first_name,
+last_name,
+full_name,
+external_id,
+scopes,
+role_rank,
+created_at,
+updated_at,
+deleted_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
+(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -346,7 +376,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE deleted_at = $1 `
+		` WHERE deleted_at = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -386,7 +416,22 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
+		`user_id,
+username,
+email,
+first_name,
+last_name,
+full_name,
+external_id,
+scopes,
+role_rank,
+created_at,
+updated_at,
+deleted_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
+(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -443,7 +488,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE email = $1 `
+		` WHERE email = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -469,7 +514,22 @@ func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSele
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
+		`user_id,
+username,
+email,
+first_name,
+last_name,
+full_name,
+external_id,
+scopes,
+role_rank,
+created_at,
+updated_at,
+deleted_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
+(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -526,7 +586,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE user_id = $1 `
+		` WHERE user_id = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -552,7 +612,22 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
+		`user_id,
+username,
+email,
+first_name,
+last_name,
+full_name,
+external_id,
+scopes,
+role_rank,
+created_at,
+updated_at,
+deleted_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
+(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -609,7 +684,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE updated_at = $1 `
+		` WHERE updated_at = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -649,7 +724,22 @@ func UserByUserIDExternalID_users_user_id_external_id_idx(ctx context.Context, d
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
+		`user_id,
+username,
+email,
+first_name,
+last_name,
+full_name,
+external_id,
+scopes,
+role_rank,
+created_at,
+updated_at,
+deleted_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
+(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -706,7 +796,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE user_id = $1 AND external_id = $2 AND (external_id IS NOT NULL) `
+		` WHERE user_id = $5 AND external_id = $6 AND (external_id IS NOT NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -732,7 +822,22 @@ func UserByUserID_users_user_id_idx(ctx context.Context, db DB, userID uuid.UUID
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
+		`user_id,
+username,
+email,
+first_name,
+last_name,
+full_name,
+external_id,
+scopes,
+role_rank,
+created_at,
+updated_at,
+deleted_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
+(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -789,7 +894,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE user_id = $1 AND (external_id IS NULL) `
+		` WHERE user_id = $5 AND (external_id IS NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -815,7 +920,22 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at ` +
+		`user_id,
+username,
+email,
+first_name,
+last_name,
+full_name,
+external_id,
+scopes,
+role_rank,
+created_at,
+updated_at,
+deleted_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
+(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -872,7 +992,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE username = $1 `
+		` WHERE username = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

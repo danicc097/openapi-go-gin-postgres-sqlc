@@ -105,7 +105,8 @@ func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID
 
 	// query
 	sqlstr := `SELECT ` +
-		`team_id, user_id ` +
+		`team_id,
+user_id ` +
 		`FROM public.user_team ` +
 		`` +
 		` WHERE user_id = $1 AND team_id = $2 `
@@ -134,7 +135,8 @@ func UserTeamByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.
 
 	// query
 	sqlstr := `SELECT ` +
-		`team_id, user_id ` +
+		`team_id,
+user_id ` +
 		`FROM public.user_team ` +
 		`` +
 		` WHERE team_id = $1 AND user_id = $2 `
@@ -177,7 +179,8 @@ func UserTeamByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...User
 
 	// query
 	sqlstr := `SELECT ` +
-		`team_id, user_id ` +
+		`team_id,
+user_id ` +
 		`FROM public.user_team ` +
 		`` +
 		` WHERE user_id = $1 `

@@ -181,7 +181,15 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int,
 
 	// query
 	sqlstr := `SELECT ` +
-		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
+		`team_id,
+project_id,
+name,
+description,
+metadata,
+created_at,
+updated_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $2::boolean = true then joined_users.users end)::jsonb as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -214,7 +222,7 @@ left join (
 						users))
 			group by
 				team_id) joined_users on joined_users.users_team_id = teams.team_id` +
-		` WHERE name = $1 AND project_id = $2 `
+		` WHERE name = $3 AND project_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -240,7 +248,15 @@ func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConf
 
 	// query
 	sqlstr := `SELECT ` +
-		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
+		`team_id,
+project_id,
+name,
+description,
+metadata,
+created_at,
+updated_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $2::boolean = true then joined_users.users end)::jsonb as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -273,7 +289,7 @@ left join (
 						users))
 			group by
 				team_id) joined_users on joined_users.users_team_id = teams.team_id` +
-		` WHERE team_id = $1 `
+		` WHERE team_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

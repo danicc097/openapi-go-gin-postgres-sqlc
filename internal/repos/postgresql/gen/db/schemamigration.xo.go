@@ -154,7 +154,8 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ..
 
 	// query
 	sqlstr := `SELECT ` +
-		`version, dirty ` +
+		`version,
+dirty ` +
 		`FROM public.schema_migrations ` +
 		`` +
 		` WHERE version = $1 `

@@ -156,7 +156,11 @@ func ActivityByName(ctx context.Context, db DB, name string, opts ...ActivitySel
 
 	// query
 	sqlstr := `SELECT ` +
-		`activity_id, name, description, is_productive ` +
+		`activity_id,
+name,
+description,
+is_productive,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
@@ -167,7 +171,7 @@ left join (
     time_entries
    group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE name = $1 `
+		` WHERE name = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -193,7 +197,11 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...Ac
 
 	// query
 	sqlstr := `SELECT ` +
-		`activity_id, name, description, is_productive ` +
+		`activity_id,
+name,
+description,
+is_productive,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
@@ -204,7 +212,7 @@ left join (
     time_entries
    group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activity_id = $1 `
+		` WHERE activity_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

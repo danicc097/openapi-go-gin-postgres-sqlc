@@ -871,21 +871,22 @@ const ext = ".xo.go"
 
 // Funcs is a set of template funcs.
 type Funcs struct {
-	driver    string
-	schema    string
-	nth       func(int) string
-	first     bool
-	pkg       string
-	tags      []string
-	imports   []string
-	conflict  string
-	custom    string
-	escSchema bool
-	escTable  bool
-	escColumn bool
-	fieldtag  *template.Template
-	context   string
-	inject    string
+	driver           string
+	schema           string
+	nth              func(int) string
+	first            bool
+	pkg              string
+	tags             []string
+	imports          []string
+	tableConstraints map[string][]Constraint
+	conflict         string
+	custom           string
+	escSchema        bool
+	escTable         bool
+	escColumn        bool
+	fieldtag         *template.Template
+	context          string
+	inject           string
 	// knownTypes is the collection of known Go types.
 	knownTypes map[string]bool
 	// shorts is the collection of Go style short names for types, mainly
@@ -916,23 +917,24 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 		return nil, err
 	}
 	funcs := &Funcs{
-		first:      first,
-		driver:     driver,
-		schema:     schema,
-		nth:        nth,
-		pkg:        Pkg(ctx),
-		tags:       Tags(ctx),
-		imports:    Imports(ctx),
-		conflict:   Conflict(ctx),
-		custom:     Custom(ctx),
-		escSchema:  Esc(ctx, "schema"),
-		escTable:   Esc(ctx, "table"),
-		escColumn:  Esc(ctx, "column"),
-		fieldtag:   fieldtag,
-		context:    Context(ctx),
-		inject:     inject,
-		knownTypes: KnownTypes(ctx),
-		shorts:     Shorts(ctx),
+		tableConstraints: make(map[string][]Constraint),
+		first:            first,
+		driver:           driver,
+		schema:           schema,
+		nth:              nth,
+		pkg:              Pkg(ctx),
+		tags:             Tags(ctx),
+		imports:          Imports(ctx),
+		conflict:         Conflict(ctx),
+		custom:           Custom(ctx),
+		escSchema:        Esc(ctx, "schema"),
+		escTable:         Esc(ctx, "table"),
+		escColumn:        Esc(ctx, "column"),
+		fieldtag:         fieldtag,
+		context:          Context(ctx),
+		inject:           inject,
+		knownTypes:       KnownTypes(ctx),
+		shorts:           Shorts(ctx),
 	}
 	return funcs.FuncMap(), nil
 }
@@ -1789,9 +1791,9 @@ func (f *Funcs) sqlstr_delete(v interface{}) []string {
 // , (case when <f.nth(i)>::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries
 
 const (
-	M2MField = `(case when {{.Nth}}::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end)::jsonb as {{.JoinTable}}`
-	O2MField = M2MField
-	O2OField = `(case when {{.Nth}}::boolean = true then row_to_json({{.JoinTable}}.*) end)::jsonb as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
+	M2MSelect = `(case when {{.Nth}}::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end)::jsonb as {{.JoinTable}}`
+	O2MSelect = M2MSelect
+	O2OSelect = `(case when {{.Nth}}::boolean = true then row_to_json({{.JoinTable}}.*) end)::jsonb as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
 )
 
 const (
@@ -1839,47 +1841,38 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		var tableConstraints []Constraint
 		switch cc := constraints.(type) {
 		case []Constraint:
-			for _, c := range cc {
-				if c.RefTableName == x.Table.SQLName && c.Cardinality != "" && c.Type == "foreign_key" {
-					if c.Cardinality == "M2M" {
-						// assumes lookup table links 2 tables
-						for _, c1 := range cc {
-							if c1.TableName == c.TableName && c1.ColumnName != c.ColumnName && c1.Type == "foreign_key" {
-								c1.LookupColumn = c.ColumnName
-								c1.LookupRefColumn = c.RefColumnName
-								tableConstraints = append(tableConstraints, c1)
+			if tc, ok := f.tableConstraints[x.Table.SQLName]; ok {
+				tableConstraints = tc
+			} else {
+				for _, c := range cc {
+					if c.RefTableName == x.Table.SQLName && c.Cardinality != "" && c.Type == "foreign_key" {
+						if c.Cardinality == "M2M" {
+							// assumes lookup table links 2 tables
+							for _, c1 := range cc {
+								if c1.TableName == c.TableName && c1.ColumnName != c.ColumnName && c1.Type == "foreign_key" {
+									c1.LookupColumn = c.ColumnName
+									c1.LookupRefColumn = c.RefColumnName
+									tableConstraints = append(tableConstraints, c1)
+								}
 							}
+						} else {
+							tableConstraints = append(tableConstraints, c)
 						}
-					} else {
-						tableConstraints = append(tableConstraints, c)
 					}
 				}
-			}
-			if len(tableConstraints) > 0 {
-				fmt.Printf("Constraints for %q (%q):\n%v\n", x.Table.SQLName, x.SQLName, PrintJSON(tableConstraints))
+				if len(tableConstraints) > 0 {
+					fmt.Printf("Constraints for %q (%q):\n%v\n", x.Table.SQLName, x.SQLName, PrintJSON(tableConstraints))
+					if _, ok := f.tableConstraints[x.Table.SQLName]; !ok {
+						f.tableConstraints[x.Table.SQLName] = tableConstraints
+					}
+				}
 			}
 		default:
 			break
 		}
+		var n int
 		// build table fieldnames
 		for _, z := range x.Table.Fields {
-			// TODO add optional join selects parameterized
-			// var n int
-			// funcs := template.FuncMap{
-			// 	"singularize": singularize,
-			// }
-			// tpl := O2OField
-			// t := template.Must(template.New("").Funcs(funcs).Parse(tpl))
-			// buf := &bytes.Buffer{}
-			// params := map[string]interface{}{
-			// 	"Nth": f.nth(n),
-			// 	"JoinTable": ...
-			// }
-			// if err := t.Execute(buf, params); err != nil {
-			// 	panic(fmt.Sprintf("could not execute template: %s", err))
-			// }
-			// n++
-
 			// add current table fields
 			fields = append(fields, f.colname(z))
 		}
@@ -1888,12 +1881,15 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			"singularize": singularize,
 		}
 		for _, c := range tableConstraints {
-			buf := createJoinStatement(c, x, funcs)
-			joins = append(joins, buf.String())
+			joinStmts, selectStmts := createJoinStatement(c, x, funcs, f.nth(n))
+			fields = append(fields, selectStmts.String())
+			joins = append(joins, joinStmts.String())
+			n++
 		}
 		// index fields
-		for i, z := range x.Fields {
-			filters = append(filters, fmt.Sprintf("%s = %s", f.colname(z), f.nth(i)))
+		for _, z := range x.Fields {
+			filters = append(filters, fmt.Sprintf("%s = %s", f.colname(z), f.nth(n)))
+			n++
 		}
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
 			filters = append(filters, after)
@@ -1907,7 +1903,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		// TODO here we join with []Constrains. no need to be dynamic, if a join is not specified in opts postgres wont waste time on it.
 		lines := []string{
 			"SELECT ",
-			strings.Join(fields, ", ") + " ",
+			strings.Join(fields, ",\n") + " ",
 			"FROM " + f.schemafn(x.Table.SQLName) + " ",
 			// TODO create and add joins themselves to filters based on the current table
 			// (all generated index queries will have these joins available as opts)
@@ -1920,16 +1916,21 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
 }
 
-func createJoinStatement(c Constraint, x Index, funcs template.FuncMap) *bytes.Buffer {
-	var joinTpl string
-	buf := &bytes.Buffer{}
+// createJoinStatement returns select queries and join statements strings
+// for a given index table.
+func createJoinStatement(c Constraint, x Index, funcs template.FuncMap, nth string) (*bytes.Buffer, *bytes.Buffer) {
+	var joinTpl, selectTpl string
+	joins := &bytes.Buffer{}
+	selects := &bytes.Buffer{}
 	params := make(map[string]interface{})
-	fmt.Fprintf(buf, "-- %s join generated from %q", c.Cardinality, c.Name)
+	fmt.Fprintf(joins, "-- %s join generated from %q", c.Cardinality, c.Name)
 
 	switch c.Cardinality {
 	case "M2M":
 		joinTpl = M2MJoin
+		selectTpl = M2MSelect
 
+		params["Nth"] = nth
 		params["LookupColumn"] = c.LookupColumn
 		params["JoinTable"] = c.RefTableName
 		params["LookupRefColumn"] = c.LookupRefColumn
@@ -1938,14 +1939,18 @@ func createJoinStatement(c Constraint, x Index, funcs template.FuncMap) *bytes.B
 		params["LookupTable"] = c.TableName
 	case "O2M", "M2O":
 		joinTpl = O2MJoin
+		selectTpl = O2MSelect
 
+		params["Nth"] = nth
 		params["JoinColumn"] = c.ColumnName
 		params["JoinTable"] = c.TableName
 		params["JoinRefColumn"] = c.RefColumnName
 		params["CurrentTable"] = x.Table.SQLName
 	case "O2O":
 		joinTpl = O2OJoin
+		selectTpl = O2OSelect
 
+		params["Nth"] = nth
 		params["JoinColumn"] = c.ColumnName
 		params["JoinTable"] = c.TableName
 		params["JoinRefColumn"] = c.RefColumnName
@@ -1953,10 +1958,15 @@ func createJoinStatement(c Constraint, x Index, funcs template.FuncMap) *bytes.B
 	default:
 	}
 	t := template.Must(template.New("").Funcs(funcs).Parse(joinTpl))
-	if err := t.Execute(buf, params); err != nil {
-		panic(fmt.Sprintf("could not execute template: %s", err))
+	if err := t.Execute(joins, params); err != nil {
+		panic(fmt.Sprintf("could not execute join template: %s", err))
 	}
-	return buf
+
+	t = template.Must(template.New("").Funcs(funcs).Parse(selectTpl))
+	if err := t.Execute(selects, params); err != nil {
+		panic(fmt.Sprintf("could not execute select template: %s", err))
+	}
+	return joins, selects
 }
 
 // sqlstr_proc builds a stored procedure call.
