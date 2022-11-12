@@ -520,7 +520,8 @@ left join (
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.UserAPIKey, &u.Teams, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -620,7 +621,8 @@ left join (
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.UserAPIKey, &u.Teams, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -834,7 +836,8 @@ left join (
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, userID, externalID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, userID, externalID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.UserAPIKey, &u.Teams, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -934,7 +937,8 @@ left join (
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.UserAPIKey, &u.Teams, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -1034,7 +1038,8 @@ left join (
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.UserAPIKey, &u.Teams, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil

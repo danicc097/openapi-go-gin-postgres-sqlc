@@ -1574,6 +1574,20 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 			for _, p := range x.Fields {
 				names = append(names, prefix+checkName(p.GoName))
 			}
+			// append joins
+			for _, c := range f.tableConstraints[x.SQLName] {
+				var joinName string
+				switch c.Cardinality {
+				case "M2M":
+					joinName = prefix + camelExport(c.RefTableName)
+				case "O2M", "M2O":
+					joinName = prefix + camelExport(c.TableName)
+				case "O2O":
+					joinName = prefix + camelExport(singularize(c.TableName))
+				default:
+				}
+				names = append(names, joinName)
+			}
 		case []Field:
 			for _, p := range x {
 				names = append(names, prefix+checkName(p.GoName))

@@ -207,6 +207,7 @@ work_item_comments.updated_at ` +
 	wic := WorkItemComment{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, workItemCommentID).Scan(&wic.WorkItemCommentID, &wic.WorkItemID, &wic.UserID, &wic.Message, &wic.CreatedAt, &wic.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}

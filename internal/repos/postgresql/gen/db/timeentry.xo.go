@@ -209,6 +209,7 @@ time_entries.duration_minutes ` +
 	te := TimeEntry{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, timeEntryID).Scan(&te.TimeEntryID, &te.TaskID, &te.ActivityID, &te.TeamID, &te.UserID, &te.Comment, &te.Start, &te.DurationMinutes); err != nil {
 		return nil, logerror(err)
 	}

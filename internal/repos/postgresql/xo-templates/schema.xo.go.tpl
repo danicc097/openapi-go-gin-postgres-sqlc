@@ -152,6 +152,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 		_exists: true,
 	{{ end -}}
 	}
+  {{/* (print "&" (short $i.Table) ".") --> prefix */}}
 	if err := {{ db "QueryRow" $i }}.Scan({{ names (print "&" (short $i.Table) ".") $i.Table }}); err != nil {
 		return nil, logerror(err)
 	}

@@ -181,6 +181,7 @@ work_item_tags.color ` +
 	wit := WorkItemTag{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, name).Scan(&wit.WorkItemTagID, &wit.Name, &wit.Description, &wit.Color); err != nil {
 		return nil, logerror(err)
 	}
@@ -215,6 +216,7 @@ work_item_tags.color ` +
 	wit := WorkItemTag{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, workItemTagID).Scan(&wit.WorkItemTagID, &wit.Name, &wit.Description, &wit.Color); err != nil {
 		return nil, logerror(err)
 	}

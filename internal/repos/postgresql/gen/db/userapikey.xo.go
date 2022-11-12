@@ -197,6 +197,7 @@ user_api_keys.expires_on ` +
 	uak := UserAPIKey{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, apiKey).Scan(&uak.UserID, &uak.APIKey, &uak.ExpiresOn); err != nil {
 		return nil, logerror(err)
 	}
@@ -230,6 +231,7 @@ user_api_keys.expires_on ` +
 	uak := UserAPIKey{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, userID).Scan(&uak.UserID, &uak.APIKey, &uak.ExpiresOn); err != nil {
 		return nil, logerror(err)
 	}

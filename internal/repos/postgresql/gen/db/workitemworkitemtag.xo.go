@@ -126,6 +126,7 @@ work_item_work_item_tag.work_item_id ` +
 	wiwit := WorkItemWorkItemTag{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, workItemID, workItemTagID).Scan(&wiwit.WorkItemTagID, &wiwit.WorkItemID); err != nil {
 		return nil, logerror(err)
 	}

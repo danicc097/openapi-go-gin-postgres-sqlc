@@ -207,6 +207,7 @@ projects.updated_at ` +
 	p := Project{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, name).Scan(&p.ProjectID, &p.Name, &p.Description, &p.Metadata, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}
@@ -243,6 +244,7 @@ projects.updated_at ` +
 	p := Project{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, projectID).Scan(&p.ProjectID, &p.Name, &p.Description, &p.Metadata, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}

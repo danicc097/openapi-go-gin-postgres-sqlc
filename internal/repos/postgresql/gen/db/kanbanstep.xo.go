@@ -191,6 +191,7 @@ kanban_steps.disabled ` +
 	ks := KanbanStep{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, kanbanStepID).Scan(&ks.KanbanStepID, &ks.TeamID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
 		return nil, logerror(err)
 	}
@@ -229,6 +230,7 @@ kanban_steps.disabled ` +
 	ks := KanbanStep{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, teamID, stepOrder).Scan(&ks.KanbanStepID, &ks.TeamID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
 		return nil, logerror(err)
 	}

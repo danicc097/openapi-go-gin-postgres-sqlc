@@ -177,6 +177,7 @@ schema_migrations.dirty ` +
 	sm := SchemaMigration{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, version).Scan(&sm.Version, &sm.Dirty); err != nil {
 		return nil, logerror(err)
 	}

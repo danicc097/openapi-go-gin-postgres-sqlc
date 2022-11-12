@@ -193,7 +193,8 @@ left join (
 	a := Activity{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, name).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive); err != nil {
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, name).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive, &a.TimeEntries); err != nil {
 		return nil, logerror(err)
 	}
 	return &a, nil
@@ -236,7 +237,8 @@ left join (
 	a := Activity{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, activityID).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive); err != nil {
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, activityID).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive, &a.TimeEntries); err != nil {
 		return nil, logerror(err)
 	}
 	return &a, nil

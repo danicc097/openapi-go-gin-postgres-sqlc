@@ -181,6 +181,7 @@ movies.synopsis ` +
 	m := Movie{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, movieID).Scan(&m.MovieID, &m.Title, &m.Year, &m.Synopsis); err != nil {
 		return nil, logerror(err)
 	}

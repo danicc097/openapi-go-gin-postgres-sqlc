@@ -128,6 +128,7 @@ user_team.user_id ` +
 	ut := UserTeam{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, userID, teamID).Scan(&ut.TeamID, &ut.UserID); err != nil {
 		return nil, logerror(err)
 	}

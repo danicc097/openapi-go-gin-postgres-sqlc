@@ -174,6 +174,7 @@ work_item_member.member ` +
 	wim := WorkItemMember{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, workItemID, member).Scan(&wim.WorkItemID, &wim.Member); err != nil {
 		return nil, logerror(err)
 	}

@@ -183,6 +183,7 @@ task_types.color ` +
 	tt := TaskType{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, taskTypeID).Scan(&tt.TaskTypeID, &tt.TeamID, &tt.Name, &tt.Description, &tt.Color); err != nil {
 		return nil, logerror(err)
 	}
@@ -218,6 +219,7 @@ task_types.color ` +
 	tt := TaskType{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, teamID, name).Scan(&tt.TaskTypeID, &tt.TeamID, &tt.Name, &tt.Description, &tt.Color); err != nil {
 		return nil, logerror(err)
 	}
