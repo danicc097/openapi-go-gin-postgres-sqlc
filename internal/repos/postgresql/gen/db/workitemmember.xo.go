@@ -106,15 +106,17 @@ func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_member_member_work_item_id_idx'.
 func WorkItemMemberByMemberWorkItemID(ctx context.Context, db DB, member uuid.UUID, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
-	c := &WorkItemMemberSelectConfig{}
+	c := &WorkItemMemberSelectConfig{
+		joins: WorkItemMemberJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_id,
-member ` +
+		`work_item_member.work_item_id,
+work_item_member.member ` +
 		`FROM public.work_item_member ` +
 		`` +
 		` WHERE member = $1 AND work_item_id = $2 `
@@ -150,15 +152,17 @@ member ` +
 //
 // Generated from index 'work_item_member_pkey'.
 func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, workItemID int64, member uuid.UUID, opts ...WorkItemMemberSelectConfigOption) (*WorkItemMember, error) {
-	c := &WorkItemMemberSelectConfig{}
+	c := &WorkItemMemberSelectConfig{
+		joins: WorkItemMemberJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_id,
-member ` +
+		`work_item_member.work_item_id,
+work_item_member.member ` +
 		`FROM public.work_item_member ` +
 		`` +
 		` WHERE work_item_id = $1 AND member = $2 `

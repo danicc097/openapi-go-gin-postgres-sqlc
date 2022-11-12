@@ -187,20 +187,22 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'teams_name_project_id_key'.
 func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...TeamSelectConfigOption) (*Team, error) {
-	c := &TeamSelectConfig{}
+	c := &TeamSelectConfig{
+		joins: TeamJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`team_id,
-project_id,
-name,
-description,
-metadata,
-created_at,
-updated_at,
+		`teams.team_id,
+teams.project_id,
+teams.name,
+teams.description,
+teams.metadata,
+teams.created_at,
+teams.updated_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_users.users end)::jsonb as users ` +
 		`FROM public.teams ` +
@@ -254,20 +256,22 @@ left join (
 //
 // Generated from index 'teams_pkey'.
 func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) (*Team, error) {
-	c := &TeamSelectConfig{}
+	c := &TeamSelectConfig{
+		joins: TeamJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`team_id,
-project_id,
-name,
-description,
-metadata,
-created_at,
-updated_at,
+		`teams.team_id,
+teams.project_id,
+teams.name,
+teams.description,
+teams.metadata,
+teams.created_at,
+teams.updated_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_users.users end)::jsonb as users ` +
 		`FROM public.teams ` +

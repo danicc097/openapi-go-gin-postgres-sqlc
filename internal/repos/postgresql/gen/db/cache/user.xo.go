@@ -81,26 +81,28 @@ func UserWithJoin(joins UserJoins) UserSelectConfigOption {
 //
 // Generated from index 'users_external_id_idx'.
 func UsersByExternalID(ctx context.Context, db DB, externalID null.String, opts ...UserSelectConfigOption) ([]*User, error) {
-	c := &UserSelectConfig{}
+	c := &UserSelectConfig{
+		joins: UserJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id,
-username,
-email,
-first_name,
-last_name,
-full_name,
-external_id,
-scopes,
-role_rank,
-created_at,
-updated_at,
-deleted_at,
-teams ` +
+		`users.user_id,
+users.username,
+users.email,
+users.first_name,
+users.last_name,
+users.full_name,
+users.external_id,
+users.scopes,
+users.role_rank,
+users.created_at,
+users.updated_at,
+users.deleted_at,
+users.teams ` +
 		`FROM cache.users ` +
 		`` +
 		` WHERE external_id = $1 `

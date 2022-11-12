@@ -104,15 +104,17 @@ func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_work_item_tag_pkey'.
 func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, workItemID int64, workItemTagID int, opts ...WorkItemWorkItemTagSelectConfigOption) (*WorkItemWorkItemTag, error) {
-	c := &WorkItemWorkItemTagSelectConfig{}
+	c := &WorkItemWorkItemTagSelectConfig{
+		joins: WorkItemWorkItemTagJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_tag_id,
-work_item_id ` +
+		`work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id ` +
 		`FROM public.work_item_work_item_tag ` +
 		`` +
 		` WHERE work_item_id = $1 AND work_item_tag_id = $2 `
@@ -134,15 +136,17 @@ work_item_id ` +
 //
 // Generated from index 'work_item_work_item_tag_work_item_tag_id_work_item_id_idx'.
 func WorkItemWorkItemTagByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
-	c := &WorkItemWorkItemTagSelectConfig{}
+	c := &WorkItemWorkItemTagSelectConfig{
+		joins: WorkItemWorkItemTagJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_tag_id,
-work_item_id ` +
+		`work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id ` +
 		`FROM public.work_item_work_item_tag ` +
 		`` +
 		` WHERE work_item_tag_id = $1 AND work_item_id = $2 `

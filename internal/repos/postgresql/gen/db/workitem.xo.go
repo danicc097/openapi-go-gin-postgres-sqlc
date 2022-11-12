@@ -194,22 +194,24 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_items_pkey'.
 func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
-	c := &WorkItemSelectConfig{}
+	c := &WorkItemSelectConfig{
+		joins: WorkItemJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_id,
-title,
-metadata,
-team_id,
-kanban_step_id,
-closed,
-created_at,
-updated_at,
-deleted_at,
+		`work_items.work_item_id,
+work_items.title,
+work_items.metadata,
+work_items.team_id,
+work_items.kanban_step_id,
+work_items.closed,
+work_items.created_at,
+work_items.updated_at,
+work_items.deleted_at,
 (case when $1::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
 (case when $2::boolean = true then joined_users.users end)::jsonb as users ` +
 		`FROM public.work_items ` +

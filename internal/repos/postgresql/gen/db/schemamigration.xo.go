@@ -155,15 +155,17 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'schema_migrations_pkey'.
 func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ...SchemaMigrationSelectConfigOption) (*SchemaMigration, error) {
-	c := &SchemaMigrationSelectConfig{}
+	c := &SchemaMigrationSelectConfig{
+		joins: SchemaMigrationJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`version,
-dirty ` +
+		`schema_migrations.version,
+schema_migrations.dirty ` +
 		`FROM public.schema_migrations ` +
 		`` +
 		` WHERE version = $1 `

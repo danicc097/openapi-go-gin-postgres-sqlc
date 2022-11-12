@@ -202,25 +202,27 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'users_created_at_idx'.
 func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
-	c := &UserSelectConfig{}
+	c := &UserSelectConfig{
+		joins: UserJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id,
-username,
-email,
-first_name,
-last_name,
-full_name,
-external_id,
-scopes,
-role_rank,
-created_at,
-updated_at,
-deleted_at,
+		`users.user_id,
+users.username,
+users.email,
+users.first_name,
+users.last_name,
+users.full_name,
+users.external_id,
+users.scopes,
+users.role_rank,
+users.created_at,
+users.updated_at,
+users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
@@ -314,25 +316,27 @@ left join (
 //
 // Generated from index 'users_deleted_at_idx'.
 func UsersByDeletedAt(ctx context.Context, db DB, deletedAt null.Time, opts ...UserSelectConfigOption) ([]*User, error) {
-	c := &UserSelectConfig{}
+	c := &UserSelectConfig{
+		joins: UserJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id,
-username,
-email,
-first_name,
-last_name,
-full_name,
-external_id,
-scopes,
-role_rank,
-created_at,
-updated_at,
-deleted_at,
+		`users.user_id,
+users.username,
+users.email,
+users.first_name,
+users.last_name,
+users.full_name,
+users.external_id,
+users.scopes,
+users.role_rank,
+users.created_at,
+users.updated_at,
+users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
@@ -426,25 +430,27 @@ left join (
 //
 // Generated from index 'users_email_key'.
 func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{}
+	c := &UserSelectConfig{
+		joins: UserJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id,
-username,
-email,
-first_name,
-last_name,
-full_name,
-external_id,
-scopes,
-role_rank,
-created_at,
-updated_at,
-deleted_at,
+		`users.user_id,
+users.username,
+users.email,
+users.first_name,
+users.last_name,
+users.full_name,
+users.external_id,
+users.scopes,
+users.role_rank,
+users.created_at,
+users.updated_at,
+users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
@@ -524,25 +530,27 @@ left join (
 //
 // Generated from index 'users_pkey'.
 func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{}
+	c := &UserSelectConfig{
+		joins: UserJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id,
-username,
-email,
-first_name,
-last_name,
-full_name,
-external_id,
-scopes,
-role_rank,
-created_at,
-updated_at,
-deleted_at,
+		`users.user_id,
+users.username,
+users.email,
+users.first_name,
+users.last_name,
+users.full_name,
+users.external_id,
+users.scopes,
+users.role_rank,
+users.created_at,
+users.updated_at,
+users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
@@ -622,25 +630,27 @@ left join (
 //
 // Generated from index 'users_updated_at_idx'.
 func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
-	c := &UserSelectConfig{}
+	c := &UserSelectConfig{
+		joins: UserJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id,
-username,
-email,
-first_name,
-last_name,
-full_name,
-external_id,
-scopes,
-role_rank,
-created_at,
-updated_at,
-deleted_at,
+		`users.user_id,
+users.username,
+users.email,
+users.first_name,
+users.last_name,
+users.full_name,
+users.external_id,
+users.scopes,
+users.role_rank,
+users.created_at,
+users.updated_at,
+users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
@@ -734,25 +744,27 @@ left join (
 //
 // Generated from index 'users_user_id_external_id_idx'.
 func UserByUserIDExternalID_users_user_id_external_id_idx(ctx context.Context, db DB, userID uuid.UUID, externalID null.String, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{}
+	c := &UserSelectConfig{
+		joins: UserJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id,
-username,
-email,
-first_name,
-last_name,
-full_name,
-external_id,
-scopes,
-role_rank,
-created_at,
-updated_at,
-deleted_at,
+		`users.user_id,
+users.username,
+users.email,
+users.first_name,
+users.last_name,
+users.full_name,
+users.external_id,
+users.scopes,
+users.role_rank,
+users.created_at,
+users.updated_at,
+users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
@@ -832,25 +844,27 @@ left join (
 //
 // Generated from index 'users_user_id_idx'.
 func UserByUserID_users_user_id_idx(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{}
+	c := &UserSelectConfig{
+		joins: UserJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id,
-username,
-email,
-first_name,
-last_name,
-full_name,
-external_id,
-scopes,
-role_rank,
-created_at,
-updated_at,
-deleted_at,
+		`users.user_id,
+users.username,
+users.email,
+users.first_name,
+users.last_name,
+users.full_name,
+users.external_id,
+users.scopes,
+users.role_rank,
+users.created_at,
+users.updated_at,
+users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
@@ -930,25 +944,27 @@ left join (
 //
 // Generated from index 'users_username_key'.
 func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{}
+	c := &UserSelectConfig{
+		joins: UserJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id,
-username,
-email,
-first_name,
-last_name,
-full_name,
-external_id,
-scopes,
-role_rank,
-created_at,
-updated_at,
-deleted_at,
+		`users.user_id,
+users.username,
+users.email,
+users.first_name,
+users.last_name,
+users.full_name,
+users.external_id,
+users.scopes,
+users.role_rank,
+users.created_at,
+users.updated_at,
+users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,

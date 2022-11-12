@@ -163,21 +163,23 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'kanban_steps_pkey'.
 func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
-	c := &KanbanStepSelectConfig{}
+	c := &KanbanStepSelectConfig{
+		joins: KanbanStepJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`kanban_step_id,
-team_id,
-step_order,
-name,
-description,
-color,
-time_trackable,
-disabled ` +
+		`kanban_steps.kanban_step_id,
+kanban_steps.team_id,
+kanban_steps.step_order,
+kanban_steps.name,
+kanban_steps.description,
+kanban_steps.color,
+kanban_steps.time_trackable,
+kanban_steps.disabled ` +
 		`FROM public.kanban_steps ` +
 		`` +
 		` WHERE kanban_step_id = $1 `
@@ -199,21 +201,23 @@ disabled ` +
 //
 // Generated from index 'kanban_steps_team_id_step_order_key'.
 func KanbanStepByTeamIDStepOrder(ctx context.Context, db DB, teamID int, stepOrder null.Int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
-	c := &KanbanStepSelectConfig{}
+	c := &KanbanStepSelectConfig{
+		joins: KanbanStepJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`kanban_step_id,
-team_id,
-step_order,
-name,
-description,
-color,
-time_trackable,
-disabled ` +
+		`kanban_steps.kanban_step_id,
+kanban_steps.team_id,
+kanban_steps.step_order,
+kanban_steps.name,
+kanban_steps.description,
+kanban_steps.color,
+kanban_steps.time_trackable,
+kanban_steps.disabled ` +
 		`FROM public.kanban_steps ` +
 		`` +
 		` WHERE team_id = $1 AND step_order = $2 `

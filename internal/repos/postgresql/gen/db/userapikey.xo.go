@@ -174,16 +174,18 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'user_api_keys_api_key_key'.
 func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
-	c := &UserAPIKeySelectConfig{}
+	c := &UserAPIKeySelectConfig{
+		joins: UserAPIKeyJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id,
-api_key,
-expires_on ` +
+		`user_api_keys.user_id,
+user_api_keys.api_key,
+user_api_keys.expires_on ` +
 		`FROM public.user_api_keys ` +
 		`` +
 		` WHERE api_key = $1 `
@@ -205,16 +207,18 @@ expires_on ` +
 //
 // Generated from index 'user_api_keys_pkey'.
 func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
-	c := &UserAPIKeySelectConfig{}
+	c := &UserAPIKeySelectConfig{
+		joins: UserAPIKeyJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id,
-api_key,
-expires_on ` +
+		`user_api_keys.user_id,
+user_api_keys.api_key,
+user_api_keys.expires_on ` +
 		`FROM public.user_api_keys ` +
 		`` +
 		` WHERE user_id = $1 `

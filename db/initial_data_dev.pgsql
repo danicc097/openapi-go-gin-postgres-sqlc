@@ -61,10 +61,10 @@ begin
   insert into user_team (team_id , user_id)
     values (2 , user_ids[7]);
   -- work item tags
-  insert into work_item_tags ("name" , description)
-    values ('CRITICAL' , 'A critical work item tag');
-  insert into work_item_tags ("name" , description)
-    values ('WAITING FOR INFO' , 'Waiting for external input');
+  insert into work_item_tags ("name" , description, color)
+    values ('CRITICAL' , 'A critical work item tag', '#abaaba');
+  insert into work_item_tags ("name" , description, color)
+    values ('WAITING FOR INFO' , 'Waiting for external input', '#abaaba');
   -- time tracking activities
   insert into activities ("name" , description , is_productive)
     values ('Nothing' , 'Doing nothing' , false);
@@ -75,33 +75,33 @@ begin
   insert into activities ("name" , description , is_productive)
     values ('Preparing' , 'Preparing a task' , true);
   -- kanban steps
-  insert into kanban_steps (team_id , step_order , "name" , description , time_trackable , disabled)
-    values (1 , null , 'Disabled step' , '' , false , true);
-  insert into kanban_steps (team_id , step_order , "name" , description , time_trackable , disabled)
-    values (1 , 1 , 'Stand-by' , '' , false , false);
-  insert into kanban_steps (team_id , step_order , "name" , description , time_trackable , disabled)
-    values (1 , 2 , 'Preparing' , '' , true , false);
-  insert into kanban_steps (team_id , step_order , "name" , description , time_trackable , disabled)
-    values (1 , 3 , 'Reviewing' , '' , true , false);
-  insert into kanban_steps (team_id , step_order , "name" , description , time_trackable , disabled)
-    values (1 , 4 , 'Submitted' , '' , true , false);
+  insert into kanban_steps (team_id , step_order , "name" , description , time_trackable , disabled, color)
+    values (1 , null , 'Disabled step' , '' , false , true, '#abaaba');
+  insert into kanban_steps (team_id , step_order , "name" , description , time_trackable , disabled, color)
+    values (1 , 1 , 'Stand-by' , '' , false , false, '#abaaba');
+  insert into kanban_steps (team_id , step_order , "name" , description , time_trackable , disabled, color)
+    values (1 , 2 , 'Preparing' , '' , true , false, '#abaaba');
+  insert into kanban_steps (team_id , step_order , "name" , description , time_trackable , disabled, color)
+    values (1 , 3 , 'Reviewing' , '' , true , false, '#abaaba');
+  insert into kanban_steps (team_id , step_order , "name" , description , time_trackable , disabled, color)
+    values (1 , 4 , 'Submitted' , '' , true , false, '#abaaba');
   -- task types
-  insert into task_types (team_id , "name")
-    values (1 , 'Concept');
-  insert into task_types (team_id , "name")
-    values (1 , 'Design');
-  insert into task_types (team_id , "name")
-    values (1 , 'Analysis');
-  insert into task_types (team_id , "name")
-    values (1 , 'Optimization');
-  insert into task_types (team_id , "name")
-    values (1 , 'Documentation');
-  insert into task_types (team_id , "name")
-    values (2 , 'Task 1');
-  insert into task_types (team_id , "name")
-    values (2 , 'Task 2');
-  insert into task_types (team_id , "name")
-    values (2 , 'Task 3');
+  insert into task_types (team_id , "name", description, color)
+    values (1 , 'Concept', 'description for task type', 'caabbb');
+  insert into task_types (team_id , "name", description, color)
+    values (1 , 'Design', 'description for task type', 'caabbb');
+  insert into task_types (team_id , "name", description, color)
+    values (1 , 'Analysis', 'description for task type', 'caabbb');
+  insert into task_types (team_id , "name", description, color)
+    values (1 , 'Optimization', 'description for task type', 'caabbb');
+  insert into task_types (team_id , "name", description, color)
+    values (1 , 'Documentation', 'description for task type', 'caabbb');
+  insert into task_types (team_id , "name", description, color)
+    values (2 , 'Task 1', 'description for task type', 'caabbb');
+  insert into task_types (team_id , "name", description, color)
+    values (2 , 'Task 2', 'description for task type', 'caabbb');
+  insert into task_types (team_id , "name", description, color)
+    values (2 , 'Task 3', 'description for task type', 'caabbb');
   -- work items
   -- work item 1
   insert into work_items (title , metadata , team_id , kanban_step_id , deleted_at)

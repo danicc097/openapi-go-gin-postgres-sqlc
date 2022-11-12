@@ -157,17 +157,19 @@ func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_tags_name_key'.
 func WorkItemTagByName(ctx context.Context, db DB, name string, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{}
+	c := &WorkItemTagSelectConfig{
+		joins: WorkItemTagJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_tag_id,
-name,
-description,
-color ` +
+		`work_item_tags.work_item_tag_id,
+work_item_tags.name,
+work_item_tags.description,
+work_item_tags.color ` +
 		`FROM public.work_item_tags ` +
 		`` +
 		` WHERE name = $1 `
@@ -189,17 +191,19 @@ color ` +
 //
 // Generated from index 'work_item_tags_pkey'.
 func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{}
+	c := &WorkItemTagSelectConfig{
+		joins: WorkItemTagJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_tag_id,
-name,
-description,
-color ` +
+		`work_item_tags.work_item_tag_id,
+work_item_tags.name,
+work_item_tags.description,
+work_item_tags.color ` +
 		`FROM public.work_item_tags ` +
 		`` +
 		` WHERE work_item_tag_id = $1 `

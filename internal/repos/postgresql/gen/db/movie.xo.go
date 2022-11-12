@@ -157,17 +157,19 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'movies_pkey'.
 func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) (*Movie, error) {
-	c := &MovieSelectConfig{}
+	c := &MovieSelectConfig{
+		joins: MovieJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`movie_id,
-title,
-year,
-synopsis ` +
+		`movies.movie_id,
+movies.title,
+movies.year,
+movies.synopsis ` +
 		`FROM public.movies ` +
 		`` +
 		` WHERE movie_id = $1 `

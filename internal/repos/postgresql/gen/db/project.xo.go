@@ -181,19 +181,21 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'projects_name_key'.
 func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{}
+	c := &ProjectSelectConfig{
+		joins: ProjectJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`project_id,
-name,
-description,
-metadata,
-created_at,
-updated_at ` +
+		`projects.project_id,
+projects.name,
+projects.description,
+projects.metadata,
+projects.created_at,
+projects.updated_at ` +
 		`FROM public.projects ` +
 		`` +
 		` WHERE name = $1 `
@@ -215,19 +217,21 @@ updated_at ` +
 //
 // Generated from index 'projects_pkey'.
 func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{}
+	c := &ProjectSelectConfig{
+		joins: ProjectJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`project_id,
-name,
-description,
-metadata,
-created_at,
-updated_at ` +
+		`projects.project_id,
+projects.name,
+projects.description,
+projects.metadata,
+projects.created_at,
+projects.updated_at ` +
 		`FROM public.projects ` +
 		`` +
 		` WHERE project_id = $1 `

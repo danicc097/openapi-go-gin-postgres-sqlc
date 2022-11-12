@@ -158,18 +158,20 @@ func (tt *TaskType) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'task_types_pkey'.
 func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int, opts ...TaskTypeSelectConfigOption) (*TaskType, error) {
-	c := &TaskTypeSelectConfig{}
+	c := &TaskTypeSelectConfig{
+		joins: TaskTypeJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`task_type_id,
-team_id,
-name,
-description,
-color ` +
+		`task_types.task_type_id,
+task_types.team_id,
+task_types.name,
+task_types.description,
+task_types.color ` +
 		`FROM public.task_types ` +
 		`` +
 		` WHERE task_type_id = $1 `
@@ -191,18 +193,20 @@ color ` +
 //
 // Generated from index 'task_types_team_id_name_key'.
 func TaskTypeByTeamIDName(ctx context.Context, db DB, teamID int64, name string, opts ...TaskTypeSelectConfigOption) (*TaskType, error) {
-	c := &TaskTypeSelectConfig{}
+	c := &TaskTypeSelectConfig{
+		joins: TaskTypeJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`task_type_id,
-team_id,
-name,
-description,
-color ` +
+		`task_types.task_type_id,
+task_types.team_id,
+task_types.name,
+task_types.description,
+task_types.color ` +
 		`FROM public.task_types ` +
 		`` +
 		` WHERE team_id = $1 AND name = $2 `

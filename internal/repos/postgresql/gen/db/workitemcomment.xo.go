@@ -181,19 +181,21 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_comments_pkey'.
 func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID int64, opts ...WorkItemCommentSelectConfigOption) (*WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{}
+	c := &WorkItemCommentSelectConfig{
+		joins: WorkItemCommentJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_comment_id,
-work_item_id,
-user_id,
-message,
-created_at,
-updated_at ` +
+		`work_item_comments.work_item_comment_id,
+work_item_comments.work_item_id,
+work_item_comments.user_id,
+work_item_comments.message,
+work_item_comments.created_at,
+work_item_comments.updated_at ` +
 		`FROM public.work_item_comments ` +
 		`` +
 		` WHERE work_item_comment_id = $1 `
@@ -215,19 +217,21 @@ updated_at ` +
 //
 // Generated from index 'work_item_comments_work_item_id_idx'.
 func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemCommentSelectConfigOption) ([]*WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{}
+	c := &WorkItemCommentSelectConfig{
+		joins: WorkItemCommentJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_comment_id,
-work_item_id,
-user_id,
-message,
-created_at,
-updated_at ` +
+		`work_item_comments.work_item_comment_id,
+work_item_comments.work_item_id,
+work_item_comments.user_id,
+work_item_comments.message,
+work_item_comments.created_at,
+work_item_comments.updated_at ` +
 		`FROM public.work_item_comments ` +
 		`` +
 		` WHERE work_item_id = $1 `

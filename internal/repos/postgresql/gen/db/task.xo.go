@@ -197,23 +197,25 @@ func (t *Task) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'tasks_pkey'.
 func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectConfigOption) (*Task, error) {
-	c := &TaskSelectConfig{}
+	c := &TaskSelectConfig{
+		joins: TaskJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`task_id,
-task_type_id,
-work_item_id,
-title,
-metadata,
-target_date,
-target_date_timezone,
-created_at,
-updated_at,
-deleted_at,
+		`tasks.task_id,
+tasks.task_type_id,
+tasks.work_item_id,
+tasks.title,
+tasks.metadata,
+tasks.target_date,
+tasks.target_date_timezone,
+tasks.created_at,
+tasks.updated_at,
+tasks.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
 		`FROM public.tasks ` +
 		`-- O2M join generated from "time_entries_task_id_fkey"

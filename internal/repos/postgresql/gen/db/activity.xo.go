@@ -160,17 +160,19 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'activities_name_key'.
 func ActivityByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{}
+	c := &ActivitySelectConfig{
+		joins: ActivityJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`activity_id,
-name,
-description,
-is_productive,
+		`activities.activity_id,
+activities.name,
+activities.description,
+activities.is_productive,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2M join generated from "time_entries_activity_id_fkey"
@@ -201,17 +203,19 @@ left join (
 //
 // Generated from index 'activities_pkey'.
 func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{}
+	c := &ActivitySelectConfig{
+		joins: ActivityJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`activity_id,
-name,
-description,
-is_productive,
+		`activities.activity_id,
+activities.name,
+activities.description,
+activities.is_productive,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2M join generated from "time_entries_activity_id_fkey"

@@ -1928,7 +1928,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		// build table fieldnames
 		for _, z := range x.Table.Fields {
 			// add current table fields
-			fields = append(fields, f.colname(z))
+			fields = append(fields, x.Table.SQLName+"."+f.colname(z))
 		}
 		// create joins for constraints
 		funcs := template.FuncMap{

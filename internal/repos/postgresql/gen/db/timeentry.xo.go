@@ -181,21 +181,23 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'time_entries_pkey'.
 func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts ...TimeEntrySelectConfigOption) (*TimeEntry, error) {
-	c := &TimeEntrySelectConfig{}
+	c := &TimeEntrySelectConfig{
+		joins: TimeEntryJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`time_entry_id,
-task_id,
-activity_id,
-team_id,
-user_id,
-comment,
-start,
-duration_minutes ` +
+		`time_entries.time_entry_id,
+time_entries.task_id,
+time_entries.activity_id,
+time_entries.team_id,
+time_entries.user_id,
+time_entries.comment,
+time_entries.start,
+time_entries.duration_minutes ` +
 		`FROM public.time_entries ` +
 		`` +
 		` WHERE time_entry_id = $1 `
@@ -217,21 +219,23 @@ duration_minutes ` +
 //
 // Generated from index 'time_entries_task_id_team_id_idx'.
 func TimeEntriesByTaskIDTeamID(ctx context.Context, db DB, taskID, teamID null.Int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
-	c := &TimeEntrySelectConfig{}
+	c := &TimeEntrySelectConfig{
+		joins: TimeEntryJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`time_entry_id,
-task_id,
-activity_id,
-team_id,
-user_id,
-comment,
-start,
-duration_minutes ` +
+		`time_entries.time_entry_id,
+time_entries.task_id,
+time_entries.activity_id,
+time_entries.team_id,
+time_entries.user_id,
+time_entries.comment,
+time_entries.start,
+time_entries.duration_minutes ` +
 		`FROM public.time_entries ` +
 		`` +
 		` WHERE task_id = $1 AND team_id = $2 `
@@ -267,21 +271,23 @@ duration_minutes ` +
 //
 // Generated from index 'time_entries_user_id_team_id_idx'.
 func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID null.Int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
-	c := &TimeEntrySelectConfig{}
+	c := &TimeEntrySelectConfig{
+		joins: TimeEntryJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`time_entry_id,
-task_id,
-activity_id,
-team_id,
-user_id,
-comment,
-start,
-duration_minutes ` +
+		`time_entries.time_entry_id,
+time_entries.task_id,
+time_entries.activity_id,
+time_entries.team_id,
+time_entries.user_id,
+time_entries.comment,
+time_entries.start,
+time_entries.duration_minutes ` +
 		`FROM public.time_entries ` +
 		`` +
 		` WHERE user_id = $1 AND team_id = $2 `
