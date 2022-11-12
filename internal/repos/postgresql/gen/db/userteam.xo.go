@@ -20,7 +20,7 @@ type UserTeam struct {
 type UserTeamSelectConfig struct {
 	limit    string
 	orderBy  string
-	joinWith []UserTeamJoinBy
+	joinWith UserTeamJoinWith
 }
 
 type UserTeamSelectConfigOption func(*UserTeamSelectConfig)
@@ -34,7 +34,7 @@ func UserTeamWithLimit(limit int) UserTeamSelectConfigOption {
 
 type UserTeamOrderBy = string
 
-type UserTeamJoinBy = string
+type UserTeamJoinWith struct{}
 
 // Exists returns true when the UserTeam exists in the database.
 func (ut *UserTeam) Exists() bool {

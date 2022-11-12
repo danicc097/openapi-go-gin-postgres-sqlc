@@ -229,7 +229,8 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{/* generated structs */}}
 
 {{ define "typedef" }}
-{{- $t := .Data -}}
+{{- $t := .Data.Table -}}
+{{- $constraints := .Data.Constraints -}}
 
 {{if $t.Comment -}}
 // {{ $t.Comment | eval $t.GoName }}
@@ -250,7 +251,7 @@ type {{ $t.GoName }} struct {
 type {{ $t.GoName }}SelectConfig struct {
 	limit       string
 	orderBy     string
-  joinWith    []{{ $t.GoName }}JoinBy
+  joinWith    {{ $t.GoName }}JoinWith
 }
 
 type {{ $t.GoName }}SelectConfigOption func(*{{ $t.GoName }}SelectConfig)
@@ -262,9 +263,7 @@ func {{ $t.GoName }}WithLimit(limit int) {{ $t.GoName }}SelectConfigOption {
 	}
 }
 
-{{ extratypes $t.GoName $t }}
-
-type {{ $t.GoName }}JoinBy = string
+{{ extratypes $t.GoName $t.SQLName $constraints $t }}
 
 {{/* regular queries for a table. Ignored for mat views or views.
  */}}

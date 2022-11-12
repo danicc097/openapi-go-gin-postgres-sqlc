@@ -20,7 +20,7 @@ type WorkItemTag struct {
 type WorkItemTagSelectConfig struct {
 	limit    string
 	orderBy  string
-	joinWith []WorkItemTagJoinBy
+	joinWith WorkItemTagJoinWith
 }
 
 type WorkItemTagSelectConfigOption func(*WorkItemTagSelectConfig)
@@ -34,7 +34,7 @@ func WorkItemTagWithLimit(limit int) WorkItemTagSelectConfigOption {
 
 type WorkItemTagOrderBy = string
 
-type WorkItemTagJoinBy = string
+type WorkItemTagJoinWith struct{}
 
 // Exists returns true when the WorkItemTag exists in the database.
 func (wit *WorkItemTag) Exists() bool {

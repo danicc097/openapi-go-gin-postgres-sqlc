@@ -20,7 +20,7 @@ type Movie struct {
 type MovieSelectConfig struct {
 	limit    string
 	orderBy  string
-	joinWith []MovieJoinBy
+	joinWith MovieJoinWith
 }
 
 type MovieSelectConfigOption func(*MovieSelectConfig)
@@ -34,7 +34,7 @@ func MovieWithLimit(limit int) MovieSelectConfigOption {
 
 type MovieOrderBy = string
 
-type MovieJoinBy = string
+type MovieJoinWith struct{}
 
 // Exists returns true when the Movie exists in the database.
 func (m *Movie) Exists() bool {

@@ -32,7 +32,7 @@ type User struct {
 type UserSelectConfig struct {
 	limit    string
 	orderBy  string
-	joinWith []UserJoinBy
+	joinWith UserJoinWith
 }
 
 type UserSelectConfigOption func(*UserSelectConfig)
@@ -68,7 +68,7 @@ func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	}
 }
 
-type UserJoinBy = string
+type UserJoinWith struct{}
 
 // UsersByExternalID retrieves a row from 'cache.users' as a User.
 //

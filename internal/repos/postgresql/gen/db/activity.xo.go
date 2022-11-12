@@ -20,7 +20,7 @@ type Activity struct {
 type ActivitySelectConfig struct {
 	limit    string
 	orderBy  string
-	joinWith []ActivityJoinBy
+	joinWith ActivityJoinWith
 }
 
 type ActivitySelectConfigOption func(*ActivitySelectConfig)
@@ -34,7 +34,9 @@ func ActivityWithLimit(limit int) ActivitySelectConfigOption {
 
 type ActivityOrderBy = string
 
-type ActivityJoinBy = string
+type ActivityJoinWith struct {
+	TimeEntries bool
+}
 
 // Exists returns true when the Activity exists in the database.
 func (a *Activity) Exists() bool {
@@ -180,7 +182,7 @@ left join (
 	a := Activity{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, name).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, name, c.joinWith.TimeEntries).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive); err != nil {
 		return nil, logerror(err)
 	}
 	return &a, nil
@@ -221,7 +223,7 @@ left join (
 	a := Activity{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, activityID).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, activityID, c.joinWith.TimeEntries).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive); err != nil {
 		return nil, logerror(err)
 	}
 	return &a, nil

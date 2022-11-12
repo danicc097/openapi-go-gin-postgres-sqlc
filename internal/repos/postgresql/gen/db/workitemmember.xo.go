@@ -20,7 +20,7 @@ type WorkItemMember struct {
 type WorkItemMemberSelectConfig struct {
 	limit    string
 	orderBy  string
-	joinWith []WorkItemMemberJoinBy
+	joinWith WorkItemMemberJoinWith
 }
 
 type WorkItemMemberSelectConfigOption func(*WorkItemMemberSelectConfig)
@@ -34,7 +34,7 @@ func WorkItemMemberWithLimit(limit int) WorkItemMemberSelectConfigOption {
 
 type WorkItemMemberOrderBy = string
 
-type WorkItemMemberJoinBy = string
+type WorkItemMemberJoinWith struct{}
 
 // Exists returns true when the WorkItemMember exists in the database.
 func (wim *WorkItemMember) Exists() bool {

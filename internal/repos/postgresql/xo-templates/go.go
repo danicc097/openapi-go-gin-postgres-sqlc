@@ -436,7 +436,10 @@ func emitQuery(ctx context.Context, query xo.Query, emit func(xo.Template)) erro
 			Dest:     strings.ToLower(table.GoName) + ext,
 			SortType: query.Type,
 			SortName: query.Name,
-			Data:     table,
+			Data: struct {
+				Table       interface{}
+				Constraints interface{}
+			}{Table: table, Constraints: []Constraint{}}, // TODO must not be empty and use current
 		})
 	}
 	// build query params
@@ -525,6 +528,8 @@ func buildQueryName(query xo.Query) string {
 
 // emitSchema emits the xo schema for the template set.
 func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) error {
+	constraints := convertConstraints(ctx, schema.Constraints)
+
 	for _, e := range schema.Enums {
 		if e.EnumPkg != "" || (e.Schema == "public" && schema.Name != "public") {
 			continue // will share enums with public, no need to emit
@@ -579,10 +584,12 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			Partial:  "typedef",
 			SortType: table.Type,
 			SortName: table.GoName,
-			Data:     table,
+			Data: struct {
+				Table       interface{}
+				Constraints interface{}
+			}{Table: table, Constraints: constraints},
 		})
 		// emit indexes
-		constraints := convertConstraints(ctx, schema.Constraints)
 		for _, i := range t.Indexes {
 			index, err := convertIndex(ctx, table, i)
 			if err != nil {
@@ -1206,15 +1213,28 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
 }
 
 // funcfn builds a type definition.
-func (f *Funcs) extratypes(name string, v interface{}) string {
+func (f *Funcs) extratypes(name string, sqlname string, constraints interface{}, v interface{}) string {
 	// -- emit ORDER BY opts
+	switch cc := constraints.(type) {
+	case []Constraint:
+		if len(cc) > 0 {
+			// always run
+			f.loadConstraints(cc, sqlname)
+		}
+	default:
+		break
+	}
 	var orderbys []Field
+	var cc []Constraint
 	switch x := v.(type) {
 	case Table:
 		for _, z := range x.Fields {
 			if z.IsDateOrTime {
 				orderbys = append(orderbys, z)
 			}
+		}
+		if tablecc, ok := f.tableConstraints[x.SQLName]; ok {
+			cc = tablecc
 		}
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 3: %T ]]", v)
@@ -1228,14 +1248,14 @@ func (f *Funcs) extratypes(name string, v interface{}) string {
 	var buf strings.Builder
 	buf.WriteString(fmt.Sprintf(`type %sOrderBy = string
 	`, name))
-	buf.WriteString("const (")
+	buf.WriteString("const (\n")
 	for _, ob := range orderbys {
 		for _, opt := range orderByOpts {
 			buf.WriteString(fmt.Sprintf(`%s%s%s %sOrderBy = "%s %s"
 			`, name, ob.GoName, opt[0], name, ob.SQLName, opt[1]))
 		}
 	}
-	buf.WriteString(")")
+	buf.WriteString(")\n")
 
 	if len(orderbys) > 0 {
 		buf.WriteString(fmt.Sprintf(`
@@ -1250,6 +1270,21 @@ func %[1]sWithOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 
 	// TODO
 	// -- emit JOIN BY opts only
+	buf.WriteString(fmt.Sprintf("type %sJoinWith struct {\n", name))
+	for _, c := range cc {
+		var joinName string
+		switch c.Cardinality {
+		case "M2M":
+			joinName = camelExport(c.RefTableName)
+		case "O2M", "M2O":
+			joinName = camelExport(c.TableName)
+		case "O2O":
+			joinName = camelExport(singularize(c.TableName))
+		default:
+		}
+		buf.WriteString(fmt.Sprintf("%s bool\n", joinName))
+	}
+	buf.WriteString("}\n")
 
 	return buf.String()
 }
@@ -1523,6 +1558,22 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 			}
 		case Index:
 			names = append(names, f.params(x.Fields, false))
+			// TODO append go joinOptions struct fields
+			// taken from f.tableConstraints[x.Table.SQLName]
+			// which should be converted to <x.Table.GoName>JoinWith<select name [can be singularized].
+			for _, c := range f.tableConstraints[x.Table.SQLName] {
+				var joinName string
+				switch c.Cardinality {
+				case "M2M":
+					joinName = "c.joinWith." + camelExport(c.RefTableName)
+				case "O2M", "M2O":
+					joinName = "c.joinWith." + camelExport(c.TableName)
+				case "O2O":
+					joinName = "c.joinWith." + camelExport(singularize(c.TableName))
+				default:
+				}
+				names = append(names, joinName)
+			}
 		default:
 			names = append(names, fmt.Sprintf("/* UNSUPPORTED TYPE 14 (%d): %T */", i, v))
 		}
@@ -1785,11 +1836,6 @@ func (f *Funcs) sqlstr_delete(v interface{}) []string {
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 25: %T ]]", v)}
 }
 
-// (case when <f.nth(i)>::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end)::jsonb as {{.JoinTable}}
-// , (case when <f.nth(i)>::boolean = true then joined_teams.teams end)::jsonb as teams
-// ,
-// , (case when <f.nth(i)>::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries
-
 const (
 	M2MSelect = `(case when {{.Nth}}::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end)::jsonb as {{.JoinTable}}`
 	O2MSelect = M2MSelect
@@ -1844,28 +1890,10 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			if tc, ok := f.tableConstraints[x.Table.SQLName]; ok {
 				tableConstraints = tc
 			} else {
-				for _, c := range cc {
-					if c.RefTableName == x.Table.SQLName && c.Cardinality != "" && c.Type == "foreign_key" {
-						if c.Cardinality == "M2M" {
-							// assumes lookup table links 2 tables
-							for _, c1 := range cc {
-								if c1.TableName == c.TableName && c1.ColumnName != c.ColumnName && c1.Type == "foreign_key" {
-									c1.LookupColumn = c.ColumnName
-									c1.LookupRefColumn = c.RefColumnName
-									tableConstraints = append(tableConstraints, c1)
-								}
-							}
-						} else {
-							tableConstraints = append(tableConstraints, c)
-						}
-					}
+				if len(cc) > 0 {
+					f.loadConstraints(cc, x.Table.SQLName)
 				}
-				if len(tableConstraints) > 0 {
-					fmt.Printf("Constraints for %q (%q):\n%v\n", x.Table.SQLName, x.SQLName, PrintJSON(tableConstraints))
-					if _, ok := f.tableConstraints[x.Table.SQLName]; !ok {
-						f.tableConstraints[x.Table.SQLName] = tableConstraints
-					}
-				}
+				// fmt.Printf("Constraints for %q (%q):\n%v\n", x.Table.SQLName, x.SQLName, PrintJSON(f.tableConstraints[x.Table.SQLName]))
 			}
 		default:
 			break
@@ -1914,6 +1942,25 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
+}
+
+// loadConstraints saves possible joins for a table based on constraints to tableConstraints
+func (f *Funcs) loadConstraints(cc []Constraint, table string) {
+	for _, c := range cc {
+		if c.RefTableName == table && c.Cardinality != "" && c.Type == "foreign_key" {
+			if c.Cardinality == "M2M" {
+				for _, c1 := range cc {
+					if c1.TableName == c.TableName && c1.ColumnName != c.ColumnName && c1.Type == "foreign_key" {
+						c1.LookupColumn = c.ColumnName
+						c1.LookupRefColumn = c.RefColumnName
+						f.tableConstraints[table] = append(f.tableConstraints[table], c1)
+					}
+				}
+			} else {
+				f.tableConstraints[table] = append(f.tableConstraints[table], c)
+			}
+		}
+	}
 }
 
 // createJoinStatement returns select queries and join statements strings
@@ -2577,8 +2624,8 @@ type Constraint struct {
 	ColumnName      string
 	RefTableName    string
 	RefColumnName   string
-	LookupColumn    string // lookup table column
-	LookupRefColumn string // the referenced PK by LookupColumn
+	LookupColumn    string // (M2M) lookup table column
+	LookupRefColumn string // (M2M) referenced PK by LookupColumn
 }
 
 // Field is a field template.

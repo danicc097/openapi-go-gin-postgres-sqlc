@@ -31,7 +31,7 @@ type Task struct {
 type TaskSelectConfig struct {
 	limit    string
 	orderBy  string
-	joinWith []TaskJoinBy
+	joinWith TaskJoinWith
 }
 
 type TaskSelectConfigOption func(*TaskSelectConfig)
@@ -71,7 +71,9 @@ func TaskWithOrderBy(rows ...TaskOrderBy) TaskSelectConfigOption {
 	}
 }
 
-type TaskJoinBy = string
+type TaskJoinWith struct {
+	TimeEntries bool
+}
 
 // Exists returns true when the Task exists in the database.
 func (t *Task) Exists() bool {
@@ -223,7 +225,7 @@ left join (
 	t := Task{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, taskID).Scan(&t.TaskID, &t.TaskTypeID, &t.WorkItemID, &t.Title, &t.Metadata, &t.TargetDate, &t.TargetDateTimezone, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, taskID, c.joinWith.TimeEntries).Scan(&t.TaskID, &t.TaskTypeID, &t.WorkItemID, &t.Title, &t.Metadata, &t.TargetDate, &t.TargetDateTimezone, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil

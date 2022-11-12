@@ -30,7 +30,7 @@ type TimeEntry struct {
 type TimeEntrySelectConfig struct {
 	limit    string
 	orderBy  string
-	joinWith []TimeEntryJoinBy
+	joinWith TimeEntryJoinWith
 }
 
 type TimeEntrySelectConfigOption func(*TimeEntrySelectConfig)
@@ -58,7 +58,7 @@ func TimeEntryWithOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption 
 	}
 }
 
-type TimeEntryJoinBy = string
+type TimeEntryJoinWith struct{}
 
 // Exists returns true when the TimeEntry exists in the database.
 func (te *TimeEntry) Exists() bool {

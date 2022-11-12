@@ -26,7 +26,7 @@ type KanbanStep struct {
 type KanbanStepSelectConfig struct {
 	limit    string
 	orderBy  string
-	joinWith []KanbanStepJoinBy
+	joinWith KanbanStepJoinWith
 }
 
 type KanbanStepSelectConfigOption func(*KanbanStepSelectConfig)
@@ -40,7 +40,7 @@ func KanbanStepWithLimit(limit int) KanbanStepSelectConfigOption {
 
 type KanbanStepOrderBy = string
 
-type KanbanStepJoinBy = string
+type KanbanStepJoinWith struct{}
 
 // Exists returns true when the KanbanStep exists in the database.
 func (ks *KanbanStep) Exists() bool {

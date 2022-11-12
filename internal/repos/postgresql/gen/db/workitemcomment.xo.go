@@ -26,7 +26,7 @@ type WorkItemComment struct {
 type WorkItemCommentSelectConfig struct {
 	limit    string
 	orderBy  string
-	joinWith []WorkItemCommentJoinBy
+	joinWith WorkItemCommentJoinWith
 }
 
 type WorkItemCommentSelectConfigOption func(*WorkItemCommentSelectConfig)
@@ -58,7 +58,7 @@ func WorkItemCommentWithOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentS
 	}
 }
 
-type WorkItemCommentJoinBy = string
+type WorkItemCommentJoinWith struct{}
 
 // Exists returns true when the WorkItemComment exists in the database.
 func (wic *WorkItemComment) Exists() bool {

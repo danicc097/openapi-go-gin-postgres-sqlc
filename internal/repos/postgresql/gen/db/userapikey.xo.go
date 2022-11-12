@@ -23,7 +23,7 @@ type UserAPIKey struct {
 type UserAPIKeySelectConfig struct {
 	limit    string
 	orderBy  string
-	joinWith []UserAPIKeyJoinBy
+	joinWith UserAPIKeyJoinWith
 }
 
 type UserAPIKeySelectConfigOption func(*UserAPIKeySelectConfig)
@@ -51,7 +51,7 @@ func UserAPIKeyWithOrderBy(rows ...UserAPIKeyOrderBy) UserAPIKeySelectConfigOpti
 	}
 }
 
-type UserAPIKeyJoinBy = string
+type UserAPIKeyJoinWith struct{}
 
 // Exists returns true when the UserAPIKey exists in the database.
 func (uak *UserAPIKey) Exists() bool {

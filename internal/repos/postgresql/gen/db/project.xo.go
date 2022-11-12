@@ -26,7 +26,7 @@ type Project struct {
 type ProjectSelectConfig struct {
 	limit    string
 	orderBy  string
-	joinWith []ProjectJoinBy
+	joinWith ProjectJoinWith
 }
 
 type ProjectSelectConfigOption func(*ProjectSelectConfig)
@@ -58,7 +58,7 @@ func ProjectWithOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 	}
 }
 
-type ProjectJoinBy = string
+type ProjectJoinWith struct{}
 
 // Exists returns true when the Project exists in the database.
 func (p *Project) Exists() bool {
