@@ -29,9 +29,9 @@ type User struct {
 }
 
 type UserSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith UserJoinWith
+	limit   string
+	orderBy string
+	joins   UserJoins
 }
 
 type UserSelectConfigOption func(*UserSelectConfig)
@@ -67,4 +67,11 @@ func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	}
 }
 
-type UserJoinWith struct{}
+type UserJoins struct{}
+
+// UserWithJoin orders results by the given columns.
+func UserWithJoin(joins UserJoins) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.joins = joins
+	}
+}

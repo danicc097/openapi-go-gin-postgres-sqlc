@@ -18,9 +18,9 @@ type WorkItemTag struct {
 }
 
 type WorkItemTagSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith WorkItemTagJoinWith
+	limit   string
+	orderBy string
+	joins   WorkItemTagJoins
 }
 
 type WorkItemTagSelectConfigOption func(*WorkItemTagSelectConfig)
@@ -34,7 +34,14 @@ func WorkItemTagWithLimit(limit int) WorkItemTagSelectConfigOption {
 
 type WorkItemTagOrderBy = string
 
-type WorkItemTagJoinWith struct{}
+type WorkItemTagJoins struct{}
+
+// WorkItemTagWithJoin orders results by the given columns.
+func WorkItemTagWithJoin(joins WorkItemTagJoins) WorkItemTagSelectConfigOption {
+	return func(s *WorkItemTagSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the WorkItemTag exists in the database.
 func (wit *WorkItemTag) Exists() bool {

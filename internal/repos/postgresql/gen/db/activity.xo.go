@@ -18,9 +18,9 @@ type Activity struct {
 }
 
 type ActivitySelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith ActivityJoinWith
+	limit   string
+	orderBy string
+	joins   ActivityJoins
 }
 
 type ActivitySelectConfigOption func(*ActivitySelectConfig)
@@ -34,8 +34,15 @@ func ActivityWithLimit(limit int) ActivitySelectConfigOption {
 
 type ActivityOrderBy = string
 
-type ActivityJoinWith struct {
+type ActivityJoins struct {
 	TimeEntries bool
+}
+
+// ActivityWithJoin orders results by the given columns.
+func ActivityWithJoin(joins ActivityJoins) ActivitySelectConfigOption {
+	return func(s *ActivitySelectConfig) {
+		s.joins = joins
+	}
 }
 
 // Exists returns true when the Activity exists in the database.
@@ -182,7 +189,7 @@ left join (
 	a := Activity{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, name, c.joinWith.TimeEntries).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, name, c.joins.TimeEntries).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive); err != nil {
 		return nil, logerror(err)
 	}
 	return &a, nil
@@ -223,7 +230,7 @@ left join (
 	a := Activity{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, activityID, c.joinWith.TimeEntries).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, activityID, c.joins.TimeEntries).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive); err != nil {
 		return nil, logerror(err)
 	}
 	return &a, nil

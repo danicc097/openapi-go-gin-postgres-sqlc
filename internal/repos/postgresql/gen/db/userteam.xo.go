@@ -18,9 +18,9 @@ type UserTeam struct {
 }
 
 type UserTeamSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith UserTeamJoinWith
+	limit   string
+	orderBy string
+	joins   UserTeamJoins
 }
 
 type UserTeamSelectConfigOption func(*UserTeamSelectConfig)
@@ -34,7 +34,14 @@ func UserTeamWithLimit(limit int) UserTeamSelectConfigOption {
 
 type UserTeamOrderBy = string
 
-type UserTeamJoinWith struct{}
+type UserTeamJoins struct{}
+
+// UserTeamWithJoin orders results by the given columns.
+func UserTeamWithJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
+	return func(s *UserTeamSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the UserTeam exists in the database.
 func (ut *UserTeam) Exists() bool {

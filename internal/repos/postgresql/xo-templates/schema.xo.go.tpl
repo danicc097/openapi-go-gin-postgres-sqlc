@@ -247,22 +247,6 @@ type {{ $t.GoName }} struct {
 {{ end -}}
 }
 
-
-type {{ $t.GoName }}SelectConfig struct {
-	limit       string
-	orderBy     string
-  joinWith    {{ $t.GoName }}JoinWith
-}
-
-type {{ $t.GoName }}SelectConfigOption func(*{{ $t.GoName }}SelectConfig)
-
-// {{ $t.GoName }}WithLimit limits row selection.
-func {{ $t.GoName }}WithLimit(limit int) {{ $t.GoName }}SelectConfigOption {
-	return func(s *{{ $t.GoName }}SelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
-	}
-}
-
 {{ extratypes $t.GoName $t.SQLName $constraints $t }}
 
 {{/* regular queries for a table. Ignored for mat views or views.

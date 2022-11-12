@@ -18,9 +18,9 @@ type Movie struct {
 }
 
 type MovieSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith MovieJoinWith
+	limit   string
+	orderBy string
+	joins   MovieJoins
 }
 
 type MovieSelectConfigOption func(*MovieSelectConfig)
@@ -34,7 +34,14 @@ func MovieWithLimit(limit int) MovieSelectConfigOption {
 
 type MovieOrderBy = string
 
-type MovieJoinWith struct{}
+type MovieJoins struct{}
+
+// MovieWithJoin orders results by the given columns.
+func MovieWithJoin(joins MovieJoins) MovieSelectConfigOption {
+	return func(s *MovieSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the Movie exists in the database.
 func (m *Movie) Exists() bool {

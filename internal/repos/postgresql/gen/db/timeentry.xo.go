@@ -28,9 +28,9 @@ type TimeEntry struct {
 }
 
 type TimeEntrySelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith TimeEntryJoinWith
+	limit   string
+	orderBy string
+	joins   TimeEntryJoins
 }
 
 type TimeEntrySelectConfigOption func(*TimeEntrySelectConfig)
@@ -58,7 +58,14 @@ func TimeEntryWithOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption 
 	}
 }
 
-type TimeEntryJoinWith struct{}
+type TimeEntryJoins struct{}
+
+// TimeEntryWithJoin orders results by the given columns.
+func TimeEntryWithJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
+	return func(s *TimeEntrySelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the TimeEntry exists in the database.
 func (te *TimeEntry) Exists() bool {

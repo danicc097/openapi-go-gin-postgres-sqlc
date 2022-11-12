@@ -28,9 +28,9 @@ type WorkItem struct {
 }
 
 type WorkItemSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith WorkItemJoinWith
+	limit   string
+	orderBy string
+	joins   WorkItemJoins
 }
 
 type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
@@ -66,9 +66,16 @@ func WorkItemWithOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 	}
 }
 
-type WorkItemJoinWith struct {
+type WorkItemJoins struct {
 	WorkItemComments bool
 	Users            bool
+}
+
+// WorkItemWithJoin orders results by the given columns.
+func WorkItemWithJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
+	return func(s *WorkItemSelectConfig) {
+		s.joins = joins
+	}
 }
 
 // Exists returns true when the WorkItem exists in the database.
@@ -243,7 +250,7 @@ left join (
 	wi := WorkItem{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, workItemID, c.joinWith.WorkItemComments, c.joinWith.Users).Scan(&wi.WorkItemID, &wi.Title, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, workItemID, c.joins.WorkItemComments, c.joins.Users).Scan(&wi.WorkItemID, &wi.Title, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &wi, nil

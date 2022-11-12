@@ -16,9 +16,9 @@ type SchemaMigration struct {
 }
 
 type SchemaMigrationSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith SchemaMigrationJoinWith
+	limit   string
+	orderBy string
+	joins   SchemaMigrationJoins
 }
 
 type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
@@ -32,7 +32,14 @@ func SchemaMigrationWithLimit(limit int) SchemaMigrationSelectConfigOption {
 
 type SchemaMigrationOrderBy = string
 
-type SchemaMigrationJoinWith struct{}
+type SchemaMigrationJoins struct{}
+
+// SchemaMigrationWithJoin orders results by the given columns.
+func SchemaMigrationWithJoin(joins SchemaMigrationJoins) SchemaMigrationSelectConfigOption {
+	return func(s *SchemaMigrationSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the SchemaMigration exists in the database.
 func (sm *SchemaMigration) Exists() bool {

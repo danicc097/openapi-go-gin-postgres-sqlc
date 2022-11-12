@@ -24,9 +24,9 @@ type KanbanStep struct {
 }
 
 type KanbanStepSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith KanbanStepJoinWith
+	limit   string
+	orderBy string
+	joins   KanbanStepJoins
 }
 
 type KanbanStepSelectConfigOption func(*KanbanStepSelectConfig)
@@ -40,7 +40,14 @@ func KanbanStepWithLimit(limit int) KanbanStepSelectConfigOption {
 
 type KanbanStepOrderBy = string
 
-type KanbanStepJoinWith struct{}
+type KanbanStepJoins struct{}
+
+// KanbanStepWithJoin orders results by the given columns.
+func KanbanStepWithJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
+	return func(s *KanbanStepSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the KanbanStep exists in the database.
 func (ks *KanbanStep) Exists() bool {

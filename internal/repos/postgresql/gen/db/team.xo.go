@@ -25,9 +25,9 @@ type Team struct {
 }
 
 type TeamSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith TeamJoinWith
+	limit   string
+	orderBy string
+	joins   TeamJoins
 }
 
 type TeamSelectConfigOption func(*TeamSelectConfig)
@@ -59,9 +59,16 @@ func TeamWithOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 	}
 }
 
-type TeamJoinWith struct {
+type TeamJoins struct {
 	TimeEntries bool
 	Users       bool
+}
+
+// TeamWithJoin orders results by the given columns.
+func TeamWithJoin(joins TeamJoins) TeamSelectConfigOption {
+	return func(s *TeamSelectConfig) {
+		s.joins = joins
+	}
 }
 
 // Exists returns true when the Team exists in the database.
@@ -234,7 +241,7 @@ left join (
 	t := Team{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, name, projectID, c.joinWith.TimeEntries, c.joinWith.Users).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, name, projectID, c.joins.TimeEntries, c.joins.Users).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil
@@ -301,7 +308,7 @@ left join (
 	t := Team{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, teamID, c.joinWith.TimeEntries, c.joinWith.Users).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, teamID, c.joins.TimeEntries, c.joins.Users).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil

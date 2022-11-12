@@ -32,9 +32,9 @@ type User struct {
 }
 
 type UserSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith UserJoinWith
+	limit   string
+	orderBy string
+	joins   UserJoins
 }
 
 type UserSelectConfigOption func(*UserSelectConfig)
@@ -70,11 +70,18 @@ func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	}
 }
 
-type UserJoinWith struct {
+type UserJoins struct {
 	TimeEntries bool
 	UserAPIKey  bool
 	Teams       bool
 	WorkItems   bool
+}
+
+// UserWithJoin orders results by the given columns.
+func UserWithJoin(joins UserJoins) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.joins = joins
+	}
 }
 
 // Exists returns true when the User exists in the database.
@@ -275,7 +282,7 @@ left join (
 
 	// run
 	logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, createdAt, c.joinWith.TimeEntries, c.joinWith.UserAPIKey, c.joinWith.Teams, c.joinWith.WorkItems)
+	rows, err := db.Query(ctx, sqlstr, createdAt, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -387,7 +394,7 @@ left join (
 
 	// run
 	logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, deletedAt, c.joinWith.TimeEntries, c.joinWith.UserAPIKey, c.joinWith.Teams, c.joinWith.WorkItems)
+	rows, err := db.Query(ctx, sqlstr, deletedAt, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -502,7 +509,7 @@ left join (
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, email, c.joinWith.TimeEntries, c.joinWith.UserAPIKey, c.joinWith.Teams, c.joinWith.WorkItems).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, email, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -600,7 +607,7 @@ left join (
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, userID, c.joinWith.TimeEntries, c.joinWith.UserAPIKey, c.joinWith.Teams, c.joinWith.WorkItems).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, userID, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -695,7 +702,7 @@ left join (
 
 	// run
 	logf(sqlstr, updatedAt)
-	rows, err := db.Query(ctx, sqlstr, updatedAt, c.joinWith.TimeEntries, c.joinWith.UserAPIKey, c.joinWith.Teams, c.joinWith.WorkItems)
+	rows, err := db.Query(ctx, sqlstr, updatedAt, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -810,7 +817,7 @@ left join (
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, userID, externalID, c.joinWith.TimeEntries, c.joinWith.UserAPIKey, c.joinWith.Teams, c.joinWith.WorkItems).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, userID, externalID, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -908,7 +915,7 @@ left join (
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, userID, c.joinWith.TimeEntries, c.joinWith.UserAPIKey, c.joinWith.Teams, c.joinWith.WorkItems).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, userID, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -1006,7 +1013,7 @@ left join (
 	u := User{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, username, c.joinWith.TimeEntries, c.joinWith.UserAPIKey, c.joinWith.Teams, c.joinWith.WorkItems).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, username, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil

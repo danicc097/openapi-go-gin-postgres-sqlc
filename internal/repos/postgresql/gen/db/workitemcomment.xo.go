@@ -24,9 +24,9 @@ type WorkItemComment struct {
 }
 
 type WorkItemCommentSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith WorkItemCommentJoinWith
+	limit   string
+	orderBy string
+	joins   WorkItemCommentJoins
 }
 
 type WorkItemCommentSelectConfigOption func(*WorkItemCommentSelectConfig)
@@ -58,7 +58,14 @@ func WorkItemCommentWithOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentS
 	}
 }
 
-type WorkItemCommentJoinWith struct{}
+type WorkItemCommentJoins struct{}
+
+// WorkItemCommentWithJoin orders results by the given columns.
+func WorkItemCommentWithJoin(joins WorkItemCommentJoins) WorkItemCommentSelectConfigOption {
+	return func(s *WorkItemCommentSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the WorkItemComment exists in the database.
 func (wic *WorkItemComment) Exists() bool {

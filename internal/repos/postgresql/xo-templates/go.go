@@ -1245,9 +1245,27 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 		{"AscNullsFirst", "ASC NULLS FIRST"},
 		{"AscNullsLast", "ASC NULLS LAST"},
 	}
+
 	var buf strings.Builder
-	buf.WriteString(fmt.Sprintf(`type %sOrderBy = string
+
+	buf.WriteString(fmt.Sprintf(`
+	type %[1]sSelectConfig struct {
+		limit       string
+		orderBy     string
+		joins  %[1]sJoins
+	}
+
+	type %[1]sSelectConfigOption func(*%[1]sSelectConfig)
+
+	// %[1]sWithLimit limits row selection.
+	func %[1]sWithLimit(limit int) %[1]sSelectConfigOption {
+		return func(s *%[1]sSelectConfig) {
+			s.limit = fmt.Sprintf(" limit %%d ", limit)
+		}
+	}
+	type %[1]sOrderBy = string
 	`, name))
+
 	buf.WriteString("const (\n")
 	for _, ob := range orderbys {
 		for _, opt := range orderByOpts {
@@ -1268,9 +1286,7 @@ func %[1]sWithOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	`, name))
 	}
 
-	// TODO
-	// -- emit JOIN BY opts only
-	buf.WriteString(fmt.Sprintf("type %sJoinWith struct {\n", name))
+	buf.WriteString(fmt.Sprintf("type %sJoins struct {\n", name))
 	for _, c := range cc {
 		var joinName string
 		switch c.Cardinality {
@@ -1285,6 +1301,15 @@ func %[1]sWithOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 		buf.WriteString(fmt.Sprintf("%s bool\n", joinName))
 	}
 	buf.WriteString("}\n")
+
+	buf.WriteString(fmt.Sprintf(`
+	// %[1]sWithJoin orders results by the given columns.
+func %[1]sWithJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
+	return func(s *%[1]sSelectConfig) {
+		s.joins = joins
+	}
+}
+	`, name))
 
 	return buf.String()
 }
@@ -1560,16 +1585,16 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 			names = append(names, f.params(x.Fields, false))
 			// TODO append go joinOptions struct fields
 			// taken from f.tableConstraints[x.Table.SQLName]
-			// which should be converted to <x.Table.GoName>JoinWith<select name [can be singularized].
+			// which should be converted to <x.Table.GoName>Joins<select name [can be singularized].
 			for _, c := range f.tableConstraints[x.Table.SQLName] {
 				var joinName string
 				switch c.Cardinality {
 				case "M2M":
-					joinName = "c.joinWith." + camelExport(c.RefTableName)
+					joinName = "c.joins." + camelExport(c.RefTableName)
 				case "O2M", "M2O":
-					joinName = "c.joinWith." + camelExport(c.TableName)
+					joinName = "c.joins." + camelExport(c.TableName)
 				case "O2O":
-					joinName = "c.joinWith." + camelExport(singularize(c.TableName))
+					joinName = "c.joins." + camelExport(singularize(c.TableName))
 				default:
 				}
 				names = append(names, joinName)

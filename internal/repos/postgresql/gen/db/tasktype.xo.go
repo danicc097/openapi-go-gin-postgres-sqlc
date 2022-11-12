@@ -19,9 +19,9 @@ type TaskType struct {
 }
 
 type TaskTypeSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith TaskTypeJoinWith
+	limit   string
+	orderBy string
+	joins   TaskTypeJoins
 }
 
 type TaskTypeSelectConfigOption func(*TaskTypeSelectConfig)
@@ -35,7 +35,14 @@ func TaskTypeWithLimit(limit int) TaskTypeSelectConfigOption {
 
 type TaskTypeOrderBy = string
 
-type TaskTypeJoinWith struct{}
+type TaskTypeJoins struct{}
+
+// TaskTypeWithJoin orders results by the given columns.
+func TaskTypeWithJoin(joins TaskTypeJoins) TaskTypeSelectConfigOption {
+	return func(s *TaskTypeSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the TaskType exists in the database.
 func (tt *TaskType) Exists() bool {
