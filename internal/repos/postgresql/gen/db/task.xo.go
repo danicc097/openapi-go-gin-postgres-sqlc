@@ -236,7 +236,7 @@ left join (
 	t := Task{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, taskID, c.joins.TimeEntries).Scan(&t.TaskID, &t.TaskTypeID, &t.WorkItemID, &t.Title, &t.Metadata, &t.TargetDate, &t.TargetDateTimezone, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, taskID).Scan(&t.TaskID, &t.TaskTypeID, &t.WorkItemID, &t.Title, &t.Metadata, &t.TargetDate, &t.TargetDateTimezone, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil

@@ -246,7 +246,7 @@ left join (
 	t := Team{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, name, projectID, c.joins.TimeEntries, c.joins.Users).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name, projectID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil
@@ -315,7 +315,7 @@ left join (
 	t := Team{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, teamID, c.joins.TimeEntries, c.joins.Users).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, teamID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil

@@ -1583,10 +1583,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				names = append(names, params)
 			}
 		case Index:
-			names = append(names, f.params(x.Fields, false))
-			// TODO append go joinOptions struct fields
-			// taken from f.tableConstraints[x.Table.SQLName]
-			// which should be converted to <x.Table.GoName>Joins<select name [can be singularized].
+			// first thing will always be boolean parameters for joins
 			for _, c := range f.tableConstraints[x.Table.SQLName] {
 				var joinName string
 				switch c.Cardinality {
@@ -1600,6 +1597,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				}
 				names = append(names, joinName)
 			}
+			names = append(names, f.params(x.Fields, false))
 		default:
 			names = append(names, fmt.Sprintf("/* UNSUPPORTED TYPE 14 (%d): %T */", i, v))
 		}

@@ -255,7 +255,7 @@ left join (
 	wi := WorkItem{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, workItemID, c.joins.WorkItemComments, c.joins.Users).Scan(&wi.WorkItemID, &wi.Title, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItemComments, c.joins.Users, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &wi, nil

@@ -27,10 +27,16 @@ func main() {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}
 
-	// username := "user_1"
+	username := "user_1"
 	// username := "doesntexist" // User should be nil
-	username := "superadmin"
-	user, err := db.UserByUsername(context.Background(), pool, username, db.UserWithJoin(db.UserJoins{TimeEntries: true, UserAPIKey: true, WorkItems: true, Teams: true}))
+	// username := "superadmin"
+	user, err := db.UserByUsername(context.Background(), pool, username,
+		db.UserWithJoin(db.UserJoins{
+			TimeEntries: true,
+			UserAPIKey:  true,
+			WorkItems:   true,
+			Teams:       true,
+		}))
 	if err != nil {
 		log.Fatalf("db.UserByUsername: %s\n", err)
 	}
