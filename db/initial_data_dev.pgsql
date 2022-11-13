@@ -155,8 +155,8 @@ begin
   insert into time_entries (task_id , activity_id , team_id , user_id , comment , "start" , duration_minutes)
     values (1 , 2 , null , user_ids[3] , '' , NOW() , 20);
   -- api keys
-  insert into user_api_keys (user_id , api_key , expires_on)
-    values (admin_id , 'admin-key-hashed' , NOW() + interval '100 days');
+  insert into user_api_keys (api_key , expires_on)
+    values ('admin-key-hashed' , NOW() + interval '100 days');
 
 end;
 $BODY$

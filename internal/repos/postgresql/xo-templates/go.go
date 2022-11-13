@@ -1950,7 +1950,6 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 				if len(cc) > 0 {
 					f.loadConstraints(cc, x.Table.SQLName)
 				}
-				// fmt.Printf("Constraints for %q (%q):\n%v\n", x.Table.SQLName, x.SQLName, formatJSON(f.tableConstraints[x.Table.SQLName]))
 			}
 		default:
 			break
@@ -2008,6 +2007,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 // loadConstraints saves possible joins for a table based on constraints to tableConstraints
 func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 	if _, ok := f.tableConstraints[table]; ok {
+		// fmt.Printf("Constraints:\n%v\n", formatJSON(f.tableConstraints[table]))
 		return // don't duplicate
 	}
 	for _, c := range cc {
