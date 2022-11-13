@@ -126,18 +126,21 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{/* generated queries from indexes */}}
 
 {{ define "index" }}
-{{- $i := .Data -}}
+{{- $i := .Data.Index -}}
+{{- $constraints := .Data.Constraints -}}
 // {{ func_name_context $i }} retrieves a row from '{{ schema $i.Table.SQLName }}' as a {{ $i.Table.GoName }}.
 //
 // Generated from index '{{ $i.SQLName }}'.
 {{ func_context $i }} {
-	c := &{{ $i.Table.GoName }}SelectConfig{}
+	c := &{{ $i.Table.GoName }}SelectConfig{
+    joins: {{ $i.Table.GoName }}Joins{},
+  }
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	{{ sqlstr "index" $i }}
+	{{ sqlstr_index $i $constraints }}
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -149,7 +152,8 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 		_exists: true,
 	{{ end -}}
 	}
-	if err := {{ db "QueryRow"  $i }}.Scan({{ names (print "&" (short $i.Table) ".") $i.Table }}); err != nil {
+  {{/* (print "&" (short $i.Table) ".") --> prefix */}}
+	if err := {{ db "QueryRow" $i }}.Scan({{ names (print "&" (short $i.Table) ".") $i.Table }}); err != nil {
 		return nil, logerror(err)
 	}
 	return &{{ short $i.Table }}, nil
@@ -228,7 +232,8 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{/* generated structs */}}
 
 {{ define "typedef" }}
-{{- $t := .Data -}}
+{{- $t := .Data.Table -}}
+{{- $constraints := .Data.Constraints -}}
 
 {{if $t.Comment -}}
 // {{ $t.Comment | eval $t.GoName }}
@@ -239,31 +244,14 @@ type {{ $t.GoName }} struct {
 {{ range $t.Fields -}}
 	{{ field . }}
 {{ end }}
+{{ join_fields $t.SQLName $constraints }}
 {{- if $t.PrimaryKeys -}}
 	// xo fields
 	_exists, _deleted bool
 {{ end -}}
 }
 
-
-type {{ $t.GoName }}SelectConfig struct {
-	limit       string
-	orderBy     string
-  joinWith    []{{ $t.GoName }}JoinBy
-}
-
-type {{ $t.GoName }}SelectConfigOption func(*{{ $t.GoName }}SelectConfig)
-
-// {{ $t.GoName }}WithLimit limits row selection.
-func {{ $t.GoName }}WithLimit(limit int) {{ $t.GoName }}SelectConfigOption {
-	return func(s *{{ $t.GoName }}SelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
-	}
-}
-
-{{ extratypes $t.GoName $t }}
-
-type {{ $t.GoName }}JoinBy = string
+{{ extratypes $t.GoName $t.SQLName $constraints $t }}
 
 {{/* regular queries for a table. Ignored for mat views or views.
  */}}

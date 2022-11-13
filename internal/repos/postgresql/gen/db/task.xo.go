@@ -24,14 +24,17 @@ type Task struct {
 	CreatedAt          time.Time    `json:"created_at" db:"created_at"`                     // created_at
 	UpdatedAt          time.Time    `json:"updated_at" db:"updated_at"`                     // updated_at
 	DeletedAt          null.Time    `json:"deleted_at" db:"deleted_at"`                     // deleted_at
+
+	TaskType    *TaskType    `json:"task_type"`    // O2O
+	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
 	// xo fields
 	_exists, _deleted bool
 }
 
 type TaskSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []TaskJoinBy
+	limit   string
+	orderBy string
+	joins   TaskJoins
 }
 
 type TaskSelectConfigOption func(*TaskSelectConfig)
@@ -46,22 +49,22 @@ func TaskWithLimit(limit int) TaskSelectConfigOption {
 type TaskOrderBy = string
 
 const (
-	TaskTargetDateDescNullsFirst TaskOrderBy = "TargetDate DescNullsFirst"
-	TaskTargetDateDescNullsLast  TaskOrderBy = "TargetDate DescNullsLast"
-	TaskTargetDateAscNullsFirst  TaskOrderBy = "TargetDate AscNullsFirst"
-	TaskTargetDateAscNullsLast   TaskOrderBy = "TargetDate AscNullsLast"
-	TaskCreatedAtDescNullsFirst  TaskOrderBy = "CreatedAt DescNullsFirst"
-	TaskCreatedAtDescNullsLast   TaskOrderBy = "CreatedAt DescNullsLast"
-	TaskCreatedAtAscNullsFirst   TaskOrderBy = "CreatedAt AscNullsFirst"
-	TaskCreatedAtAscNullsLast    TaskOrderBy = "CreatedAt AscNullsLast"
-	TaskUpdatedAtDescNullsFirst  TaskOrderBy = "UpdatedAt DescNullsFirst"
-	TaskUpdatedAtDescNullsLast   TaskOrderBy = "UpdatedAt DescNullsLast"
-	TaskUpdatedAtAscNullsFirst   TaskOrderBy = "UpdatedAt AscNullsFirst"
-	TaskUpdatedAtAscNullsLast    TaskOrderBy = "UpdatedAt AscNullsLast"
-	TaskDeletedAtDescNullsFirst  TaskOrderBy = "DeletedAt DescNullsFirst"
-	TaskDeletedAtDescNullsLast   TaskOrderBy = "DeletedAt DescNullsLast"
-	TaskDeletedAtAscNullsFirst   TaskOrderBy = "DeletedAt AscNullsFirst"
-	TaskDeletedAtAscNullsLast    TaskOrderBy = "DeletedAt AscNullsLast"
+	TaskTargetDateDescNullsFirst TaskOrderBy = " target_date DESC NULLS FIRST "
+	TaskTargetDateDescNullsLast  TaskOrderBy = " target_date DESC NULLS LAST "
+	TaskTargetDateAscNullsFirst  TaskOrderBy = " target_date ASC NULLS FIRST "
+	TaskTargetDateAscNullsLast   TaskOrderBy = " target_date ASC NULLS LAST "
+	TaskCreatedAtDescNullsFirst  TaskOrderBy = " created_at DESC NULLS FIRST "
+	TaskCreatedAtDescNullsLast   TaskOrderBy = " created_at DESC NULLS LAST "
+	TaskCreatedAtAscNullsFirst   TaskOrderBy = " created_at ASC NULLS FIRST "
+	TaskCreatedAtAscNullsLast    TaskOrderBy = " created_at ASC NULLS LAST "
+	TaskUpdatedAtDescNullsFirst  TaskOrderBy = " updated_at DESC NULLS FIRST "
+	TaskUpdatedAtDescNullsLast   TaskOrderBy = " updated_at DESC NULLS LAST "
+	TaskUpdatedAtAscNullsFirst   TaskOrderBy = " updated_at ASC NULLS FIRST "
+	TaskUpdatedAtAscNullsLast    TaskOrderBy = " updated_at ASC NULLS LAST "
+	TaskDeletedAtDescNullsFirst  TaskOrderBy = " deleted_at DESC NULLS FIRST "
+	TaskDeletedAtDescNullsLast   TaskOrderBy = " deleted_at DESC NULLS LAST "
+	TaskDeletedAtAscNullsFirst   TaskOrderBy = " deleted_at ASC NULLS FIRST "
+	TaskDeletedAtAscNullsLast    TaskOrderBy = " deleted_at ASC NULLS LAST "
 )
 
 // TaskWithOrderBy orders results by the given columns.
@@ -71,7 +74,17 @@ func TaskWithOrderBy(rows ...TaskOrderBy) TaskSelectConfigOption {
 	}
 }
 
-type TaskJoinBy = string
+type TaskJoins struct {
+	TaskType    bool
+	TimeEntries bool
+}
+
+// TaskWithJoin orders results by the given columns.
+func TaskWithJoin(joins TaskJoins) TaskSelectConfigOption {
+	return func(s *TaskSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the Task exists in the database.
 func (t *Task) Exists() bool {
@@ -186,16 +199,40 @@ func (t *Task) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'tasks_pkey'.
 func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectConfigOption) (*Task, error) {
-	c := &TaskSelectConfig{}
+	c := &TaskSelectConfig{
+		joins: TaskJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`task_id, task_type_id, work_item_id, title, metadata, target_date, target_date_timezone, created_at, updated_at, deleted_at ` +
+		`tasks.task_id,
+tasks.task_type_id,
+tasks.work_item_id,
+tasks.title,
+tasks.metadata,
+tasks.target_date,
+tasks.target_date_timezone,
+tasks.created_at,
+tasks.updated_at,
+tasks.deleted_at,
+(case when $1::boolean = true then row_to_json(task_types.*) end)::jsonb as task_type,
+(case when $2::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
 		`FROM public.tasks ` +
-		`WHERE task_id = $1 `
+		`-- O2O join generated from "tasks_task_type_id_fkey"
+left join task_types on task_types.task_type_id = tasks.task_type_id
+-- O2M join generated from "time_entries_task_id_fkey"
+left join (
+  select
+  task_id as time_entries_task_id
+    , json_agg(time_entries.*) as time_entries
+  from
+    time_entries
+   group by
+        task_id) joined_time_entries on joined_time_entries.time_entries_task_id = tasks.task_id` +
+		` WHERE task_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -204,22 +241,23 @@ func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectCo
 	t := Task{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, taskID).Scan(&t.TaskID, &t.TaskTypeID, &t.WorkItemID, &t.Title, &t.Metadata, &t.TargetDate, &t.TargetDateTimezone, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt); err != nil {
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TaskType, c.joins.TimeEntries, taskID).Scan(&t.TaskID, &t.TaskTypeID, &t.WorkItemID, &t.Title, &t.Metadata, &t.TargetDate, &t.TargetDateTimezone, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt, &t.TaskType, &t.TimeEntries); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil
 }
 
-// TaskType returns the TaskType associated with the Task's (TaskTypeID).
+// FKTaskType returns the TaskType associated with the Task's (TaskTypeID).
 //
 // Generated from foreign key 'tasks_task_type_id_fkey'.
-func (t *Task) TaskType(ctx context.Context, db DB) (*TaskType, error) {
+func (t *Task) FKTaskType(ctx context.Context, db DB) (*TaskType, error) {
 	return TaskTypeByTaskTypeID(ctx, db, t.TaskTypeID)
 }
 
-// WorkItem returns the WorkItem associated with the Task's (WorkItemID).
+// FKWorkItem returns the WorkItem associated with the Task's (WorkItemID).
 //
 // Generated from foreign key 'tasks_work_item_id_fkey'.
-func (t *Task) WorkItem(ctx context.Context, db DB) (*WorkItem, error) {
+func (t *Task) FKWorkItem(ctx context.Context, db DB) (*WorkItem, error) {
 	return WorkItemByWorkItemID(ctx, db, t.WorkItemID)
 }

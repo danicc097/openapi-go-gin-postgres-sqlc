@@ -20,14 +20,17 @@ type Team struct {
 	Metadata    pgtype.JSONB `json:"metadata" db:"metadata"`       // metadata
 	CreatedAt   time.Time    `json:"created_at" db:"created_at"`   // created_at
 	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at"`   // updated_at
+
+	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
+	Users       *[]User      `json:"users"`        // M2M
 	// xo fields
 	_exists, _deleted bool
 }
 
 type TeamSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []TeamJoinBy
+	limit   string
+	orderBy string
+	joins   TeamJoins
 }
 
 type TeamSelectConfigOption func(*TeamSelectConfig)
@@ -42,14 +45,14 @@ func TeamWithLimit(limit int) TeamSelectConfigOption {
 type TeamOrderBy = string
 
 const (
-	TeamCreatedAtDescNullsFirst TeamOrderBy = "CreatedAt DescNullsFirst"
-	TeamCreatedAtDescNullsLast  TeamOrderBy = "CreatedAt DescNullsLast"
-	TeamCreatedAtAscNullsFirst  TeamOrderBy = "CreatedAt AscNullsFirst"
-	TeamCreatedAtAscNullsLast   TeamOrderBy = "CreatedAt AscNullsLast"
-	TeamUpdatedAtDescNullsFirst TeamOrderBy = "UpdatedAt DescNullsFirst"
-	TeamUpdatedAtDescNullsLast  TeamOrderBy = "UpdatedAt DescNullsLast"
-	TeamUpdatedAtAscNullsFirst  TeamOrderBy = "UpdatedAt AscNullsFirst"
-	TeamUpdatedAtAscNullsLast   TeamOrderBy = "UpdatedAt AscNullsLast"
+	TeamCreatedAtDescNullsFirst TeamOrderBy = " created_at DESC NULLS FIRST "
+	TeamCreatedAtDescNullsLast  TeamOrderBy = " created_at DESC NULLS LAST "
+	TeamCreatedAtAscNullsFirst  TeamOrderBy = " created_at ASC NULLS FIRST "
+	TeamCreatedAtAscNullsLast   TeamOrderBy = " created_at ASC NULLS LAST "
+	TeamUpdatedAtDescNullsFirst TeamOrderBy = " updated_at DESC NULLS FIRST "
+	TeamUpdatedAtDescNullsLast  TeamOrderBy = " updated_at DESC NULLS LAST "
+	TeamUpdatedAtAscNullsFirst  TeamOrderBy = " updated_at ASC NULLS FIRST "
+	TeamUpdatedAtAscNullsLast   TeamOrderBy = " updated_at ASC NULLS LAST "
 )
 
 // TeamWithOrderBy orders results by the given columns.
@@ -59,7 +62,17 @@ func TeamWithOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 	}
 }
 
-type TeamJoinBy = string
+type TeamJoins struct {
+	TimeEntries bool
+	Users       bool
+}
+
+// TeamWithJoin orders results by the given columns.
+func TeamWithJoin(joins TeamJoins) TeamSelectConfigOption {
+	return func(s *TeamSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the Team exists in the database.
 func (t *Team) Exists() bool {
@@ -174,16 +187,57 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'teams_name_project_id_key'.
 func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...TeamSelectConfigOption) (*Team, error) {
-	c := &TeamSelectConfig{}
+	c := &TeamSelectConfig{
+		joins: TeamJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
+		`teams.team_id,
+teams.project_id,
+teams.name,
+teams.description,
+teams.metadata,
+teams.created_at,
+teams.updated_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $2::boolean = true then joined_users.users end)::jsonb as users ` +
 		`FROM public.teams ` +
-		`WHERE name = $1 AND project_id = $2 `
+		`-- O2M join generated from "time_entries_team_id_fkey"
+left join (
+  select
+  team_id as time_entries_team_id
+    , json_agg(time_entries.*) as time_entries
+  from
+    time_entries
+   group by
+        team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
+-- M2M join generated from "user_team_user_id_fkey"
+left join (
+	select
+		team_id as users_team_id
+		, json_agg(users.*) as users
+	from
+		user_team
+		join users using (user_id)
+	where
+		team_id in (
+			select
+				team_id
+			from
+				user_team
+			where
+				user_id = any (
+					select
+						user_id
+					from
+						users))
+			group by
+				team_id) joined_users on joined_users.users_team_id = teams.team_id` +
+		` WHERE name = $3 AND project_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -192,7 +246,8 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int,
 	t := Team{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, name, projectID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt); err != nil {
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name, projectID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt, &t.TimeEntries, &t.Users); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil
@@ -202,16 +257,57 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int,
 //
 // Generated from index 'teams_pkey'.
 func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) (*Team, error) {
-	c := &TeamSelectConfig{}
+	c := &TeamSelectConfig{
+		joins: TeamJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`team_id, project_id, name, description, metadata, created_at, updated_at ` +
+		`teams.team_id,
+teams.project_id,
+teams.name,
+teams.description,
+teams.metadata,
+teams.created_at,
+teams.updated_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $2::boolean = true then joined_users.users end)::jsonb as users ` +
 		`FROM public.teams ` +
-		`WHERE team_id = $1 `
+		`-- O2M join generated from "time_entries_team_id_fkey"
+left join (
+  select
+  team_id as time_entries_team_id
+    , json_agg(time_entries.*) as time_entries
+  from
+    time_entries
+   group by
+        team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
+-- M2M join generated from "user_team_user_id_fkey"
+left join (
+	select
+		team_id as users_team_id
+		, json_agg(users.*) as users
+	from
+		user_team
+		join users using (user_id)
+	where
+		team_id in (
+			select
+				team_id
+			from
+				user_team
+			where
+				user_id = any (
+					select
+						user_id
+					from
+						users))
+			group by
+				team_id) joined_users on joined_users.users_team_id = teams.team_id` +
+		` WHERE team_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -220,15 +316,16 @@ func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConf
 	t := Team{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, teamID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt); err != nil {
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, teamID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt, &t.TimeEntries, &t.Users); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil
 }
 
-// Project returns the Project associated with the Team's (ProjectID).
+// FKProject returns the Project associated with the Team's (ProjectID).
 //
 // Generated from foreign key 'teams_project_id_fkey'.
-func (t *Team) Project(ctx context.Context, db DB) (*Project, error) {
+func (t *Team) FKProject(ctx context.Context, db DB) (*Project, error) {
 	return ProjectByProjectID(ctx, db, t.ProjectID)
 }

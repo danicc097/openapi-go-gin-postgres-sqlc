@@ -19,14 +19,15 @@ type Project struct {
 	Metadata    pgtype.JSONB `json:"metadata" db:"metadata"`       // metadata
 	CreatedAt   time.Time    `json:"created_at" db:"created_at"`   // created_at
 	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at"`   // updated_at
+
 	// xo fields
 	_exists, _deleted bool
 }
 
 type ProjectSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []ProjectJoinBy
+	limit   string
+	orderBy string
+	joins   ProjectJoins
 }
 
 type ProjectSelectConfigOption func(*ProjectSelectConfig)
@@ -41,14 +42,14 @@ func ProjectWithLimit(limit int) ProjectSelectConfigOption {
 type ProjectOrderBy = string
 
 const (
-	ProjectCreatedAtDescNullsFirst ProjectOrderBy = "CreatedAt DescNullsFirst"
-	ProjectCreatedAtDescNullsLast  ProjectOrderBy = "CreatedAt DescNullsLast"
-	ProjectCreatedAtAscNullsFirst  ProjectOrderBy = "CreatedAt AscNullsFirst"
-	ProjectCreatedAtAscNullsLast   ProjectOrderBy = "CreatedAt AscNullsLast"
-	ProjectUpdatedAtDescNullsFirst ProjectOrderBy = "UpdatedAt DescNullsFirst"
-	ProjectUpdatedAtDescNullsLast  ProjectOrderBy = "UpdatedAt DescNullsLast"
-	ProjectUpdatedAtAscNullsFirst  ProjectOrderBy = "UpdatedAt AscNullsFirst"
-	ProjectUpdatedAtAscNullsLast   ProjectOrderBy = "UpdatedAt AscNullsLast"
+	ProjectCreatedAtDescNullsFirst ProjectOrderBy = " created_at DESC NULLS FIRST "
+	ProjectCreatedAtDescNullsLast  ProjectOrderBy = " created_at DESC NULLS LAST "
+	ProjectCreatedAtAscNullsFirst  ProjectOrderBy = " created_at ASC NULLS FIRST "
+	ProjectCreatedAtAscNullsLast   ProjectOrderBy = " created_at ASC NULLS LAST "
+	ProjectUpdatedAtDescNullsFirst ProjectOrderBy = " updated_at DESC NULLS FIRST "
+	ProjectUpdatedAtDescNullsLast  ProjectOrderBy = " updated_at DESC NULLS LAST "
+	ProjectUpdatedAtAscNullsFirst  ProjectOrderBy = " updated_at ASC NULLS FIRST "
+	ProjectUpdatedAtAscNullsLast   ProjectOrderBy = " updated_at ASC NULLS LAST "
 )
 
 // ProjectWithOrderBy orders results by the given columns.
@@ -58,7 +59,14 @@ func ProjectWithOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 	}
 }
 
-type ProjectJoinBy = string
+type ProjectJoins struct{}
+
+// ProjectWithJoin orders results by the given columns.
+func ProjectWithJoin(joins ProjectJoins) ProjectSelectConfigOption {
+	return func(s *ProjectSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the Project exists in the database.
 func (p *Project) Exists() bool {
@@ -173,16 +181,24 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'projects_name_key'.
 func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{}
+	c := &ProjectSelectConfig{
+		joins: ProjectJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`project_id, name, description, metadata, created_at, updated_at ` +
+		`projects.project_id,
+projects.name,
+projects.description,
+projects.metadata,
+projects.created_at,
+projects.updated_at ` +
 		`FROM public.projects ` +
-		`WHERE name = $1 `
+		`` +
+		` WHERE name = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -191,6 +207,7 @@ func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelec
 	p := Project{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, name).Scan(&p.ProjectID, &p.Name, &p.Description, &p.Metadata, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}
@@ -201,16 +218,24 @@ func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelec
 //
 // Generated from index 'projects_pkey'.
 func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{}
+	c := &ProjectSelectConfig{
+		joins: ProjectJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`project_id, name, description, metadata, created_at, updated_at ` +
+		`projects.project_id,
+projects.name,
+projects.description,
+projects.metadata,
+projects.created_at,
+projects.updated_at ` +
 		`FROM public.projects ` +
-		`WHERE project_id = $1 `
+		`` +
+		` WHERE project_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -219,6 +244,7 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...Proje
 	p := Project{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, projectID).Scan(&p.ProjectID, &p.Name, &p.Description, &p.Metadata, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}

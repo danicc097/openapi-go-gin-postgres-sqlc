@@ -20,6 +20,7 @@ type User struct {
 	LastName   null.String   `json:"last_name" db:"last_name"`     // last_name
 	FullName   null.String   `json:"full_name" db:"full_name"`     // full_name
 	ExternalID null.String   `json:"external_id" db:"external_id"` // external_id
+	APIKeyID   null.Int      `json:"api_key_id" db:"api_key_id"`   // api_key_id
 	Scopes     []string      `json:"scopes" db:"scopes"`           // scopes
 	RoleRank   null.Int      `json:"role_rank" db:"role_rank"`     // role_rank
 	CreatedAt  null.Time     `json:"created_at" db:"created_at"`   // created_at
@@ -29,9 +30,9 @@ type User struct {
 }
 
 type UserSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []UserJoinBy
+	limit   string
+	orderBy string
+	joins   UserJoins
 }
 
 type UserSelectConfigOption func(*UserSelectConfig)
@@ -46,18 +47,18 @@ func UserWithLimit(limit int) UserSelectConfigOption {
 type UserOrderBy = string
 
 const (
-	UserCreatedAtDescNullsFirst UserOrderBy = "CreatedAt DescNullsFirst"
-	UserCreatedAtDescNullsLast  UserOrderBy = "CreatedAt DescNullsLast"
-	UserCreatedAtAscNullsFirst  UserOrderBy = "CreatedAt AscNullsFirst"
-	UserCreatedAtAscNullsLast   UserOrderBy = "CreatedAt AscNullsLast"
-	UserUpdatedAtDescNullsFirst UserOrderBy = "UpdatedAt DescNullsFirst"
-	UserUpdatedAtDescNullsLast  UserOrderBy = "UpdatedAt DescNullsLast"
-	UserUpdatedAtAscNullsFirst  UserOrderBy = "UpdatedAt AscNullsFirst"
-	UserUpdatedAtAscNullsLast   UserOrderBy = "UpdatedAt AscNullsLast"
-	UserDeletedAtDescNullsFirst UserOrderBy = "DeletedAt DescNullsFirst"
-	UserDeletedAtDescNullsLast  UserOrderBy = "DeletedAt DescNullsLast"
-	UserDeletedAtAscNullsFirst  UserOrderBy = "DeletedAt AscNullsFirst"
-	UserDeletedAtAscNullsLast   UserOrderBy = "DeletedAt AscNullsLast"
+	UserCreatedAtDescNullsFirst UserOrderBy = " created_at DESC NULLS FIRST "
+	UserCreatedAtDescNullsLast  UserOrderBy = " created_at DESC NULLS LAST "
+	UserCreatedAtAscNullsFirst  UserOrderBy = " created_at ASC NULLS FIRST "
+	UserCreatedAtAscNullsLast   UserOrderBy = " created_at ASC NULLS LAST "
+	UserUpdatedAtDescNullsFirst UserOrderBy = " updated_at DESC NULLS FIRST "
+	UserUpdatedAtDescNullsLast  UserOrderBy = " updated_at DESC NULLS LAST "
+	UserUpdatedAtAscNullsFirst  UserOrderBy = " updated_at ASC NULLS FIRST "
+	UserUpdatedAtAscNullsLast   UserOrderBy = " updated_at ASC NULLS LAST "
+	UserDeletedAtDescNullsFirst UserOrderBy = " deleted_at DESC NULLS FIRST "
+	UserDeletedAtDescNullsLast  UserOrderBy = " deleted_at DESC NULLS LAST "
+	UserDeletedAtAscNullsFirst  UserOrderBy = " deleted_at ASC NULLS FIRST "
+	UserDeletedAtAscNullsLast   UserOrderBy = " deleted_at ASC NULLS LAST "
 )
 
 // UserWithOrderBy orders results by the given columns.
@@ -67,4 +68,11 @@ func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	}
 }
 
-type UserJoinBy = string
+type UserJoins struct{}
+
+// UserWithJoin orders results by the given columns.
+func UserWithJoin(joins UserJoins) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.joins = joins
+	}
+}

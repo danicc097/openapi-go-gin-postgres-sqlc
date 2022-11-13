@@ -11,14 +11,15 @@ import (
 type SchemaMigration struct {
 	Version int64 `json:"version" db:"version"` // version
 	Dirty   bool  `json:"dirty" db:"dirty"`     // dirty
+
 	// xo fields
 	_exists, _deleted bool
 }
 
 type SchemaMigrationSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []SchemaMigrationJoinBy
+	limit   string
+	orderBy string
+	joins   SchemaMigrationJoins
 }
 
 type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
@@ -32,7 +33,14 @@ func SchemaMigrationWithLimit(limit int) SchemaMigrationSelectConfigOption {
 
 type SchemaMigrationOrderBy = string
 
-type SchemaMigrationJoinBy = string
+type SchemaMigrationJoins struct{}
+
+// SchemaMigrationWithJoin orders results by the given columns.
+func SchemaMigrationWithJoin(joins SchemaMigrationJoins) SchemaMigrationSelectConfigOption {
+	return func(s *SchemaMigrationSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the SchemaMigration exists in the database.
 func (sm *SchemaMigration) Exists() bool {
@@ -147,16 +155,20 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'schema_migrations_pkey'.
 func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ...SchemaMigrationSelectConfigOption) (*SchemaMigration, error) {
-	c := &SchemaMigrationSelectConfig{}
+	c := &SchemaMigrationSelectConfig{
+		joins: SchemaMigrationJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`version, dirty ` +
+		`schema_migrations.version,
+schema_migrations.dirty ` +
 		`FROM public.schema_migrations ` +
-		`WHERE version = $1 `
+		`` +
+		` WHERE version = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -165,6 +177,7 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ..
 	sm := SchemaMigration{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, version).Scan(&sm.Version, &sm.Dirty); err != nil {
 		return nil, logerror(err)
 	}

@@ -27,6 +27,14 @@ create table teams (
   , unique (name , project_id)
 );
 
+create table user_api_keys (
+  user_api_key_id serial not null
+  , api_key text not null unique
+  , expires_on timestamp with time zone not null
+  --, expires_on timestamp without time zone not null
+  , primary key (user_api_key_id)
+);
+
 create table users (
   user_id uuid default gen_random_uuid () not null
   , username text not null unique
@@ -41,6 +49,7 @@ create table users (
     first_name || ' ' || last_name
   end) stored
   , external_id text
+  , api_key_id int
   , scopes text[] default '{}' not null
   , role_rank smallint default 1 not null check (role_rank > 0)
   -- so that later on we can (1) append scopes and remove duplicates:
@@ -53,7 +62,10 @@ create table users (
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
   , primary key (user_id)
+  , foreign key (api_key_id) references user_api_keys (user_api_key_id) on delete cascade
 );
+
+comment on column users.api_key_id is 'cardinality:O2O';
 
 -- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
 create unique index on users (user_id , external_id)
@@ -127,7 +139,11 @@ create table work_item_comments (
 
 comment on column work_item_comments.work_item_id is 'cardinality:O2M';
 
--- no unique index on it -> O2M
+-- we want to generate the following:
+-- work_items.xo.go --> joinComments (pluralize) to return all comments associated to a workitem
+-- already done by xo: WorkItemCommentsByWorkItemID (returns []*WorkItemComment)
+-- work_item_comments.xo.go --> joinWorkItem (singularize) to return the workitem object every time is useless in this case.
+-- work_item_comments acts as a link table
 create index on work_item_comments (work_item_id);
 
 create table work_item_tags (
@@ -192,6 +208,11 @@ create table tasks (
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade -- not unique, many tasks for the same work_item_id
 );
 
+comment on column tasks.work_item_id is 'cardinality:O2M';
+
+comment on column tasks.task_type_id is 'cardinality:O2O';
+
+-- we're doing it the wrong way. O2O
 create table work_item_member (
   work_item_id bigint not null
   , member uuid not null
@@ -238,15 +259,20 @@ create table time_entries (
 -- TODO revisit all comments and fix.
 -- We need cardinality comments only on FK columns, never base tables.
 -- cardinality will be different for every table making use of a pk.
--- it would be O2O for these below if we had unique indexes for every single one of them.
--- in that case we would simply apply a join using (fk_name).
--- if not, FK by definition allows duplicates --> O2M -> need 2 nested joins to get an agg
+-- think of user api. For joins: we want to provide possibilities to:
+-- user.xo.go:
+-- select for time_entries that joins with:
+-- a task can be associated to many time entries, and any time entry is linked back to only one task: O2M
+-- another way to see it: one task shares many time_entries, and time_entries are part of only one task.
 comment on column time_entries.task_id is 'cardinality:O2M';
 
+-- a team can be associated to many time entries, and any time entry is linked back to only one team: O2M
 comment on column time_entries.team_id is 'cardinality:O2M';
 
+-- an activity can be associated to many time entries, and any time entry is linked back to only one activity: O2M
 comment on column time_entries.activity_id is 'cardinality:O2M';
 
+-- a user can be associated to many time entries, and any time entry is linked back to only one user: O2M
 comment on column time_entries.user_id is 'cardinality:O2M';
 
 -- A multicolumn B-tree index can be used with query conditions that involve any subset of the index's
@@ -295,17 +321,6 @@ create table movies (
   , year integer not null
   , synopsis text not null
   , primary key (movie_id)
-);
-
--- we can infer O2O for the user_id fk since PK and FK in a given table are the same
--- comment on column user_api_keys.user_id IS 'cardinality:O2O';
-create table user_api_keys (
-  user_id uuid not null
-  , api_key text not null unique
-  , expires_on timestamp with time zone not null
-  --, expires_on timestamp without time zone not null
-  , primary key (user_id)
-  , foreign key (user_id) references users (user_id) on delete cascade -- generates GetUserByAPIKey
 );
 
 create or replace view v.users as

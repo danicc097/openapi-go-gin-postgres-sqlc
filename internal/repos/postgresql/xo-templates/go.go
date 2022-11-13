@@ -5,6 +5,7 @@ package gotpl
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -25,6 +26,11 @@ import (
 	"golang.org/x/tools/imports"
 	"mvdan.cc/gofumpt/format"
 )
+
+func formatJSON(obj interface{}) string {
+	bytes, _ := json.MarshalIndent(obj, "  ", "  ")
+	return string(bytes)
+}
 
 var ErrNoSingle = errors.New("in query exec mode, the --single or -S must be provided")
 
@@ -430,7 +436,10 @@ func emitQuery(ctx context.Context, query xo.Query, emit func(xo.Template)) erro
 			Dest:     strings.ToLower(table.GoName) + ext,
 			SortType: query.Type,
 			SortName: query.Name,
-			Data:     table,
+			Data: struct {
+				Table       interface{}
+				Constraints interface{}
+			}{Table: table, Constraints: []Constraint{}}, // TODO must not be empty and use current
 		})
 	}
 	// build query params
@@ -519,6 +528,8 @@ func buildQueryName(query xo.Query) string {
 
 // emitSchema emits the xo schema for the template set.
 func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) error {
+	constraints := convertConstraints(ctx, schema.Constraints)
+
 	for _, e := range schema.Enums {
 		if e.EnumPkg != "" || (e.Schema == "public" && schema.Name != "public") {
 			continue // will share enums with public, no need to emit
@@ -573,7 +584,10 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			Partial:  "typedef",
 			SortType: table.Type,
 			SortName: table.GoName,
-			Data:     table,
+			Data: struct {
+				Table       interface{}
+				Constraints interface{}
+			}{Table: table, Constraints: constraints},
 		})
 		// emit indexes
 		for _, i := range t.Indexes {
@@ -586,10 +600,15 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 				Partial:  "index",
 				SortType: table.Type,
 				SortName: index.SQLName,
-				Data:     index,
+				Data: struct {
+					Index       interface{}
+					Constraints interface{}
+				}{Index: index, Constraints: constraints},
 			})
 		}
 		// emit fkeys
+		// NOTE: do not use these for automatic join generation in replacement of o2o and o2m table comments,
+		// it will also generate joins for m2m lookup tables which pollutes everything
 		for _, fk := range t.ForeignKeys {
 			fkey, err := convertFKey(ctx, table, fk)
 			if err != nil {
@@ -739,6 +758,23 @@ func convertIndex(ctx context.Context, t Table, i xo.Index) (Index, error) {
 	}, nil
 }
 
+func convertConstraints(ctx context.Context, constraints []xo.Constraint) []Constraint {
+	cc := make([]Constraint, len(constraints))
+	for i, constraint := range constraints {
+		cc[i] = Constraint{
+			Type:          constraint.Type,
+			Cardinality:   constraint.Cardinality,
+			Name:          constraint.Name,
+			TableName:     constraint.TableName,
+			RefTableName:  constraint.RefTableName,
+			ColumnName:    constraint.ColumnName,
+			RefColumnName: constraint.RefColumnName,
+		}
+	}
+
+	return cc
+}
+
 func convertFKey(ctx context.Context, t Table, fk xo.ForeignKey) (ForeignKey, error) {
 	var fields, refFields []Field
 	// convert fields
@@ -844,21 +880,22 @@ const ext = ".xo.go"
 
 // Funcs is a set of template funcs.
 type Funcs struct {
-	driver    string
-	schema    string
-	nth       func(int) string
-	first     bool
-	pkg       string
-	tags      []string
-	imports   []string
-	conflict  string
-	custom    string
-	escSchema bool
-	escTable  bool
-	escColumn bool
-	fieldtag  *template.Template
-	context   string
-	inject    string
+	driver           string
+	schema           string
+	nth              func(int) string
+	first            bool
+	pkg              string
+	tags             []string
+	imports          []string
+	tableConstraints map[string][]Constraint
+	conflict         string
+	custom           string
+	escSchema        bool
+	escTable         bool
+	escColumn        bool
+	fieldtag         *template.Template
+	context          string
+	inject           string
 	// knownTypes is the collection of known Go types.
 	knownTypes map[string]bool
 	// shorts is the collection of Go style short names for types, mainly
@@ -889,23 +926,24 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 		return nil, err
 	}
 	funcs := &Funcs{
-		first:      first,
-		driver:     driver,
-		schema:     schema,
-		nth:        nth,
-		pkg:        Pkg(ctx),
-		tags:       Tags(ctx),
-		imports:    Imports(ctx),
-		conflict:   Conflict(ctx),
-		custom:     Custom(ctx),
-		escSchema:  Esc(ctx, "schema"),
-		escTable:   Esc(ctx, "table"),
-		escColumn:  Esc(ctx, "column"),
-		fieldtag:   fieldtag,
-		context:    Context(ctx),
-		inject:     inject,
-		knownTypes: KnownTypes(ctx),
-		shorts:     Shorts(ctx),
+		tableConstraints: make(map[string][]Constraint),
+		first:            first,
+		driver:           driver,
+		schema:           schema,
+		nth:              nth,
+		pkg:              Pkg(ctx),
+		tags:             Tags(ctx),
+		imports:          Imports(ctx),
+		conflict:         Conflict(ctx),
+		custom:           Custom(ctx),
+		escSchema:        Esc(ctx, "schema"),
+		escTable:         Esc(ctx, "table"),
+		escColumn:        Esc(ctx, "column"),
+		fieldtag:         fieldtag,
+		context:          Context(ctx),
+		inject:           inject,
+		knownTypes:       KnownTypes(ctx),
+		shorts:           Shorts(ctx),
 	}
 	return funcs.FuncMap(), nil
 }
@@ -957,10 +995,12 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"zero":         f.zero,
 		"type":         f.typefn,
 		"field":        f.field,
+		"join_fields":  f.join_fields,
 		"short":        f.short,
 		// sqlstr funcs
-		"querystr": f.querystr,
-		"sqlstr":   f.sqlstr,
+		"querystr":     f.querystr,
+		"sqlstr":       f.sqlstr,
+		"sqlstr_index": f.sqlstr_index,
 		// helpers
 		"check_name":    checkName,
 		"eval":          eval,
@@ -1111,7 +1151,7 @@ func (f *Funcs) func_name_context(v interface{}) string {
 	case Table:
 		return x.GoName
 	case ForeignKey:
-		return x.GoName
+		return "FK" + x.GoName // else clash with join fields in struct
 	case Proc:
 		n := x.GoName
 		if x.Overloaded {
@@ -1176,9 +1216,19 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
 }
 
 // funcfn builds a type definition.
-func (f *Funcs) extratypes(name string, v interface{}) string {
+func (f *Funcs) extratypes(name string, sqlname string, constraints interface{}, v interface{}) string {
 	// -- emit ORDER BY opts
+	switch cc := constraints.(type) {
+	case []Constraint:
+		if len(cc) > 0 {
+			// always run
+			f.loadConstraints(cc, sqlname)
+		}
+	default:
+		break
+	}
 	var orderbys []Field
+	var cc []Constraint
 	switch x := v.(type) {
 	case Table:
 		for _, z := range x.Fields {
@@ -1186,26 +1236,48 @@ func (f *Funcs) extratypes(name string, v interface{}) string {
 				orderbys = append(orderbys, z)
 			}
 		}
+		if tablecc, ok := f.tableConstraints[x.SQLName]; ok {
+			cc = tablecc
+		}
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 3: %T ]]", v)
 	}
+
 	orderByOpts := [][]string{
 		{"DescNullsFirst", "DESC NULLS FIRST"},
 		{"DescNullsLast", "DESC NULLS LAST"},
 		{"AscNullsFirst", "ASC NULLS FIRST"},
 		{"AscNullsLast", "ASC NULLS LAST"},
 	}
+
 	var buf strings.Builder
-	buf.WriteString(fmt.Sprintf(`type %sOrderBy = string
-	`, name))
-	buf.WriteString("const (")
-	for _, ob := range orderbys {
-		for _, opt := range orderByOpts {
-			buf.WriteString(fmt.Sprintf(`%[1]s%s%s %[1]sOrderBy = "%s %s"
-			`, name, ob.GoName, opt[0], ob.SQLName, opt[1]))
+
+	buf.WriteString(fmt.Sprintf(`
+	type %[1]sSelectConfig struct {
+		limit       string
+		orderBy     string
+		joins  %[1]sJoins
+	}
+
+	type %[1]sSelectConfigOption func(*%[1]sSelectConfig)
+
+	// %[1]sWithLimit limits row selection.
+	func %[1]sWithLimit(limit int) %[1]sSelectConfigOption {
+		return func(s *%[1]sSelectConfig) {
+			s.limit = fmt.Sprintf(" limit %%d ", limit)
 		}
 	}
-	buf.WriteString(")")
+	type %[1]sOrderBy = string
+	`, name))
+
+	buf.WriteString("const (\n")
+	for _, ob := range orderbys {
+		for _, opt := range orderByOpts {
+			buf.WriteString(fmt.Sprintf(`%s%s%s %sOrderBy = " %s %s "
+			`, name, ob.GoName, opt[0], name, ob.SQLName, opt[1]))
+		}
+	}
+	buf.WriteString(")\n")
 
 	if len(orderbys) > 0 {
 		buf.WriteString(fmt.Sprintf(`
@@ -1218,8 +1290,36 @@ func %[1]sWithOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	`, name))
 	}
 
-	// TODO
-	// -- emit JOIN BY opts
+	buf.WriteString(fmt.Sprintf("type %sJoins struct {\n", name))
+	for _, c := range cc {
+		var joinName string
+		switch c.Cardinality {
+		case "M2M":
+			joinName = camelExport(c.RefTableName)
+		case "O2M", "M2O":
+			if c.RefTableName != sqlname {
+				continue
+			}
+			joinName = camelExport(c.TableName)
+		case "O2O":
+			if c.TableName != sqlname {
+				continue
+			}
+			joinName = camelExport(singularize(c.RefTableName))
+		default:
+		}
+		buf.WriteString(fmt.Sprintf("%s bool\n", joinName))
+	}
+	buf.WriteString("}\n")
+
+	buf.WriteString(fmt.Sprintf(`
+	// %[1]sWithJoin orders results by the given columns.
+func %[1]sWithJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
+	return func(s *%[1]sSelectConfig) {
+		s.joins = joins
+	}
+}
+	`, name))
 
 	return buf.String()
 }
@@ -1483,6 +1583,26 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 			for _, p := range x.Fields {
 				names = append(names, prefix+checkName(p.GoName))
 			}
+			// append joins
+			for _, c := range f.tableConstraints[x.SQLName] {
+				var joinName string
+				switch c.Cardinality {
+				case "M2M":
+					joinName = prefix + camelExport(c.RefTableName)
+				case "O2M", "M2O":
+					if c.RefTableName != x.SQLName {
+						continue
+					}
+					joinName = prefix + camelExport(c.TableName)
+				case "O2O":
+					if c.TableName != x.SQLName {
+						continue
+					}
+					joinName = prefix + camelExport(singularize(c.RefTableName))
+				default:
+				}
+				names = append(names, joinName)
+			}
 		case []Field:
 			for _, p := range x {
 				names = append(names, prefix+checkName(p.GoName))
@@ -1492,6 +1612,26 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				names = append(names, params)
 			}
 		case Index:
+			// first thing will always be boolean parameters for joins
+			for _, c := range f.tableConstraints[x.Table.SQLName] {
+				var joinName string
+				switch c.Cardinality {
+				case "M2M":
+					joinName = "c.joins." + camelExport(c.RefTableName)
+				case "O2M", "M2O":
+					if c.RefTableName != x.Table.SQLName {
+						continue
+					}
+					joinName = "c.joins." + camelExport(c.TableName)
+				case "O2O":
+					if c.TableName != x.Table.SQLName {
+						continue
+					}
+					joinName = "c.joins." + camelExport(singularize(c.RefTableName))
+				default:
+				}
+				names = append(names, joinName)
+			}
 			names = append(names, f.params(x.Fields, false))
 		default:
 			names = append(names, fmt.Sprintf("/* UNSUPPORTED TYPE 14 (%d): %T */", i, v))
@@ -1592,8 +1732,6 @@ func (f *Funcs) sqlstr(typ string, v interface{}) string {
 		lines = f.sqlstr_delete(v)
 	case "proc":
 		lines = f.sqlstr_proc(v)
-	case "index":
-		lines = f.sqlstr_index(v)
 	default:
 		return fmt.Sprintf("const sqlstr = `UNKNOWN QUERY TYPE: %s`", typ)
 	}
@@ -1757,58 +1895,199 @@ func (f *Funcs) sqlstr_delete(v interface{}) []string {
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 25: %T ]]", v)}
 }
 
-// TODO generate o2m,m2o, m2m, o2o
-// see PostgresTableForeignKeys query
-// TODO ref_column_name_pk_table : e.g. ref_column_name is project_id -->
-// find origin table where pk is project_id (need a new join with
-//  foreign key [not foreign_key_name] in ref_table_name where column is ref_column_name)
-// `left join (
-// 	select
-// 		%column_name
-// 		, ARRAY_AGG(%ref_column_name_pk_table.*) as %ref_column_name_pk_table
-// 	from
-// 		%ref_table_name uo
-// 		left join %ref_column_name_pk_table using (%ref_column_name)
-// 	where
-// 		%column_name in (
-// 			select
-// 				%column_name
-// 			from
-// 				%ref_table_name
-// 			where
-// 				%ref_column_name = any (
-// 					select
-// 						%ref_column_name
-// 					from
-// 						%ref_column_name_pk_table))
-// 			group by
-// 				%column_name) joined_projects using (%column_name)`
+const (
+	M2MSelect = `(case when {{.Nth}}::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end)::jsonb as {{.JoinTable}}`
+	O2MSelect = M2MSelect
+	O2OSelect = `(case when {{.Nth}}::boolean = true then row_to_json({{.JoinTable}}.*) end)::jsonb as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
+)
+
+const (
+	M2MJoin = `
+left join (
+	select
+		{{.LookupColumn}} as {{.JoinTable}}_{{.LookupRefColumn}}
+		, json_agg({{.JoinTable}}.*) as {{.JoinTable}}
+	from
+		{{.LookupTable}}
+		join {{.JoinTable}} using ({{.JoinTablePK}})
+	where
+		{{.LookupColumn}} in (
+			select
+				{{.LookupColumn}}
+			from
+				{{.LookupTable}}
+			where
+				{{.JoinTablePK}} = any (
+					select
+						{{.JoinTablePK}}
+					from
+						{{.JoinTable}}))
+			group by
+				{{.LookupColumn}}) joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.JoinTable}}_{{.LookupRefColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}`
+	M2OJoin = `
+left join (
+  select
+  {{.JoinColumn}} as {{.JoinTable}}_{{.JoinRefColumn}}
+    , json_agg({{.JoinTable}}.*) as {{.JoinTable}}
+  from
+    {{.JoinTable}}
+   group by
+        {{.JoinColumn}}) joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.JoinTable}}_{{.JoinRefColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
+	O2MJoin = M2OJoin
+	O2OJoin = `
+left join {{.JoinTable}} on {{.JoinTable}}.{{.JoinColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
+)
 
 // sqlstr_index builds a index fields.
-func (f *Funcs) sqlstr_index(v interface{}) []string {
+func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 	switch x := v.(type) {
 	case Index:
+		var filters, fields, joins []string
+		var tableConstraints []Constraint
+		switch cc := constraints.(type) {
+		case []Constraint:
+			if tc, ok := f.tableConstraints[x.Table.SQLName]; ok {
+				tableConstraints = tc
+			} else {
+				if len(cc) > 0 {
+					f.loadConstraints(cc, x.Table.SQLName)
+				}
+			}
+		default:
+			break
+		}
+		var n int
 		// build table fieldnames
-		var fields []string
 		for _, z := range x.Table.Fields {
-			fields = append(fields, f.colname(z))
+			// add current table fields
+			fields = append(fields, x.Table.SQLName+"."+f.colname(z))
+		}
+		// create joins for constraints
+		funcs := template.FuncMap{
+			"singularize": singularize,
+		}
+		for _, c := range tableConstraints {
+			joinStmts, selectStmts := createJoinStatement(c, x, funcs, f.nth, n)
+			if joinStmts.String() == "" || selectStmts.String() == "" {
+				continue
+			}
+
+			fields = append(fields, selectStmts.String())
+			joins = append(joins, joinStmts.String())
+			n++
 		}
 		// index fields
-		var filters []string
-		for i, z := range x.Fields {
-			filters = append(filters, fmt.Sprintf("%s = %s", f.colname(z), f.nth(i)))
+		for _, z := range x.Fields {
+			filters = append(filters, fmt.Sprintf("%s = %s", f.colname(z), f.nth(n)))
+			n++
 		}
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
 			filters = append(filters, after)
 		}
-		return []string{
+
+		/**   -- for openapi requests we can have manual or generated adapters to convert request bodies to xo models.
+		  -- For responses use a struct as is, that can be generated: see https://github.com/swaggest/rest/ -> we could generate
+		  -- openapi schema refs from xo models (we just care about types, this will be used for responses only)
+		  -- so we could easily respond with whatever json object.
+		  -- specifically see https://github.com/swaggest/openapi-go (Type-based reflection of Go structures to OpenAPI 3 schema.) */
+		// TODO here we join with []Constrains. no need to be dynamic, if a join is not specified in opts postgres wont waste time on it.
+		lines := []string{
 			"SELECT ",
-			strings.Join(fields, ", ") + " ",
+			strings.Join(fields, ",\n") + " ",
 			"FROM " + f.schemafn(x.Table.SQLName) + " ",
-			"WHERE " + strings.Join(filters, " AND "),
+			// TODO create and add joins themselves to filters based on the current table
+			// (all generated index queries will have these joins available as opts)
+			// makeJoins(x.Table, ...)
+			strings.Join(joins, "\n"),
+			" WHERE " + strings.Join(filters, " AND "),
+		}
+		return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
+	}
+	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
+}
+
+// loadConstraints saves possible joins for a table based on constraints to tableConstraints
+func (f *Funcs) loadConstraints(cc []Constraint, table string) {
+	if _, ok := f.tableConstraints[table]; ok {
+		// fmt.Printf("Constraints:\n%v\n", formatJSON(f.tableConstraints[table]))
+		return // don't duplicate
+	}
+	for _, c := range cc {
+		if c.Cardinality != "" && c.Type == "foreign_key" {
+			if c.Cardinality == "M2M" && c.RefTableName == table {
+				for _, c1 := range cc {
+					if c1.TableName == c.TableName && c1.ColumnName != c.ColumnName && c1.Type == "foreign_key" {
+						c1.LookupColumn = c.ColumnName
+						c1.LookupRefColumn = c.RefColumnName
+						f.tableConstraints[table] = append(f.tableConstraints[table], c1)
+					}
+				}
+			} else if c.Cardinality == "O2O" && c.TableName == table {
+				f.tableConstraints[table] = append(f.tableConstraints[table], c)
+			} else if c.RefTableName == table {
+				f.tableConstraints[table] = append(f.tableConstraints[table], c)
+			}
 		}
 	}
-	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)}
+}
+
+// createJoinStatement returns select queries and join statements strings
+// for a given index table.
+func createJoinStatement(c Constraint, x Index, funcs template.FuncMap, nth func(int) string, n int) (*bytes.Buffer, *bytes.Buffer) {
+	var joinTpl, selectTpl string
+	joins := &bytes.Buffer{}
+	selects := &bytes.Buffer{}
+	params := make(map[string]interface{})
+	fmt.Fprintf(joins, "-- %s join generated from %q", c.Cardinality, c.Name)
+
+	switch c.Cardinality {
+	case "M2M":
+		joinTpl = M2MJoin
+		selectTpl = M2MSelect
+
+		params["Nth"] = nth(n)
+		params["LookupColumn"] = c.LookupColumn
+		params["JoinTable"] = c.RefTableName
+		params["LookupRefColumn"] = c.LookupRefColumn
+		params["JoinTablePK"] = c.RefColumnName
+		params["CurrentTable"] = x.Table.SQLName
+		params["LookupTable"] = c.TableName
+	case "O2M", "M2O":
+		if c.RefTableName != x.Table.SQLName {
+			return &bytes.Buffer{}, &bytes.Buffer{}
+		}
+		joinTpl = O2MJoin
+		selectTpl = O2MSelect
+
+		params["Nth"] = nth(n)
+		params["JoinColumn"] = c.ColumnName
+		params["JoinTable"] = c.TableName
+		params["JoinRefColumn"] = c.RefColumnName
+		params["CurrentTable"] = x.Table.SQLName
+	case "O2O":
+		if c.TableName != x.Table.SQLName {
+			return &bytes.Buffer{}, &bytes.Buffer{}
+		}
+		joinTpl = O2OJoin
+		selectTpl = O2OSelect
+
+		params["Nth"] = nth(n)
+		params["JoinColumn"] = c.RefColumnName
+		params["JoinTable"] = c.RefTableName
+		params["JoinRefColumn"] = c.ColumnName
+		params["CurrentTable"] = x.Table.SQLName
+	default:
+	}
+	t := template.Must(template.New("").Funcs(funcs).Parse(joinTpl))
+	if err := t.Execute(joins, params); err != nil {
+		panic(fmt.Sprintf("could not execute join template: %s", err))
+	}
+
+	t = template.Must(template.New("").Funcs(funcs).Parse(selectTpl))
+	if err := t.Execute(selects, params); err != nil {
+		panic(fmt.Sprintf("could not execute select template: %s", err))
+	}
+	return joins, selects
 }
 
 // sqlstr_proc builds a stored procedure call.
@@ -1986,6 +2265,54 @@ func (f *Funcs) field(field Field) (string, error) {
 	}
 
 	return fmt.Sprintf("\t%s %s%s // %s", field.GoName, fieldType, tag, field.SQLName), nil
+}
+
+// join_fields generates a struct field definition from join constraints
+func (f *Funcs) join_fields(sqlname string, constraints interface{}) (string, error) {
+	switch x := constraints.(type) {
+	case []Constraint:
+		if len(x) > 0 {
+			f.loadConstraints(x, sqlname)
+		}
+	default:
+		break
+	}
+
+	cc, ok := f.tableConstraints[sqlname]
+	if !ok {
+		return "", nil
+	}
+	var buf strings.Builder
+
+	var goName, tag string
+	for _, c := range cc {
+		// sync with extratypes
+		switch c.Cardinality {
+		case "M2M":
+			goName = camelExport(singularize(c.RefTableName))
+			tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(snaker.CamelToSnake(goName)))
+			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), goName, tag, c.Cardinality))
+		case "O2M", "M2O":
+			if c.RefTableName != sqlname {
+				continue
+			}
+			goName = camelExport(singularize(c.TableName))
+			// TODO revisit. O2M and M2O from different viewpoints.
+			tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(snaker.CamelToSnake(goName)))
+			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), goName, tag, c.Cardinality))
+		case "O2O":
+			if c.TableName != sqlname {
+				continue
+			}
+			goName = camelExport(singularize(c.RefTableName))
+			tag = fmt.Sprintf("`json:\"%s\"`", snaker.CamelToSnake(goName))
+			buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, goName, tag, c.Cardinality))
+		default:
+			continue
+		}
+	}
+
+	return buf.String(), nil
 }
 
 // short generates a safe Go identifier for typ. typ is first checked
@@ -2405,6 +2732,22 @@ type Index struct {
 	IsPrimary  bool
 	Comment    string
 	Definition string
+}
+
+// Constraint is a table constraint.
+type Constraint struct {
+	// "unique" "check" "primary_key" "foreign_key"
+	Type string
+	// "M2M" "O2M" "M2O" "O2O"
+	Cardinality string
+	// Key name
+	Name            string
+	TableName       string
+	ColumnName      string
+	RefTableName    string
+	RefColumnName   string
+	LookupColumn    string // (M2M) lookup table column
+	LookupRefColumn string // (M2M) referenced PK by LookupColumn
 }
 
 // Field is a field template.

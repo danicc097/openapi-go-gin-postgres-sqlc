@@ -11,14 +11,15 @@ import (
 type WorkItemWorkItemTag struct {
 	WorkItemTagID int   `json:"work_item_tag_id" db:"work_item_tag_id"` // work_item_tag_id
 	WorkItemID    int64 `json:"work_item_id" db:"work_item_id"`         // work_item_id
+
 	// xo fields
 	_exists, _deleted bool
 }
 
 type WorkItemWorkItemTagSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []WorkItemWorkItemTagJoinBy
+	limit   string
+	orderBy string
+	joins   WorkItemWorkItemTagJoins
 }
 
 type WorkItemWorkItemTagSelectConfigOption func(*WorkItemWorkItemTagSelectConfig)
@@ -32,7 +33,14 @@ func WorkItemWorkItemTagWithLimit(limit int) WorkItemWorkItemTagSelectConfigOpti
 
 type WorkItemWorkItemTagOrderBy = string
 
-type WorkItemWorkItemTagJoinBy = string
+type WorkItemWorkItemTagJoins struct{}
+
+// WorkItemWorkItemTagWithJoin orders results by the given columns.
+func WorkItemWorkItemTagWithJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
+	return func(s *WorkItemWorkItemTagSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the WorkItemWorkItemTag exists in the database.
 func (wiwit *WorkItemWorkItemTag) Exists() bool {
@@ -96,16 +104,20 @@ func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_work_item_tag_pkey'.
 func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, workItemID int64, workItemTagID int, opts ...WorkItemWorkItemTagSelectConfigOption) (*WorkItemWorkItemTag, error) {
-	c := &WorkItemWorkItemTagSelectConfig{}
+	c := &WorkItemWorkItemTagSelectConfig{
+		joins: WorkItemWorkItemTagJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_tag_id, work_item_id ` +
+		`work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id ` +
 		`FROM public.work_item_work_item_tag ` +
-		`WHERE work_item_id = $1 AND work_item_tag_id = $2 `
+		`` +
+		` WHERE work_item_id = $1 AND work_item_tag_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -114,6 +126,7 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 	wiwit := WorkItemWorkItemTag{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, workItemID, workItemTagID).Scan(&wiwit.WorkItemTagID, &wiwit.WorkItemID); err != nil {
 		return nil, logerror(err)
 	}
@@ -124,16 +137,20 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 //
 // Generated from index 'work_item_work_item_tag_work_item_tag_id_work_item_id_idx'.
 func WorkItemWorkItemTagByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
-	c := &WorkItemWorkItemTagSelectConfig{}
+	c := &WorkItemWorkItemTagSelectConfig{
+		joins: WorkItemWorkItemTagJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_tag_id, work_item_id ` +
+		`work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id ` +
 		`FROM public.work_item_work_item_tag ` +
-		`WHERE work_item_tag_id = $1 AND work_item_id = $2 `
+		`` +
+		` WHERE work_item_tag_id = $1 AND work_item_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -162,16 +179,16 @@ func WorkItemWorkItemTagByWorkItemTagIDWorkItemID(ctx context.Context, db DB, wo
 	return res, nil
 }
 
-// WorkItem returns the WorkItem associated with the WorkItemWorkItemTag's (WorkItemID).
+// FKWorkItem returns the WorkItem associated with the WorkItemWorkItemTag's (WorkItemID).
 //
 // Generated from foreign key 'work_item_work_item_tag_work_item_id_fkey'.
-func (wiwit *WorkItemWorkItemTag) WorkItem(ctx context.Context, db DB) (*WorkItem, error) {
+func (wiwit *WorkItemWorkItemTag) FKWorkItem(ctx context.Context, db DB) (*WorkItem, error) {
 	return WorkItemByWorkItemID(ctx, db, wiwit.WorkItemID)
 }
 
-// WorkItemTag returns the WorkItemTag associated with the WorkItemWorkItemTag's (WorkItemTagID).
+// FKWorkItemTag returns the WorkItemTag associated with the WorkItemWorkItemTag's (WorkItemTagID).
 //
 // Generated from foreign key 'work_item_work_item_tag_work_item_tag_id_fkey'.
-func (wiwit *WorkItemWorkItemTag) WorkItemTag(ctx context.Context, db DB) (*WorkItemTag, error) {
+func (wiwit *WorkItemWorkItemTag) FKWorkItemTag(ctx context.Context, db DB) (*WorkItemTag, error) {
 	return WorkItemTagByWorkItemTagID(ctx, db, wiwit.WorkItemTagID)
 }

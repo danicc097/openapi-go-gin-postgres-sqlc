@@ -23,14 +23,18 @@ type WorkItem struct {
 	CreatedAt    time.Time    `json:"created_at" db:"created_at"`         // created_at
 	UpdatedAt    time.Time    `json:"updated_at" db:"updated_at"`         // updated_at
 	DeletedAt    null.Time    `json:"deleted_at" db:"deleted_at"`         // deleted_at
+
+	Tasks            *[]Task            `json:"tasks"`              // O2M
+	WorkItemComments *[]WorkItemComment `json:"work_item_comments"` // O2M
+	Users            *[]User            `json:"users"`              // M2M
 	// xo fields
 	_exists, _deleted bool
 }
 
 type WorkItemSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []WorkItemJoinBy
+	limit   string
+	orderBy string
+	joins   WorkItemJoins
 }
 
 type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
@@ -45,18 +49,18 @@ func WorkItemWithLimit(limit int) WorkItemSelectConfigOption {
 type WorkItemOrderBy = string
 
 const (
-	WorkItemCreatedAtDescNullsFirst WorkItemOrderBy = "CreatedAt DescNullsFirst"
-	WorkItemCreatedAtDescNullsLast  WorkItemOrderBy = "CreatedAt DescNullsLast"
-	WorkItemCreatedAtAscNullsFirst  WorkItemOrderBy = "CreatedAt AscNullsFirst"
-	WorkItemCreatedAtAscNullsLast   WorkItemOrderBy = "CreatedAt AscNullsLast"
-	WorkItemUpdatedAtDescNullsFirst WorkItemOrderBy = "UpdatedAt DescNullsFirst"
-	WorkItemUpdatedAtDescNullsLast  WorkItemOrderBy = "UpdatedAt DescNullsLast"
-	WorkItemUpdatedAtAscNullsFirst  WorkItemOrderBy = "UpdatedAt AscNullsFirst"
-	WorkItemUpdatedAtAscNullsLast   WorkItemOrderBy = "UpdatedAt AscNullsLast"
-	WorkItemDeletedAtDescNullsFirst WorkItemOrderBy = "DeletedAt DescNullsFirst"
-	WorkItemDeletedAtDescNullsLast  WorkItemOrderBy = "DeletedAt DescNullsLast"
-	WorkItemDeletedAtAscNullsFirst  WorkItemOrderBy = "DeletedAt AscNullsFirst"
-	WorkItemDeletedAtAscNullsLast   WorkItemOrderBy = "DeletedAt AscNullsLast"
+	WorkItemCreatedAtDescNullsFirst WorkItemOrderBy = " created_at DESC NULLS FIRST "
+	WorkItemCreatedAtDescNullsLast  WorkItemOrderBy = " created_at DESC NULLS LAST "
+	WorkItemCreatedAtAscNullsFirst  WorkItemOrderBy = " created_at ASC NULLS FIRST "
+	WorkItemCreatedAtAscNullsLast   WorkItemOrderBy = " created_at ASC NULLS LAST "
+	WorkItemUpdatedAtDescNullsFirst WorkItemOrderBy = " updated_at DESC NULLS FIRST "
+	WorkItemUpdatedAtDescNullsLast  WorkItemOrderBy = " updated_at DESC NULLS LAST "
+	WorkItemUpdatedAtAscNullsFirst  WorkItemOrderBy = " updated_at ASC NULLS FIRST "
+	WorkItemUpdatedAtAscNullsLast   WorkItemOrderBy = " updated_at ASC NULLS LAST "
+	WorkItemDeletedAtDescNullsFirst WorkItemOrderBy = " deleted_at DESC NULLS FIRST "
+	WorkItemDeletedAtDescNullsLast  WorkItemOrderBy = " deleted_at DESC NULLS LAST "
+	WorkItemDeletedAtAscNullsFirst  WorkItemOrderBy = " deleted_at ASC NULLS FIRST "
+	WorkItemDeletedAtAscNullsLast   WorkItemOrderBy = " deleted_at ASC NULLS LAST "
 )
 
 // WorkItemWithOrderBy orders results by the given columns.
@@ -66,7 +70,18 @@ func WorkItemWithOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 	}
 }
 
-type WorkItemJoinBy = string
+type WorkItemJoins struct {
+	Tasks            bool
+	WorkItemComments bool
+	Users            bool
+}
+
+// WorkItemWithJoin orders results by the given columns.
+func WorkItemWithJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
+	return func(s *WorkItemSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the WorkItem exists in the database.
 func (wi *WorkItem) Exists() bool {
@@ -181,16 +196,69 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_items_pkey'.
 func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
-	c := &WorkItemSelectConfig{}
+	c := &WorkItemSelectConfig{
+		joins: WorkItemJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_id, title, metadata, team_id, kanban_step_id, closed, created_at, updated_at, deleted_at ` +
+		`work_items.work_item_id,
+work_items.title,
+work_items.metadata,
+work_items.team_id,
+work_items.kanban_step_id,
+work_items.closed,
+work_items.created_at,
+work_items.updated_at,
+work_items.deleted_at,
+(case when $1::boolean = true then joined_tasks.tasks end)::jsonb as tasks,
+(case when $2::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
+(case when $3::boolean = true then joined_users.users end)::jsonb as users ` +
 		`FROM public.work_items ` +
-		`WHERE work_item_id = $1 `
+		`-- O2M join generated from "tasks_work_item_id_fkey"
+left join (
+  select
+  work_item_id as tasks_work_item_id
+    , json_agg(tasks.*) as tasks
+  from
+    tasks
+   group by
+        work_item_id) joined_tasks on joined_tasks.tasks_work_item_id = work_items.work_item_id
+-- O2M join generated from "work_item_comments_work_item_id_fkey"
+left join (
+  select
+  work_item_id as work_item_comments_work_item_id
+    , json_agg(work_item_comments.*) as work_item_comments
+  from
+    work_item_comments
+   group by
+        work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
+-- M2M join generated from "work_item_member_member_fkey"
+left join (
+	select
+		work_item_id as users_work_item_id
+		, json_agg(users.*) as users
+	from
+		work_item_member
+		join users using (user_id)
+	where
+		work_item_id in (
+			select
+				work_item_id
+			from
+				work_item_member
+			where
+				user_id = any (
+					select
+						user_id
+					from
+						users))
+			group by
+				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id` +
+		` WHERE work_item_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -199,22 +267,23 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 	wi := WorkItem{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt); err != nil {
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.Tasks, c.joins.WorkItemComments, c.joins.Users, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.Tasks, &wi.WorkItemComments, &wi.Users); err != nil {
 		return nil, logerror(err)
 	}
 	return &wi, nil
 }
 
-// KanbanStep returns the KanbanStep associated with the WorkItem's (KanbanStepID).
+// FKKanbanStep returns the KanbanStep associated with the WorkItem's (KanbanStepID).
 //
 // Generated from foreign key 'work_items_kanban_step_id_fkey'.
-func (wi *WorkItem) KanbanStep(ctx context.Context, db DB) (*KanbanStep, error) {
+func (wi *WorkItem) FKKanbanStep(ctx context.Context, db DB) (*KanbanStep, error) {
 	return KanbanStepByKanbanStepID(ctx, db, wi.KanbanStepID)
 }
 
-// Team returns the Team associated with the WorkItem's (TeamID).
+// FKTeam returns the Team associated with the WorkItem's (TeamID).
 //
 // Generated from foreign key 'work_items_team_id_fkey'.
-func (wi *WorkItem) Team(ctx context.Context, db DB) (*Team, error) {
+func (wi *WorkItem) FKTeam(ctx context.Context, db DB) (*Team, error) {
 	return TeamByTeamID(ctx, db, wi.TeamID)
 }

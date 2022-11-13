@@ -49,7 +49,7 @@ export interface components {
       last_name?: string
     }
     /**
-     * @description Scope automatically generated from scopes.json
+     * @description Scope automatically generated from scopes.json keys
      * @enum {string}
      */
     Scope:
@@ -61,7 +61,7 @@ export interface components {
       | 'project-settings:write'
       | 'work-item:review'
     /**
-     * @description Role automatically generated from roles.json
+     * @description Role automatically generated from roles.json keys
      * @enum {string}
      */
     Role: 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'

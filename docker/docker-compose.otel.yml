@@ -67,7 +67,7 @@ services:
     volumes:
       - timescale_otel_data:/home/postgres/pgdata/data
 
-  # TODO alertmanager
+  # TODO alertmanager with teams: https://github.com/prometheus-msteams/prometheus-msteams
   # alertmanager:
   #   image: prom/alertmanager:latest
   #   ports:

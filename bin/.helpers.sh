@@ -118,6 +118,16 @@ to_pascal() {
   printf '%s\n' "$s"
 }
 
+restart_pid() {
+  # get command + args
+  SAVED_COMMAND="$(while IFS= read -r -d $'\0' f; do printf '%q ' "$f"; done </proc/$1/cmdline)"
+  # original working directory for the command
+  cd /proc/$1/cwd
+  kill $1
+  eval $SAVED_COMMAND &
+  disown # send to background as before
+}
+
 err() {
   echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
   sleep 0.1 # while processing xerr in background

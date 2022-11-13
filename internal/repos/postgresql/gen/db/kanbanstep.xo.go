@@ -19,14 +19,15 @@ type KanbanStep struct {
 	Color         string   `json:"color" db:"color"`                   // color
 	TimeTrackable bool     `json:"time_trackable" db:"time_trackable"` // time_trackable
 	Disabled      bool     `json:"disabled" db:"disabled"`             // disabled
+
 	// xo fields
 	_exists, _deleted bool
 }
 
 type KanbanStepSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []KanbanStepJoinBy
+	limit   string
+	orderBy string
+	joins   KanbanStepJoins
 }
 
 type KanbanStepSelectConfigOption func(*KanbanStepSelectConfig)
@@ -40,7 +41,14 @@ func KanbanStepWithLimit(limit int) KanbanStepSelectConfigOption {
 
 type KanbanStepOrderBy = string
 
-type KanbanStepJoinBy = string
+type KanbanStepJoins struct{}
+
+// KanbanStepWithJoin orders results by the given columns.
+func KanbanStepWithJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
+	return func(s *KanbanStepSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the KanbanStep exists in the database.
 func (ks *KanbanStep) Exists() bool {
@@ -155,16 +163,26 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'kanban_steps_pkey'.
 func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
-	c := &KanbanStepSelectConfig{}
+	c := &KanbanStepSelectConfig{
+		joins: KanbanStepJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`kanban_step_id, team_id, step_order, name, description, color, time_trackable, disabled ` +
+		`kanban_steps.kanban_step_id,
+kanban_steps.team_id,
+kanban_steps.step_order,
+kanban_steps.name,
+kanban_steps.description,
+kanban_steps.color,
+kanban_steps.time_trackable,
+kanban_steps.disabled ` +
 		`FROM public.kanban_steps ` +
-		`WHERE kanban_step_id = $1 `
+		`` +
+		` WHERE kanban_step_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -173,6 +191,7 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts
 	ks := KanbanStep{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, kanbanStepID).Scan(&ks.KanbanStepID, &ks.TeamID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
 		return nil, logerror(err)
 	}
@@ -183,16 +202,26 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts
 //
 // Generated from index 'kanban_steps_team_id_step_order_key'.
 func KanbanStepByTeamIDStepOrder(ctx context.Context, db DB, teamID int, stepOrder null.Int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
-	c := &KanbanStepSelectConfig{}
+	c := &KanbanStepSelectConfig{
+		joins: KanbanStepJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`kanban_step_id, team_id, step_order, name, description, color, time_trackable, disabled ` +
+		`kanban_steps.kanban_step_id,
+kanban_steps.team_id,
+kanban_steps.step_order,
+kanban_steps.name,
+kanban_steps.description,
+kanban_steps.color,
+kanban_steps.time_trackable,
+kanban_steps.disabled ` +
 		`FROM public.kanban_steps ` +
-		`WHERE team_id = $1 AND step_order = $2 `
+		`` +
+		` WHERE team_id = $1 AND step_order = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -201,15 +230,16 @@ func KanbanStepByTeamIDStepOrder(ctx context.Context, db DB, teamID int, stepOrd
 	ks := KanbanStep{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, teamID, stepOrder).Scan(&ks.KanbanStepID, &ks.TeamID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
 		return nil, logerror(err)
 	}
 	return &ks, nil
 }
 
-// Team returns the Team associated with the KanbanStep's (TeamID).
+// FKTeam returns the Team associated with the KanbanStep's (TeamID).
 //
 // Generated from foreign key 'kanban_steps_team_id_fkey'.
-func (ks *KanbanStep) Team(ctx context.Context, db DB) (*Team, error) {
+func (ks *KanbanStep) FKTeam(ctx context.Context, db DB) (*Team, error) {
 	return TeamByTeamID(ctx, db, ks.TeamID)
 }

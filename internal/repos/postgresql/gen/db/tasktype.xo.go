@@ -14,14 +14,15 @@ type TaskType struct {
 	Name        string `json:"name" db:"name"`                 // name
 	Description string `json:"description" db:"description"`   // description
 	Color       string `json:"color" db:"color"`               // color
+
 	// xo fields
 	_exists, _deleted bool
 }
 
 type TaskTypeSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []TaskTypeJoinBy
+	limit   string
+	orderBy string
+	joins   TaskTypeJoins
 }
 
 type TaskTypeSelectConfigOption func(*TaskTypeSelectConfig)
@@ -35,7 +36,14 @@ func TaskTypeWithLimit(limit int) TaskTypeSelectConfigOption {
 
 type TaskTypeOrderBy = string
 
-type TaskTypeJoinBy = string
+type TaskTypeJoins struct{}
+
+// TaskTypeWithJoin orders results by the given columns.
+func TaskTypeWithJoin(joins TaskTypeJoins) TaskTypeSelectConfigOption {
+	return func(s *TaskTypeSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the TaskType exists in the database.
 func (tt *TaskType) Exists() bool {
@@ -150,16 +158,23 @@ func (tt *TaskType) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'task_types_pkey'.
 func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int, opts ...TaskTypeSelectConfigOption) (*TaskType, error) {
-	c := &TaskTypeSelectConfig{}
+	c := &TaskTypeSelectConfig{
+		joins: TaskTypeJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`task_type_id, team_id, name, description, color ` +
+		`task_types.task_type_id,
+task_types.team_id,
+task_types.name,
+task_types.description,
+task_types.color ` +
 		`FROM public.task_types ` +
-		`WHERE task_type_id = $1 `
+		`` +
+		` WHERE task_type_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -168,6 +183,7 @@ func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int, opts ...Ta
 	tt := TaskType{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, taskTypeID).Scan(&tt.TaskTypeID, &tt.TeamID, &tt.Name, &tt.Description, &tt.Color); err != nil {
 		return nil, logerror(err)
 	}
@@ -178,16 +194,23 @@ func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int, opts ...Ta
 //
 // Generated from index 'task_types_team_id_name_key'.
 func TaskTypeByTeamIDName(ctx context.Context, db DB, teamID int64, name string, opts ...TaskTypeSelectConfigOption) (*TaskType, error) {
-	c := &TaskTypeSelectConfig{}
+	c := &TaskTypeSelectConfig{
+		joins: TaskTypeJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`task_type_id, team_id, name, description, color ` +
+		`task_types.task_type_id,
+task_types.team_id,
+task_types.name,
+task_types.description,
+task_types.color ` +
 		`FROM public.task_types ` +
-		`WHERE team_id = $1 AND name = $2 `
+		`` +
+		` WHERE team_id = $1 AND name = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -196,15 +219,16 @@ func TaskTypeByTeamIDName(ctx context.Context, db DB, teamID int64, name string,
 	tt := TaskType{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, teamID, name).Scan(&tt.TaskTypeID, &tt.TeamID, &tt.Name, &tt.Description, &tt.Color); err != nil {
 		return nil, logerror(err)
 	}
 	return &tt, nil
 }
 
-// Team returns the Team associated with the TaskType's (TeamID).
+// FKTeam returns the Team associated with the TaskType's (TeamID).
 //
 // Generated from foreign key 'task_types_team_id_fkey'.
-func (tt *TaskType) Team(ctx context.Context, db DB) (*Team, error) {
+func (tt *TaskType) FKTeam(ctx context.Context, db DB) (*Team, error) {
 	return TeamByTeamID(ctx, db, int(tt.TeamID))
 }

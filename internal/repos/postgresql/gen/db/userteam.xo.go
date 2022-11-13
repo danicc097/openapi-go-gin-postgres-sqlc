@@ -13,14 +13,15 @@ import (
 type UserTeam struct {
 	TeamID int       `json:"team_id" db:"team_id"` // team_id
 	UserID uuid.UUID `json:"user_id" db:"user_id"` // user_id
+
 	// xo fields
 	_exists, _deleted bool
 }
 
 type UserTeamSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []UserTeamJoinBy
+	limit   string
+	orderBy string
+	joins   UserTeamJoins
 }
 
 type UserTeamSelectConfigOption func(*UserTeamSelectConfig)
@@ -34,7 +35,14 @@ func UserTeamWithLimit(limit int) UserTeamSelectConfigOption {
 
 type UserTeamOrderBy = string
 
-type UserTeamJoinBy = string
+type UserTeamJoins struct{}
+
+// UserTeamWithJoin orders results by the given columns.
+func UserTeamWithJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
+	return func(s *UserTeamSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the UserTeam exists in the database.
 func (ut *UserTeam) Exists() bool {
@@ -98,16 +106,20 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'user_team_pkey'.
 func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID int, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
-	c := &UserTeamSelectConfig{}
+	c := &UserTeamSelectConfig{
+		joins: UserTeamJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`team_id, user_id ` +
+		`user_team.team_id,
+user_team.user_id ` +
 		`FROM public.user_team ` +
-		`WHERE user_id = $1 AND team_id = $2 `
+		`` +
+		` WHERE user_id = $1 AND team_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -116,6 +128,7 @@ func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID
 	ut := UserTeam{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, userID, teamID).Scan(&ut.TeamID, &ut.UserID); err != nil {
 		return nil, logerror(err)
 	}
@@ -126,16 +139,20 @@ func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID
 //
 // Generated from index 'user_team_team_id_user_id_idx'.
 func UserTeamByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
-	c := &UserTeamSelectConfig{}
+	c := &UserTeamSelectConfig{
+		joins: UserTeamJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`team_id, user_id ` +
+		`user_team.team_id,
+user_team.user_id ` +
 		`FROM public.user_team ` +
-		`WHERE team_id = $1 AND user_id = $2 `
+		`` +
+		` WHERE team_id = $1 AND user_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -168,16 +185,20 @@ func UserTeamByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.
 //
 // Generated from index 'user_team_user_idx'.
 func UserTeamByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
-	c := &UserTeamSelectConfig{}
+	c := &UserTeamSelectConfig{
+		joins: UserTeamJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`team_id, user_id ` +
+		`user_team.team_id,
+user_team.user_id ` +
 		`FROM public.user_team ` +
-		`WHERE user_id = $1 `
+		`` +
+		` WHERE user_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -206,16 +227,16 @@ func UserTeamByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...User
 	return res, nil
 }
 
-// Team returns the Team associated with the UserTeam's (TeamID).
+// FKTeam returns the Team associated with the UserTeam's (TeamID).
 //
 // Generated from foreign key 'user_team_team_id_fkey'.
-func (ut *UserTeam) Team(ctx context.Context, db DB) (*Team, error) {
+func (ut *UserTeam) FKTeam(ctx context.Context, db DB) (*Team, error) {
 	return TeamByTeamID(ctx, db, ut.TeamID)
 }
 
-// User returns the User associated with the UserTeam's (UserID).
+// FKUser returns the User associated with the UserTeam's (UserID).
 //
 // Generated from foreign key 'user_team_user_id_fkey'.
-func (ut *UserTeam) User(ctx context.Context, db DB) (*User, error) {
+func (ut *UserTeam) FKUser(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, ut.UserID)
 }

@@ -1,4 +1,5 @@
--- plpgsql-language-server:use-keyword-query-parameters
+-- plpgsql-language-server:use-keyword-query-parameter
+
 -- name: GetUser :one
 select
   username
@@ -19,6 +20,12 @@ and (username = sqlc.narg('username')::text
 and (user_id = sqlc.narg('user_id')::uuid
   or sqlc.narg('user_id')::uuid is null)
 limit 1;
+
+-- name: RegisterNewUser :one
+insert into users (username , email , role_rank)
+  values (@username , @email , @role_rank)
+returning
+  user_id , username , email , role_rank , created_at , updated_at;
 
 -- name: GetUsersWithJoins :many
 select

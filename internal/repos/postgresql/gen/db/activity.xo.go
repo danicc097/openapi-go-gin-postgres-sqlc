@@ -13,14 +13,16 @@ type Activity struct {
 	Name         string `json:"name" db:"name"`                   // name
 	Description  string `json:"description" db:"description"`     // description
 	IsProductive bool   `json:"is_productive" db:"is_productive"` // is_productive
+
+	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
 	// xo fields
 	_exists, _deleted bool
 }
 
 type ActivitySelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []ActivityJoinBy
+	limit   string
+	orderBy string
+	joins   ActivityJoins
 }
 
 type ActivitySelectConfigOption func(*ActivitySelectConfig)
@@ -34,7 +36,16 @@ func ActivityWithLimit(limit int) ActivitySelectConfigOption {
 
 type ActivityOrderBy = string
 
-type ActivityJoinBy = string
+type ActivityJoins struct {
+	TimeEntries bool
+}
+
+// ActivityWithJoin orders results by the given columns.
+func ActivityWithJoin(joins ActivityJoins) ActivitySelectConfigOption {
+	return func(s *ActivitySelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the Activity exists in the database.
 func (a *Activity) Exists() bool {
@@ -149,16 +160,31 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'activities_name_key'.
 func ActivityByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{}
+	c := &ActivitySelectConfig{
+		joins: ActivityJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`activity_id, name, description, is_productive ` +
+		`activities.activity_id,
+activities.name,
+activities.description,
+activities.is_productive,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
 		`FROM public.activities ` +
-		`WHERE name = $1 `
+		`-- O2M join generated from "time_entries_activity_id_fkey"
+left join (
+  select
+  activity_id as time_entries_activity_id
+    , json_agg(time_entries.*) as time_entries
+  from
+    time_entries
+   group by
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
+		` WHERE name = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -167,7 +193,8 @@ func ActivityByName(ctx context.Context, db DB, name string, opts ...ActivitySel
 	a := Activity{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, name).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive); err != nil {
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, name).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive, &a.TimeEntries); err != nil {
 		return nil, logerror(err)
 	}
 	return &a, nil
@@ -177,16 +204,31 @@ func ActivityByName(ctx context.Context, db DB, name string, opts ...ActivitySel
 //
 // Generated from index 'activities_pkey'.
 func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{}
+	c := &ActivitySelectConfig{
+		joins: ActivityJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`activity_id, name, description, is_productive ` +
+		`activities.activity_id,
+activities.name,
+activities.description,
+activities.is_productive,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
 		`FROM public.activities ` +
-		`WHERE activity_id = $1 `
+		`-- O2M join generated from "time_entries_activity_id_fkey"
+left join (
+  select
+  activity_id as time_entries_activity_id
+    , json_agg(time_entries.*) as time_entries
+  from
+    time_entries
+   group by
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
+		` WHERE activity_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -195,7 +237,8 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...Ac
 	a := Activity{
 		_exists: true,
 	}
-	if err := db.QueryRow(ctx, sqlstr, activityID).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive); err != nil {
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, activityID).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive, &a.TimeEntries); err != nil {
 		return nil, logerror(err)
 	}
 	return &a, nil

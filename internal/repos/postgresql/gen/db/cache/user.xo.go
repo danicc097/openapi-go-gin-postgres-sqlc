@@ -21,6 +21,7 @@ type User struct {
 	LastName   null.String   `json:"last_name" db:"last_name"`     // last_name
 	FullName   null.String   `json:"full_name" db:"full_name"`     // full_name
 	ExternalID null.String   `json:"external_id" db:"external_id"` // external_id
+	APIKeyID   null.Int      `json:"api_key_id" db:"api_key_id"`   // api_key_id
 	Scopes     []string      `json:"scopes" db:"scopes"`           // scopes
 	RoleRank   null.Int      `json:"role_rank" db:"role_rank"`     // role_rank
 	CreatedAt  null.Time     `json:"created_at" db:"created_at"`   // created_at
@@ -30,9 +31,9 @@ type User struct {
 }
 
 type UserSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []UserJoinBy
+	limit   string
+	orderBy string
+	joins   UserJoins
 }
 
 type UserSelectConfigOption func(*UserSelectConfig)
@@ -47,18 +48,18 @@ func UserWithLimit(limit int) UserSelectConfigOption {
 type UserOrderBy = string
 
 const (
-	UserCreatedAtDescNullsFirst UserOrderBy = "CreatedAt DescNullsFirst"
-	UserCreatedAtDescNullsLast  UserOrderBy = "CreatedAt DescNullsLast"
-	UserCreatedAtAscNullsFirst  UserOrderBy = "CreatedAt AscNullsFirst"
-	UserCreatedAtAscNullsLast   UserOrderBy = "CreatedAt AscNullsLast"
-	UserUpdatedAtDescNullsFirst UserOrderBy = "UpdatedAt DescNullsFirst"
-	UserUpdatedAtDescNullsLast  UserOrderBy = "UpdatedAt DescNullsLast"
-	UserUpdatedAtAscNullsFirst  UserOrderBy = "UpdatedAt AscNullsFirst"
-	UserUpdatedAtAscNullsLast   UserOrderBy = "UpdatedAt AscNullsLast"
-	UserDeletedAtDescNullsFirst UserOrderBy = "DeletedAt DescNullsFirst"
-	UserDeletedAtDescNullsLast  UserOrderBy = "DeletedAt DescNullsLast"
-	UserDeletedAtAscNullsFirst  UserOrderBy = "DeletedAt AscNullsFirst"
-	UserDeletedAtAscNullsLast   UserOrderBy = "DeletedAt AscNullsLast"
+	UserCreatedAtDescNullsFirst UserOrderBy = " created_at DESC NULLS FIRST "
+	UserCreatedAtDescNullsLast  UserOrderBy = " created_at DESC NULLS LAST "
+	UserCreatedAtAscNullsFirst  UserOrderBy = " created_at ASC NULLS FIRST "
+	UserCreatedAtAscNullsLast   UserOrderBy = " created_at ASC NULLS LAST "
+	UserUpdatedAtDescNullsFirst UserOrderBy = " updated_at DESC NULLS FIRST "
+	UserUpdatedAtDescNullsLast  UserOrderBy = " updated_at DESC NULLS LAST "
+	UserUpdatedAtAscNullsFirst  UserOrderBy = " updated_at ASC NULLS FIRST "
+	UserUpdatedAtAscNullsLast   UserOrderBy = " updated_at ASC NULLS LAST "
+	UserDeletedAtDescNullsFirst UserOrderBy = " deleted_at DESC NULLS FIRST "
+	UserDeletedAtDescNullsLast  UserOrderBy = " deleted_at DESC NULLS LAST "
+	UserDeletedAtAscNullsFirst  UserOrderBy = " deleted_at ASC NULLS FIRST "
+	UserDeletedAtAscNullsLast   UserOrderBy = " deleted_at ASC NULLS LAST "
 )
 
 // UserWithOrderBy orders results by the given columns.
@@ -68,22 +69,45 @@ func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	}
 }
 
-type UserJoinBy = string
+type UserJoins struct{}
+
+// UserWithJoin orders results by the given columns.
+func UserWithJoin(joins UserJoins) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // UsersByExternalID retrieves a row from 'cache.users' as a User.
 //
 // Generated from index 'users_external_id_idx'.
 func UsersByExternalID(ctx context.Context, db DB, externalID null.String, opts ...UserSelectConfigOption) ([]*User, error) {
-	c := &UserSelectConfig{}
+	c := &UserSelectConfig{
+		joins: UserJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, scopes, role_rank, created_at, updated_at, deleted_at, teams ` +
+		`users.user_id,
+users.username,
+users.email,
+users.first_name,
+users.last_name,
+users.full_name,
+users.external_id,
+users.api_key_id,
+users.scopes,
+users.role_rank,
+users.created_at,
+users.updated_at,
+users.deleted_at,
+users.teams ` +
 		`FROM cache.users ` +
-		`WHERE external_id = $1 `
+		`` +
+		` WHERE external_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -99,7 +123,7 @@ func UsersByExternalID(ctx context.Context, db DB, externalID null.String, opts 
 	for rows.Next() {
 		u := User{}
 		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Teams); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Teams); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &u)

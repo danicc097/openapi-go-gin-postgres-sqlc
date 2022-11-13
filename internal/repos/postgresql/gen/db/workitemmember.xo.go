@@ -13,14 +13,15 @@ import (
 type WorkItemMember struct {
 	WorkItemID int64     `json:"work_item_id" db:"work_item_id"` // work_item_id
 	Member     uuid.UUID `json:"member" db:"member"`             // member
+
 	// xo fields
 	_exists, _deleted bool
 }
 
 type WorkItemMemberSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []WorkItemMemberJoinBy
+	limit   string
+	orderBy string
+	joins   WorkItemMemberJoins
 }
 
 type WorkItemMemberSelectConfigOption func(*WorkItemMemberSelectConfig)
@@ -34,7 +35,14 @@ func WorkItemMemberWithLimit(limit int) WorkItemMemberSelectConfigOption {
 
 type WorkItemMemberOrderBy = string
 
-type WorkItemMemberJoinBy = string
+type WorkItemMemberJoins struct{}
+
+// WorkItemMemberWithJoin orders results by the given columns.
+func WorkItemMemberWithJoin(joins WorkItemMemberJoins) WorkItemMemberSelectConfigOption {
+	return func(s *WorkItemMemberSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the WorkItemMember exists in the database.
 func (wim *WorkItemMember) Exists() bool {
@@ -98,16 +106,20 @@ func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_member_member_work_item_id_idx'.
 func WorkItemMemberByMemberWorkItemID(ctx context.Context, db DB, member uuid.UUID, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
-	c := &WorkItemMemberSelectConfig{}
+	c := &WorkItemMemberSelectConfig{
+		joins: WorkItemMemberJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_id, member ` +
+		`work_item_member.work_item_id,
+work_item_member.member ` +
 		`FROM public.work_item_member ` +
-		`WHERE member = $1 AND work_item_id = $2 `
+		`` +
+		` WHERE member = $1 AND work_item_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -140,16 +152,20 @@ func WorkItemMemberByMemberWorkItemID(ctx context.Context, db DB, member uuid.UU
 //
 // Generated from index 'work_item_member_pkey'.
 func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, workItemID int64, member uuid.UUID, opts ...WorkItemMemberSelectConfigOption) (*WorkItemMember, error) {
-	c := &WorkItemMemberSelectConfig{}
+	c := &WorkItemMemberSelectConfig{
+		joins: WorkItemMemberJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_id, member ` +
+		`work_item_member.work_item_id,
+work_item_member.member ` +
 		`FROM public.work_item_member ` +
-		`WHERE work_item_id = $1 AND member = $2 `
+		`` +
+		` WHERE work_item_id = $1 AND member = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -158,22 +174,23 @@ func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, workItemID int
 	wim := WorkItemMember{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, workItemID, member).Scan(&wim.WorkItemID, &wim.Member); err != nil {
 		return nil, logerror(err)
 	}
 	return &wim, nil
 }
 
-// User returns the User associated with the WorkItemMember's (Member).
+// FKUser returns the User associated with the WorkItemMember's (Member).
 //
 // Generated from foreign key 'work_item_member_member_fkey'.
-func (wim *WorkItemMember) User(ctx context.Context, db DB) (*User, error) {
+func (wim *WorkItemMember) FKUser(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, wim.Member)
 }
 
-// WorkItem returns the WorkItem associated with the WorkItemMember's (WorkItemID).
+// FKWorkItem returns the WorkItem associated with the WorkItemMember's (WorkItemID).
 //
 // Generated from foreign key 'work_item_member_work_item_id_fkey'.
-func (wim *WorkItemMember) WorkItem(ctx context.Context, db DB) (*WorkItem, error) {
+func (wim *WorkItemMember) FKWorkItem(ctx context.Context, db DB) (*WorkItem, error) {
 	return WorkItemByWorkItemID(ctx, db, wim.WorkItemID)
 }

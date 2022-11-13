@@ -23,14 +23,15 @@ type TimeEntry struct {
 	Comment         string    `json:"comment" db:"comment"`                   // comment
 	Start           time.Time `json:"start" db:"start"`                       // start
 	DurationMinutes null.Int  `json:"duration_minutes" db:"duration_minutes"` // duration_minutes
+
 	// xo fields
 	_exists, _deleted bool
 }
 
 type TimeEntrySelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []TimeEntryJoinBy
+	limit   string
+	orderBy string
+	joins   TimeEntryJoins
 }
 
 type TimeEntrySelectConfigOption func(*TimeEntrySelectConfig)
@@ -45,10 +46,10 @@ func TimeEntryWithLimit(limit int) TimeEntrySelectConfigOption {
 type TimeEntryOrderBy = string
 
 const (
-	TimeEntryStartDescNullsFirst TimeEntryOrderBy = "Start DescNullsFirst"
-	TimeEntryStartDescNullsLast  TimeEntryOrderBy = "Start DescNullsLast"
-	TimeEntryStartAscNullsFirst  TimeEntryOrderBy = "Start AscNullsFirst"
-	TimeEntryStartAscNullsLast   TimeEntryOrderBy = "Start AscNullsLast"
+	TimeEntryStartDescNullsFirst TimeEntryOrderBy = " start DESC NULLS FIRST "
+	TimeEntryStartDescNullsLast  TimeEntryOrderBy = " start DESC NULLS LAST "
+	TimeEntryStartAscNullsFirst  TimeEntryOrderBy = " start ASC NULLS FIRST "
+	TimeEntryStartAscNullsLast   TimeEntryOrderBy = " start ASC NULLS LAST "
 )
 
 // TimeEntryWithOrderBy orders results by the given columns.
@@ -58,7 +59,14 @@ func TimeEntryWithOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption 
 	}
 }
 
-type TimeEntryJoinBy = string
+type TimeEntryJoins struct{}
+
+// TimeEntryWithJoin orders results by the given columns.
+func TimeEntryWithJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
+	return func(s *TimeEntrySelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the TimeEntry exists in the database.
 func (te *TimeEntry) Exists() bool {
@@ -173,16 +181,26 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'time_entries_pkey'.
 func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts ...TimeEntrySelectConfigOption) (*TimeEntry, error) {
-	c := &TimeEntrySelectConfig{}
+	c := &TimeEntrySelectConfig{
+		joins: TimeEntryJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`time_entry_id, task_id, activity_id, team_id, user_id, comment, start, duration_minutes ` +
+		`time_entries.time_entry_id,
+time_entries.task_id,
+time_entries.activity_id,
+time_entries.team_id,
+time_entries.user_id,
+time_entries.comment,
+time_entries.start,
+time_entries.duration_minutes ` +
 		`FROM public.time_entries ` +
-		`WHERE time_entry_id = $1 `
+		`` +
+		` WHERE time_entry_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -191,6 +209,7 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts 
 	te := TimeEntry{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, timeEntryID).Scan(&te.TimeEntryID, &te.TaskID, &te.ActivityID, &te.TeamID, &te.UserID, &te.Comment, &te.Start, &te.DurationMinutes); err != nil {
 		return nil, logerror(err)
 	}
@@ -201,16 +220,26 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts 
 //
 // Generated from index 'time_entries_task_id_team_id_idx'.
 func TimeEntriesByTaskIDTeamID(ctx context.Context, db DB, taskID, teamID null.Int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
-	c := &TimeEntrySelectConfig{}
+	c := &TimeEntrySelectConfig{
+		joins: TimeEntryJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`time_entry_id, task_id, activity_id, team_id, user_id, comment, start, duration_minutes ` +
+		`time_entries.time_entry_id,
+time_entries.task_id,
+time_entries.activity_id,
+time_entries.team_id,
+time_entries.user_id,
+time_entries.comment,
+time_entries.start,
+time_entries.duration_minutes ` +
 		`FROM public.time_entries ` +
-		`WHERE task_id = $1 AND team_id = $2 `
+		`` +
+		` WHERE task_id = $1 AND team_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -243,16 +272,26 @@ func TimeEntriesByTaskIDTeamID(ctx context.Context, db DB, taskID, teamID null.I
 //
 // Generated from index 'time_entries_user_id_team_id_idx'.
 func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID null.Int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
-	c := &TimeEntrySelectConfig{}
+	c := &TimeEntrySelectConfig{
+		joins: TimeEntryJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`time_entry_id, task_id, activity_id, team_id, user_id, comment, start, duration_minutes ` +
+		`time_entries.time_entry_id,
+time_entries.task_id,
+time_entries.activity_id,
+time_entries.team_id,
+time_entries.user_id,
+time_entries.comment,
+time_entries.start,
+time_entries.duration_minutes ` +
 		`FROM public.time_entries ` +
-		`WHERE user_id = $1 AND team_id = $2 `
+		`` +
+		` WHERE user_id = $1 AND team_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -281,30 +320,30 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, tea
 	return res, nil
 }
 
-// Activity returns the Activity associated with the TimeEntry's (ActivityID).
+// FKActivity returns the Activity associated with the TimeEntry's (ActivityID).
 //
 // Generated from foreign key 'time_entries_activity_id_fkey'.
-func (te *TimeEntry) Activity(ctx context.Context, db DB) (*Activity, error) {
+func (te *TimeEntry) FKActivity(ctx context.Context, db DB) (*Activity, error) {
 	return ActivityByActivityID(ctx, db, te.ActivityID)
 }
 
-// Task returns the Task associated with the TimeEntry's (TaskID).
+// FKTask returns the Task associated with the TimeEntry's (TaskID).
 //
 // Generated from foreign key 'time_entries_task_id_fkey'.
-func (te *TimeEntry) Task(ctx context.Context, db DB) (*Task, error) {
+func (te *TimeEntry) FKTask(ctx context.Context, db DB) (*Task, error) {
 	return TaskByTaskID(ctx, db, te.TaskID.Int64)
 }
 
-// Team returns the Team associated with the TimeEntry's (TeamID).
+// FKTeam returns the Team associated with the TimeEntry's (TeamID).
 //
 // Generated from foreign key 'time_entries_team_id_fkey'.
-func (te *TimeEntry) Team(ctx context.Context, db DB) (*Team, error) {
+func (te *TimeEntry) FKTeam(ctx context.Context, db DB) (*Team, error) {
 	return TeamByTeamID(ctx, db, int(te.TeamID.Int64))
 }
 
-// User returns the User associated with the TimeEntry's (UserID).
+// FKUser returns the User associated with the TimeEntry's (UserID).
 //
 // Generated from foreign key 'time_entries_user_id_fkey'.
-func (te *TimeEntry) User(ctx context.Context, db DB) (*User, error) {
+func (te *TimeEntry) FKUser(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, te.UserID)
 }

@@ -19,14 +19,15 @@ type WorkItemComment struct {
 	Message           string    `json:"message" db:"message"`                           // message
 	CreatedAt         time.Time `json:"created_at" db:"created_at"`                     // created_at
 	UpdatedAt         time.Time `json:"updated_at" db:"updated_at"`                     // updated_at
+
 	// xo fields
 	_exists, _deleted bool
 }
 
 type WorkItemCommentSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []WorkItemCommentJoinBy
+	limit   string
+	orderBy string
+	joins   WorkItemCommentJoins
 }
 
 type WorkItemCommentSelectConfigOption func(*WorkItemCommentSelectConfig)
@@ -41,14 +42,14 @@ func WorkItemCommentWithLimit(limit int) WorkItemCommentSelectConfigOption {
 type WorkItemCommentOrderBy = string
 
 const (
-	WorkItemCommentCreatedAtDescNullsFirst WorkItemCommentOrderBy = "CreatedAt DescNullsFirst"
-	WorkItemCommentCreatedAtDescNullsLast  WorkItemCommentOrderBy = "CreatedAt DescNullsLast"
-	WorkItemCommentCreatedAtAscNullsFirst  WorkItemCommentOrderBy = "CreatedAt AscNullsFirst"
-	WorkItemCommentCreatedAtAscNullsLast   WorkItemCommentOrderBy = "CreatedAt AscNullsLast"
-	WorkItemCommentUpdatedAtDescNullsFirst WorkItemCommentOrderBy = "UpdatedAt DescNullsFirst"
-	WorkItemCommentUpdatedAtDescNullsLast  WorkItemCommentOrderBy = "UpdatedAt DescNullsLast"
-	WorkItemCommentUpdatedAtAscNullsFirst  WorkItemCommentOrderBy = "UpdatedAt AscNullsFirst"
-	WorkItemCommentUpdatedAtAscNullsLast   WorkItemCommentOrderBy = "UpdatedAt AscNullsLast"
+	WorkItemCommentCreatedAtDescNullsFirst WorkItemCommentOrderBy = " created_at DESC NULLS FIRST "
+	WorkItemCommentCreatedAtDescNullsLast  WorkItemCommentOrderBy = " created_at DESC NULLS LAST "
+	WorkItemCommentCreatedAtAscNullsFirst  WorkItemCommentOrderBy = " created_at ASC NULLS FIRST "
+	WorkItemCommentCreatedAtAscNullsLast   WorkItemCommentOrderBy = " created_at ASC NULLS LAST "
+	WorkItemCommentUpdatedAtDescNullsFirst WorkItemCommentOrderBy = " updated_at DESC NULLS FIRST "
+	WorkItemCommentUpdatedAtDescNullsLast  WorkItemCommentOrderBy = " updated_at DESC NULLS LAST "
+	WorkItemCommentUpdatedAtAscNullsFirst  WorkItemCommentOrderBy = " updated_at ASC NULLS FIRST "
+	WorkItemCommentUpdatedAtAscNullsLast   WorkItemCommentOrderBy = " updated_at ASC NULLS LAST "
 )
 
 // WorkItemCommentWithOrderBy orders results by the given columns.
@@ -58,7 +59,14 @@ func WorkItemCommentWithOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentS
 	}
 }
 
-type WorkItemCommentJoinBy = string
+type WorkItemCommentJoins struct{}
+
+// WorkItemCommentWithJoin orders results by the given columns.
+func WorkItemCommentWithJoin(joins WorkItemCommentJoins) WorkItemCommentSelectConfigOption {
+	return func(s *WorkItemCommentSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the WorkItemComment exists in the database.
 func (wic *WorkItemComment) Exists() bool {
@@ -173,16 +181,24 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_comments_pkey'.
 func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID int64, opts ...WorkItemCommentSelectConfigOption) (*WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{}
+	c := &WorkItemCommentSelectConfig{
+		joins: WorkItemCommentJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_comment_id, work_item_id, user_id, message, created_at, updated_at ` +
+		`work_item_comments.work_item_comment_id,
+work_item_comments.work_item_id,
+work_item_comments.user_id,
+work_item_comments.message,
+work_item_comments.created_at,
+work_item_comments.updated_at ` +
 		`FROM public.work_item_comments ` +
-		`WHERE work_item_comment_id = $1 `
+		`` +
+		` WHERE work_item_comment_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -191,6 +207,7 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 	wic := WorkItemComment{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, workItemCommentID).Scan(&wic.WorkItemCommentID, &wic.WorkItemID, &wic.UserID, &wic.Message, &wic.CreatedAt, &wic.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}
@@ -201,16 +218,24 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 //
 // Generated from index 'work_item_comments_work_item_id_idx'.
 func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemCommentSelectConfigOption) ([]*WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{}
+	c := &WorkItemCommentSelectConfig{
+		joins: WorkItemCommentJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_comment_id, work_item_id, user_id, message, created_at, updated_at ` +
+		`work_item_comments.work_item_comment_id,
+work_item_comments.work_item_id,
+work_item_comments.user_id,
+work_item_comments.message,
+work_item_comments.created_at,
+work_item_comments.updated_at ` +
 		`FROM public.work_item_comments ` +
-		`WHERE work_item_id = $1 `
+		`` +
+		` WHERE work_item_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -239,16 +264,16 @@ func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, 
 	return res, nil
 }
 
-// User returns the User associated with the WorkItemComment's (UserID).
+// FKUser returns the User associated with the WorkItemComment's (UserID).
 //
 // Generated from foreign key 'work_item_comments_user_id_fkey'.
-func (wic *WorkItemComment) User(ctx context.Context, db DB) (*User, error) {
+func (wic *WorkItemComment) FKUser(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, wic.UserID)
 }
 
-// WorkItem returns the WorkItem associated with the WorkItemComment's (WorkItemID).
+// FKWorkItem returns the WorkItem associated with the WorkItemComment's (WorkItemID).
 //
 // Generated from foreign key 'work_item_comments_work_item_id_fkey'.
-func (wic *WorkItemComment) WorkItem(ctx context.Context, db DB) (*WorkItem, error) {
+func (wic *WorkItemComment) FKWorkItem(ctx context.Context, db DB) (*WorkItem, error) {
 	return WorkItemByWorkItemID(ctx, db, wic.WorkItemID)
 }

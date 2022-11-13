@@ -13,14 +13,15 @@ type Movie struct {
 	Title    string `json:"title" db:"title"`       // title
 	Year     int    `json:"year" db:"year"`         // year
 	Synopsis string `json:"synopsis" db:"synopsis"` // synopsis
+
 	// xo fields
 	_exists, _deleted bool
 }
 
 type MovieSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []MovieJoinBy
+	limit   string
+	orderBy string
+	joins   MovieJoins
 }
 
 type MovieSelectConfigOption func(*MovieSelectConfig)
@@ -34,7 +35,14 @@ func MovieWithLimit(limit int) MovieSelectConfigOption {
 
 type MovieOrderBy = string
 
-type MovieJoinBy = string
+type MovieJoins struct{}
+
+// MovieWithJoin orders results by the given columns.
+func MovieWithJoin(joins MovieJoins) MovieSelectConfigOption {
+	return func(s *MovieSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the Movie exists in the database.
 func (m *Movie) Exists() bool {
@@ -149,16 +157,22 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'movies_pkey'.
 func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) (*Movie, error) {
-	c := &MovieSelectConfig{}
+	c := &MovieSelectConfig{
+		joins: MovieJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`movie_id, title, year, synopsis ` +
+		`movies.movie_id,
+movies.title,
+movies.year,
+movies.synopsis ` +
 		`FROM public.movies ` +
-		`WHERE movie_id = $1 `
+		`` +
+		` WHERE movie_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -167,6 +181,7 @@ func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelect
 	m := Movie{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, movieID).Scan(&m.MovieID, &m.Title, &m.Year, &m.Synopsis); err != nil {
 		return nil, logerror(err)
 	}

@@ -13,14 +13,15 @@ type WorkItemTag struct {
 	Name          string `json:"name" db:"name"`                         // name
 	Description   string `json:"description" db:"description"`           // description
 	Color         string `json:"color" db:"color"`                       // color
+
 	// xo fields
 	_exists, _deleted bool
 }
 
 type WorkItemTagSelectConfig struct {
-	limit    string
-	orderBy  string
-	joinWith []WorkItemTagJoinBy
+	limit   string
+	orderBy string
+	joins   WorkItemTagJoins
 }
 
 type WorkItemTagSelectConfigOption func(*WorkItemTagSelectConfig)
@@ -34,7 +35,14 @@ func WorkItemTagWithLimit(limit int) WorkItemTagSelectConfigOption {
 
 type WorkItemTagOrderBy = string
 
-type WorkItemTagJoinBy = string
+type WorkItemTagJoins struct{}
+
+// WorkItemTagWithJoin orders results by the given columns.
+func WorkItemTagWithJoin(joins WorkItemTagJoins) WorkItemTagSelectConfigOption {
+	return func(s *WorkItemTagSelectConfig) {
+		s.joins = joins
+	}
+}
 
 // Exists returns true when the WorkItemTag exists in the database.
 func (wit *WorkItemTag) Exists() bool {
@@ -149,16 +157,22 @@ func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_tags_name_key'.
 func WorkItemTagByName(ctx context.Context, db DB, name string, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{}
+	c := &WorkItemTagSelectConfig{
+		joins: WorkItemTagJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_tag_id, name, description, color ` +
+		`work_item_tags.work_item_tag_id,
+work_item_tags.name,
+work_item_tags.description,
+work_item_tags.color ` +
 		`FROM public.work_item_tags ` +
-		`WHERE name = $1 `
+		`` +
+		` WHERE name = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -167,6 +181,7 @@ func WorkItemTagByName(ctx context.Context, db DB, name string, opts ...WorkItem
 	wit := WorkItemTag{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, name).Scan(&wit.WorkItemTagID, &wit.Name, &wit.Description, &wit.Color); err != nil {
 		return nil, logerror(err)
 	}
@@ -177,16 +192,22 @@ func WorkItemTagByName(ctx context.Context, db DB, name string, opts ...WorkItem
 //
 // Generated from index 'work_item_tags_pkey'.
 func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{}
+	c := &WorkItemTagSelectConfig{
+		joins: WorkItemTagJoins{},
+	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_tag_id, name, description, color ` +
+		`work_item_tags.work_item_tag_id,
+work_item_tags.name,
+work_item_tags.description,
+work_item_tags.color ` +
 		`FROM public.work_item_tags ` +
-		`WHERE work_item_tag_id = $1 `
+		`` +
+		` WHERE work_item_tag_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -195,6 +216,7 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, o
 	wit := WorkItemTag{
 		_exists: true,
 	}
+
 	if err := db.QueryRow(ctx, sqlstr, workItemTagID).Scan(&wit.WorkItemTagID, &wit.Name, &wit.Description, &wit.Color); err != nil {
 		return nil, logerror(err)
 	}
