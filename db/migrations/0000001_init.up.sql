@@ -35,7 +35,6 @@ create table user_api_keys (
   , primary key (user_api_key_id)
 );
 
-
 create table users (
   user_id uuid default gen_random_uuid () not null
   , username text not null unique
