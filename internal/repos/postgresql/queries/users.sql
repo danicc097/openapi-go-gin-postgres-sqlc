@@ -1,5 +1,4 @@
 -- plpgsql-language-server:use-keyword-query-parameter
-
 -- name: GetUser :one
 select
   username

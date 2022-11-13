@@ -15,6 +15,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
+// clear && go run cmd/cli/main.go -env .env.dev
 func main() {
 	var env string
 
