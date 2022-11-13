@@ -49,22 +49,22 @@ func TaskWithLimit(limit int) TaskSelectConfigOption {
 type TaskOrderBy = string
 
 const (
-	TaskTargetDateDescNullsFirst TaskOrderBy = "target_date DESC NULLS FIRST"
-	TaskTargetDateDescNullsLast  TaskOrderBy = "target_date DESC NULLS LAST"
-	TaskTargetDateAscNullsFirst  TaskOrderBy = "target_date ASC NULLS FIRST"
-	TaskTargetDateAscNullsLast   TaskOrderBy = "target_date ASC NULLS LAST"
-	TaskCreatedAtDescNullsFirst  TaskOrderBy = "created_at DESC NULLS FIRST"
-	TaskCreatedAtDescNullsLast   TaskOrderBy = "created_at DESC NULLS LAST"
-	TaskCreatedAtAscNullsFirst   TaskOrderBy = "created_at ASC NULLS FIRST"
-	TaskCreatedAtAscNullsLast    TaskOrderBy = "created_at ASC NULLS LAST"
-	TaskUpdatedAtDescNullsFirst  TaskOrderBy = "updated_at DESC NULLS FIRST"
-	TaskUpdatedAtDescNullsLast   TaskOrderBy = "updated_at DESC NULLS LAST"
-	TaskUpdatedAtAscNullsFirst   TaskOrderBy = "updated_at ASC NULLS FIRST"
-	TaskUpdatedAtAscNullsLast    TaskOrderBy = "updated_at ASC NULLS LAST"
-	TaskDeletedAtDescNullsFirst  TaskOrderBy = "deleted_at DESC NULLS FIRST"
-	TaskDeletedAtDescNullsLast   TaskOrderBy = "deleted_at DESC NULLS LAST"
-	TaskDeletedAtAscNullsFirst   TaskOrderBy = "deleted_at ASC NULLS FIRST"
-	TaskDeletedAtAscNullsLast    TaskOrderBy = "deleted_at ASC NULLS LAST"
+	TaskTargetDateDescNullsFirst TaskOrderBy = " target_date DESC NULLS FIRST "
+	TaskTargetDateDescNullsLast  TaskOrderBy = " target_date DESC NULLS LAST "
+	TaskTargetDateAscNullsFirst  TaskOrderBy = " target_date ASC NULLS FIRST "
+	TaskTargetDateAscNullsLast   TaskOrderBy = " target_date ASC NULLS LAST "
+	TaskCreatedAtDescNullsFirst  TaskOrderBy = " created_at DESC NULLS FIRST "
+	TaskCreatedAtDescNullsLast   TaskOrderBy = " created_at DESC NULLS LAST "
+	TaskCreatedAtAscNullsFirst   TaskOrderBy = " created_at ASC NULLS FIRST "
+	TaskCreatedAtAscNullsLast    TaskOrderBy = " created_at ASC NULLS LAST "
+	TaskUpdatedAtDescNullsFirst  TaskOrderBy = " updated_at DESC NULLS FIRST "
+	TaskUpdatedAtDescNullsLast   TaskOrderBy = " updated_at DESC NULLS LAST "
+	TaskUpdatedAtAscNullsFirst   TaskOrderBy = " updated_at ASC NULLS FIRST "
+	TaskUpdatedAtAscNullsLast    TaskOrderBy = " updated_at ASC NULLS LAST "
+	TaskDeletedAtDescNullsFirst  TaskOrderBy = " deleted_at DESC NULLS FIRST "
+	TaskDeletedAtDescNullsLast   TaskOrderBy = " deleted_at DESC NULLS LAST "
+	TaskDeletedAtAscNullsFirst   TaskOrderBy = " deleted_at ASC NULLS FIRST "
+	TaskDeletedAtAscNullsLast    TaskOrderBy = " deleted_at ASC NULLS LAST "
 )
 
 // TaskWithOrderBy orders results by the given columns.

@@ -42,14 +42,14 @@ func WorkItemCommentWithLimit(limit int) WorkItemCommentSelectConfigOption {
 type WorkItemCommentOrderBy = string
 
 const (
-	WorkItemCommentCreatedAtDescNullsFirst WorkItemCommentOrderBy = "created_at DESC NULLS FIRST"
-	WorkItemCommentCreatedAtDescNullsLast  WorkItemCommentOrderBy = "created_at DESC NULLS LAST"
-	WorkItemCommentCreatedAtAscNullsFirst  WorkItemCommentOrderBy = "created_at ASC NULLS FIRST"
-	WorkItemCommentCreatedAtAscNullsLast   WorkItemCommentOrderBy = "created_at ASC NULLS LAST"
-	WorkItemCommentUpdatedAtDescNullsFirst WorkItemCommentOrderBy = "updated_at DESC NULLS FIRST"
-	WorkItemCommentUpdatedAtDescNullsLast  WorkItemCommentOrderBy = "updated_at DESC NULLS LAST"
-	WorkItemCommentUpdatedAtAscNullsFirst  WorkItemCommentOrderBy = "updated_at ASC NULLS FIRST"
-	WorkItemCommentUpdatedAtAscNullsLast   WorkItemCommentOrderBy = "updated_at ASC NULLS LAST"
+	WorkItemCommentCreatedAtDescNullsFirst WorkItemCommentOrderBy = " created_at DESC NULLS FIRST "
+	WorkItemCommentCreatedAtDescNullsLast  WorkItemCommentOrderBy = " created_at DESC NULLS LAST "
+	WorkItemCommentCreatedAtAscNullsFirst  WorkItemCommentOrderBy = " created_at ASC NULLS FIRST "
+	WorkItemCommentCreatedAtAscNullsLast   WorkItemCommentOrderBy = " created_at ASC NULLS LAST "
+	WorkItemCommentUpdatedAtDescNullsFirst WorkItemCommentOrderBy = " updated_at DESC NULLS FIRST "
+	WorkItemCommentUpdatedAtDescNullsLast  WorkItemCommentOrderBy = " updated_at DESC NULLS LAST "
+	WorkItemCommentUpdatedAtAscNullsFirst  WorkItemCommentOrderBy = " updated_at ASC NULLS FIRST "
+	WorkItemCommentUpdatedAtAscNullsLast   WorkItemCommentOrderBy = " updated_at ASC NULLS LAST "
 )
 
 // WorkItemCommentWithOrderBy orders results by the given columns.

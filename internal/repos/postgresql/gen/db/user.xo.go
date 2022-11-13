@@ -15,19 +15,19 @@ import (
 
 // User represents a row from 'public.users'.
 type User struct {
-	UserID       uuid.UUID   `json:"user_id" db:"user_id"`                 // user_id
-	Username     string      `json:"username" db:"username"`               // username
-	Email        string      `json:"email" db:"email"`                     // email
-	FirstName    null.String `json:"first_name" db:"first_name"`           // first_name
-	LastName     null.String `json:"last_name" db:"last_name"`             // last_name
-	FullName     null.String `json:"full_name" db:"full_name"`             // full_name
-	ExternalID   null.String `json:"external_id" db:"external_id"`         // external_id
-	UserAPIKeyID null.Int    `json:"user_api_key_id" db:"user_api_key_id"` // user_api_key_id
-	Scopes       []string    `json:"scopes" db:"scopes"`                   // scopes
-	RoleRank     int16       `json:"role_rank" db:"role_rank"`             // role_rank
-	CreatedAt    time.Time   `json:"created_at" db:"created_at"`           // created_at
-	UpdatedAt    time.Time   `json:"updated_at" db:"updated_at"`           // updated_at
-	DeletedAt    null.Time   `json:"deleted_at" db:"deleted_at"`           // deleted_at
+	UserID     uuid.UUID   `json:"user_id" db:"user_id"`         // user_id
+	Username   string      `json:"username" db:"username"`       // username
+	Email      string      `json:"email" db:"email"`             // email
+	FirstName  null.String `json:"first_name" db:"first_name"`   // first_name
+	LastName   null.String `json:"last_name" db:"last_name"`     // last_name
+	FullName   null.String `json:"full_name" db:"full_name"`     // full_name
+	ExternalID null.String `json:"external_id" db:"external_id"` // external_id
+	APIKeyID   null.Int    `json:"api_key_id" db:"api_key_id"`   // api_key_id
+	Scopes     []string    `json:"scopes" db:"scopes"`           // scopes
+	RoleRank   int16       `json:"role_rank" db:"role_rank"`     // role_rank
+	CreatedAt  time.Time   `json:"created_at" db:"created_at"`   // created_at
+	UpdatedAt  time.Time   `json:"updated_at" db:"updated_at"`   // updated_at
+	DeletedAt  null.Time   `json:"deleted_at" db:"deleted_at"`   // deleted_at
 
 	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
 	Teams       *[]Team      `json:"teams"`        // M2M
@@ -55,18 +55,18 @@ func UserWithLimit(limit int) UserSelectConfigOption {
 type UserOrderBy = string
 
 const (
-	UserCreatedAtDescNullsFirst UserOrderBy = "created_at DESC NULLS FIRST"
-	UserCreatedAtDescNullsLast  UserOrderBy = "created_at DESC NULLS LAST"
-	UserCreatedAtAscNullsFirst  UserOrderBy = "created_at ASC NULLS FIRST"
-	UserCreatedAtAscNullsLast   UserOrderBy = "created_at ASC NULLS LAST"
-	UserUpdatedAtDescNullsFirst UserOrderBy = "updated_at DESC NULLS FIRST"
-	UserUpdatedAtDescNullsLast  UserOrderBy = "updated_at DESC NULLS LAST"
-	UserUpdatedAtAscNullsFirst  UserOrderBy = "updated_at ASC NULLS FIRST"
-	UserUpdatedAtAscNullsLast   UserOrderBy = "updated_at ASC NULLS LAST"
-	UserDeletedAtDescNullsFirst UserOrderBy = "deleted_at DESC NULLS FIRST"
-	UserDeletedAtDescNullsLast  UserOrderBy = "deleted_at DESC NULLS LAST"
-	UserDeletedAtAscNullsFirst  UserOrderBy = "deleted_at ASC NULLS FIRST"
-	UserDeletedAtAscNullsLast   UserOrderBy = "deleted_at ASC NULLS LAST"
+	UserCreatedAtDescNullsFirst UserOrderBy = " created_at DESC NULLS FIRST "
+	UserCreatedAtDescNullsLast  UserOrderBy = " created_at DESC NULLS LAST "
+	UserCreatedAtAscNullsFirst  UserOrderBy = " created_at ASC NULLS FIRST "
+	UserCreatedAtAscNullsLast   UserOrderBy = " created_at ASC NULLS LAST "
+	UserUpdatedAtDescNullsFirst UserOrderBy = " updated_at DESC NULLS FIRST "
+	UserUpdatedAtDescNullsLast  UserOrderBy = " updated_at DESC NULLS LAST "
+	UserUpdatedAtAscNullsFirst  UserOrderBy = " updated_at ASC NULLS FIRST "
+	UserUpdatedAtAscNullsLast   UserOrderBy = " updated_at ASC NULLS LAST "
+	UserDeletedAtDescNullsFirst UserOrderBy = " deleted_at DESC NULLS FIRST "
+	UserDeletedAtDescNullsLast  UserOrderBy = " deleted_at DESC NULLS LAST "
+	UserDeletedAtAscNullsFirst  UserOrderBy = " deleted_at ASC NULLS FIRST "
+	UserDeletedAtAscNullsLast   UserOrderBy = " deleted_at ASC NULLS LAST "
 )
 
 // UserWithOrderBy orders results by the given columns.
@@ -111,13 +111,13 @@ func (u *User) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.users (` +
-		`username, email, first_name, last_name, external_id, user_api_key_id, scopes, role_rank, deleted_at` +
+		`username, email, first_name, last_name, external_id, api_key_id, scopes, role_rank, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
 		`) RETURNING user_id, full_name `
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.UserAPIKeyID, u.Scopes, u.RoleRank, u.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.UserAPIKeyID, u.Scopes, u.RoleRank, u.DeletedAt).Scan(&u.UserID, &u.FullName); err != nil {
+	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt)
+	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt).Scan(&u.UserID, &u.FullName); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -135,11 +135,11 @@ func (u *User) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.users SET ` +
-		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, user_api_key_id = $6, scopes = $7, role_rank = $8, deleted_at = $9 ` +
+		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, deleted_at = $9 ` +
 		`WHERE user_id = $10 `
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.UserAPIKeyID, u.Scopes, u.RoleRank, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
-	if _, err := db.Exec(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.UserAPIKeyID, u.Scopes, u.RoleRank, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID); err != nil {
+	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
+	if _, err := db.Exec(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -161,16 +161,16 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.users (` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, user_api_key_id, scopes, role_rank, deleted_at` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, api_key_id, scopes, role_rank, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11` +
 		`)` +
 		` ON CONFLICT (user_id) DO ` +
 		`UPDATE SET ` +
-		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, user_api_key_id = EXCLUDED.user_api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, deleted_at = EXCLUDED.deleted_at  `
+		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, deleted_at = EXCLUDED.deleted_at  `
 	// run
-	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.UserAPIKeyID, u.Scopes, u.RoleRank, u.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.UserAPIKeyID, u.Scopes, u.RoleRank, u.DeletedAt); err != nil {
+	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -219,7 +219,7 @@ users.first_name,
 users.last_name,
 users.full_name,
 users.external_id,
-users.user_api_key_id,
+users.api_key_id,
 users.scopes,
 users.role_rank,
 users.created_at,
@@ -261,8 +261,8 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_user_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.user_api_key_id
+-- O2O join generated from "users_api_key_id_fkey"
+left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -303,7 +303,7 @@ left join (
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.UserAPIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &u)
@@ -334,7 +334,7 @@ users.first_name,
 users.last_name,
 users.full_name,
 users.external_id,
-users.user_api_key_id,
+users.api_key_id,
 users.scopes,
 users.role_rank,
 users.created_at,
@@ -376,8 +376,8 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_user_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.user_api_key_id
+-- O2O join generated from "users_api_key_id_fkey"
+left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -418,7 +418,7 @@ left join (
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.UserAPIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &u)
@@ -449,7 +449,7 @@ users.first_name,
 users.last_name,
 users.full_name,
 users.external_id,
-users.user_api_key_id,
+users.api_key_id,
 users.scopes,
 users.role_rank,
 users.created_at,
@@ -491,8 +491,8 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_user_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.user_api_key_id
+-- O2O join generated from "users_api_key_id_fkey"
+left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -525,7 +525,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.UserAPIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -551,7 +551,7 @@ users.first_name,
 users.last_name,
 users.full_name,
 users.external_id,
-users.user_api_key_id,
+users.api_key_id,
 users.scopes,
 users.role_rank,
 users.created_at,
@@ -593,8 +593,8 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_user_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.user_api_key_id
+-- O2O join generated from "users_api_key_id_fkey"
+left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -627,7 +627,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.UserAPIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -653,7 +653,7 @@ users.first_name,
 users.last_name,
 users.full_name,
 users.external_id,
-users.user_api_key_id,
+users.api_key_id,
 users.scopes,
 users.role_rank,
 users.created_at,
@@ -695,8 +695,8 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_user_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.user_api_key_id
+-- O2O join generated from "users_api_key_id_fkey"
+left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -737,7 +737,7 @@ left join (
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.UserAPIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &u)
@@ -768,7 +768,7 @@ users.first_name,
 users.last_name,
 users.full_name,
 users.external_id,
-users.user_api_key_id,
+users.api_key_id,
 users.scopes,
 users.role_rank,
 users.created_at,
@@ -810,8 +810,8 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_user_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.user_api_key_id
+-- O2O join generated from "users_api_key_id_fkey"
+left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -844,7 +844,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, userID, externalID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.UserAPIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, userID, externalID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -870,7 +870,7 @@ users.first_name,
 users.last_name,
 users.full_name,
 users.external_id,
-users.user_api_key_id,
+users.api_key_id,
 users.scopes,
 users.role_rank,
 users.created_at,
@@ -912,8 +912,8 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_user_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.user_api_key_id
+-- O2O join generated from "users_api_key_id_fkey"
+left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -946,7 +946,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.UserAPIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -972,7 +972,7 @@ users.first_name,
 users.last_name,
 users.full_name,
 users.external_id,
-users.user_api_key_id,
+users.api_key_id,
 users.scopes,
 users.role_rank,
 users.created_at,
@@ -1014,8 +1014,8 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_user_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.user_api_key_id
+-- O2O join generated from "users_api_key_id_fkey"
+left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -1048,15 +1048,15 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.UserAPIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
 }
 
-// FKUserAPIKey returns the UserAPIKey associated with the User's (UserAPIKeyID).
+// FKUserAPIKey returns the UserAPIKey associated with the User's (APIKeyID).
 //
-// Generated from foreign key 'users_user_api_key_id_fkey'.
+// Generated from foreign key 'users_api_key_id_fkey'.
 func (u *User) FKUserAPIKey(ctx context.Context, db DB) (*UserAPIKey, error) {
-	return UserAPIKeyByUserAPIKeyID(ctx, db, int(u.UserAPIKeyID.Int64))
+	return UserAPIKeyByUserAPIKeyID(ctx, db, int(u.APIKeyID.Int64))
 }

@@ -42,14 +42,14 @@ func ProjectWithLimit(limit int) ProjectSelectConfigOption {
 type ProjectOrderBy = string
 
 const (
-	ProjectCreatedAtDescNullsFirst ProjectOrderBy = "created_at DESC NULLS FIRST"
-	ProjectCreatedAtDescNullsLast  ProjectOrderBy = "created_at DESC NULLS LAST"
-	ProjectCreatedAtAscNullsFirst  ProjectOrderBy = "created_at ASC NULLS FIRST"
-	ProjectCreatedAtAscNullsLast   ProjectOrderBy = "created_at ASC NULLS LAST"
-	ProjectUpdatedAtDescNullsFirst ProjectOrderBy = "updated_at DESC NULLS FIRST"
-	ProjectUpdatedAtDescNullsLast  ProjectOrderBy = "updated_at DESC NULLS LAST"
-	ProjectUpdatedAtAscNullsFirst  ProjectOrderBy = "updated_at ASC NULLS FIRST"
-	ProjectUpdatedAtAscNullsLast   ProjectOrderBy = "updated_at ASC NULLS LAST"
+	ProjectCreatedAtDescNullsFirst ProjectOrderBy = " created_at DESC NULLS FIRST "
+	ProjectCreatedAtDescNullsLast  ProjectOrderBy = " created_at DESC NULLS LAST "
+	ProjectCreatedAtAscNullsFirst  ProjectOrderBy = " created_at ASC NULLS FIRST "
+	ProjectCreatedAtAscNullsLast   ProjectOrderBy = " created_at ASC NULLS LAST "
+	ProjectUpdatedAtDescNullsFirst ProjectOrderBy = " updated_at DESC NULLS FIRST "
+	ProjectUpdatedAtDescNullsLast  ProjectOrderBy = " updated_at DESC NULLS LAST "
+	ProjectUpdatedAtAscNullsFirst  ProjectOrderBy = " updated_at ASC NULLS FIRST "
+	ProjectUpdatedAtAscNullsLast   ProjectOrderBy = " updated_at ASC NULLS LAST "
 )
 
 // ProjectWithOrderBy orders results by the given columns.

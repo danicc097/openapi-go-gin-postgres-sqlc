@@ -82,7 +82,7 @@ select
     case when $4::boolean = true then
       joined_time_entries.time_entries
     end)::jsonb as time_entries -- if O2M
-  , users.user_id, users.username, users.email, users.first_name, users.last_name, users.full_name, users.external_id, users.user_api_key_id, users.scopes, users.role_rank, users.created_at, users.updated_at, users.deleted_at
+  , users.user_id, users.username, users.email, users.first_name, users.last_name, users.full_name, users.external_id, users.api_key_id, users.scopes, users.role_rank, users.created_at, users.updated_at, users.deleted_at
 from
   users
   ------------------------------
@@ -155,23 +155,23 @@ type GetUsersWithJoinsParams struct {
 }
 
 type GetUsersWithJoinsRow struct {
-	WorkItems    pgtype.JSONB `db:"work_items" json:"work_items"`
-	Teams        pgtype.JSONB `db:"teams" json:"teams"`
-	UserApiKey   pgtype.JSONB `db:"user_api_key" json:"user_api_key"`
-	TimeEntries  pgtype.JSONB `db:"time_entries" json:"time_entries"`
-	UserID       uuid.UUID    `db:"user_id" json:"user_id"`
-	Username     string       `db:"username" json:"username"`
-	Email        string       `db:"email" json:"email"`
-	FirstName    *string      `db:"first_name" json:"first_name"`
-	LastName     *string      `db:"last_name" json:"last_name"`
-	FullName     *string      `db:"full_name" json:"full_name"`
-	ExternalID   *string      `db:"external_id" json:"external_id"`
-	UserApiKeyID *int32       `db:"user_api_key_id" json:"user_api_key_id"`
-	Scopes       []string     `db:"scopes" json:"scopes"`
-	RoleRank     int16        `db:"role_rank" json:"role_rank"`
-	CreatedAt    time.Time    `db:"created_at" json:"created_at"`
-	UpdatedAt    time.Time    `db:"updated_at" json:"updated_at"`
-	DeletedAt    *time.Time   `db:"deleted_at" json:"deleted_at"`
+	WorkItems   pgtype.JSONB `db:"work_items" json:"work_items"`
+	Teams       pgtype.JSONB `db:"teams" json:"teams"`
+	UserApiKey  pgtype.JSONB `db:"user_api_key" json:"user_api_key"`
+	TimeEntries pgtype.JSONB `db:"time_entries" json:"time_entries"`
+	UserID      uuid.UUID    `db:"user_id" json:"user_id"`
+	Username    string       `db:"username" json:"username"`
+	Email       string       `db:"email" json:"email"`
+	FirstName   *string      `db:"first_name" json:"first_name"`
+	LastName    *string      `db:"last_name" json:"last_name"`
+	FullName    *string      `db:"full_name" json:"full_name"`
+	ExternalID  *string      `db:"external_id" json:"external_id"`
+	ApiKeyID    *int32       `db:"api_key_id" json:"api_key_id"`
+	Scopes      []string     `db:"scopes" json:"scopes"`
+	RoleRank    int16        `db:"role_rank" json:"role_rank"`
+	CreatedAt   time.Time    `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time    `db:"updated_at" json:"updated_at"`
+	DeletedAt   *time.Time   `db:"deleted_at" json:"deleted_at"`
 }
 
 func (q *Queries) GetUsersWithJoins(ctx context.Context, db DBTX, arg GetUsersWithJoinsParams) ([]GetUsersWithJoinsRow, error) {
@@ -200,7 +200,7 @@ func (q *Queries) GetUsersWithJoins(ctx context.Context, db DBTX, arg GetUsersWi
 			&i.LastName,
 			&i.FullName,
 			&i.ExternalID,
-			&i.UserApiKeyID,
+			&i.ApiKeyID,
 			&i.Scopes,
 			&i.RoleRank,
 			&i.CreatedAt,

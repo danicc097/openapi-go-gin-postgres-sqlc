@@ -14,20 +14,20 @@ import (
 
 // User represents a row from 'cache.users'.
 type User struct {
-	UserID       uuid.NullUUID `json:"user_id" db:"user_id"`                 // user_id
-	Username     null.String   `json:"username" db:"username"`               // username
-	Email        null.String   `json:"email" db:"email"`                     // email
-	FirstName    null.String   `json:"first_name" db:"first_name"`           // first_name
-	LastName     null.String   `json:"last_name" db:"last_name"`             // last_name
-	FullName     null.String   `json:"full_name" db:"full_name"`             // full_name
-	ExternalID   null.String   `json:"external_id" db:"external_id"`         // external_id
-	UserAPIKeyID null.Int      `json:"user_api_key_id" db:"user_api_key_id"` // user_api_key_id
-	Scopes       []string      `json:"scopes" db:"scopes"`                   // scopes
-	RoleRank     null.Int      `json:"role_rank" db:"role_rank"`             // role_rank
-	CreatedAt    null.Time     `json:"created_at" db:"created_at"`           // created_at
-	UpdatedAt    null.Time     `json:"updated_at" db:"updated_at"`           // updated_at
-	DeletedAt    null.Time     `json:"deleted_at" db:"deleted_at"`           // deleted_at
-	Teams        []any         `json:"teams" db:"teams"`                     // teams
+	UserID     uuid.NullUUID `json:"user_id" db:"user_id"`         // user_id
+	Username   null.String   `json:"username" db:"username"`       // username
+	Email      null.String   `json:"email" db:"email"`             // email
+	FirstName  null.String   `json:"first_name" db:"first_name"`   // first_name
+	LastName   null.String   `json:"last_name" db:"last_name"`     // last_name
+	FullName   null.String   `json:"full_name" db:"full_name"`     // full_name
+	ExternalID null.String   `json:"external_id" db:"external_id"` // external_id
+	APIKeyID   null.Int      `json:"api_key_id" db:"api_key_id"`   // api_key_id
+	Scopes     []string      `json:"scopes" db:"scopes"`           // scopes
+	RoleRank   null.Int      `json:"role_rank" db:"role_rank"`     // role_rank
+	CreatedAt  null.Time     `json:"created_at" db:"created_at"`   // created_at
+	UpdatedAt  null.Time     `json:"updated_at" db:"updated_at"`   // updated_at
+	DeletedAt  null.Time     `json:"deleted_at" db:"deleted_at"`   // deleted_at
+	Teams      []any         `json:"teams" db:"teams"`             // teams
 }
 
 type UserSelectConfig struct {
@@ -48,18 +48,18 @@ func UserWithLimit(limit int) UserSelectConfigOption {
 type UserOrderBy = string
 
 const (
-	UserCreatedAtDescNullsFirst UserOrderBy = "created_at DESC NULLS FIRST"
-	UserCreatedAtDescNullsLast  UserOrderBy = "created_at DESC NULLS LAST"
-	UserCreatedAtAscNullsFirst  UserOrderBy = "created_at ASC NULLS FIRST"
-	UserCreatedAtAscNullsLast   UserOrderBy = "created_at ASC NULLS LAST"
-	UserUpdatedAtDescNullsFirst UserOrderBy = "updated_at DESC NULLS FIRST"
-	UserUpdatedAtDescNullsLast  UserOrderBy = "updated_at DESC NULLS LAST"
-	UserUpdatedAtAscNullsFirst  UserOrderBy = "updated_at ASC NULLS FIRST"
-	UserUpdatedAtAscNullsLast   UserOrderBy = "updated_at ASC NULLS LAST"
-	UserDeletedAtDescNullsFirst UserOrderBy = "deleted_at DESC NULLS FIRST"
-	UserDeletedAtDescNullsLast  UserOrderBy = "deleted_at DESC NULLS LAST"
-	UserDeletedAtAscNullsFirst  UserOrderBy = "deleted_at ASC NULLS FIRST"
-	UserDeletedAtAscNullsLast   UserOrderBy = "deleted_at ASC NULLS LAST"
+	UserCreatedAtDescNullsFirst UserOrderBy = " created_at DESC NULLS FIRST "
+	UserCreatedAtDescNullsLast  UserOrderBy = " created_at DESC NULLS LAST "
+	UserCreatedAtAscNullsFirst  UserOrderBy = " created_at ASC NULLS FIRST "
+	UserCreatedAtAscNullsLast   UserOrderBy = " created_at ASC NULLS LAST "
+	UserUpdatedAtDescNullsFirst UserOrderBy = " updated_at DESC NULLS FIRST "
+	UserUpdatedAtDescNullsLast  UserOrderBy = " updated_at DESC NULLS LAST "
+	UserUpdatedAtAscNullsFirst  UserOrderBy = " updated_at ASC NULLS FIRST "
+	UserUpdatedAtAscNullsLast   UserOrderBy = " updated_at ASC NULLS LAST "
+	UserDeletedAtDescNullsFirst UserOrderBy = " deleted_at DESC NULLS FIRST "
+	UserDeletedAtDescNullsLast  UserOrderBy = " deleted_at DESC NULLS LAST "
+	UserDeletedAtAscNullsFirst  UserOrderBy = " deleted_at ASC NULLS FIRST "
+	UserDeletedAtAscNullsLast   UserOrderBy = " deleted_at ASC NULLS LAST "
 )
 
 // UserWithOrderBy orders results by the given columns.
@@ -98,7 +98,7 @@ users.first_name,
 users.last_name,
 users.full_name,
 users.external_id,
-users.user_api_key_id,
+users.api_key_id,
 users.scopes,
 users.role_rank,
 users.created_at,
@@ -123,7 +123,7 @@ users.teams ` +
 	for rows.Next() {
 		u := User{}
 		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.UserAPIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Teams); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.Teams); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &u)

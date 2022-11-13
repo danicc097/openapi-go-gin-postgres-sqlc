@@ -45,14 +45,14 @@ func TeamWithLimit(limit int) TeamSelectConfigOption {
 type TeamOrderBy = string
 
 const (
-	TeamCreatedAtDescNullsFirst TeamOrderBy = "created_at DESC NULLS FIRST"
-	TeamCreatedAtDescNullsLast  TeamOrderBy = "created_at DESC NULLS LAST"
-	TeamCreatedAtAscNullsFirst  TeamOrderBy = "created_at ASC NULLS FIRST"
-	TeamCreatedAtAscNullsLast   TeamOrderBy = "created_at ASC NULLS LAST"
-	TeamUpdatedAtDescNullsFirst TeamOrderBy = "updated_at DESC NULLS FIRST"
-	TeamUpdatedAtDescNullsLast  TeamOrderBy = "updated_at DESC NULLS LAST"
-	TeamUpdatedAtAscNullsFirst  TeamOrderBy = "updated_at ASC NULLS FIRST"
-	TeamUpdatedAtAscNullsLast   TeamOrderBy = "updated_at ASC NULLS LAST"
+	TeamCreatedAtDescNullsFirst TeamOrderBy = " created_at DESC NULLS FIRST "
+	TeamCreatedAtDescNullsLast  TeamOrderBy = " created_at DESC NULLS LAST "
+	TeamCreatedAtAscNullsFirst  TeamOrderBy = " created_at ASC NULLS FIRST "
+	TeamCreatedAtAscNullsLast   TeamOrderBy = " created_at ASC NULLS LAST "
+	TeamUpdatedAtDescNullsFirst TeamOrderBy = " updated_at DESC NULLS FIRST "
+	TeamUpdatedAtDescNullsLast  TeamOrderBy = " updated_at DESC NULLS LAST "
+	TeamUpdatedAtAscNullsFirst  TeamOrderBy = " updated_at ASC NULLS FIRST "
+	TeamUpdatedAtAscNullsLast   TeamOrderBy = " updated_at ASC NULLS LAST "
 )
 
 // TeamWithOrderBy orders results by the given columns.

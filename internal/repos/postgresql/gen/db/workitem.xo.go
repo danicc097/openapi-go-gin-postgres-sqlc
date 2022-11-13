@@ -49,18 +49,18 @@ func WorkItemWithLimit(limit int) WorkItemSelectConfigOption {
 type WorkItemOrderBy = string
 
 const (
-	WorkItemCreatedAtDescNullsFirst WorkItemOrderBy = "created_at DESC NULLS FIRST"
-	WorkItemCreatedAtDescNullsLast  WorkItemOrderBy = "created_at DESC NULLS LAST"
-	WorkItemCreatedAtAscNullsFirst  WorkItemOrderBy = "created_at ASC NULLS FIRST"
-	WorkItemCreatedAtAscNullsLast   WorkItemOrderBy = "created_at ASC NULLS LAST"
-	WorkItemUpdatedAtDescNullsFirst WorkItemOrderBy = "updated_at DESC NULLS FIRST"
-	WorkItemUpdatedAtDescNullsLast  WorkItemOrderBy = "updated_at DESC NULLS LAST"
-	WorkItemUpdatedAtAscNullsFirst  WorkItemOrderBy = "updated_at ASC NULLS FIRST"
-	WorkItemUpdatedAtAscNullsLast   WorkItemOrderBy = "updated_at ASC NULLS LAST"
-	WorkItemDeletedAtDescNullsFirst WorkItemOrderBy = "deleted_at DESC NULLS FIRST"
-	WorkItemDeletedAtDescNullsLast  WorkItemOrderBy = "deleted_at DESC NULLS LAST"
-	WorkItemDeletedAtAscNullsFirst  WorkItemOrderBy = "deleted_at ASC NULLS FIRST"
-	WorkItemDeletedAtAscNullsLast   WorkItemOrderBy = "deleted_at ASC NULLS LAST"
+	WorkItemCreatedAtDescNullsFirst WorkItemOrderBy = " created_at DESC NULLS FIRST "
+	WorkItemCreatedAtDescNullsLast  WorkItemOrderBy = " created_at DESC NULLS LAST "
+	WorkItemCreatedAtAscNullsFirst  WorkItemOrderBy = " created_at ASC NULLS FIRST "
+	WorkItemCreatedAtAscNullsLast   WorkItemOrderBy = " created_at ASC NULLS LAST "
+	WorkItemUpdatedAtDescNullsFirst WorkItemOrderBy = " updated_at DESC NULLS FIRST "
+	WorkItemUpdatedAtDescNullsLast  WorkItemOrderBy = " updated_at DESC NULLS LAST "
+	WorkItemUpdatedAtAscNullsFirst  WorkItemOrderBy = " updated_at ASC NULLS FIRST "
+	WorkItemUpdatedAtAscNullsLast   WorkItemOrderBy = " updated_at ASC NULLS LAST "
+	WorkItemDeletedAtDescNullsFirst WorkItemOrderBy = " deleted_at DESC NULLS FIRST "
+	WorkItemDeletedAtDescNullsLast  WorkItemOrderBy = " deleted_at DESC NULLS LAST "
+	WorkItemDeletedAtAscNullsFirst  WorkItemOrderBy = " deleted_at ASC NULLS FIRST "
+	WorkItemDeletedAtAscNullsLast   WorkItemOrderBy = " deleted_at ASC NULLS LAST "
 )
 
 // WorkItemWithOrderBy orders results by the given columns.

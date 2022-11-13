@@ -607,6 +607,8 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			})
 		}
 		// emit fkeys
+		// NOTE: do not use these for automatic join generation in replacement of o2o and o2m table comments,
+		// it will also generate joins for m2m lookup tables which pollutes everything
 		for _, fk := range t.ForeignKeys {
 			fkey, err := convertFKey(ctx, table, fk)
 			if err != nil {
@@ -1271,7 +1273,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 	buf.WriteString("const (\n")
 	for _, ob := range orderbys {
 		for _, opt := range orderByOpts {
-			buf.WriteString(fmt.Sprintf(`%s%s%s %sOrderBy = "%s %s"
+			buf.WriteString(fmt.Sprintf(`%s%s%s %sOrderBy = " %s %s "
 			`, name, ob.GoName, opt[0], name, ob.SQLName, opt[1]))
 		}
 	}
