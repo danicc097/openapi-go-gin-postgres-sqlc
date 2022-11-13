@@ -181,16 +181,16 @@ work_item_member.member ` +
 	return &wim, nil
 }
 
-// User returns the User associated with the WorkItemMember's (Member).
+// FKUser returns the User associated with the WorkItemMember's (Member).
 //
 // Generated from foreign key 'work_item_member_member_fkey'.
-func (wim *WorkItemMember) User(ctx context.Context, db DB) (*User, error) {
+func (wim *WorkItemMember) FKUser(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, wim.Member)
 }
 
-// WorkItem returns the WorkItem associated with the WorkItemMember's (WorkItemID).
+// FKWorkItem returns the WorkItem associated with the WorkItemMember's (WorkItemID).
 //
 // Generated from foreign key 'work_item_member_work_item_id_fkey'.
-func (wim *WorkItemMember) WorkItem(ctx context.Context, db DB) (*WorkItem, error) {
+func (wim *WorkItemMember) FKWorkItem(ctx context.Context, db DB) (*WorkItem, error) {
 	return WorkItemByWorkItemID(ctx, db, wim.WorkItemID)
 }

@@ -226,9 +226,9 @@ task_types.color ` +
 	return &tt, nil
 }
 
-// Team returns the Team associated with the TaskType's (TeamID).
+// FKTeam returns the Team associated with the TaskType's (TeamID).
 //
 // Generated from foreign key 'task_types_team_id_fkey'.
-func (tt *TaskType) Team(ctx context.Context, db DB) (*Team, error) {
+func (tt *TaskType) FKTeam(ctx context.Context, db DB) (*Team, error) {
 	return TeamByTeamID(ctx, db, int(tt.TeamID))
 }

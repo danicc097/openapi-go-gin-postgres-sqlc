@@ -34,8 +34,8 @@ func main() {
 		db.UserWithJoin(db.UserJoins{
 			TimeEntries: true,
 			UserAPIKey:  true,
-			WorkItems:   true,
-			Teams:       true,
+			WorkItems:   false,
+			Teams:       false,
 		}))
 	if err != nil {
 		log.Fatalf("db.UserByUsername: %s\n", err)

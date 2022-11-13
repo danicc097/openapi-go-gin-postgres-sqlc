@@ -27,6 +27,22 @@ create table teams (
   , unique (name , project_id)
 );
 
+create table user_api_keys (
+  user_api_key_id serial not null
+  , api_key text not null unique
+  , expires_on timestamp with time zone not null
+  --, expires_on timestamp without time zone not null
+  , primary key (user_api_key_id)
+);
+
+-- we can infer O2O for the user_id fk since PK and FK in a given table are the same
+-- but better be explicit. O2O when we don't want to clutter the original table with information,
+-- two cases:
+--  1) e.g. users and computers we could have users.computer_id and join using user_computers.computer_id
+-- and have a unique computers.user_id column to ensure O2O.
+-- TODO doing and generating it the wrong way! O2O comment goes on the FK, never on the PK!
+-- since that pk could be o2o, m2o, etc. depending on what table we are in.
+-- when we do tasks.task_type_id O2O comment -> wrong generation in the other table.
 create table users (
   user_id uuid default gen_random_uuid () not null
   , username text not null unique
@@ -41,6 +57,7 @@ create table users (
     first_name || ' ' || last_name
   end) stored
   , external_id text
+  , user_api_key_id int
   , scopes text[] default '{}' not null
   , role_rank smallint default 1 not null check (role_rank > 0)
   -- so that later on we can (1) append scopes and remove duplicates:
@@ -53,7 +70,10 @@ create table users (
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
   , primary key (user_id)
+  , foreign key (user_api_key_id) references user_api_keys (user_api_key_id) on delete cascade
 );
+
+comment on column users.user_api_key_id is 'cardinality:O2O';
 
 -- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
 create unique index on users (user_id , external_id)
@@ -196,6 +216,11 @@ create table tasks (
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade -- not unique, many tasks for the same work_item_id
 );
 
+comment on column tasks.work_item_id is 'cardinality:O2M';
+
+comment on column tasks.task_type_id is 'cardinality:O2O';
+
+-- we're doing it the wrong way. O2O
 create table work_item_member (
   work_item_id bigint not null
   , member uuid not null
@@ -305,24 +330,6 @@ create table movies (
   , synopsis text not null
   , primary key (movie_id)
 );
-
-create table user_api_keys (
-  user_id uuid not null
-  , api_key text not null unique
-  , expires_on timestamp with time zone not null
-  --, expires_on timestamp without time zone not null
-  , primary key (user_id)
-  , foreign key (user_id) references users (user_id) on delete cascade
-);
-
--- we can infer O2O for the user_id fk since PK and FK in a given table are the same
--- but better be explicit. O2O when we don't want to clutter the original table with information,
--- two cases:
---  1) e.g. users and computers we could have users.computer_id and join using user_computers.computer_id
--- and have a unique computers.user_id column to ensure O2O.
--- Or 2) like done above let user_id be both pk and fk. Like stated before, better be explicit and have cardinality:O2O
--- comment on the FK (user_computers.computer_id in (1), user_computers.user_id in (2))
-comment on column user_api_keys.user_id is 'cardinality:O2O';
 
 create or replace view v.users as
 select

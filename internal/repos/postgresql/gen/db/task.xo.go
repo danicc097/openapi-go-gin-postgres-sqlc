@@ -25,6 +25,7 @@ type Task struct {
 	UpdatedAt          time.Time    `json:"updated_at" db:"updated_at"`                     // updated_at
 	DeletedAt          null.Time    `json:"deleted_at" db:"deleted_at"`                     // deleted_at
 
+	TaskType    *TaskType    `json:"task_type"`    // O2O
 	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
 	// xo fields
 	_exists, _deleted bool
@@ -74,6 +75,7 @@ func TaskWithOrderBy(rows ...TaskOrderBy) TaskSelectConfigOption {
 }
 
 type TaskJoins struct {
+	TaskType    bool
 	TimeEntries bool
 }
 
@@ -216,9 +218,12 @@ tasks.target_date_timezone,
 tasks.created_at,
 tasks.updated_at,
 tasks.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
+(case when $1::boolean = true then row_to_json(task_types.*) end)::jsonb as task_type,
+(case when $2::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
 		`FROM public.tasks ` +
-		`-- O2M join generated from "time_entries_task_id_fkey"
+		`-- O2O join generated from "tasks_task_type_id_fkey"
+left join task_types on task_types.task_type_id = tasks.task_type_id
+-- O2M join generated from "time_entries_task_id_fkey"
 left join (
   select
   task_id as time_entries_task_id
@@ -227,7 +232,7 @@ left join (
     time_entries
    group by
         task_id) joined_time_entries on joined_time_entries.time_entries_task_id = tasks.task_id` +
-		` WHERE task_id = $2 `
+		` WHERE task_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -237,22 +242,22 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, taskID).Scan(&t.TaskID, &t.TaskTypeID, &t.WorkItemID, &t.Title, &t.Metadata, &t.TargetDate, &t.TargetDateTimezone, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt, &t.TimeEntries); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TaskType, c.joins.TimeEntries, taskID).Scan(&t.TaskID, &t.TaskTypeID, &t.WorkItemID, &t.Title, &t.Metadata, &t.TargetDate, &t.TargetDateTimezone, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt, &t.TaskType, &t.TimeEntries); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil
 }
 
-// TaskType returns the TaskType associated with the Task's (TaskTypeID).
+// FKTaskType returns the TaskType associated with the Task's (TaskTypeID).
 //
 // Generated from foreign key 'tasks_task_type_id_fkey'.
-func (t *Task) TaskType(ctx context.Context, db DB) (*TaskType, error) {
+func (t *Task) FKTaskType(ctx context.Context, db DB) (*TaskType, error) {
 	return TaskTypeByTaskTypeID(ctx, db, t.TaskTypeID)
 }
 
-// WorkItem returns the WorkItem associated with the Task's (WorkItemID).
+// FKWorkItem returns the WorkItem associated with the Task's (WorkItemID).
 //
 // Generated from foreign key 'tasks_work_item_id_fkey'.
-func (t *Task) WorkItem(ctx context.Context, db DB) (*WorkItem, error) {
+func (t *Task) FKWorkItem(ctx context.Context, db DB) (*WorkItem, error) {
 	return WorkItemByWorkItemID(ctx, db, t.WorkItemID)
 }

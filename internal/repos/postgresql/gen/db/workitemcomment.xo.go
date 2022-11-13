@@ -264,16 +264,16 @@ work_item_comments.updated_at ` +
 	return res, nil
 }
 
-// User returns the User associated with the WorkItemComment's (UserID).
+// FKUser returns the User associated with the WorkItemComment's (UserID).
 //
 // Generated from foreign key 'work_item_comments_user_id_fkey'.
-func (wic *WorkItemComment) User(ctx context.Context, db DB) (*User, error) {
+func (wic *WorkItemComment) FKUser(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, wic.UserID)
 }
 
-// WorkItem returns the WorkItem associated with the WorkItemComment's (WorkItemID).
+// FKWorkItem returns the WorkItem associated with the WorkItemComment's (WorkItemID).
 //
 // Generated from foreign key 'work_item_comments_work_item_id_fkey'.
-func (wic *WorkItemComment) WorkItem(ctx context.Context, db DB) (*WorkItem, error) {
+func (wic *WorkItemComment) FKWorkItem(ctx context.Context, db DB) (*WorkItem, error) {
 	return WorkItemByWorkItemID(ctx, db, wic.WorkItemID)
 }

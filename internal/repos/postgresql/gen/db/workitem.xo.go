@@ -24,6 +24,7 @@ type WorkItem struct {
 	UpdatedAt    time.Time    `json:"updated_at" db:"updated_at"`         // updated_at
 	DeletedAt    null.Time    `json:"deleted_at" db:"deleted_at"`         // deleted_at
 
+	Tasks            *[]Task            `json:"tasks"`              // O2M
 	WorkItemComments *[]WorkItemComment `json:"work_item_comments"` // O2M
 	Users            *[]User            `json:"users"`              // M2M
 	// xo fields
@@ -70,6 +71,7 @@ func WorkItemWithOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 }
 
 type WorkItemJoins struct {
+	Tasks            bool
 	WorkItemComments bool
 	Users            bool
 }
@@ -212,10 +214,20 @@ work_items.closed,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
-(case when $2::boolean = true then joined_users.users end)::jsonb as users ` +
+(case when $1::boolean = true then joined_tasks.tasks end)::jsonb as tasks,
+(case when $2::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
+(case when $3::boolean = true then joined_users.users end)::jsonb as users ` +
 		`FROM public.work_items ` +
-		`-- O2M join generated from "work_item_comments_work_item_id_fkey"
+		`-- O2M join generated from "tasks_work_item_id_fkey"
+left join (
+  select
+  work_item_id as tasks_work_item_id
+    , json_agg(tasks.*) as tasks
+  from
+    tasks
+   group by
+        work_item_id) joined_tasks on joined_tasks.tasks_work_item_id = work_items.work_item_id
+-- O2M join generated from "work_item_comments_work_item_id_fkey"
 left join (
   select
   work_item_id as work_item_comments_work_item_id
@@ -246,7 +258,7 @@ left join (
 						users))
 			group by
 				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id` +
-		` WHERE work_item_id = $3 `
+		` WHERE work_item_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -256,22 +268,22 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItemComments, c.joins.Users, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.WorkItemComments, &wi.Users); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.Tasks, c.joins.WorkItemComments, c.joins.Users, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.Tasks, &wi.WorkItemComments, &wi.Users); err != nil {
 		return nil, logerror(err)
 	}
 	return &wi, nil
 }
 
-// KanbanStep returns the KanbanStep associated with the WorkItem's (KanbanStepID).
+// FKKanbanStep returns the KanbanStep associated with the WorkItem's (KanbanStepID).
 //
 // Generated from foreign key 'work_items_kanban_step_id_fkey'.
-func (wi *WorkItem) KanbanStep(ctx context.Context, db DB) (*KanbanStep, error) {
+func (wi *WorkItem) FKKanbanStep(ctx context.Context, db DB) (*KanbanStep, error) {
 	return KanbanStepByKanbanStepID(ctx, db, wi.KanbanStepID)
 }
 
-// Team returns the Team associated with the WorkItem's (TeamID).
+// FKTeam returns the Team associated with the WorkItem's (TeamID).
 //
 // Generated from foreign key 'work_items_team_id_fkey'.
-func (wi *WorkItem) Team(ctx context.Context, db DB) (*Team, error) {
+func (wi *WorkItem) FKTeam(ctx context.Context, db DB) (*Team, error) {
 	return TeamByTeamID(ctx, db, wi.TeamID)
 }

@@ -227,16 +227,16 @@ user_team.user_id ` +
 	return res, nil
 }
 
-// Team returns the Team associated with the UserTeam's (TeamID).
+// FKTeam returns the Team associated with the UserTeam's (TeamID).
 //
 // Generated from foreign key 'user_team_team_id_fkey'.
-func (ut *UserTeam) Team(ctx context.Context, db DB) (*Team, error) {
+func (ut *UserTeam) FKTeam(ctx context.Context, db DB) (*Team, error) {
 	return TeamByTeamID(ctx, db, ut.TeamID)
 }
 
-// User returns the User associated with the UserTeam's (UserID).
+// FKUser returns the User associated with the UserTeam's (UserID).
 //
 // Generated from foreign key 'user_team_user_id_fkey'.
-func (ut *UserTeam) User(ctx context.Context, db DB) (*User, error) {
+func (ut *UserTeam) FKUser(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, ut.UserID)
 }

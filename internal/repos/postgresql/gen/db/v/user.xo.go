@@ -13,19 +13,20 @@ import (
 
 // User represents a row from 'v.users'.
 type User struct {
-	UserID     uuid.NullUUID `json:"user_id" db:"user_id"`         // user_id
-	Username   null.String   `json:"username" db:"username"`       // username
-	Email      null.String   `json:"email" db:"email"`             // email
-	FirstName  null.String   `json:"first_name" db:"first_name"`   // first_name
-	LastName   null.String   `json:"last_name" db:"last_name"`     // last_name
-	FullName   null.String   `json:"full_name" db:"full_name"`     // full_name
-	ExternalID null.String   `json:"external_id" db:"external_id"` // external_id
-	Scopes     []string      `json:"scopes" db:"scopes"`           // scopes
-	RoleRank   null.Int      `json:"role_rank" db:"role_rank"`     // role_rank
-	CreatedAt  null.Time     `json:"created_at" db:"created_at"`   // created_at
-	UpdatedAt  null.Time     `json:"updated_at" db:"updated_at"`   // updated_at
-	DeletedAt  null.Time     `json:"deleted_at" db:"deleted_at"`   // deleted_at
-	Teams      []any         `json:"teams" db:"teams"`             // teams
+	UserID       uuid.NullUUID `json:"user_id" db:"user_id"`                 // user_id
+	Username     null.String   `json:"username" db:"username"`               // username
+	Email        null.String   `json:"email" db:"email"`                     // email
+	FirstName    null.String   `json:"first_name" db:"first_name"`           // first_name
+	LastName     null.String   `json:"last_name" db:"last_name"`             // last_name
+	FullName     null.String   `json:"full_name" db:"full_name"`             // full_name
+	ExternalID   null.String   `json:"external_id" db:"external_id"`         // external_id
+	UserAPIKeyID null.Int      `json:"user_api_key_id" db:"user_api_key_id"` // user_api_key_id
+	Scopes       []string      `json:"scopes" db:"scopes"`                   // scopes
+	RoleRank     null.Int      `json:"role_rank" db:"role_rank"`             // role_rank
+	CreatedAt    null.Time     `json:"created_at" db:"created_at"`           // created_at
+	UpdatedAt    null.Time     `json:"updated_at" db:"updated_at"`           // updated_at
+	DeletedAt    null.Time     `json:"deleted_at" db:"deleted_at"`           // deleted_at
+	Teams        []any         `json:"teams" db:"teams"`                     // teams
 }
 
 type UserSelectConfig struct {

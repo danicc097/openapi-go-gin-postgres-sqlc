@@ -179,16 +179,16 @@ work_item_work_item_tag.work_item_id ` +
 	return res, nil
 }
 
-// WorkItem returns the WorkItem associated with the WorkItemWorkItemTag's (WorkItemID).
+// FKWorkItem returns the WorkItem associated with the WorkItemWorkItemTag's (WorkItemID).
 //
 // Generated from foreign key 'work_item_work_item_tag_work_item_id_fkey'.
-func (wiwit *WorkItemWorkItemTag) WorkItem(ctx context.Context, db DB) (*WorkItem, error) {
+func (wiwit *WorkItemWorkItemTag) FKWorkItem(ctx context.Context, db DB) (*WorkItem, error) {
 	return WorkItemByWorkItemID(ctx, db, wiwit.WorkItemID)
 }
 
-// WorkItemTag returns the WorkItemTag associated with the WorkItemWorkItemTag's (WorkItemTagID).
+// FKWorkItemTag returns the WorkItemTag associated with the WorkItemWorkItemTag's (WorkItemTagID).
 //
 // Generated from foreign key 'work_item_work_item_tag_work_item_tag_id_fkey'.
-func (wiwit *WorkItemWorkItemTag) WorkItemTag(ctx context.Context, db DB) (*WorkItemTag, error) {
+func (wiwit *WorkItemWorkItemTag) FKWorkItemTag(ctx context.Context, db DB) (*WorkItemTag, error) {
 	return WorkItemTagByWorkItemTagID(ctx, db, wiwit.WorkItemTagID)
 }

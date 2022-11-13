@@ -320,30 +320,30 @@ time_entries.duration_minutes ` +
 	return res, nil
 }
 
-// Activity returns the Activity associated with the TimeEntry's (ActivityID).
+// FKActivity returns the Activity associated with the TimeEntry's (ActivityID).
 //
 // Generated from foreign key 'time_entries_activity_id_fkey'.
-func (te *TimeEntry) Activity(ctx context.Context, db DB) (*Activity, error) {
+func (te *TimeEntry) FKActivity(ctx context.Context, db DB) (*Activity, error) {
 	return ActivityByActivityID(ctx, db, te.ActivityID)
 }
 
-// Task returns the Task associated with the TimeEntry's (TaskID).
+// FKTask returns the Task associated with the TimeEntry's (TaskID).
 //
 // Generated from foreign key 'time_entries_task_id_fkey'.
-func (te *TimeEntry) Task(ctx context.Context, db DB) (*Task, error) {
+func (te *TimeEntry) FKTask(ctx context.Context, db DB) (*Task, error) {
 	return TaskByTaskID(ctx, db, te.TaskID.Int64)
 }
 
-// Team returns the Team associated with the TimeEntry's (TeamID).
+// FKTeam returns the Team associated with the TimeEntry's (TeamID).
 //
 // Generated from foreign key 'time_entries_team_id_fkey'.
-func (te *TimeEntry) Team(ctx context.Context, db DB) (*Team, error) {
+func (te *TimeEntry) FKTeam(ctx context.Context, db DB) (*Team, error) {
 	return TeamByTeamID(ctx, db, int(te.TeamID.Int64))
 }
 
-// User returns the User associated with the TimeEntry's (UserID).
+// FKUser returns the User associated with the TimeEntry's (UserID).
 //
 // Generated from foreign key 'time_entries_user_id_fkey'.
-func (te *TimeEntry) User(ctx context.Context, db DB) (*User, error) {
+func (te *TimeEntry) FKUser(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, te.UserID)
 }
