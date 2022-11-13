@@ -532,7 +532,7 @@ x.run-dev() {
 
           for pid in "${pids[@]}"; do
             # air and vite spawn processes as well, need to kill those (whose parent is pid), kill $pid will not kill children. pkill -P would also work
-            echo "$(list_descendants $pid)"
+            list_descendants $pid
             kill "$(list_descendants $pid)"
           done
           pids=()
