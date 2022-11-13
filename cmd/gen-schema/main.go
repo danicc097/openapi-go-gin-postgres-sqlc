@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
+	kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
 	"github.com/swaggest/openapi-go/openapi3"
 )
 
@@ -21,7 +24,8 @@ func main() {
 	reflector := openapi3.Reflector{}
 
 	// we could load the existing spec to reflector.Spec: https://pkg.go.dev/github.com/swaggest/openapi-go/openapi3#example-Spec.UnmarshalYAML
-	// and if "x-db-struct" found in an OPERATION
+	// and if "x-db-struct" found in an OPERATION.
+	// NOTE: comments are gone. should print result to openapi.gen.yaml and use that since this is in gen/postgen step
 	reflector.Spec = &openapi3.Spec{Openapi: "3.0.3"}
 
 	reflector.Spec.Info.
@@ -64,4 +68,32 @@ func main() {
 	}
 
 	fmt.Println(string(schema))
+
+	var s openapi3.Spec
+
+	schemaBlob, err := os.ReadFile("openapi.yaml")
+	if err != nil {
+		log.Fatalf("error opening schema file: %s", err)
+	}
+
+	oas, err := rest.ReadOpenAPI("openapi.yaml")
+	if err != nil {
+		log.Fatalf("ReadOpenAPI: %s", err)
+	}
+	oas.Components.SecuritySchemes = kinopenapi3.SecuritySchemes{} // error
+
+	fmt.Println(string(schemaBlob))
+	specWithoutSec, err := oas.MarshalJSON()
+	if err != nil {
+		log.Fatalf("oas.MarshalJSON: %s", err)
+	}
+	fmt.Println(string(specWithoutSec))
+
+	if err := s.UnmarshalYAML(specWithoutSec); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(s.Info.Title)
+	// fmt.Println(s.Info.Title)
+	// fmt.Println(s.Components.Schemas.MapOfSchemaOrRefValues["Error"].Schema.Properties["code"].Schema.MapOfAnything["x-foo"])
 }
