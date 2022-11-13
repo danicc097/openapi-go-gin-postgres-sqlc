@@ -11,11 +11,11 @@ export type Message = string
 export type ErrorType = string
 export type Detail = ValidationError[]
 /**
- * Role automatically generated from roles.json
+ * Role automatically generated from roles.json keys
  */
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 /**
- * Scope automatically generated from scopes.json
+ * Scope automatically generated from scopes.json keys
  */
 export type Scope =
   | 'test-scope'

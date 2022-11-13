@@ -2,12 +2,14 @@ package rest
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -16,7 +18,11 @@ import (
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	rv8 "github.com/go-redis/redis/v8"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/zitadel/oidc/pkg/client/rp"
+	httphelper "github.com/zitadel/oidc/pkg/http"
+	"github.com/zitadel/oidc/pkg/oidc"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -44,10 +50,11 @@ type Config struct {
 	Redis   *rv8.Client
 	Logger  *zap.Logger
 	// SpecPath is the OpenAPI spec filepath.
-	SpecPath        string
-	MovieSvcClient  v1.MovieGenreClient
-	ScopePolicyPath string
-	RolePolicyPath  string
+	SpecPath               string
+	MovieSvcClient         v1.MovieGenreClient
+	ScopePolicyPath        string
+	RolePolicyPath         string
+	MyProviderCallbackPath string
 }
 
 func (c *Config) validate() error {
@@ -92,6 +99,8 @@ func WithMiddlewares(mws ...gin.HandlerFunc) serverOption {
 		s.middlewares = mws
 	}
 }
+
+var key = []byte("test1234test1234")
 
 // NewServer returns a new http server.
 func NewServer(conf Config, opts ...serverOption) (*server, error) {
@@ -141,6 +150,80 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	vg := router.Group(os.Getenv("API_VERSION"))
 	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
 
+	// -- oidc
+	clientID := os.Getenv("OIDC_CLIENT_ID")
+	clientSecret := os.Getenv("OIDC_CLIENT_SECRET")
+	keyPath := os.Getenv("OIDC_KEY_PATH") // not used
+	issuer := os.Getenv("OIDC_ISSUER")
+	scopes := strings.Split(os.Getenv("OIDC_SCOPES"), " ")
+
+	redirectURI := internaldomain.BuildApiURL(conf.MyProviderCallbackPath)
+	cookieHandler := httphelper.NewCookieHandler(key, key, httphelper.WithUnsecure())
+
+	options := []rp.Option{
+		rp.WithCookieHandler(cookieHandler),
+		rp.WithVerifierOpts(rp.WithIssuedAtOffset(5 * time.Second)),
+	}
+	if clientSecret == "" {
+		options = append(options, rp.WithPKCE(cookieHandler))
+	}
+	if keyPath != "" {
+		options = append(options, rp.WithJWTProfile(rp.SignerFromKeyPath(keyPath)))
+	}
+	provider, err := rp.NewRelyingPartyOIDC(issuer, clientID, clientSecret, redirectURI, scopes, options...)
+	conf.Logger.Sugar().Infof("issuer %s", issuer)
+	conf.Logger.Sugar().Infof("redirectURI %s", redirectURI)
+	if err != nil {
+		return nil, fmt.Errorf("error creating provider %s", err)
+	}
+
+	// generate some state (representing the state of the user in your application,
+	// e.g. the page where he was before sending him to login
+	state := func() string {
+		return uuid.New().String()
+	}
+
+	// register the AuthURLHandler at your preferred path
+	// the AuthURLHandler creates the auth request and redirects the user to the auth server
+	// including state handling with secure cookie and the possibility to use PKCE
+	vg.Any("/auth/myprovider/login", gin.WrapH(rp.AuthURLHandler(state, provider)))
+
+	// for demonstration purposes the returned userinfo response is written as JSON object onto response
+	marshalUserinfo := func(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens, state string, rp rp.RelyingParty, info oidc.UserInfo) {
+		data, err := json.Marshal(info)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Write(data)
+	}
+
+	// you could also just take the access_token and id_token without calling the userinfo endpoint:
+	//
+	// marshalToken := func(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens, state string, rp rp.RelyingParty) {
+	//	data, err := json.Marshal(tokens)
+	//	if err != nil {
+	//		http.Error(w, err.Error(), http.StatusInternalServerError)
+	//		return
+	//	}
+	//	w.Write(data)
+	//}
+
+	// register the CodeExchangeHandler at the conf.MyProviderCallbackPath
+	// the CodeExchangeHandler handles the auth response, creates the token request and calls the callback function
+	// with the returned tokens from the token endpoint
+	// in this example the callback function itself is wrapped by the UserinfoCallback which
+	// will call the Userinfo endpoint, check the sub and pass the info into the callback function
+	// TODO in reality we would redirect to our app frontend instead
+	vg.Any(conf.MyProviderCallbackPath, gin.WrapH(rp.CodeExchangeHandler(rp.UserinfoCallback(marshalUserinfo), provider)))
+
+	// if you would use the callback without calling the userinfo endpoint, simply switch the callback handler for:
+	//
+	// http.Handle(conf.MyProviderCallbackPath, rp.CodeExchangeHandler(marshalToken, provider))
+
+	// TODO /auth/logout
+
+	// -- openapi
 	oaOptions := OAValidatorOptions{
 		Options: openapi3filter.Options{
 			ExcludeRequestBody:    false,
@@ -270,14 +353,15 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 	}
 
 	srv, err := NewServer(Config{
-		Address:         address,
-		Pool:            pool,
-		Redis:           rdb,
-		Logger:          logger,
-		SpecPath:        specPath,
-		ScopePolicyPath: scopePolicyPath,
-		RolePolicyPath:  rolePolicyPath,
-		MovieSvcClient:  v1.NewMovieGenreClient(movieSvcConn),
+		Address:                address,
+		Pool:                   pool,
+		Redis:                  rdb,
+		Logger:                 logger,
+		SpecPath:               specPath,
+		ScopePolicyPath:        scopePolicyPath,
+		RolePolicyPath:         rolePolicyPath,
+		MovieSvcClient:         v1.NewMovieGenreClient(movieSvcConn),
+		MyProviderCallbackPath: "/auth/myprovider/callback",
 	})
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "NewServer")

@@ -387,7 +387,13 @@ x.gen() {
 
     wait
 
-    restart_pid "$(pidof gopls)"
+    # vscode will randomly lose connection when restarting
+    # for pid in $(pidof gopls); do
+    #   restart_pid $pid &
+    # done
+
+    wait
+
     x.lint
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -447,7 +453,7 @@ x.test.backend-setup() {
   { { {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts
-    run_shared_services up -d --remove-orphans
+    run_shared_services up -d --build --remove-orphans
     [[ -z $NO_GEN ]] && x.gen
     drop_and_recreate_db "postgres_test"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -473,7 +479,7 @@ x.build() {
 
 # Run backend with hot-reloading.
 x.run.backend-hr() {
-  run_shared_services up -d --remove-orphans
+  run_shared_services up -d --build --remove-orphans
   # TODO new include_files flag in fork, e.g. for openapi.yaml.
   # else generated .yaml files trigger rebuild.
   # --build.include_files "openapi.yaml" \
@@ -542,7 +548,7 @@ x.run-prod() {
   env="prod"
 
   docker network create traefik-net 2>/dev/null || true
-  run_shared_services up -d --remove-orphans
+  run_shared_services up -d --build --remove-orphans
   x.db.recreate
 
   cd frontend && pnpm run generate && cd - >/dev/null
@@ -826,6 +832,7 @@ run_shared_services() {
   docker-compose \
     -p "$PROJECT_PREFIX" \
     -f docker-compose.shared.yml \
+    -f docker-compose.oidc.yml \
     --env-file ../.env."$env" \
     "$@" 2>&1 # https://github.com/docker/compose/issues/7346
   cd - >/dev/null

@@ -36,7 +36,7 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Scope": {
-      "description": "Scope automatically generated from scopes.json",
+      "description": "Scope automatically generated from scopes.json keys",
       "type": "string",
       "enum": [
         "test-scope",
@@ -50,7 +50,7 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Role": {
-      "description": "Role automatically generated from roles.json",
+      "description": "Role automatically generated from roles.json keys",
       "type": "string",
       "enum": [
         "guest",
