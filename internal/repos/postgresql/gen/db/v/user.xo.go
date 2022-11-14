@@ -5,28 +5,27 @@ package v
 import (
 	"fmt"
 	"strings"
-
-	"gopkg.in/guregu/null.v4"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 // User represents a row from 'v.users'.
 type User struct {
-	UserID     uuid.NullUUID `json:"user_id" db:"user_id"`         // user_id
-	Username   *string       `json:"username" db:"username"`       // username
-	Email      *string       `json:"email" db:"email"`             // email
-	FirstName  *string       `json:"first_name" db:"first_name"`   // first_name
-	LastName   *string       `json:"last_name" db:"last_name"`     // last_name
-	FullName   *string       `json:"full_name" db:"full_name"`     // full_name
-	ExternalID *string       `json:"external_id" db:"external_id"` // external_id
-	APIKeyID   *int64        `json:"api_key_id" db:"api_key_id"`   // api_key_id
-	Scopes     []string      `json:"scopes" db:"scopes"`           // scopes
-	RoleRank   *int16        `json:"role_rank" db:"role_rank"`     // role_rank
-	CreatedAt  null.Time     `json:"created_at" db:"created_at"`   // created_at
-	UpdatedAt  null.Time     `json:"updated_at" db:"updated_at"`   // updated_at
-	DeletedAt  null.Time     `json:"deleted_at" db:"deleted_at"`   // deleted_at
-	Teams      []any         `json:"teams" db:"teams"`             // teams
+	UserID     *uuid.UUID `json:"user_id" db:"user_id"`         // user_id
+	Username   *string    `json:"username" db:"username"`       // username
+	Email      *string    `json:"email" db:"email"`             // email
+	FirstName  *string    `json:"first_name" db:"first_name"`   // first_name
+	LastName   *string    `json:"last_name" db:"last_name"`     // last_name
+	FullName   *string    `json:"full_name" db:"full_name"`     // full_name
+	ExternalID *string    `json:"external_id" db:"external_id"` // external_id
+	APIKeyID   *int64     `json:"api_key_id" db:"api_key_id"`   // api_key_id
+	Scopes     []string   `json:"scopes" db:"scopes"`           // scopes
+	RoleRank   *int16     `json:"role_rank" db:"role_rank"`     // role_rank
+	CreatedAt  *time.Time `json:"created_at" db:"created_at"`   // created_at
+	UpdatedAt  *time.Time `json:"updated_at" db:"updated_at"`   // updated_at
+	DeletedAt  *time.Time `json:"deleted_at" db:"deleted_at"`   // deleted_at
+	Teams      []any      `json:"teams" db:"teams"`             // teams
 }
 
 type UserSelectConfig struct {

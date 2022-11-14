@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
-	"github.com/jackc/pgtype"
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
 	"github.com/swaggest/openapi-go/openapi3"
@@ -43,7 +43,7 @@ func main() {
 			Count uint   `json:"count"`
 			Name  string `json:"name"`
 		} `json:"items,omitempty"`
-		DeletedAt pgtype.Date `json:"deleted_at" db:"deleted_at" pattern:"^[a-z]{2}-[A-Z]{2}$"`
+		DeletedAt *time.Time `json:"deleted_at" db:"deleted_at"`
 	}
 
 	type resp struct {
@@ -60,7 +60,7 @@ func main() {
 	putOp := openapi3.Operation{}
 
 	handleError(reflector.SetRequest(&putOp, new(req), http.MethodPut))
-	// handleError(reflector.SetJSONResponse(&putOp, new(db.User), http.StatusOK))
+	handleError(reflector.SetJSONResponse(&putOp, new(db.User), http.StatusOK))
 	// handleError(reflector.SetJSONResponse(&putOp, new([]db.User), http.StatusConflict))
 	handleError(reflector.Spec.AddOperation(http.MethodPut, "/things/{id}", putOp))
 

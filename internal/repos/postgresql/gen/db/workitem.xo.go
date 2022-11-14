@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgtype"
-	"gopkg.in/guregu/null.v4"
 )
 
 // WorkItem represents a row from 'public.work_items'.
@@ -22,7 +21,7 @@ type WorkItem struct {
 	Closed       bool         `json:"closed" db:"closed"`                 // closed
 	CreatedAt    time.Time    `json:"created_at" db:"created_at"`         // created_at
 	UpdatedAt    time.Time    `json:"updated_at" db:"updated_at"`         // updated_at
-	DeletedAt    null.Time    `json:"deleted_at" db:"deleted_at"`         // deleted_at
+	DeletedAt    *time.Time   `json:"deleted_at" db:"deleted_at"`         // deleted_at
 
 	Tasks            *[]Task            `json:"tasks"`              // O2M
 	WorkItemComments *[]WorkItemComment `json:"work_item_comments"` // O2M

@@ -24,7 +24,6 @@ import (
 {{- if driver "postgres" }}
 	"github.com/lib/pq"
 	"github.com/lib/pq/hstore"
-  "gopkg.in/guregu/null.v4"
 {{ end }}{{ range imports }}
 	{{ with .Alias }}{{ . }} {{ end }}{{ .Pkg }}
 {{ end }}
