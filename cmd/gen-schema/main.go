@@ -1,17 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"go/importer"
-	"go/token"
+	"flag"
 	"log"
 	"net/http"
 	"os"
-	"reflect"
 	"time"
-	"unsafe"
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/swaggest/openapi-go/openapi3"
 )
 
@@ -20,12 +18,6 @@ func handleError(err error) {
 		log.Fatal(err)
 	}
 }
-
-//go:linkname typelinks reflect.typelinks
-func typelinks() (sections []unsafe.Pointer, offset [][]int32)
-
-//go:linkname add reflect.add
-func add(p unsafe.Pointer, x uintptr, whySafe string) unsafe.Pointer
 
 type req struct {
 	ID     string `path:"id" example:"XXX-XXXXX"`
@@ -49,8 +41,12 @@ type resp struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// clear && go build -o gen-schema cmd/gen-schema/main.go && ./gen-schema -env .env.dev
 func main() {
+	var structName string
+
+	flag.StringVar(&structName, "struct-name", "", "db package struct name to generate an OpenAPI schema for")
+	flag.Parse()
+
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
 	// we could load the existing spec to reflector.Spec: https://pkg.go.dev/github.com/swaggest/openapi-go/openapi3#example-Spec.UnmarshalYAML
@@ -67,98 +63,25 @@ func main() {
 	// we can edit an existing op by getting all operations with "x-db-struct", trace back to the openapi3.Operation
 	putOp := openapi3.Operation{}
 
-	// FIXME this wont work, we will have access only to things referenced by User. the rest of structs are missing
-	// fmt.Println(db.User{}) // dummy call to dynamically get types in package
-	// modelsPkg := "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	var dbTypes []reflect.Type
-	var dbTypesdd []string
-	sections, offsets := typelinks()
-	for i, base := range sections {
-		for _, offset := range offsets[i] {
-			typeAddr := add(base, uintptr(offset), "")
-			typ := reflect.TypeOf(*(*interface{})(unsafe.Pointer(&typeAddr)))
-			// if typ.Kind() != reflect.Struct {
-			// 	continue
-			// }
-			dbTypes = append(dbTypes, typ)
-			dbTypesdd = append(dbTypesdd, typ.String()+"|"+typ.Kind().String())
-			// fmt.Println("--------------")
-			// fmt.Println(typ.PkgPath())
-			// fmt.Println(typ.String())
-			// reflect.New()
-		}
-	}
-	dbFiles, err := os.ReadDir("./internal/repos/postgresql/gen/db")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fs := token.NewFileSet()
-	for _, f := range dbFiles {
-		if f.IsDir() {
-			continue
-		}
-		i, err := f.Info()
-		if err != nil {
-			log.Fatalf("info")
-		}
-
-		fs.AddFile(f.Name(), fs.Base(), int(i.Size()))
-	}
-
-	defaultImporter := importer.ForCompiler(fs, "source", nil)
-	pkg, err := defaultImporter.Import("github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db")
-	if err != nil {
-		fmt.Printf("error: %s\n", err.Error())
-		return
-	}
-	for _, declName := range pkg.Scope().Names() {
-		fmt.Println(declName)
-	}
-	// fix missing structs! Activity, etc. for some reason dont appear
-	// for i, base := range sections {
-	// 	for _, offset := range offsets[i] {
-	// 		typeAddr := add(base, uintptr(offset), "")
-	// 		typ := reflect.TypeOf(*(*interface{})(unsafe.Pointer(&typeAddr)))
-	// 		if typ.Kind() != reflect.Pointer {
-	// 			continue
-	// 		}
-	// 		if typ.Elem().Kind() != reflect.Struct {
-	// 			continue
-	// 		}
-	// 		st := typ.Elem()
-	// 		dbTypes = append(dbTypes, st)
-	// 		dbTypesdd = append(dbTypesdd, st.String()+"|"+st.Kind().String())
-	// 		// fmt.Println("--------------")
-	// 		fmt.Println(st.PkgPath())
-	// 		// fmt.Println(st.String())
-	// 		// reflect.New()
-	// 	}
-	// }
-	// fmt.Println(dbTypesdd)
-
 	handleError(reflector.SetRequest(&putOp, new(req), http.MethodPut))
-	// handleError(reflector.SetJSONResponse(&putOp, new(db.User), http.StatusOK))
-	// handleError(reflector.SetJSONResponse(&putOp, new([]db.User), http.StatusConflict))
-	handleError(reflector.Spec.AddOperation(http.MethodPut, "/things/{id}", putOp))
-	// reflector.Spec.Paths.MapOfPathItemValues["fefse"].MapOfOperationValues["test"].
-	schema, err := reflector.Spec.MarshalYAML()
-	if err != nil {
-		log.Fatal(err)
+	handleError(reflector.SetJSONResponse(&putOp, new(db.User), http.StatusOK))
+	st, ok := postgen.DbStructs[structName]
+	if !ok {
+		log.Fatalf("struct-name %s does not exist in db package", structName)
 	}
+	handleError(reflector.SetJSONResponse(&putOp, st, http.StatusConflict))
+	handleError(reflector.Spec.AddOperation(http.MethodPut, "/things/{id}", putOp))
+	// reflector.Spec.Paths.MapOfPathItemValues["mypath"].MapOfOperationValues["method"].
+	schema, err := reflector.Spec.MarshalYAML()
+	handleError(err)
 
 	// fmt.Println(string(schema))
 
 	os.WriteFile("openapi.test.gen.yaml", schema, 0o777)
-	fmt.Println("saved spec")
 
 	// var s openapi3.Spec
-
-	// TODO pgx types instead of null.* package. For time use pgtype.Date /pgtype.Timestamptz etc.
-	// pgtype supports json (un)marshalling like `null.v4`
-	// openapi-go needs some kind of annotation to tell its nullable: true and format: date-time or whatever
-	// https://github.com/jackc/pgtype
 	// have to merge with our own (done easily but comments are lost. output to openapi.gen.yaml, we are in postgen step so doesnt matter)
+	// have to change frontend generation, swaggerUI paths
 	// schemaBlob, err := os.ReadFile("openapi.yaml")
 	// if err != nil {
 	// 	log.Fatalf("error opening schema file: %s", err)

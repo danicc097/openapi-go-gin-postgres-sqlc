@@ -97,7 +97,7 @@ paths:
       # a x-db-request (sqlc params struct).
       # this belongs in postgen (need xo/sqlc output.)
       # we can use either sqlc result row struct or complete xo models
-      x-db-struct: db.User
+      x-db-struct: User
       responses:
         "200":
           content:
