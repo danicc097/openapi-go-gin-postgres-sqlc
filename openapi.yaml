@@ -92,7 +92,10 @@ paths:
       <<: *path-security
       summary: returns the logged in user
       operationId: GetCurrentUser
-      # TODO update reflector.Spec for all operations with a x-db-struct. this belongs in postgen (need xo/sqlc output.)
+      # TODO update reflector.Spec for all operations that contain
+      # a x-db-response (either sqlc result rows struct or xo models).
+      # a x-db-request (sqlc params struct).
+      # this belongs in postgen (need xo/sqlc output.)
       # we can use either sqlc result row struct or complete xo models
       x-db-struct: db.User
       responses:

@@ -6,6 +6,8 @@ openapi-generator-cli.jar
 /post-generate-api
 /postgen
 /pregen
+/gen-schema
+/cli
 /oapi-codegen
 .openapi-generator
 **/swagger-ui/**/*
@@ -23,7 +25,6 @@ go.work*
 whiteboard.excalidraw
 heredoc-example
 file-to-watch
-
 .env
 .env.prod
 .env.production
