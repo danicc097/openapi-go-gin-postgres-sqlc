@@ -9,7 +9,8 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
-	kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
+
+	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
 	"github.com/swaggest/openapi-go/openapi3"
 )
 
@@ -80,19 +81,24 @@ func main() {
 	if err != nil {
 		log.Fatalf("ReadOpenAPI: %s", err)
 	}
-	oas.Components.SecuritySchemes = kinopenapi3.SecuritySchemes{} // error
+	// oas.Components.SecuritySchemes = kinopenapi3.SecuritySchemes{} // error
 
 	fmt.Println(string(schemaBlob))
 	specWithoutSec, err := oas.MarshalJSON()
 	if err != nil {
 		log.Fatalf("oas.MarshalJSON: %s", err)
 	}
-	fmt.Println(string(specWithoutSec))
+	// fmt.Println(string(specWithoutSec))
 
 	if err := s.UnmarshalYAML(specWithoutSec); err != nil {
 		log.Fatal(err)
 	}
 
+	out, err := reflector.Spec.MarshalYAML()
+	if err != nil {
+		log.Fatalf("s.UnmarshalYAML: %s", err)
+	}
+	fmt.Println(string(out))
 	fmt.Println(s.Info.Title)
 	// fmt.Println(s.Info.Title)
 	// fmt.Println(s.Components.Schemas.MapOfSchemaOrRefValues["Error"].Schema.Properties["code"].Schema.MapOfAnything["x-foo"])
