@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
+	"github.com/jackc/pgtype"
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
 	"github.com/swaggest/openapi-go/openapi3"
@@ -43,6 +43,7 @@ func main() {
 			Count uint   `json:"count"`
 			Name  string `json:"name"`
 		} `json:"items,omitempty"`
+		DeletedAt pgtype.Date `json:"deleted_at" db:"deleted_at" pattern:"^[a-z]{2}-[A-Z]{2}$"`
 	}
 
 	type resp struct {
@@ -59,8 +60,8 @@ func main() {
 	putOp := openapi3.Operation{}
 
 	handleError(reflector.SetRequest(&putOp, new(req), http.MethodPut))
-	handleError(reflector.SetJSONResponse(&putOp, new(db.User), http.StatusOK))
-	handleError(reflector.SetJSONResponse(&putOp, new([]db.User), http.StatusConflict))
+	// handleError(reflector.SetJSONResponse(&putOp, new(db.User), http.StatusOK))
+	// handleError(reflector.SetJSONResponse(&putOp, new([]db.User), http.StatusConflict))
 	handleError(reflector.Spec.AddOperation(http.MethodPut, "/things/{id}", putOp))
 
 	schema, err := reflector.Spec.MarshalYAML()
@@ -68,14 +69,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(string(schema))
+	// fmt.Println(string(schema))
+
+	os.WriteFile("openapi.test.gen.yaml", schema, 0o777)
 
 	var s openapi3.Spec
 
-	schemaBlob, err := os.ReadFile("openapi.yaml")
-	if err != nil {
-		log.Fatalf("error opening schema file: %s", err)
-	}
+	// TODO pgx types instead of null.* package. For time use pgtype.Date /pgtype.Timestamptz etc.
+	// pgtype supports json (un)marshalling like `null.v4`
+	// openapi-go needs some kind of annotation to tell its nullable: true and format: date-time or whatever
+	// https://github.com/jackc/pgtype
+	// have to merge with our own (done easily but comments are lost. output to openapi.gen.yaml, we are in postgen step so doesnt matter)
+	// schemaBlob, err := os.ReadFile("openapi.yaml")
+	// if err != nil {
+	// 	log.Fatalf("error opening schema file: %s", err)
+	// }
 
 	oas, err := rest.ReadOpenAPI("openapi.yaml")
 	if err != nil {
@@ -83,7 +91,7 @@ func main() {
 	}
 	// oas.Components.SecuritySchemes = kinopenapi3.SecuritySchemes{} // error
 
-	fmt.Println(string(schemaBlob))
+	// fmt.Println(string(schemaBlob))
 	specWithoutSec, err := oas.MarshalJSON()
 	if err != nil {
 		log.Fatalf("oas.MarshalJSON: %s", err)
@@ -93,12 +101,6 @@ func main() {
 	if err := s.UnmarshalYAML(specWithoutSec); err != nil {
 		log.Fatal(err)
 	}
-
-	out, err := reflector.Spec.MarshalYAML()
-	if err != nil {
-		log.Fatalf("s.UnmarshalYAML: %s", err)
-	}
-	fmt.Println(string(out))
 	fmt.Println(s.Info.Title)
 	// fmt.Println(s.Info.Title)
 	// fmt.Println(s.Components.Schemas.MapOfSchemaOrRefValues["Error"].Schema.Properties["code"].Schema.MapOfAnything["x-foo"])

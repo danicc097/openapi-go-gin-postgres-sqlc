@@ -2150,12 +2150,11 @@ func (f *Funcs) convertTypes(fkey ForeignKey) string {
 		}
 		// convert types
 		typ, refType := field.Type, refField.Type
-		if strings.HasPrefix(typ, "null.") {
-			_typ := typ[5:]
-			if strings.HasPrefix("Int", _typ) {
-				_typ += "64"
-			}
-			expr = expr + "." + _typ
+		if strings.HasPrefix(typ, "*") {
+			_typ := typ[1:]
+			// TODO nil checks generate and return err
+			// NOTE: pgx can handle By queries' scan and query row calls with pointer addresses just fine (tested with external_id *string)
+			expr = "*" + expr
 			typ = strings.ToLower(_typ)
 		}
 		if strings.ToLower(refType) != typ {
@@ -3099,12 +3098,10 @@ func addLegacyFuncs(ctx context.Context, funcs template.FuncMap) {
 			return expr
 		}
 		ft := f.Type
-		if strings.HasPrefix(ft, "null.") {
-			typ := f.Type[5:]
-			if strings.HasPrefix("Int", typ) {
-				typ += "64"
-			}
-			expr = expr + "." + typ
+		if strings.HasPrefix(ft, "*") {
+			typ := f.Type[:1]
+			// TODO nil checks generate and return err
+			expr = "*" + expr
 			ft = strings.ToLower(typ)
 		}
 		if t.Type != ft {

@@ -34,3 +34,5 @@ openapi-go.code-workspace
 frontend/vite.config.ts.timestamp-*.mjs
 test-spec.yaml
 rest-server
+
+openapi.test.gen.yaml
