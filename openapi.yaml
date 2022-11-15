@@ -98,7 +98,7 @@ paths:
       # this belongs in postgen (need xo/sqlc output.)
       # we can use either sqlc result row struct or complete xo models
       # db-struct needs to match components.schemas name.
-      x-db-struct: User
+      x-db-response: User
       responses:
         "200":
           content:

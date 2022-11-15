@@ -118,7 +118,7 @@ type UpdateUserRequest struct {
 	Role *Role `json:"role,omitempty"`
 }
 
-// User represents a user
+// User defines model for User.
 type User struct {
 	ApiKeyId    *int         `json:"api_key_id"`
 	CreatedAt   *time.Time   `json:"created_at,omitempty"`

@@ -899,16 +899,18 @@ EOF
 }
 
 update_spec_with_db_structs() {
+  vext="x-db-response"
+  struct_names=$(yq e ".. | select(has(\"$vext\")).$vext" $SPEC)
+  struct_names=$(join_by "," ${struct_names[*]})
+  ((${#struct_names} == 0)) && return
+
   go build -o gen-schema cmd/gen-schema/main.go
-  struct_names="User,Team"
-  # TODO get structs that need generation from values from x vendor extension
   ./gen-schema --struct-names $struct_names | yq '
     with_entries(select(.key == "components")) |
     (.components.schemas[] | key) line_comment="Generated from db package structs. DO NOT EDIT."' \
     >/tmp/openapi.yaml
 
-  readarray -t schemas_to_update < <(yq '.components.schemas[] | key' /tmp/openapi.yaml)
-  for schema in ${schemas_to_update[@]}; do
+  for schema in $(yq '.components.schemas[] | key' /tmp/openapi.yaml); do
     yq eval-all "(
         select(fi==1).components.schemas.$schema
         ) as \$newSchema

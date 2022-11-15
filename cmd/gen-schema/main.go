@@ -56,30 +56,13 @@ func main() {
 
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
-	// we could load the existing spec to reflector.Spec: https://pkg.go.dev/github.com/swaggest/openapi-go/openapi3#example-Spec.UnmarshalYAML
-	// and if "x-db-struct" found in an OPERATION.
-	// NOTE: comments are gone. should print result to openapi.gen.yaml and use that since this is in gen/postgen step
-	// schemaBlob, err := os.ReadFile("openapi.yaml")
-	// if err != nil {
-	// 	log.Fatalf("openapi spec: %s", err)
-	// }
-	// if err := reflector.Spec.UnmarshalYAML(schemaBlob); err != nil {
-	// 	log.Fatalf("Spec.UnmarshalYAML: %s", err)
-	// }
-
-	// we can edit an existing op by getting all operations with "x-db-struct", trace back to the openapi3.Operation
-	// IMPORTANT:
-	// we only need to get Db** generated structs and replace in our spec. (we already have a reference in our openapi.yaml operation, leading to an empty schema - else spec wont compile - so all thats left is to replace the schema with the generated one.)
-	// we can use yq for this (plain replace schema by name) and forget about an openapi.gen.yaml that messes things up.
-	// gen-schema cli should generate a new yaml file with dummy operations (/dummy-$i), i++ while reflector is updated, as we do now (openapi.test.gen.yaml), so **yq reads the schema there, and replaces it in our openapi.yaml**
-	// we dont have to do anything else!
-
 	reflector.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
 		if strings.HasPrefix(defaultDefName, "Db") {
 			return strings.TrimPrefix(defaultDefName, "Db")
 		}
 		return defaultDefName
 	})
+
 	for i, sn := range structNames {
 		dummyOp := openapi3.Operation{}
 		st, ok := postgen.DbStructs[sn]
