@@ -57,7 +57,9 @@ func newOpenapiMiddleware(
 }
 
 // RequestValidatorWithOptions creates a validator middlewares from an openapi object.
-// TODO validate responses for dev and ci (with openapi3filter.Strict(true)).
+// TODO validate responses for dev and ci at least (with openapi3filter.Strict(true)).
+// need custom response writer for gin: https://github.com/gin-gonic/gin/issues/1363#issuecomment-577722498
+// for reference middelware see https://github.com/aereal/go-openapi3-validation-middleware/blob/main/middleware.go
 func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOptions) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer newOTELSpan(c.Request.Context(), "RequestValidatorWithOptions").End()

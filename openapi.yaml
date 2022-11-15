@@ -1,5 +1,313 @@
+#
+# Vendor extensions
+# -----------------
+#
+# Schema enums:
+#   - `x-db-enum` refers to a Postgres enum type and syncs its values.
+# Path operations:
+#   - `x-required-scopes` is an array of required scope keys from scopes.json
+#   - `x-required-role` is a required role name from role.json
+#
+x-uuid-pattern: &uuid-pattern ^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}
+# merge so that openapi validator middleware does a header precheck before going deeper
+x-path-security: &path-security
+  security:
+    - bearer_auth: []
+    - api_key: []
+#######################################
+openapi: 3.0.3
+info:
+  description: openapi-go-gin-postgres-sqlc
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  title: OpenAPI openapi-go-gin-postgres-sqlc
+  version: 2.0.0
+servers:
+  - url: https://localhost:8090/v2
+  - url: https://openapi.prod.localhost/api/v2
+  # for tests validation middleware to work on random port.
+  - url: /v2
+tags:
+  - description: Operations about user
+    name: user
+paths:
+  /ping:
+    get:
+      description: ""
+      summary: Ping pongs
+      operationId: Ping
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: pong
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /openapi.yaml:
+    get:
+      summary: Returns this very OpenAPI spec.
+      operationId: OpenapiYamlGet
+      responses:
+        "200":
+          description: OpenAPI YAML file.
+          content:
+            text/yaml:
+              schema:
+                type: string
+                format: binary
+  /admin/ping:
+    get:
+      <<: *path-security
+      summary: Ping pongs
+      operationId: AdminPing
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: pong
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+        - admin
+      x-required-scopes:
+        - test-scope
+      x-required-role: admin
+  /user/me:
+    get:
+      # <<: *path-security
+      summary: returns the logged in user
+      operationId: GetCurrentUser
+      # TODO update reflector.Spec for all operations that contain
+      # a x-db-response (either sqlc result rows struct or xo models).
+      # a x-db-request (sqlc params struct).
+      # this belongs in postgen (need xo/sqlc output.)
+      # we can use either sqlc result row struct or complete xo models
+      # db-struct needs to match components.schemas name.
+      x-db-struct: User
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ok
+      tags:
+        - user
+  /user/{id}:
+    delete:
+      <<: *path-security
+      summary: deletes the user by id
+      operationId: DeleteUser
+      parameters:
+        - description: user_id that needs to be deleted
+          explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          style: simple
+      responses:
+        "404":
+          description: User not found
+      tags:
+        - user
+      x-required-scopes:
+        - test-scope
+        - users:write
+      x-required-role: admin
+    put:
+      <<: *path-security
+      summary: updates the user by id
+      operationId: UpdateUser
+      parameters:
+        - description: user_id that needs to be updated
+          explode: false
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            pattern: *uuid-pattern
+          style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+        description: Updated user object
+        required: true
+      responses:
+        "404":
+          description: User not found
+      tags:
+        - user
+      x-required-role: user
 components:
   schemas:
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    UpdateUserRequest:
+      description: represents User data to update
+      example:
+        role: manager
+        first_name: Jane
+        last_name: Doe
+      properties:
+        role:
+          $ref: '#/components/schemas/Role'
+        first_name:
+          type: string
+          pattern: ^[ a-zA-Z0-9_-]+$
+        last_name:
+          type: string
+          pattern: ^[ a-zA-Z0-9_-]+$
+      title: a User
+      type: object
+    # TODO bookstack style ABAC
+    # allow per user global list of scopes in token
+    # so we can use openapi scopes security as well. Then internally
+    # check if other conditions met via middleware, etc.
+    # e.g. invoicing/billing scopes should be extremely specific so RBAC is
+    # not an option
+    # used as x-required-role: ?? (rank-based, at most one)
+    Scope:
+      description: Scope automatically generated from scopes.json keys
+      type: string
+      enum:
+        - test-scope
+        - users:read
+        - users:write
+        - scopes:write
+        - team-settings:write
+        - project-settings:write
+        - work-item:review
+    Role:
+      description: Role automatically generated from roles.json keys
+      type: string
+      enum:
+        - guest
+        - user
+        - advancedUser
+        - manager
+        - admin
+        - superAdmin
+    TaskRole:
+      title: Task role
+      description: Role in task for a member.
+      type: string
+      x-db-enum: task_role
+      enum:
+        - preparer
+        - reviewer
+    Organization:
+      title: Organization
+      description: Organization a user belongs to.
+      type: string
+      # x-db-enum: org
+      # enum: ["team 1", "team 2", "team 3"]
+    # generated later from db struct
+    User: # Generated from db package structs. DO NOT EDIT.
+      description: represents a user
+      properties:
+        api_key_id:
+          nullable: true
+          type: integer
+        created_at:
+          format: date-time
+          type: string
+        deleted_at:
+          format: date-time
+          nullable: true
+          type: string
+        email:
+          type: string
+        external_id:
+          nullable: true
+          type: string
+        first_name:
+          nullable: true
+          type: string
+        full_name:
+          nullable: true
+          type: string
+        last_name:
+          nullable: true
+          type: string
+        role_rank:
+          type: integer
+        scopes:
+          items:
+            type: string
+          nullable: true
+          type: array
+        teams:
+          items:
+            $ref: '#/components/schemas/Team'
+          nullable: true
+          type: array
+        time_entries:
+          items:
+            $ref: '#/components/schemas/TimeEntry'
+          nullable: true
+          type: array
+        updated_at:
+          format: date-time
+          type: string
+        user_api_key:
+          $ref: '#/components/schemas/UserAPIKey'
+        user_id:
+          $ref: '#/components/schemas/UuidUUID'
+        username:
+          type: string
+        work_items:
+          items:
+            $ref: '#/components/schemas/WorkItem'
+          nullable: true
+          type: array
+      type: object
+    # à la FastAPI
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
     PgtypeJSONB: # Generated from db package structs. DO NOT EDIT.
       type: object
     Task: # Generated from db package structs. DO NOT EDIT.
@@ -103,64 +411,6 @@ components:
         user_id:
           $ref: '#/components/schemas/UuidUUID'
       type: object
-    User: # Generated from db package structs. DO NOT EDIT.
-      properties:
-        api_key_id:
-          nullable: true
-          type: integer
-        created_at:
-          format: date-time
-          type: string
-        deleted_at:
-          format: date-time
-          nullable: true
-          type: string
-        email:
-          type: string
-        external_id:
-          nullable: true
-          type: string
-        first_name:
-          nullable: true
-          type: string
-        full_name:
-          nullable: true
-          type: string
-        last_name:
-          nullable: true
-          type: string
-        role_rank:
-          type: integer
-        scopes:
-          items:
-            type: string
-          nullable: true
-          type: array
-        teams:
-          items:
-            $ref: '#/components/schemas/Team'
-          nullable: true
-          type: array
-        time_entries:
-          items:
-            $ref: '#/components/schemas/TimeEntry'
-          nullable: true
-          type: array
-        updated_at:
-          format: date-time
-          type: string
-        user_api_key:
-          $ref: '#/components/schemas/UserAPIKey'
-        user_id:
-          $ref: '#/components/schemas/UuidUUID'
-        username:
-          type: string
-        work_items:
-          items:
-            $ref: '#/components/schemas/WorkItem'
-          nullable: true
-          type: array
-      type: object
     UserAPIKey: # Generated from db package structs. DO NOT EDIT.
       nullable: true
       properties:
@@ -231,3 +481,18 @@ components:
         work_item_id:
           type: integer
       type: object
+  examples:
+    User:
+      value:
+        username: username
+        email: email@email.com
+        password: password
+  securitySchemes:
+    api_key:
+      in: header
+      name: x-api-key
+      type: apiKey
+    bearer_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

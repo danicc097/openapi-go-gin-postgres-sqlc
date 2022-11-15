@@ -226,7 +226,6 @@ x.pregen() {
     yq --prettyPrint '.. style="single"' -i $SPEC
     # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
-    sed -i 's/!!merge //' $SPEC
 
     # don't want this to block when getting bad gen
     go build -o pregen "$PWD"/cmd/pregen/main.go || echo "Could not rebuild pregen" >&2
@@ -254,23 +253,16 @@ clean_yq_array() {
 # Run post-generation scripts in the internal package.
 x.postgen() {
   { { {
+    echo "Running generation"
+
     generate_db_structs_map
 
-    # TODO uncomment when gen-schema done
-    # echo "Running generation"
-    # cache="$1"
-    # mkdir -p "$cache"
-    # go build -o postgen "$PWD"/cmd/postgen/main.go
-    # ./postgen -cachedir="$cache" -env=".env.$env"
+    update_spec_with_db_structs
 
-    go build -o gen-schema cmd/gen-schema/main.go
-    struct_names="User,Team"
-    # TODO get structs that need generation from values from x vendor extension
-    ./gen-schema --struct-names $struct_names | yq '
-    with_entries(select(.key == "components")) |
-    (.components.schemas[] | key) line_comment="Generated from db package structs. DO NOT EDIT."' \
-      >/tmp/openapi.yaml
-    yq ea '. as $item ireduce ({}; . * $item )' "$SPEC" /tmp/openapi.yaml >"$SPEC"
+    cache="$1"
+    mkdir -p "$cache"
+    go build -o postgen "$PWD"/cmd/postgen/main.go
+    ./postgen -cachedir="$cache" -env=".env.$env"
   } \
     2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 
@@ -908,6 +900,25 @@ ${map_fields[@]}
 EOF
 
   gofumpt -w $out
+}
+
+update_spec_with_db_structs() {
+  go build -o gen-schema cmd/gen-schema/main.go
+  struct_names="User,Team"
+  # TODO get structs that need generation from values from x vendor extension
+  ./gen-schema --struct-names $struct_names | yq '
+    with_entries(select(.key == "components")) |
+    (.components.schemas[] | key) line_comment="Generated from db package structs. DO NOT EDIT."' \
+    >/tmp/openapi.yaml
+  yq eval-all "(
+      select(fi==0).components * select(fi==1).components | select(fi==0)
+      ) as \$mergedComponents
+      | select(fi == 0)
+      | .components = \$mergedComponents
+    " "$SPEC" /tmp/openapi.yaml >/tmp/final-spec
+
+  mv /tmp/final-spec "$SPEC"
+  sed -i 's/!!merge //' $SPEC
 }
 
 xo_schema() {

@@ -76,22 +76,28 @@ export interface components {
      * @description Organization a user belongs to.
      */
     Organization: string
-    /**
-     * a User
-     * @description represents a user
-     */
-    GetCurrentUserRes: {
-      /** Format: int64 */
-      user_id?: number
-      username?: string
-      first_name?: string
-      last_name?: string
+    /** @description represents a user */
+    User: {
+      api_key_id?: number | null
+      /** Format: date-time */
+      created_at?: string
+      /** Format: date-time */
+      deleted_at?: string | null
       email?: string
-      password?: string
-      phone?: string
-      role?: components['schemas']['Role']
-      /** @description are organizations a user belongs to */
-      orgs?: components['schemas']['Organization'][]
+      external_id?: string | null
+      first_name?: string | null
+      full_name?: string | null
+      last_name?: string | null
+      role_rank?: number
+      scopes?: string[] | null
+      teams?: components['schemas']['Team'][] | null
+      time_entries?: components['schemas']['TimeEntry'][] | null
+      /** Format: date-time */
+      updated_at?: string
+      user_api_key?: components['schemas']['UserAPIKey']
+      user_id?: components['schemas']['UuidUUID']
+      username?: string
+      work_items?: components['schemas']['WorkItem'][] | null
     }
     /** ValidationError */
     ValidationError: {
@@ -101,6 +107,90 @@ export interface components {
       msg: string
       /** Error Type */
       type: string
+    }
+    PgtypeJSONB: { [key: string]: unknown }
+    Task: {
+      /** Format: date-time */
+      created_at?: string
+      /** Format: date-time */
+      deleted_at?: string | null
+      metadata?: components['schemas']['PgtypeJSONB']
+      /** Format: date-time */
+      target_date?: string
+      target_date_timezone?: string
+      task_id?: number
+      task_type?: components['schemas']['TaskType']
+      task_type_id?: number
+      time_entries?: components['schemas']['TimeEntry'][] | null
+      title?: string
+      /** Format: date-time */
+      updated_at?: string
+      work_item_id?: number
+    }
+    TaskType: {
+      color?: string
+      description?: string
+      name?: string
+      task_type_id?: number
+      team_id?: number
+    } | null
+    Team: {
+      /** Format: date-time */
+      created_at?: string
+      description?: string
+      metadata?: components['schemas']['PgtypeJSONB']
+      name?: string
+      project_id?: number
+      team_id?: number
+      time_entries?: components['schemas']['TimeEntry'][] | null
+      /** Format: date-time */
+      updated_at?: string
+      users?: components['schemas']['User'][] | null
+    }
+    TimeEntry: {
+      activity_id?: number
+      comment?: string
+      duration_minutes?: number | null
+      /** Format: date-time */
+      start?: string
+      task_id?: number | null
+      team_id?: number | null
+      time_entry_id?: number
+      user_id?: components['schemas']['UuidUUID']
+    }
+    UserAPIKey: {
+      api_key?: string
+      /** Format: date-time */
+      expires_on?: string
+      user_api_key_id?: number
+    } | null
+    UuidUUID: string
+    WorkItem: {
+      closed?: boolean
+      /** Format: date-time */
+      created_at?: string
+      /** Format: date-time */
+      deleted_at?: string | null
+      kanban_step_id?: number
+      metadata?: components['schemas']['PgtypeJSONB']
+      tasks?: components['schemas']['Task'][] | null
+      team_id?: number
+      title?: string
+      /** Format: date-time */
+      updated_at?: string
+      users?: components['schemas']['User'][] | null
+      work_item_comments?: components['schemas']['WorkItemComment'][] | null
+      work_item_id?: number
+    }
+    WorkItemComment: {
+      /** Format: date-time */
+      created_at?: string
+      message?: string
+      /** Format: date-time */
+      updated_at?: string
+      user_id?: components['schemas']['UuidUUID']
+      work_item_comment_id?: number
+      work_item_id?: number
     }
   }
 }
@@ -150,10 +240,10 @@ export interface operations {
   }
   GetCurrentUser: {
     responses: {
-      /** successful operation */
+      /** ok */
       200: {
         content: {
-          'application/json': components['schemas']['GetCurrentUserRes']
+          'application/json': components['schemas']['User']
         }
       }
     }
