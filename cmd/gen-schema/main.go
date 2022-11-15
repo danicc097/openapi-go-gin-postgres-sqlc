@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
@@ -41,10 +43,15 @@ type resp struct {
 }
 
 func main() {
-	var structName string
+	var structNamesList string
 
-	flag.StringVar(&structName, "struct-name", "", "db package struct name to generate an OpenAPI schema for")
+	flag.StringVar(&structNamesList, "struct-names", "", "comma-delimited db package struct names to generate an OpenAPI schema for")
 	flag.Parse()
+
+	structNames := strings.Split(structNamesList, ",")
+	for i := range structNames {
+		structNames[i] = strings.TrimSpace(structNames[i])
+	}
 
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
@@ -60,25 +67,23 @@ func main() {
 	}
 
 	// we can edit an existing op by getting all operations with "x-db-struct", trace back to the openapi3.Operation
-	putOp := openapi3.Operation{}
-
-	// handleError(reflector.SetRequest(&putOp, new(req), http.MethodPut))
-	// handleError(reflector.SetJSONResponse(&putOp, new(db.User), http.StatusOK))
-	st, ok := postgen.DbStructs[structName]
-	if !ok {
-		log.Fatalf("struct-name %s does not exist in db package", structName)
-	}
-
-	// we only need to get Db** generated structs and replace in our spec. (we already have a reference in operation, leading to an empty schema - else spec wont compile - so all thats left is to replace the schema with the generated one.)
+	// IMPORTANT:
+	// we only need to get Db** generated structs and replace in our spec. (we already have a reference in our openapi.yaml operation, leading to an empty schema - else spec wont compile - so all thats left is to replace the schema with the generated one.)
 	// we can use yq for this (plain replace schema by name) and forget about an openapi.gen.yaml that messes things up.
 	// gen-schema cli should generate a new yaml file with dummy operations (/dummy-$i), i++ while reflector is updated, as we do now (openapi.test.gen.yaml), so **yq reads the schema there, and replaces it in our openapi.yaml**
 	// we dont have to do anything else!
-	handleError(reflector.SetJSONResponse(&putOp, st, http.StatusConflict))
-	handleError(reflector.Spec.AddOperation(http.MethodPut, "/things", putOp))
-	// reflector.Spec.Paths.MapOfPathItemValues["mypath"].MapOfOperationValues["method"].
+	for i, sn := range structNames {
+		dummyOp := openapi3.Operation{}
+		st, ok := postgen.DbStructs[sn]
+		if !ok {
+			log.Fatalf("struct-name %s does not exist in db package", sn)
+		}
+		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
+		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
+		// reflector.Spec.Paths.MapOfPathItemValues["mypath"].MapOfOperationValues["method"].
+	}
 	schema, err := reflector.Spec.MarshalYAML()
 	handleError(err)
-
 	// fmt.Println(string(schema))
 
 	os.WriteFile("openapi.test.gen.yaml", schema, 0o777)

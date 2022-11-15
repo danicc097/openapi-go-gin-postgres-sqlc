@@ -176,6 +176,7 @@ x.pregen() {
     done
 
     ######## Sync enums with external sources and validate
+    ######## external json files are the source of truth
     # frontend scopes: 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right) and show aggregated
     # arrays can't be nested
     declare -A enum_src_files=(
@@ -288,7 +289,7 @@ EOF
     # option 1) call gen-schema which will echo a simple dummy spec to stdout and yq merges
     # option 2) gen-schema receives the whole array of structs found by yq --struct-names User,Activity...
     # and
-    ./gen-schema --struct-name User
+    ./gen-schema --struct-names User,Team
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 
