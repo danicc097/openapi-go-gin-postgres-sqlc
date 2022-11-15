@@ -908,14 +908,19 @@ update_spec_with_db_structs() {
     with_entries(select(.key == "components")) |
     (.components.schemas[] | key) line_comment="Generated from db package structs. DO NOT EDIT."' \
     >/tmp/openapi.yaml
-  yq eval-all "(
-      select(fi==0).components * select(fi==1).components | select(fi==0)
-      ) as \$mergedComponents
-      | select(fi == 0)
-      | .components = \$mergedComponents
-    " "$SPEC" /tmp/openapi.yaml >/tmp/final-spec
 
-  mv /tmp/final-spec "$SPEC"
+  readarray -t schemas_to_update < <(yq '.components.schemas[] | key' /tmp/openapi.yaml)
+  for schema in ${schemas_to_update[@]}; do
+    yq eval-all "(
+        select(fi==1).components.schemas.$schema
+        ) as \$newSchema
+        | select(fi == 0)
+        | .components.schemas.$schema = \$newSchema
+      " "$SPEC" /tmp/openapi.yaml >/tmp/final-spec
+
+    mv /tmp/final-spec "$SPEC"
+  done
+
   sed -i 's/!!merge //' $SPEC
 }
 

@@ -230,7 +230,6 @@ components:
       # enum: ["team 1", "team 2", "team 3"]
     # generated later from db struct
     User: # Generated from db package structs. DO NOT EDIT.
-      description: represents a user
       properties:
         api_key_id:
           nullable: true
