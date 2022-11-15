@@ -9,7 +9,6 @@ import (
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/swaggest/openapi-go/openapi3"
 )
 
@@ -63,14 +62,19 @@ func main() {
 	// we can edit an existing op by getting all operations with "x-db-struct", trace back to the openapi3.Operation
 	putOp := openapi3.Operation{}
 
-	handleError(reflector.SetRequest(&putOp, new(req), http.MethodPut))
-	handleError(reflector.SetJSONResponse(&putOp, new(db.User), http.StatusOK))
+	// handleError(reflector.SetRequest(&putOp, new(req), http.MethodPut))
+	// handleError(reflector.SetJSONResponse(&putOp, new(db.User), http.StatusOK))
 	st, ok := postgen.DbStructs[structName]
 	if !ok {
 		log.Fatalf("struct-name %s does not exist in db package", structName)
 	}
+
+	// we only need to get Db** generated structs and replace in our spec. (we already have a reference in operation, leading to an empty schema - else spec wont compile - so all thats left is to replace the schema with the generated one.)
+	// we can use yq for this (plain replace schema by name) and forget about an openapi.gen.yaml that messes things up.
+	// gen-schema cli should generate a new yaml file with dummy operations (/dummy-$i), i++ while reflector is updated, as we do now (openapi.test.gen.yaml), so **yq reads the schema there, and replaces it in our openapi.yaml**
+	// we dont have to do anything else!
 	handleError(reflector.SetJSONResponse(&putOp, st, http.StatusConflict))
-	handleError(reflector.Spec.AddOperation(http.MethodPut, "/things/{id}", putOp))
+	handleError(reflector.Spec.AddOperation(http.MethodPut, "/things", putOp))
 	// reflector.Spec.Paths.MapOfPathItemValues["mypath"].MapOfOperationValues["method"].
 	schema, err := reflector.Spec.MarshalYAML()
 	handleError(err)

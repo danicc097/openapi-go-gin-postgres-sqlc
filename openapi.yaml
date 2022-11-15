@@ -103,8 +103,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetCurrentUserRes'
-          description: successful operation
+                $ref: '#/components/schemas/User'
+          description: ok
       tags:
         - user
   /user/{id}:
@@ -227,41 +227,9 @@ components:
       type: string
       # x-db-enum: org
       # enum: ["team 1", "team 2", "team 3"]
-    # TODO generate adapter to convert db model -> this
-    # based on matches of x-db-model: <...>'s json tags (both sqlc and xo generate them)
-    # against parsed property names (kin) - when its a response object only (kin filter)
-    # if request: adapter to convert this -> db model.
-    # we must specify x-db-model for adapters to be generated.
-    # x-db-model is specified in req or res objects only (kin filter)
-    # ^ all this is part of postgen
-    GetCurrentUserRes:
+    # generated later from db struct
+    User:
       description: represents a user
-      properties:
-        user_id:
-          format: int64
-          type: integer
-        username:
-          type: string
-        first_name:
-          type: string
-        last_name:
-          type: string
-        email:
-          type: string
-        password:
-          type: string
-        phone:
-          type: string
-        role:
-          $ref: '#/components/schemas/Role'
-        orgs:
-          description: are organizations a user belongs to
-          items:
-            $ref: '#/components/schemas/Organization'
-      title: a User
-      type: object
-      xml:
-        name: User
     # à la FastAPI
     ValidationError:
       title: ValidationError
