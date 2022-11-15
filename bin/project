@@ -105,8 +105,6 @@ x.bootstrap() {
 # Install go libraries as runnable programs.
 x.install-tools() {
   { { {
-    set -o errexit -eo pipefail
-
     go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
     # go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.16.0
     # TODO until merged
@@ -866,7 +864,7 @@ run_hot_reload() {
 
 run_shared_services() {
   cd docker
-  docker-compose \
+  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
     -p "$PROJECT_PREFIX" \
     -f docker-compose.shared.yml \
     -f docker-compose.oidc.yml \
