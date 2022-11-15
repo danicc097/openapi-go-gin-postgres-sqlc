@@ -68,19 +68,17 @@ and it can still follow the same handlers struct pattern for all we care, it won
 type openapiGenerator struct {
 	conf       *Conf
 	stderr     io.Writer
-	cacheDir   Dir
 	spec       string
 	operations map[string][]string
 }
 
 // NewOpenapiGenerator returns a new postgen openapiGenerator.
-func NewOpenapiGenerator(conf *Conf, stderr io.Writer, cacheDir Dir, spec string) *openapiGenerator {
+func NewOpenapiGenerator(conf *Conf, stderr io.Writer, spec string) *openapiGenerator {
 	operations := make(map[string][]string)
 
 	return &openapiGenerator{
 		conf:       conf,
 		stderr:     stderr,
-		cacheDir:   cacheDir,
 		spec:       spec,
 		operations: operations,
 	}

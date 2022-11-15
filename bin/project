@@ -259,10 +259,8 @@ x.postgen() {
 
     update_spec_with_db_structs
 
-    cache="$1"
-    mkdir -p "$cache"
     go build -o postgen "$PWD"/cmd/postgen/main.go
-    ./postgen -cachedir="$cache" -env=".env.$env"
+    ./postgen -env=".env.$env"
   } \
     2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 
@@ -421,7 +419,7 @@ x.gen() {
 
     x.gen.xo
 
-    x.postgen "$cache" &
+    x.postgen &
     x.gen.counterfeiter "$cache" & # delay since it depends on generated output too
 
     wait
