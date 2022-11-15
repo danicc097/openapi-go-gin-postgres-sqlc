@@ -75,9 +75,6 @@ export interface AUser {
   first_name?: string
   last_name?: string
 }
-/**
- * represents a user
- */
 export interface User {
   api_key_id?: number | null
   created_at?: string

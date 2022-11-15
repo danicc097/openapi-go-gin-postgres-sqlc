@@ -16,7 +16,7 @@ services:
       - ../.env.${APP_ENV:?not set}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.simple-oidc-server.rule=Host(`authserver.dev.localhost`) && PathPrefix("/oidc")
+      - traefik.http.routers.simple-oidc-server.rule=Host(`${OIDC_DOMAIN:?not set}`) && PathPrefix("/oidc")
       - traefik.http.routers.simple-oidc-server.middlewares=strip_prefix_oidc # check docs to exclude requests from compression
       - traefik.http.middlewares.strip_prefix_oidc.stripprefix.prefixes=/oidc
       - traefik.docker.network=traefik-net

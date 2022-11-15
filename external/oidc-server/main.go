@@ -27,6 +27,7 @@ func main() {
 		Addr:    ":" + port,
 		Handler: router,
 	}
+	log.Default().Printf("listening at: %s", server.Addr)
 	err := server.ListenAndServe()
 	// if running directly localhost manually add certs
 	// err := server.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")

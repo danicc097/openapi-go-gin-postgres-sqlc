@@ -76,7 +76,6 @@ export interface components {
      * @description Organization a user belongs to.
      */
     Organization: string
-    /** @description represents a user */
     User: {
       api_key_id?: number | null
       /** Format: date-time */

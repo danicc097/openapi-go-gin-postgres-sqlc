@@ -80,7 +80,6 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "User": {
-      "description": "represents a user",
       "properties": {
         "api_key_id": {
           "type": [
@@ -180,6 +179,7 @@
         }
       },
       "type": "object",
+      "x-db-struct": "User",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "ValidationError": {
