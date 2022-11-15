@@ -2,8 +2,9 @@
 # Vendor extensions
 # -----------------
 #
-# Schema enums:
-#   - `x-db-enum` refers to a Postgres enum type and syncs its values.
+# Component schemas:
+#   - `x-db-enum` generates and syncs a Postgres enum type.
+#   - `x-db-struct` generates and syncs a db package struct.
 # Path operations:
 #   - `x-required-scopes` is an array of required scope keys from scopes.json
 #   - `x-required-role` is a required role name from role.json
@@ -92,13 +93,6 @@ paths:
       # <<: *path-security
       summary: returns the logged in user
       operationId: GetCurrentUser
-      # TODO update reflector.Spec for all operations that contain
-      # a x-db-response (either sqlc result rows struct or xo models).
-      # a x-db-request (sqlc params struct).
-      # this belongs in postgen (need xo/sqlc output.)
-      # we can use either sqlc result row struct or complete xo models
-      # db-struct needs to match components.schemas name.
-      x-db-response: User
       responses:
         "200":
           content:
@@ -287,6 +281,7 @@ components:
           nullable: true
           type: array
       type: object
+      x-db-struct: User
     # à la FastAPI
     ValidationError:
       title: ValidationError

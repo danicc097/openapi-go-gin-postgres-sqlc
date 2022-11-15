@@ -70,6 +70,7 @@ func main() {
 			log.Fatalf("struct-name %s does not exist in db package", sn)
 		}
 		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
+		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-db-struct": sn}
 		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
 		// reflector.Spec.Paths.MapOfPathItemValues["mypath"].MapOfOperationValues["method"].
 	}
