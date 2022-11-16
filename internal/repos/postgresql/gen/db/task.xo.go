@@ -13,16 +13,15 @@ import (
 
 // Task represents a row from 'public.tasks'.
 type Task struct {
-	TaskID             int64        `json:"task_id" db:"task_id"`                           // task_id
-	TaskTypeID         int          `json:"task_type_id" db:"task_type_id"`                 // task_type_id
-	WorkItemID         int64        `json:"work_item_id" db:"work_item_id"`                 // work_item_id
-	Title              string       `json:"title" db:"title"`                               // title
-	Metadata           pgtype.JSONB `json:"metadata" db:"metadata"`                         // metadata
-	TargetDate         time.Time    `json:"target_date" db:"target_date"`                   // target_date
-	TargetDateTimezone string       `json:"target_date_timezone" db:"target_date_timezone"` // target_date_timezone
-	CreatedAt          time.Time    `json:"created_at" db:"created_at"`                     // created_at
-	UpdatedAt          time.Time    `json:"updated_at" db:"updated_at"`                     // updated_at
-	DeletedAt          *time.Time   `json:"deleted_at" db:"deleted_at"`                     // deleted_at
+	TaskID     int64        `json:"task_id" db:"task_id"`           // task_id
+	TaskTypeID int          `json:"task_type_id" db:"task_type_id"` // task_type_id
+	WorkItemID int64        `json:"work_item_id" db:"work_item_id"` // work_item_id
+	Title      string       `json:"title" db:"title"`               // title
+	Metadata   pgtype.JSONB `json:"metadata" db:"metadata"`         // metadata
+	Finished   *bool        `json:"finished" db:"finished"`         // finished
+	CreatedAt  time.Time    `json:"created_at" db:"created_at"`     // created_at
+	UpdatedAt  time.Time    `json:"updated_at" db:"updated_at"`     // updated_at
+	DeletedAt  *time.Time   `json:"deleted_at" db:"deleted_at"`     // deleted_at
 
 	TaskType    *TaskType    `json:"task_type"`    // O2O
 	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
@@ -48,22 +47,18 @@ func TaskWithLimit(limit int) TaskSelectConfigOption {
 type TaskOrderBy = string
 
 const (
-	TaskTargetDateDescNullsFirst TaskOrderBy = " target_date DESC NULLS FIRST "
-	TaskTargetDateDescNullsLast  TaskOrderBy = " target_date DESC NULLS LAST "
-	TaskTargetDateAscNullsFirst  TaskOrderBy = " target_date ASC NULLS FIRST "
-	TaskTargetDateAscNullsLast   TaskOrderBy = " target_date ASC NULLS LAST "
-	TaskCreatedAtDescNullsFirst  TaskOrderBy = " created_at DESC NULLS FIRST "
-	TaskCreatedAtDescNullsLast   TaskOrderBy = " created_at DESC NULLS LAST "
-	TaskCreatedAtAscNullsFirst   TaskOrderBy = " created_at ASC NULLS FIRST "
-	TaskCreatedAtAscNullsLast    TaskOrderBy = " created_at ASC NULLS LAST "
-	TaskUpdatedAtDescNullsFirst  TaskOrderBy = " updated_at DESC NULLS FIRST "
-	TaskUpdatedAtDescNullsLast   TaskOrderBy = " updated_at DESC NULLS LAST "
-	TaskUpdatedAtAscNullsFirst   TaskOrderBy = " updated_at ASC NULLS FIRST "
-	TaskUpdatedAtAscNullsLast    TaskOrderBy = " updated_at ASC NULLS LAST "
-	TaskDeletedAtDescNullsFirst  TaskOrderBy = " deleted_at DESC NULLS FIRST "
-	TaskDeletedAtDescNullsLast   TaskOrderBy = " deleted_at DESC NULLS LAST "
-	TaskDeletedAtAscNullsFirst   TaskOrderBy = " deleted_at ASC NULLS FIRST "
-	TaskDeletedAtAscNullsLast    TaskOrderBy = " deleted_at ASC NULLS LAST "
+	TaskCreatedAtDescNullsFirst TaskOrderBy = " created_at DESC NULLS FIRST "
+	TaskCreatedAtDescNullsLast  TaskOrderBy = " created_at DESC NULLS LAST "
+	TaskCreatedAtAscNullsFirst  TaskOrderBy = " created_at ASC NULLS FIRST "
+	TaskCreatedAtAscNullsLast   TaskOrderBy = " created_at ASC NULLS LAST "
+	TaskUpdatedAtDescNullsFirst TaskOrderBy = " updated_at DESC NULLS FIRST "
+	TaskUpdatedAtDescNullsLast  TaskOrderBy = " updated_at DESC NULLS LAST "
+	TaskUpdatedAtAscNullsFirst  TaskOrderBy = " updated_at ASC NULLS FIRST "
+	TaskUpdatedAtAscNullsLast   TaskOrderBy = " updated_at ASC NULLS LAST "
+	TaskDeletedAtDescNullsFirst TaskOrderBy = " deleted_at DESC NULLS FIRST "
+	TaskDeletedAtDescNullsLast  TaskOrderBy = " deleted_at DESC NULLS LAST "
+	TaskDeletedAtAscNullsFirst  TaskOrderBy = " deleted_at ASC NULLS FIRST "
+	TaskDeletedAtAscNullsLast   TaskOrderBy = " deleted_at ASC NULLS LAST "
 )
 
 // TaskWithOrderBy orders results by the given columns.
@@ -106,13 +101,13 @@ func (t *Task) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.tasks (` +
-		`task_type_id, work_item_id, title, metadata, target_date, target_date_timezone, deleted_at` +
+		`task_type_id, work_item_id, title, metadata, finished, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7` +
+		`$1, $2, $3, $4, $5, $6` +
 		`) RETURNING task_id `
 	// run
-	logf(sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt).Scan(&t.TaskID); err != nil {
+	logf(sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.DeletedAt)
+	if err := db.QueryRow(ctx, sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.DeletedAt).Scan(&t.TaskID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -130,11 +125,11 @@ func (t *Task) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.tasks SET ` +
-		`task_type_id = $1, work_item_id = $2, title = $3, metadata = $4, target_date = $5, target_date_timezone = $6, deleted_at = $7 ` +
-		`WHERE task_id = $8 `
+		`task_type_id = $1, work_item_id = $2, title = $3, metadata = $4, finished = $5, deleted_at = $6 ` +
+		`WHERE task_id = $7 `
 	// run
-	logf(sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID)
-	if _, err := db.Exec(ctx, sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID); err != nil {
+	logf(sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID)
+	if _, err := db.Exec(ctx, sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -156,16 +151,16 @@ func (t *Task) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.tasks (` +
-		`task_id, task_type_id, work_item_id, title, metadata, target_date, target_date_timezone, deleted_at` +
+		`task_id, task_type_id, work_item_id, title, metadata, finished, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8` +
+		`$1, $2, $3, $4, $5, $6, $7` +
 		`)` +
 		` ON CONFLICT (task_id) DO ` +
 		`UPDATE SET ` +
-		`task_type_id = EXCLUDED.task_type_id, work_item_id = EXCLUDED.work_item_id, title = EXCLUDED.title, metadata = EXCLUDED.metadata, target_date = EXCLUDED.target_date, target_date_timezone = EXCLUDED.target_date_timezone, deleted_at = EXCLUDED.deleted_at  `
+		`task_type_id = EXCLUDED.task_type_id, work_item_id = EXCLUDED.work_item_id, title = EXCLUDED.title, metadata = EXCLUDED.metadata, finished = EXCLUDED.finished, deleted_at = EXCLUDED.deleted_at  `
 	// run
-	logf(sqlstr, t.TaskID, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, t.TaskID, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.TargetDate, t.TargetDateTimezone, t.DeletedAt); err != nil {
+	logf(sqlstr, t.TaskID, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, t.TaskID, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -212,8 +207,7 @@ tasks.task_type_id,
 tasks.work_item_id,
 tasks.title,
 tasks.metadata,
-tasks.target_date,
-tasks.target_date_timezone,
+tasks.finished,
 tasks.created_at,
 tasks.updated_at,
 tasks.deleted_at,
@@ -241,7 +235,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TaskType, c.joins.TimeEntries, taskID).Scan(&t.TaskID, &t.TaskTypeID, &t.WorkItemID, &t.Title, &t.Metadata, &t.TargetDate, &t.TargetDateTimezone, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt, &t.TaskType, &t.TimeEntries); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TaskType, c.joins.TimeEntries, taskID).Scan(&t.TaskID, &t.TaskTypeID, &t.WorkItemID, &t.Title, &t.Metadata, &t.Finished, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt, &t.TaskType, &t.TimeEntries); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil

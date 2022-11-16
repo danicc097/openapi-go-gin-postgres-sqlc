@@ -117,9 +117,21 @@ create table kanban_steps (
   , foreign key (team_id) references teams (team_id) on delete cascade
 );
 
+create table work_item_types (
+  work_item_type_id serial
+  , project_id bigint not null
+  , name text not null
+  , description text not null
+  , color text not null
+  , primary key (work_item_type_id)
+  , unique (project_id , name)
+  , foreign key (project_id) references projects (project_id) on delete cascade
+);
+
 create table work_items (
   work_item_id bigserial not null
   , title text not null
+  , work_item_type_id int not null
   , metadata jsonb not null
   , team_id int not null
   , kanban_step_id int not null
@@ -129,6 +141,7 @@ create table work_items (
   , deleted_at timestamp with time zone
   , primary key (work_item_id)
   , foreign key (team_id) references teams (team_id) on delete cascade
+  , foreign key (work_item_type_id) references work_item_types (work_item_type_id) on delete cascade
   , foreign key (kanban_step_id) references kanban_steps (kanban_step_id) on delete cascade
 );
 
@@ -172,12 +185,11 @@ create table work_item_work_item_tag (
 create index on work_item_work_item_tag (work_item_tag_id , work_item_id);
 
 -- dont need to index by user_id, there's no use case to filter by user_id
-create type task_role as ENUM (
+create type work_item_role as ENUM (
   'preparer'
   , 'reviewer'
 );
 
--- only need different types for tasks. work items are all the same, just containers
 create table task_types (
   task_type_id serial
   , team_id bigint not null
@@ -204,7 +216,7 @@ create table tasks (
   , work_item_id bigint not null
   , title text not null
   , metadata jsonb not null
-  , finished boolean default False
+  , finished boolean default false
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone

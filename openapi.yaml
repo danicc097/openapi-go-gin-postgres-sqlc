@@ -210,11 +210,11 @@ components:
         - manager
         - admin
         - superAdmin
-    TaskRole:
-      title: Task role
-      description: Role in task for a member.
+    WorkItemRole:
+      title: WorkItem role
+      description: Role in work item for a member.
       type: string
-      x-db-enum: task_role
+      x-db-enum: work_item_role
       enum:
         - preparer
         - reviewer
@@ -315,13 +315,11 @@ components:
           format: date-time
           nullable: true
           type: string
+        finished:
+          nullable: true
+          type: boolean
         metadata:
           $ref: '#/components/schemas/PgtypeJSONB'
-        target_date:
-          format: date-time
-          type: string
-        target_date_timezone:
-          type: string
         task_id:
           type: integer
         task_type:
@@ -460,6 +458,8 @@ components:
           nullable: true
           type: array
         work_item_id:
+          type: integer
+        work_item_type_id:
           type: integer
       type: object
     WorkItemComment: # Generated from db package structs. DO NOT EDIT.

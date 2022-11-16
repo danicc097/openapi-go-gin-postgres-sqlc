@@ -892,7 +892,7 @@ import (
   db "$GOMOD_PKG/$PG_REPO_GEN/db"
   )
     var DbStructs = map[string]any{
-${map_fields[@]}
+$(printf "%s\n" "${map_fields[@]}")
   }
 EOF
 

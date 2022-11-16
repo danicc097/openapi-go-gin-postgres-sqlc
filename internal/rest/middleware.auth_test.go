@@ -70,9 +70,11 @@ func TestAuthorizationMiddleware(t *testing.T) {
 			ctxWithUser(c, &db.User{RoleRank: r.Rank})
 		})
 
+		req.Header.Add()
+
 		engine.Use(authMw.EnsureAuthorized(AuthRestriction{MinimumRole: tc.requiredRole}))
-		engine.GET("/", func(ctx *gin.Context) {
-			ctx.String(http.StatusOK, "ok")
+		engine.GET("/", func(c *gin.Context) {
+			c.String(http.StatusOK, "ok")
 		})
 		engine.ServeHTTP(resp, req)
 
