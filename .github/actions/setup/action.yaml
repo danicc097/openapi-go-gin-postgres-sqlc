@@ -28,12 +28,27 @@ runs:
         source .envrc
 
         project e2e.sync-deps --x-env=ci &
+        pids+=("$!")
         project install-tools --x-env=ci &
+        pids+=("$!")
         project fetch.swagger-ui --x-env=ci &
+        pids+=("$!")
         bin/scripts/install-pg_format.sh &
+        pids+=("$!")
         bin/scripts/install-mkcert.sh &
+        pids+=("$!")
         bin/scripts/install-proto.sh &
-        wait
+        pids+=("$!")
+        (
+          git clone https://github.com/danicc097/traefik-boostrap.git
+          docker network create traefik-net
+          ./traefik-boostrap/compose-up
+        ) &
+        pids+=("$!")
+
+        for pid in ${pids[@]}; do
+          wait $pid
+        done
 
         echo "$HOME/.local/bin" >> $GITHUB_PATH
         echo "$HOME/bin" >> $GITHUB_PATH
