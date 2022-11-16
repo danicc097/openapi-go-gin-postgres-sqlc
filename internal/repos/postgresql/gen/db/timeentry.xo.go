@@ -198,7 +198,7 @@ time_entries.start,
 time_entries.duration_minutes ` +
 		`FROM public.time_entries ` +
 		`` +
-		` WHERE time_entry_id = $1 `
+		` WHERE time_entries.time_entry_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -237,7 +237,7 @@ time_entries.start,
 time_entries.duration_minutes ` +
 		`FROM public.time_entries ` +
 		`` +
-		` WHERE task_id = $1 AND team_id = $2 `
+		` WHERE time_entries.task_id = $1 AND time_entries.team_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -289,7 +289,7 @@ time_entries.start,
 time_entries.duration_minutes ` +
 		`FROM public.time_entries ` +
 		`` +
-		` WHERE user_id = $1 AND team_id = $2 `
+		` WHERE time_entries.user_id = $1 AND time_entries.team_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -198,7 +198,7 @@ work_item_comments.created_at,
 work_item_comments.updated_at ` +
 		`FROM public.work_item_comments ` +
 		`` +
-		` WHERE work_item_comment_id = $1 `
+		` WHERE work_item_comments.work_item_comment_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -235,7 +235,7 @@ work_item_comments.created_at,
 work_item_comments.updated_at ` +
 		`FROM public.work_item_comments ` +
 		`` +
-		` WHERE work_item_id = $1 `
+		` WHERE work_item_comments.work_item_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

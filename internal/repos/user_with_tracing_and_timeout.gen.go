@@ -27,6 +27,8 @@ type UserWrappedConfig struct {
 
 	UpsertTimeout time.Duration
 
+	UserByAPIKeyTimeout time.Duration
+
 	UserByEmailTimeout time.Duration
 }
 
@@ -107,6 +109,39 @@ func (_d UserWrapped) Upsert(ctx context.Context, d db.DBTX, user *db.User) (err
 	}
 
 	return _d.User.Upsert(ctx, d, user)
+}
+
+// UserByAPIKey implements User.
+func (_d UserWrapped) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.User, err error) {
+	// -- tracing
+	ctx, _span := otel.Tracer(_d._otelName).Start(ctx, "User.UserByAPIKey")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":    ctx,
+				"d":      d,
+				"apiKey": apiKey}, map[string]interface{}{
+				"up1": up1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+
+	// -- timeout
+	var cancelFunc func()
+	if _d.config.UserByAPIKeyTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UserByAPIKeyTimeout)
+		defer cancelFunc()
+	}
+
+	return _d.User.UserByAPIKey(ctx, d, apiKey)
 }
 
 // UserByEmail implements User.

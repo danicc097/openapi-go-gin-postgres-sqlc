@@ -56,9 +56,9 @@ func main() {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}
 
-	username := "user_2"
+	// username := "user_2"
 	// username := "doesntexist" // User should be nil
-	// username := "superadmin"
+	username := "superadmin"
 	user, err := db.UserByUsername(context.Background(), pool, username,
 		db.UserWithJoin(db.UserJoins{
 			TimeEntries: true,
@@ -70,6 +70,21 @@ func main() {
 		log.Fatalf("db.UserByUsername: %s\n", err)
 	}
 	format.PrintJSON(user)
+
+	// test correct queries
+	uak, err := db.UserAPIKeyByAPIKey(context.Background(), pool, "19270107-1b9c-4f52-a578-7390d5b31513-key-hashed")
+	if err != nil {
+		log.Fatalf("UserAPIKeyByAPIKey: %v", err)
+	}
+	if uak == nil {
+		log.Fatalf("api does not exist: %v", err)
+	}
+
+	u, err := uak.FKUser(context.Background(), pool)
+	if err != nil {
+		log.Fatalf("could not get user by email: %v", err)
+	}
+	fmt.Printf(" found user from its api key u: %v#\n", u)
 }
 
 func errAndExit(out []byte, err error) {

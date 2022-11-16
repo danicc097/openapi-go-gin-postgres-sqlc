@@ -168,7 +168,7 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ..
 schema_migrations.dirty ` +
 		`FROM public.schema_migrations ` +
 		`` +
-		` WHERE version = $1 `
+		` WHERE schema_migrations.version = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

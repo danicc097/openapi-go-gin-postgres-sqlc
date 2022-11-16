@@ -184,7 +184,7 @@ left join (
     time_entries
    group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE name = $2 `
+		` WHERE activities.name = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -228,7 +228,7 @@ left join (
     time_entries
    group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activity_id = $2 `
+		` WHERE activities.activity_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -1978,10 +1978,15 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		}
 		// index fields
 		for _, z := range x.Fields {
-			filters = append(filters, fmt.Sprintf("%s = %s", f.colname(z), f.nth(n)))
+			filters = append(filters, fmt.Sprintf("%s.%s = %s", x.Table.SQLName, f.colname(z), f.nth(n)))
 			n++
 		}
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
+			fmt.Printf("after : %s\n", after)
+			// TODO this also needs to have table name prepended.
+			// after : (external_id IS NOT NULL)after : (external_id IS NULL)
+			// hacky solution is to loop through current table columns and if found .Cut() and construct a new string
+			// that simply inserts the table in between
 			filters = append(filters, after)
 		}
 

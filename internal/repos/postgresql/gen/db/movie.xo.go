@@ -172,7 +172,7 @@ movies.year,
 movies.synopsis ` +
 		`FROM public.movies ` +
 		`` +
-		` WHERE movie_id = $1 `
+		` WHERE movies.movie_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

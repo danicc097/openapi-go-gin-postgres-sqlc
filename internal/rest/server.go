@@ -30,6 +30,7 @@ import (
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -276,7 +277,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 		vg.Use(rlMw.Limit())
 	}
 
-	usvc := services.NewUser(postgresql.NewUser(), conf.Logger)
+	usvc := services.NewUser(repos.NewUserWrapped(postgresql.NewUser(), otelName, repos.UserWrappedConfig{}, nil), conf.Logger)
 	authzsvc, err := services.NewAuthorization(conf.Logger, conf.ScopePolicyPath, conf.RolePolicyPath)
 	if err != nil {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)

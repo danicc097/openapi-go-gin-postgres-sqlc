@@ -9,12 +9,6 @@
 #   - `x-required-scopes` is an array of required scope keys from scopes.json
 #   - `x-required-role` is a required role name from role.json
 #
-x-uuid-pattern: &uuid-pattern ^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}
-# merge so that openapi validator middleware does a header precheck before going deeper
-x-path-security: &path-security
-  security:
-    - bearer_auth: []
-    - api_key: []
 #######################################
 openapi: 3.0.3
 info:
@@ -66,7 +60,9 @@ paths:
                 format: binary
   /admin/ping:
     get:
-      <<: *path-security
+      security:
+        - bearer_auth: []
+        - api_key: []
       summary: Ping pongs
       operationId: AdminPing
       responses:
@@ -90,7 +86,9 @@ paths:
       x-required-role: admin
   /user/me:
     get:
-      # <<: *path-security
+      security:
+        - bearer_auth: []
+        - api_key: []
       summary: returns the logged in user
       operationId: GetCurrentUser
       responses:
@@ -104,7 +102,9 @@ paths:
         - user
   /user/{id}:
     delete:
-      <<: *path-security
+      security:
+        - bearer_auth: []
+        - api_key: []
       summary: deletes the user by id
       operationId: DeleteUser
       parameters:
@@ -126,7 +126,9 @@ paths:
         - users:write
       x-required-role: admin
     put:
-      <<: *path-security
+      security:
+        - bearer_auth: []
+        - api_key: []
       summary: updates the user by id
       operationId: UpdateUser
       parameters:
@@ -137,7 +139,7 @@ paths:
           required: true
           schema:
             type: string
-            pattern: *uuid-pattern
+            pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
           style: simple
       requestBody:
         content:
@@ -415,6 +417,8 @@ components:
           type: string
         user_api_key_id:
           type: integer
+        user_id:
+          $ref: '#/components/schemas/UuidUUID'
       type: object
     UuidUUID: # Generated from db package structs. DO NOT EDIT.
       type: string

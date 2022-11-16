@@ -222,6 +222,8 @@ x.pregen() {
   " openapi.yaml >>$opid_auth
 
     yq --prettyPrint '.. style="single"' -i $SPEC
+    sed -i 's/!!merge //' $SPEC
+
     # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
 
@@ -427,8 +429,6 @@ x.gen() {
     #   restart_pid $pid &
     # done
 
-    wait
-
     x.lint
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -448,14 +448,14 @@ x.lint.go() {
   { { {
     files=$(find . \
       -not -path "**/$PROTO_DIR/*" \
-      -not -path "**/"$PG_REPO_GEN"/*" \
+      -not -path "**/$PG_REPO_GEN/*" \
       -not -path "**/testdata/*" \
       -not -path "**/*.cache/*" \
       -not -path "**/*.gen.*" \
       -name "*.go")
 
-    goimports -w $files
-    gofumpt -w $files
+    goimports -w $files || echo Linting failed
+    gofumpt -w $files || echo Linting failed
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -519,8 +519,9 @@ x.run.backend-hr() {
   # else generated .yaml files trigger rebuild.
   # --build.include_files "openapi.yaml" \
   # NOTE: building binary very unreliable, leads to bin not found.
+  [[ -z $NO_GEN ]] && pre_build_cmd="bin/project gen"
   air \
-    --build.pre_build_cmd "bin/project gen" \
+    --build.pre_build_cmd "$pre_build_cmd" \
     --build.cmd "" \
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \

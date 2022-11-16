@@ -13,6 +13,7 @@ declare
   admin_id uuid := '19270107-1b9c-4f52-a578-7390d5b31513';
   manager_1_id uuid := '29270107-1b9c-4f52-a578-7390d5b31513';
   ui uuid;
+  u_api_key int;
   user_ids uuid[];
 begin
   -- https://stackoverflow.com/questions/41772518/pl-pgsql-accessing-fields-of-an-element-of-an-array-of-custom-type
@@ -156,8 +157,36 @@ begin
   insert into time_entries (task_id , activity_id , team_id , user_id , comment , "start" , duration_minutes)
     values (1 , 2 , null , user_ids[3] , '' , NOW() , 20);
   -- api keys
-  insert into user_api_keys (api_key , expires_on)
-    values ('admin-key-hashed' , NOW() + interval '100 days');
+  insert into user_api_keys (api_key , expires_on , user_id)
+    values (admin_id || '-key-hashed' , NOW() + interval '100 days' , admin_id)
+  returning
+    user_api_key_id into u_api_key;
+  update
+    users
+  set
+    api_key_id = u_api_key
+  where
+    user_id = admin_id;
+  insert into user_api_keys (api_key , expires_on , user_id)
+    values (user_ids[1] || '-key-hashed' , NOW() + interval '100 days' , user_ids[1])
+  returning
+    user_api_key_id into u_api_key;
+  update
+    users
+  set
+    api_key_id = u_api_key
+  where
+    user_id = user_ids[1];
+  insert into user_api_keys (api_key , expires_on , user_id)
+    values (user_ids[2] || '-key-hashed' , NOW() + interval '100 days' , user_ids[2])
+  returning
+    user_api_key_id into u_api_key;
+  update
+    users
+  set
+    api_key_id = u_api_key
+  where
+    user_id = user_ids[2];
 
 end;
 $BODY$

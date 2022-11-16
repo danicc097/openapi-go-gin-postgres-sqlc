@@ -231,7 +231,7 @@ left join (
     time_entries
    group by
         task_id) joined_time_entries on joined_time_entries.time_entries_task_id = tasks.task_id` +
-		` WHERE task_id = $3 `
+		` WHERE tasks.task_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

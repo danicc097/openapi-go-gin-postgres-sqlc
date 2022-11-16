@@ -172,7 +172,7 @@ work_item_tags.description,
 work_item_tags.color ` +
 		`FROM public.work_item_tags ` +
 		`` +
-		` WHERE name = $1 `
+		` WHERE work_item_tags.name = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -207,7 +207,7 @@ work_item_tags.description,
 work_item_tags.color ` +
 		`FROM public.work_item_tags ` +
 		`` +
-		` WHERE work_item_tag_id = $1 `
+		` WHERE work_item_tags.work_item_tag_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

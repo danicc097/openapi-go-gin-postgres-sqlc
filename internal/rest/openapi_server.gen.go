@@ -83,6 +83,10 @@ func (siw *ServerInterfaceWrapper) Ping(c *gin.Context) {
 // GetCurrentUser operation middleware.
 func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
 
+	c.Set(models.Bearer_authScopes, []string{""})
+
+	c.Set(models.Api_keyScopes, []string{""})
+
 	// apply middlewares for operation "GetCurrentUser".
 	for _, mw := range siw.Handler.middlewares(GetCurrentUser) {
 		mw(c)

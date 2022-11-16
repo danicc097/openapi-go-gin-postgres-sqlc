@@ -119,7 +119,7 @@ func WorkItemMemberByMemberWorkItemID(ctx context.Context, db DB, member uuid.UU
 work_item_member.member ` +
 		`FROM public.work_item_member ` +
 		`` +
-		` WHERE member = $1 AND work_item_id = $2 `
+		` WHERE work_item_member.member = $1 AND work_item_member.work_item_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -165,7 +165,7 @@ func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, workItemID int
 work_item_member.member ` +
 		`FROM public.work_item_member ` +
 		`` +
-		` WHERE work_item_id = $1 AND member = $2 `
+		` WHERE work_item_member.work_item_id = $1 AND work_item_member.member = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

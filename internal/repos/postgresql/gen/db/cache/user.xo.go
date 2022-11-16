@@ -106,7 +106,7 @@ users.deleted_at,
 users.teams ` +
 		`FROM cache.users ` +
 		`` +
-		` WHERE external_id = $1 `
+		` WHERE users.external_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

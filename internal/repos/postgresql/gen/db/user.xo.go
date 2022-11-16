@@ -283,7 +283,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE created_at = $5 `
+		` WHERE users.created_at = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -398,7 +398,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE deleted_at = $5 `
+		` WHERE users.deleted_at = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -513,7 +513,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE email = $5 `
+		` WHERE users.email = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -615,7 +615,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE user_id = $5 `
+		` WHERE users.user_id = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -717,7 +717,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE updated_at = $5 `
+		` WHERE users.updated_at = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -832,7 +832,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE user_id = $5 AND external_id = $6 AND (external_id IS NOT NULL) `
+		` WHERE users.user_id = $5 AND users.external_id = $6 AND (external_id IS NOT NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -934,7 +934,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE user_id = $5 AND (external_id IS NULL) `
+		` WHERE users.user_id = $5 AND (external_id IS NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -1036,7 +1036,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE username = $5 `
+		` WHERE users.username = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

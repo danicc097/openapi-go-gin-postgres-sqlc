@@ -198,7 +198,7 @@ projects.created_at,
 projects.updated_at ` +
 		`FROM public.projects ` +
 		`` +
-		` WHERE name = $1 `
+		` WHERE projects.name = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -235,7 +235,7 @@ projects.created_at,
 projects.updated_at ` +
 		`FROM public.projects ` +
 		`` +
-		` WHERE project_id = $1 `
+		` WHERE projects.project_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -144,6 +144,7 @@ type UserAPIKey struct {
 	ApiKey       *string    `json:"api_key,omitempty"`
 	ExpiresOn    *time.Time `json:"expires_on,omitempty"`
 	UserApiKeyId *int       `json:"user_api_key_id,omitempty"`
+	UserId       *UuidUUID  `json:"user_id,omitempty"`
 }
 
 // UuidUUID defines model for UuidUUID.

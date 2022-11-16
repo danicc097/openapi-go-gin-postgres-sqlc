@@ -257,7 +257,7 @@ left join (
 						users))
 			group by
 				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id` +
-		` WHERE work_item_id = $4 `
+		` WHERE work_items.work_item_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

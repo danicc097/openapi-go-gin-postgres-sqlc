@@ -62,3 +62,15 @@ func (u *User) UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.Us
 
 	return user, nil
 }
+
+// UserByAPIKey gets a user by apiKey.
+func (u *User) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error) {
+	defer newOTELSpan(ctx, "User.UserByAPIKey").End()
+
+	user, err := u.urepo.UserByAPIKey(ctx, d, apiKey)
+	if err != nil {
+		return nil, errors.Wrap(err, "urepo.UserByEmail")
+	}
+
+	return user, nil
+}

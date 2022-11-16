@@ -66,6 +66,12 @@ create table users (
   , foreign key (api_key_id) references user_api_keys (user_api_key_id) on delete cascade
 );
 
+alter table user_api_keys
+  add column user_id uuid not null unique;
+
+alter table user_api_keys
+  add foreign key (user_id) references users (user_id) on delete cascade;
+
 comment on column users.api_key_id is 'cardinality:O2O';
 
 -- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)

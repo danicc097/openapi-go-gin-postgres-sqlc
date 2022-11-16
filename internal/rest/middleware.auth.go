@@ -47,12 +47,24 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		a.logger.Sugar().Info("Would have run EnsureAuthenticated and set user in ctx")
 		// if x-api-key header found
-		a.authnsvc.GetUserFromApiKey(c.Request.Context())
-		// if auth header with bearer scheme found
-		a.authnsvc.GetUserFromToken(c.Request.Context())
+		if c.Request.Header.Get("x-api-key") != "" {
+			u, err := a.authnsvc.GetUserFromApiKey(c.Request.Context(), "")
+			if err != nil {
+				renderErrorResponse(c, "could not get user from api key", err)
+			}
+			ctxWithUser(c, u)
+			c.Next()
+		}
+		if strings.HasPrefix(c.Request.Header.Get("Authorization"), "Bearer ") {
+			u, err := a.authnsvc.GetUserFromToken(c.Request.Context(), "")
+			if err != nil {
+				renderErrorResponse(c, "could not get user from token", err)
+			}
+			ctxWithUser(c, u)
+			c.Next()
+		}
 
-		// set user to context
-		// ctxWithUser(c)
+		renderErrorResponse(c, "Unauthenticated.", errors.New("Unauthenticated."))
 	}
 }
 

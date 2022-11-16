@@ -119,7 +119,7 @@ func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID
 user_team.user_id ` +
 		`FROM public.user_team ` +
 		`` +
-		` WHERE user_id = $1 AND team_id = $2 `
+		` WHERE user_team.user_id = $1 AND user_team.team_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -152,7 +152,7 @@ func UserTeamByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.
 user_team.user_id ` +
 		`FROM public.user_team ` +
 		`` +
-		` WHERE team_id = $1 AND user_id = $2 `
+		` WHERE user_team.team_id = $1 AND user_team.user_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -198,7 +198,7 @@ func UserTeamByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...User
 user_team.user_id ` +
 		`FROM public.user_team ` +
 		`` +
-		` WHERE user_id = $1 `
+		` WHERE user_team.user_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

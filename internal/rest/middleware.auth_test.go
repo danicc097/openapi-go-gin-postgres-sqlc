@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -50,7 +51,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		logger, _ := zap.NewDevelopment()
 		_, engine := gin.CreateTestContext(resp)
 
-		usvc := services.NewUser(postgresql.NewUser(), logger)
+		usvc := services.NewUser(repos.NewUserWrapped(postgresql.NewUser(), otelName, repos.UserWrappedConfig{}, nil), logger)
 		authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
 		if err != nil {
 			t.Fatalf("services.NewAuthorization: %v", err)

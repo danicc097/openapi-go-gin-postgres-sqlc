@@ -237,7 +237,7 @@ left join (
 						users))
 			group by
 				team_id) joined_users on joined_users.users_team_id = teams.team_id` +
-		` WHERE name = $3 AND project_id = $4 `
+		` WHERE teams.name = $3 AND teams.project_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -307,7 +307,7 @@ left join (
 						users))
 			group by
 				team_id) joined_users on joined_users.users_team_id = teams.team_id` +
-		` WHERE team_id = $3 `
+		` WHERE teams.team_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

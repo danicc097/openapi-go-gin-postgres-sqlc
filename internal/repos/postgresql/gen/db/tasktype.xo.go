@@ -174,7 +174,7 @@ task_types.description,
 task_types.color ` +
 		`FROM public.task_types ` +
 		`` +
-		` WHERE task_type_id = $1 `
+		` WHERE task_types.task_type_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -210,7 +210,7 @@ task_types.description,
 task_types.color ` +
 		`FROM public.task_types ` +
 		`` +
-		` WHERE team_id = $1 AND name = $2 `
+		` WHERE task_types.team_id = $1 AND task_types.name = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

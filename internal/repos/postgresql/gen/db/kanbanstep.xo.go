@@ -180,7 +180,7 @@ kanban_steps.time_trackable,
 kanban_steps.disabled ` +
 		`FROM public.kanban_steps ` +
 		`` +
-		` WHERE kanban_step_id = $1 `
+		` WHERE kanban_steps.kanban_step_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -219,7 +219,7 @@ kanban_steps.time_trackable,
 kanban_steps.disabled ` +
 		`FROM public.kanban_steps ` +
 		`` +
-		` WHERE team_id = $1 AND step_order = $2 `
+		` WHERE kanban_steps.team_id = $1 AND kanban_steps.step_order = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
