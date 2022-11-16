@@ -30,7 +30,7 @@ func TestAdminPingRoute(t *testing.T) {
 		if err != nil {
 			t.Fatalf("authzsvc.RoleByName: %v", err)
 		}
-		ctxWithUser(c, &db.User{RoleRank: r.Rank})
+		ctxWithUser(c, &db.User{RoleRank: r.Rank}) // see
 	}})
 	if err != nil {
 		t.Fatalf("Couldn't run test server: %s\n", err)
@@ -39,6 +39,7 @@ func TestAdminPingRoute(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/admin/ping", nil)
+	// FIXME see middleware.auth_test for fixture factory
 	req.Header.Add("x-api-key", "dummy-key")
 
 	srv.Handler.ServeHTTP(resp, req)

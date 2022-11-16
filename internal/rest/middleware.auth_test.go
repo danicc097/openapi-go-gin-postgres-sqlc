@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -8,7 +9,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -62,15 +63,18 @@ func TestAuthorizationMiddleware(t *testing.T) {
 
 		req, _ := http.NewRequest(http.MethodGet, "/", nil)
 
-		engine.Use(func(c *gin.Context) {
-			r, err := authzsvc.RoleByName(string(tc.role))
-			if err != nil {
-				t.Fatalf("authzsvc.RoleByName: %v", err)
-			}
-			ctxWithUser(c, &db.User{RoleRank: r.Rank})
+		ff := testutil.NewFixtureFactory(usvc, pool, authnsvc, authzsvc)
+		user, err := ff.CreateUser(context.Background(), testutil.CreateUserParams{
+			Role:       tc.role,
+			WithAPIKey: true,
 		})
+		if err != nil {
+			t.Fatalf("ff.CreateUser: %s", err)
+		}
 
-		req.Header.Add()
+		engine.Use(func(c *gin.Context) {
+			ctxWithUser(c, user)
+		})
 
 		engine.Use(authMw.EnsureAuthorized(AuthRestriction{MinimumRole: tc.requiredRole}))
 		engine.GET("/", func(c *gin.Context) {

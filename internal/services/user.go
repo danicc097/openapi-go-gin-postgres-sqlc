@@ -41,8 +41,11 @@ func (u *User) Upsert(ctx context.Context, d db.DBTX, user *db.User) error {
 }
 
 // Register registers a user record.
+// TODO accepts basic parameters and everything else is default, returns a *db.User. must not pass a db.User here
 func (u *User) Register(ctx context.Context, d db.DBTX, user *db.User) error {
 	defer newOTELSpan(ctx, "User.Register").End()
+
+	// TODO construct db.User and fill missing fields with default roles, etc.
 
 	if err := u.urepo.Create(ctx, d, user); err != nil {
 		return errors.Wrap(err, "urepo.Create")

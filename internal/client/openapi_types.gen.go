@@ -33,10 +33,10 @@ const (
 	ScopeWorkItemReview       Scope = "work-item:review"
 )
 
-// Defines values for TaskRole.
+// Defines values for WorkItemRole.
 const (
-	TaskRolePreparer TaskRole = "preparer"
-	TaskRoleReviewer TaskRole = "reviewer"
+	WorkItemRolePreparer WorkItemRole = "preparer"
+	WorkItemRoleReviewer WorkItemRole = "reviewer"
 )
 
 // HTTPValidationError defines model for HTTPValidationError.
@@ -58,22 +58,18 @@ type Scope string
 
 // Task defines model for Task.
 type Task struct {
-	CreatedAt          *time.Time   `json:"created_at,omitempty"`
-	DeletedAt          *time.Time   `json:"deleted_at"`
-	Metadata           *PgtypeJSONB `json:"metadata,omitempty"`
-	TargetDate         *time.Time   `json:"target_date,omitempty"`
-	TargetDateTimezone *string      `json:"target_date_timezone,omitempty"`
-	TaskId             *int         `json:"task_id,omitempty"`
-	TaskType           *TaskType    `json:"task_type"`
-	TaskTypeId         *int         `json:"task_type_id,omitempty"`
-	TimeEntries        *[]TimeEntry `json:"time_entries"`
-	Title              *string      `json:"title,omitempty"`
-	UpdatedAt          *time.Time   `json:"updated_at,omitempty"`
-	WorkItemId         *int         `json:"work_item_id,omitempty"`
+	CreatedAt   *time.Time   `json:"created_at,omitempty"`
+	DeletedAt   *time.Time   `json:"deleted_at"`
+	Finished    *bool        `json:"finished"`
+	Metadata    *PgtypeJSONB `json:"metadata,omitempty"`
+	TaskId      *int         `json:"task_id,omitempty"`
+	TaskType    *TaskType    `json:"task_type"`
+	TaskTypeId  *int         `json:"task_type_id,omitempty"`
+	TimeEntries *[]TimeEntry `json:"time_entries"`
+	Title       *string      `json:"title,omitempty"`
+	UpdatedAt   *time.Time   `json:"updated_at,omitempty"`
+	WorkItemId  *int         `json:"work_item_id,omitempty"`
 }
-
-// TaskRole Role in task for a member.
-type TaskRole string
 
 // TaskType defines model for TaskType.
 type TaskType struct {
@@ -171,6 +167,7 @@ type WorkItem struct {
 	Users            *[]User            `json:"users"`
 	WorkItemComments *[]WorkItemComment `json:"work_item_comments"`
 	WorkItemId       *int               `json:"work_item_id,omitempty"`
+	WorkItemTypeId   *int               `json:"work_item_type_id,omitempty"`
 }
 
 // WorkItemComment defines model for WorkItemComment.
@@ -182,6 +179,9 @@ type WorkItemComment struct {
 	WorkItemCommentId *int       `json:"work_item_comment_id,omitempty"`
 	WorkItemId        *int       `json:"work_item_id,omitempty"`
 }
+
+// WorkItemRole Role in work item for a member.
+type WorkItemRole string
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 type UpdateUserJSONRequestBody = UpdateUserRequest

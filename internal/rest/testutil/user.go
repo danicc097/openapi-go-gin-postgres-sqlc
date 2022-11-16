@@ -1,29 +1,61 @@
 package testutil
 
 import (
+	"context"
+	"fmt"
+	"time"
+
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 )
 
-type createUserParams struct {
-	usvc *services.User
-	pool *pgxpool.Pool
-
-	role          models.Role
-	scopes        []models.Scope
-	authenticated bool // if true, an access token is created and returned
+type CreateUserParams struct {
+	DeletedAt  time.Time
+	Role       models.Role
+	Scopes     []models.Scope
+	WithToken  bool // if true, an access token is created and returned
+	WithAPIKey bool // if true, an api key is created and returned
 }
 
-func createUser(params createUserParams) {
-	// TODO any value that has a  unique constraint in db must be generated
-	// via randomXXX().
-	// the only parameters createUser accepts are high level, at the `rest` layer only.
-	// functions in this package only make use of SERVICES.
-	// it also accepts
-	// e.g. roles -> roles from deepmap gen server, not from services or anywhere else.
-	// when everything is create we return the user as well as any external data associated to it
-	// after creation
+type CreateUserResult struct {
+	User   *db.User
+	APIKey string
+	Token  string
+}
 
-	//
+// CreateUser creates a new random user with the given configuration.
+func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParams) (*CreateUserResult, error) {
+	// TODO any value that has a unique constraint in db must be generated via randomXXX().
+	// the only parameters accepted are high level, at the `rest` layer only.
+	// IMPORTANT: functions in this package only make use of SERVICES.
+	// do not use any repository or db layer components
+	// services have absolutely all the logic we need for fixtures. dont want any magic or leaking.
+	scopes := make([]string, len(params.Scopes))
+	for i, s := range params.Scopes {
+		scopes[i] = string(s)
+	}
+	r, err := ff.authzsvc.RoleByName(string(params.Role))
+	if err != nil {
+		return nil, fmt.Errorf("authzsvc.RoleByName: %v", err)
+	}
+	// TODO usvc.CreateUser instead and then authn.createtoken or createapikey, usvc.deleteuser, etc. - no repo logic here
+	u := &db.User{
+		Username:  testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
+		Email:     testutil.RandomEmail(),
+		FirstName: pointers.String(testutil.RandomFirstName()),
+		LastName:  pointers.String(testutil.RandomLastName()),
+		Scopes:    scopes,
+		RoleRank:  r.Rank,
+		DeletedAt: &params.DeletedAt,
+	}
+
+	ff.usvc.Register(ctx, ff.pool, u)
+
+	return &CreateUserResult{
+		User:   u,
+		APIKey: "",
+		Token:  "",
+	}, nil
 }

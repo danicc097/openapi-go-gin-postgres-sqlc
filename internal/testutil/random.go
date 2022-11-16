@@ -34,7 +34,7 @@ func RandomString(n int) string {
 
 // RandomName generates a random name.
 func RandomName() string {
-	return RandomString(int(RandomInt(6, 14)))
+	return RandomNameIdentifier(1, "") + RandomString(int(RandomInt(10, 25)))
 }
 
 // RandomMoney generates a random amount of money.
@@ -42,7 +42,36 @@ func RandomMoney() int64 {
 	return RandomInt(0, 1000)
 }
 
+// RandomFirstName generates a random first name.
+func RandomFirstName() string {
+	return firstNames[rand.Intn(len(firstNames))]
+}
+
+// RandomLastName generates a random last name.
+func RandomLastName() string {
+	return lastNames[rand.Intn(len(lastNames))]
+}
+
 // RandomEmail generates a random email.
 func RandomEmail() string {
-	return fmt.Sprintf("%s@email.com", RandomString(int(RandomInt(6, 14))))
+	return fmt.Sprintf("%s@email.com", RandomNameIdentifier(3, ".")+RandomString(int(RandomInt(5, 10))))
+}
+
+// RandomNameIdentifier generates a random name identifier,
+// such as eminently-sincere-mollusk.
+func RandomNameIdentifier(n int, sep string) string {
+	adv := adverbs[rand.Intn(len(adverbs))]
+	adj := adjectives[rand.Intn(len(adjectives))]
+	nam := names[rand.Intn(len(names))]
+
+	var ss []string
+	switch n {
+	case 1:
+		ss = append(ss, nam)
+	case 2:
+		ss = append(ss, adj, nam)
+	default:
+		ss = append(ss, adv, adj, nam)
+	}
+	return strings.Join(ss, sep)
 }
