@@ -79,45 +79,107 @@
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "GetCurrentUserRes": {
-      "description": "represents a user",
+    "User": {
       "properties": {
-        "user_id": {
-          "format": "int64",
-          "type": "integer",
-          "minimum": -9223372036854776000,
-          "maximum": 9223372036854776000
+        "api_key_id": {
+          "type": [
+            "integer",
+            "null"
+          ]
         },
-        "username": {
+        "created_at": {
+          "format": "date-time",
           "type": "string"
         },
-        "first_name": {
-          "type": "string"
-        },
-        "last_name": {
-          "type": "string"
+        "deleted_at": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "email": {
           "type": "string"
         },
-        "password": {
-          "type": "string"
+        "external_id": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
-        "phone": {
-          "type": "string"
+        "first_name": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
-        "role": {
-          "$ref": "#/definitions/Role"
+        "full_name": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
-        "orgs": {
-          "description": "are organizations a user belongs to",
+        "last_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "role_rank": {
+          "type": "integer"
+        },
+        "scopes": {
           "items": {
-            "$ref": "#/definitions/Organization"
-          }
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "teams": {
+          "items": {
+            "$ref": "#/definitions/Team"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "time_entries": {
+          "items": {
+            "$ref": "#/definitions/TimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "user_api_key": {
+          "$ref": "#/definitions/UserAPIKey"
+        },
+        "user_id": {
+          "$ref": "#/definitions/UuidUUID"
+        },
+        "username": {
+          "type": "string"
+        },
+        "work_items": {
+          "items": {
+            "$ref": "#/definitions/WorkItem"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
         }
       },
-      "title": "a User",
       "type": "object",
+      "x-db-struct": "User",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "ValidationError": {
@@ -146,6 +208,291 @@
         }
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "PgtypeJSONB": {
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Task": {
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deleted_at": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "metadata": {
+          "$ref": "#/definitions/PgtypeJSONB"
+        },
+        "target_date": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "target_date_timezone": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "integer"
+        },
+        "task_type": {
+          "$ref": "#/definitions/TaskType"
+        },
+        "task_type_id": {
+          "type": "integer"
+        },
+        "time_entries": {
+          "items": {
+            "$ref": "#/definitions/TimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "work_item_id": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "TaskType": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "task_type_id": {
+          "type": "integer"
+        },
+        "team_id": {
+          "type": "integer"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Team": {
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/definitions/PgtypeJSONB"
+        },
+        "name": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "integer"
+        },
+        "team_id": {
+          "type": "integer"
+        },
+        "time_entries": {
+          "items": {
+            "$ref": "#/definitions/TimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "users": {
+          "items": {
+            "$ref": "#/definitions/User"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "TimeEntry": {
+      "properties": {
+        "activity_id": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "duration_minutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "task_id": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "team_id": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "time_entry_id": {
+          "type": "integer"
+        },
+        "user_id": {
+          "$ref": "#/definitions/UuidUUID"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UserAPIKey": {
+      "properties": {
+        "api_key": {
+          "type": "string"
+        },
+        "expires_on": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "user_api_key_id": {
+          "type": "integer"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UuidUUID": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItem": {
+      "properties": {
+        "closed": {
+          "type": "boolean"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deleted_at": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kanban_step_id": {
+          "type": "integer"
+        },
+        "metadata": {
+          "$ref": "#/definitions/PgtypeJSONB"
+        },
+        "tasks": {
+          "items": {
+            "$ref": "#/definitions/Task"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "team_id": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "users": {
+          "items": {
+            "$ref": "#/definitions/User"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "work_item_comments": {
+          "items": {
+            "$ref": "#/definitions/WorkItemComment"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "work_item_id": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemComment": {
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "user_id": {
+          "$ref": "#/definitions/UuidUUID"
+        },
+        "work_item_comment_id": {
+          "type": "integer"
+        },
+        "work_item_id": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -167,11 +514,38 @@
     "Organization": {
       "$ref": "#/definitions/Organization"
     },
-    "GetCurrentUserRes": {
-      "$ref": "#/definitions/GetCurrentUserRes"
+    "User": {
+      "$ref": "#/definitions/User"
     },
     "ValidationError": {
       "$ref": "#/definitions/ValidationError"
+    },
+    "PgtypeJSONB": {
+      "$ref": "#/definitions/PgtypeJSONB"
+    },
+    "Task": {
+      "$ref": "#/definitions/Task"
+    },
+    "TaskType": {
+      "$ref": "#/definitions/TaskType"
+    },
+    "Team": {
+      "$ref": "#/definitions/Team"
+    },
+    "TimeEntry": {
+      "$ref": "#/definitions/TimeEntry"
+    },
+    "UserAPIKey": {
+      "$ref": "#/definitions/UserAPIKey"
+    },
+    "UuidUUID": {
+      "$ref": "#/definitions/UuidUUID"
+    },
+    "WorkItem": {
+      "$ref": "#/definitions/WorkItem"
+    },
+    "WorkItemComment": {
+      "$ref": "#/definitions/WorkItemComment"
     }
   }
 }

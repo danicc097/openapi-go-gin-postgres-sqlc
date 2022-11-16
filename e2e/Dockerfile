@@ -3,7 +3,7 @@
 # Use a Docker image version that matches Playwright version.
 # use supported regular ubuntu
 #
-FROM ubuntu:focal
+FROM ubuntu:focal-20221019
 
 WORKDIR /src
 ENV PYTHONDONTWRITEBYTECODE 1

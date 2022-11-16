@@ -3,6 +3,7 @@ package rest
 import (
 	"net/http"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4"
 	"go.opentelemetry.io/otel/trace"
@@ -46,7 +47,13 @@ func (h *Handlers) DeleteUser(c *gin.Context, id string) {
 
 // GetCurrentUser returns the logged in user.
 func (h *Handlers) GetCurrentUser(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "501 not implemented")
+	// TODO return user from gin context (set when reading token in auth middleware)
+	// getUserFromCtx(c)
+	u, err := db.UserByUsername(c.Request.Context(), h.pool, "user_2", db.UserWithJoin(db.UserJoins{TimeEntries: true, Teams: true}))
+	if err != nil {
+		renderErrorResponse(c, "could not find user", err)
+	}
+	c.JSON(http.StatusOK, u)
 }
 
 // UpdateUser updates the user by id.

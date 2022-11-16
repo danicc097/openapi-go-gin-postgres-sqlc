@@ -34,7 +34,7 @@ func main() {
 	}
 
 	var stderr bytes.Buffer
-	og := postgen.NewOpenapiGenerator(conf, &stderr, postgen.Dir(cacheDir), spec)
+	og := postgen.NewOpenapiGenerator(conf, &stderr, spec)
 
 	if err := og.Generate(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

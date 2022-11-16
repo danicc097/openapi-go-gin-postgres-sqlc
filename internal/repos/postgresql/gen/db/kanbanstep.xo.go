@@ -5,20 +5,18 @@ package db
 import (
 	"context"
 	"fmt"
-
-	"gopkg.in/guregu/null.v4"
 )
 
 // KanbanStep represents a row from 'public.kanban_steps'.
 type KanbanStep struct {
-	KanbanStepID  int      `json:"kanban_step_id" db:"kanban_step_id"` // kanban_step_id
-	TeamID        int      `json:"team_id" db:"team_id"`               // team_id
-	StepOrder     null.Int `json:"step_order" db:"step_order"`         // step_order
-	Name          string   `json:"name" db:"name"`                     // name
-	Description   string   `json:"description" db:"description"`       // description
-	Color         string   `json:"color" db:"color"`                   // color
-	TimeTrackable bool     `json:"time_trackable" db:"time_trackable"` // time_trackable
-	Disabled      bool     `json:"disabled" db:"disabled"`             // disabled
+	KanbanStepID  int    `json:"kanban_step_id" db:"kanban_step_id"` // kanban_step_id
+	TeamID        int    `json:"team_id" db:"team_id"`               // team_id
+	StepOrder     *int16 `json:"step_order" db:"step_order"`         // step_order
+	Name          string `json:"name" db:"name"`                     // name
+	Description   string `json:"description" db:"description"`       // description
+	Color         string `json:"color" db:"color"`                   // color
+	TimeTrackable bool   `json:"time_trackable" db:"time_trackable"` // time_trackable
+	Disabled      bool   `json:"disabled" db:"disabled"`             // disabled
 
 	// xo fields
 	_exists, _deleted bool
@@ -201,7 +199,7 @@ kanban_steps.disabled ` +
 // KanbanStepByTeamIDStepOrder retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_team_id_step_order_key'.
-func KanbanStepByTeamIDStepOrder(ctx context.Context, db DB, teamID int, stepOrder null.Int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
+func KanbanStepByTeamIDStepOrder(ctx context.Context, db DB, teamID int, stepOrder *int16, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
 	c := &KanbanStepSelectConfig{
 		joins: KanbanStepJoins{},
 	}

@@ -519,7 +519,7 @@ func (r PingResponse) StatusCode() int {
 type GetCurrentUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *GetCurrentUserRes
+	JSON200      *User
 }
 
 // Status returns HTTPResponse.Status
@@ -735,7 +735,7 @@ func ParseGetCurrentUserResponse(rsp *http.Response) (*GetCurrentUserResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest GetCurrentUserRes
+		var dest User
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

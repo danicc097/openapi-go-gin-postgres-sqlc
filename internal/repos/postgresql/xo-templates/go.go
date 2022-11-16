@@ -1990,14 +1990,11 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		  -- openapi schema refs from xo models (we just care about types, this will be used for responses only)
 		  -- so we could easily respond with whatever json object.
 		  -- specifically see https://github.com/swaggest/openapi-go (Type-based reflection of Go structures to OpenAPI 3 schema.) */
-		// TODO here we join with []Constrains. no need to be dynamic, if a join is not specified in opts postgres wont waste time on it.
+		// no need to be dynamic for joins, if a join is not specified in opts postgres wont waste time on it.
 		lines := []string{
 			"SELECT ",
 			strings.Join(fields, ",\n") + " ",
 			"FROM " + f.schemafn(x.Table.SQLName) + " ",
-			// TODO create and add joins themselves to filters based on the current table
-			// (all generated index queries will have these joins available as opts)
-			// makeJoins(x.Table, ...)
 			strings.Join(joins, "\n"),
 			" WHERE " + strings.Join(filters, " AND "),
 		}
@@ -2153,12 +2150,11 @@ func (f *Funcs) convertTypes(fkey ForeignKey) string {
 		}
 		// convert types
 		typ, refType := field.Type, refField.Type
-		if strings.HasPrefix(typ, "null.") {
-			_typ := typ[5:]
-			if strings.HasPrefix("Int", _typ) {
-				_typ += "64"
-			}
-			expr = expr + "." + _typ
+		if strings.HasPrefix(typ, "*") {
+			_typ := typ[1:]
+			// TODO nil checks generate and return err
+			// NOTE: pgx can handle By queries' scan and query row calls with pointer addresses just fine (tested with external_id *string)
+			expr = "*" + expr
 			typ = strings.ToLower(_typ)
 		}
 		if strings.ToLower(refType) != typ {
@@ -3102,12 +3098,10 @@ func addLegacyFuncs(ctx context.Context, funcs template.FuncMap) {
 			return expr
 		}
 		ft := f.Type
-		if strings.HasPrefix(ft, "null.") {
-			typ := f.Type[5:]
-			if strings.HasPrefix("Int", typ) {
-				typ += "64"
-			}
-			expr = expr + "." + typ
+		if strings.HasPrefix(ft, "*") {
+			typ := f.Type[:1]
+			// TODO nil checks generate and return err
+			expr = "*" + expr
 			ft = strings.ToLower(typ)
 		}
 		if t.Type != ft {

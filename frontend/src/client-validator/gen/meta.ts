@@ -10,8 +10,17 @@ import {
   Role,
   TaskRole,
   Organization,
-  GetCurrentUserRes,
+  User,
   ValidationError,
+  PgtypeJSONB,
+  Task,
+  TaskType,
+  Team,
+  TimeEntry,
+  UserAPIKey,
+  UuidUUID,
+  WorkItem,
+  WorkItemComment,
 } from './models'
 
 export const schemaDefinitions = {
@@ -21,8 +30,17 @@ export const schemaDefinitions = {
   Role: info<Role>('Role', '#/definitions/Role'),
   TaskRole: info<TaskRole>('TaskRole', '#/definitions/TaskRole'),
   Organization: info<Organization>('Organization', '#/definitions/Organization'),
-  GetCurrentUserRes: info<GetCurrentUserRes>('GetCurrentUserRes', '#/definitions/GetCurrentUserRes'),
+  User: info<User>('User', '#/definitions/User'),
   ValidationError: info<ValidationError>('ValidationError', '#/definitions/ValidationError'),
+  PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
+  Task: info<Task>('Task', '#/definitions/Task'),
+  TaskType: info<TaskType>('TaskType', '#/definitions/TaskType'),
+  Team: info<Team>('Team', '#/definitions/Team'),
+  TimeEntry: info<TimeEntry>('TimeEntry', '#/definitions/TimeEntry'),
+  UserAPIKey: info<UserAPIKey>('UserAPIKey', '#/definitions/UserAPIKey'),
+  UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
+  WorkItem: info<WorkItem>('WorkItem', '#/definitions/WorkItem'),
+  WorkItemComment: info<WorkItemComment>('WorkItemComment', '#/definitions/WorkItemComment'),
 }
 
 export interface SchemaInfo<T> {

@@ -36,12 +36,13 @@ readonly PROTO_DIR="internal/pb"
 readonly MIGRATIONS_DIR="db/migrations"
 readonly PG_REPO="internal/repos/postgresql"
 readonly PG_REPO_GEN="internal/repos/postgresql/gen"
+readonly GEN_SCHEMA_CMD="cmd/gen-schema"
 readonly MAX_COMMENT_LEN=88
 readonly MAX_FNAME_LOG_LEN=13
 readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
 readonly GEN_POSTGRES_DB="gen_db"
-pkg=$(head -1 go.mod)
-readonly GOMOD_PKG="${pkg#module*}"
+pkg="$(head -1 go.mod)"
+readonly GOMOD_PKG="${pkg#module *}"
 
 pids=()
 env="dev"
@@ -104,8 +105,6 @@ x.bootstrap() {
 # Install go libraries as runnable programs.
 x.install-tools() {
   { { {
-    set -o errexit -eo pipefail
-
     go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
     # go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.16.0
     # TODO until merged
@@ -175,6 +174,7 @@ x.pregen() {
     done
 
     ######## Sync enums with external sources and validate
+    ######## external json files are the source of truth
     # frontend scopes: 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right) and show aggregated
     # arrays can't be nested
     declare -A enum_src_files=(
@@ -224,7 +224,6 @@ x.pregen() {
     yq --prettyPrint '.. style="single"' -i $SPEC
     # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
-    sed -i 's/!!merge //' $SPEC
 
     # don't want this to block when getting bad gen
     go build -o pregen "$PWD"/cmd/pregen/main.go || echo "Could not rebuild pregen" >&2
@@ -253,11 +252,16 @@ clean_yq_array() {
 x.postgen() {
   { { {
     echo "Running generation"
-    cache="$1"
-    mkdir -p "$cache"
+
+    generate_db_structs_map
+
+    update_spec_with_db_structs
+
     go build -o postgen "$PWD"/cmd/postgen/main.go
-    ./postgen -cachedir="$cache" -env=".env.$env"
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+    ./postgen -env=".env.$env"
+  } \
+    2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+
 }
 
 # Generate type-safe Go code from SQL.
@@ -265,6 +269,37 @@ x.gen.sqlc() {
   { { {
     echo "Running generation"
     sqlc generate -f "$PG_REPO"/sqlc.yaml || err "Failed sqlc generation"
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Automatically generate CRUD and By queries based on existing indexes from a Postgres schema.
+x.gen.xo() {
+  # TODO from hn
+  # I've used https://github.com/xo/xo, extended it with some custom functions for templating, extended the templates themselves, and can now generate CRUD for anything in the database, functions for common select queries based on the indices that exist in the database, field filtering and scanning, updates for subsets of fields including some atomic operations, etc. The sky is the limit honestly. It has allowed me to start with something approximating a statically generated ORM and extend it with any features I want as time goes on. I also write .extra.go files along side the generated .xo.go files to extend the structs that are generated with custom logic and methods to convert data into response formats.
+  # TODO joins? e.g. users join user_organizations (user_id)
+  #
+  { { {
+    echo "Running generation"
+    # xo schema --help
+
+    mkdir -p "$PG_REPO_GEN"/db
+    xo_schema -o "$PG_REPO_GEN"/db \
+      --ignore "*.created_at" \
+      --ignore "*.updated_at" || err "Failed xo public schema generation" &
+
+    mkdir -p "$PG_REPO_GEN"/db/v
+    xo_schema -o "$PG_REPO_GEN"/db/v \
+      --schema v \
+      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
+      err "Failed xo v schema generation" &
+
+    mkdir -p "$PG_REPO_GEN"/db/cache
+    xo_schema -o "$PG_REPO_GEN"/db/cache \
+      --schema cache \
+      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
+      err "Failed xo cache schema generation" &
+
+    wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -382,7 +417,7 @@ x.gen() {
 
     x.gen.xo
 
-    x.postgen "$cache" &
+    x.postgen &
     x.gen.counterfeiter "$cache" & # delay since it depends on generated output too
 
     wait
@@ -829,7 +864,7 @@ run_hot_reload() {
 
 run_shared_services() {
   cd docker
-  docker-compose \
+  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
     -p "$PROJECT_PREFIX" \
     -f docker-compose.shared.yml \
     -f docker-compose.oidc.yml \
@@ -838,35 +873,55 @@ run_shared_services() {
   cd - >/dev/null
 }
 
-# Automatically generate CRUD and By queries based on existing indexes from a Postgres schema.
-x.gen.xo() {
-  # TODO from hn
-  # I've used https://github.com/xo/xo, extended it with some custom functions for templating, extended the templates themselves, and can now generate CRUD for anything in the database, functions for common select queries based on the indices that exist in the database, field filtering and scanning, updates for subsets of fields including some atomic operations, etc. The sky is the limit honestly. It has allowed me to start with something approximating a statically generated ORM and extend it with any features I want as time goes on. I also write .extra.go files along side the generated .xo.go files to extend the structs that are generated with custom logic and methods to convert data into response formats.
-  # TODO joins? e.g. users join user_organizations (user_id)
-  #
-  { { {
-    echo "Running generation"
-    # xo schema --help
+# generate db structs for use with swaggest/openapi-go.
+# no need for ast parsing since all code in db is generated and predictable
+generate_db_structs_map() {
+  readarray -t structs < <(find "$PG_REPO_GEN/db/" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
+  for struct in ${structs[@]}; do
+    map_fields+=("\"$struct\": db.$struct{},")
+  done
 
-    mkdir -p "$PG_REPO_GEN"/db
-    xo_schema -o "$PG_REPO_GEN"/db \
-      --ignore "*.created_at" \
-      --ignore "*.updated_at" || err "Failed xo public schema generation" &
+  out="internal/postgen/db_structs.gen.go"
+  cat <<EOF >$out
+// Code generated by 'project postgen'. DO NOT EDIT.
 
-    mkdir -p "$PG_REPO_GEN"/db/v
-    xo_schema -o "$PG_REPO_GEN"/db/v \
-      --schema v \
-      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
-      err "Failed xo v schema generation" &
+package postgen
 
-    mkdir -p "$PG_REPO_GEN"/db/cache
-    xo_schema -o "$PG_REPO_GEN"/db/cache \
-      --schema cache \
-      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
-      err "Failed xo cache schema generation" &
+import (
+  db "$GOMOD_PKG/$PG_REPO_GEN/db"
+  )
+    var DbStructs = map[string]any{
+${map_fields[@]}
+  }
+EOF
 
-    wait
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  gofumpt -w $out
+}
+
+update_spec_with_db_structs() {
+  vext="x-db-struct"
+  struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC)
+  struct_names=$(join_by "," ${struct_names[*]})
+  ((${#struct_names} == 0)) && return
+
+  go build -o gen-schema cmd/gen-schema/main.go
+  ./gen-schema --struct-names $struct_names | yq '
+    with_entries(select(.key == "components")) |
+    (.components.schemas[] | key) line_comment="Generated from db package structs. DO NOT EDIT."' \
+    >/tmp/openapi.yaml
+
+  for schema in $(yq '.components.schemas[] | key' /tmp/openapi.yaml); do
+    yq eval-all "(
+        select(fi==1).components.schemas.$schema
+        ) as \$newSchema
+        | select(fi == 0)
+        | .components.schemas.$schema = \$newSchema
+      " "$SPEC" /tmp/openapi.yaml >/tmp/final-spec
+
+    mv /tmp/final-spec "$SPEC"
+  done
+
+  sed -i 's/!!merge //' $SPEC
 }
 
 xo_schema() {

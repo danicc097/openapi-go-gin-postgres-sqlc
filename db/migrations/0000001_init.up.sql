@@ -31,6 +31,7 @@ create table user_api_keys (
   user_api_key_id serial not null
   , api_key text not null unique
   , expires_on timestamp with time zone not null
+  -- don't use,  see https://github.com/jackc/pgx/issues/924
   --, expires_on timestamp without time zone not null
   , primary key (user_api_key_id)
 );
@@ -198,6 +199,7 @@ create table tasks (
   , title text not null
   , metadata jsonb not null
   , target_date timestamp with time zone not null
+  -- don't use,  see https://github.com/jackc/pgx/issues/924
   --, target_date timestamp without time zone not null
   , target_date_timezone text not null
   , created_at timestamp with time zone default current_timestamp not null

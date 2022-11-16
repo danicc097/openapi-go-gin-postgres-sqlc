@@ -2,8 +2,9 @@
 # Vendor extensions
 # -----------------
 #
-# Schema enums:
-#   - `x-db-enum` refers to a Postgres enum type and syncs its values.
+# Component schemas:
+#   - `x-db-enum` generates and syncs a Postgres enum type.
+#   - `x-db-struct` generates and syncs a db package struct.
 # Path operations:
 #   - `x-required-scopes` is an array of required scope keys from scopes.json
 #   - `x-required-role` is a required role name from role.json
@@ -17,11 +18,11 @@ x-path-security: &path-security
 #######################################
 openapi: 3.0.3
 info:
-  description: This is a sample server Petstore server. For this sample, you can use the api key `special-key` to test the authorization filters.
+  description: openapi-go-gin-postgres-sqlc
   license:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  title: OpenAPI Petstore
+  title: OpenAPI openapi-go-gin-postgres-sqlc
   version: 2.0.0
 servers:
   - url: https://localhost:8090/v2
@@ -89,7 +90,7 @@ paths:
       x-required-role: admin
   /user/me:
     get:
-      <<: *path-security
+      # <<: *path-security
       summary: returns the logged in user
       operationId: GetCurrentUser
       responses:
@@ -97,8 +98,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetCurrentUserRes'
-          description: successful operation
+                $ref: '#/components/schemas/User'
+          description: ok
       tags:
         - user
   /user/{id}:
@@ -221,41 +222,66 @@ components:
       type: string
       # x-db-enum: org
       # enum: ["team 1", "team 2", "team 3"]
-    # TODO generate adapter to convert db model -> this
-    # based on matches of x-db-model: <...>'s json tags (both sqlc and xo generate them)
-    # against parsed property names (kin) - when its a response object only (kin filter)
-    # if request: adapter to convert this -> db model.
-    # we must specify x-db-model for adapters to be generated.
-    # x-db-model is specified in req or res objects only (kin filter)
-    # ^ all this is part of postgen
-    GetCurrentUserRes:
-      description: represents a user
+    # generated later from db struct
+    User: # Generated from db package structs. DO NOT EDIT.
       properties:
-        user_id:
-          format: int64
+        api_key_id:
+          nullable: true
           type: integer
-        username:
+        created_at:
+          format: date-time
           type: string
-        first_name:
-          type: string
-        last_name:
+        deleted_at:
+          format: date-time
+          nullable: true
           type: string
         email:
           type: string
-        password:
+        external_id:
+          nullable: true
           type: string
-        phone:
+        first_name:
+          nullable: true
           type: string
-        role:
-          $ref: '#/components/schemas/Role'
-        orgs:
-          description: are organizations a user belongs to
+        full_name:
+          nullable: true
+          type: string
+        last_name:
+          nullable: true
+          type: string
+        role_rank:
+          type: integer
+        scopes:
           items:
-            $ref: '#/components/schemas/Organization'
-      title: a User
+            type: string
+          nullable: true
+          type: array
+        teams:
+          items:
+            $ref: '#/components/schemas/Team'
+          nullable: true
+          type: array
+        time_entries:
+          items:
+            $ref: '#/components/schemas/TimeEntry'
+          nullable: true
+          type: array
+        updated_at:
+          format: date-time
+          type: string
+        user_api_key:
+          $ref: '#/components/schemas/UserAPIKey'
+        user_id:
+          $ref: '#/components/schemas/UuidUUID'
+        username:
+          type: string
+        work_items:
+          items:
+            $ref: '#/components/schemas/WorkItem'
+          nullable: true
+          type: array
       type: object
-      xml:
-        name: User
+      x-db-struct: User
     # à la FastAPI
     ValidationError:
       title: ValidationError
@@ -276,6 +302,179 @@ components:
         type:
           title: Error Type
           type: string
+    PgtypeJSONB: # Generated from db package structs. DO NOT EDIT.
+      type: object
+    Task: # Generated from db package structs. DO NOT EDIT.
+      properties:
+        created_at:
+          format: date-time
+          type: string
+        deleted_at:
+          format: date-time
+          nullable: true
+          type: string
+        metadata:
+          $ref: '#/components/schemas/PgtypeJSONB'
+        target_date:
+          format: date-time
+          type: string
+        target_date_timezone:
+          type: string
+        task_id:
+          type: integer
+        task_type:
+          $ref: '#/components/schemas/TaskType'
+        task_type_id:
+          type: integer
+        time_entries:
+          items:
+            $ref: '#/components/schemas/TimeEntry'
+          nullable: true
+          type: array
+        title:
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+        work_item_id:
+          type: integer
+      type: object
+    TaskType: # Generated from db package structs. DO NOT EDIT.
+      nullable: true
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        task_type_id:
+          type: integer
+        team_id:
+          type: integer
+      type: object
+    Team: # Generated from db package structs. DO NOT EDIT.
+      properties:
+        created_at:
+          format: date-time
+          type: string
+        description:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/PgtypeJSONB'
+        name:
+          type: string
+        project_id:
+          type: integer
+        team_id:
+          type: integer
+        time_entries:
+          items:
+            $ref: '#/components/schemas/TimeEntry'
+          nullable: true
+          type: array
+        updated_at:
+          format: date-time
+          type: string
+        users:
+          items:
+            $ref: '#/components/schemas/User'
+          nullable: true
+          type: array
+      type: object
+    TimeEntry: # Generated from db package structs. DO NOT EDIT.
+      properties:
+        activity_id:
+          type: integer
+        comment:
+          type: string
+        duration_minutes:
+          nullable: true
+          type: integer
+        start:
+          format: date-time
+          type: string
+        task_id:
+          nullable: true
+          type: integer
+        team_id:
+          nullable: true
+          type: integer
+        time_entry_id:
+          type: integer
+        user_id:
+          $ref: '#/components/schemas/UuidUUID'
+      type: object
+    UserAPIKey: # Generated from db package structs. DO NOT EDIT.
+      nullable: true
+      properties:
+        api_key:
+          type: string
+        expires_on:
+          format: date-time
+          type: string
+        user_api_key_id:
+          type: integer
+      type: object
+    UuidUUID: # Generated from db package structs. DO NOT EDIT.
+      type: string
+    WorkItem: # Generated from db package structs. DO NOT EDIT.
+      properties:
+        closed:
+          type: boolean
+        created_at:
+          format: date-time
+          type: string
+        deleted_at:
+          format: date-time
+          nullable: true
+          type: string
+        kanban_step_id:
+          type: integer
+        metadata:
+          $ref: '#/components/schemas/PgtypeJSONB'
+        tasks:
+          items:
+            $ref: '#/components/schemas/Task'
+          nullable: true
+          type: array
+        team_id:
+          type: integer
+        title:
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+        users:
+          items:
+            $ref: '#/components/schemas/User'
+          nullable: true
+          type: array
+        work_item_comments:
+          items:
+            $ref: '#/components/schemas/WorkItemComment'
+          nullable: true
+          type: array
+        work_item_id:
+          type: integer
+      type: object
+    WorkItemComment: # Generated from db package structs. DO NOT EDIT.
+      properties:
+        created_at:
+          format: date-time
+          type: string
+        message:
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+        user_id:
+          $ref: '#/components/schemas/UuidUUID'
+        work_item_comment_id:
+          type: integer
+        work_item_id:
+          type: integer
+      type: object
   examples:
     User:
       value:

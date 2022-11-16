@@ -33,6 +33,31 @@ export type TaskRole = 'preparer' | 'reviewer'
  * Organization a user belongs to.
  */
 export type Organization = string
+export type UuidUUID = string
+export type UserAPIKey = {
+  api_key?: string
+  expires_on?: string
+  user_api_key_id?: number
+} & UserAPIKey1
+export type UserAPIKey1 = {
+  api_key?: string
+  expires_on?: string
+  user_api_key_id?: number
+} | null
+export type TaskType = {
+  color?: string
+  description?: string
+  name?: string
+  task_type_id?: number
+  team_id?: number
+} & TaskType1
+export type TaskType1 = {
+  color?: string
+  description?: string
+  name?: string
+  task_type_id?: number
+  team_id?: number
+} | null
 
 export interface HTTPValidationError {
   detail?: Detail
@@ -50,20 +75,80 @@ export interface AUser {
   first_name?: string
   last_name?: string
 }
-/**
- * represents a user
- */
-export interface AUser1 {
-  user_id?: number
-  username?: string
-  first_name?: string
-  last_name?: string
+export interface User {
+  api_key_id?: number | null
+  created_at?: string
+  deleted_at?: string | null
   email?: string
-  password?: string
-  phone?: string
-  role?: Role
-  /**
-   * are organizations a user belongs to
-   */
-  orgs?: Organization[]
+  external_id?: string | null
+  first_name?: string | null
+  full_name?: string | null
+  last_name?: string | null
+  role_rank?: number
+  scopes?: string[] | null
+  teams?: Team[] | null
+  time_entries?: TimeEntry[] | null
+  updated_at?: string
+  user_api_key?: UserAPIKey
+  user_id?: UuidUUID
+  username?: string
+  work_items?: WorkItem[] | null
+}
+export interface Team {
+  created_at?: string
+  description?: string
+  metadata?: PgtypeJSONB
+  name?: string
+  project_id?: number
+  team_id?: number
+  time_entries?: TimeEntry[] | null
+  updated_at?: string
+  users?: User[] | null
+}
+export interface PgtypeJSONB {}
+export interface TimeEntry {
+  activity_id?: number
+  comment?: string
+  duration_minutes?: number | null
+  start?: string
+  task_id?: number | null
+  team_id?: number | null
+  time_entry_id?: number
+  user_id?: UuidUUID
+}
+export interface WorkItem {
+  closed?: boolean
+  created_at?: string
+  deleted_at?: string | null
+  kanban_step_id?: number
+  metadata?: PgtypeJSONB
+  tasks?: Task[] | null
+  team_id?: number
+  title?: string
+  updated_at?: string
+  users?: User[] | null
+  work_item_comments?: WorkItemComment[] | null
+  work_item_id?: number
+}
+export interface Task {
+  created_at?: string
+  deleted_at?: string | null
+  metadata?: PgtypeJSONB
+  target_date?: string
+  target_date_timezone?: string
+  task_id?: number
+  task_type?: TaskType
+  task_type_id?: number
+  time_entries?: TimeEntry[] | null
+  title?: string
+  updated_at?: string
+  work_item_id?: number
+}
+export interface WorkItemComment {
+  created_at?: string
+  message?: string
+  updated_at?: string
+  user_id?: UuidUUID
+  work_item_comment_id?: number
+  work_item_id?: number
 }
