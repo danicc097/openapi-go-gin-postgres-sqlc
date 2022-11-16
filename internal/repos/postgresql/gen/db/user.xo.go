@@ -137,7 +137,7 @@ func (u *User) Update(ctx context.Context, db DB) error {
 		`WHERE user_id = $10 `
 	// run
 	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
-	if _, err := db.Exec(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt, u.UserID); err != nil {
 		return logerror(err)
 	}
 	return nil

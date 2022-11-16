@@ -2,10 +2,12 @@ package postgresql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/jackc/pgconn"
 )
 
 // User represents the repository used for interacting with User records.
@@ -77,7 +79,17 @@ func (u *User) Create(ctx context.Context, d db.DBTX, user *db.User) error {
 
 	// save is almost the same as insert but detects if the user struct was created before
 	// in which case it updated instead
-	return user.Save(ctx, d)
+	err := user.Save(ctx, d)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			fmt.Println(pgErr.Detail) // parseable
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 // Upsert upserts a new user record.

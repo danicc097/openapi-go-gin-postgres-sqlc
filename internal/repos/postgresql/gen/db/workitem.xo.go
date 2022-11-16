@@ -132,7 +132,7 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) error {
 		`WHERE work_item_id = $8 `
 	// run
 	logf(sqlstr, wi.Title, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
-	if _, err := db.Exec(ctx, sqlstr, wi.Title, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, wi.Title, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.DeletedAt, wi.WorkItemID); err != nil {
 		return logerror(err)
 	}
 	return nil

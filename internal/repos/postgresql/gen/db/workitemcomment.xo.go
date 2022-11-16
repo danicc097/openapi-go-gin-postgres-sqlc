@@ -117,7 +117,7 @@ func (wic *WorkItemComment) Update(ctx context.Context, db DB) error {
 		`WHERE work_item_comment_id = $4 `
 	// run
 	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID)
-	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.WorkItemCommentID); err != nil {
 		return logerror(err)
 	}
 	return nil

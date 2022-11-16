@@ -129,7 +129,7 @@ func (t *Task) Update(ctx context.Context, db DB) error {
 		`WHERE task_id = $7 `
 	// run
 	logf(sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID)
-	if _, err := db.Exec(ctx, sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.DeletedAt, t.TaskID); err != nil {
 		return logerror(err)
 	}
 	return nil

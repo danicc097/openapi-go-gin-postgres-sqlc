@@ -123,7 +123,7 @@ func (t *Team) Update(ctx context.Context, db DB) error {
 		`WHERE team_id = $5 `
 	// run
 	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata, t.CreatedAt, t.UpdatedAt, t.TeamID)
-	if _, err := db.Exec(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata, t.CreatedAt, t.UpdatedAt, t.TeamID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata, t.TeamID); err != nil {
 		return logerror(err)
 	}
 	return nil

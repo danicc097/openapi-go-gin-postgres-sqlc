@@ -117,7 +117,7 @@ func (p *Project) Update(ctx context.Context, db DB) error {
 		`WHERE project_id = $4 `
 	// run
 	logf(sqlstr, p.Name, p.Description, p.Metadata, p.CreatedAt, p.UpdatedAt, p.ProjectID)
-	if _, err := db.Exec(ctx, sqlstr, p.Name, p.Description, p.Metadata, p.CreatedAt, p.UpdatedAt, p.ProjectID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, p.Name, p.Description, p.Metadata, p.ProjectID); err != nil {
 		return logerror(err)
 	}
 	return nil

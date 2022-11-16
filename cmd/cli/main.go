@@ -41,14 +41,14 @@ func main() {
 		errAndExit(out, err)
 	}
 
-	cmd = exec.Command(
-		"bash", "-c",
-		"project db.initial-data",
-	)
-	cmd.Dir = "."
-	if out, err := cmd.CombinedOutput(); err != nil {
-		errAndExit(out, err)
-	}
+	// cmd = exec.Command(
+	// 	"bash", "-c",
+	// 	"project db.initial-data",
+	// )
+	// cmd.Dir = "."
+	// if out, err := cmd.CombinedOutput(); err != nil {
+	// 	errAndExit(out, err)
+	// }
 
 	conf := envvar.New()
 	pool, err := postgresql.New(conf)
@@ -70,7 +70,11 @@ func main() {
 		log.Fatalf("db.UserByUsername: %s\n", err)
 	}
 	format.PrintJSON(user)
-
+	u1 := &db.User{Username: "superadmin", Email: "fsefesfe", ExternalID: "·gfrsgdrgrgdrg", Scopes: []string{}, RoleRank: 3}
+	err = u1.Insert(context.Background(), pool)
+	if err != nil {
+		log.Fatalf("Save: %v", err)
+	}
 	// test correct queries
 	uak, err := db.UserAPIKeyByAPIKey(context.Background(), pool, "19270107-1b9c-4f52-a578-7390d5b31513-key-hashed")
 	if err != nil {

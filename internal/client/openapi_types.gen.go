@@ -120,7 +120,7 @@ type User struct {
 	CreatedAt   *time.Time   `json:"created_at,omitempty"`
 	DeletedAt   *time.Time   `json:"deleted_at"`
 	Email       *string      `json:"email,omitempty"`
-	ExternalId  *string      `json:"external_id"`
+	ExternalId  *string      `json:"external_id,omitempty"`
 	FirstName   *string      `json:"first_name"`
 	FullName    *string      `json:"full_name"`
 	LastName    *string      `json:"last_name"`
