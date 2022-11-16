@@ -22,6 +22,5 @@ jobs:
       - name: Run project
         run: |
           source .envrc
-          docker network create traefik-net
           go mod download
           project test -race --x-env=ci
