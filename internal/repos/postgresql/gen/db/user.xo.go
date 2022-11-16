@@ -19,7 +19,7 @@ type User struct {
 	FirstName  *string    `json:"first_name" db:"first_name"`   // first_name
 	LastName   *string    `json:"last_name" db:"last_name"`     // last_name
 	FullName   *string    `json:"full_name" db:"full_name"`     // full_name
-	ExternalID *string    `json:"external_id" db:"external_id"` // external_id
+	ExternalID string     `json:"external_id" db:"external_id"` // external_id
 	APIKeyID   *int64     `json:"api_key_id" db:"api_key_id"`   // api_key_id
 	Scopes     []string   `json:"scopes" db:"scopes"`           // scopes
 	RoleRank   int16      `json:"role_rank" db:"role_rank"`     // role_rank
@@ -529,6 +529,108 @@ left join (
 	return &u, nil
 }
 
+// UserByExternalID retrieves a row from 'public.users' as a User.
+//
+// Generated from index 'users_external_id_key'.
+func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...UserSelectConfigOption) (*User, error) {
+	c := &UserSelectConfig{
+		joins: UserJoins{},
+	}
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`users.user_id,
+users.username,
+users.email,
+users.first_name,
+users.last_name,
+users.full_name,
+users.external_id,
+users.api_key_id,
+users.scopes,
+users.role_rank,
+users.created_at,
+users.updated_at,
+users.deleted_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
+(case when $3::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
+		`FROM public.users ` +
+		`-- O2M join generated from "time_entries_user_id_fkey"
+left join (
+  select
+  user_id as time_entries_user_id
+    , json_agg(time_entries.*) as time_entries
+  from
+    time_entries
+   group by
+        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
+-- M2M join generated from "user_team_team_id_fkey"
+left join (
+	select
+		user_id as teams_user_id
+		, json_agg(teams.*) as teams
+	from
+		user_team
+		join teams using (team_id)
+	where
+		user_id in (
+			select
+				user_id
+			from
+				user_team
+			where
+				team_id = any (
+					select
+						team_id
+					from
+						teams))
+			group by
+				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+-- O2O join generated from "users_api_key_id_fkey"
+left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
+-- M2M join generated from "work_item_member_work_item_id_fkey"
+left join (
+	select
+		member as work_items_user_id
+		, json_agg(work_items.*) as work_items
+	from
+		work_item_member
+		join work_items using (work_item_id)
+	where
+		member in (
+			select
+				member
+			from
+				work_item_member
+			where
+				work_item_id = any (
+					select
+						work_item_id
+					from
+						work_items))
+			group by
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
+		` WHERE users.external_id = $5 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, externalID)
+	u := User{
+		_exists: true,
+	}
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, externalID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
+		return nil, logerror(err)
+	}
+	return &u, nil
+}
+
 // UserByUserID retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_pkey'.
@@ -744,210 +846,6 @@ left join (
 		return nil, logerror(err)
 	}
 	return res, nil
-}
-
-// UserByUserIDExternalID_users_user_id_external_id_idx retrieves a row from 'public.users' as a User.
-//
-// Generated from index 'users_user_id_external_id_idx'.
-func UserByUserIDExternalID_users_user_id_external_id_idx(ctx context.Context, db DB, userID uuid.UUID, externalID *string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{
-		joins: UserJoins{},
-	}
-	for _, o := range opts {
-		o(c)
-	}
-
-	// query
-	sqlstr := `SELECT ` +
-		`users.user_id,
-users.username,
-users.email,
-users.first_name,
-users.last_name,
-users.full_name,
-users.external_id,
-users.api_key_id,
-users.scopes,
-users.role_rank,
-users.created_at,
-users.updated_at,
-users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
-		`FROM public.users ` +
-		`-- O2M join generated from "time_entries_user_id_fkey"
-left join (
-  select
-  user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
-  from
-    time_entries
-   group by
-        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-		user_id as teams_user_id
-		, json_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_member_work_item_id_fkey"
-left join (
-	select
-		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.user_id = $5 AND users.external_id = $6 AND (external_id IS NOT NULL) `
-	sqlstr += c.orderBy
-	sqlstr += c.limit
-
-	// run
-	logf(sqlstr, userID, externalID)
-	u := User{
-		_exists: true,
-	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, userID, externalID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
-		return nil, logerror(err)
-	}
-	return &u, nil
-}
-
-// UserByUserID_users_user_id_idx retrieves a row from 'public.users' as a User.
-//
-// Generated from index 'users_user_id_idx'.
-func UserByUserID_users_user_id_idx(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{
-		joins: UserJoins{},
-	}
-	for _, o := range opts {
-		o(c)
-	}
-
-	// query
-	sqlstr := `SELECT ` +
-		`users.user_id,
-users.username,
-users.email,
-users.first_name,
-users.last_name,
-users.full_name,
-users.external_id,
-users.api_key_id,
-users.scopes,
-users.role_rank,
-users.created_at,
-users.updated_at,
-users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
-		`FROM public.users ` +
-		`-- O2M join generated from "time_entries_user_id_fkey"
-left join (
-  select
-  user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
-  from
-    time_entries
-   group by
-        user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- M2M join generated from "user_team_team_id_fkey"
-left join (
-	select
-		user_id as teams_user_id
-		, json_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
--- M2M join generated from "work_item_member_work_item_id_fkey"
-left join (
-	select
-		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.user_id = $5 AND (external_id IS NULL) `
-	sqlstr += c.orderBy
-	sqlstr += c.limit
-
-	// run
-	logf(sqlstr, userID)
-	u := User{
-		_exists: true,
-	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
-		return nil, logerror(err)
-	}
-	return &u, nil
 }
 
 // UserByUsername retrieves a row from 'public.users' as a User.

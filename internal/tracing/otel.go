@@ -15,7 +15,6 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 )
 
-// TODO postgres for jaeger (26-oct) with promscale
 // https://www.timescale.com/blog/using-postgresql-as-a-scalable-durable-and-reliable-storage-for-jaeger-tracing/
 
 func InitTracer() *sdktrace.TracerProvider {

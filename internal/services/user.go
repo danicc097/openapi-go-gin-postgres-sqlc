@@ -42,6 +42,8 @@ func (u *User) Upsert(ctx context.Context, d db.DBTX, user *db.User) error {
 
 // Register registers a user record.
 // TODO accepts basic parameters and everything else is default, returns a *db.User. must not pass a db.User here
+// IMPORTANT: no endpoint for user creation. Only when coming from auth server.
+// we will not support password auth.
 func (u *User) Register(ctx context.Context, d db.DBTX, user *db.User) error {
 	defer newOTELSpan(ctx, "User.Register").End()
 

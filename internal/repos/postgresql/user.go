@@ -69,8 +69,14 @@ func (u *User) Create(ctx context.Context, d db.DBTX, user *db.User) error {
 	// (^ replace hardcoded errors with constants in https://github.com/jackc/pgerrcode/blob/master/errcode.go)
 	// https://github.com/jackc/pgx/issues/474
 	// (^ latest comments - see https://github.com/jackc/pgerrcode/)
+	// IMPORTANT: the above is useless for unique constraints (if code is unique violation 23505, we need to know where,
+	// a conflict
+	// status code is not enough). we can use a simple regex if we get access to postgres error:
+	// 	ERROR:  23505: duplicate key value violates unique constraint "users_external_id_key"
+	// DETAIL:  Key (external_id)=(provider_external_id1) already exists.
 
-	// save inserts or updates if already exists
+	// save is almost the same as insert but detects if the user struct was created before
+	// in which case it updated instead
 	return user.Save(ctx, d)
 }
 

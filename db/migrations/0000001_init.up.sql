@@ -49,7 +49,7 @@ create table users (
   else
     first_name || ' ' || last_name
   end) stored
-  , external_id text
+  , external_id text not null unique
   , api_key_id int
   , scopes text[] default '{}' not null
   , role_rank smallint default 1 not null check (role_rank > 0)
@@ -74,15 +74,13 @@ alter table user_api_keys
 
 comment on column users.api_key_id is 'cardinality:O2O';
 
--- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
-create unique index on users (user_id , external_id)
-where
-  external_id is not null;
-
-create unique index on users (user_id)
-where
-  external_id is null;
-
+-- -- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
+-- create unique index on users (user_id , external_id)
+-- where
+--   external_id is not null;
+-- create unique index on users (user_id)
+-- where
+--   external_id is null;
 create index on users (deleted_at);
 
 create index on users (created_at);

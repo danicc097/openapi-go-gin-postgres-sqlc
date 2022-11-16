@@ -240,7 +240,6 @@ components:
         email:
           type: string
         external_id:
-          nullable: true
           type: string
         first_name:
           nullable: true

@@ -27,10 +27,10 @@ begin
       user_id into ui;
     user_ids[i] = ui;
   end loop;
-  insert into users (user_id , username , email , first_name , last_name , role_rank)
-    values (admin_id , 'superadmin' , 'superadmin@email.com' , 'Admin' , '' , 6);
-  insert into users (user_id , username , email , first_name , last_name , role_rank)
-    values (manager_1_id , 'manager 1' , 'manager1@email.com' , 'Mr.Manager' , 'Smith' , 4);
+  insert into users (user_id , username , email , first_name , last_name , role_rank , external_id)
+    values (admin_id , 'superadmin' , 'superadmin@email.com' , 'Admin' , '' , 6 , 'provider_external_id' || admin_id);
+  insert into users (user_id , username , email , first_name , last_name , role_rank , external_id)
+    values (manager_1_id , 'manager 1' , 'manager1@email.com' , 'Mr.Manager' , 'Smith' , 4 , 'provider_external_id' || manager_1_id);
   -- projects
   insert into projects ("name" , description , metadata)
     values ('project 1' , 'This is project 1' , '{}');
@@ -98,16 +98,16 @@ begin
     values (1 , 'Optimization' , 'description for task type' , 'caabbb');
   insert into task_types (team_id , "name" , description , color)
     values (1 , 'Documentation' , 'description for task type' , 'caabbb');
-  insert into task_types (team_id , "name" , description , color)
-    values (2 , 'Task 1' , 'description for task type' , 'caabbb');
-  insert into task_types (team_id , "name" , description , color)
-    values (2 , 'Task 2' , 'description for task type' , 'caabbb');
-  insert into task_types (team_id , "name" , description , color)
-    values (2 , 'Task 3' , 'description for task type' , 'caabbb');
+  insert into work_item_types (project_id , "name" , description , color)
+    values (2 , 'work_item 1' , 'description for work_item type' , 'caabbb');
+  insert into work_item_types (project_id , "name" , description , color)
+    values (2 , 'work_item 2' , 'description for work_item type' , 'caabbb');
+  insert into work_item_types (project_id , "name" , description , color)
+    values (2 , 'work_item 3' , 'description for work_item type' , 'caabbb');
   -- work items
   -- work item 1
-  insert into work_items (title , metadata , team_id , kanban_step_id , deleted_at)
-    values ('Work item 1' , '{}' , 1 , 1 , null);
+  insert into work_items (title , work_item_type_id , metadata , team_id , kanban_step_id , deleted_at)
+    values ('Work item 1' , 1 , '{}' , 1 , 1 , null);
   -- work item tags
   insert into work_item_work_item_tag (work_item_tag_id , work_item_id)
     values (1 , 1);
@@ -133,8 +133,8 @@ begin
   insert into work_item_member (work_item_id , "member")
     values (1 , user_ids[2]);
   -- work item 2
-  insert into work_items (title , metadata , team_id , kanban_step_id , deleted_at)
-    values ('Work item 2' , '{}' , 1 , 1 , null);
+  insert into work_items (title , work_item_type_id , metadata , team_id , kanban_step_id , deleted_at)
+    values ('Work item 2' , 2 , '{}' , 1 , 1 , null);
   -- work item tags
   insert into work_item_work_item_tag (work_item_tag_id , work_item_id)
     values (1 , 2);
