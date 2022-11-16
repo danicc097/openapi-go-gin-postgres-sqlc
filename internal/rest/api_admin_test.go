@@ -17,6 +17,9 @@ import (
 func TestAdminPingRoute(t *testing.T) {
 	t.Parallel()
 
+	// TODO helper method to create unique users for tests with specific roles, ranks, scopes, api keys...
+	// we ensure they're all unique to each test and everything can therefore be parallelized.
+
 	authzsvc, err := services.NewAuthorization(zaptest.NewLogger(t), "../../scopes.json", "../../roles.json")
 	if err != nil {
 		t.Fatalf("services.NewAuthorization: %v", err)
