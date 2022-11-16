@@ -119,14 +119,14 @@ begin
   insert into work_item_comments (work_item_id , user_id , message)
     values (1 , user_ids[2] , 'Yet another message for work item 1');
   --tasks
-  insert into tasks (task_type_id , work_item_id , title , metadata , target_date , target_date_timezone , deleted_at)
-    values (1 , 1 , 'Task for work item 1' , '{}' , NOW() + interval '1 hour' , '' , null);
-  insert into tasks (task_type_id , work_item_id , title , metadata , target_date , target_date_timezone , deleted_at)
-    values (1 , 1 , 'Another task with same type for work item 1' , '{}' , NOW() + interval '10 hour' , '' , null);
-  insert into tasks (task_type_id , work_item_id , title , metadata , target_date , target_date_timezone , deleted_at)
-    values (2 , 1 , 'Task for work item 1' , '{}' , NOW() + interval '2 hour' , '' , null);
-  insert into tasks (task_type_id , work_item_id , title , metadata , target_date , target_date_timezone , deleted_at)
-    values (2 , 1 , '(deleted) Task with restore possibility' , '{}' , NOW() + interval '2 hour' , '' , NOW());
+  insert into tasks (task_type_id , work_item_id , title , metadata , deleted_at)
+    values (1 , 1 , 'Task for work item 1' , '{}' , null);
+  insert into tasks (task_type_id , work_item_id , title , metadata , deleted_at)
+    values (1 , 1 , 'Another task with same type for work item 1' , '{}' , null);
+  insert into tasks (task_type_id , work_item_id , title , metadata , deleted_at)
+    values (2 , 1 , 'Task for work item 1' , '{}' , null);
+  insert into tasks (task_type_id , work_item_id , title , metadata , deleted_at)
+    values (2 , 1 , '(deleted) Task with restore possibility' , '{}' , NOW());
 
   insert into work_item_member (work_item_id , "member")
     values (1 , user_ids[1]);

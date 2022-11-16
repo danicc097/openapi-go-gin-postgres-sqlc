@@ -64,6 +64,7 @@ func runTestServer(t *testing.T, pool *pgxpool.Pool, middlewares []gin.HandlerFu
 	rdb := redis.NewClient(&redis.Options{
 		Addr: s.Addr(),
 	})
+
 	// sanity check
 	rdb.Set(ctx, "foo", "bar", 10*time.Second)
 	assert.Equal(t, "bar", rdb.Get(ctx, "foo").Val())

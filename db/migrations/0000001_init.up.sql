@@ -204,10 +204,7 @@ create table tasks (
   , work_item_id bigint not null
   , title text not null
   , metadata jsonb not null
-  , target_date timestamp with time zone not null
-  -- don't use,  see https://github.com/jackc/pgx/issues/924
-  --, target_date timestamp without time zone not null
-  , target_date_timezone text not null
+  , finished boolean default False
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
