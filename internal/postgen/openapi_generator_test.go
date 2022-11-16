@@ -44,7 +44,7 @@ func TestAnalyzeSpec(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			var stderr bytes.Buffer
 
-			og := NewOpenapiGenerator(&Conf{}, &stderr, "", path.Join(baseDir, tc.File))
+			og := NewOpenapiGenerator(&Conf{}, &stderr, path.Join(baseDir, tc.File))
 
 			err := og.analyzeSpec()
 			if err != nil && tc.ErrContains != "" {
