@@ -72,7 +72,7 @@ func renderResponse(c *gin.Context, res interface{}, status int) {
 
 	content, err := json.Marshal(res)
 	if err != nil {
-		// XXX Do something with the error ;)
+		// TODO Do something with the error
 		fmt.Printf("error in renderResponse Marshal: %s", err)
 		// c.Status(http.StatusInternalServerError)
 
@@ -82,7 +82,7 @@ func renderResponse(c *gin.Context, res interface{}, status int) {
 	c.Status(status)
 
 	if _, err = c.Writer.Write(content); err != nil { //nolint: staticcheck
-		// XXX Do something with the error ;)
+		// TODO Do something with the error
 		fmt.Printf("error in renderResponse Write: %s", err)
 	}
 }

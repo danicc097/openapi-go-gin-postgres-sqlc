@@ -43,7 +43,7 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(c *gin.Context)
 
-// AdminPing operation middleware.
+// AdminPing operation with its own middleware.
 func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 
 	c.Set(models.Bearer_authScopes, []string{""})
@@ -58,7 +58,7 @@ func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 	siw.Handler.AdminPing(c)
 }
 
-// OpenapiYamlGet operation middleware.
+// OpenapiYamlGet operation with its own middleware.
 func (siw *ServerInterfaceWrapper) OpenapiYamlGet(c *gin.Context) {
 
 	// apply middlewares for operation "OpenapiYamlGet".
@@ -69,7 +69,7 @@ func (siw *ServerInterfaceWrapper) OpenapiYamlGet(c *gin.Context) {
 	siw.Handler.OpenapiYamlGet(c)
 }
 
-// Ping operation middleware.
+// Ping operation with its own middleware.
 func (siw *ServerInterfaceWrapper) Ping(c *gin.Context) {
 
 	// apply middlewares for operation "Ping".
@@ -80,7 +80,7 @@ func (siw *ServerInterfaceWrapper) Ping(c *gin.Context) {
 	siw.Handler.Ping(c)
 }
 
-// GetCurrentUser operation middleware.
+// GetCurrentUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
 
 	c.Set(models.Bearer_authScopes, []string{""})
@@ -95,7 +95,7 @@ func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
 	siw.Handler.GetCurrentUser(c)
 }
 
-// DeleteUser operation middleware.
+// DeleteUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 
 	var err error
@@ -121,7 +121,7 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 	siw.Handler.DeleteUser(c, id)
 }
 
-// UpdateUser operation middleware.
+// UpdateUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 
 	var err error

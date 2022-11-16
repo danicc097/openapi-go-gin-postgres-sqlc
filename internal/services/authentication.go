@@ -14,10 +14,11 @@ type Authentication struct {
 	usvc   *User
 }
 
-func NewAuthentication(logger *zap.Logger, usvc *User) *Authentication {
+func NewAuthentication(logger *zap.Logger, usvc *User, pool *pgxpool.Pool) *Authentication {
 	return &Authentication{
 		logger: logger,
 		usvc:   usvc,
+		pool:   pool,
 	}
 }
 

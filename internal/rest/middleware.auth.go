@@ -51,6 +51,8 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 			u, err := a.authnsvc.GetUserFromApiKey(c.Request.Context(), "")
 			if err != nil {
 				renderErrorResponse(c, "could not get user from api key", err)
+				c.Abort()
+				return
 			}
 			ctxWithUser(c, u)
 			c.Next()
@@ -59,6 +61,8 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 			u, err := a.authnsvc.GetUserFromToken(c.Request.Context(), "")
 			if err != nil {
 				renderErrorResponse(c, "could not get user from token", err)
+				c.Abort()
+				return
 			}
 			ctxWithUser(c, u)
 			c.Next()

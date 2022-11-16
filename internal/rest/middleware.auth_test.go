@@ -56,7 +56,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		if err != nil {
 			t.Fatalf("services.NewAuthorization: %v", err)
 		}
-		authnsvc := services.NewAuthentication(logger, usvc)
+		authnsvc := services.NewAuthentication(logger, usvc, pool)
 
 		authMw := newAuthMiddleware(logger, pool, authnsvc, authzsvc, usvc)
 
