@@ -37,8 +37,8 @@ type TaskSelectConfig struct {
 
 type TaskSelectConfigOption func(*TaskSelectConfig)
 
-// TaskWithLimit limits row selection.
-func TaskWithLimit(limit int) TaskSelectConfigOption {
+// WithTaskLimit limits row selection.
+func WithTaskLimit(limit int) TaskSelectConfigOption {
 	return func(s *TaskSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -47,7 +47,7 @@ func TaskWithLimit(limit int) TaskSelectConfigOption {
 // WithDeletedTaskOnly limits result to records marked as deleted.
 func WithDeletedTaskOnly() TaskSelectConfigOption {
 	return func(s *TaskSelectConfig) {
-		s.deletedAt = " null "
+		s.deletedAt = " not null "
 	}
 }
 
@@ -68,8 +68,8 @@ const (
 	TaskDeletedAtAscNullsLast   TaskOrderBy = " deleted_at ASC NULLS LAST "
 )
 
-// TaskWithOrderBy orders results by the given columns.
-func TaskWithOrderBy(rows ...TaskOrderBy) TaskSelectConfigOption {
+// WithTaskOrderBy orders results by the given columns.
+func WithTaskOrderBy(rows ...TaskOrderBy) TaskSelectConfigOption {
 	return func(s *TaskSelectConfig) {
 		if len(rows) == 0 {
 			s.orderBy = ""
@@ -84,8 +84,8 @@ type TaskJoins struct {
 	TaskType bool
 }
 
-// TaskWithJoin orders results by the given columns.
-func TaskWithJoin(joins TaskJoins) TaskSelectConfigOption {
+// WithTaskJoin orders results by the given columns.
+func WithTaskJoin(joins TaskJoins) TaskSelectConfigOption {
 	return func(s *TaskSelectConfig) {
 		s.joins = joins
 	}
@@ -205,7 +205,7 @@ func (t *Task) Delete(ctx context.Context, db DB) error {
 // Generated from index 'tasks_pkey'.
 func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectConfigOption) (*Task, error) {
 	c := &TaskSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     TaskJoins{},
 	}
 	for _, o := range opts {

@@ -36,8 +36,8 @@ type TeamSelectConfig struct {
 
 type TeamSelectConfigOption func(*TeamSelectConfig)
 
-// TeamWithLimit limits row selection.
-func TeamWithLimit(limit int) TeamSelectConfigOption {
+// WithTeamLimit limits row selection.
+func WithTeamLimit(limit int) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -46,7 +46,7 @@ func TeamWithLimit(limit int) TeamSelectConfigOption {
 // WithDeletedTeamOnly limits result to records marked as deleted.
 func WithDeletedTeamOnly() TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
-		s.deletedAt = " null "
+		s.deletedAt = " not null "
 	}
 }
 
@@ -63,8 +63,8 @@ const (
 	TeamUpdatedAtAscNullsLast   TeamOrderBy = " updated_at ASC NULLS LAST "
 )
 
-// TeamWithOrderBy orders results by the given columns.
-func TeamWithOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
+// WithTeamOrderBy orders results by the given columns.
+func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
 		if len(rows) == 0 {
 			s.orderBy = ""
@@ -80,8 +80,8 @@ type TeamJoins struct {
 	Users       bool
 }
 
-// TeamWithJoin orders results by the given columns.
-func TeamWithJoin(joins TeamJoins) TeamSelectConfigOption {
+// WithTeamJoin orders results by the given columns.
+func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
 		s.joins = joins
 	}
@@ -201,7 +201,7 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 // Generated from index 'teams_name_project_id_key'.
 func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...TeamSelectConfigOption) (*Team, error) {
 	c := &TeamSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     TeamJoins{},
 	}
 	for _, o := range opts {
@@ -272,7 +272,7 @@ left join (
 // Generated from index 'teams_pkey'.
 func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) (*Team, error) {
 	c := &TeamSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     TeamJoins{},
 	}
 	for _, o := range opts {

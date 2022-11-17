@@ -56,23 +56,23 @@ func main() {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}
 
-	// username := "user_2"
+	username := "user_2"
 	// username := "doesntexist" // User should be nil
-	username := "superadmin"
+	// username := "superadmin"
 	user, err := db.UserByUsername(context.Background(), pool, username,
-		db.UserWithJoin(db.UserJoins{
+		db.WithUserJoin(db.UserJoins{
 			TimeEntries: true,
 			WorkItems:   true,
 			Teams:       true,
 		}),
-		db.UserWithOrderBy(db.UserCreatedAtDescNullsLast))
+		db.WithUserOrderBy(db.UserCreatedAtDescNullsLast))
 	if err != nil {
 		log.Fatalf("db.UserByUsername: %s\n", err)
 	}
 	format.PrintJSON(user)
 	// test correct queries
-	key := "19270107-1b9c-4ff52-a578-7390d5b31513-key-hashed"
-	uak, err := db.UserAPIKeyByAPIKey(context.Background(), pool, key, db.UserAPIKeyWithJoin(db.UserAPIKeyJoins{User: true}))
+	key := user.UserID.String() + "-key-hashed"
+	uak, err := db.UserAPIKeyByAPIKey(context.Background(), pool, key, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
 	if err != nil {
 		log.Fatalf("UserAPIKeyByAPIKey: %v", err)
 	}

@@ -28,8 +28,8 @@ type TaskTypeSelectConfig struct {
 
 type TaskTypeSelectConfigOption func(*TaskTypeSelectConfig)
 
-// TaskTypeWithLimit limits row selection.
-func TaskTypeWithLimit(limit int) TaskTypeSelectConfigOption {
+// WithTaskTypeLimit limits row selection.
+func WithTaskTypeLimit(limit int) TaskTypeSelectConfigOption {
 	return func(s *TaskTypeSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -38,7 +38,7 @@ func TaskTypeWithLimit(limit int) TaskTypeSelectConfigOption {
 // WithDeletedTaskTypeOnly limits result to records marked as deleted.
 func WithDeletedTaskTypeOnly() TaskTypeSelectConfigOption {
 	return func(s *TaskTypeSelectConfig) {
-		s.deletedAt = " null "
+		s.deletedAt = " not null "
 	}
 }
 
@@ -46,8 +46,8 @@ type TaskTypeOrderBy = string
 
 type TaskTypeJoins struct{}
 
-// TaskTypeWithJoin orders results by the given columns.
-func TaskTypeWithJoin(joins TaskTypeJoins) TaskTypeSelectConfigOption {
+// WithTaskTypeJoin orders results by the given columns.
+func WithTaskTypeJoin(joins TaskTypeJoins) TaskTypeSelectConfigOption {
 	return func(s *TaskTypeSelectConfig) {
 		s.joins = joins
 	}
@@ -167,7 +167,7 @@ func (tt *TaskType) Delete(ctx context.Context, db DB) error {
 // Generated from index 'task_types_pkey'.
 func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int, opts ...TaskTypeSelectConfigOption) (*TaskType, error) {
 	c := &TaskTypeSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     TaskTypeJoins{},
 	}
 	for _, o := range opts {
@@ -204,7 +204,7 @@ task_types.color ` +
 // Generated from index 'task_types_team_id_name_key'.
 func TaskTypeByTeamIDName(ctx context.Context, db DB, teamID int64, name string, opts ...TaskTypeSelectConfigOption) (*TaskType, error) {
 	c := &TaskTypeSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     TaskTypeJoins{},
 	}
 	for _, o := range opts {

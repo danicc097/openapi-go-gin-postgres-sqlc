@@ -33,8 +33,8 @@ type ProjectSelectConfig struct {
 
 type ProjectSelectConfigOption func(*ProjectSelectConfig)
 
-// ProjectWithLimit limits row selection.
-func ProjectWithLimit(limit int) ProjectSelectConfigOption {
+// WithProjectLimit limits row selection.
+func WithProjectLimit(limit int) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -43,7 +43,7 @@ func ProjectWithLimit(limit int) ProjectSelectConfigOption {
 // WithDeletedProjectOnly limits result to records marked as deleted.
 func WithDeletedProjectOnly() ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
-		s.deletedAt = " null "
+		s.deletedAt = " not null "
 	}
 }
 
@@ -60,8 +60,8 @@ const (
 	ProjectUpdatedAtAscNullsLast   ProjectOrderBy = " updated_at ASC NULLS LAST "
 )
 
-// ProjectWithOrderBy orders results by the given columns.
-func ProjectWithOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
+// WithProjectOrderBy orders results by the given columns.
+func WithProjectOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		if len(rows) == 0 {
 			s.orderBy = ""
@@ -74,8 +74,8 @@ func ProjectWithOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 
 type ProjectJoins struct{}
 
-// ProjectWithJoin orders results by the given columns.
-func ProjectWithJoin(joins ProjectJoins) ProjectSelectConfigOption {
+// WithProjectJoin orders results by the given columns.
+func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		s.joins = joins
 	}
@@ -195,7 +195,7 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 // Generated from index 'projects_name_key'.
 func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelectConfigOption) (*Project, error) {
 	c := &ProjectSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     ProjectJoins{},
 	}
 	for _, o := range opts {
@@ -233,7 +233,7 @@ projects.updated_at ` +
 // Generated from index 'projects_pkey'.
 func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) (*Project, error) {
 	c := &ProjectSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     ProjectJoins{},
 	}
 	for _, o := range opts {

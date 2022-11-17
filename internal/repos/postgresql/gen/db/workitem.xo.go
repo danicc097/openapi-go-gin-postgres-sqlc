@@ -41,8 +41,8 @@ type WorkItemSelectConfig struct {
 
 type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
 
-// WorkItemWithLimit limits row selection.
-func WorkItemWithLimit(limit int) WorkItemSelectConfigOption {
+// WithWorkItemLimit limits row selection.
+func WithWorkItemLimit(limit int) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -51,7 +51,7 @@ func WorkItemWithLimit(limit int) WorkItemSelectConfigOption {
 // WithDeletedWorkItemOnly limits result to records marked as deleted.
 func WithDeletedWorkItemOnly() WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
-		s.deletedAt = " null "
+		s.deletedAt = " not null "
 	}
 }
 
@@ -72,8 +72,8 @@ const (
 	WorkItemDeletedAtAscNullsLast   WorkItemOrderBy = " deleted_at ASC NULLS LAST "
 )
 
-// WorkItemWithOrderBy orders results by the given columns.
-func WorkItemWithOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
+// WithWorkItemOrderBy orders results by the given columns.
+func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
 		if len(rows) == 0 {
 			s.orderBy = ""
@@ -91,8 +91,8 @@ type WorkItemJoins struct {
 	Users            bool
 }
 
-// WorkItemWithJoin orders results by the given columns.
-func WorkItemWithJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
+// WithWorkItemJoin orders results by the given columns.
+func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
 		s.joins = joins
 	}
@@ -212,7 +212,7 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 // Generated from index 'work_items_pkey'.
 func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
 	c := &WorkItemSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     WorkItemJoins{},
 	}
 	for _, o := range opts {

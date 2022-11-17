@@ -1263,8 +1263,8 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 
 	type %[1]sSelectConfigOption func(*%[1]sSelectConfig)
 
-	// %[1]sWithLimit limits row selection.
-	func %[1]sWithLimit(limit int) %[1]sSelectConfigOption {
+	// With%[1]sLimit limits row selection.
+	func With%[1]sLimit(limit int) %[1]sSelectConfigOption {
 		return func(s *%[1]sSelectConfig) {
 			s.limit = fmt.Sprintf(" limit %%d ", limit)
 		}
@@ -1273,7 +1273,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 	// WithDeleted%[1]sOnly limits result to records marked as deleted.
 	func WithDeleted%[1]sOnly() %[1]sSelectConfigOption {
 		return func(s *%[1]sSelectConfig) {
-			s.deletedAt = " null "
+			s.deletedAt = " not null "
 		}
 	}
 
@@ -1292,8 +1292,8 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 
 	if len(orderbys) > 0 {
 		buf.WriteString(fmt.Sprintf(`
-	// %[1]sWithOrderBy orders results by the given columns.
-func %[1]sWithOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
+	// With%[1]sOrderBy orders results by the given columns.
+func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
 		if len(rows) == 0 {
 			s.orderBy = ""
@@ -1329,8 +1329,8 @@ func %[1]sWithOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	buf.WriteString("}\n")
 
 	buf.WriteString(fmt.Sprintf(`
-	// %[1]sWithJoin orders results by the given columns.
-func %[1]sWithJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
+	// With%[1]sJoin orders results by the given columns.
+func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
 		s.joins = joins
 	}

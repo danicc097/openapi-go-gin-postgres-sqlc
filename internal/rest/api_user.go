@@ -49,7 +49,7 @@ func (h *Handlers) DeleteUser(c *gin.Context, id string) {
 func (h *Handlers) GetCurrentUser(c *gin.Context) {
 	// TODO return user from gin context (set when reading token in auth middleware)
 	// getUserFromCtx(c)
-	u, err := db.UserByUsername(c.Request.Context(), h.pool, "user_2", db.UserWithJoin(db.UserJoins{TimeEntries: true, Teams: true}))
+	u, err := db.UserByUsername(c.Request.Context(), h.pool, "user_2", db.WithUserJoin(db.UserJoins{TimeEntries: true, Teams: true}))
 	if err != nil {
 		renderErrorResponse(c, "could not find user", err)
 	}

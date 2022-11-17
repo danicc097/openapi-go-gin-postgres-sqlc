@@ -31,8 +31,8 @@ type KanbanStepSelectConfig struct {
 
 type KanbanStepSelectConfigOption func(*KanbanStepSelectConfig)
 
-// KanbanStepWithLimit limits row selection.
-func KanbanStepWithLimit(limit int) KanbanStepSelectConfigOption {
+// WithKanbanStepLimit limits row selection.
+func WithKanbanStepLimit(limit int) KanbanStepSelectConfigOption {
 	return func(s *KanbanStepSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -41,7 +41,7 @@ func KanbanStepWithLimit(limit int) KanbanStepSelectConfigOption {
 // WithDeletedKanbanStepOnly limits result to records marked as deleted.
 func WithDeletedKanbanStepOnly() KanbanStepSelectConfigOption {
 	return func(s *KanbanStepSelectConfig) {
-		s.deletedAt = " null "
+		s.deletedAt = " not null "
 	}
 }
 
@@ -49,8 +49,8 @@ type KanbanStepOrderBy = string
 
 type KanbanStepJoins struct{}
 
-// KanbanStepWithJoin orders results by the given columns.
-func KanbanStepWithJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
+// WithKanbanStepJoin orders results by the given columns.
+func WithKanbanStepJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
 	return func(s *KanbanStepSelectConfig) {
 		s.joins = joins
 	}
@@ -170,7 +170,7 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 // Generated from index 'kanban_steps_pkey'.
 func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
 	c := &KanbanStepSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     KanbanStepJoins{},
 	}
 	for _, o := range opts {
@@ -210,7 +210,7 @@ kanban_steps.disabled ` +
 // Generated from index 'kanban_steps_team_id_step_order_key'.
 func KanbanStepByTeamIDStepOrder(ctx context.Context, db DB, teamID int, stepOrder *int16, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
 	c := &KanbanStepSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     KanbanStepJoins{},
 	}
 	for _, o := range opts {

@@ -35,8 +35,8 @@ type TimeEntrySelectConfig struct {
 
 type TimeEntrySelectConfigOption func(*TimeEntrySelectConfig)
 
-// TimeEntryWithLimit limits row selection.
-func TimeEntryWithLimit(limit int) TimeEntrySelectConfigOption {
+// WithTimeEntryLimit limits row selection.
+func WithTimeEntryLimit(limit int) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -45,7 +45,7 @@ func TimeEntryWithLimit(limit int) TimeEntrySelectConfigOption {
 // WithDeletedTimeEntryOnly limits result to records marked as deleted.
 func WithDeletedTimeEntryOnly() TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
-		s.deletedAt = " null "
+		s.deletedAt = " not null "
 	}
 }
 
@@ -58,8 +58,8 @@ const (
 	TimeEntryStartAscNullsLast   TimeEntryOrderBy = " start ASC NULLS LAST "
 )
 
-// TimeEntryWithOrderBy orders results by the given columns.
-func TimeEntryWithOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption {
+// WithTimeEntryOrderBy orders results by the given columns.
+func WithTimeEntryOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
 		if len(rows) == 0 {
 			s.orderBy = ""
@@ -72,8 +72,8 @@ func TimeEntryWithOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption 
 
 type TimeEntryJoins struct{}
 
-// TimeEntryWithJoin orders results by the given columns.
-func TimeEntryWithJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
+// WithTimeEntryJoin orders results by the given columns.
+func WithTimeEntryJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
 		s.joins = joins
 	}
@@ -193,7 +193,7 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 // Generated from index 'time_entries_pkey'.
 func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts ...TimeEntrySelectConfigOption) (*TimeEntry, error) {
 	c := &TimeEntrySelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     TimeEntryJoins{},
 	}
 	for _, o := range opts {
@@ -233,7 +233,7 @@ time_entries.duration_minutes ` +
 // Generated from index 'time_entries_user_id_team_id_idx'.
 func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID *int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
 	c := &TimeEntrySelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     TimeEntryJoins{},
 	}
 	for _, o := range opts {
@@ -286,7 +286,7 @@ time_entries.duration_minutes ` +
 // Generated from index 'time_entries_work_item_id_team_id_idx'.
 func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int64, teamID *int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
 	c := &TimeEntrySelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     TimeEntryJoins{},
 	}
 	for _, o := range opts {

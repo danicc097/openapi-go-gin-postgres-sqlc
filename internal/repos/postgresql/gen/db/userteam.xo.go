@@ -27,8 +27,8 @@ type UserTeamSelectConfig struct {
 
 type UserTeamSelectConfigOption func(*UserTeamSelectConfig)
 
-// UserTeamWithLimit limits row selection.
-func UserTeamWithLimit(limit int) UserTeamSelectConfigOption {
+// WithUserTeamLimit limits row selection.
+func WithUserTeamLimit(limit int) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -37,7 +37,7 @@ func UserTeamWithLimit(limit int) UserTeamSelectConfigOption {
 // WithDeletedUserTeamOnly limits result to records marked as deleted.
 func WithDeletedUserTeamOnly() UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
-		s.deletedAt = " null "
+		s.deletedAt = " not null "
 	}
 }
 
@@ -45,8 +45,8 @@ type UserTeamOrderBy = string
 
 type UserTeamJoins struct{}
 
-// UserTeamWithJoin orders results by the given columns.
-func UserTeamWithJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
+// WithUserTeamJoin orders results by the given columns.
+func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
 		s.joins = joins
 	}
@@ -115,7 +115,7 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 // Generated from index 'user_team_pkey'.
 func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID int, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
 	c := &UserTeamSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     UserTeamJoins{},
 	}
 	for _, o := range opts {
@@ -149,7 +149,7 @@ user_team.user_id ` +
 // Generated from index 'user_team_team_id_user_id_idx'.
 func UserTeamByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
 	c := &UserTeamSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     UserTeamJoins{},
 	}
 	for _, o := range opts {
@@ -196,7 +196,7 @@ user_team.user_id ` +
 // Generated from index 'user_team_user_idx'.
 func UserTeamByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
 	c := &UserTeamSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     UserTeamJoins{},
 	}
 	for _, o := range opts {

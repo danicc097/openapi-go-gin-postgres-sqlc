@@ -28,8 +28,8 @@ type WorkItemTypeSelectConfig struct {
 
 type WorkItemTypeSelectConfigOption func(*WorkItemTypeSelectConfig)
 
-// WorkItemTypeWithLimit limits row selection.
-func WorkItemTypeWithLimit(limit int) WorkItemTypeSelectConfigOption {
+// WithWorkItemTypeLimit limits row selection.
+func WithWorkItemTypeLimit(limit int) WorkItemTypeSelectConfigOption {
 	return func(s *WorkItemTypeSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -38,7 +38,7 @@ func WorkItemTypeWithLimit(limit int) WorkItemTypeSelectConfigOption {
 // WithDeletedWorkItemTypeOnly limits result to records marked as deleted.
 func WithDeletedWorkItemTypeOnly() WorkItemTypeSelectConfigOption {
 	return func(s *WorkItemTypeSelectConfig) {
-		s.deletedAt = " null "
+		s.deletedAt = " not null "
 	}
 }
 
@@ -46,8 +46,8 @@ type WorkItemTypeOrderBy = string
 
 type WorkItemTypeJoins struct{}
 
-// WorkItemTypeWithJoin orders results by the given columns.
-func WorkItemTypeWithJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOption {
+// WithWorkItemTypeJoin orders results by the given columns.
+func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOption {
 	return func(s *WorkItemTypeSelectConfig) {
 		s.joins = joins
 	}
@@ -167,7 +167,7 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 // Generated from index 'work_item_types_pkey'.
 func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID int, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     WorkItemTypeJoins{},
 	}
 	for _, o := range opts {
@@ -204,7 +204,7 @@ work_item_types.color ` +
 // Generated from index 'work_item_types_project_id_name_key'.
 func WorkItemTypeByProjectIDName(ctx context.Context, db DB, projectID int64, name string, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     WorkItemTypeJoins{},
 	}
 	for _, o := range opts {

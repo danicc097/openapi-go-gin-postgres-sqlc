@@ -38,8 +38,8 @@ type UserSelectConfig struct {
 
 type UserSelectConfigOption func(*UserSelectConfig)
 
-// UserWithLimit limits row selection.
-func UserWithLimit(limit int) UserSelectConfigOption {
+// WithUserLimit limits row selection.
+func WithUserLimit(limit int) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -48,7 +48,7 @@ func UserWithLimit(limit int) UserSelectConfigOption {
 // WithDeletedUserOnly limits result to records marked as deleted.
 func WithDeletedUserOnly() UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.deletedAt = " null "
+		s.deletedAt = " not null "
 	}
 }
 
@@ -69,8 +69,8 @@ const (
 	UserDeletedAtAscNullsLast   UserOrderBy = " deleted_at ASC NULLS LAST "
 )
 
-// UserWithOrderBy orders results by the given columns.
-func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
+// WithUserOrderBy orders results by the given columns.
+func WithUserOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		if len(rows) == 0 {
 			s.orderBy = ""
@@ -83,8 +83,8 @@ func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 
 type UserJoins struct{}
 
-// UserWithJoin orders results by the given columns.
-func UserWithJoin(joins UserJoins) UserSelectConfigOption {
+// WithUserJoin orders results by the given columns.
+func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		s.joins = joins
 	}
@@ -95,7 +95,7 @@ func UserWithJoin(joins UserJoins) UserSelectConfigOption {
 // Generated from index 'users_external_id_idx'.
 func UsersByExternalID(ctx context.Context, db DB, externalID *string, opts ...UserSelectConfigOption) ([]*User, error) {
 	c := &UserSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     UserJoins{},
 	}
 	for _, o := range opts {

@@ -27,8 +27,8 @@ type MovieSelectConfig struct {
 
 type MovieSelectConfigOption func(*MovieSelectConfig)
 
-// MovieWithLimit limits row selection.
-func MovieWithLimit(limit int) MovieSelectConfigOption {
+// WithMovieLimit limits row selection.
+func WithMovieLimit(limit int) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -37,7 +37,7 @@ func MovieWithLimit(limit int) MovieSelectConfigOption {
 // WithDeletedMovieOnly limits result to records marked as deleted.
 func WithDeletedMovieOnly() MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
-		s.deletedAt = " null "
+		s.deletedAt = " not null "
 	}
 }
 
@@ -45,8 +45,8 @@ type MovieOrderBy = string
 
 type MovieJoins struct{}
 
-// MovieWithJoin orders results by the given columns.
-func MovieWithJoin(joins MovieJoins) MovieSelectConfigOption {
+// WithMovieJoin orders results by the given columns.
+func WithMovieJoin(joins MovieJoins) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
 		s.joins = joins
 	}
@@ -166,7 +166,7 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 // Generated from index 'movies_pkey'.
 func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) (*Movie, error) {
 	c := &MovieSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     MovieJoins{},
 	}
 	for _, o := range opts {

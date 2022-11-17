@@ -148,13 +148,13 @@ begin
   -- work item 2, 3... 20
   -- use loops and randomize. edge cases done explicitly later on
   -- time entries
-  insert into time_entries (task_id , activity_id , team_id , user_id , comment , "start" , duration_minutes)
+  insert into time_entries (work_item_id , activity_id , team_id , user_id , comment , "start" , duration_minutes)
     values (null , 1 , 1 , user_ids[1] , 'Sleeping time' , NOW() , random_between (10 , 20));
-  insert into time_entries (task_id , activity_id , team_id , user_id , comment , "start" , duration_minutes)
-    values (1 , 2 , null , user_ids[1] , 'Working on important task 1' , NOW() , 10);
-  insert into time_entries (task_id , activity_id , team_id , user_id , comment , "start" , duration_minutes)
+  insert into time_entries (work_item_id , activity_id , team_id , user_id , comment , "start" , duration_minutes)
+    values (1 , 2 , null , user_ids[1] , 'Working on important work_item 1' , NOW() , 10);
+  insert into time_entries (work_item_id , activity_id , team_id , user_id , comment , "start" , duration_minutes)
     values (1 , 2 , null , user_ids[2] , '' , NOW() , 20);
-  insert into time_entries (task_id , activity_id , team_id , user_id , comment , "start" , duration_minutes)
+  insert into time_entries (work_item_id , activity_id , team_id , user_id , comment , "start" , duration_minutes)
     values (1 , 2 , null , user_ids[3] , '' , NOW() , 20);
   -- api keys
   insert into user_api_keys (api_key , expires_on , user_id)

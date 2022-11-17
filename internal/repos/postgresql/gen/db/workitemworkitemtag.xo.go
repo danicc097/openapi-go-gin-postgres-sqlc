@@ -25,8 +25,8 @@ type WorkItemWorkItemTagSelectConfig struct {
 
 type WorkItemWorkItemTagSelectConfigOption func(*WorkItemWorkItemTagSelectConfig)
 
-// WorkItemWorkItemTagWithLimit limits row selection.
-func WorkItemWorkItemTagWithLimit(limit int) WorkItemWorkItemTagSelectConfigOption {
+// WithWorkItemWorkItemTagLimit limits row selection.
+func WithWorkItemWorkItemTagLimit(limit int) WorkItemWorkItemTagSelectConfigOption {
 	return func(s *WorkItemWorkItemTagSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -35,7 +35,7 @@ func WorkItemWorkItemTagWithLimit(limit int) WorkItemWorkItemTagSelectConfigOpti
 // WithDeletedWorkItemWorkItemTagOnly limits result to records marked as deleted.
 func WithDeletedWorkItemWorkItemTagOnly() WorkItemWorkItemTagSelectConfigOption {
 	return func(s *WorkItemWorkItemTagSelectConfig) {
-		s.deletedAt = " null "
+		s.deletedAt = " not null "
 	}
 }
 
@@ -43,8 +43,8 @@ type WorkItemWorkItemTagOrderBy = string
 
 type WorkItemWorkItemTagJoins struct{}
 
-// WorkItemWorkItemTagWithJoin orders results by the given columns.
-func WorkItemWorkItemTagWithJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
+// WithWorkItemWorkItemTagJoin orders results by the given columns.
+func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
 	return func(s *WorkItemWorkItemTagSelectConfig) {
 		s.joins = joins
 	}
@@ -113,7 +113,7 @@ func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 // Generated from index 'work_item_work_item_tag_pkey'.
 func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, workItemID int64, workItemTagID int, opts ...WorkItemWorkItemTagSelectConfigOption) (*WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     WorkItemWorkItemTagJoins{},
 	}
 	for _, o := range opts {
@@ -147,7 +147,7 @@ work_item_work_item_tag.work_item_id ` +
 // Generated from index 'work_item_work_item_tag_work_item_tag_id_work_item_id_idx'.
 func WorkItemWorkItemTagByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{
-		deletedAt: " not null ",
+		deletedAt: " null ",
 		joins:     WorkItemWorkItemTagJoins{},
 	}
 	for _, o := range opts {
