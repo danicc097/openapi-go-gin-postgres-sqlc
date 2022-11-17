@@ -25,9 +25,10 @@ type Project struct {
 }
 
 type ProjectSelectConfig struct {
-	limit   string
-	orderBy string
-	joins   ProjectJoins
+	limit     string
+	orderBy   string
+	joins     ProjectJoins
+	deletedAt string
 }
 
 type ProjectSelectConfigOption func(*ProjectSelectConfig)
@@ -36,6 +37,13 @@ type ProjectSelectConfigOption func(*ProjectSelectConfig)
 func ProjectWithLimit(limit int) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
+	}
+}
+
+// WithDeletedProjectOnly limits result to records marked as deleted.
+func WithDeletedProjectOnly() ProjectSelectConfigOption {
+	return func(s *ProjectSelectConfig) {
+		s.deletedAt = " null "
 	}
 }
 
@@ -187,7 +195,8 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 // Generated from index 'projects_name_key'.
 func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelectConfigOption) (*Project, error) {
 	c := &ProjectSelectConfig{
-		joins: ProjectJoins{},
+		deletedAt: " not null ",
+		joins:     ProjectJoins{},
 	}
 	for _, o := range opts {
 		o(c)
@@ -224,7 +233,8 @@ projects.updated_at ` +
 // Generated from index 'projects_pkey'.
 func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) (*Project, error) {
 	c := &ProjectSelectConfig{
-		joins: ProjectJoins{},
+		deletedAt: " not null ",
+		joins:     ProjectJoins{},
 	}
 	for _, o := range opts {
 		o(c)

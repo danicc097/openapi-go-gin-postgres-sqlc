@@ -29,9 +29,10 @@ type Task struct {
 }
 
 type TaskSelectConfig struct {
-	limit   string
-	orderBy string
-	joins   TaskJoins
+	limit     string
+	orderBy   string
+	joins     TaskJoins
+	deletedAt string
 }
 
 type TaskSelectConfigOption func(*TaskSelectConfig)
@@ -40,6 +41,13 @@ type TaskSelectConfigOption func(*TaskSelectConfig)
 func TaskWithLimit(limit int) TaskSelectConfigOption {
 	return func(s *TaskSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
+	}
+}
+
+// WithDeletedTaskOnly limits result to records marked as deleted.
+func WithDeletedTaskOnly() TaskSelectConfigOption {
+	return func(s *TaskSelectConfig) {
+		s.deletedAt = " null "
 	}
 }
 
@@ -197,14 +205,15 @@ func (t *Task) Delete(ctx context.Context, db DB) error {
 // Generated from index 'tasks_pkey'.
 func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectConfigOption) (*Task, error) {
 	c := &TaskSelectConfig{
-		joins: TaskJoins{},
+		deletedAt: " not null ",
+		joins:     TaskJoins{},
 	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := `SELECT ` +
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`tasks.task_id,
 tasks.task_type_id,
 tasks.work_item_id,
@@ -214,11 +223,11 @@ tasks.finished,
 tasks.created_at,
 tasks.updated_at,
 tasks.deleted_at,
-(case when $1::boolean = true then row_to_json(task_types.*) end)::jsonb as task_type ` +
-		`FROM public.tasks ` +
+(case when $1::boolean = true then row_to_json(task_types.*) end)::jsonb as task_type `+
+		`FROM public.tasks `+
 		`-- O2O join generated from "tasks_task_type_id_fkey"
-left join task_types on task_types.task_type_id = tasks.task_type_id` +
-		` WHERE tasks.task_id = $2 `
+left join task_types on task_types.task_type_id = tasks.task_type_id`+
+		` WHERE tasks.task_id = $2  AND tasks.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

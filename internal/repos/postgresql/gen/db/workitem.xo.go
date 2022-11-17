@@ -33,9 +33,10 @@ type WorkItem struct {
 }
 
 type WorkItemSelectConfig struct {
-	limit   string
-	orderBy string
-	joins   WorkItemJoins
+	limit     string
+	orderBy   string
+	joins     WorkItemJoins
+	deletedAt string
 }
 
 type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
@@ -44,6 +45,13 @@ type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
 func WorkItemWithLimit(limit int) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
+	}
+}
+
+// WithDeletedWorkItemOnly limits result to records marked as deleted.
+func WithDeletedWorkItemOnly() WorkItemSelectConfigOption {
+	return func(s *WorkItemSelectConfig) {
+		s.deletedAt = " null "
 	}
 }
 
@@ -204,14 +212,15 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 // Generated from index 'work_items_pkey'.
 func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
 	c := &WorkItemSelectConfig{
-		joins: WorkItemJoins{},
+		deletedAt: " not null ",
+		joins:     WorkItemJoins{},
 	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := `SELECT ` +
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
 work_items.work_item_type_id,
@@ -225,8 +234,8 @@ work_items.deleted_at,
 (case when $1::boolean = true then joined_tasks.tasks end)::jsonb as tasks,
 (case when $2::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $3::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
-(case when $4::boolean = true then joined_users.users end)::jsonb as users ` +
-		`FROM public.work_items ` +
+(case when $4::boolean = true then joined_users.users end)::jsonb as users `+
+		`FROM public.work_items `+
 		`-- O2M join generated from "tasks_work_item_id_fkey"
 left join (
   select
@@ -275,8 +284,8 @@ left join (
 					from
 						users))
 			group by
-				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id` +
-		` WHERE work_items.work_item_id = $5 `
+				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id`+
+		` WHERE work_items.work_item_id = $5  AND work_items.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

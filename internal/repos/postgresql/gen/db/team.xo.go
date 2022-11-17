@@ -28,9 +28,10 @@ type Team struct {
 }
 
 type TeamSelectConfig struct {
-	limit   string
-	orderBy string
-	joins   TeamJoins
+	limit     string
+	orderBy   string
+	joins     TeamJoins
+	deletedAt string
 }
 
 type TeamSelectConfigOption func(*TeamSelectConfig)
@@ -39,6 +40,13 @@ type TeamSelectConfigOption func(*TeamSelectConfig)
 func TeamWithLimit(limit int) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
+	}
+}
+
+// WithDeletedTeamOnly limits result to records marked as deleted.
+func WithDeletedTeamOnly() TeamSelectConfigOption {
+	return func(s *TeamSelectConfig) {
+		s.deletedAt = " null "
 	}
 }
 
@@ -193,7 +201,8 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 // Generated from index 'teams_name_project_id_key'.
 func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...TeamSelectConfigOption) (*Team, error) {
 	c := &TeamSelectConfig{
-		joins: TeamJoins{},
+		deletedAt: " not null ",
+		joins:     TeamJoins{},
 	}
 	for _, o := range opts {
 		o(c)
@@ -263,7 +272,8 @@ left join (
 // Generated from index 'teams_pkey'.
 func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) (*Team, error) {
 	c := &TeamSelectConfig{
-		joins: TeamJoins{},
+		deletedAt: " not null ",
+		joins:     TeamJoins{},
 	}
 	for _, o := range opts {
 		o(c)

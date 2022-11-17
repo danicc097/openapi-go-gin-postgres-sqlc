@@ -1258,6 +1258,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 		limit       string
 		orderBy     string
 		joins  %[1]sJoins
+		deletedAt   string
 	}
 
 	type %[1]sSelectConfigOption func(*%[1]sSelectConfig)
@@ -1268,7 +1269,16 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 			s.limit = fmt.Sprintf(" limit %%d ", limit)
 		}
 	}
+
+	// WithDeleted%[1]sOnly limits result to records marked as deleted.
+	func WithDeleted%[1]sOnly() %[1]sSelectConfigOption {
+		return func(s *%[1]sSelectConfig) {
+			s.deletedAt = " null "
+		}
+	}
+
 	type %[1]sOrderBy = string
+
 	`, name))
 
 	buf.WriteString("const (\n")
@@ -1966,6 +1976,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			break
 		}
 		var n int
+		var hasDeletedAt bool
 		// build table fieldnames
 		for _, z := range x.Table.Fields {
 			// add current table fields
@@ -1990,13 +2001,11 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			filters = append(filters, fmt.Sprintf("%s.%s = %s", x.Table.SQLName, f.colname(z), f.nth(n)))
 			n++
 		}
-		// TODO
-		// for _, field := range x.Table.Fields {
-		// 	if field.SQLName == "deleted_at" {
-		// 		filters = append(filters, fmt.Sprintf("%s.%s is %s", x.Table.SQLName, "deleted_at", f.nth(n)))
-		// 		n++
-		// 	}
-		// }
+		for _, field := range x.Table.Fields {
+			if field.SQLName == "deleted_at" {
+				hasDeletedAt = true
+			}
+		}
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
 			fmt.Printf("after : %s\n", after)
 			// TODO this also needs to have table name prepended.
@@ -2020,7 +2029,14 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			" WHERE " + strings.Join(filters, " AND "),
 		}
 
-		return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
+		if hasDeletedAt {
+			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s `, c.deletedAt)",
+				strings.Join(lines, "` +\n\t `"),
+				fmt.Sprintf(" AND %s.deleted_at is %%s", x.Table.SQLName),
+			)
+		} else {
+			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
+		}
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
 }

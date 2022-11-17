@@ -29,9 +29,10 @@ type User struct {
 }
 
 type UserSelectConfig struct {
-	limit   string
-	orderBy string
-	joins   UserJoins
+	limit     string
+	orderBy   string
+	joins     UserJoins
+	deletedAt string
 }
 
 type UserSelectConfigOption func(*UserSelectConfig)
@@ -40,6 +41,13 @@ type UserSelectConfigOption func(*UserSelectConfig)
 func UserWithLimit(limit int) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
+	}
+}
+
+// WithDeletedUserOnly limits result to records marked as deleted.
+func WithDeletedUserOnly() UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.deletedAt = " null "
 	}
 }
 

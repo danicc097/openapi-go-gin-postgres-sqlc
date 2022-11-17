@@ -19,9 +19,10 @@ type WorkItemMember struct {
 }
 
 type WorkItemMemberSelectConfig struct {
-	limit   string
-	orderBy string
-	joins   WorkItemMemberJoins
+	limit     string
+	orderBy   string
+	joins     WorkItemMemberJoins
+	deletedAt string
 }
 
 type WorkItemMemberSelectConfigOption func(*WorkItemMemberSelectConfig)
@@ -30,6 +31,13 @@ type WorkItemMemberSelectConfigOption func(*WorkItemMemberSelectConfig)
 func WorkItemMemberWithLimit(limit int) WorkItemMemberSelectConfigOption {
 	return func(s *WorkItemMemberSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
+	}
+}
+
+// WithDeletedWorkItemMemberOnly limits result to records marked as deleted.
+func WithDeletedWorkItemMemberOnly() WorkItemMemberSelectConfigOption {
+	return func(s *WorkItemMemberSelectConfig) {
+		s.deletedAt = " null "
 	}
 }
 
@@ -107,7 +115,8 @@ func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
 // Generated from index 'work_item_member_member_work_item_id_idx'.
 func WorkItemMemberByMemberWorkItemID(ctx context.Context, db DB, member uuid.UUID, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
 	c := &WorkItemMemberSelectConfig{
-		joins: WorkItemMemberJoins{},
+		deletedAt: " not null ",
+		joins:     WorkItemMemberJoins{},
 	}
 	for _, o := range opts {
 		o(c)
@@ -153,7 +162,8 @@ work_item_member.member ` +
 // Generated from index 'work_item_member_pkey'.
 func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, workItemID int64, member uuid.UUID, opts ...WorkItemMemberSelectConfigOption) (*WorkItemMember, error) {
 	c := &WorkItemMemberSelectConfig{
-		joins: WorkItemMemberJoins{},
+		deletedAt: " not null ",
+		joins:     WorkItemMemberJoins{},
 	}
 	for _, o := range opts {
 		o(c)

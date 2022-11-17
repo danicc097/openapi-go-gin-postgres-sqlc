@@ -35,9 +35,10 @@ type User struct {
 }
 
 type UserSelectConfig struct {
-	limit   string
-	orderBy string
-	joins   UserJoins
+	limit     string
+	orderBy   string
+	joins     UserJoins
+	deletedAt string
 }
 
 type UserSelectConfigOption func(*UserSelectConfig)
@@ -46,6 +47,13 @@ type UserSelectConfigOption func(*UserSelectConfig)
 func UserWithLimit(limit int) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
+	}
+}
+
+// WithDeletedUserOnly limits result to records marked as deleted.
+func WithDeletedUserOnly() UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.deletedAt = " null "
 	}
 }
 
@@ -205,14 +213,15 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 // Generated from index 'users_created_at_idx'.
 func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
 	c := &UserSelectConfig{
-		joins: UserJoins{},
+		deletedAt: " not null ",
+		joins:     UserJoins{},
 	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := `SELECT ` +
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
 users.email,
@@ -228,8 +237,8 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
-		`FROM public.users ` +
+(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
   select
@@ -282,8 +291,8 @@ left join (
 					from
 						work_items))
 			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.created_at = $4 `
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		` WHERE users.created_at = $4  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -317,14 +326,15 @@ left join (
 // Generated from index 'users_deleted_at_idx'.
 func UsersByDeletedAt(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
 	c := &UserSelectConfig{
-		joins: UserJoins{},
+		deletedAt: " not null ",
+		joins:     UserJoins{},
 	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := `SELECT ` +
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
 users.email,
@@ -340,8 +350,8 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
-		`FROM public.users ` +
+(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
   select
@@ -394,8 +404,8 @@ left join (
 					from
 						work_items))
 			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.deleted_at = $4 `
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		` WHERE users.deleted_at = $4  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -429,14 +439,15 @@ left join (
 // Generated from index 'users_email_key'.
 func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectConfigOption) (*User, error) {
 	c := &UserSelectConfig{
-		joins: UserJoins{},
+		deletedAt: " not null ",
+		joins:     UserJoins{},
 	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := `SELECT ` +
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
 users.email,
@@ -452,8 +463,8 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
-		`FROM public.users ` +
+(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
   select
@@ -506,8 +517,8 @@ left join (
 					from
 						work_items))
 			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.email = $4 `
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		` WHERE users.email = $4  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -528,14 +539,15 @@ left join (
 // Generated from index 'users_external_id_key'.
 func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...UserSelectConfigOption) (*User, error) {
 	c := &UserSelectConfig{
-		joins: UserJoins{},
+		deletedAt: " not null ",
+		joins:     UserJoins{},
 	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := `SELECT ` +
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
 users.email,
@@ -551,8 +563,8 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
-		`FROM public.users ` +
+(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
   select
@@ -605,8 +617,8 @@ left join (
 					from
 						work_items))
 			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.external_id = $4 `
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		` WHERE users.external_id = $4  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -627,14 +639,15 @@ left join (
 // Generated from index 'users_pkey'.
 func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
 	c := &UserSelectConfig{
-		joins: UserJoins{},
+		deletedAt: " not null ",
+		joins:     UserJoins{},
 	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := `SELECT ` +
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
 users.email,
@@ -650,8 +663,8 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
-		`FROM public.users ` +
+(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
   select
@@ -704,8 +717,8 @@ left join (
 					from
 						work_items))
 			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.user_id = $4 `
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		` WHERE users.user_id = $4  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -726,14 +739,15 @@ left join (
 // Generated from index 'users_updated_at_idx'.
 func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
 	c := &UserSelectConfig{
-		joins: UserJoins{},
+		deletedAt: " not null ",
+		joins:     UserJoins{},
 	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := `SELECT ` +
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
 users.email,
@@ -749,8 +763,8 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
-		`FROM public.users ` +
+(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
   select
@@ -803,8 +817,8 @@ left join (
 					from
 						work_items))
 			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.updated_at = $4 `
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		` WHERE users.updated_at = $4  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -838,14 +852,15 @@ left join (
 // Generated from index 'users_username_key'.
 func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSelectConfigOption) (*User, error) {
 	c := &UserSelectConfig{
-		joins: UserJoins{},
+		deletedAt: " not null ",
+		joins:     UserJoins{},
 	}
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := `SELECT ` +
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
 users.email,
@@ -861,8 +876,8 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
-		`FROM public.users ` +
+(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
   select
@@ -915,8 +930,8 @@ left join (
 					from
 						work_items))
 			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.username = $4 `
+				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		` WHERE users.username = $4  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -24,9 +24,10 @@ type UserAPIKey struct {
 }
 
 type UserAPIKeySelectConfig struct {
-	limit   string
-	orderBy string
-	joins   UserAPIKeyJoins
+	limit     string
+	orderBy   string
+	joins     UserAPIKeyJoins
+	deletedAt string
 }
 
 type UserAPIKeySelectConfigOption func(*UserAPIKeySelectConfig)
@@ -35,6 +36,13 @@ type UserAPIKeySelectConfigOption func(*UserAPIKeySelectConfig)
 func UserAPIKeyWithLimit(limit int) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
+	}
+}
+
+// WithDeletedUserAPIKeyOnly limits result to records marked as deleted.
+func WithDeletedUserAPIKeyOnly() UserAPIKeySelectConfigOption {
+	return func(s *UserAPIKeySelectConfig) {
+		s.deletedAt = " null "
 	}
 }
 
@@ -184,7 +192,8 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 // Generated from index 'user_api_keys_api_key_key'.
 func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
 	c := &UserAPIKeySelectConfig{
-		joins: UserAPIKeyJoins{},
+		deletedAt: " not null ",
+		joins:     UserAPIKeyJoins{},
 	}
 	for _, o := range opts {
 		o(c)
@@ -221,7 +230,8 @@ left join users on users.user_id = user_api_keys.user_id` +
 // Generated from index 'user_api_keys_pkey'.
 func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
 	c := &UserAPIKeySelectConfig{
-		joins: UserAPIKeyJoins{},
+		deletedAt: " not null ",
+		joins:     UserAPIKeyJoins{},
 	}
 	for _, o := range opts {
 		o(c)
@@ -258,7 +268,8 @@ left join users on users.user_id = user_api_keys.user_id` +
 // Generated from index 'user_api_keys_user_id_key'.
 func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
 	c := &UserAPIKeySelectConfig{
-		joins: UserAPIKeyJoins{},
+		deletedAt: " not null ",
+		joins:     UserAPIKeyJoins{},
 	}
 	for _, o := range opts {
 		o(c)
