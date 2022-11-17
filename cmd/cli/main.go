@@ -64,7 +64,8 @@ func main() {
 			TimeEntries: true,
 			WorkItems:   true,
 			Teams:       true,
-		}))
+		}),
+		db.UserWithOrderBy(db.UserCreatedAtDescNullsLast))
 	if err != nil {
 		log.Fatalf("db.UserByUsername: %s\n", err)
 	}

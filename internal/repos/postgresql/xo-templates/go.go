@@ -1159,6 +1159,7 @@ func (f *Funcs) func_name_context(v interface{}) string {
 		}
 		return n
 	case Index:
+		// these are e.g.(external_id IS NOT NULL)
 		if _, _, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
 			return x.Func + "_" + x.SQLName
 		}
@@ -1284,7 +1285,12 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 	// %[1]sWithOrderBy orders results by the given columns.
 func %[1]sWithOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
+		if len(rows) == 0 {
+			s.orderBy = ""
+			return
+		}
+		s.orderBy = " order by "
+		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 	`, name))
@@ -1984,6 +1990,13 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			filters = append(filters, fmt.Sprintf("%s.%s = %s", x.Table.SQLName, f.colname(z), f.nth(n)))
 			n++
 		}
+		// TODO
+		// for _, field := range x.Table.Fields {
+		// 	if field.SQLName == "deleted_at" {
+		// 		filters = append(filters, fmt.Sprintf("%s.%s is %s", x.Table.SQLName, "deleted_at", f.nth(n)))
+		// 		n++
+		// 	}
+		// }
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
 			fmt.Printf("after : %s\n", after)
 			// TODO this also needs to have table name prepended.
@@ -2006,6 +2019,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			strings.Join(joins, "\n"),
 			" WHERE " + strings.Join(filters, " AND "),
 		}
+
 		return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)

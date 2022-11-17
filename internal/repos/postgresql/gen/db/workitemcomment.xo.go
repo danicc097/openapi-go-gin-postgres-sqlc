@@ -55,7 +55,12 @@ const (
 // WorkItemCommentWithOrderBy orders results by the given columns.
 func WorkItemCommentWithOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
+		if len(rows) == 0 {
+			s.orderBy = ""
+			return
+		}
+		s.orderBy = " order by "
+		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 

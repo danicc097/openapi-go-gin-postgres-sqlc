@@ -63,7 +63,12 @@ const (
 // UserWithOrderBy orders results by the given columns.
 func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
+		if len(rows) == 0 {
+			s.orderBy = ""
+			return
+		}
+		s.orderBy = " order by "
+		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 

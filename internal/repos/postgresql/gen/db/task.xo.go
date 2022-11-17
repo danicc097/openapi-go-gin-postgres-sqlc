@@ -63,7 +63,12 @@ const (
 // TaskWithOrderBy orders results by the given columns.
 func TaskWithOrderBy(rows ...TaskOrderBy) TaskSelectConfigOption {
 	return func(s *TaskSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
+		if len(rows) == 0 {
+			s.orderBy = ""
+			return
+		}
+		s.orderBy = " order by "
+		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 

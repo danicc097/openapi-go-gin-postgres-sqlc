@@ -160,6 +160,7 @@ type WorkItem struct {
 	Metadata         *PgtypeJSONB       `json:"metadata,omitempty"`
 	Tasks            *[]Task            `json:"tasks"`
 	TeamId           *int               `json:"team_id,omitempty"`
+	TimeEntries      *[]TimeEntry       `json:"time_entries"`
 	Title            *string            `json:"title,omitempty"`
 	UpdatedAt        *time.Time         `json:"updated_at,omitempty"`
 	Users            *[]User            `json:"users"`
