@@ -18,6 +18,7 @@ type UserAPIKey struct {
 	ExpiresOn    time.Time `json:"expires_on" db:"expires_on"`           // expires_on
 	UserID       uuid.UUID `json:"user_id" db:"user_id"`                 // user_id
 
+	User *User `json:"user"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -53,7 +54,9 @@ func UserAPIKeyWithOrderBy(rows ...UserAPIKeyOrderBy) UserAPIKeySelectConfigOpti
 	}
 }
 
-type UserAPIKeyJoins struct{}
+type UserAPIKeyJoins struct {
+	User bool
+}
 
 // UserAPIKeyWithJoin orders results by the given columns.
 func UserAPIKeyWithJoin(joins UserAPIKeyJoins) UserAPIKeySelectConfigOption {
@@ -187,10 +190,12 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
-user_api_keys.user_id ` +
+user_api_keys.user_id,
+(case when $1::boolean = true then row_to_json(users.*) end)::jsonb as user ` +
 		`FROM public.user_api_keys ` +
-		`` +
-		` WHERE user_api_keys.api_key = $1 `
+		`-- O2O join generated from "user_api_keys_user_id_fkey"
+left join users on users.user_id = user_api_keys.user_id` +
+		` WHERE user_api_keys.api_key = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -200,7 +205,7 @@ user_api_keys.user_id ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, apiKey).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.User, apiKey).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID, &uak.User); err != nil {
 		return nil, logerror(err)
 	}
 	return &uak, nil
@@ -222,10 +227,12 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
-user_api_keys.user_id ` +
+user_api_keys.user_id,
+(case when $1::boolean = true then row_to_json(users.*) end)::jsonb as user ` +
 		`FROM public.user_api_keys ` +
-		`` +
-		` WHERE user_api_keys.user_api_key_id = $1 `
+		`-- O2O join generated from "user_api_keys_user_id_fkey"
+left join users on users.user_id = user_api_keys.user_id` +
+		` WHERE user_api_keys.user_api_key_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -235,7 +242,7 @@ user_api_keys.user_id ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, userAPIKeyID).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.User, userAPIKeyID).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID, &uak.User); err != nil {
 		return nil, logerror(err)
 	}
 	return &uak, nil
@@ -257,10 +264,12 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
 user_api_keys.expires_on,
-user_api_keys.user_id ` +
+user_api_keys.user_id,
+(case when $1::boolean = true then row_to_json(users.*) end)::jsonb as user ` +
 		`FROM public.user_api_keys ` +
-		`` +
-		` WHERE user_api_keys.user_id = $1 `
+		`-- O2O join generated from "user_api_keys_user_id_fkey"
+left join users on users.user_id = user_api_keys.user_id` +
+		` WHERE user_api_keys.user_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -270,7 +279,7 @@ user_api_keys.user_id ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, userID).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.User, userID).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID, &uak.User); err != nil {
 		return nil, logerror(err)
 	}
 	return &uak, nil

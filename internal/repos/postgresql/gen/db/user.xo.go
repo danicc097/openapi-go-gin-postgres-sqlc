@@ -29,7 +29,6 @@ type User struct {
 
 	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
 	Teams       *[]Team      `json:"teams"`        // M2M
-	UserAPIKey  *UserAPIKey  `json:"user_api_key"` // O2O
 	WorkItems   *[]WorkItem  `json:"work_items"`   // M2M
 	// xo fields
 	_exists, _deleted bool
@@ -77,7 +76,6 @@ func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 type UserJoins struct {
 	TimeEntries bool
 	Teams       bool
-	UserAPIKey  bool
 	WorkItems   bool
 }
 
@@ -225,8 +223,7 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
+(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -259,8 +256,6 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -283,13 +278,13 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.created_at = $5 `
+		` WHERE users.created_at = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, createdAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, createdAt)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -340,8 +335,7 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
+(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -374,8 +368,6 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -398,13 +390,13 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.deleted_at = $5 `
+		` WHERE users.deleted_at = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, deletedAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, deletedAt)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -455,8 +447,7 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
+(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -489,8 +480,6 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -513,7 +502,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.email = $5 `
+		` WHERE users.email = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -523,7 +512,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -557,8 +546,7 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
+(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -591,8 +579,6 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -615,7 +601,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.external_id = $5 `
+		` WHERE users.external_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -625,7 +611,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, externalID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, externalID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -659,8 +645,7 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
+(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -693,8 +678,6 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -717,7 +700,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.user_id = $5 `
+		` WHERE users.user_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -727,7 +710,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -761,8 +744,7 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
+(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -795,8 +777,6 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -819,13 +799,13 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.updated_at = $5 `
+		` WHERE users.updated_at = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	logf(sqlstr, updatedAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, updatedAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, updatedAt)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -876,8 +856,7 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $3::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
+(case when $3::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.users ` +
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -910,8 +889,6 @@ left join (
 						teams))
 			group by
 				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
--- O2O join generated from "users_api_key_id_fkey"
-left join user_api_keys on user_api_keys.user_api_key_id = users.api_key_id
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
@@ -934,7 +911,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id` +
-		` WHERE users.username = $5 `
+		` WHERE users.username = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -944,7 +921,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.UserAPIKey, c.joins.WorkItems, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.UserAPIKey, &u.WorkItems); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil

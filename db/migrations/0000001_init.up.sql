@@ -72,7 +72,11 @@ alter table user_api_keys
 alter table user_api_keys
   add foreign key (user_id) references users (user_id) on delete cascade;
 
-comment on column users.api_key_id is 'cardinality:O2O';
+-- circular schema ref. (users' join is ultimately useless, we will start from an apikey
+-- and go from there to the user that owns it)
+--  generates join in users table
+-- comment on column users.api_key_id IS 'cardinality:O2O';
+comment on column user_api_keys.user_id is 'cardinality:O2O';
 
 -- -- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
 -- create unique index on users (user_id , external_id)

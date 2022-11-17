@@ -411,7 +411,6 @@ x.gen() {
     # xo cannot use db files as input, needs an up-to-date schema
     # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
     # use a unique db to prevent cosmic accidents
-    x.gen.client-server &
     x.gen.proto &
     wait
 
@@ -421,6 +420,8 @@ x.gen() {
 
     x.postgen &
     x.gen.counterfeiter "$cache" & # delay since it depends on generated output too
+
+    x.gen.client-server # depends on schemas generated in postgen
 
     wait
 

@@ -129,7 +129,6 @@ type User struct {
 	Teams       *[]Team      `json:"teams"`
 	TimeEntries *[]TimeEntry `json:"time_entries"`
 	UpdatedAt   *time.Time   `json:"updated_at,omitempty"`
-	UserApiKey  *UserAPIKey  `json:"user_api_key"`
 	UserId      *UuidUUID    `json:"user_id,omitempty"`
 	Username    *string      `json:"username,omitempty"`
 	WorkItems   *[]WorkItem  `json:"work_items"`

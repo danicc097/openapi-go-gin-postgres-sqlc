@@ -7,7 +7,25 @@
 API-first and Database-first approach with OpenAPI v3, sqlc+xo codegen,
 generated backend, frontend client and validators and an unimaginative title.
 
-You also get dynamic `x` function and `x` flags arguments documentation _and_
+## What's this for?
+
+Your OpenAPI v3 spec becomes a real single source of truth for the full stack. Any
+change to it is validated and cascades down to:
+
+- **frontend**: generated API queries (`rtk-query`). User-friendly [generated] client-side validation
+  (fork of `openapi-typescript-validator`).
+- **backend**: generated Gin server (custom `oapi-codegen` and post-generation).
+  Request and response validation (`kin-openapi`). Generated CRUD and index queries via `xo`
+  and custom queries via `sqlc` by leveraging custom `xo` template generation
+  that ensures compatibility.
+
+Additionally, it features OpenTelemetry in both browser (automatic and
+manual instrumentation) and backend services (manual instrumentation) via
+Jaeger, TimescaleDB and Promscale (certified storage backend).
+
+## Makefile alternative
+
+You get dynamic `x` function and `x` options parameters documentation _and_
 autocompletion (`complete -C project project`) for
 free (from your own source itself and comments)
 so they're always up to date without any repetitive work: add/remove functions
@@ -25,22 +43,11 @@ with `--x-help`:
 
 ![](.github/help-x-function.png)
 
+## Code generation
 
-## What's this for?
+Docs WIP
 
-Your OpenAPI v3 spec becomes a real single source of truth for the full stack. Any
-change to it is validated and cascades down to:
-
-- **frontend**: generated API queries (`rtk-query`). User-friendly [generated] client-side validation
-  (fork of `openapi-typescript-validator`).
-- **backend**: generated Gin server (custom `oapi-codegen` and post-generation).
-  Request and response validation (`kin-openapi`). Generated CRUD and index queries via `xo`
-  and custom queries via `sqlc` by leveraging custom `xo` template generation
-  that ensures compatibility.
-
-Additionally, it features OpenTelemetry in both browser (automatic and
-manual instrumentation) and backend services (manual instrumentation) via
-Jaeger, TimescaleDB and Promscale (certified storage backend).
+<!-- xo custom templates with cardinality comments for join generation, schema from structs, spec sync -->
 
 ## Architecture
 

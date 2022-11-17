@@ -270,8 +270,6 @@ components:
         updated_at:
           format: date-time
           type: string
-        user_api_key:
-          $ref: '#/components/schemas/UserAPIKey'
         user_id:
           $ref: '#/components/schemas/UuidUUID'
         username:
