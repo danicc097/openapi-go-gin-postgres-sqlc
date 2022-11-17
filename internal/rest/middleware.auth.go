@@ -48,7 +48,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		a.logger.Sugar().Info("Would have run EnsureAuthenticated and set user in ctx")
 		// if x-api-key header found
 		if c.Request.Header.Get("x-api-key") != "" {
-			u, err := a.authnsvc.GetUserFromApiKey(c.Request.Context(), "")
+			u, err := a.authnsvc.GetUserFromAPIKey(c.Request.Context(), "")
 			if err != nil {
 				renderErrorResponse(c, "could not get user from api key", err)
 				c.Abort()
@@ -58,7 +58,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 			c.Next()
 		}
 		if strings.HasPrefix(c.Request.Header.Get("Authorization"), "Bearer ") {
-			u, err := a.authnsvc.GetUserFromToken(c.Request.Context(), "")
+			u, err := a.authnsvc.GetUserFromAccessToken(c.Request.Context(), "")
 			if err != nil {
 				renderErrorResponse(c, "could not get user from token", err)
 				c.Abort()

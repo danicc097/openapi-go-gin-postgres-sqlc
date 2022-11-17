@@ -22,18 +22,24 @@ func NewAuthentication(logger *zap.Logger, usvc *User, pool *pgxpool.Pool) *Auth
 	}
 }
 
-// GetUserFromToken returns a user from a token.
-func (a *Authentication) GetUserFromToken(ctx context.Context, token string) (*db.User, error) {
+// GetUserFromAccessToken returns a user from a token.
+func (a *Authentication) GetUserFromAccessToken(ctx context.Context, token string) (*db.User, error) {
 	return &db.User{}, nil
 }
 
-// GetUserFromApiKey returns a user from an api key.
-func (a *Authentication) GetUserFromApiKey(ctx context.Context, apiKey string) (*db.User, error) {
+// GetUserFromAPIKey returns a user from an api key.
+func (a *Authentication) GetUserFromAPIKey(ctx context.Context, apiKey string) (*db.User, error) {
 	return a.usvc.UserByAPIKey(ctx, a.pool, apiKey)
 }
 
 // CreateAccessTokenForUser creates a new token for a user.
-func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user db.User) {
+func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.User) string {
+	return ""
+}
+
+// CreateAccessTokenForUser creates a new token for a user.
+func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User) string {
+	return ""
 }
 
 // GetClaimFromToken creates a new token for a user.

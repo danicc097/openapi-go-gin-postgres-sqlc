@@ -116,12 +116,7 @@ func (u *User) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.
 		return nil, fmt.Errorf("api does not exist: %v", err)
 	}
 
-	user, err := uak.FKUser(ctx, d)
-	if err != nil {
-		return nil, fmt.Errorf("could not get user by email: %v", err)
-	}
-
-	return user, nil
+	return uak.User, nil
 }
 
 // TODO use xo

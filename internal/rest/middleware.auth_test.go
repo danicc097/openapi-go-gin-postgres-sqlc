@@ -64,7 +64,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		req, _ := http.NewRequest(http.MethodGet, "/", nil)
 
 		ff := testutil.NewFixtureFactory(usvc, pool, authnsvc, authzsvc)
-		user, err := ff.CreateUser(context.Background(), testutil.CreateUserParams{
+		ufixture, err := ff.CreateUser(context.Background(), testutil.CreateUserParams{
 			Role:       tc.role,
 			WithAPIKey: true,
 		})
@@ -73,7 +73,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		}
 
 		engine.Use(func(c *gin.Context) {
-			ctxWithUser(c, user)
+			ctxWithUser(c, ufixture.User)
 		})
 
 		engine.Use(authMw.EnsureAuthorized(AuthRestriction{MinimumRole: tc.requiredRole}))

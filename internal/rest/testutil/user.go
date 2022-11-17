@@ -40,7 +40,7 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	if err != nil {
 		return nil, fmt.Errorf("authzsvc.RoleByName: %v", err)
 	}
-	// TODO usvc.CreateUser instead and then authn.createtoken or createapikey, usvc.deleteuser, etc. - no repo logic here
+	// TODO usvc.CreateUser with createUser params instead and then authn.createtoken or createapikey, usvc.deleteuser, etc. - no repo logic here
 	u := &db.User{
 		Username:  testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
 		Email:     testutil.RandomEmail(),
@@ -53,9 +53,18 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 
 	ff.usvc.Register(ctx, ff.pool, u)
 
+	var apiKey, accessToken string
+
+	if params.WithAPIKey {
+		apiKey = ff.authnsvc.CreateAPIKeyForUser(ctx, u) // TODO will save row in user_api_keys and also u.update() to save api_key_id
+	}
+	if params.WithToken {
+		accessToken = ff.authnsvc.CreateAccessTokenForUser(ctx, u) // TODO simply returns a jwt
+	}
+
 	return &CreateUserResult{
 		User:   u,
-		APIKey: "",
-		Token:  "",
+		APIKey: apiKey,
+		Token:  accessToken,
 	}, nil
 }
