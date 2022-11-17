@@ -260,7 +260,7 @@ create table activities (
 -- no unique indexes at all
 create table time_entries (
   time_entry_id bigserial not null
-  , task_id bigint
+  , work_item_id bigint
   , activity_id int not null
   , team_id int
   , user_id uuid not null
@@ -269,10 +269,10 @@ create table time_entries (
   , duration_minutes int -- NULL -> active
   , primary key (time_entry_id)
   , foreign key (user_id) references users (user_id) on delete cascade
-  , foreign key (task_id) references tasks (task_id) on delete cascade
+  , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
   , foreign key (activity_id) references activities (activity_id) on delete cascade -- need to know where we're allocating time
   , foreign key (team_id) references teams (team_id) on delete cascade -- need to know where we're allocating time
-  , check (num_nonnulls (team_id , task_id) = 1) -- team_id null when a task id is associated and viceversa
+  , check (num_nonnulls (team_id , work_item_id) = 1) -- team_id null when a work_item id is associated and viceversa
 );
 
 -- TODO revisit all comments and fix.
@@ -283,7 +283,7 @@ create table time_entries (
 -- select for time_entries that joins with:
 -- a task can be associated to many time entries, and any time entry is linked back to only one task: O2M
 -- another way to see it: one task shares many time_entries, and time_entries are part of only one task.
-comment on column time_entries.task_id is 'cardinality:O2M';
+comment on column time_entries.work_item_id is 'cardinality:O2M';
 
 -- a team can be associated to many time entries, and any time entry is linked back to only one team: O2M
 comment on column time_entries.team_id is 'cardinality:O2M';
@@ -299,7 +299,7 @@ comment on column time_entries.user_id is 'cardinality:O2M';
 create index on time_entries (user_id , team_id);
 
 -- show user his timelog based on what projects are selected
-create index on time_entries (task_id , team_id);
+create index on time_entries (work_item_id , team_id);
 
 
 /*

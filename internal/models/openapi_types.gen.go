@@ -58,17 +58,16 @@ type Scope string
 
 // Task defines model for Task.
 type Task struct {
-	CreatedAt   *time.Time   `json:"created_at,omitempty"`
-	DeletedAt   *time.Time   `json:"deleted_at"`
-	Finished    *bool        `json:"finished"`
-	Metadata    *PgtypeJSONB `json:"metadata,omitempty"`
-	TaskId      *int         `json:"task_id,omitempty"`
-	TaskType    *TaskType    `json:"task_type"`
-	TaskTypeId  *int         `json:"task_type_id,omitempty"`
-	TimeEntries *[]TimeEntry `json:"time_entries"`
-	Title       *string      `json:"title,omitempty"`
-	UpdatedAt   *time.Time   `json:"updated_at,omitempty"`
-	WorkItemId  *int         `json:"work_item_id,omitempty"`
+	CreatedAt  *time.Time   `json:"created_at,omitempty"`
+	DeletedAt  *time.Time   `json:"deleted_at"`
+	Finished   *bool        `json:"finished"`
+	Metadata   *PgtypeJSONB `json:"metadata,omitempty"`
+	TaskId     *int         `json:"task_id,omitempty"`
+	TaskType   *TaskType    `json:"task_type"`
+	TaskTypeId *int         `json:"task_type_id,omitempty"`
+	Title      *string      `json:"title,omitempty"`
+	UpdatedAt  *time.Time   `json:"updated_at,omitempty"`
+	WorkItemId *int         `json:"work_item_id,omitempty"`
 }
 
 // TaskType defines model for TaskType.
@@ -99,10 +98,10 @@ type TimeEntry struct {
 	Comment         *string    `json:"comment,omitempty"`
 	DurationMinutes *int       `json:"duration_minutes"`
 	Start           *time.Time `json:"start,omitempty"`
-	TaskId          *int       `json:"task_id"`
 	TeamId          *int       `json:"team_id"`
 	TimeEntryId     *int       `json:"time_entry_id,omitempty"`
 	UserId          *UuidUUID  `json:"user_id,omitempty"`
+	WorkItemId      *int       `json:"work_item_id"`
 }
 
 // UpdateUserRequest represents User data to update

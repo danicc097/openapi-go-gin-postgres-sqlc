@@ -323,11 +323,6 @@ components:
           $ref: '#/components/schemas/TaskType'
         task_type_id:
           type: integer
-        time_entries:
-          items:
-            $ref: '#/components/schemas/TimeEntry'
-          nullable: true
-          type: array
         title:
           type: string
         updated_at:
@@ -391,9 +386,6 @@ components:
         start:
           format: date-time
           type: string
-        task_id:
-          nullable: true
-          type: integer
         team_id:
           nullable: true
           type: integer
@@ -401,6 +393,9 @@ components:
           type: integer
         user_id:
           $ref: '#/components/schemas/UuidUUID'
+        work_item_id:
+          nullable: true
+          type: integer
       type: object
     UserAPIKey: # Generated from db package structs. DO NOT EDIT.
       nullable: true
@@ -439,6 +434,11 @@ components:
           type: array
         team_id:
           type: integer
+        time_entries:
+          items:
+            $ref: '#/components/schemas/TimeEntry'
+          nullable: true
+          type: array
         title:
           type: string
         updated_at:

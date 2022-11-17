@@ -23,8 +23,7 @@ type Task struct {
 	UpdatedAt  time.Time    `json:"updated_at" db:"updated_at"`     // updated_at
 	DeletedAt  *time.Time   `json:"deleted_at" db:"deleted_at"`     // deleted_at
 
-	TaskType    *TaskType    `json:"task_type"`    // O2O
-	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
+	TaskType *TaskType `json:"task_type"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -69,8 +68,7 @@ func TaskWithOrderBy(rows ...TaskOrderBy) TaskSelectConfigOption {
 }
 
 type TaskJoins struct {
-	TaskType    bool
-	TimeEntries bool
+	TaskType bool
 }
 
 // TaskWithJoin orders results by the given columns.
@@ -211,21 +209,11 @@ tasks.finished,
 tasks.created_at,
 tasks.updated_at,
 tasks.deleted_at,
-(case when $1::boolean = true then row_to_json(task_types.*) end)::jsonb as task_type,
-(case when $2::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
+(case when $1::boolean = true then row_to_json(task_types.*) end)::jsonb as task_type ` +
 		`FROM public.tasks ` +
 		`-- O2O join generated from "tasks_task_type_id_fkey"
-left join task_types on task_types.task_type_id = tasks.task_type_id
--- O2M join generated from "time_entries_task_id_fkey"
-left join (
-  select
-  task_id as time_entries_task_id
-    , json_agg(time_entries.*) as time_entries
-  from
-    time_entries
-   group by
-        task_id) joined_time_entries on joined_time_entries.time_entries_task_id = tasks.task_id` +
-		` WHERE tasks.task_id = $3 `
+left join task_types on task_types.task_type_id = tasks.task_type_id` +
+		` WHERE tasks.task_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -235,7 +223,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TaskType, c.joins.TimeEntries, taskID).Scan(&t.TaskID, &t.TaskTypeID, &t.WorkItemID, &t.Title, &t.Metadata, &t.Finished, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt, &t.TaskType, &t.TimeEntries); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TaskType, taskID).Scan(&t.TaskID, &t.TaskTypeID, &t.WorkItemID, &t.Title, &t.Metadata, &t.Finished, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt, &t.TaskType); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil

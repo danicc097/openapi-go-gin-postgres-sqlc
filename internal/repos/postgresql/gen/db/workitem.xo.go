@@ -25,6 +25,7 @@ type WorkItem struct {
 	DeletedAt      *time.Time   `json:"deleted_at" db:"deleted_at"`               // deleted_at
 
 	Tasks            *[]Task            `json:"tasks"`              // O2M
+	TimeEntries      *[]TimeEntry       `json:"time_entries"`       // O2M
 	WorkItemComments *[]WorkItemComment `json:"work_item_comments"` // O2M
 	Users            *[]User            `json:"users"`              // M2M
 	// xo fields
@@ -72,6 +73,7 @@ func WorkItemWithOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 
 type WorkItemJoins struct {
 	Tasks            bool
+	TimeEntries      bool
 	WorkItemComments bool
 	Users            bool
 }
@@ -216,8 +218,9 @@ work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
 (case when $1::boolean = true then joined_tasks.tasks end)::jsonb as tasks,
-(case when $2::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
-(case when $3::boolean = true then joined_users.users end)::jsonb as users ` +
+(case when $2::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $3::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
+(case when $4::boolean = true then joined_users.users end)::jsonb as users ` +
 		`FROM public.work_items ` +
 		`-- O2M join generated from "tasks_work_item_id_fkey"
 left join (
@@ -228,6 +231,15 @@ left join (
     tasks
    group by
         work_item_id) joined_tasks on joined_tasks.tasks_work_item_id = work_items.work_item_id
+-- O2M join generated from "time_entries_work_item_id_fkey"
+left join (
+  select
+  work_item_id as time_entries_work_item_id
+    , json_agg(time_entries.*) as time_entries
+  from
+    time_entries
+   group by
+        work_item_id) joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
 -- O2M join generated from "work_item_comments_work_item_id_fkey"
 left join (
   select
@@ -259,7 +271,7 @@ left join (
 						users))
 			group by
 				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id` +
-		` WHERE work_items.work_item_id = $4 `
+		` WHERE work_items.work_item_id = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -269,7 +281,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.Tasks, c.joins.WorkItemComments, c.joins.Users, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.Tasks, &wi.WorkItemComments, &wi.Users); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.Tasks, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Users, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.Tasks, &wi.TimeEntries, &wi.WorkItemComments, &wi.Users); err != nil {
 		return nil, logerror(err)
 	}
 	return &wi, nil

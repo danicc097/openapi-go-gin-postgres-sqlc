@@ -23,6 +23,21 @@ type FakeUser struct {
 	createReturnsOnCall map[int]struct {
 		result1 error
 	}
+	CreateAPIKeyStub        func(context.Context, db.DBTX, *db.User) (*db.UserAPIKey, error)
+	createAPIKeyMutex       sync.RWMutex
+	createAPIKeyArgsForCall []struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 *db.User
+	}
+	createAPIKeyReturns struct {
+		result1 *db.UserAPIKey
+		result2 error
+	}
+	createAPIKeyReturnsOnCall map[int]struct {
+		result1 *db.UserAPIKey
+		result2 error
+	}
 	UserByAPIKeyStub        func(context.Context, db.DBTX, string) (*db.User, error)
 	userByAPIKeyMutex       sync.RWMutex
 	userByAPIKeyArgsForCall []struct {
@@ -118,6 +133,72 @@ func (fake *FakeUser) CreateReturnsOnCall(i int, result1 error) {
 	fake.createReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
+}
+
+func (fake *FakeUser) CreateAPIKey(arg1 context.Context, arg2 db.DBTX, arg3 *db.User) (*db.UserAPIKey, error) {
+	fake.createAPIKeyMutex.Lock()
+	ret, specificReturn := fake.createAPIKeyReturnsOnCall[len(fake.createAPIKeyArgsForCall)]
+	fake.createAPIKeyArgsForCall = append(fake.createAPIKeyArgsForCall, struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 *db.User
+	}{arg1, arg2, arg3})
+	stub := fake.CreateAPIKeyStub
+	fakeReturns := fake.createAPIKeyReturns
+	fake.recordInvocation("CreateAPIKey", []interface{}{arg1, arg2, arg3})
+	fake.createAPIKeyMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUser) CreateAPIKeyCallCount() int {
+	fake.createAPIKeyMutex.RLock()
+	defer fake.createAPIKeyMutex.RUnlock()
+	return len(fake.createAPIKeyArgsForCall)
+}
+
+func (fake *FakeUser) CreateAPIKeyCalls(stub func(context.Context, db.DBTX, *db.User) (*db.UserAPIKey, error)) {
+	fake.createAPIKeyMutex.Lock()
+	defer fake.createAPIKeyMutex.Unlock()
+	fake.CreateAPIKeyStub = stub
+}
+
+func (fake *FakeUser) CreateAPIKeyArgsForCall(i int) (context.Context, db.DBTX, *db.User) {
+	fake.createAPIKeyMutex.RLock()
+	defer fake.createAPIKeyMutex.RUnlock()
+	argsForCall := fake.createAPIKeyArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeUser) CreateAPIKeyReturns(result1 *db.UserAPIKey, result2 error) {
+	fake.createAPIKeyMutex.Lock()
+	defer fake.createAPIKeyMutex.Unlock()
+	fake.CreateAPIKeyStub = nil
+	fake.createAPIKeyReturns = struct {
+		result1 *db.UserAPIKey
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUser) CreateAPIKeyReturnsOnCall(i int, result1 *db.UserAPIKey, result2 error) {
+	fake.createAPIKeyMutex.Lock()
+	defer fake.createAPIKeyMutex.Unlock()
+	fake.CreateAPIKeyStub = nil
+	if fake.createAPIKeyReturnsOnCall == nil {
+		fake.createAPIKeyReturnsOnCall = make(map[int]struct {
+			result1 *db.UserAPIKey
+			result2 error
+		})
+	}
+	fake.createAPIKeyReturnsOnCall[i] = struct {
+		result1 *db.UserAPIKey
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeUser) UserByAPIKey(arg1 context.Context, arg2 db.DBTX, arg3 string) (*db.User, error) {
@@ -257,6 +338,8 @@ func (fake *FakeUser) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
+	fake.createAPIKeyMutex.RLock()
+	defer fake.createAPIKeyMutex.RUnlock()
 	fake.userByAPIKeyMutex.RLock()
 	defer fake.userByAPIKeyMutex.RUnlock()
 	fake.userByEmailMutex.RLock()
