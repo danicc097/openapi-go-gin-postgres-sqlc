@@ -145,8 +145,8 @@ x.pregen() {
   { { {
     echo "Running generation"
 
-    x.db.drop
-    x.migrate up
+    POSTGRES_DB=$GEN_POSTGRES_DB x.db.drop
+    POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up
 
     ######## Sync enums from db with spec
     # example: `x-db-enum: user_role` will use the db's "user_role" enum
@@ -397,7 +397,7 @@ x.gen() {
 
     x.db.recreate
 
-    POSTGRES_DB=$GEN_POSTGRES_DB x.pregen
+    x.pregen
 
     rm -rf "$PG_REPO_GEN"
 
@@ -927,7 +927,7 @@ update_spec_with_db_structs() {
 }
 
 xo_schema() {
-  xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
+  POSTGRES_DB=$GEN_POSTGRES_DB xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
     --src "$PG_REPO"/xo-templates \
     "$@"
 }

@@ -69,21 +69,13 @@ func main() {
 		log.Fatalf("db.UserByUsername: %s\n", err)
 	}
 	format.PrintJSON(user)
-	// u1 := &db.User{Username: "superadmin", Email: "fsefesfe", ExternalID: "·gfrsgdrgrgdrg", Scopes: []string{}, RoleRank: 3}
-	// err = u1.Insert(context.Background(), pool)
-	// if err != nil {
-	// 	log.Fatalf("Insert: %v", err)
-	// }
 	// test correct queries
-	key := "19270107-1b9c-4f52-a578-7390d5b31513-key-hashed"
+	key := "19270107-1b9c-4ff52-a578-7390d5b31513-key-hashed"
 	uak, err := db.UserAPIKeyByAPIKey(context.Background(), pool, key, db.UserAPIKeyWithJoin(db.UserAPIKeyJoins{User: true}))
 	if err != nil {
 		log.Fatalf("UserAPIKeyByAPIKey: %v", err)
 	}
-	if uak == nil {
-		log.Fatalf("api does not exist: %v", err)
-	}
-	fmt.Printf(" found user from its api key u: %v#\n", uak.User)
+	fmt.Printf("found user from its api key u: %v#\n", uak.User)
 }
 
 func errAndExit(out []byte, err error) {

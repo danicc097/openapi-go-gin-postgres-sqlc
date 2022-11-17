@@ -23,19 +23,6 @@ type FakeUser struct {
 	createReturnsOnCall map[int]struct {
 		result1 error
 	}
-	UpsertStub        func(context.Context, db.DBTX, *db.User) error
-	upsertMutex       sync.RWMutex
-	upsertArgsForCall []struct {
-		arg1 context.Context
-		arg2 db.DBTX
-		arg3 *db.User
-	}
-	upsertReturns struct {
-		result1 error
-	}
-	upsertReturnsOnCall map[int]struct {
-		result1 error
-	}
 	UserByAPIKeyStub        func(context.Context, db.DBTX, string) (*db.User, error)
 	userByAPIKeyMutex       sync.RWMutex
 	userByAPIKeyArgsForCall []struct {
@@ -129,69 +116,6 @@ func (fake *FakeUser) CreateReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.createReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeUser) Upsert(arg1 context.Context, arg2 db.DBTX, arg3 *db.User) error {
-	fake.upsertMutex.Lock()
-	ret, specificReturn := fake.upsertReturnsOnCall[len(fake.upsertArgsForCall)]
-	fake.upsertArgsForCall = append(fake.upsertArgsForCall, struct {
-		arg1 context.Context
-		arg2 db.DBTX
-		arg3 *db.User
-	}{arg1, arg2, arg3})
-	stub := fake.UpsertStub
-	fakeReturns := fake.upsertReturns
-	fake.recordInvocation("Upsert", []interface{}{arg1, arg2, arg3})
-	fake.upsertMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2, arg3)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeUser) UpsertCallCount() int {
-	fake.upsertMutex.RLock()
-	defer fake.upsertMutex.RUnlock()
-	return len(fake.upsertArgsForCall)
-}
-
-func (fake *FakeUser) UpsertCalls(stub func(context.Context, db.DBTX, *db.User) error) {
-	fake.upsertMutex.Lock()
-	defer fake.upsertMutex.Unlock()
-	fake.UpsertStub = stub
-}
-
-func (fake *FakeUser) UpsertArgsForCall(i int) (context.Context, db.DBTX, *db.User) {
-	fake.upsertMutex.RLock()
-	defer fake.upsertMutex.RUnlock()
-	argsForCall := fake.upsertArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
-}
-
-func (fake *FakeUser) UpsertReturns(result1 error) {
-	fake.upsertMutex.Lock()
-	defer fake.upsertMutex.Unlock()
-	fake.UpsertStub = nil
-	fake.upsertReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeUser) UpsertReturnsOnCall(i int, result1 error) {
-	fake.upsertMutex.Lock()
-	defer fake.upsertMutex.Unlock()
-	fake.UpsertStub = nil
-	if fake.upsertReturnsOnCall == nil {
-		fake.upsertReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.upsertReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -333,8 +257,6 @@ func (fake *FakeUser) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
-	fake.upsertMutex.RLock()
-	defer fake.upsertMutex.RUnlock()
 	fake.userByAPIKeyMutex.RLock()
 	defer fake.userByAPIKeyMutex.RUnlock()
 	fake.userByEmailMutex.RLock()

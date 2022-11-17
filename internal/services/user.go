@@ -28,18 +28,6 @@ func NewUser(urepo repos.User, logger *zap.Logger) *User {
 	}
 }
 
-// Upsert upserts a user record.
-func (u *User) Upsert(ctx context.Context, d db.DBTX, user *db.User) error {
-	defer newOTELSpan(ctx, "User.Upsert").End()
-
-	if err := u.urepo.Upsert(ctx, d, user); err != nil {
-		// TODO database info is leaked if its inaccessible
-		return errors.Wrap(err, "urepo.Upsert")
-	}
-
-	return nil
-}
-
 // Register registers a user record.
 // TODO accepts basic parameters and everything else is default, returns a *db.User. must not pass a db.User here
 // IMPORTANT: no endpoint for user creation. Only when coming from auth server.
@@ -51,6 +39,16 @@ func (u *User) Register(ctx context.Context, d db.DBTX, user *db.User) error {
 
 	if err := u.urepo.Create(ctx, d, user); err != nil {
 		return errors.Wrap(err, "urepo.Create")
+	}
+
+	return nil
+}
+
+func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) error {
+	defer newOTELSpan(ctx, "User.CreateAPIKey").End()
+
+	if _, err := u.urepo.CreateAPIKey(ctx, d, user); err != nil {
+		return errors.Wrap(err, "urepo.CreateAPIKey")
 	}
 
 	return nil

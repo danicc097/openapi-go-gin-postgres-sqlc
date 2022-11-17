@@ -39,6 +39,7 @@ func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.
 
 // CreateAccessTokenForUser creates a new token for a user.
 func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User) string {
+	a.usvc.CreateAPIKey(ctx, a.pool, user) // TODO sholuld return it
 	return ""
 }
 

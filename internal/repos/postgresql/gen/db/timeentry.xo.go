@@ -16,11 +16,11 @@ type TimeEntry struct {
 	TimeEntryID     int64     `json:"time_entry_id" db:"time_entry_id"`       // time_entry_id
 	TaskID          *int64    `json:"task_id" db:"task_id"`                   // task_id
 	ActivityID      int       `json:"activity_id" db:"activity_id"`           // activity_id
-	TeamID          *int64    `json:"team_id" db:"team_id"`                   // team_id
+	TeamID          *int      `json:"team_id" db:"team_id"`                   // team_id
 	UserID          uuid.UUID `json:"user_id" db:"user_id"`                   // user_id
 	Comment         string    `json:"comment" db:"comment"`                   // comment
 	Start           time.Time `json:"start" db:"start"`                       // start
-	DurationMinutes *int64    `json:"duration_minutes" db:"duration_minutes"` // duration_minutes
+	DurationMinutes *int      `json:"duration_minutes" db:"duration_minutes"` // duration_minutes
 
 	// xo fields
 	_exists, _deleted bool
@@ -217,7 +217,7 @@ time_entries.duration_minutes ` +
 // TimeEntriesByTaskIDTeamID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_task_id_team_id_idx'.
-func TimeEntriesByTaskIDTeamID(ctx context.Context, db DB, taskID, teamID *int64, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
+func TimeEntriesByTaskIDTeamID(ctx context.Context, db DB, taskID *int64, teamID *int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
 	c := &TimeEntrySelectConfig{
 		joins: TimeEntryJoins{},
 	}
@@ -269,7 +269,7 @@ time_entries.duration_minutes ` +
 // TimeEntriesByUserIDTeamID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_user_id_team_id_idx'.
-func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID *int64, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
+func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID *int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
 	c := &TimeEntrySelectConfig{
 		joins: TimeEntryJoins{},
 	}
@@ -336,7 +336,7 @@ func (te *TimeEntry) FKTask(ctx context.Context, db DB) (*Task, error) {
 //
 // Generated from foreign key 'time_entries_team_id_fkey'.
 func (te *TimeEntry) FKTeam(ctx context.Context, db DB) (*Team, error) {
-	return TeamByTeamID(ctx, db, int(*te.TeamID))
+	return TeamByTeamID(ctx, db, *te.TeamID)
 }
 
 // FKUser returns the User associated with the TimeEntry's (UserID).

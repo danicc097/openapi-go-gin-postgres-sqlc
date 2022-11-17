@@ -2,12 +2,13 @@ package postgresql
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/jackc/pgconn"
+	"github.com/google/uuid"
 )
 
 // User represents the repository used for interacting with User records.
@@ -81,27 +82,18 @@ func (u *User) Create(ctx context.Context, d db.DBTX, user *db.User) error {
 	// in which case it updated instead
 	err := user.Save(ctx, d)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			fmt.Println(pgErr.Detail) // parseable
-		}
-
-		return err
+		// TODO return internal error with appropiate code (that gets converted to status code) and ui shows error.Root()
+		// e.g. username "superadmin" already exists
+		return fmt.Errorf("could not create user: %v", parseErrorDetail(err))
 	}
 
 	return nil
 }
 
-// Upsert upserts a new user record.
-func (u *User) Upsert(ctx context.Context, d db.DBTX, user *db.User) error {
-	// https://github.com/xo/xo/blob/master/_examples/booktest/postgres.go
-	return user.Upsert(ctx, d)
-}
-
 func (u *User) UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error) {
 	user, err := db.UserByEmail(ctx, d, email)
 	if err != nil {
-		return nil, fmt.Errorf("could not get user by email: %v", err)
+		return nil, fmt.Errorf("could not get user by email: %v", parseErrorDetail(err))
 	}
 
 	return user, nil
@@ -110,13 +102,27 @@ func (u *User) UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.Us
 func (u *User) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error) {
 	uak, err := db.UserAPIKeyByAPIKey(ctx, d, apiKey)
 	if err != nil {
-		return nil, fmt.Errorf("db.UserAPIKeyByAPIKey: %v", err)
-	}
-	if uak == nil {
-		return nil, fmt.Errorf("api does not exist: %v", err)
+		return nil, fmt.Errorf("could not get api key: %v", parseErrorDetail(err))
 	}
 
 	return uak.User, nil
+}
+
+func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error) {
+	uak := &db.UserAPIKey{
+		APIKey:    uuid.NewString(),
+		ExpiresOn: time.Now().AddDate(1, 0, 0),
+	}
+	if err := uak.Save(ctx, d); err != nil {
+		return nil, fmt.Errorf("could not save api key: %v", parseErrorDetail(err))
+	}
+
+	user.APIKeyID = pointers.Int(uak.UserAPIKeyID)
+	if err := user.Update(ctx, d); err != nil {
+		return nil, fmt.Errorf("could not update user: %v", parseErrorDetail(err))
+	}
+
+	return uak, nil
 }
 
 // TODO use xo

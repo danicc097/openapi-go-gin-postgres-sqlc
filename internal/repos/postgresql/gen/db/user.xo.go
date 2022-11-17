@@ -20,7 +20,7 @@ type User struct {
 	LastName   *string    `json:"last_name" db:"last_name"`     // last_name
 	FullName   *string    `json:"full_name" db:"full_name"`     // full_name
 	ExternalID string     `json:"external_id" db:"external_id"` // external_id
-	APIKeyID   *int64     `json:"api_key_id" db:"api_key_id"`   // api_key_id
+	APIKeyID   *int       `json:"api_key_id" db:"api_key_id"`   // api_key_id
 	Scopes     []string   `json:"scopes" db:"scopes"`           // scopes
 	RoleRank   int16      `json:"role_rank" db:"role_rank"`     // role_rank
 	CreatedAt  time.Time  `json:"created_at" db:"created_at"`   // created_at
@@ -931,5 +931,5 @@ left join (
 //
 // Generated from foreign key 'users_api_key_id_fkey'.
 func (u *User) FKUserAPIKey(ctx context.Context, db DB) (*UserAPIKey, error) {
-	return UserAPIKeyByUserAPIKeyID(ctx, db, int(*u.APIKeyID))
+	return UserAPIKeyByUserAPIKeyID(ctx, db, *u.APIKeyID)
 }

@@ -69,6 +69,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		}
 
 		renderErrorResponse(c, "Unauthenticated.", errors.New("Unauthenticated."))
+		c.Abort()
 	}
 }
 
