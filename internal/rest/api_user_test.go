@@ -57,9 +57,6 @@ func TestGetUserRoute(t *testing.T) {
 			t.Fatalf("could not marshal user fixture")
 		}
 
-		// TODO not this, since u fixture struct has _exist, etc. not json
-		// fields.
-		// instead convert all to json and compare that
 		assert.Equal(t, string(userj), resp.Body.String())
 	})
 }

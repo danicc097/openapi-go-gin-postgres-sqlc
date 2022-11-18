@@ -114,10 +114,10 @@ func (t *Task) Insert(ctx context.Context, db DB) error {
 		`task_type_id, work_item_id, title, metadata, finished, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6` +
-		`) RETURNING task_id `
+		`) RETURNING task_id, created_at, updated_at `
 	// run
 	logf(sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.DeletedAt).Scan(&t.TaskID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.DeletedAt).Scan(&t.TaskID, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists

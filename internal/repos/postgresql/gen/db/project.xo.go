@@ -96,10 +96,10 @@ func (p *Project) Insert(ctx context.Context, db DB) error {
 		`name, description, metadata` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) RETURNING project_id `
+		`) RETURNING project_id, created_at, updated_at `
 	// run
 	logf(sqlstr, p.Name, p.Description, p.Metadata)
-	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.Metadata).Scan(&p.ProjectID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.Metadata).Scan(&p.ProjectID, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists

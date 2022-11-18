@@ -275,7 +275,7 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	case {{ short $t }}._deleted: // deleted
 		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
-{{ if eq (len $t.Generated) 0 -}}
+{{ if and (eq (len $t.Generated) 0) (eq (len $t.Ignored) 0) -}}
 	// insert (manual)
 	{{ sqlstr "insert_manual" $t }}
 	// run
@@ -289,7 +289,7 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	// run
 	{{ logf $t $t.Generated $t.Ignored }}
 {{ if (driver "postgres") -}}
-	if err := {{ db_prefix "QueryRow" false false $t }}.Scan({{ names (print "&" (short $t) ".") $t.Generated }}); err != nil {
+	if err := {{ db_prefix "QueryRow" false false $t }}.Scan({{ names (print "&" (short $t) ".") $t.Generated $t.Ignored }}); err != nil {
 		return logerror(err)
 	}
 {{- else -}}

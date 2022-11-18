@@ -96,10 +96,10 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) error {
 		`work_item_id, user_id, message` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) RETURNING work_item_comment_id `
+		`) RETURNING work_item_comment_id, created_at, updated_at `
 	// run
 	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message)
-	if err := db.QueryRow(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message).Scan(&wic.WorkItemCommentID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message).Scan(&wic.WorkItemCommentID, &wic.CreatedAt, &wic.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists

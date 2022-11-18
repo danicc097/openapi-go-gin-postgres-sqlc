@@ -122,10 +122,10 @@ func (u *User) Insert(ctx context.Context, db DB) error {
 		`username, email, first_name, last_name, external_id, api_key_id, scopes, role_rank, deleted_at` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
-		`) RETURNING user_id, full_name `
+		`) RETURNING user_id, full_name, created_at, updated_at `
 	// run
 	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt).Scan(&u.UserID, &u.FullName); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt).Scan(&u.UserID, &u.FullName, &u.CreatedAt, &u.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists

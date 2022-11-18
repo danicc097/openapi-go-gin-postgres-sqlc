@@ -1835,7 +1835,7 @@ func (f *Funcs) sqlstr_insert(v interface{}) []string {
 		var generatedFields []string
 		var count int
 		for _, field := range x.Fields {
-			if field.IsGenerated {
+			if field.IsGenerated || field.IsIgnored {
 				generatedFields = append(generatedFields, f.colname(field))
 			} else {
 				count++
