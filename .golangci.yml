@@ -4,6 +4,7 @@ linters:
   enable-all: true
   disable:
     # - json(camel)
+    - lll
     - wsl
     - nosnakecase
     - godox # marks TODO, FIX, ...
@@ -42,6 +43,11 @@ linters-settings:
     simplify: true
   lll:
     line-length: 130
+  staticcheck:
+    go: "1.19"
+    checks:
+      - "all"
+      - "-SA1029"
   gci:
     sections:
       - standard

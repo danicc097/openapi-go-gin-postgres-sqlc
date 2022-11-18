@@ -5,5 +5,7 @@ import (
 )
 
 func TestAuthentication(t *testing.T) {
+	t.Parallel()
+
 	// TODO mock auth server
 }

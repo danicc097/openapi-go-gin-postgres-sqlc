@@ -12,6 +12,8 @@ import (
 )
 
 func TestRateLimitMiddleware(t *testing.T) {
+	t.Parallel()
+
 	resp := httptest.NewRecorder()
 	logger, _ := zap.NewDevelopment()
 	_, engine := gin.CreateTestContext(resp)
