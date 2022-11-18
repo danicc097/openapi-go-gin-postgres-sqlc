@@ -3,7 +3,6 @@ package main
 // https://github.com/deepmap/oapi-codegen/pull/707
 
 import (
-	"context"
 	"embed"
 	"flag"
 	"io/fs"
@@ -48,10 +47,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("error loading openapi specification: %v", err)
 	}
-	err = spec.Validate(context.Background())
-	if err != nil {
-		log.Fatalf("error validating openapi specification: %v", err)
-	}
+
+	// will fail on separated yamls
+	// err = spec.Validate(context.Background())
+	// if err != nil {
+	// 	log.Fatalf("error validating openapi specification: %v", err)
+	// }
 
 	// loading configuration
 	cfgdata, err := os.ReadFile(cfgPath)

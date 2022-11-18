@@ -38,7 +38,7 @@ func (siw *ServerInterfaceWrapper) {{$opid}}(c *gin.Context) {
   {{end}}
 
 {{range .SecurityDefinitions}}
-  c.Set({{modelsPkg}}{{.ProviderName | ucFirst}}Scopes, {{toStringArray .Scopes}})
+  c.Set(externalRef0.{{.ProviderName | ucFirst}}Scopes, {{toStringArray .Scopes}})
 {{end}}
 
   {{if .RequiresParamObject}}

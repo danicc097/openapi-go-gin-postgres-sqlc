@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	externalRef0 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/gin-gonic/gin"
 )
@@ -28,10 +28,10 @@ type ServerInterface interface {
 	GetCurrentUser(c *gin.Context)
 	// deletes the user by id
 	// (DELETE /user/{id})
-	DeleteUser(c *gin.Context, id UserID)
+	DeleteUser(c *gin.Context, id externalRef0.UserID)
 	// updates the user by id
 	// (PATCH /user/{id})
-	UpdateUser(c *gin.Context, id UserID)
+	UpdateUser(c *gin.Context, id externalRef0.UserID)
 
 	middlewares(opID operationID) []gin.HandlerFunc
 }
@@ -46,9 +46,9 @@ type MiddlewareFunc func(c *gin.Context)
 // AdminPing operation with its own middleware.
 func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 
-	c.Set(models.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
 
-	c.Set(models.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{""})
 
 	// apply middlewares for operation "AdminPing".
 	for _, mw := range siw.Handler.middlewares(AdminPing) {
@@ -98,9 +98,9 @@ func (siw *ServerInterfaceWrapper) Ping(c *gin.Context) {
 // GetCurrentUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
 
-	c.Set(models.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
 
-	c.Set(models.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{""})
 
 	// apply middlewares for operation "GetCurrentUser".
 	for _, mw := range siw.Handler.middlewares(GetCurrentUser) {
@@ -121,7 +121,7 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id UserID
+	var id externalRef0.UserID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -129,9 +129,9 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	c.Set(models.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
 
-	c.Set(models.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{""})
 
 	// apply middlewares for operation "DeleteUser".
 	for _, mw := range siw.Handler.middlewares(DeleteUser) {
@@ -152,7 +152,7 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id UserID
+	var id externalRef0.UserID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -160,9 +160,9 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	c.Set(models.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
 
-	c.Set(models.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{""})
 
 	// apply middlewares for operation "UpdateUser".
 	for _, mw := range siw.Handler.middlewares(UpdateUser) {

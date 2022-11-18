@@ -334,13 +334,12 @@ x.gen.client-server() {
 
     sed "s/\$ref: '\#\//\$ref: '$types\#\//g" $SPEC >$paths
     yq e 'del(.components)' -i $paths
-    yq e 'with_entries(select(.key == "components"))' $SPEC >$types
+    cp $SPEC $types
+    # yq e 'with_entries(select(.key == "components"))' $SPEC >$types # must use spec itself else not all types gen'ed
 
     ./oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC" || err "Failed types generation"
-    ./oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$SPEC" || err "Failed server generation"
-
+    ./oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
     ./oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
-    ./oapi-codegen --config internal/client/oapi-codegen-types.yaml "$SPEC" || err "Failed client types generation"
 
   } \
     2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
