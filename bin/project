@@ -324,9 +324,18 @@ x.gen.gowrap() {
 # Generate Go client and server.
 x.gen.client-server() {
   { { {
+    local paths types
+
     go build -o oapi-codegen "$PWD"/cmd/oapi-codegen
 
     echo "Running generation"
+    paths=".openapi.paths.yaml"
+    types=".openapi.types.yaml"
+
+    sed "s/\$ref: '\#\//\$ref: '$types\#\//g" $SPEC >$paths
+    yq e 'del(.components)' -i $paths
+    yq e 'with_entries(select(.key == "components"))' $SPEC >$types
+
     ./oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
     ./oapi-codegen --config internal/client/oapi-codegen-types.yaml "$SPEC" || err "Failed client generation"
 

@@ -1,6 +1,7 @@
 package services_test
 
 // FIXME convert to xo
+// use repostesting package
 // func TestUser_Upsert(t *testing.T) {
 // 	type fields struct {
 // 		urepo  services.UserRepo
