@@ -17,25 +17,16 @@ type SchemaMigration struct {
 }
 
 type SchemaMigrationSelectConfig struct {
-	limit     string
-	orderBy   string
-	joins     SchemaMigrationJoins
-	deletedAt string
+	limit   string
+	orderBy string
+	joins   SchemaMigrationJoins
 }
-
 type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
 
 // WithSchemaMigrationLimit limits row selection.
 func WithSchemaMigrationLimit(limit int) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
-	}
-}
-
-// WithDeletedSchemaMigrationOnly limits result to records marked as deleted.
-func WithDeletedSchemaMigrationOnly() SchemaMigrationSelectConfigOption {
-	return func(s *SchemaMigrationSelectConfig) {
-		s.deletedAt = " not null "
 	}
 }
 
@@ -163,10 +154,8 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'schema_migrations_pkey'.
 func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ...SchemaMigrationSelectConfigOption) (*SchemaMigration, error) {
-	c := &SchemaMigrationSelectConfig{
-		deletedAt: " null ",
-		joins:     SchemaMigrationJoins{},
-	}
+	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}

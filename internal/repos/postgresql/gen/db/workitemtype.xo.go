@@ -20,25 +20,16 @@ type WorkItemType struct {
 }
 
 type WorkItemTypeSelectConfig struct {
-	limit     string
-	orderBy   string
-	joins     WorkItemTypeJoins
-	deletedAt string
+	limit   string
+	orderBy string
+	joins   WorkItemTypeJoins
 }
-
 type WorkItemTypeSelectConfigOption func(*WorkItemTypeSelectConfig)
 
 // WithWorkItemTypeLimit limits row selection.
 func WithWorkItemTypeLimit(limit int) WorkItemTypeSelectConfigOption {
 	return func(s *WorkItemTypeSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
-	}
-}
-
-// WithDeletedWorkItemTypeOnly limits result to records marked as deleted.
-func WithDeletedWorkItemTypeOnly() WorkItemTypeSelectConfigOption {
-	return func(s *WorkItemTypeSelectConfig) {
-		s.deletedAt = " not null "
 	}
 }
 
@@ -166,10 +157,8 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_types_pkey'.
 func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID int, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{
-		deletedAt: " null ",
-		joins:     WorkItemTypeJoins{},
-	}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -203,10 +192,8 @@ work_item_types.color ` +
 //
 // Generated from index 'work_item_types_project_id_name_key'.
 func WorkItemTypeByProjectIDName(ctx context.Context, db DB, projectID int64, name string, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{
-		deletedAt: " null ",
-		joins:     WorkItemTypeJoins{},
-	}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}

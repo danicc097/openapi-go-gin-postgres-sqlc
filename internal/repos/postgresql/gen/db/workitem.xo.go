@@ -38,7 +38,6 @@ type WorkItemSelectConfig struct {
 	joins     WorkItemJoins
 	deletedAt string
 }
-
 type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
 
 // WithWorkItemLimit limits row selection.
@@ -211,10 +210,8 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_items_pkey'.
 func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
-	c := &WorkItemSelectConfig{
-		deletedAt: " null ",
-		joins:     WorkItemJoins{},
-	}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}

@@ -35,7 +35,6 @@ type UserSelectConfig struct {
 	joins     UserJoins
 	deletedAt string
 }
-
 type UserSelectConfigOption func(*UserSelectConfig)
 
 // WithUserLimit limits row selection.
@@ -94,10 +93,8 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 //
 // Generated from index 'users_external_id_idx'.
 func UsersByExternalID(ctx context.Context, db DB, externalID *string, opts ...UserSelectConfigOption) ([]*User, error) {
-	c := &UserSelectConfig{
-		deletedAt: " null ",
-		joins:     UserJoins{},
-	}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}

@@ -34,7 +34,6 @@ type TaskSelectConfig struct {
 	joins     TaskJoins
 	deletedAt string
 }
-
 type TaskSelectConfigOption func(*TaskSelectConfig)
 
 // WithTaskLimit limits row selection.
@@ -204,10 +203,8 @@ func (t *Task) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'tasks_pkey'.
 func TaskByTaskID(ctx context.Context, db DB, taskID int64, opts ...TaskSelectConfigOption) (*Task, error) {
-	c := &TaskSelectConfig{
-		deletedAt: " null ",
-		joins:     TaskJoins{},
-	}
+	c := &TaskSelectConfig{deletedAt: " null ", joins: TaskJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}

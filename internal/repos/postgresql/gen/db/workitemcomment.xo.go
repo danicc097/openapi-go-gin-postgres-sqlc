@@ -25,25 +25,16 @@ type WorkItemComment struct {
 }
 
 type WorkItemCommentSelectConfig struct {
-	limit     string
-	orderBy   string
-	joins     WorkItemCommentJoins
-	deletedAt string
+	limit   string
+	orderBy string
+	joins   WorkItemCommentJoins
 }
-
 type WorkItemCommentSelectConfigOption func(*WorkItemCommentSelectConfig)
 
 // WithWorkItemCommentLimit limits row selection.
 func WithWorkItemCommentLimit(limit int) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
-	}
-}
-
-// WithDeletedWorkItemCommentOnly limits result to records marked as deleted.
-func WithDeletedWorkItemCommentOnly() WorkItemCommentSelectConfigOption {
-	return func(s *WorkItemCommentSelectConfig) {
-		s.deletedAt = " not null "
 	}
 }
 
@@ -194,10 +185,8 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_comments_pkey'.
 func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID int64, opts ...WorkItemCommentSelectConfigOption) (*WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{
-		deletedAt: " null ",
-		joins:     WorkItemCommentJoins{},
-	}
+	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -232,10 +221,8 @@ work_item_comments.updated_at ` +
 //
 // Generated from index 'work_item_comments_work_item_id_idx'.
 func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemCommentSelectConfigOption) ([]*WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{
-		deletedAt: " null ",
-		joins:     WorkItemCommentJoins{},
-	}
+	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}

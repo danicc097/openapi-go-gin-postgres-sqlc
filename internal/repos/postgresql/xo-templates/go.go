@@ -969,6 +969,8 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"context":         f.contextfn,
 		"context_both":    f.context_both,
 		"context_disable": f.context_disable,
+		// func opts
+		"initial_opts": f.initial_opts,
 		// func and query
 		"func_name_context":   f.func_name_context,
 		"func_name":           f.func_name_none,
@@ -1216,6 +1218,31 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
 	return fmt.Sprintf("func %s(%s) (%s)", name, strings.Join(params, ", "), strings.Join(returns, ", "))
 }
 
+// initial_opts returns base conf for select queries.
+func (f *Funcs) initial_opts(v interface{}) string {
+	var hasDeletedAt bool
+	var buf strings.Builder
+
+	switch x := v.(type) {
+	case Table:
+		for _, field := range x.Fields {
+			if field.SQLName == "deleted_at" {
+				hasDeletedAt = true
+			}
+		}
+		buf.WriteString(fmt.Sprintf(`c := &%sSelectConfig{`, x.GoName))
+		if hasDeletedAt {
+			buf.WriteString(`deletedAt: " null ",`)
+		}
+		buf.WriteString(fmt.Sprintf(`joins: %sJoins{},
+  }`, x.GoName))
+	default:
+		return ""
+	}
+
+	return buf.String()
+}
+
 // funcfn builds a type definition.
 func (f *Funcs) extratypes(name string, sqlname string, constraints interface{}, v interface{}) string {
 	// -- emit ORDER BY opts
@@ -1228,6 +1255,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 	default:
 		break
 	}
+	var hasDeletedAt bool
 	var orderbys []Field
 	var cc []Constraint
 	switch x := v.(type) {
@@ -1235,6 +1263,9 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 		for _, z := range x.Fields {
 			if z.IsDateOrTime {
 				orderbys = append(orderbys, z)
+			}
+			if z.SQLName == "deleted_at" {
+				hasDeletedAt = true
 			}
 		}
 		if tablecc, ok := f.tableConstraints[x.SQLName]; ok {
@@ -1257,10 +1288,14 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 	type %[1]sSelectConfig struct {
 		limit       string
 		orderBy     string
-		joins  %[1]sJoins
-		deletedAt   string
+		joins  %[1]sJoins`, name))
+	if hasDeletedAt {
+		buf.WriteString(`
+			deletedAt   string`)
 	}
-
+	buf.WriteString(`
+	}`)
+	buf.WriteString(fmt.Sprintf(`
 	type %[1]sSelectConfigOption func(*%[1]sSelectConfig)
 
 	// With%[1]sLimit limits row selection.
@@ -1268,20 +1303,24 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 		return func(s *%[1]sSelectConfig) {
 			s.limit = fmt.Sprintf(" limit %%d ", limit)
 		}
-	}
+	}`, name))
 
+	if hasDeletedAt {
+		buf.WriteString(fmt.Sprintf(`
 	// WithDeleted%[1]sOnly limits result to records marked as deleted.
 	func WithDeleted%[1]sOnly() %[1]sSelectConfigOption {
 		return func(s *%[1]sSelectConfig) {
 			s.deletedAt = " not null "
 		}
+	}`, name))
 	}
 
-	type %[1]sOrderBy = string
+	buf.WriteString(fmt.Sprintf(`
+	type %[1]sOrderBy = string`, name))
 
-	`, name))
-
-	buf.WriteString("const (\n")
+	buf.WriteString(`
+	const (
+	`)
 	for _, ob := range orderbys {
 		for _, opt := range orderByOpts {
 			buf.WriteString(fmt.Sprintf(`%s%s%s %sOrderBy = " %s %s "

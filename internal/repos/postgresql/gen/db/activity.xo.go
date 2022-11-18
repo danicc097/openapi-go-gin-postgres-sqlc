@@ -20,25 +20,16 @@ type Activity struct {
 }
 
 type ActivitySelectConfig struct {
-	limit     string
-	orderBy   string
-	joins     ActivityJoins
-	deletedAt string
+	limit   string
+	orderBy string
+	joins   ActivityJoins
 }
-
 type ActivitySelectConfigOption func(*ActivitySelectConfig)
 
 // WithActivityLimit limits row selection.
 func WithActivityLimit(limit int) ActivitySelectConfigOption {
 	return func(s *ActivitySelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
-	}
-}
-
-// WithDeletedActivityOnly limits result to records marked as deleted.
-func WithDeletedActivityOnly() ActivitySelectConfigOption {
-	return func(s *ActivitySelectConfig) {
-		s.deletedAt = " not null "
 	}
 }
 
@@ -168,10 +159,8 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'activities_name_key'.
 func ActivityByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{
-		deletedAt: " null ",
-		joins:     ActivityJoins{},
-	}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -213,10 +202,8 @@ left join (
 //
 // Generated from index 'activities_pkey'.
 func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{
-		deletedAt: " null ",
-		joins:     ActivityJoins{},
-	}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}

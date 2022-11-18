@@ -34,7 +34,6 @@ type UserSelectConfig struct {
 	joins     UserJoins
 	deletedAt string
 }
-
 type UserSelectConfigOption func(*UserSelectConfig)
 
 // WithUserLimit limits row selection.

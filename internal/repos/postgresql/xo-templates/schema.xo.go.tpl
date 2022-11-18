@@ -132,10 +132,8 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 //
 // Generated from index '{{ $i.SQLName }}'.
 {{ func_context $i }} {
-	c := &{{ $i.Table.GoName }}SelectConfig{
-    deletedAt: " null ",
-    joins: {{ $i.Table.GoName }}Joins{},
-  }
+	{{ initial_opts $i.Table }}
+
 	for _, o := range opts {
 		o(c)
 	}

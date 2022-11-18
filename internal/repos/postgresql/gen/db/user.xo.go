@@ -40,7 +40,6 @@ type UserSelectConfig struct {
 	joins     UserJoins
 	deletedAt string
 }
-
 type UserSelectConfigOption func(*UserSelectConfig)
 
 // WithUserLimit limits row selection.
@@ -212,10 +211,8 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'users_created_at_idx'.
 func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
-	c := &UserSelectConfig{
-		deletedAt: " null ",
-		joins:     UserJoins{},
-	}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -325,10 +322,8 @@ left join (
 //
 // Generated from index 'users_deleted_at_idx'.
 func UsersByDeletedAt(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
-	c := &UserSelectConfig{
-		deletedAt: " null ",
-		joins:     UserJoins{},
-	}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -438,10 +433,8 @@ left join (
 //
 // Generated from index 'users_email_key'.
 func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{
-		deletedAt: " null ",
-		joins:     UserJoins{},
-	}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -538,10 +531,8 @@ left join (
 //
 // Generated from index 'users_external_id_key'.
 func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{
-		deletedAt: " null ",
-		joins:     UserJoins{},
-	}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -638,10 +629,8 @@ left join (
 //
 // Generated from index 'users_pkey'.
 func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{
-		deletedAt: " null ",
-		joins:     UserJoins{},
-	}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -738,10 +727,8 @@ left join (
 //
 // Generated from index 'users_updated_at_idx'.
 func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
-	c := &UserSelectConfig{
-		deletedAt: " null ",
-		joins:     UserJoins{},
-	}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -851,10 +838,8 @@ left join (
 //
 // Generated from index 'users_username_key'.
 func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{
-		deletedAt: " null ",
-		joins:     UserJoins{},
-	}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}

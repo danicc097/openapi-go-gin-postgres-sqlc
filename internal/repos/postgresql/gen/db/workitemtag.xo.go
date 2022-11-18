@@ -19,25 +19,16 @@ type WorkItemTag struct {
 }
 
 type WorkItemTagSelectConfig struct {
-	limit     string
-	orderBy   string
-	joins     WorkItemTagJoins
-	deletedAt string
+	limit   string
+	orderBy string
+	joins   WorkItemTagJoins
 }
-
 type WorkItemTagSelectConfigOption func(*WorkItemTagSelectConfig)
 
 // WithWorkItemTagLimit limits row selection.
 func WithWorkItemTagLimit(limit int) WorkItemTagSelectConfigOption {
 	return func(s *WorkItemTagSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
-	}
-}
-
-// WithDeletedWorkItemTagOnly limits result to records marked as deleted.
-func WithDeletedWorkItemTagOnly() WorkItemTagSelectConfigOption {
-	return func(s *WorkItemTagSelectConfig) {
-		s.deletedAt = " not null "
 	}
 }
 
@@ -165,10 +156,8 @@ func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_tags_name_key'.
 func WorkItemTagByName(ctx context.Context, db DB, name string, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{
-		deletedAt: " null ",
-		joins:     WorkItemTagJoins{},
-	}
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -201,10 +190,8 @@ work_item_tags.color ` +
 //
 // Generated from index 'work_item_tags_pkey'.
 func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{
-		deletedAt: " null ",
-		joins:     WorkItemTagJoins{},
-	}
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
