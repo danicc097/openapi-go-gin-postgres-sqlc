@@ -136,10 +136,11 @@ func (t *Task) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.tasks SET ` +
 		`task_type_id = $1, work_item_id = $2, title = $3, metadata = $4, finished = $5, deleted_at = $6 ` +
-		`WHERE task_id = $7 `
+		`WHERE task_id = $7 ` +
+		`RETURNING task_id, created_at, updated_at `
 	// run
 	logf(sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.CreatedAt, t.UpdatedAt, t.DeletedAt, t.TaskID)
-	if _, err := db.Exec(ctx, sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.DeletedAt, t.TaskID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, t.TaskTypeID, t.WorkItemID, t.Title, t.Metadata, t.Finished, t.DeletedAt, t.TaskID).Scan(&t.TaskID, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	return nil

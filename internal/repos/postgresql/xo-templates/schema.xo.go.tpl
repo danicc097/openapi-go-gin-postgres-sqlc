@@ -336,7 +336,7 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	{{ sqlstr "update" $t }}
 	// run
 	{{ logf_update $t }}
-	if _, err := {{ db_update "Exec" $t }}; err != nil {
+	if err := {{ db_update "QueryRow" $t }}.Scan({{ names (print "&" (short $t) ".") $t.Generated $t.Ignored }}); err != nil {
 		return logerror(err)
 	}
 	return nil

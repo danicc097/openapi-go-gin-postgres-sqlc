@@ -89,10 +89,11 @@ func (m *Movie) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.movies SET ` +
 		`title = $1, year = $2, synopsis = $3 ` +
-		`WHERE movie_id = $4 `
+		`WHERE movie_id = $4 ` +
+		`RETURNING movie_id `
 	// run
 	logf(sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID)
-	if _, err := db.Exec(ctx, sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID).Scan(&m.MovieID); err != nil {
 		return logerror(err)
 	}
 	return nil

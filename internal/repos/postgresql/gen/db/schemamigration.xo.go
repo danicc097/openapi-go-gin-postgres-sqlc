@@ -87,10 +87,11 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.schema_migrations SET ` +
 		`dirty = $1 ` +
-		`WHERE version = $2 `
+		`WHERE version = $2 ` +
+		`RETURNING version `
 	// run
 	logf(sqlstr, sm.Dirty, sm.Version)
-	if _, err := db.Exec(ctx, sqlstr, sm.Dirty, sm.Version); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, sm.Dirty, sm.Version).Scan(); err != nil {
 		return logerror(err)
 	}
 	return nil

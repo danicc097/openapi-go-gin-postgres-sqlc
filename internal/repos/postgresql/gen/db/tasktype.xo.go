@@ -90,10 +90,11 @@ func (tt *TaskType) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.task_types SET ` +
 		`team_id = $1, name = $2, description = $3, color = $4 ` +
-		`WHERE task_type_id = $5 `
+		`WHERE task_type_id = $5 ` +
+		`RETURNING task_type_id `
 	// run
 	logf(sqlstr, tt.TeamID, tt.Name, tt.Description, tt.Color, tt.TaskTypeID)
-	if _, err := db.Exec(ctx, sqlstr, tt.TeamID, tt.Name, tt.Description, tt.Color, tt.TaskTypeID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, tt.TeamID, tt.Name, tt.Description, tt.Color, tt.TaskTypeID).Scan(&tt.TaskTypeID); err != nil {
 		return logerror(err)
 	}
 	return nil

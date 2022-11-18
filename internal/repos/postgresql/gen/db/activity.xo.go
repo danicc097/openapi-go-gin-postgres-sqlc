@@ -92,10 +92,11 @@ func (a *Activity) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.activities SET ` +
 		`name = $1, description = $2, is_productive = $3 ` +
-		`WHERE activity_id = $4 `
+		`WHERE activity_id = $4 ` +
+		`RETURNING activity_id `
 	// run
 	logf(sqlstr, a.Name, a.Description, a.IsProductive, a.ActivityID)
-	if _, err := db.Exec(ctx, sqlstr, a.Name, a.Description, a.IsProductive, a.ActivityID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, a.Name, a.Description, a.IsProductive, a.ActivityID).Scan(&a.ActivityID); err != nil {
 		return logerror(err)
 	}
 	return nil

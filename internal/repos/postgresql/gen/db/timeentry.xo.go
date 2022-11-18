@@ -116,10 +116,11 @@ func (te *TimeEntry) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.time_entries SET ` +
 		`work_item_id = $1, activity_id = $2, team_id = $3, user_id = $4, comment = $5, start = $6, duration_minutes = $7 ` +
-		`WHERE time_entry_id = $8 `
+		`WHERE time_entry_id = $8 ` +
+		`RETURNING time_entry_id `
 	// run
 	logf(sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID)
-	if _, err := db.Exec(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID).Scan(&te.TimeEntryID); err != nil {
 		return logerror(err)
 	}
 	return nil

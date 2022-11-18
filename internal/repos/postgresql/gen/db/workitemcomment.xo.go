@@ -118,10 +118,11 @@ func (wic *WorkItemComment) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_comments SET ` +
 		`work_item_id = $1, user_id = $2, message = $3 ` +
-		`WHERE work_item_comment_id = $4 `
+		`WHERE work_item_comment_id = $4 ` +
+		`RETURNING work_item_comment_id, created_at, updated_at `
 	// run
 	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID)
-	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.WorkItemCommentID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.WorkItemCommentID).Scan(&wic.WorkItemCommentID, &wic.CreatedAt, &wic.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	return nil

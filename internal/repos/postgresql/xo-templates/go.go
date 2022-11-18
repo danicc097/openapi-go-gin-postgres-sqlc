@@ -1895,12 +1895,18 @@ func (f *Funcs) sqlstr_update(v interface{}) []string {
 	// build pkey vals
 	switch x := v.(type) {
 	case Table:
-		var list []string
+		var list, returns []string
+		for _, z := range x.Fields {
+			if z.IsPrimary || z.IsGenerated || z.IsIgnored {
+				returns = append(returns, z.SQLName)
+			}
+		}
 		n, lines := f.sqlstr_update_base("", v)
 		for i, z := range x.PrimaryKeys {
-			list = append(list, fmt.Sprintf("%s = %s", f.colname(z), f.nth(n+i)))
+			list = append(list, fmt.Sprintf("%s = %s ", f.colname(z), f.nth(n+i)))
 		}
-		return append(lines, "WHERE "+strings.Join(list, " AND "))
+
+		return append(lines, "WHERE "+strings.Join(list, " AND "), "RETURNING "+strings.Join(returns, ", "))
 	}
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 20: %T ]]", v)}
 }

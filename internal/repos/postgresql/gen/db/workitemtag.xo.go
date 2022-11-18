@@ -89,10 +89,11 @@ func (wit *WorkItemTag) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_tags SET ` +
 		`name = $1, description = $2, color = $3 ` +
-		`WHERE work_item_tag_id = $4 `
+		`WHERE work_item_tag_id = $4 ` +
+		`RETURNING work_item_tag_id `
 	// run
 	logf(sqlstr, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID)
-	if _, err := db.Exec(ctx, sqlstr, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID).Scan(&wit.WorkItemTagID); err != nil {
 		return logerror(err)
 	}
 	return nil

@@ -115,10 +115,11 @@ func (uak *UserAPIKey) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.user_api_keys SET ` +
 		`api_key = $1, expires_on = $2, user_id = $3 ` +
-		`WHERE user_api_key_id = $4 `
+		`WHERE user_api_key_id = $4 ` +
+		`RETURNING user_api_key_id `
 	// run
 	logf(sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID)
-	if _, err := db.Exec(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID).Scan(&uak.UserAPIKeyID); err != nil {
 		return logerror(err)
 	}
 	return nil

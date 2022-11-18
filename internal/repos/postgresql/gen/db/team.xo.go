@@ -124,10 +124,11 @@ func (t *Team) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.teams SET ` +
 		`project_id = $1, name = $2, description = $3, metadata = $4 ` +
-		`WHERE team_id = $5 `
+		`WHERE team_id = $5 ` +
+		`RETURNING team_id, created_at, updated_at `
 	// run
 	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata, t.CreatedAt, t.UpdatedAt, t.TeamID)
-	if _, err := db.Exec(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata, t.TeamID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata, t.TeamID).Scan(&t.TeamID, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	return nil

@@ -144,10 +144,11 @@ func (u *User) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.users SET ` +
 		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, deleted_at = $9 ` +
-		`WHERE user_id = $10 `
+		`WHERE user_id = $10 ` +
+		`RETURNING user_id, full_name, created_at, updated_at `
 	// run
 	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
-	if _, err := db.Exec(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt, u.UserID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt, u.UserID).Scan(&u.UserID, &u.FullName, &u.CreatedAt, &u.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	return nil

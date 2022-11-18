@@ -228,7 +228,7 @@ x.pregen() {
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
 
     # don't want this to block when getting bad gen
-    go build -o pregen "$PWD"/cmd/pregen/main.go || echo "Could not rebuild pregen" >&2
+    go build -o pregen "$PWD"/cmd/pregen/main.go 2>/dev/null || echo "Could not rebuild pregen" >&2
 
     ./pregen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -391,47 +391,51 @@ x.gen.proto() {
 x.gen() {
   { { {
     echo "Running code generation"
-    local cache=".generate.cache"
+    # must always be consistent regardless of current env
+    (
+      POSTGRES_DB=$GEN_POSTGRES_DB
 
-    mkdir -p "$cache"
+      local cache=".generate.cache"
 
-    x.db.recreate
+      mkdir -p "$cache"
 
-    x.pregen
+      x.db.recreate
 
-    rm -rf "$PG_REPO_GEN"
+      x.pregen
 
-    # TODO try use gnu parallel and exit when anyone fails
-    # (with current setup the whole x.gen is executed and only then
-    # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
+      rm -rf "$PG_REPO_GEN"
 
-    go generate ./... &
-    x.gen.gowrap &
-    x.gen.sqlc &
-    # xo cannot use db files as input, needs an up-to-date schema
-    # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
-    # use a unique db to prevent cosmic accidents
-    x.gen.proto &
-    wait
+      # TODO try use gnu parallel and exit when anyone fails
+      # (with current setup the whole x.gen is executed and only then
+      # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
 
-    rm "$PG_REPO_GEN"/db/models.go # sqlc enums
+      go generate ./... &
+      x.gen.gowrap &
+      x.gen.sqlc &
+      # xo cannot use db files as input, needs an up-to-date schema
+      # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
+      # use a unique db to prevent cosmic accidents
+      x.gen.proto &
+      wait
 
-    x.gen.xo
+      rm "$PG_REPO_GEN"/db/models.go # sqlc enums
 
-    x.postgen &
-    x.gen.counterfeiter "$cache" & # delay since it depends on generated output too
+      x.gen.xo
 
-    x.gen.client-server # depends on schemas generated in postgen
+      x.postgen &
+      x.gen.counterfeiter "$cache" & # delay since it depends on generated output too
 
-    wait
+      x.gen.client-server # depends on schemas generated in postgen
 
-    # vscode will randomly lose connection when restarting
-    # for pid in $(pidof gopls); do
-    #   restart_pid $pid &
-    # done
+      wait
 
-    x.lint
+      # vscode will randomly lose connection when restarting
+      # for pid in $(pidof gopls); do
+      #   restart_pid $pid &
+      # done
 
+      x.lint
+    )
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -490,7 +494,7 @@ x.test.backend-setup() {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts
     run_shared_services up -d --build --remove-orphans
-    [[ -z $NO_GEN ]] && POSTGRES_DB=$GEN_POSTGRES_DB x.gen
+    [[ -z $NO_GEN ]] && x.gen
     drop_and_recreate_db "postgres_test"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -597,8 +601,6 @@ x.run-prod() {
     --env-file ".env.$env" \
     up -d --build 2>&1 # https://github.com/docker/compose/issues/7346
 
-  # TODO handle rollback and restore up to X revision (from restored db)
-  # see dump_schema_v
   echo "Migrations:"
   x.migrate up
 }

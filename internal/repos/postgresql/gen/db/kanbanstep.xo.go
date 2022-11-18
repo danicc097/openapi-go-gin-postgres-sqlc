@@ -93,10 +93,11 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.kanban_steps SET ` +
 		`team_id = $1, step_order = $2, name = $3, description = $4, color = $5, time_trackable = $6, disabled = $7 ` +
-		`WHERE kanban_step_id = $8 `
+		`WHERE kanban_step_id = $8 ` +
+		`RETURNING kanban_step_id `
 	// run
 	logf(sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID)
-	if _, err := db.Exec(ctx, sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID).Scan(&ks.KanbanStepID); err != nil {
 		return logerror(err)
 	}
 	return nil
