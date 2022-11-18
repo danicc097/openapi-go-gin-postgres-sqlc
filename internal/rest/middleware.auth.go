@@ -115,14 +115,14 @@ func (a *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 			return
 		}
 		if err := a.authzsvc.HasRequiredRole(userRole, config.MinimumRole); err != nil {
-			renderErrorResponse(c, "Unauthorized.", err)
+			renderErrorResponse(c, "Unauthorized", err)
 			c.Abort()
 
 			return
 		}
 
 		if err := a.authzsvc.HasRequiredScopes(user.Scopes, config.RequiredScopes); err != nil {
-			renderErrorResponse(c, "Unauthorized.", err)
+			renderErrorResponse(c, "Unauthorized", err)
 			c.Abort()
 
 			return

@@ -18,6 +18,6 @@
     "description": "Can change project settings for all underlying teams."
   },
   "work-item:review": {
-    "description": "Can be part of a task in a work item with reviewer role."
+    "description": "Can be part of a work item with reviewer role."
   }
 }

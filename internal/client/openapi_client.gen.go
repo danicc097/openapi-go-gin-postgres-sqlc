@@ -105,12 +105,12 @@ type ClientInterface interface {
 	GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteUser request
-	DeleteUser(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteUser(ctx context.Context, id UserID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateUser request with any body
-	UpdateUserWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserWithBody(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateUser(ctx context.Context, id string, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUser(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -161,7 +161,7 @@ func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditor
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteUser(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteUser(ctx context.Context, id UserID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteUserRequest(c.Server, id)
 	if err != nil {
 		return nil, err
@@ -173,7 +173,7 @@ func (c *Client) DeleteUser(ctx context.Context, id string, reqEditors ...Reques
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateUserWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserWithBody(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -185,7 +185,7 @@ func (c *Client) UpdateUserWithBody(ctx context.Context, id string, contentType 
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateUser(ctx context.Context, id string, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUser(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
@@ -306,7 +306,7 @@ func NewGetCurrentUserRequest(server string) (*http.Request, error) {
 }
 
 // NewDeleteUserRequest generates requests for DeleteUser
-func NewDeleteUserRequest(server string, id string) (*http.Request, error) {
+func NewDeleteUserRequest(server string, id UserID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -340,7 +340,7 @@ func NewDeleteUserRequest(server string, id string) (*http.Request, error) {
 }
 
 // NewUpdateUserRequest calls the generic UpdateUser builder with application/json body
-func NewUpdateUserRequest(server string, id string, body UpdateUserJSONRequestBody) (*http.Request, error) {
+func NewUpdateUserRequest(server string, id UserID, body UpdateUserJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -351,7 +351,7 @@ func NewUpdateUserRequest(server string, id string, body UpdateUserJSONRequestBo
 }
 
 // NewUpdateUserRequestWithBody generates requests for UpdateUser with any type of body
-func NewUpdateUserRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateUserRequestWithBody(server string, id UserID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -376,7 +376,7 @@ func NewUpdateUserRequestWithBody(server string, id string, contentType string, 
 		return nil, err
 	}
 
-	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -442,12 +442,12 @@ type ClientWithResponsesInterface interface {
 	GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error)
 
 	// DeleteUser request
-	DeleteUserWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
+	DeleteUserWithResponse(ctx context.Context, id UserID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
 
 	// UpdateUser request with any body
-	UpdateUserWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithBodyWithResponse(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
-	UpdateUserWithResponse(ctx context.Context, id string, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithResponse(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 }
 
 type AdminPingResponse struct {
@@ -617,7 +617,7 @@ func (c *ClientWithResponses) GetCurrentUserWithResponse(ctx context.Context, re
 }
 
 // DeleteUserWithResponse request returning *DeleteUserResponse
-func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
+func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id UserID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
 	rsp, err := c.DeleteUser(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -626,7 +626,7 @@ func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id str
 }
 
 // UpdateUserWithBodyWithResponse request with arbitrary body returning *UpdateUserResponse
-func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
 	rsp, err := c.UpdateUserWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -634,7 +634,7 @@ func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context
 	return ParseUpdateUserResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id string, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
 	rsp, err := c.UpdateUser(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err

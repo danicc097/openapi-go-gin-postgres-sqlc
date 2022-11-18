@@ -16,7 +16,9 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestAuthorizationMiddleware(t *testing.T) {
+func TestAuthorizationMiddleware_Roles(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name         string
 		role         models.Role
@@ -29,14 +31,14 @@ func TestAuthorizationMiddleware(t *testing.T) {
 			role:         models.RoleUser,
 			requiredRole: models.RoleAdmin,
 			status:       http.StatusForbidden,
-			body:         "Unauthorized.",
+			body:         "Unauthorized",
 		},
 		{
 			name:         "unauthorized_manager",
 			role:         models.RoleManager,
 			requiredRole: models.RoleAdmin,
 			status:       http.StatusForbidden,
-			body:         "Unauthorized.",
+			body:         "Unauthorized",
 		},
 		{
 			name:         "authorized",

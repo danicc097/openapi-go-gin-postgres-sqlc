@@ -182,5 +182,8 @@ type WorkItemComment struct {
 // WorkItemRole Role in work item for a member.
 type WorkItemRole string
 
+// UserID defines model for UserID.
+type UserID = string
+
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 type UpdateUserJSONRequestBody = UpdateUserRequest

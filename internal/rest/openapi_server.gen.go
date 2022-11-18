@@ -28,10 +28,10 @@ type ServerInterface interface {
 	GetCurrentUser(c *gin.Context)
 	// deletes the user by id
 	// (DELETE /user/{id})
-	DeleteUser(c *gin.Context, id string)
+	DeleteUser(c *gin.Context, id UserID)
 	// updates the user by id
-	// (PUT /user/{id})
-	UpdateUser(c *gin.Context, id string)
+	// (PATCH /user/{id})
+	UpdateUser(c *gin.Context, id UserID)
 
 	middlewares(opID operationID) []gin.HandlerFunc
 }
@@ -121,7 +121,7 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id string
+	var id UserID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -152,7 +152,7 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id string
+	var id UserID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -203,7 +203,7 @@ func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, op
 
 	router.DELETE(options.BaseURL+"/user/:id", wrapper.DeleteUser)
 
-	router.PUT(options.BaseURL+"/user/:id", wrapper.UpdateUser)
+	router.PATCH(options.BaseURL+"/user/:id", wrapper.UpdateUser)
 
 	return router
 }
