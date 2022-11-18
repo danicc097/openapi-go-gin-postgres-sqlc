@@ -162,25 +162,24 @@ components:
         first_name: Jane
         last_name: Doe
       properties:
-        role:
-          $ref: '#/components/schemas/Role'
         first_name:
+          description: originally from auth server but updatable
           type: string
           pattern: ^[ a-zA-Z0-9_-]+$
         last_name:
+          description: originally from auth server but updatable
           type: string
           pattern: ^[ a-zA-Z0-9_-]+$
+        role:
+          $ref: '#/components/schemas/Role'
+        scopes:
+          items:
+            $ref: '#/components/schemas/Scope'
+          type: array
       title: a User
       type: object
     # TODO bookstack style ABAC
-    # allow per user global list of scopes in token
-    # so we can use openapi scopes security as well. Then internally
-    # check if other conditions met via middleware, etc.
-    # e.g. invoicing/billing scopes should be extremely specific so RBAC is
-    # not an option
-    # used as x-required-role: ?? (rank-based, at most one)
-    Scope:
-      description: Scope automatically generated from scopes.json keys
+    Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string
       enum:
         - test-scope
@@ -190,8 +189,7 @@ components:
         - team-settings:write
         - project-settings:write
         - work-item:review
-    Role:
-      description: Role automatically generated from roles.json keys
+    Role: # Generated from roles.json keys. DO NOT EDIT.
       type: string
       enum:
         - guest
@@ -208,13 +206,6 @@ components:
       enum:
         - preparer
         - reviewer
-    Organization:
-      title: Organization
-      description: Organization a user belongs to.
-      type: string
-      # x-db-enum: org
-      # enum: ["team 1", "team 2", "team 3"]
-    # generated later from db struct
     User: # Generated from db package structs. DO NOT EDIT.
       properties:
         api_key_id:

@@ -13,7 +13,6 @@ import {
   Scope,
   Role,
   WorkItemRole,
-  Organization,
   User,
   ValidationError,
   PgtypeJSONB,
@@ -91,18 +90,6 @@ export const WorkItemRoleDecoder: Decoder<WorkItemRole> = {
       throw new Error(`Schema ${WorkItemRoleDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, WorkItemRoleDecoder.definitionName)
-  },
-}
-export const OrganizationDecoder: Decoder<Organization> = {
-  definitionName: 'Organization',
-  schemaRef: '#/definitions/Organization',
-
-  decode(json: unknown): Organization {
-    const schema = ajv.getSchema(OrganizationDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${OrganizationDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, OrganizationDecoder.definitionName)
   },
 }
 export const UserDecoder: Decoder<User> = {

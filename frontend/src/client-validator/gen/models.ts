@@ -10,13 +10,7 @@ export type Location = string[]
 export type Message = string
 export type ErrorType = string
 export type Detail = ValidationError[]
-/**
- * Role automatically generated from roles.json keys
- */
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
-/**
- * Scope automatically generated from scopes.json keys
- */
 export type Scope =
   | 'test-scope'
   | 'users:read'
@@ -29,10 +23,6 @@ export type Scope =
  * Role in work item for a member.
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
-/**
- * Organization a user belongs to.
- */
-export type Organization = string
 export type UuidUUID = string
 export type TaskType = {
   color?: string
@@ -73,9 +63,16 @@ export interface ValidationError {
  * represents User data to update
  */
 export interface AUser {
-  role?: Role
+  /**
+   * originally from auth server but updatable
+   */
   first_name?: string
+  /**
+   * originally from auth server but updatable
+   */
   last_name?: string
+  role?: Role
+  scopes?: Scope[]
 }
 export interface User {
   api_key_id?: number | null

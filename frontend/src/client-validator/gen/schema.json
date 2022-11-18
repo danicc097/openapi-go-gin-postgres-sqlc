@@ -19,16 +19,24 @@
     "UpdateUserRequest": {
       "description": "represents User data to update",
       "properties": {
-        "role": {
-          "$ref": "#/definitions/Role"
-        },
         "first_name": {
+          "description": "originally from auth server but updatable",
           "type": "string",
           "pattern": "^[ a-zA-Z0-9_-]+$"
         },
         "last_name": {
+          "description": "originally from auth server but updatable",
           "type": "string",
           "pattern": "^[ a-zA-Z0-9_-]+$"
+        },
+        "role": {
+          "$ref": "#/definitions/Role"
+        },
+        "scopes": {
+          "items": {
+            "$ref": "#/definitions/Scope"
+          },
+          "type": "array"
         }
       },
       "title": "a User",
@@ -36,7 +44,6 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Scope": {
-      "description": "Scope automatically generated from scopes.json keys",
       "type": "string",
       "enum": [
         "test-scope",
@@ -50,7 +57,6 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Role": {
-      "description": "Role automatically generated from roles.json keys",
       "type": "string",
       "enum": [
         "guest",
@@ -71,12 +77,6 @@
         "preparer",
         "reviewer"
       ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "Organization": {
-      "title": "Organization",
-      "description": "Organization a user belongs to.",
-      "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "User": {
@@ -509,9 +509,6 @@
     },
     "WorkItemRole": {
       "$ref": "#/definitions/WorkItemRole"
-    },
-    "Organization": {
-      "$ref": "#/definitions/Organization"
     },
     "User": {
       "$ref": "#/definitions/User"

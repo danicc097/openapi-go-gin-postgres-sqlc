@@ -57,16 +57,13 @@ type HTTPValidationError struct {
 	Detail *[]ValidationError `json:"detail,omitempty"`
 }
 
-// Organization Organization a user belongs to.
-type Organization = string
-
 // PgtypeJSONB defines model for PgtypeJSONB.
 type PgtypeJSONB = map[string]interface{}
 
-// Role Role automatically generated from roles.json keys
+// Role defines model for Role.
 type Role string
 
-// Scope Scope automatically generated from scopes.json keys
+// Scope defines model for Scope.
 type Scope string
 
 // Task defines model for Task.
@@ -119,11 +116,13 @@ type TimeEntry struct {
 
 // UpdateUserRequest represents User data to update
 type UpdateUserRequest struct {
+	// FirstName originally from auth server but updatable
 	FirstName *string `json:"first_name,omitempty"`
-	LastName  *string `json:"last_name,omitempty"`
 
-	// Role Role automatically generated from roles.json keys
-	Role *Role `json:"role,omitempty"`
+	// LastName originally from auth server but updatable
+	LastName *string  `json:"last_name,omitempty"`
+	Role     *Role    `json:"role,omitempty"`
+	Scopes   *[]Scope `json:"scopes,omitempty"`
 }
 
 // User defines model for User.

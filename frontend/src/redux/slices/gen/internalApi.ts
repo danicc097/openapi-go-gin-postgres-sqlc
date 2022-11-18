@@ -36,7 +36,7 @@ export type PingRes = /** status 200 OK */ string
 export type PingArgs = void
 export type OpenapiYamlGetRes = unknown
 export type OpenapiYamlGetArgs = void
-export type AdminPingRes = /** status 200 OK */ string
+export type AdminPingRes = unknown
 export type AdminPingArgs = void
 export type GetCurrentUserRes = /** status 200 ok */ User
 export type GetCurrentUserArgs = void
@@ -142,10 +142,19 @@ export type User = {
   work_items?: WorkItem[] | null
 }
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
+export type Scope =
+  | 'test-scope'
+  | 'users:read'
+  | 'users:write'
+  | 'scopes:write'
+  | 'team-settings:write'
+  | 'project-settings:write'
+  | 'work-item:review'
 export type AUser = {
-  role?: Role
   first_name?: string
   last_name?: string
+  role?: Role
+  scopes?: Scope[]
 }
 export const {
   usePingQuery,

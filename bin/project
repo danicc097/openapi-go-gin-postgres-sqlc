@@ -196,7 +196,9 @@ x.pregen() {
       readarray -t enums <<<$enums
 
       echo "Replacing '$enum' enum in $SPEC with $src_file"
-      yq e ".components.schemas.$enum.description = \"$enum automatically generated from $src_file keys\"" -i $SPEC
+      yq e "
+        (.components.schemas.$enum | key) line_comment=\"Generated from $src_file keys. DO NOT EDIT.\"
+      " -i $SPEC
       enums_arr=$(printf ",\"%s\"" "${enums[@]}")
       enums_arr="[${enums_arr:1}]"
       enums_arr=$enums_arr yq e ".components.schemas.$enum.enum = env(enums_arr)" -i $SPEC

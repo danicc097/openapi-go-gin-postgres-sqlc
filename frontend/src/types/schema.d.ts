@@ -44,14 +44,14 @@ export interface components {
      * }
      */
     UpdateUserRequest: {
-      role?: components['schemas']['Role']
+      /** @description originally from auth server but updatable */
       first_name?: string
+      /** @description originally from auth server but updatable */
       last_name?: string
+      role?: components['schemas']['Role']
+      scopes?: components['schemas']['Scope'][]
     }
-    /**
-     * @description Scope automatically generated from scopes.json keys
-     * @enum {string}
-     */
+    /** @enum {string} */
     Scope:
       | 'test-scope'
       | 'users:read'
@@ -60,10 +60,7 @@ export interface components {
       | 'team-settings:write'
       | 'project-settings:write'
       | 'work-item:review'
-    /**
-     * @description Role automatically generated from roles.json keys
-     * @enum {string}
-     */
+    /** @enum {string} */
     Role: 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
     /**
      * WorkItem role
@@ -71,11 +68,6 @@ export interface components {
      * @enum {string}
      */
     WorkItemRole: 'preparer' | 'reviewer'
-    /**
-     * Organization
-     * @description Organization a user belongs to.
-     */
-    Organization: string
     User: {
       api_key_id?: number | null
       /** Format: date-time */
@@ -229,12 +221,6 @@ export interface operations {
   }
   AdminPing: {
     responses: {
-      /** OK */
-      200: {
-        content: {
-          'text/plain': string
-        }
-      }
       /** Validation Error */
       422: {
         content: {
