@@ -53,6 +53,10 @@ func (h *Handlers) middlewares(opID operationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthenticated(),
 			h.authmw.EnsureAuthorized(AuthRestriction{MinimumRole: models.RoleAdmin}),
 		}
+	case GetCurrentUser:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
 	default:
 		return []gin.HandlerFunc{}
 	}

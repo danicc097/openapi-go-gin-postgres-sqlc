@@ -1,9 +1,9 @@
 package rest
 
 import (
+	"errors"
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4"
 	"go.opentelemetry.io/otel/trace"
@@ -47,12 +47,12 @@ func (h *Handlers) DeleteUser(c *gin.Context, id string) {
 
 // GetCurrentUser returns the logged in user.
 func (h *Handlers) GetCurrentUser(c *gin.Context) {
-	// TODO return user from context isntead with has user with the appropiate joins(teams, etc.) already
-	// getUserFromCtx(c)
-	// TODO remove
-	u, err := db.UserByUsername(c.Request.Context(), h.pool, "someusername", db.WithUserJoin(db.UserJoins{TimeEntries: true, Teams: true}))
-	if err != nil {
-		renderErrorResponse(c, "could not find user", err)
+	//  user from context isntead has the appropiate joins already (teams, etc.)
+	u := getUserFromCtx(c)
+	if u == nil {
+		renderErrorResponse(c, "user not found", errors.New("user not found"))
+
+		return
 	}
 	c.JSON(http.StatusOK, u)
 }

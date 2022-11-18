@@ -2,7 +2,6 @@ package rest
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
@@ -16,14 +15,7 @@ const (
 )
 
 func getUserFromCtx(c *gin.Context) *db.User {
-	iuser, ok := c.Get(userCtxKey)
-	fmt.Printf("getUserFromCtx iuser: %v\n", iuser)
-	if !ok {
-		return nil
-	}
-
-	user, ok := iuser.(*db.User)
-	fmt.Printf("getUserFromCtx user: %v\n", user)
+	user, ok := c.Value(userCtxKey).(*db.User)
 	if !ok {
 		return nil
 	}

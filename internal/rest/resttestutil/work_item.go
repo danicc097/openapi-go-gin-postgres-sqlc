@@ -1,4 +1,4 @@
-package testutil
+package resttestutil
 
 type createWorkItemParams struct {
 	typ string

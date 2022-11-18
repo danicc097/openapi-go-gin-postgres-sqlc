@@ -1,4 +1,4 @@
-package testutil
+package resttestutil
 
 import (
 	"context"
@@ -37,23 +37,23 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	for i, s := range params.Scopes {
 		scopes[i] = string(s)
 	}
-	r, err := ff.authzsvc.RoleByName(string(params.Role))
+	role, err := ff.authzsvc.RoleByName(string(params.Role))
 	if err != nil {
-		return nil, fmt.Errorf("authzsvc.RoleByName: %v", err)
+		return nil, fmt.Errorf("authzsvc.RoleByName: %w", err)
 	}
-	// TODO usvc.CreateUser with createUser params instead and then authn.createtoken or createapikey, usvc.deleteuser, etc. - no repo logic here
-	u := &db.User{
+
+	user := &db.User{
 		Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
 		Email:      testutil.RandomEmail(),
 		FirstName:  pointers.String(testutil.RandomFirstName()),
 		LastName:   pointers.String(testutil.RandomLastName()),
 		ExternalID: testutil.RandomString(10),
 		Scopes:     scopes,
-		RoleRank:   r.Rank,
+		RoleRank:   role.Rank,
 		DeletedAt:  &params.DeletedAt,
 	}
 
-	err = ff.usvc.Register(ctx, ff.pool, u)
+	err = ff.usvc.Register(ctx, ff.pool, user)
 	if err != nil {
 		return nil, errors.Wrap(err, "usvc.Register")
 	}
@@ -61,17 +61,17 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	var apiKey *db.UserAPIKey
 
 	if params.WithAPIKey {
-		apiKey, err = ff.authnsvc.CreateAPIKeyForUser(ctx, u)
+		apiKey, err = ff.authnsvc.CreateAPIKeyForUser(ctx, user)
 		if err != nil {
 			return nil, errors.Wrap(err, "authnsvc.CreateAPIKeyForUser")
 		}
 	}
 	if params.WithToken {
-		accessToken = ff.authnsvc.CreateAccessTokenForUser(ctx, u) // TODO simply returns a jwt
+		accessToken = ff.authnsvc.CreateAccessTokenForUser(ctx, user) // TODO simply returns a jwt
 	}
 
 	return &CreateUserResult{
-		User:   u,
+		User:   user,
 		APIKey: apiKey,
 		Token:  accessToken,
 	}, nil

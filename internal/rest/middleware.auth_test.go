@@ -9,7 +9,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/testutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -57,14 +57,14 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		if err != nil {
 			t.Fatalf("services.NewAuthorization: %v", err)
 		}
-		authnsvc := services.NewAuthentication(logger, usvc, pool)
+		authnsvc := services.NewAuthentication(logger, usvc, testpool)
 
-		authMw := newAuthMiddleware(logger, pool, authnsvc, authzsvc, usvc)
+		authMw := newAuthMiddleware(logger, testpool, authnsvc, authzsvc, usvc)
 
 		req, _ := http.NewRequest(http.MethodGet, "/", nil)
 
-		ff := testutil.NewFixtureFactory(usvc, pool, authnsvc, authzsvc)
-		ufixture, err := ff.CreateUser(context.Background(), testutil.CreateUserParams{
+		ff := resttestutil.NewFixtureFactory(usvc, testpool, authnsvc, authzsvc)
+		ufixture, err := ff.CreateUser(context.Background(), resttestutil.CreateUserParams{
 			Role:       tc.role,
 			WithAPIKey: true,
 		})

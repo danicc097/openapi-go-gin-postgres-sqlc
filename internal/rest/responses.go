@@ -23,10 +23,10 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 	status := http.StatusInternalServerError
 
 	var ierr *internal.Error
+	fmt.Printf("err: %v\n", err)
 	if !errors.As(err, &ierr) {
 		resp.Error = "internal error"
 		resp.Message = msg
-		fmt.Printf("err: %v\n", err)
 	} else {
 		resp.Message = ierr.Cause().Error()
 		switch ierr.Code() {

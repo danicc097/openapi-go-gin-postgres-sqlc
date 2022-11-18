@@ -1,6 +1,71 @@
 package rest
 
-// func TestCreateUserRoute(t *testing.T) {
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestGetUserRoute(t *testing.T) {
+	t.Parallel()
+
+	srv, err := runTestServer(t, testpool, []gin.HandlerFunc{})
+	if err != nil {
+		t.Fatalf("Couldn't run test server: %s\n", err)
+	}
+
+	t.Cleanup(func() {
+		srv.Close()
+	})
+
+	ff := newTestFixtureFactory(t)
+
+	t.Run("authenticated user", func(t *testing.T) {
+		t.Parallel()
+
+		ufixture, err := ff.CreateUser(context.Background(), resttestutil.CreateUserParams{
+			Role:       models.RoleAdmin,
+			WithAPIKey: true,
+		})
+		if err != nil {
+			t.Fatalf("ff.CreateUser: %s", err)
+		}
+
+		req, err := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/user/me", &bytes.Buffer{})
+		req.Header.Add("Content-Type", "application/json")
+		req.Header.Add("x-api-key", ufixture.APIKey.APIKey)
+		if err != nil {
+			t.Errorf("%v", err)
+		}
+
+		resp := httptest.NewRecorder()
+
+		srv.Handler.ServeHTTP(resp, req)
+		t.Logf("%v", resp)
+		assert.Equal(t, http.StatusOK, resp.Code)
+		userj, err := json.Marshal(ufixture.User)
+		if err != nil {
+			t.Fatalf("could not marshal user fixture")
+		}
+
+		// TODO not this, since u fixture struct has _exist, etc. not json
+		// fields.
+		// instead convert all to json and compare that
+		assert.Equal(t, string(userj), resp.Body.String())
+	})
+}
+
+// TODO test PATCH route
+// func TestUpdateUserRoute(t *testing.T) {
 // 	t.Parallel()
 
 // 	srv, err := runTestServer(t, pool, []gin.HandlerFunc{})

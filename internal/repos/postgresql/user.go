@@ -30,7 +30,7 @@ var _ repos.User = (*User)(nil)
 // func (u *User) Create(ctx context.Context, d db.DBTX, params models.CreateUserRequest) (models.CreateUserResponse, error) {
 
 // 	// TODO logger needs to be passed down to repo as well
-// 	// environment.Logger.Sugar().Infof("users.Create.params: %v", params)
+// 	// environment.Logger.Sugar().Infof("users.Create.params: %w", params)
 // 	_, err := u.q.GetUser(ctx, db.GetUserParams{
 // 		Username: sql.NullString{String: params.Username},
 // 	})
@@ -84,7 +84,7 @@ func (u *User) Create(ctx context.Context, d db.DBTX, user *db.User) error {
 	if err != nil {
 		// TODO return internal error with appropiate code (that gets converted to status code) and ui shows error.Root()
 		// e.g. username "superadmin" already exists
-		return fmt.Errorf("could not create user: %v", parseErrorDetail(err))
+		return fmt.Errorf("could not create user: %w", parseErrorDetail(err))
 	}
 
 	return nil
@@ -93,16 +93,20 @@ func (u *User) Create(ctx context.Context, d db.DBTX, user *db.User) error {
 func (u *User) UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error) {
 	user, err := db.UserByEmail(ctx, d, email)
 	if err != nil {
-		return nil, fmt.Errorf("could not get user by email: %v", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get user by email: %w", parseErrorDetail(err))
 	}
 
 	return user, nil
 }
 
 func (u *User) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error) {
-	uak, err := db.UserAPIKeyByAPIKey(ctx, d, apiKey)
+	uak, err := db.UserAPIKeyByAPIKey(ctx, d, apiKey, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
 	if err != nil {
-		return nil, fmt.Errorf("could not get api key: %v", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get api key: %w", parseErrorDetail(err))
+	}
+
+	if uak.User == nil {
+		return nil, fmt.Errorf("could not join user by api key")
 	}
 
 	return uak.User, nil
@@ -115,12 +119,12 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 		UserID:    user.UserID,
 	}
 	if err := uak.Save(ctx, d); err != nil {
-		return nil, fmt.Errorf("could not save api key: %v", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not save api key: %w", parseErrorDetail(err))
 	}
 
 	user.APIKeyID = pointers.Int(uak.UserAPIKeyID)
 	if err := user.Update(ctx, d); err != nil {
-		return nil, fmt.Errorf("could not update user: %v", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not update user: %w", parseErrorDetail(err))
 	}
 
 	return uak, nil

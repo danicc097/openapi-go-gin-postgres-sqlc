@@ -50,22 +50,14 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		auth := c.Request.Header.Get("Authorization")
 		if apiKey != "" {
 			u, err := a.authnsvc.GetUserFromAPIKey(c.Request.Context(), apiKey)
-			if err != nil {
+			if err != nil || u == nil {
 				renderErrorResponse(c, "could not get user from api key", err)
 				c.Abort()
 
 				return
 			}
+
 			ctxWithUser(c, u)
-
-			// FIXME this fails... remove later
-			user := getUserFromCtx(c)
-			if user == nil {
-				renderErrorResponse(c, "getUserFromCtx this should not happen.", nil)
-				c.Abort()
-
-				return
-			}
 
 			c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.
 
@@ -73,7 +65,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		}
 		if strings.HasPrefix(auth, "Bearer ") {
 			u, err := a.authnsvc.GetUserFromAccessToken(c.Request.Context(), strings.Split(auth, "Bearer ")[1])
-			if err != nil {
+			if err != nil || u == nil {
 				renderErrorResponse(c, "could not get user from token", err)
 				c.Abort()
 
