@@ -41,11 +41,10 @@ func TestGetUserRoute(t *testing.T) {
 		}
 
 		req, err := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/user/me", &bytes.Buffer{})
-		req.Header.Add("Content-Type", "application/json")
-		req.Header.Add("x-api-key", ufixture.APIKey.APIKey)
 		if err != nil {
 			t.Errorf("%v", err)
 		}
+		req.Header.Add("x-api-key", ufixture.APIKey.APIKey)
 
 		resp := httptest.NewRecorder()
 

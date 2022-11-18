@@ -145,8 +145,8 @@ x.pregen() {
   { { {
     echo "Running generation"
 
-    POSTGRES_DB=$GEN_POSTGRES_DB x.db.drop
-    POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up
+    x.db.drop
+    x.migrate up
 
     ######## Sync enums from db with spec
     # example: `x-db-enum: user_role` will use the db's "user_role" enum
@@ -490,7 +490,7 @@ x.test.backend-setup() {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts
     run_shared_services up -d --build --remove-orphans
-    [[ -z $NO_GEN ]] && x.gen
+    [[ -z $NO_GEN ]] && POSTGRES_DB=$GEN_POSTGRES_DB x.gen
     drop_and_recreate_db "postgres_test"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -692,8 +692,8 @@ x.db.conns() {
 # and stops its running processes if any.
 x.db.recreate() {
   { { {
-    create_db_if_not_exists "postgres_$env"
-    stop_db_processes "postgres_$env"
+    create_db_if_not_exists $POSTGRES_DB
+    stop_db_processes $POSTGRES_DB
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

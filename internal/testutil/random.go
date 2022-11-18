@@ -34,7 +34,7 @@ func RandomString(n int) string {
 
 // RandomName generates a random name.
 func RandomName() string {
-	return RandomNameIdentifier(1, "") + RandomString(int(RandomInt(10, 25)))
+	return RandomNameIdentifier(1, "") + " " + RandomString(int(RandomInt(10, 15)))
 }
 
 // RandomMoney generates a random amount of money.
@@ -54,7 +54,7 @@ func RandomLastName() string {
 
 // RandomEmail generates a random email.
 func RandomEmail() string {
-	return fmt.Sprintf("%s@email.com", RandomNameIdentifier(3, ".")+RandomString(int(RandomInt(5, 10))))
+	return fmt.Sprintf("%s-%s@email.com", RandomNameIdentifier(3, "."), RandomString(int(RandomInt(3, 5))))
 }
 
 // RandomNameIdentifier generates a random name identifier,

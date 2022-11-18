@@ -13,7 +13,7 @@ import (
 )
 
 type CreateUserParams struct {
-	DeletedAt  time.Time
+	DeletedAt  *time.Time
 	Role       models.Role
 	Scopes     []models.Scope
 	WithToken  bool // if true, an access token is created and returned
@@ -50,7 +50,7 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 		ExternalID: testutil.RandomString(10),
 		Scopes:     scopes,
 		RoleRank:   role.Rank,
-		DeletedAt:  &params.DeletedAt,
+		DeletedAt:  params.DeletedAt,
 	}
 
 	err = ff.usvc.Register(ctx, ff.pool, user)
