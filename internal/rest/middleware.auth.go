@@ -46,29 +46,46 @@ func newAuthMiddleware(
 func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		a.logger.Sugar().Info("Would have run EnsureAuthenticated and set user in ctx")
-		// if x-api-key header found
-		if c.Request.Header.Get("x-api-key") != "" {
-			u, err := a.authnsvc.GetUserFromAPIKey(c.Request.Context(), "")
+		apiKey := c.Request.Header.Get("x-api-key")
+		auth := c.Request.Header.Get("Authorization")
+		if apiKey != "" {
+			u, err := a.authnsvc.GetUserFromAPIKey(c.Request.Context(), apiKey)
 			if err != nil {
 				renderErrorResponse(c, "could not get user from api key", err)
 				c.Abort()
+
 				return
 			}
 			ctxWithUser(c, u)
-			c.Next()
+
+			// FIXME this fails... remove later
+			user := getUserFromCtx(c)
+			if user == nil {
+				renderErrorResponse(c, "getUserFromCtx this should not happen.", nil)
+				c.Abort()
+
+				return
+			}
+
+			c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.
+
+			return
 		}
-		if strings.HasPrefix(c.Request.Header.Get("Authorization"), "Bearer ") {
-			u, err := a.authnsvc.GetUserFromAccessToken(c.Request.Context(), "")
+		if strings.HasPrefix(auth, "Bearer ") {
+			u, err := a.authnsvc.GetUserFromAccessToken(c.Request.Context(), strings.Split(auth, "Bearer ")[1])
 			if err != nil {
 				renderErrorResponse(c, "could not get user from token", err)
 				c.Abort()
+
 				return
 			}
 			ctxWithUser(c, u)
-			c.Next()
+			c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.
+
+			return
 		}
 
-		renderErrorResponse(c, "Unauthenticated.", errors.New("Unauthenticated."))
+		renderErrorResponse(c, "Unauthenticated", errors.New("Unauthenticated"))
 		c.Abort()
 	}
 }
@@ -93,6 +110,7 @@ func (a *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 		user := getUserFromCtx(c)
 		if user == nil {
 			renderErrorResponse(c, "Could not get user from context.", nil)
+			c.Abort()
 
 			return
 		}
@@ -100,18 +118,25 @@ func (a *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 		userRole, ok := a.authzsvc.RoleByRank(user.RoleRank)
 		if !ok {
 			renderErrorResponse(c, fmt.Sprintf("Unknown rank value: %d", user.RoleRank), errors.New("unknown rank"))
+			c.Abort()
+
+			return
 		}
 		if err := a.authzsvc.HasRequiredRole(userRole, config.MinimumRole); err != nil {
 			renderErrorResponse(c, "Unauthorized.", err)
+			c.Abort()
 
 			return
 		}
 
 		if err := a.authzsvc.HasRequiredScopes(user.Scopes, config.RequiredScopes); err != nil {
 			renderErrorResponse(c, "Unauthorized.", err)
+			c.Abort()
 
 			return
 		}
+
+		c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.
 	}
 }
 

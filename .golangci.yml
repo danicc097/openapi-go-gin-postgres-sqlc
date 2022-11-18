@@ -3,7 +3,7 @@
 linters:
   enable-all: true
   disable:
-    - json(camel)
+    # - json(camel)
     - wsl
     - nosnakecase
     - godox # marks TODO, FIX, ...
@@ -75,6 +75,14 @@ linters-settings:
       - internaldomain.NewErrorf(
       - internal.NewErrorf(
       - internal.WrapErrorf(
+      - .Errorf(
+      - errors.New(
+      - errors.Unwrap(
+      - .Wrap(
+      - .Wrapf(
+      - .WithMessage(
+      - .WithMessagef(
+      - .WithStack(
     ignorePackageGlobs:
       - github.com/danicc097/openapi-go-gin-postgres-sqlc/*
 issues:

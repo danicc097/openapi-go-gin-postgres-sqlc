@@ -41,7 +41,8 @@ func TestAdminPingRoute(t *testing.T) {
 	}
 
 	srv, err := runTestServer(t, pool, []gin.HandlerFunc{func(c *gin.Context) {
-		ctxWithUser(c, ufixture.User)
+		// ctxWithUser(c, ufixture.User)
+		c.Next()
 	}})
 	if err != nil {
 		t.Fatalf("Couldn't run test server: %s\n", err)
@@ -50,8 +51,7 @@ func TestAdminPingRoute(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/admin/ping", nil)
-	// FIXME see middleware.auth_test for fixture factory
-	req.Header.Add("x-api-key", ufixture.APIKey)
+	req.Header.Add("x-api-key", ufixture.APIKey.APIKey)
 
 	srv.Handler.ServeHTTP(resp, req)
 

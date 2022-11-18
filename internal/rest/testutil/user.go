@@ -9,6 +9,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/pkg/errors"
 )
 
 type CreateUserParams struct {
@@ -21,7 +22,7 @@ type CreateUserParams struct {
 
 type CreateUserResult struct {
 	User   *db.User
-	APIKey string
+	APIKey *db.UserAPIKey
 	Token  string
 }
 
@@ -42,21 +43,28 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	}
 	// TODO usvc.CreateUser with createUser params instead and then authn.createtoken or createapikey, usvc.deleteuser, etc. - no repo logic here
 	u := &db.User{
-		Username:  testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
-		Email:     testutil.RandomEmail(),
-		FirstName: pointers.String(testutil.RandomFirstName()),
-		LastName:  pointers.String(testutil.RandomLastName()),
-		Scopes:    scopes,
-		RoleRank:  r.Rank,
-		DeletedAt: &params.DeletedAt,
+		Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
+		Email:      testutil.RandomEmail(),
+		FirstName:  pointers.String(testutil.RandomFirstName()),
+		LastName:   pointers.String(testutil.RandomLastName()),
+		ExternalID: testutil.RandomString(10),
+		Scopes:     scopes,
+		RoleRank:   r.Rank,
+		DeletedAt:  &params.DeletedAt,
 	}
 
-	ff.usvc.Register(ctx, ff.pool, u)
-
-	var apiKey, accessToken string
+	err = ff.usvc.Register(ctx, ff.pool, u)
+	if err != nil {
+		return nil, errors.Wrap(err, "usvc.Register")
+	}
+	var accessToken string
+	var apiKey *db.UserAPIKey
 
 	if params.WithAPIKey {
-		apiKey = ff.authnsvc.CreateAPIKeyForUser(ctx, u) // TODO will save row in user_api_keys and also u.update() to save api_key_id
+		apiKey, err = ff.authnsvc.CreateAPIKeyForUser(ctx, u)
+		if err != nil {
+			return nil, errors.Wrap(err, "authnsvc.CreateAPIKeyForUser")
+		}
 	}
 	if params.WithToken {
 		accessToken = ff.authnsvc.CreateAccessTokenForUser(ctx, u) // TODO simply returns a jwt

@@ -53,11 +53,11 @@ func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 	// apply middlewares for operation "AdminPing".
 	for _, mw := range siw.Handler.middlewares(AdminPing) {
 		mw(c)
-	}
 
-	// should actually call router.<Method> with a slice of mw, last item the actual handler
-	if c.IsAborted() {
-		return
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
 	}
 
 	siw.Handler.AdminPing(c)
@@ -69,11 +69,11 @@ func (siw *ServerInterfaceWrapper) OpenapiYamlGet(c *gin.Context) {
 	// apply middlewares for operation "OpenapiYamlGet".
 	for _, mw := range siw.Handler.middlewares(OpenapiYamlGet) {
 		mw(c)
-	}
 
-	// should actually call router.<Method> with a slice of mw, last item the actual handler
-	if c.IsAborted() {
-		return
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
 	}
 
 	siw.Handler.OpenapiYamlGet(c)
@@ -85,11 +85,11 @@ func (siw *ServerInterfaceWrapper) Ping(c *gin.Context) {
 	// apply middlewares for operation "Ping".
 	for _, mw := range siw.Handler.middlewares(Ping) {
 		mw(c)
-	}
 
-	// should actually call router.<Method> with a slice of mw, last item the actual handler
-	if c.IsAborted() {
-		return
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
 	}
 
 	siw.Handler.Ping(c)
@@ -105,11 +105,11 @@ func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
 	// apply middlewares for operation "GetCurrentUser".
 	for _, mw := range siw.Handler.middlewares(GetCurrentUser) {
 		mw(c)
-	}
 
-	// should actually call router.<Method> with a slice of mw, last item the actual handler
-	if c.IsAborted() {
-		return
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
 	}
 
 	siw.Handler.GetCurrentUser(c)
@@ -136,11 +136,11 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 	// apply middlewares for operation "DeleteUser".
 	for _, mw := range siw.Handler.middlewares(DeleteUser) {
 		mw(c)
-	}
 
-	// should actually call router.<Method> with a slice of mw, last item the actual handler
-	if c.IsAborted() {
-		return
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
 	}
 
 	siw.Handler.DeleteUser(c, id)
@@ -167,11 +167,11 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 	// apply middlewares for operation "UpdateUser".
 	for _, mw := range siw.Handler.middlewares(UpdateUser) {
 		mw(c)
-	}
 
-	// should actually call router.<Method> with a slice of mw, last item the actual handler
-	if c.IsAborted() {
-		return
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
 	}
 
 	siw.Handler.UpdateUser(c, id)

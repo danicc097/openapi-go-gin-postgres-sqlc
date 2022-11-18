@@ -44,14 +44,15 @@ func (u *User) Register(ctx context.Context, d db.DBTX, user *db.User) error {
 	return nil
 }
 
-func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) error {
+func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error) {
 	defer newOTELSpan(ctx, "User.CreateAPIKey").End()
 
-	if _, err := u.urepo.CreateAPIKey(ctx, d, user); err != nil {
-		return errors.Wrap(err, "urepo.CreateAPIKey")
+	uak, err := u.urepo.CreateAPIKey(ctx, d, user)
+	if err != nil {
+		return nil, errors.Wrap(err, "urepo.CreateAPIKey")
 	}
 
-	return nil
+	return uak, nil
 }
 
 // UserByEmail gets a user by email.
@@ -72,7 +73,7 @@ func (u *User) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.
 
 	user, err := u.urepo.UserByAPIKey(ctx, d, apiKey)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.UserByEmail")
+		return nil, errors.Wrap(err, "urepo.UserByAPIKey")
 	}
 
 	return user, nil

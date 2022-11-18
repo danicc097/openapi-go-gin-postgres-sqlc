@@ -5,6 +5,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -38,9 +39,13 @@ func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.
 }
 
 // CreateAccessTokenForUser creates a new token for a user.
-func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User) string {
-	a.usvc.CreateAPIKey(ctx, a.pool, user) // TODO sholuld return it
-	return ""
+func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User) (*db.UserAPIKey, error) {
+	uak, err := a.usvc.CreateAPIKey(ctx, a.pool, user)
+	if err != nil {
+		return nil, errors.Wrap(err, "usvc.CreateAPIKey")
+	}
+
+	return uak, nil
 }
 
 // GetClaimFromToken creates a new token for a user.

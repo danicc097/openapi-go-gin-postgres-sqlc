@@ -22,6 +22,8 @@ func parseErrorDetail(err error) error {
 			matches := errorDetailRegex.FindStringSubmatch(pgErr.Detail)
 			column, value = matches[1], matches[2]
 			newErr = internal.NewErrorf(internal.ErrorCodeAlreadyExists, fmt.Sprintf("%s %q already exists", column, value))
+		default:
+			newErr = internal.NewErrorf(internal.ErrorCodeUnknown, fmt.Sprintf("%s | %s", pgErr.Detail, pgErr.Message))
 		}
 	}
 

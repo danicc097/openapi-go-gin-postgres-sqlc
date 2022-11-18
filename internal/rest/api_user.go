@@ -47,9 +47,10 @@ func (h *Handlers) DeleteUser(c *gin.Context, id string) {
 
 // GetCurrentUser returns the logged in user.
 func (h *Handlers) GetCurrentUser(c *gin.Context) {
-	// TODO return user from gin context (set when reading token in auth middleware)
+	// TODO return user from context isntead with has user with the appropiate joins(teams, etc.) already
 	// getUserFromCtx(c)
-	u, err := db.UserByUsername(c.Request.Context(), h.pool, "user_2", db.WithUserJoin(db.UserJoins{TimeEntries: true, Teams: true}))
+	// TODO remove
+	u, err := db.UserByUsername(c.Request.Context(), h.pool, "someusername", db.WithUserJoin(db.UserJoins{TimeEntries: true, Teams: true}))
 	if err != nil {
 		renderErrorResponse(c, "could not find user", err)
 	}

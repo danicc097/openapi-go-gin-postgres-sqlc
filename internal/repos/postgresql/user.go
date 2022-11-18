@@ -112,6 +112,7 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 	uak := &db.UserAPIKey{
 		APIKey:    uuid.NewString(),
 		ExpiresOn: time.Now().AddDate(1, 0, 0),
+		UserID:    user.UserID,
 	}
 	if err := uak.Save(ctx, d); err != nil {
 		return nil, fmt.Errorf("could not save api key: %v", parseErrorDetail(err))
