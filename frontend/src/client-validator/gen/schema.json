@@ -62,9 +62,9 @@
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "TaskRole": {
-      "title": "Task role",
-      "description": "Role in task for a member.",
+    "WorkItemRole": {
+      "title": "WorkItem role",
+      "description": "Role in work item for a member.",
       "type": "string",
       "x-db-enum": "work_item_role",
       "enum": [
@@ -102,10 +102,7 @@
           "type": "string"
         },
         "external_id": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": "string"
         },
         "first_name": {
           "type": [
@@ -158,9 +155,6 @@
         "updated_at": {
           "format": "date-time",
           "type": "string"
-        },
-        "user_api_key": {
-          "$ref": "#/definitions/UserAPIKey"
         },
         "user_id": {
           "$ref": "#/definitions/UuidUUID"
@@ -226,15 +220,14 @@
             "null"
           ]
         },
+        "finished": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "metadata": {
           "$ref": "#/definitions/PgtypeJSONB"
-        },
-        "target_date": {
-          "format": "date-time",
-          "type": "string"
-        },
-        "target_date_timezone": {
-          "type": "string"
         },
         "task_id": {
           "type": "integer"
@@ -244,15 +237,6 @@
         },
         "task_type_id": {
           "type": "integer"
-        },
-        "time_entries": {
-          "items": {
-            "$ref": "#/definitions/TimeEntry"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         },
         "title": {
           "type": "string"
@@ -357,12 +341,6 @@
           "format": "date-time",
           "type": "string"
         },
-        "task_id": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        },
         "team_id": {
           "type": [
             "integer",
@@ -374,6 +352,12 @@
         },
         "user_id": {
           "$ref": "#/definitions/UuidUUID"
+        },
+        "work_item_id": {
+          "type": [
+            "integer",
+            "null"
+          ]
         }
       },
       "type": "object",
@@ -390,6 +374,9 @@
         },
         "user_api_key_id": {
           "type": "integer"
+        },
+        "user_id": {
+          "$ref": "#/definitions/UuidUUID"
         }
       },
       "type": [
@@ -436,6 +423,15 @@
         "team_id": {
           "type": "integer"
         },
+        "time_entries": {
+          "items": {
+            "$ref": "#/definitions/TimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
         "title": {
           "type": "string"
         },
@@ -462,6 +458,9 @@
           ]
         },
         "work_item_id": {
+          "type": "integer"
+        },
+        "work_item_type_id": {
           "type": "integer"
         }
       },
@@ -508,8 +507,8 @@
     "Role": {
       "$ref": "#/definitions/Role"
     },
-    "TaskRole": {
-      "$ref": "#/definitions/TaskRole"
+    "WorkItemRole": {
+      "$ref": "#/definitions/WorkItemRole"
     },
     "Organization": {
       "$ref": "#/definitions/Organization"

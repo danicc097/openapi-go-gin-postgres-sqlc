@@ -26,24 +26,14 @@ export type Scope =
   | 'project-settings:write'
   | 'work-item:review'
 /**
- * Role in task for a member.
+ * Role in work item for a member.
  */
-export type TaskRole = 'preparer' | 'reviewer'
+export type WorkItemRole = 'preparer' | 'reviewer'
 /**
  * Organization a user belongs to.
  */
 export type Organization = string
 export type UuidUUID = string
-export type UserAPIKey = {
-  api_key?: string
-  expires_on?: string
-  user_api_key_id?: number
-} & UserAPIKey1
-export type UserAPIKey1 = {
-  api_key?: string
-  expires_on?: string
-  user_api_key_id?: number
-} | null
 export type TaskType = {
   color?: string
   description?: string
@@ -57,6 +47,18 @@ export type TaskType1 = {
   name?: string
   task_type_id?: number
   team_id?: number
+} | null
+export type UserAPIKey = {
+  api_key?: string
+  expires_on?: string
+  user_api_key_id?: number
+  user_id?: UuidUUID
+} & UserAPIKey1
+export type UserAPIKey1 = {
+  api_key?: string
+  expires_on?: string
+  user_api_key_id?: number
+  user_id?: UuidUUID
 } | null
 
 export interface HTTPValidationError {
@@ -80,7 +82,7 @@ export interface User {
   created_at?: string
   deleted_at?: string | null
   email?: string
-  external_id?: string | null
+  external_id?: string
   first_name?: string | null
   full_name?: string | null
   last_name?: string | null
@@ -89,7 +91,6 @@ export interface User {
   teams?: Team[] | null
   time_entries?: TimeEntry[] | null
   updated_at?: string
-  user_api_key?: UserAPIKey
   user_id?: UuidUUID
   username?: string
   work_items?: WorkItem[] | null
@@ -111,10 +112,10 @@ export interface TimeEntry {
   comment?: string
   duration_minutes?: number | null
   start?: string
-  task_id?: number | null
   team_id?: number | null
   time_entry_id?: number
   user_id?: UuidUUID
+  work_item_id?: number | null
 }
 export interface WorkItem {
   closed?: boolean
@@ -124,22 +125,22 @@ export interface WorkItem {
   metadata?: PgtypeJSONB
   tasks?: Task[] | null
   team_id?: number
+  time_entries?: TimeEntry[] | null
   title?: string
   updated_at?: string
   users?: User[] | null
   work_item_comments?: WorkItemComment[] | null
   work_item_id?: number
+  work_item_type_id?: number
 }
 export interface Task {
   created_at?: string
   deleted_at?: string | null
+  finished?: boolean | null
   metadata?: PgtypeJSONB
-  target_date?: string
-  target_date_timezone?: string
   task_id?: number
   task_type?: TaskType
   task_type_id?: number
-  time_entries?: TimeEntry[] | null
   title?: string
   updated_at?: string
   work_item_id?: number

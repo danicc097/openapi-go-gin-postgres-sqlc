@@ -21,9 +21,9 @@ export interface paths {
   '/user/me': {
     get: operations['GetCurrentUser']
   }
-  [key: `/user/${string}`]: {
-    put: operations['UpdateUser']
+  [key: `/user/{id}`]: {
     delete: operations['DeleteUser']
+    patch: operations['UpdateUser']
   }
 }
 
@@ -66,11 +66,11 @@ export interface components {
      */
     Role: 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
     /**
-     * Task role
-     * @description Role in task for a member.
+     * WorkItem role
+     * @description Role in work item for a member.
      * @enum {string}
      */
-    TaskRole: 'preparer' | 'reviewer'
+    WorkItemRole: 'preparer' | 'reviewer'
     /**
      * Organization
      * @description Organization a user belongs to.
@@ -83,7 +83,7 @@ export interface components {
       /** Format: date-time */
       deleted_at?: string | null
       email?: string
-      external_id?: string | null
+      external_id?: string
       first_name?: string | null
       full_name?: string | null
       last_name?: string | null
@@ -93,7 +93,6 @@ export interface components {
       time_entries?: components['schemas']['TimeEntry'][] | null
       /** Format: date-time */
       updated_at?: string
-      user_api_key?: components['schemas']['UserAPIKey']
       user_id?: components['schemas']['UuidUUID']
       username?: string
       work_items?: components['schemas']['WorkItem'][] | null
@@ -113,14 +112,11 @@ export interface components {
       created_at?: string
       /** Format: date-time */
       deleted_at?: string | null
+      finished?: boolean | null
       metadata?: components['schemas']['PgtypeJSONB']
-      /** Format: date-time */
-      target_date?: string
-      target_date_timezone?: string
       task_id?: number
       task_type?: components['schemas']['TaskType']
       task_type_id?: number
-      time_entries?: components['schemas']['TimeEntry'][] | null
       title?: string
       /** Format: date-time */
       updated_at?: string
@@ -152,16 +148,17 @@ export interface components {
       duration_minutes?: number | null
       /** Format: date-time */
       start?: string
-      task_id?: number | null
       team_id?: number | null
       time_entry_id?: number
       user_id?: components['schemas']['UuidUUID']
+      work_item_id?: number | null
     }
     UserAPIKey: {
       api_key?: string
       /** Format: date-time */
       expires_on?: string
       user_api_key_id?: number
+      user_id?: components['schemas']['UuidUUID']
     } | null
     UuidUUID: string
     WorkItem: {
@@ -174,12 +171,14 @@ export interface components {
       metadata?: components['schemas']['PgtypeJSONB']
       tasks?: components['schemas']['Task'][] | null
       team_id?: number
+      time_entries?: components['schemas']['TimeEntry'][] | null
       title?: string
       /** Format: date-time */
       updated_at?: string
       users?: components['schemas']['User'][] | null
       work_item_comments?: components['schemas']['WorkItemComment'][] | null
       work_item_id?: number
+      work_item_type_id?: number
     }
     WorkItemComment: {
       /** Format: date-time */
@@ -191,6 +190,13 @@ export interface components {
       work_item_comment_id?: number
       work_item_id?: number
     }
+  }
+  parameters: {
+    /**
+     * @description user_id that needs to be updated
+     * @example 123e4567-e89b-12d3-a456-426614174000
+     */
+    UserID: string
   }
 }
 
@@ -247,11 +253,23 @@ export interface operations {
       }
     }
   }
+  DeleteUser: {
+    parameters: {
+      path: {
+        /** user_id that needs to be updated */
+        id: components['parameters']['UserID']
+      }
+    }
+    responses: {
+      /** User not found */
+      404: unknown
+    }
+  }
   UpdateUser: {
     parameters: {
       path: {
         /** user_id that needs to be updated */
-        id: string
+        id: components['parameters']['UserID']
       }
     }
     responses: {
@@ -263,18 +281,6 @@ export interface operations {
       content: {
         'application/json': components['schemas']['UpdateUserRequest']
       }
-    }
-  }
-  DeleteUser: {
-    parameters: {
-      path: {
-        /** user_id that needs to be deleted */
-        id: string
-      }
-    }
-    responses: {
-      /** User not found */
-      404: unknown
     }
   }
 }

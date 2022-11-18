@@ -66,13 +66,6 @@ paths:
       summary: Ping pongs
       operationId: AdminPing
       responses:
-        "200":
-          description: OK
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: pong
         "422":
           description: Validation Error
           content:
@@ -150,6 +143,7 @@ components:
       schema:
         type: string
         pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+      example: 123e4567-e89b-12d3-a456-426614174000
       style: simple
   schemas:
     HTTPValidationError:

@@ -3,5 +3,7 @@ package: rest
 generate:
   gin-server: true
 output: internal/rest/openapi_server.gen.go
+import-mapping:
+  ../models/oapi-codegen-types.yaml: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models
 output-options:
   skip-prune: true
