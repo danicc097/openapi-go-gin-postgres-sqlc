@@ -74,6 +74,7 @@ function App() {
       first_name: (v, vv, path) => validateField(UpdateUserRequestDecoder, path, vv),
       last_name: (v, vv, path) => validateField(UpdateUserRequestDecoder, path, vv),
       role: (v, vv, path) => validateField(UpdateUserRequestDecoder, path, vv),
+      // TODO validating array
       scopes: (v, vv, path) => validateField(UpdateUserRequestDecoder, path, vv),
     },
   })
@@ -81,8 +82,7 @@ function App() {
   const fetchData = async () => {
     try {
       const updateUserRequest = UpdateUserRequestDecoder.decode(form.values)
-
-      const payload = await updateUser(updateUserRequest).unwrap()
+      const payload = await updateUser({ updateUserRequest, id: '4153bf46-d88f-4809-98a7-3ea17065d2fa' }).unwrap()
       console.log('fulfilled', payload)
       addToast('done')
       setCalloutError(null)

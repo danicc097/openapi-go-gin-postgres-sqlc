@@ -10,11 +10,13 @@ export const emptyInternalApi = createApi({
     baseUrl: `https://${Config.DOMAIN}${PORT}${Config.API_PREFIX}${Config.API_VERSION}`,
     // in frontend always token
     prepareHeaders: (headers, { getState }) => {
-      const token = '' // TODO get from LS
+      // const token = '' // TODO get from LS once backend implemented createTokenForUser
 
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`)
-      }
+      // if (token) {
+      //   headers.set('authorization', `Bearer ${token}`)
+      // }
+
+      headers.set('x-api-key', `19270107-1b9c-4f52-a578-7390d5b31513-key-hashed`)
 
       return headers
     },

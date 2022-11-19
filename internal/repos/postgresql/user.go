@@ -29,8 +29,44 @@ func (u *User) Create(ctx context.Context, d db.DBTX, user *db.User) error {
 	return user.Save(ctx, d)
 }
 
+func (u *User) Update(ctx context.Context, d db.DBTX, params repos.UserUpdateParams) (*db.User, error) {
+	user, err := u.UserByID(ctx, d, params.ID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get user by id %w", parseErrorDetail(err))
+	}
+
+	// distinguish keys not present in json body and zero valued ones
+	if params.FirstName != nil {
+		user.FirstName = params.FirstName
+	}
+	if params.LastName != nil {
+		user.LastName = params.LastName
+	}
+	if params.Scopes != nil {
+		user.Scopes = *params.Scopes
+	}
+	if params.Rank != nil {
+		user.RoleRank = *params.Rank
+	}
+
+	err = user.Update(ctx, d)
+	if err != nil {
+		return nil, fmt.Errorf("could not update user: %w", parseErrorDetail(err))
+	}
+
+	return user, err
+}
+
 func (u *User) UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error) {
 	return db.UserByEmail(ctx, d, email)
+}
+
+func (u *User) UserByID(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse id as UUID: %w", parseErrorDetail(err))
+	}
+	return db.UserByUserID(ctx, d, uid)
 }
 
 func (u *User) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error) {

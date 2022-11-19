@@ -28,8 +28,9 @@ func NewUser(urepo repos.User, logger *zap.Logger) *User {
 	}
 }
 
-// Register registers a user record.
-// TODO accepts basic parameters and everything else is default, returns a *db.User. must not pass a db.User here
+// Register registers a user.
+// TODO accepts basic parameters instead of user *db.User and everything else is default,
+// returns a *db.User. must not pass a db.User here
 // IMPORTANT: no endpoint for user creation. Only when coming from auth server.
 // we will not support password auth.
 func (u *User) Register(ctx context.Context, d db.DBTX, user *db.User) error {
@@ -42,6 +43,19 @@ func (u *User) Register(ctx context.Context, d db.DBTX, user *db.User) error {
 	}
 
 	return nil
+}
+
+// Update updates a user.
+func (u *User) Update(ctx context.Context, d db.DBTX, params repos.UserUpdateParams) (*db.User, error) {
+	defer newOTELSpan(ctx, "User.Update").End()
+
+	// TODO construct db.User and fill missing fields with default roles, etc.
+	user, err := u.urepo.Update(ctx, d, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "urepo.Update")
+	}
+
+	return user, nil
 }
 
 func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error) {
