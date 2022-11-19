@@ -12,17 +12,22 @@ interface UIState {
   switchTheme: () => void
 }
 
-export const useUISlice = create<UIState>()(
-  devtools(
-    persist((set) => ({
-      theme: 'dark', // TODO zustand middleware for persisting to LS
-      toastList: [],
-      addToast: (toast: Toast) => set(addToast(toast)),
-      removeToast: (toast: Toast) => set(removeToast(toast.id)),
-      switchTheme: () => set(switchTheme()),
-    })),
-  ),
+const useUISlice = create<UIState>()(
+  // devtools(
+  //   persist(
+  (set) => ({
+    theme: 'dark', // TODO zustand middleware for persisting to LS
+    toastList: [],
+    addToast: (toast: Toast) => set(addToast(toast)),
+    removeToast: (toast: Toast) => set(removeToast(toast.id)),
+    switchTheme: () => set(switchTheme()),
+  }),
+  // { version: 1, name: 'persist-name' },
+  //   ),
+  // ),
 )
+
+export { useUISlice }
 
 function switchTheme(): unknown {
   return (state: UIState) => {

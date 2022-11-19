@@ -65,6 +65,7 @@ specifiers:
   vite-plugin-dynamic-import: ^1.2.1
   vite-tsconfig-paths: ^3.5.0
   vitest: ^0.23.1
+  zone.js: 0.11.4
   zustand: ^4.1.4
 
 dependencies:
@@ -75,7 +76,7 @@ dependencies:
   '@emotion/react': 11.10.4_jgf5e57r2hhelgoh5e3va5b5ti
   '@emotion/styled': 11.10.5_rhfydnvaifshl3rgif4ltf46im
   '@opentelemetry/api': 1.2.0
-  '@opentelemetry/auto-instrumentations-web': 0.30.0_@opentelemetry+api@1.2.0
+  '@opentelemetry/auto-instrumentations-web': 0.30.0_g6o5iejishnbckeoe5v2a3kdwq
   '@opentelemetry/context-zone': 1.7.0_@opentelemetry+api@1.2.0
   '@opentelemetry/core': 1.7.0_@opentelemetry+api@1.2.0
   '@opentelemetry/exporter-trace-otlp-http': 0.33.0_@opentelemetry+api@1.2.0
@@ -110,6 +111,7 @@ dependencies:
   vite-plugin-dynamic-import: 1.2.1
   vite-tsconfig-paths: 3.5.0_vite@3.0.9
   vitest: 0.23.1_terser@5.15.0
+  zone.js: 0.11.4
   zustand: 4.1.4_react@17.0.2
 
 devDependencies:
@@ -950,7 +952,7 @@ packages:
     engines: {node: '>=8.0.0'}
     dev: false
 
-  /@opentelemetry/auto-instrumentations-web/0.30.0_@opentelemetry+api@1.2.0:
+  /@opentelemetry/auto-instrumentations-web/0.30.0_g6o5iejishnbckeoe5v2a3kdwq:
     resolution: {integrity: sha512-ud/1pgfgWjkNs0H70kJjazMgkHOUgfERUtCWhcynBcht0EFMlvJ9krz9cSa62PNF4p+vCzfrEJMVmjQQ3dIaTw==}
     engines: {node: '>=8.12.0'}
     peerDependencies:
@@ -960,7 +962,7 @@ packages:
       '@opentelemetry/instrumentation': 0.32.0_@opentelemetry+api@1.2.0
       '@opentelemetry/instrumentation-document-load': 0.30.0_@opentelemetry+api@1.2.0
       '@opentelemetry/instrumentation-fetch': 0.32.0_@opentelemetry+api@1.2.0
-      '@opentelemetry/instrumentation-user-interaction': 0.31.0_@opentelemetry+api@1.2.0
+      '@opentelemetry/instrumentation-user-interaction': 0.31.0_g6o5iejishnbckeoe5v2a3kdwq
       '@opentelemetry/instrumentation-xml-http-request': 0.32.0_@opentelemetry+api@1.2.0
     transitivePeerDependencies:
       - supports-color
@@ -1081,7 +1083,7 @@ packages:
       - supports-color
     dev: false
 
-  /@opentelemetry/instrumentation-user-interaction/0.31.0_@opentelemetry+api@1.2.0:
+  /@opentelemetry/instrumentation-user-interaction/0.31.0_g6o5iejishnbckeoe5v2a3kdwq:
     resolution: {integrity: sha512-FNDpkl6Lyoiv/ksQ3kvgIldT61NIRGJJejzYlPcxXwKXOn/x3pncHLr0GC6ZkdzvJlygBN3JUDq1sTz5Mj7PAQ==}
     engines: {node: '>=8.12.0'}
     peerDependencies:
@@ -1092,6 +1094,7 @@ packages:
       '@opentelemetry/core': 1.7.0_@opentelemetry+api@1.2.0
       '@opentelemetry/instrumentation': 0.32.0_@opentelemetry+api@1.2.0
       '@opentelemetry/sdk-trace-web': 1.7.0_@opentelemetry+api@1.2.0
+      zone.js: 0.11.4
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -5612,6 +5615,12 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
+
+  /zone.js/0.11.4:
+    resolution: {integrity: sha512-DDh2Ab+A/B+9mJyajPjHFPWfYU1H+pdun4wnnk0OcQTNjem1XQSZ2CDW+rfZEUDjv5M19SBqAkjZi0x5wuB5Qw==}
+    dependencies:
+      tslib: 2.4.0
+    dev: false
 
   /zone.js/0.11.8:
     resolution: {integrity: sha512-82bctBg2hKcEJ21humWIkXRlLBBmrc3nN7DFh5LGGhcyycO2S7FN8NmdvlcKaGFDNVL4/9kFLmwmInTavdJERA==}
