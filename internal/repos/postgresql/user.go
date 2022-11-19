@@ -34,6 +34,7 @@ func (u *User) UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.Us
 }
 
 func (u *User) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error) {
+	fmt.Printf("apiKey: %v\n", apiKey)
 	uak, err := db.UserAPIKeyByAPIKey(ctx, d, apiKey, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
 	if err != nil {
 		return nil, fmt.Errorf("could not get api key: %w", parseErrorDetail(err))

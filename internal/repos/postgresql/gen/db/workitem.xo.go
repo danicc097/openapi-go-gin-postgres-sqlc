@@ -13,16 +13,16 @@ import (
 
 // WorkItem represents a row from 'public.work_items'.
 type WorkItem struct {
-	WorkItemID     int64        `json:"work_item_id" db:"work_item_id"`           // work_item_id
-	Title          string       `json:"title" db:"title"`                         // title
-	WorkItemTypeID int          `json:"work_item_type_id" db:"work_item_type_id"` // work_item_type_id
-	Metadata       pgtype.JSONB `json:"metadata" db:"metadata"`                   // metadata
-	TeamID         int          `json:"team_id" db:"team_id"`                     // team_id
-	KanbanStepID   int          `json:"kanban_step_id" db:"kanban_step_id"`       // kanban_step_id
-	Closed         bool         `json:"closed" db:"closed"`                       // closed
-	CreatedAt      time.Time    `json:"created_at" db:"created_at"`               // created_at
-	UpdatedAt      time.Time    `json:"updated_at" db:"updated_at"`               // updated_at
-	DeletedAt      *time.Time   `json:"deleted_at" db:"deleted_at"`               // deleted_at
+	WorkItemID     int64        `json:"workItemID" db:"work_item_id"`          // work_item_id
+	Title          string       `json:"title" db:"title"`                      // title
+	WorkItemTypeID int          `json:"workItemTypeID" db:"work_item_type_id"` // work_item_type_id
+	Metadata       pgtype.JSONB `json:"metadata" db:"metadata"`                // metadata
+	TeamID         int          `json:"teamID" db:"team_id"`                   // team_id
+	KanbanStepID   int          `json:"kanbanStepID" db:"kanban_step_id"`      // kanban_step_id
+	Closed         bool         `json:"closed" db:"closed"`                    // closed
+	CreatedAt      time.Time    `json:"createdAt" db:"created_at"`             // created_at
+	UpdatedAt      time.Time    `json:"updatedAt" db:"updated_at"`             // updated_at
+	DeletedAt      *time.Time   `json:"deletedAt" db:"deleted_at"`             // deleted_at
 
 	Tasks            *[]Task            `json:"tasks"`              // O2M
 	TimeEntries      *[]TimeEntry       `json:"time_entries"`       // O2M

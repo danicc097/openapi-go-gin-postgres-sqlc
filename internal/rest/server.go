@@ -32,6 +32,7 @@ import (
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
@@ -271,7 +272,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	// - repos must not be concerned with transaction details
 	// - also note services dont necessarily need an equivalently named repository or viceversa.
 
-	rlMw := newRateLimitMiddleware(conf.Logger, 15, 3)
+	rlMw := newRateLimitMiddleware(conf.Logger, 25, 10)
 	switch os.Getenv("APP_ENV") {
 	case "prod":
 		vg.Use(rlMw.Limit())
@@ -292,7 +293,16 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	RegisterHandlersWithOptions(vg, handlers, GinServerOptions{BaseURL: ""})
 
+	switch os.Getenv("APP_ENV") {
+	case "prod":
+		db.SetErrorLogger(conf.Logger.Sugar().Errorf)
+	default:
+		db.SetLogger(conf.Logger.Sugar().Infof)
+		db.SetErrorLogger(conf.Logger.Sugar().Errorf)
+	}
+
 	conf.Logger.Info("Server started")
+
 	srv.httpsrv = &http.Server{
 		Handler:           router,
 		Addr:              conf.Address,

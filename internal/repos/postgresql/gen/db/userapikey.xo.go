@@ -13,10 +13,10 @@ import (
 
 // UserAPIKey represents a row from 'public.user_api_keys'.
 type UserAPIKey struct {
-	UserAPIKeyID int       `json:"user_api_key_id" db:"user_api_key_id"` // user_api_key_id
-	APIKey       string    `json:"api_key" db:"api_key"`                 // api_key
-	ExpiresOn    time.Time `json:"expires_on" db:"expires_on"`           // expires_on
-	UserID       uuid.UUID `json:"user_id" db:"user_id"`                 // user_id
+	UserAPIKeyID int       `json:"userAPIKeyID" db:"user_api_key_id"` // user_api_key_id
+	APIKey       string    `json:"apiKey" db:"api_key"`               // api_key
+	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on"`         // expires_on
+	UserID       uuid.UUID `json:"userID" db:"user_id"`               // user_id
 
 	User *User `json:"user"` // O2O
 	// xo fields

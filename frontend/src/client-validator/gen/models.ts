@@ -28,15 +28,15 @@ export type TaskType = {
   color?: string
   description?: string
   name?: string
-  task_type_id?: number
-  team_id?: number
+  taskTypeID?: number
+  teamID?: number
 } & TaskType1
 export type TaskType1 = {
   color?: string
   description?: string
   name?: string
-  task_type_id?: number
-  team_id?: number
+  taskTypeID?: number
+  teamID?: number
 } | null
 export type UserAPIKey = {
   api_key?: string
@@ -75,78 +75,78 @@ export interface AUser {
   scopes?: Scope[]
 }
 export interface User {
-  api_key_id?: number | null
-  created_at?: string
-  deleted_at?: string | null
+  apiKeyID?: number | null
+  createdAt?: string
+  deletedAt?: string | null
   email?: string
-  external_id?: string
-  first_name?: string | null
-  full_name?: string | null
-  last_name?: string | null
-  role_rank?: number
+  externalID?: string
+  firstName?: string | null
+  fullName?: string | null
+  lastName?: string | null
+  roleRank?: number
   scopes?: string[] | null
   teams?: Team[] | null
   time_entries?: TimeEntry[] | null
-  updated_at?: string
-  user_id?: UuidUUID
+  updatedAt?: string
+  userID?: UuidUUID
   username?: string
   work_items?: WorkItem[] | null
 }
 export interface Team {
-  created_at?: string
+  createdAt?: string
   description?: string
   metadata?: PgtypeJSONB
   name?: string
-  project_id?: number
-  team_id?: number
+  projectID?: number
+  teamID?: number
   time_entries?: TimeEntry[] | null
-  updated_at?: string
+  updatedAt?: string
   users?: User[] | null
 }
 export interface PgtypeJSONB {}
 export interface TimeEntry {
-  activity_id?: number
+  activityID?: number
   comment?: string
-  duration_minutes?: number | null
+  durationMinutes?: number | null
   start?: string
-  team_id?: number | null
-  time_entry_id?: number
-  user_id?: UuidUUID
-  work_item_id?: number | null
+  teamID?: number | null
+  timeEntryID?: number
+  userID?: UuidUUID
+  workItemID?: number | null
 }
 export interface WorkItem {
   closed?: boolean
-  created_at?: string
-  deleted_at?: string | null
-  kanban_step_id?: number
+  createdAt?: string
+  deletedAt?: string | null
+  kanbanStepID?: number
   metadata?: PgtypeJSONB
   tasks?: Task[] | null
-  team_id?: number
+  teamID?: number
   time_entries?: TimeEntry[] | null
   title?: string
-  updated_at?: string
+  updatedAt?: string
   users?: User[] | null
   work_item_comments?: WorkItemComment[] | null
-  work_item_id?: number
-  work_item_type_id?: number
+  workItemID?: number
+  workItemTypeID?: number
 }
 export interface Task {
-  created_at?: string
-  deleted_at?: string | null
+  createdAt?: string
+  deletedAt?: string | null
   finished?: boolean | null
   metadata?: PgtypeJSONB
-  task_id?: number
   task_type?: TaskType
-  task_type_id?: number
+  taskID?: number
+  taskTypeID?: number
   title?: string
-  updated_at?: string
-  work_item_id?: number
+  updatedAt?: string
+  workItemID?: number
 }
 export interface WorkItemComment {
-  created_at?: string
+  createdAt?: string
   message?: string
-  updated_at?: string
-  user_id?: UuidUUID
-  work_item_comment_id?: number
-  work_item_id?: number
+  updatedAt?: string
+  userID?: UuidUUID
+  workItemCommentID?: number
+  workItemID?: number
 }

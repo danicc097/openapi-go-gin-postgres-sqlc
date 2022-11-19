@@ -69,23 +69,23 @@ export interface components {
      */
     WorkItemRole: 'preparer' | 'reviewer'
     User: {
-      api_key_id?: number | null
+      apiKeyID?: number | null
       /** Format: date-time */
-      created_at?: string
+      createdAt?: string
       /** Format: date-time */
-      deleted_at?: string | null
+      deletedAt?: string | null
       email?: string
-      external_id?: string
-      first_name?: string | null
-      full_name?: string | null
-      last_name?: string | null
-      role_rank?: number
+      externalID?: string
+      firstName?: string | null
+      fullName?: string | null
+      lastName?: string | null
+      roleRank?: number
       scopes?: string[] | null
       teams?: components['schemas']['Team'][] | null
       time_entries?: components['schemas']['TimeEntry'][] | null
       /** Format: date-time */
-      updated_at?: string
-      user_id?: components['schemas']['UuidUUID']
+      updatedAt?: string
+      userID?: components['schemas']['UuidUUID']
       username?: string
       work_items?: components['schemas']['WorkItem'][] | null
     }
@@ -101,49 +101,49 @@ export interface components {
     PgtypeJSONB: { [key: string]: unknown }
     Task: {
       /** Format: date-time */
-      created_at?: string
+      createdAt?: string
       /** Format: date-time */
-      deleted_at?: string | null
+      deletedAt?: string | null
       finished?: boolean | null
       metadata?: components['schemas']['PgtypeJSONB']
-      task_id?: number
       task_type?: components['schemas']['TaskType']
-      task_type_id?: number
+      taskID?: number
+      taskTypeID?: number
       title?: string
       /** Format: date-time */
-      updated_at?: string
-      work_item_id?: number
+      updatedAt?: string
+      workItemID?: number
     }
     TaskType: {
       color?: string
       description?: string
       name?: string
-      task_type_id?: number
-      team_id?: number
+      taskTypeID?: number
+      teamID?: number
     } | null
     Team: {
       /** Format: date-time */
-      created_at?: string
+      createdAt?: string
       description?: string
       metadata?: components['schemas']['PgtypeJSONB']
       name?: string
-      project_id?: number
-      team_id?: number
+      projectID?: number
+      teamID?: number
       time_entries?: components['schemas']['TimeEntry'][] | null
       /** Format: date-time */
-      updated_at?: string
+      updatedAt?: string
       users?: components['schemas']['User'][] | null
     }
     TimeEntry: {
-      activity_id?: number
+      activityID?: number
       comment?: string
-      duration_minutes?: number | null
+      durationMinutes?: number | null
       /** Format: date-time */
       start?: string
-      team_id?: number | null
-      time_entry_id?: number
-      user_id?: components['schemas']['UuidUUID']
-      work_item_id?: number | null
+      teamID?: number | null
+      timeEntryID?: number
+      userID?: components['schemas']['UuidUUID']
+      workItemID?: number | null
     }
     UserAPIKey: {
       api_key?: string
@@ -156,31 +156,31 @@ export interface components {
     WorkItem: {
       closed?: boolean
       /** Format: date-time */
-      created_at?: string
+      createdAt?: string
       /** Format: date-time */
-      deleted_at?: string | null
-      kanban_step_id?: number
+      deletedAt?: string | null
+      kanbanStepID?: number
       metadata?: components['schemas']['PgtypeJSONB']
       tasks?: components['schemas']['Task'][] | null
-      team_id?: number
+      teamID?: number
       time_entries?: components['schemas']['TimeEntry'][] | null
       title?: string
       /** Format: date-time */
-      updated_at?: string
+      updatedAt?: string
       users?: components['schemas']['User'][] | null
       work_item_comments?: components['schemas']['WorkItemComment'][] | null
-      work_item_id?: number
-      work_item_type_id?: number
+      workItemID?: number
+      workItemTypeID?: number
     }
     WorkItemComment: {
       /** Format: date-time */
-      created_at?: string
+      createdAt?: string
       message?: string
       /** Format: date-time */
-      updated_at?: string
-      user_id?: components['schemas']['UuidUUID']
-      work_item_comment_id?: number
-      work_item_id?: number
+      updatedAt?: string
+      userID?: components['schemas']['UuidUUID']
+      workItemCommentID?: number
+      workItemID?: number
     }
   }
   parameters: {

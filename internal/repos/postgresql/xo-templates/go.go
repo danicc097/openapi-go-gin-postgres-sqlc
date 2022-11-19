@@ -206,7 +206,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Short:      "g",
 				// migrate to camel once Response structs and adapters done
 				// Default:    `json:"{{ camel .GoName }}" db:"{{ .SQLName }}"`,
-				Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
+				Default: `json:"{{ camel .GoName }}" db:"{{ .SQLName }}"`,
 			},
 			{
 				ContextKey: ContextKey,

@@ -51,7 +51,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		if apiKey != "" {
 			u, err := a.authnsvc.GetUserFromAPIKey(c.Request.Context(), apiKey)
 			if err != nil || u == nil {
-				renderErrorResponse(c, "could not get user from api key", err)
+				renderResponse(c, gin.H{"error": "unauthenticated", "detail": "could not get user from api key"}, http.StatusUnauthorized)
 				c.Abort()
 
 				return
@@ -66,7 +66,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		if strings.HasPrefix(auth, "Bearer ") {
 			u, err := a.authnsvc.GetUserFromAccessToken(c.Request.Context(), strings.Split(auth, "Bearer ")[1])
 			if err != nil || u == nil {
-				renderErrorResponse(c, "could not get user from token", err)
+				renderResponse(c, gin.H{"error": "unauthenticated", "detail": "could not get user from token"}, http.StatusUnauthorized)
 				c.Abort()
 
 				return
@@ -77,7 +77,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 			return
 		}
 
-		renderErrorResponse(c, "Unauthenticated", errors.New("Unauthenticated"))
+		renderResponse(c, gin.H{"error": "unauthenticated", "detail": "No authentication data provided"}, http.StatusUnauthorized)
 		c.Abort()
 	}
 }

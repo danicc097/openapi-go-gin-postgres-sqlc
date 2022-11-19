@@ -16,9 +16,8 @@ trap errtrap SIGUSR1
 killgroup() {
   printf "\nkilling spawned processes...\n"
 
-  kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
-
-  kill 0
+  # kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
+  pgrep -P $PROC | xargs kill
   exit 1
 }
 
@@ -573,7 +572,7 @@ x.run-dev() {
   # close_write event, else duplicated, tripl. events -> race condition
   while true; do
     inotifywait \
-      --monitor "$SPEC" \
+      --monitor $SPEC \
       --event=close_write \
       --format='%T %f' \
       --timefmt='%s' |
