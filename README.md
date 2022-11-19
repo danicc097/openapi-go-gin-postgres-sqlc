@@ -71,7 +71,8 @@ Simplified:
 
 ## TODOs
 
-- remove elasticsearch in favor of postgres with promscale (recent addition)
+- Pgx v5 + [logging](https://github.com/jackc/pgx/issues/1381) (dependent on
+  sqlc support) to support custom struct tag scanning and allow switch to json camel
 
 - Meaningful project name.
 

@@ -68,16 +68,16 @@ type Scope string
 
 // Task defines model for Task.
 type Task struct {
-	CreatedAt  *time.Time   `json:"createdAt,omitempty"`
-	DeletedAt  *time.Time   `json:"deletedAt"`
+	CreatedAt  *time.Time   `json:"created_at,omitempty"`
+	DeletedAt  *time.Time   `json:"deleted_at"`
 	Finished   *bool        `json:"finished"`
 	Metadata   *PgtypeJSONB `json:"metadata,omitempty"`
-	TaskID     *int         `json:"taskID,omitempty"`
-	TaskTypeID *int         `json:"taskTypeID,omitempty"`
+	TaskId     *int         `json:"task_id,omitempty"`
 	TaskType   *TaskType    `json:"task_type"`
+	TaskTypeId *int         `json:"task_type_id,omitempty"`
 	Title      *string      `json:"title,omitempty"`
-	UpdatedAt  *time.Time   `json:"updatedAt,omitempty"`
-	WorkItemID *int         `json:"workItemID,omitempty"`
+	UpdatedAt  *time.Time   `json:"updated_at,omitempty"`
+	WorkItemId *int         `json:"work_item_id,omitempty"`
 }
 
 // TaskType defines model for TaskType.

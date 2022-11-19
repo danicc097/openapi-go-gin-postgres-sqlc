@@ -13,14 +13,14 @@ import (
 
 // TimeEntry represents a row from 'public.time_entries'.
 type TimeEntry struct {
-	TimeEntryID     int64     `json:"timeEntryID" db:"time_entry_id"`        // time_entry_id
-	WorkItemID      *int64    `json:"workItemID" db:"work_item_id"`          // work_item_id
-	ActivityID      int       `json:"activityID" db:"activity_id"`           // activity_id
-	TeamID          *int      `json:"teamID" db:"team_id"`                   // team_id
-	UserID          uuid.UUID `json:"userID" db:"user_id"`                   // user_id
-	Comment         string    `json:"comment" db:"comment"`                  // comment
-	Start           time.Time `json:"start" db:"start"`                      // start
-	DurationMinutes *int      `json:"durationMinutes" db:"duration_minutes"` // duration_minutes
+	TimeEntryID     int64     `json:"time_entry_id" db:"time_entry_id"`       // time_entry_id
+	WorkItemID      *int64    `json:"work_item_id" db:"work_item_id"`         // work_item_id
+	ActivityID      int       `json:"activity_id" db:"activity_id"`           // activity_id
+	TeamID          *int      `json:"team_id" db:"team_id"`                   // team_id
+	UserID          uuid.UUID `json:"user_id" db:"user_id"`                   // user_id
+	Comment         string    `json:"comment" db:"comment"`                   // comment
+	Start           time.Time `json:"start" db:"start"`                       // start
+	DurationMinutes *int      `json:"duration_minutes" db:"duration_minutes"` // duration_minutes
 
 	// xo fields
 	_exists, _deleted bool

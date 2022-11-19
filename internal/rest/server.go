@@ -293,6 +293,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	RegisterHandlersWithOptions(vg, handlers, GinServerOptions{BaseURL: ""})
 
+	// TODO use pgx logger instead (v5) https://github.com/jackc/pgx/issues/1381
 	switch os.Getenv("APP_ENV") {
 	case "prod":
 		db.SetErrorLogger(conf.Logger.Sugar().Errorf)

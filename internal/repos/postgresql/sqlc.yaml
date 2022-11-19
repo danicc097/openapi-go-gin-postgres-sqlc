@@ -22,6 +22,7 @@ sql:
         disable_emit_table_structs: true
         # only necessary for stdlib, pgx automatically prepares and caches statements by default
         # emit_prepared_queries: true # mutually exclusive with emit_methods_with_db_argument
+        # TODO camel when xo and sqlc using pgx v5 -> db tag to unmarshal and json tag camel
         json_tags_case_style: snake
         # TODO new flag on main branch to not use sql.Null when using pgx
         emit_pointers_for_null_types: true
