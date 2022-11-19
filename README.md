@@ -101,7 +101,7 @@ Simplified:
   - Redux toolkit has its [own
     generator](https://github.com/reduxjs/redux-toolkit/tree/master/packages/rtk-query-codegen-openapi)
     and can generate hooks. Uses rtk-query, in essenceequivalent to react-query.
-    Creators don't use openapi so that's a red flag for the generator.
+    Creators don't use openapi so that's a red flag for the generator itself.
 
   2. state management:
     - zustand + react-query should by far cover all needs. Data will be heavily
