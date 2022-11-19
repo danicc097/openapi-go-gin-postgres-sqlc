@@ -11,7 +11,7 @@ openapi-generator-cli.jar
 /cli
 /oapi-codegen
 .openapi-generator
-
+**/*.old
 /.openapi.*.yaml
 **/swagger-ui/**/*
 /test.sql

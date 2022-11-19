@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "jsxImportSource": "@emotion/react",
     "target": "ESNext",
     "useDefineForClassFields": true,
     "lib": [

@@ -27,6 +27,8 @@ type UserWrappedConfig struct {
 
 	CreateAPIKeyTimeout time.Duration
 
+	UpdateTimeout time.Duration
+
 	UserByAPIKeyTimeout time.Duration
 
 	UserByEmailTimeout time.Duration
@@ -110,6 +112,39 @@ func (_d UserWrapped) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User
 	}
 
 	return _d.User.CreateAPIKey(ctx, d, user)
+}
+
+// Update implements User.
+func (_d UserWrapped) Update(ctx context.Context, d db.DBTX, params UserUpdateParams) (up1 *db.User, err error) {
+	// -- tracing
+	ctx, _span := otel.Tracer(_d._otelName).Start(ctx, "User.Update")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":    ctx,
+				"d":      d,
+				"params": params}, map[string]interface{}{
+				"up1": up1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+
+	// -- timeout
+	var cancelFunc func()
+	if _d.config.UpdateTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)
+		defer cancelFunc()
+	}
+
+	return _d.User.Update(ctx, d, params)
 }
 
 // UserByAPIKey implements User.

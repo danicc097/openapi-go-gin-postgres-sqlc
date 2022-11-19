@@ -1,0 +1,22 @@
+/* @import url('https://fonts.googleapis.com/css?family=Roboto+Mono:400,400i,700,700i'); */
+/* @import url('https://rsms.me/inter/inter.css'); */
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500&display=swap');
+
+/*
+In case of no internet connection on client side:
+If you choose to link the css file via Js for bundling,
+then you need to have a different font-family for all your
+italic fonts and use normal font-style.
+Usage would be done through class names
+*/
+
+/* @font-face {
+  font-family: 'my-font-family-name';
+  src: url(../fonts/Exo_2/Exo2-Regular.ttf) format('truetype');
+  font-weight: normal;
+  font-weight: normal;
+} */
+
+/* .my-text-class {
+  font-family: 'my-font-family-name';
+} */
