@@ -81,17 +81,17 @@
     },
     "User": {
       "properties": {
-        "apiKeyID": {
+        "api_key_id": {
           "type": [
             "integer",
             "null"
           ]
         },
-        "createdAt": {
+        "created_at": {
           "format": "date-time",
           "type": "string"
         },
-        "deletedAt": {
+        "deleted_at": {
           "format": "date-time",
           "type": [
             "string",
@@ -101,28 +101,28 @@
         "email": {
           "type": "string"
         },
-        "externalID": {
+        "external_id": {
           "type": "string"
         },
-        "firstName": {
+        "first_name": {
           "type": [
             "string",
             "null"
           ]
         },
-        "fullName": {
+        "full_name": {
           "type": [
             "string",
             "null"
           ]
         },
-        "lastName": {
+        "last_name": {
           "type": [
             "string",
             "null"
           ]
         },
-        "roleRank": {
+        "role_rank": {
           "type": "integer"
         },
         "scopes": {
@@ -152,11 +152,11 @@
             "null"
           ]
         },
-        "updatedAt": {
+        "updated_at": {
           "format": "date-time",
           "type": "string"
         },
-        "userID": {
+        "user_id": {
           "$ref": "#/definitions/UuidUUID"
         },
         "username": {
@@ -209,11 +209,11 @@
     },
     "Task": {
       "properties": {
-        "createdAt": {
+        "created_at": {
           "format": "date-time",
           "type": "string"
         },
-        "deletedAt": {
+        "deleted_at": {
           "format": "date-time",
           "type": [
             "string",
@@ -229,23 +229,23 @@
         "metadata": {
           "$ref": "#/definitions/PgtypeJSONB"
         },
+        "task_id": {
+          "type": "integer"
+        },
         "task_type": {
           "$ref": "#/definitions/TaskType"
         },
-        "taskID": {
-          "type": "integer"
-        },
-        "taskTypeID": {
+        "task_type_id": {
           "type": "integer"
         },
         "title": {
           "type": "string"
         },
-        "updatedAt": {
+        "updated_at": {
           "format": "date-time",
           "type": "string"
         },
-        "workItemID": {
+        "work_item_id": {
           "type": "integer"
         }
       },
@@ -263,10 +263,10 @@
         "name": {
           "type": "string"
         },
-        "taskTypeID": {
+        "task_type_id": {
           "type": "integer"
         },
-        "teamID": {
+        "team_id": {
           "type": "integer"
         }
       },
@@ -278,7 +278,7 @@
     },
     "Team": {
       "properties": {
-        "createdAt": {
+        "created_at": {
           "format": "date-time",
           "type": "string"
         },
@@ -291,10 +291,10 @@
         "name": {
           "type": "string"
         },
-        "projectID": {
+        "project_id": {
           "type": "integer"
         },
-        "teamID": {
+        "team_id": {
           "type": "integer"
         },
         "time_entries": {
@@ -306,7 +306,7 @@
             "null"
           ]
         },
-        "updatedAt": {
+        "updated_at": {
           "format": "date-time",
           "type": "string"
         },
@@ -325,13 +325,13 @@
     },
     "TimeEntry": {
       "properties": {
-        "activityID": {
+        "activity_id": {
           "type": "integer"
         },
         "comment": {
           "type": "string"
         },
-        "durationMinutes": {
+        "duration_minutes": {
           "type": [
             "integer",
             "null"
@@ -341,19 +341,19 @@
           "format": "date-time",
           "type": "string"
         },
-        "teamID": {
+        "team_id": {
           "type": [
             "integer",
             "null"
           ]
         },
-        "timeEntryID": {
+        "time_entry_id": {
           "type": "integer"
         },
-        "userID": {
+        "user_id": {
           "$ref": "#/definitions/UuidUUID"
         },
-        "workItemID": {
+        "work_item_id": {
           "type": [
             "integer",
             "null"
@@ -394,18 +394,18 @@
         "closed": {
           "type": "boolean"
         },
-        "createdAt": {
+        "created_at": {
           "format": "date-time",
           "type": "string"
         },
-        "deletedAt": {
+        "deleted_at": {
           "format": "date-time",
           "type": [
             "string",
             "null"
           ]
         },
-        "kanbanStepID": {
+        "kanban_step_id": {
           "type": "integer"
         },
         "metadata": {
@@ -420,7 +420,7 @@
             "null"
           ]
         },
-        "teamID": {
+        "team_id": {
           "type": "integer"
         },
         "time_entries": {
@@ -435,7 +435,7 @@
         "title": {
           "type": "string"
         },
-        "updatedAt": {
+        "updated_at": {
           "format": "date-time",
           "type": "string"
         },
@@ -457,10 +457,10 @@
             "null"
           ]
         },
-        "workItemID": {
+        "work_item_id": {
           "type": "integer"
         },
-        "workItemTypeID": {
+        "work_item_type_id": {
           "type": "integer"
         }
       },
@@ -469,24 +469,24 @@
     },
     "WorkItemComment": {
       "properties": {
-        "createdAt": {
+        "created_at": {
           "format": "date-time",
           "type": "string"
         },
         "message": {
           "type": "string"
         },
-        "updatedAt": {
+        "updated_at": {
           "format": "date-time",
           "type": "string"
         },
-        "userID": {
+        "user_id": {
           "$ref": "#/definitions/UuidUUID"
         },
-        "workItemCommentID": {
+        "work_item_comment_id": {
           "type": "integer"
         },
-        "workItemID": {
+        "work_item_id": {
           "type": "integer"
         }
       },

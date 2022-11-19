@@ -43,7 +43,7 @@
     "ajv": "^8.11.0",
     "ajv-formats": "^2.1.1",
     "dotenv": "^16.0.2",
-    "openapi-typescript": "^5.4.1",
+    "openapi-typescript": "^6.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^8.0.2",

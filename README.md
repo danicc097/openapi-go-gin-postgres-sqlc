@@ -72,7 +72,8 @@ Simplified:
 ## TODOs
 
 - Pgx v5 + [logging](https://github.com/jackc/pgx/issues/1381) (dependent on
-  sqlc support) to support custom struct tag scanning and allow switch to json camel
+  sqlc support) to support custom struct tag scanning and allow switch to json
+  camel
 
 - Meaningful project name.
 
@@ -94,9 +95,14 @@ Simplified:
 
 - frontend miscellanea:
   1. codegen from oas:
-  - ts client (openapitools)
+  - ~~ts client (openapitools)~~ keep away from this project
   - react-query components (fabien0102/openapi-codegen)
-  - React Query hooks, Axios requests and Typescript types (rametta/rapini)
+  - React Query hooks, Axios requests and Typescript types (rametta/rapini) generation
   - Redux toolkit has its [own
     generator](https://github.com/reduxjs/redux-toolkit/tree/master/packages/rtk-query-codegen-openapi)
-    and can generate hooks. Uses rtk-query.
+    and can generate hooks. Uses rtk-query, in essenceequivalent to react-query.
+    Creators don't use openapi so that's a red flag for the generator.
+
+  2. state management:
+    - zustand + react-query should by far cover all needs. Data will be heavily
+      dependent on backend.

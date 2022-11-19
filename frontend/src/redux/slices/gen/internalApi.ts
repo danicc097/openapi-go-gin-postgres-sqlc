@@ -60,84 +60,84 @@ export type HttpValidationError = {
 export type PgtypeJsonb = object
 export type UuidUuid = string
 export type TimeEntry = {
-  activityID?: number
+  activity_id?: number
   comment?: string
-  durationMinutes?: number | null
+  duration_minutes?: number | null
   start?: string
-  teamID?: number | null
-  timeEntryID?: number
-  userID?: UuidUuid
-  workItemID?: number | null
+  team_id?: number | null
+  time_entry_id?: number
+  user_id?: UuidUuid
+  work_item_id?: number | null
 }
 export type Team = {
-  createdAt?: string
+  created_at?: string
   description?: string
   metadata?: PgtypeJsonb
   name?: string
-  projectID?: number
-  teamID?: number
+  project_id?: number
+  team_id?: number
   time_entries?: TimeEntry[] | null
-  updatedAt?: string
+  updated_at?: string
   users?: User[] | null
 }
 export type TaskType = {
   color?: string
   description?: string
   name?: string
-  taskTypeID?: number
-  teamID?: number
+  task_type_id?: number
+  team_id?: number
 } | null
 export type Task = {
-  createdAt?: string
-  deletedAt?: string | null
+  created_at?: string
+  deleted_at?: string | null
   finished?: boolean | null
   metadata?: PgtypeJsonb
+  task_id?: number
   task_type?: TaskType
-  taskID?: number
-  taskTypeID?: number
+  task_type_id?: number
   title?: string
-  updatedAt?: string
-  workItemID?: number
+  updated_at?: string
+  work_item_id?: number
 }
 export type WorkItemComment = {
-  createdAt?: string
+  created_at?: string
   message?: string
-  updatedAt?: string
-  userID?: UuidUuid
-  workItemCommentID?: number
-  workItemID?: number
+  updated_at?: string
+  user_id?: UuidUuid
+  work_item_comment_id?: number
+  work_item_id?: number
 }
 export type WorkItem = {
   closed?: boolean
-  createdAt?: string
-  deletedAt?: string | null
-  kanbanStepID?: number
+  created_at?: string
+  deleted_at?: string | null
+  kanban_step_id?: number
   metadata?: PgtypeJsonb
   tasks?: Task[] | null
-  teamID?: number
+  team_id?: number
   time_entries?: TimeEntry[] | null
   title?: string
-  updatedAt?: string
+  updated_at?: string
   users?: User[] | null
   work_item_comments?: WorkItemComment[] | null
-  workItemID?: number
-  workItemTypeID?: number
+  work_item_id?: number
+  work_item_type_id?: number
 }
 export type User = {
-  apiKeyID?: number | null
-  createdAt?: string
-  deletedAt?: string | null
+  api_key_id?: number | null
+  created_at?: string
+  deleted_at?: string | null
   email?: string
-  externalID?: string
-  firstName?: string | null
-  fullName?: string | null
-  lastName?: string | null
-  roleRank?: number
+  external_id?: string
+  first_name?: string | null
+  full_name?: string | null
+  last_name?: string | null
+  role_rank?: number
   scopes?: string[] | null
   teams?: Team[] | null
   time_entries?: TimeEntry[] | null
-  updatedAt?: string
-  userID?: UuidUuid
+  updated_at?: string
+  user_id?: UuidUuid
   username?: string
   work_items?: WorkItem[] | null
 }
