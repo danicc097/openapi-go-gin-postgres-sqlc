@@ -13,6 +13,8 @@ import type { ValidationErrors } from 'src/client-validator/validate'
 import { useForm } from '@mantine/form'
 import { validateField } from 'src/utils/validation'
 import { AttributeKeys, newFrontendSpan, tracer } from 'src/TraceProvider'
+import roles from '@roles'
+import scopes from '@scopes'
 
 // TODO role changing see:
 // https://codesandbox.io/s/wonderful-danilo-u3m1jz?file=/src/TransactionsTable.js

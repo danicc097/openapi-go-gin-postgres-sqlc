@@ -26,6 +26,12 @@
       "@assets/*": [
         "assets/*"
       ],
+      "@roles": [
+        "../roles.json"
+      ],
+      "@scopes": [
+        "../scopes.json"
+      ],
     }
   },
   "include": [
