@@ -8,8 +8,17 @@ const PORT = import.meta.env.DEV ? ':' + Config.API_PORT : ''
 export const emptyInternalApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `https://${Config.DOMAIN}${PORT}${Config.API_PREFIX}${Config.API_VERSION}`,
+    // in frontend always token
+    prepareHeaders: (headers, { getState }) => {
+      const token = '' // TODO get from LS
+
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`)
+      }
+
+      return headers
+    },
   }),
   endpoints: () => ({}),
   reducerPath: 'internalApi',
-  // TODO prepareHeaders for auth
 })

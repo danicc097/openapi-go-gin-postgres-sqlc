@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import './App.css'
-import { CreateUserRequestDecoder } from './client-validator/gen/decoders'
-import { useCreateUserMutation } from './redux/slices/gen/internalApi'
+import { UpdateUserRequestDecoder } from './client-validator/gen/decoders'
+import { useUpdateUserMutation } from './redux/slices/gen/internalApi'
 import { useUI } from 'src/hooks/ui'
 import { Alert, Button, Group, PasswordInput, Text, TextInput } from '@mantine/core'
 import { IconAlertCircle } from '@tabler/icons'
@@ -42,9 +42,9 @@ to report to Jaeger backends.
 
 */
 
-type RequiredUserCreateKeys = RequiredKeys<schemas['CreateUserRequest']>
+type RequiredUserUpdateKeys = RequiredKeys<schemas['UpdateUserRequest']>
 
-const REQUIRED_USER_CREATE_KEYS: Record<RequiredUserCreateKeys, boolean> = {
+const REQUIRED_USER_UPDATE_KEYS: Record<RequiredUserUpdateKeys, boolean> = {
   username: true,
   email: true,
   password: true,
@@ -56,29 +56,33 @@ function App() {
   const [calloutErrors, setCalloutError] = useState<ValidationErrors>(null)
 
   const { addToast } = useUI()
-  const [createUser, createUserResult] = useCreateUserMutation()
+  const [updateUser, updateUserResult] = useUpdateUserMutation()
 
-  type CreateUserRequestForm = schemas['CreateUserRequest'] & {
-    passwordConfirm: string
-  }
+  type UpdateUserRequestForm = schemas['UpdateUserRequest']
 
-  const form = useForm<CreateUserRequestForm>({
-    // TODO blank
-    initialValues: { username: 'user', email: 'user@mail', password: '12341234', passwordConfirm: '12341234' },
+  const form = useForm<UpdateUserRequestForm>({
+    // TODO not  blank for exp purposes
+    initialValues: {
+      first_name: 'first name',
+      last_name: 'last name',
+      role: 'manager',
+      scopes: ['test-scope', 'users:read', 'work-item:review'],
+    },
     validateInputOnChange: true,
+    // forget about this, will use eui
     validate: {
-      username: (v, vv, path) => validateField(CreateUserRequestDecoder, path, vv),
-      email: (v, vv, path) => validateField(CreateUserRequestDecoder, path, vv),
-      password: (v, vv, path) => validateField(CreateUserRequestDecoder, path, vv),
-      passwordConfirm: (v, vv, path) => (v !== vv.password ? 'Passwords do not match' : null),
+      first_name: (v, vv, path) => validateField(UpdateUserRequestDecoder, path, vv),
+      last_name: (v, vv, path) => validateField(UpdateUserRequestDecoder, path, vv),
+      role: (v, vv, path) => validateField(UpdateUserRequestDecoder, path, vv),
+      scopes: (v, vv, path) => validateField(UpdateUserRequestDecoder, path, vv),
     },
   })
 
   const fetchData = async () => {
     try {
-      const createUserRequest = CreateUserRequestDecoder.decode(form.values)
+      const updateUserRequest = UpdateUserRequestDecoder.decode(form.values)
 
-      const payload = await createUser(createUserRequest).unwrap()
+      const payload = await updateUser(updateUserRequest).unwrap()
       console.log('fulfilled', payload)
       addToast('done')
       setCalloutError(null)
@@ -95,9 +99,9 @@ function App() {
   }
 
   const renderResult = () =>
-    createUserResult ? (
+    updateUserResult ? (
       <Prism style={{ textAlign: 'left' }} language="json">
-        {JSON.stringify(createUserResult, null, '\t')}
+        {JSON.stringify(updateUserResult, null, '\t')}
       </Prism>
     ) : null
 
@@ -145,7 +149,7 @@ function App() {
       // field, just that the field has an error,
       // so all validation errors are aggregated with full description in a callout)
       try {
-        CreateUserRequestDecoder.decode(form.values)
+        UpdateUserRequestDecoder.decode(form.values)
         setCalloutError(null)
       } catch (error) {
         if (error.validationErrors) {
@@ -174,28 +178,28 @@ function App() {
       <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
         <form onSubmit={form.onSubmit(handleSubmit, handleError)}>
           <TextInput
-            withAsterisk={REQUIRED_USER_CREATE_KEYS['email']}
-            label="Email"
+            withAsterisk={REQUIRED_USER_UPDATE_KEYS['first_name']}
+            label="first_name"
             placeholder="mail@example.com"
-            {...form.getInputProps('email')}
+            {...form.getInputProps('first_name')}
           />
           <TextInput
-            withAsterisk={REQUIRED_USER_CREATE_KEYS['username']}
-            label="Username"
-            placeholder="username"
-            {...form.getInputProps('username')}
+            withAsterisk={REQUIRED_USER_UPDATE_KEYS['last_name']}
+            label="last name"
+            placeholder="last_name"
+            {...form.getInputProps('last_name')}
           />
-          <PasswordInput
-            withAsterisk={REQUIRED_USER_CREATE_KEYS['password']}
-            label="Password"
-            placeholder="password"
-            {...form.getInputProps('password')}
+          <TextInput
+            withAsterisk={REQUIRED_USER_UPDATE_KEYS['role']}
+            label="role"
+            placeholder="role"
+            {...form.getInputProps('role')}
           />
-          <PasswordInput
-            withAsterisk={REQUIRED_USER_CREATE_KEYS['passwordConfirm']}
-            label="Confirm password"
+          <TextInput
+            withAsterisk={REQUIRED_USER_UPDATE_KEYS['scopes']}
+            label="scopes "
             placeholder="password"
-            {...form.getInputProps('passwordConfirm')}
+            {...form.getInputProps('scopes')}
           />
           <Group position="right" mt="md">
             <Button type="submit">Submit</Button>
