@@ -8,7 +8,7 @@ x-logging: &default-logging
 # Debug config with docker-compose --env-file <...> config
 services:
   jaeger:
-    image: jaegertracing/all-in-one:1.38
+    image: jaegertracing/all-in-one:1.39
     networks:
       - traefik-net
       - otel-network

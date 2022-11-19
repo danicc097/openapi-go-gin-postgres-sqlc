@@ -5,6 +5,7 @@ import './index.css'
 import configureReduxStore from './redux/store'
 import TraceProvider from './TraceProvider'
 import ReactDOM from 'react-dom'
+import './icons'
 
 export const store = configureReduxStore()
 

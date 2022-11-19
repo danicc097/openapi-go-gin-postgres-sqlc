@@ -32,6 +32,7 @@ type TraceProviderProps = {
 }
 
 // IMPORTANT: For host browser in localhost, ensure port 9411 forwarded.
+// TODO return early if not authenticated
 export default function TraceProvider({ children }: TraceProviderProps) {
   const provider = new WebTracerProvider({
     resource: new Resource({
