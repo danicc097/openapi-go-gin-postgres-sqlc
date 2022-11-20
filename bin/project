@@ -508,7 +508,6 @@ x.test.backend-setup() {
 # Args: [...]
 x.test() {
   { { {
-    x.test.backend-setup
     APP_ENV="$env" go test "$@" ./...
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }

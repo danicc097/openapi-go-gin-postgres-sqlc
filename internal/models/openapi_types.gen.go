@@ -101,6 +101,12 @@ type TimeEntry struct {
 	WorkItemId      *int       `json:"work_item_id"`
 }
 
+// UpdateUserAuthRequest represents User authorization data to update
+type UpdateUserAuthRequest struct {
+	Role   *Role    `json:"role,omitempty"`
+	Scopes *[]Scope `json:"scopes,omitempty"`
+}
+
 // UpdateUserRequest represents User data to update
 type UpdateUserRequest struct {
 	// FirstName originally from auth server but updatable
@@ -136,12 +142,6 @@ type UserAPIKey struct {
 	ExpiresOn    *time.Time `json:"expires_on,omitempty"`
 	UserApiKeyId *int       `json:"user_api_key_id,omitempty"`
 	UserId       *UuidUUID  `json:"user_id,omitempty"`
-}
-
-// UpdateUserAuthRequest represents User authorization data to update
-type UpdateUserAuthRequest struct {
-	Role   *Role    `json:"role,omitempty"`
-	Scopes *[]Scope `json:"scopes,omitempty"`
 }
 
 // UuidUUID defines model for UuidUUID.

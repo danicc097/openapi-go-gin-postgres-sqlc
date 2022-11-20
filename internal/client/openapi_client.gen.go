@@ -114,6 +114,12 @@ type TimeEntry struct {
 	WorkItemId      *int       `json:"work_item_id"`
 }
 
+// UpdateUserAuthRequest represents User authorization data to update
+type UpdateUserAuthRequest struct {
+	Role   *Role    `json:"role,omitempty"`
+	Scopes *[]Scope `json:"scopes,omitempty"`
+}
+
 // UpdateUserRequest represents User data to update
 type UpdateUserRequest struct {
 	// FirstName originally from auth server but updatable
@@ -149,12 +155,6 @@ type UserAPIKey struct {
 	ExpiresOn    *time.Time `json:"expires_on,omitempty"`
 	UserApiKeyId *int       `json:"user_api_key_id,omitempty"`
 	UserId       *UuidUUID  `json:"user_id,omitempty"`
-}
-
-// UpdateUserAuthRequest represents User authorization data to update
-type UpdateUserAuthRequest struct {
-	Role   *Role    `json:"role,omitempty"`
-	Scopes *[]Scope `json:"scopes,omitempty"`
 }
 
 // UuidUUID defines model for UuidUUID.
@@ -831,6 +831,7 @@ func (r DeleteUserResponse) StatusCode() int {
 type UpdateUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *User
 }
 
 // Status returns HTTPResponse.Status
@@ -852,6 +853,7 @@ func (r UpdateUserResponse) StatusCode() int {
 type UpdateUserAuthorizationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *User
 }
 
 // Status returns HTTPResponse.Status
@@ -1082,6 +1084,16 @@ func ParseUpdateUserResponse(rsp *http.Response) (*UpdateUserResponse, error) {
 		HTTPResponse: rsp,
 	}
 
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest User
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
 	return response, nil
 }
 
@@ -1096,6 +1108,16 @@ func ParseUpdateUserAuthorizationResponse(rsp *http.Response) (*UpdateUserAuthor
 	response := &UpdateUserAuthorizationResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest User
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
