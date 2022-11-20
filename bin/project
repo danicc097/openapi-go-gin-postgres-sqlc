@@ -500,6 +500,7 @@ x.test.backend-setup() {
     # only once before any test starts
     run_shared_services up -d --build --remove-orphans
     [[ -z $NO_GEN ]] && x.gen
+    # no need to migrate, done on every test run internally
     drop_and_recreate_db "postgres_test"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }

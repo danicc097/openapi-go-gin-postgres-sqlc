@@ -216,7 +216,9 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	// with the returned tokens from the token endpoint
 	// in this example the callback function itself is wrapped by the UserinfoCallback which
 	// will call the Userinfo endpoint, check the sub and pass the info into the callback function
-	// TODO in reality we would redirect to our app frontend instead
+	// TODO in reality we would redirect back to our app frontend instead
+	// this callback must also be extended to create an access token (or any other login method) for our own
+	// app (and create user if not found) once the external auth request is authorized
 	vg.Any(conf.MyProviderCallbackPath, gin.WrapH(rp.CodeExchangeHandler(rp.UserinfoCallback(marshalUserinfo), provider)))
 
 	// if you would use the callback without calling the userinfo endpoint, simply switch the callback handler for:

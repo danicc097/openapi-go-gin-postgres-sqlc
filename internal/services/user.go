@@ -119,7 +119,6 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 
 	if caller.RoleRank < adminRole.Rank {
 		if user.UserID == caller.UserID {
-			// ensure not removing existing scopes from target user
 			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot update your own authorization information")
 		}
 	}
@@ -130,8 +129,13 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		if err != nil {
 			return nil, errors.Wrap(err, "authzsvc.RoleByName")
 		}
-		if role.Rank > user.RoleRank {
-			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set an user rank higher than self")
+		if role.Rank > caller.RoleRank {
+			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set a user rank higher than self")
+		}
+		if caller.RoleRank < adminRole.Rank {
+			if role.Rank < user.RoleRank {
+				return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot demote a user role")
+			}
 		}
 		rank = &role.Rank
 	}

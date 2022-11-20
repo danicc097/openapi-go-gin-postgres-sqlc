@@ -38,7 +38,7 @@ func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.
 	return ""
 }
 
-// CreateAccessTokenForUser creates a new token for a user.
+// CreateAccessTokenForUser creates a new API key for a user.
 func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User) (*db.UserAPIKey, error) {
 	uak, err := a.usvc.CreateAPIKey(ctx, a.pool, user)
 	if err != nil {
@@ -48,7 +48,7 @@ func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User)
 	return uak, nil
 }
 
-// GetClaimFromToken creates a new token for a user.
+// GetClaimFromToken retrieves a claim from a token.
 func (a *Authentication) GetClaimFromToken(ctx context.Context, token string, claim string) any {
 	return nil
 }
