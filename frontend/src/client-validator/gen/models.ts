@@ -10,7 +10,6 @@ export type Location = string[]
 export type Message = string
 export type ErrorType = string
 export type Detail = ValidationError[]
-export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 export type Scope =
   | 'test-scope'
   | 'users:read'
@@ -19,6 +18,7 @@ export type Scope =
   | 'team-settings:write'
   | 'project-settings:write'
   | 'work-item:review'
+export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 /**
  * Role in work item for a member.
  */
@@ -71,6 +71,11 @@ export interface AUser {
    * originally from auth server but updatable
    */
   last_name?: string
+}
+/**
+ * represents User authorization data to update
+ */
+export interface AUser1 {
   role?: Role
   scopes?: Scope[]
 }

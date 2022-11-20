@@ -20,6 +20,14 @@ const injectedRtkApi = api
         query: () => ({ url: `/user/me` }),
         providesTags: ['user'],
       }),
+      updateUserAuthorization: build.mutation<UpdateUserAuthorizationRes, UpdateUserAuthorizationArgs>({
+        query: (queryArg) => ({
+          url: `/user/${queryArg.id}/authorization`,
+          method: 'PATCH',
+          body: queryArg.updateUserAuthRequest,
+        }),
+        invalidatesTags: ['user'],
+      }),
       deleteUser: build.mutation<DeleteUserRes, DeleteUserArgs>({
         query: (queryArg) => ({ url: `/user/${queryArg}`, method: 'DELETE' }),
         invalidatesTags: ['user'],
@@ -40,14 +48,21 @@ export type AdminPingRes = unknown
 export type AdminPingArgs = void
 export type GetCurrentUserRes = /** status 200 ok */ User
 export type GetCurrentUserArgs = void
+export type UpdateUserAuthorizationRes = /** status 200 ok */ User
+export type UpdateUserAuthorizationArgs = {
+  /** user_id that needs to be updated */
+  id: string
+  /** Updated user object */
+  updateUserAuthRequest: AUser
+}
 export type DeleteUserRes = unknown
 export type DeleteUserArgs = /** user_id that needs to be updated */ string
-export type UpdateUserRes = unknown
+export type UpdateUserRes = /** status 200 ok */ User
 export type UpdateUserArgs = {
   /** user_id that needs to be updated */
   id: string
   /** Updated user object */
-  updateUserRequest: AUser
+  updateUserRequest: AUser2
 }
 export type ValidationError = {
   loc: string[]
@@ -151,16 +166,19 @@ export type Scope =
   | 'project-settings:write'
   | 'work-item:review'
 export type AUser = {
-  first_name?: string
-  last_name?: string
   role?: Role
   scopes?: Scope[]
+}
+export type AUser2 = {
+  first_name?: string
+  last_name?: string
 }
 export const {
   usePingQuery,
   useOpenapiYamlGetQuery,
   useAdminPingQuery,
   useGetCurrentUserQuery,
+  useUpdateUserAuthorizationMutation,
   useDeleteUserMutation,
   useUpdateUserMutation,
 } = injectedRtkApi

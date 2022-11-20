@@ -16,33 +16,6 @@
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "UpdateUserRequest": {
-      "description": "represents User data to update",
-      "properties": {
-        "first_name": {
-          "description": "originally from auth server but updatable",
-          "type": "string",
-          "pattern": "^[ a-zA-Z0-9_-]+$"
-        },
-        "last_name": {
-          "description": "originally from auth server but updatable",
-          "type": "string",
-          "pattern": "^[ a-zA-Z0-9_-]+$"
-        },
-        "role": {
-          "$ref": "#/definitions/Role"
-        },
-        "scopes": {
-          "items": {
-            "$ref": "#/definitions/Scope"
-          },
-          "type": "array"
-        }
-      },
-      "title": "a User",
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "Scope": {
       "type": "string",
       "enum": [
@@ -77,6 +50,41 @@
         "preparer",
         "reviewer"
       ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UpdateUserRequest": {
+      "description": "represents User data to update",
+      "properties": {
+        "first_name": {
+          "description": "originally from auth server but updatable",
+          "type": "string",
+          "pattern": "^[ a-zA-Z0-9_-]+$"
+        },
+        "last_name": {
+          "description": "originally from auth server but updatable",
+          "type": "string",
+          "pattern": "^[ a-zA-Z0-9_-]+$"
+        }
+      },
+      "title": "a User",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UpdateUserAuthRequest": {
+      "description": "represents User authorization data to update",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/Role"
+        },
+        "scopes": {
+          "items": {
+            "$ref": "#/definitions/Scope"
+          },
+          "type": "array"
+        }
+      },
+      "title": "a User",
+      "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "User": {
@@ -498,9 +506,6 @@
     "HTTPValidationError": {
       "$ref": "#/definitions/HTTPValidationError"
     },
-    "UpdateUserRequest": {
-      "$ref": "#/definitions/UpdateUserRequest"
-    },
     "Scope": {
       "$ref": "#/definitions/Scope"
     },
@@ -509,6 +514,12 @@
     },
     "WorkItemRole": {
       "$ref": "#/definitions/WorkItemRole"
+    },
+    "UpdateUserRequest": {
+      "$ref": "#/definitions/UpdateUserRequest"
+    },
+    "UpdateUserAuthRequest": {
+      "$ref": "#/definitions/UpdateUserAuthRequest"
     },
     "User": {
       "$ref": "#/definitions/User"

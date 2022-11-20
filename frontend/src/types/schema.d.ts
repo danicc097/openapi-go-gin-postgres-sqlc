@@ -31,6 +31,10 @@ export interface paths {
     /** returns the logged in user */
     get: operations["GetCurrentUser"];
   };
+  "/user/{id}/authorization": {
+    /** updates user role and scopes by id */
+    patch: operations["UpdateUserAuthorization"];
+  };
   "/user/{id}": {
     /** deletes the user by id */
     delete: operations["DeleteUser"];
@@ -46,23 +50,6 @@ export interface components {
       /** Detail */
       detail?: (components["schemas"]["ValidationError"])[];
     };
-    /**
-     * a User 
-     * @description represents User data to update 
-     * @example {
-     *   "role": "manager",
-     *   "first_name": "Jane",
-     *   "last_name": "Doe"
-     * }
-     */
-    UpdateUserRequest: {
-      /** @description originally from auth server but updatable */
-      first_name?: string;
-      /** @description originally from auth server but updatable */
-      last_name?: string;
-      role?: components["schemas"]["Role"];
-      scopes?: (components["schemas"]["Scope"])[];
-    };
     /** @enum {string} */
     Scope: "test-scope" | "users:read" | "users:write" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item:review";
     /** @enum {string} */
@@ -73,6 +60,34 @@ export interface components {
      * @enum {string}
      */
     WorkItemRole: "preparer" | "reviewer";
+    /**
+     * a User 
+     * @description represents User data to update 
+     * @example {
+     *   "first_name": "Jane",
+     *   "last_name": "Doe"
+     * }
+     */
+    UpdateUserRequest: {
+      /** @description originally from auth server but updatable */
+      first_name?: string;
+      /** @description originally from auth server but updatable */
+      last_name?: string;
+    };
+    /**
+     * a User 
+     * @description represents User authorization data to update 
+     * @example {
+     *   "role": "manager",
+     *   "scopes": [
+     *     "test-scope"
+     *   ]
+     * }
+     */
+    UpdateUserAuthRequest: {
+      role?: components["schemas"]["Role"];
+      scopes?: (components["schemas"]["Scope"])[];
+    };
     User: {
       api_key_id?: number | null;
       /** Format: date-time */
@@ -255,6 +270,23 @@ export interface operations {
       };
     };
   };
+  UpdateUserAuthorization: {
+    /** updates user role and scopes by id */
+    /** @description Updated user object */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateUserAuthRequest"];
+      };
+    };
+    responses: {
+      /** @description ok */
+      200: {
+        content: {
+          "application/json": components["schemas"]["User"];
+        };
+      };
+    };
+  };
   DeleteUser: {
     /** deletes the user by id */
     responses: {
@@ -271,8 +303,12 @@ export interface operations {
       };
     };
     responses: {
-      /** @description User not found */
-      404: never;
+      /** @description ok */
+      200: {
+        content: {
+          "application/json": components["schemas"]["User"];
+        };
+      };
     };
   };
 }

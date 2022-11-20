@@ -5,10 +5,11 @@
 
 import {
   HTTPValidationError,
-  UpdateUserRequest,
   Scope,
   Role,
   WorkItemRole,
+  UpdateUserRequest,
+  UpdateUserAuthRequest,
   User,
   ValidationError,
   PgtypeJSONB,
@@ -24,10 +25,11 @@ import {
 
 export const schemaDefinitions = {
   HTTPValidationError: info<HTTPValidationError>('HTTPValidationError', '#/definitions/HTTPValidationError'),
-  UpdateUserRequest: info<UpdateUserRequest>('UpdateUserRequest', '#/definitions/UpdateUserRequest'),
   Scope: info<Scope>('Scope', '#/definitions/Scope'),
   Role: info<Role>('Role', '#/definitions/Role'),
   WorkItemRole: info<WorkItemRole>('WorkItemRole', '#/definitions/WorkItemRole'),
+  UpdateUserRequest: info<UpdateUserRequest>('UpdateUserRequest', '#/definitions/UpdateUserRequest'),
+  UpdateUserAuthRequest: info<UpdateUserAuthRequest>('UpdateUserAuthRequest', '#/definitions/UpdateUserAuthRequest'),
   User: info<User>('User', '#/definitions/User'),
   ValidationError: info<ValidationError>('ValidationError', '#/definitions/ValidationError'),
   PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
