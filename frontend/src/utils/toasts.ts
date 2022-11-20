@@ -19,4 +19,5 @@ export enum ToastId {
   CreateGlobalNotificationFailure = 'toastCreateGlobalNotificationFailure',
   CreatePersonalNotificationSuccess = 'toastCreatePersonalNotificationSuccess',
   CreatePersonalNotificationFailure = 'toastCreatePersonalNotificationFailure',
+  NoticationAPIAccessDenied = 'toastNoticationAPIAccessDenied',
 }

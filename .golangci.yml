@@ -3,7 +3,8 @@
 linters:
   enable-all: true
   disable:
-    - json(camel)
+    # - json(camel)
+    - lll
     - wsl
     - nosnakecase
     - godox # marks TODO, FIX, ...
@@ -42,6 +43,11 @@ linters-settings:
     simplify: true
   lll:
     line-length: 130
+  staticcheck:
+    go: "1.19"
+    checks:
+      - "all"
+      - "-SA1029"
   gci:
     sections:
       - standard
@@ -55,7 +61,6 @@ linters-settings:
     allow:
       - error
       - stdlib
-      #
       - "go.opentelemetry.io/otel/trace.Span"
   varnamelen:
     max-distance: 10
@@ -63,6 +68,8 @@ linters-settings:
     ignore-map-index-ok: true
     ignore-chan-recv-ok: true
     ignore-decls:
+      - d db.DBTX
+      - c *gin.Context
       - b bytes.Buffer
       - h http.Handler
       - id string
@@ -75,6 +82,14 @@ linters-settings:
       - internaldomain.NewErrorf(
       - internal.NewErrorf(
       - internal.WrapErrorf(
+      - .Errorf(
+      - errors.New(
+      - errors.Unwrap(
+      - .Wrap(
+      - .Wrapf(
+      - .WithMessage(
+      - .WithMessagef(
+      - .WithStack(
     ignorePackageGlobs:
       - github.com/danicc097/openapi-go-gin-postgres-sqlc/*
 issues:

@@ -1,0 +1,25 @@
+/* border for nav button */
+/* global style for all hovered and focused anchor tags to not show an underline and instead highlight dodgerblue */
+a:hover,
+a:focus {
+  text-decoration: none !important;
+  color: dodgerblue;
+}
+
+.euiHeaderSectionItem:after {
+  top: 0 !important;
+}
+
+/* disable scrollbar */
+/* ::-webkit-scrollbar {
+  display: none !important;
+} */
+
+.hide-scrollbar {
+  scrollbar-width: none !important; /* Firefox 64 */
+  -ms-overflow-style: none !important; /* Internet Explorer 11 */
+}
+
+* {
+  font-family: 'Exo 2', sans-serif !important;
+}

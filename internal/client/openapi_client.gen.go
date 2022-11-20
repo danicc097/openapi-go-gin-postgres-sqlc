@@ -12,12 +12,200 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"gopkg.in/yaml.v2"
 
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
 )
+
+const (
+	Api_keyScopes     = "api_key.Scopes"
+	Bearer_authScopes = "bearer_auth.Scopes"
+)
+
+// Defines values for Role.
+const (
+	RoleAdmin        Role = "admin"
+	RoleAdvancedUser Role = "advancedUser"
+	RoleGuest        Role = "guest"
+	RoleManager      Role = "manager"
+	RoleSuperAdmin   Role = "superAdmin"
+	RoleUser         Role = "user"
+)
+
+// Defines values for Scope.
+const (
+	ProjectSettingsWrite Scope = "project-settings:write"
+	ScopesWrite          Scope = "scopes:write"
+	TeamSettingsWrite    Scope = "team-settings:write"
+	TestScope            Scope = "test-scope"
+	UsersRead            Scope = "users:read"
+	UsersWrite           Scope = "users:write"
+	WorkItemReview       Scope = "work-item:review"
+)
+
+// Defines values for WorkItemRole.
+const (
+	Preparer WorkItemRole = "preparer"
+	Reviewer WorkItemRole = "reviewer"
+)
+
+// HTTPValidationError defines model for HTTPValidationError.
+type HTTPValidationError struct {
+	Detail *[]ValidationError `json:"detail,omitempty"`
+}
+
+// PgtypeJSONB defines model for PgtypeJSONB.
+type PgtypeJSONB = map[string]interface{}
+
+// Role defines model for Role.
+type Role string
+
+// Scope defines model for Scope.
+type Scope string
+
+// Task defines model for Task.
+type Task struct {
+	CreatedAt  *time.Time   `json:"created_at,omitempty"`
+	DeletedAt  *time.Time   `json:"deleted_at"`
+	Finished   *bool        `json:"finished"`
+	Metadata   *PgtypeJSONB `json:"metadata,omitempty"`
+	TaskId     *int         `json:"task_id,omitempty"`
+	TaskType   *TaskType    `json:"task_type"`
+	TaskTypeId *int         `json:"task_type_id,omitempty"`
+	Title      *string      `json:"title,omitempty"`
+	UpdatedAt  *time.Time   `json:"updated_at,omitempty"`
+	WorkItemId *int         `json:"work_item_id,omitempty"`
+}
+
+// TaskType defines model for TaskType.
+type TaskType struct {
+	Color       *string `json:"color,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	TaskTypeId  *int    `json:"task_type_id,omitempty"`
+	TeamId      *int    `json:"team_id,omitempty"`
+}
+
+// Team defines model for Team.
+type Team struct {
+	CreatedAt   *time.Time   `json:"created_at,omitempty"`
+	Description *string      `json:"description,omitempty"`
+	Metadata    *PgtypeJSONB `json:"metadata,omitempty"`
+	Name        *string      `json:"name,omitempty"`
+	ProjectId   *int         `json:"project_id,omitempty"`
+	TeamId      *int         `json:"team_id,omitempty"`
+	TimeEntries *[]TimeEntry `json:"time_entries"`
+	UpdatedAt   *time.Time   `json:"updated_at,omitempty"`
+	Users       *[]User      `json:"users"`
+}
+
+// TimeEntry defines model for TimeEntry.
+type TimeEntry struct {
+	ActivityId      *int       `json:"activity_id,omitempty"`
+	Comment         *string    `json:"comment,omitempty"`
+	DurationMinutes *int       `json:"duration_minutes"`
+	Start           *time.Time `json:"start,omitempty"`
+	TeamId          *int       `json:"team_id"`
+	TimeEntryId     *int       `json:"time_entry_id,omitempty"`
+	UserId          *UuidUUID  `json:"user_id,omitempty"`
+	WorkItemId      *int       `json:"work_item_id"`
+}
+
+// UpdateUserAuthRequest represents User authorization data to update
+type UpdateUserAuthRequest struct {
+	Role   *Role    `json:"role,omitempty"`
+	Scopes *[]Scope `json:"scopes,omitempty"`
+}
+
+// UpdateUserRequest represents User data to update
+type UpdateUserRequest struct {
+	// FirstName originally from auth server but updatable
+	FirstName *string `json:"first_name,omitempty"`
+
+	// LastName originally from auth server but updatable
+	LastName *string `json:"last_name,omitempty"`
+}
+
+// User defines model for User.
+type User struct {
+	ApiKeyId    *int         `json:"api_key_id"`
+	CreatedAt   *time.Time   `json:"created_at,omitempty"`
+	DeletedAt   *time.Time   `json:"deleted_at"`
+	Email       *string      `json:"email,omitempty"`
+	ExternalId  *string      `json:"external_id,omitempty"`
+	FirstName   *string      `json:"first_name"`
+	FullName    *string      `json:"full_name"`
+	LastName    *string      `json:"last_name"`
+	RoleRank    *int         `json:"role_rank,omitempty"`
+	Scopes      *[]string    `json:"scopes"`
+	Teams       *[]Team      `json:"teams"`
+	TimeEntries *[]TimeEntry `json:"time_entries"`
+	UpdatedAt   *time.Time   `json:"updated_at,omitempty"`
+	UserId      *UuidUUID    `json:"user_id,omitempty"`
+	Username    *string      `json:"username,omitempty"`
+	WorkItems   *[]WorkItem  `json:"work_items"`
+}
+
+// UserAPIKey defines model for UserAPIKey.
+type UserAPIKey struct {
+	ApiKey       *string    `json:"api_key,omitempty"`
+	ExpiresOn    *time.Time `json:"expires_on,omitempty"`
+	UserApiKeyId *int       `json:"user_api_key_id,omitempty"`
+	UserId       *UuidUUID  `json:"user_id,omitempty"`
+}
+
+// UuidUUID defines model for UuidUUID.
+type UuidUUID = string
+
+// ValidationError defines model for ValidationError.
+type ValidationError struct {
+	Loc  []string `json:"loc"`
+	Msg  string   `json:"msg"`
+	Type string   `json:"type"`
+}
+
+// WorkItem defines model for WorkItem.
+type WorkItem struct {
+	Closed           *bool              `json:"closed,omitempty"`
+	CreatedAt        *time.Time         `json:"created_at,omitempty"`
+	DeletedAt        *time.Time         `json:"deleted_at"`
+	KanbanStepId     *int               `json:"kanban_step_id,omitempty"`
+	Metadata         *PgtypeJSONB       `json:"metadata,omitempty"`
+	Tasks            *[]Task            `json:"tasks"`
+	TeamId           *int               `json:"team_id,omitempty"`
+	TimeEntries      *[]TimeEntry       `json:"time_entries"`
+	Title            *string            `json:"title,omitempty"`
+	UpdatedAt        *time.Time         `json:"updated_at,omitempty"`
+	Users            *[]User            `json:"users"`
+	WorkItemComments *[]WorkItemComment `json:"work_item_comments"`
+	WorkItemId       *int               `json:"work_item_id,omitempty"`
+	WorkItemTypeId   *int               `json:"work_item_type_id,omitempty"`
+}
+
+// WorkItemComment defines model for WorkItemComment.
+type WorkItemComment struct {
+	CreatedAt         *time.Time `json:"created_at,omitempty"`
+	Message           *string    `json:"message,omitempty"`
+	UpdatedAt         *time.Time `json:"updated_at,omitempty"`
+	UserId            *UuidUUID  `json:"user_id,omitempty"`
+	WorkItemCommentId *int       `json:"work_item_comment_id,omitempty"`
+	WorkItemId        *int       `json:"work_item_id,omitempty"`
+}
+
+// WorkItemRole Role in work item for a member.
+type WorkItemRole string
+
+// UserID defines model for UserID.
+type UserID = string
+
+// UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
+type UpdateUserJSONRequestBody = UpdateUserRequest
+
+// UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
+type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -105,12 +293,17 @@ type ClientInterface interface {
 	GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteUser request
-	DeleteUser(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteUser(ctx context.Context, id UserID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateUser request with any body
-	UpdateUserWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserWithBody(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateUser(ctx context.Context, id string, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUser(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateUserAuthorization request with any body
+	UpdateUserAuthorizationWithBody(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateUserAuthorization(ctx context.Context, id UserID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -161,7 +354,7 @@ func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditor
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteUser(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteUser(ctx context.Context, id UserID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteUserRequest(c.Server, id)
 	if err != nil {
 		return nil, err
@@ -173,7 +366,7 @@ func (c *Client) DeleteUser(ctx context.Context, id string, reqEditors ...Reques
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateUserWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserWithBody(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -185,8 +378,32 @@ func (c *Client) UpdateUserWithBody(ctx context.Context, id string, contentType 
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateUser(ctx context.Context, id string, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUser(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateUserAuthorizationRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateUserAuthorization(ctx context.Context, id UserID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateUserAuthorizationRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -306,7 +523,7 @@ func NewGetCurrentUserRequest(server string) (*http.Request, error) {
 }
 
 // NewDeleteUserRequest generates requests for DeleteUser
-func NewDeleteUserRequest(server string, id string) (*http.Request, error) {
+func NewDeleteUserRequest(server string, id UserID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -340,7 +557,7 @@ func NewDeleteUserRequest(server string, id string) (*http.Request, error) {
 }
 
 // NewUpdateUserRequest calls the generic UpdateUser builder with application/json body
-func NewUpdateUserRequest(server string, id string, body UpdateUserJSONRequestBody) (*http.Request, error) {
+func NewUpdateUserRequest(server string, id UserID, body UpdateUserJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -351,7 +568,7 @@ func NewUpdateUserRequest(server string, id string, body UpdateUserJSONRequestBo
 }
 
 // NewUpdateUserRequestWithBody generates requests for UpdateUser with any type of body
-func NewUpdateUserRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateUserRequestWithBody(server string, id UserID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -376,7 +593,54 @@ func NewUpdateUserRequestWithBody(server string, id string, contentType string, 
 		return nil, err
 	}
 
-	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewUpdateUserAuthorizationRequest calls the generic UpdateUserAuthorization builder with application/json body
+func NewUpdateUserAuthorizationRequest(server string, id UserID, body UpdateUserAuthorizationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateUserAuthorizationRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateUserAuthorizationRequestWithBody generates requests for UpdateUserAuthorization with any type of body
+func NewUpdateUserAuthorizationRequestWithBody(server string, id UserID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/user/%s/authorization", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -442,12 +706,17 @@ type ClientWithResponsesInterface interface {
 	GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error)
 
 	// DeleteUser request
-	DeleteUserWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
+	DeleteUserWithResponse(ctx context.Context, id UserID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
 
 	// UpdateUser request with any body
-	UpdateUserWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithBodyWithResponse(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
-	UpdateUserWithResponse(ctx context.Context, id string, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithResponse(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+
+	// UpdateUserAuthorization request with any body
+	UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
+
+	UpdateUserAuthorizationWithResponse(ctx context.Context, id UserID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
 }
 
 type AdminPingResponse struct {
@@ -562,6 +831,7 @@ func (r DeleteUserResponse) StatusCode() int {
 type UpdateUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *User
 }
 
 // Status returns HTTPResponse.Status
@@ -574,6 +844,28 @@ func (r UpdateUserResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateUserAuthorizationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *User
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateUserAuthorizationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateUserAuthorizationResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -617,7 +909,7 @@ func (c *ClientWithResponses) GetCurrentUserWithResponse(ctx context.Context, re
 }
 
 // DeleteUserWithResponse request returning *DeleteUserResponse
-func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
+func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id UserID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
 	rsp, err := c.DeleteUser(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -626,7 +918,7 @@ func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id str
 }
 
 // UpdateUserWithBodyWithResponse request with arbitrary body returning *UpdateUserResponse
-func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
 	rsp, err := c.UpdateUserWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -634,12 +926,29 @@ func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context
 	return ParseUpdateUserResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id string, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
 	rsp, err := c.UpdateUser(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpdateUserResponse(rsp)
+}
+
+// UpdateUserAuthorizationWithBodyWithResponse request with arbitrary body returning *UpdateUserAuthorizationResponse
+func (c *ClientWithResponses) UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
+	rsp, err := c.UpdateUserAuthorizationWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateUserAuthorizationResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateUserAuthorizationWithResponse(ctx context.Context, id UserID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
+	rsp, err := c.UpdateUserAuthorization(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateUserAuthorizationResponse(rsp)
 }
 
 // ParseAdminPingResponse parses an HTTP response from a AdminPingWithResponse call
@@ -773,6 +1082,42 @@ func ParseUpdateUserResponse(rsp *http.Response) (*UpdateUserResponse, error) {
 	response := &UpdateUserResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest User
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateUserAuthorizationResponse parses an HTTP response from a UpdateUserAuthorizationWithResponse call
+func ParseUpdateUserAuthorizationResponse(rsp *http.Response) (*UpdateUserAuthorizationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateUserAuthorizationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest User
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil

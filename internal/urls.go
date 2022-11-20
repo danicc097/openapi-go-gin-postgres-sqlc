@@ -37,5 +37,6 @@ func BuildApiURL(subpaths ...string) string {
 	}
 
 	url := dsn.String()
+
 	return url
 }

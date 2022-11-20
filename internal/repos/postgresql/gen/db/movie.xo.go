@@ -23,11 +23,10 @@ type MovieSelectConfig struct {
 	orderBy string
 	joins   MovieJoins
 }
-
 type MovieSelectConfigOption func(*MovieSelectConfig)
 
-// MovieWithLimit limits row selection.
-func MovieWithLimit(limit int) MovieSelectConfigOption {
+// WithMovieLimit limits row selection.
+func WithMovieLimit(limit int) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -37,8 +36,8 @@ type MovieOrderBy = string
 
 type MovieJoins struct{}
 
-// MovieWithJoin orders results by the given columns.
-func MovieWithJoin(joins MovieJoins) MovieSelectConfigOption {
+// WithMovieJoin orders results by the given columns.
+func WithMovieJoin(joins MovieJoins) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
 		s.joins = joins
 	}
@@ -90,10 +89,11 @@ func (m *Movie) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.movies SET ` +
 		`title = $1, year = $2, synopsis = $3 ` +
-		`WHERE movie_id = $4 `
+		`WHERE movie_id = $4 ` +
+		`RETURNING movie_id `
 	// run
 	logf(sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID)
-	if _, err := db.Exec(ctx, sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID).Scan(&m.MovieID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -157,9 +157,8 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'movies_pkey'.
 func MovieByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) (*Movie, error) {
-	c := &MovieSelectConfig{
-		joins: MovieJoins{},
-	}
+	c := &MovieSelectConfig{joins: MovieJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -172,7 +171,7 @@ movies.year,
 movies.synopsis ` +
 		`FROM public.movies ` +
 		`` +
-		` WHERE movie_id = $1 `
+		` WHERE movies.movie_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

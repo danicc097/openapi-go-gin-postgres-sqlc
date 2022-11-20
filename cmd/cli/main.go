@@ -41,14 +41,14 @@ func main() {
 		errAndExit(out, err)
 	}
 
-	cmd = exec.Command(
-		"bash", "-c",
-		"project db.initial-data",
-	)
-	cmd.Dir = "."
-	if out, err := cmd.CombinedOutput(); err != nil {
-		errAndExit(out, err)
-	}
+	// cmd = exec.Command(
+	// 	"bash", "-c",
+	// 	"project db.initial-data",
+	// )
+	// cmd.Dir = "."
+	// if out, err := cmd.CombinedOutput(); err != nil {
+	// 	errAndExit(out, err)
+	// }
 
 	conf := envvar.New()
 	pool, err := postgresql.New(conf)
@@ -60,16 +60,23 @@ func main() {
 	// username := "doesntexist" // User should be nil
 	// username := "superadmin"
 	user, err := db.UserByUsername(context.Background(), pool, username,
-		db.UserWithJoin(db.UserJoins{
+		db.WithUserJoin(db.UserJoins{
 			TimeEntries: true,
-			UserAPIKey:  true,
 			WorkItems:   true,
 			Teams:       true,
-		}))
+		}),
+		db.WithUserOrderBy(db.UserCreatedAtDescNullsLast))
 	if err != nil {
 		log.Fatalf("db.UserByUsername: %s\n", err)
 	}
 	format.PrintJSON(user)
+	// test correct queries
+	key := user.UserID.String() + "-key-hashed"
+	uak, err := db.UserAPIKeyByAPIKey(context.Background(), pool, key, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
+	if err != nil {
+		log.Fatalf("UserAPIKeyByAPIKey: %v", err)
+	}
+	fmt.Printf("found user from its api key u: %v#\n", uak.User)
 }
 
 func errAndExit(out []byte, err error) {

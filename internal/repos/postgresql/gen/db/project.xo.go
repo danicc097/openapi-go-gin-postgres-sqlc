@@ -29,11 +29,10 @@ type ProjectSelectConfig struct {
 	orderBy string
 	joins   ProjectJoins
 }
-
 type ProjectSelectConfigOption func(*ProjectSelectConfig)
 
-// ProjectWithLimit limits row selection.
-func ProjectWithLimit(limit int) ProjectSelectConfigOption {
+// WithProjectLimit limits row selection.
+func WithProjectLimit(limit int) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -52,17 +51,22 @@ const (
 	ProjectUpdatedAtAscNullsLast   ProjectOrderBy = " updated_at ASC NULLS LAST "
 )
 
-// ProjectWithOrderBy orders results by the given columns.
-func ProjectWithOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
+// WithProjectOrderBy orders results by the given columns.
+func WithProjectOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
+		if len(rows) == 0 {
+			s.orderBy = ""
+			return
+		}
+		s.orderBy = " order by "
+		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 
 type ProjectJoins struct{}
 
-// ProjectWithJoin orders results by the given columns.
-func ProjectWithJoin(joins ProjectJoins) ProjectSelectConfigOption {
+// WithProjectJoin orders results by the given columns.
+func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		s.joins = joins
 	}
@@ -92,10 +96,10 @@ func (p *Project) Insert(ctx context.Context, db DB) error {
 		`name, description, metadata` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) RETURNING project_id `
+		`) RETURNING project_id, created_at, updated_at `
 	// run
 	logf(sqlstr, p.Name, p.Description, p.Metadata)
-	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.Metadata).Scan(&p.ProjectID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.Metadata).Scan(&p.ProjectID, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -114,10 +118,11 @@ func (p *Project) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.projects SET ` +
 		`name = $1, description = $2, metadata = $3 ` +
-		`WHERE project_id = $4 `
+		`WHERE project_id = $4 ` +
+		`RETURNING project_id, created_at, updated_at `
 	// run
 	logf(sqlstr, p.Name, p.Description, p.Metadata, p.CreatedAt, p.UpdatedAt, p.ProjectID)
-	if _, err := db.Exec(ctx, sqlstr, p.Name, p.Description, p.Metadata, p.CreatedAt, p.UpdatedAt, p.ProjectID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.Metadata, p.ProjectID).Scan(&p.ProjectID, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -181,9 +186,8 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'projects_name_key'.
 func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{
-		joins: ProjectJoins{},
-	}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -198,7 +202,7 @@ projects.created_at,
 projects.updated_at ` +
 		`FROM public.projects ` +
 		`` +
-		` WHERE name = $1 `
+		` WHERE projects.name = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -218,9 +222,8 @@ projects.updated_at ` +
 //
 // Generated from index 'projects_pkey'.
 func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{
-		joins: ProjectJoins{},
-	}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -235,7 +238,7 @@ projects.created_at,
 projects.updated_at ` +
 		`FROM public.projects ` +
 		`` +
-		` WHERE project_id = $1 `
+		` WHERE projects.project_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

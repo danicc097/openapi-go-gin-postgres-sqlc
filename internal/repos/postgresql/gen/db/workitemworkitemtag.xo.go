@@ -21,11 +21,10 @@ type WorkItemWorkItemTagSelectConfig struct {
 	orderBy string
 	joins   WorkItemWorkItemTagJoins
 }
-
 type WorkItemWorkItemTagSelectConfigOption func(*WorkItemWorkItemTagSelectConfig)
 
-// WorkItemWorkItemTagWithLimit limits row selection.
-func WorkItemWorkItemTagWithLimit(limit int) WorkItemWorkItemTagSelectConfigOption {
+// WithWorkItemWorkItemTagLimit limits row selection.
+func WithWorkItemWorkItemTagLimit(limit int) WorkItemWorkItemTagSelectConfigOption {
 	return func(s *WorkItemWorkItemTagSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -35,8 +34,8 @@ type WorkItemWorkItemTagOrderBy = string
 
 type WorkItemWorkItemTagJoins struct{}
 
-// WorkItemWorkItemTagWithJoin orders results by the given columns.
-func WorkItemWorkItemTagWithJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
+// WithWorkItemWorkItemTagJoin orders results by the given columns.
+func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
 	return func(s *WorkItemWorkItemTagSelectConfig) {
 		s.joins = joins
 	}
@@ -104,9 +103,8 @@ func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_work_item_tag_pkey'.
 func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, workItemID int64, workItemTagID int, opts ...WorkItemWorkItemTagSelectConfigOption) (*WorkItemWorkItemTag, error) {
-	c := &WorkItemWorkItemTagSelectConfig{
-		joins: WorkItemWorkItemTagJoins{},
-	}
+	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -117,7 +115,7 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 work_item_work_item_tag.work_item_id ` +
 		`FROM public.work_item_work_item_tag ` +
 		`` +
-		` WHERE work_item_id = $1 AND work_item_tag_id = $2 `
+		` WHERE work_item_work_item_tag.work_item_id = $1 AND work_item_work_item_tag.work_item_tag_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -137,9 +135,8 @@ work_item_work_item_tag.work_item_id ` +
 //
 // Generated from index 'work_item_work_item_tag_work_item_tag_id_work_item_id_idx'.
 func WorkItemWorkItemTagByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
-	c := &WorkItemWorkItemTagSelectConfig{
-		joins: WorkItemWorkItemTagJoins{},
-	}
+	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -150,7 +147,7 @@ func WorkItemWorkItemTagByWorkItemTagIDWorkItemID(ctx context.Context, db DB, wo
 work_item_work_item_tag.work_item_id ` +
 		`FROM public.work_item_work_item_tag ` +
 		`` +
-		` WHERE work_item_tag_id = $1 AND work_item_id = $2 `
+		` WHERE work_item_work_item_tag.work_item_tag_id = $1 AND work_item_work_item_tag.work_item_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

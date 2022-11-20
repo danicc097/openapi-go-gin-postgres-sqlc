@@ -7,7 +7,7 @@ type MiddlewareFunc func(c *gin.Context)
 
 {{range .}}{{$opid := .OperationId}}
 
-// {{$opid}} operation middleware.
+// {{$opid}} operation with its own middleware.
 func (siw *ServerInterfaceWrapper) {{$opid}}(c *gin.Context) {
 
   {{if or .RequiresParamObject (gt (len .PathParams) 0) }}
@@ -38,7 +38,7 @@ func (siw *ServerInterfaceWrapper) {{$opid}}(c *gin.Context) {
   {{end}}
 
 {{range .SecurityDefinitions}}
-  c.Set({{modelsPkg}}{{.ProviderName | ucFirst}}Scopes, {{toStringArray .Scopes}})
+  c.Set(externalRef0.{{.ProviderName | ucFirst}}Scopes, {{toStringArray .Scopes}})
 {{end}}
 
   {{if .RequiresParamObject}}
@@ -172,6 +172,11 @@ func (siw *ServerInterfaceWrapper) {{$opid}}(c *gin.Context) {
   // apply middlewares for operation "{{$opid}}".
 	for _, mw := range siw.Handler.middlewares({{$opid}}) {
 		mw(c)
+
+    // should actually call router.<Method> with a slice of mw, last item the actual handler
+    if c.IsAborted() {
+      return
+    }
 	}
 
   siw.Handler.{{.OperationId}}(c{{genParamNames .PathParams}}{{if .RequiresParamObject}}, params{{end}})

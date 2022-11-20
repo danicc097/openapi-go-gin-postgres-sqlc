@@ -46,12 +46,19 @@ func (h *Handlers) middlewares(opID operationID) []gin.HandlerFunc {
 	case UpdateUser:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
-			h.authmw.EnsureAuthorized(AuthRestriction{MinimumRole: models.RoleAdmin}),
+		}
+	case UpdateUserAuthorization:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
 		}
 	case AdminPing:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 			h.authmw.EnsureAuthorized(AuthRestriction{MinimumRole: models.RoleAdmin}),
+		}
+	case GetCurrentUser:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
 		}
 	default:
 		return []gin.HandlerFunc{}

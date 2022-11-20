@@ -12,6 +12,12 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+const synopsis = `
+Asian horror cinema often depicts stomach-churning scenes of gore and zombie outbreaks quite vividly and The Sadness ticks all the right boxes.
+Chaos and anarchy descend on the city of Taipei as residents turn into mass killers. In the wake of such a deadly viral pandemic, Jim and Kat are a young couple who seek to find each other. Violence, killing and massacre only seem to rise while the government and authorities remain complacent.
+Among the most gruesome horror movies of 2022, The Sadness lives up to its name and is not for the faint-hearted. In fact, a trigger warning is also issued at the beginning for those who may not be able to endure watching all the slashing and blood.
+`
+
 // movie is an external ML service to showcase calling services from others.
 type movie struct {
 	moviec    tfidf.MovieGenreClient

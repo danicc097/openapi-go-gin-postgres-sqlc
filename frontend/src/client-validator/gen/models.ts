@@ -10,13 +10,6 @@ export type Location = string[]
 export type Message = string
 export type ErrorType = string
 export type Detail = ValidationError[]
-/**
- * Role automatically generated from roles.json keys
- */
-export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
-/**
- * Scope automatically generated from scopes.json keys
- */
 export type Scope =
   | 'test-scope'
   | 'users:read'
@@ -25,25 +18,12 @@ export type Scope =
   | 'team-settings:write'
   | 'project-settings:write'
   | 'work-item:review'
+export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 /**
- * Role in task for a member.
+ * Role in work item for a member.
  */
-export type TaskRole = 'preparer' | 'reviewer'
-/**
- * Organization a user belongs to.
- */
-export type Organization = string
+export type WorkItemRole = 'preparer' | 'reviewer'
 export type UuidUUID = string
-export type UserAPIKey = {
-  api_key?: string
-  expires_on?: string
-  user_api_key_id?: number
-} & UserAPIKey1
-export type UserAPIKey1 = {
-  api_key?: string
-  expires_on?: string
-  user_api_key_id?: number
-} | null
 export type TaskType = {
   color?: string
   description?: string
@@ -58,6 +38,18 @@ export type TaskType1 = {
   task_type_id?: number
   team_id?: number
 } | null
+export type UserAPIKey = {
+  api_key?: string
+  expires_on?: string
+  user_api_key_id?: number
+  user_id?: UuidUUID
+} & UserAPIKey1
+export type UserAPIKey1 = {
+  api_key?: string
+  expires_on?: string
+  user_api_key_id?: number
+  user_id?: UuidUUID
+} | null
 
 export interface HTTPValidationError {
   detail?: Detail
@@ -71,16 +63,28 @@ export interface ValidationError {
  * represents User data to update
  */
 export interface AUser {
-  role?: Role
+  /**
+   * originally from auth server but updatable
+   */
   first_name?: string
+  /**
+   * originally from auth server but updatable
+   */
   last_name?: string
+}
+/**
+ * represents User authorization data to update
+ */
+export interface AUser1 {
+  role?: Role
+  scopes?: Scope[]
 }
 export interface User {
   api_key_id?: number | null
   created_at?: string
   deleted_at?: string | null
   email?: string
-  external_id?: string | null
+  external_id?: string
   first_name?: string | null
   full_name?: string | null
   last_name?: string | null
@@ -89,7 +93,6 @@ export interface User {
   teams?: Team[] | null
   time_entries?: TimeEntry[] | null
   updated_at?: string
-  user_api_key?: UserAPIKey
   user_id?: UuidUUID
   username?: string
   work_items?: WorkItem[] | null
@@ -111,10 +114,10 @@ export interface TimeEntry {
   comment?: string
   duration_minutes?: number | null
   start?: string
-  task_id?: number | null
   team_id?: number | null
   time_entry_id?: number
   user_id?: UuidUUID
+  work_item_id?: number | null
 }
 export interface WorkItem {
   closed?: boolean
@@ -124,22 +127,22 @@ export interface WorkItem {
   metadata?: PgtypeJSONB
   tasks?: Task[] | null
   team_id?: number
+  time_entries?: TimeEntry[] | null
   title?: string
   updated_at?: string
   users?: User[] | null
   work_item_comments?: WorkItemComment[] | null
   work_item_id?: number
+  work_item_type_id?: number
 }
 export interface Task {
   created_at?: string
   deleted_at?: string | null
+  finished?: boolean | null
   metadata?: PgtypeJSONB
-  target_date?: string
-  target_date_timezone?: string
   task_id?: number
   task_type?: TaskType
   task_type_id?: number
-  time_entries?: TimeEntry[] | null
   title?: string
   updated_at?: string
   work_item_id?: number

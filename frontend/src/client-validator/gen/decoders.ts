@@ -9,11 +9,11 @@ import { Decoder } from './helpers'
 import { validateJson } from '../validate'
 import {
   HTTPValidationError,
-  UpdateUserRequest,
   Scope,
   Role,
-  TaskRole,
-  Organization,
+  WorkItemRole,
+  UpdateUserRequest,
+  UpdateUserAuthRequest,
   User,
   ValidationError,
   PgtypeJSONB,
@@ -45,18 +45,6 @@ export const HTTPValidationErrorDecoder: Decoder<HTTPValidationError> = {
     return validateJson(json, schema, HTTPValidationErrorDecoder.definitionName)
   },
 }
-export const UpdateUserRequestDecoder: Decoder<UpdateUserRequest> = {
-  definitionName: 'UpdateUserRequest',
-  schemaRef: '#/definitions/UpdateUserRequest',
-
-  decode(json: unknown): UpdateUserRequest {
-    const schema = ajv.getSchema(UpdateUserRequestDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${UpdateUserRequestDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, UpdateUserRequestDecoder.definitionName)
-  },
-}
 export const ScopeDecoder: Decoder<Scope> = {
   definitionName: 'Scope',
   schemaRef: '#/definitions/Scope',
@@ -81,28 +69,40 @@ export const RoleDecoder: Decoder<Role> = {
     return validateJson(json, schema, RoleDecoder.definitionName)
   },
 }
-export const TaskRoleDecoder: Decoder<TaskRole> = {
-  definitionName: 'TaskRole',
-  schemaRef: '#/definitions/TaskRole',
+export const WorkItemRoleDecoder: Decoder<WorkItemRole> = {
+  definitionName: 'WorkItemRole',
+  schemaRef: '#/definitions/WorkItemRole',
 
-  decode(json: unknown): TaskRole {
-    const schema = ajv.getSchema(TaskRoleDecoder.schemaRef)
+  decode(json: unknown): WorkItemRole {
+    const schema = ajv.getSchema(WorkItemRoleDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${TaskRoleDecoder.definitionName} not found`)
+      throw new Error(`Schema ${WorkItemRoleDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, TaskRoleDecoder.definitionName)
+    return validateJson(json, schema, WorkItemRoleDecoder.definitionName)
   },
 }
-export const OrganizationDecoder: Decoder<Organization> = {
-  definitionName: 'Organization',
-  schemaRef: '#/definitions/Organization',
+export const UpdateUserRequestDecoder: Decoder<UpdateUserRequest> = {
+  definitionName: 'UpdateUserRequest',
+  schemaRef: '#/definitions/UpdateUserRequest',
 
-  decode(json: unknown): Organization {
-    const schema = ajv.getSchema(OrganizationDecoder.schemaRef)
+  decode(json: unknown): UpdateUserRequest {
+    const schema = ajv.getSchema(UpdateUserRequestDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${OrganizationDecoder.definitionName} not found`)
+      throw new Error(`Schema ${UpdateUserRequestDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, OrganizationDecoder.definitionName)
+    return validateJson(json, schema, UpdateUserRequestDecoder.definitionName)
+  },
+}
+export const UpdateUserAuthRequestDecoder: Decoder<UpdateUserAuthRequest> = {
+  definitionName: 'UpdateUserAuthRequest',
+  schemaRef: '#/definitions/UpdateUserAuthRequest',
+
+  decode(json: unknown): UpdateUserAuthRequest {
+    const schema = ajv.getSchema(UpdateUserAuthRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${UpdateUserAuthRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, UpdateUserAuthRequestDecoder.definitionName)
   },
 }
 export const UserDecoder: Decoder<User> = {

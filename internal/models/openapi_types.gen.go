@@ -33,10 +33,10 @@ const (
 	ScopeWorkItemReview       Scope = "work-item:review"
 )
 
-// Defines values for TaskRole.
+// Defines values for WorkItemRole.
 const (
-	TaskRolePreparer TaskRole = "preparer"
-	TaskRoleReviewer TaskRole = "reviewer"
+	WorkItemRolePreparer WorkItemRole = "preparer"
+	WorkItemRoleReviewer WorkItemRole = "reviewer"
 )
 
 // HTTPValidationError defines model for HTTPValidationError.
@@ -44,36 +44,28 @@ type HTTPValidationError struct {
 	Detail *[]ValidationError `json:"detail,omitempty"`
 }
 
-// Organization Organization a user belongs to.
-type Organization = string
-
 // PgtypeJSONB defines model for PgtypeJSONB.
 type PgtypeJSONB = map[string]interface{}
 
-// Role Role automatically generated from roles.json keys
+// Role defines model for Role.
 type Role string
 
-// Scope Scope automatically generated from scopes.json keys
+// Scope defines model for Scope.
 type Scope string
 
 // Task defines model for Task.
 type Task struct {
-	CreatedAt          *time.Time   `json:"created_at,omitempty"`
-	DeletedAt          *time.Time   `json:"deleted_at"`
-	Metadata           *PgtypeJSONB `json:"metadata,omitempty"`
-	TargetDate         *time.Time   `json:"target_date,omitempty"`
-	TargetDateTimezone *string      `json:"target_date_timezone,omitempty"`
-	TaskId             *int         `json:"task_id,omitempty"`
-	TaskType           *TaskType    `json:"task_type"`
-	TaskTypeId         *int         `json:"task_type_id,omitempty"`
-	TimeEntries        *[]TimeEntry `json:"time_entries"`
-	Title              *string      `json:"title,omitempty"`
-	UpdatedAt          *time.Time   `json:"updated_at,omitempty"`
-	WorkItemId         *int         `json:"work_item_id,omitempty"`
+	CreatedAt  *time.Time   `json:"created_at,omitempty"`
+	DeletedAt  *time.Time   `json:"deleted_at"`
+	Finished   *bool        `json:"finished"`
+	Metadata   *PgtypeJSONB `json:"metadata,omitempty"`
+	TaskId     *int         `json:"task_id,omitempty"`
+	TaskType   *TaskType    `json:"task_type"`
+	TaskTypeId *int         `json:"task_type_id,omitempty"`
+	Title      *string      `json:"title,omitempty"`
+	UpdatedAt  *time.Time   `json:"updated_at,omitempty"`
+	WorkItemId *int         `json:"work_item_id,omitempty"`
 }
-
-// TaskRole Role in task for a member.
-type TaskRole string
 
 // TaskType defines model for TaskType.
 type TaskType struct {
@@ -103,19 +95,25 @@ type TimeEntry struct {
 	Comment         *string    `json:"comment,omitempty"`
 	DurationMinutes *int       `json:"duration_minutes"`
 	Start           *time.Time `json:"start,omitempty"`
-	TaskId          *int       `json:"task_id"`
 	TeamId          *int       `json:"team_id"`
 	TimeEntryId     *int       `json:"time_entry_id,omitempty"`
 	UserId          *UuidUUID  `json:"user_id,omitempty"`
+	WorkItemId      *int       `json:"work_item_id"`
+}
+
+// UpdateUserAuthRequest represents User authorization data to update
+type UpdateUserAuthRequest struct {
+	Role   *Role    `json:"role,omitempty"`
+	Scopes *[]Scope `json:"scopes,omitempty"`
 }
 
 // UpdateUserRequest represents User data to update
 type UpdateUserRequest struct {
+	// FirstName originally from auth server but updatable
 	FirstName *string `json:"first_name,omitempty"`
-	LastName  *string `json:"last_name,omitempty"`
 
-	// Role Role automatically generated from roles.json keys
-	Role *Role `json:"role,omitempty"`
+	// LastName originally from auth server but updatable
+	LastName *string `json:"last_name,omitempty"`
 }
 
 // User defines model for User.
@@ -124,7 +122,7 @@ type User struct {
 	CreatedAt   *time.Time   `json:"created_at,omitempty"`
 	DeletedAt   *time.Time   `json:"deleted_at"`
 	Email       *string      `json:"email,omitempty"`
-	ExternalId  *string      `json:"external_id"`
+	ExternalId  *string      `json:"external_id,omitempty"`
 	FirstName   *string      `json:"first_name"`
 	FullName    *string      `json:"full_name"`
 	LastName    *string      `json:"last_name"`
@@ -133,7 +131,6 @@ type User struct {
 	Teams       *[]Team      `json:"teams"`
 	TimeEntries *[]TimeEntry `json:"time_entries"`
 	UpdatedAt   *time.Time   `json:"updated_at,omitempty"`
-	UserApiKey  *UserAPIKey  `json:"user_api_key"`
 	UserId      *UuidUUID    `json:"user_id,omitempty"`
 	Username    *string      `json:"username,omitempty"`
 	WorkItems   *[]WorkItem  `json:"work_items"`
@@ -144,6 +141,7 @@ type UserAPIKey struct {
 	ApiKey       *string    `json:"api_key,omitempty"`
 	ExpiresOn    *time.Time `json:"expires_on,omitempty"`
 	UserApiKeyId *int       `json:"user_api_key_id,omitempty"`
+	UserId       *UuidUUID  `json:"user_id,omitempty"`
 }
 
 // UuidUUID defines model for UuidUUID.
@@ -165,11 +163,13 @@ type WorkItem struct {
 	Metadata         *PgtypeJSONB       `json:"metadata,omitempty"`
 	Tasks            *[]Task            `json:"tasks"`
 	TeamId           *int               `json:"team_id,omitempty"`
+	TimeEntries      *[]TimeEntry       `json:"time_entries"`
 	Title            *string            `json:"title,omitempty"`
 	UpdatedAt        *time.Time         `json:"updated_at,omitempty"`
 	Users            *[]User            `json:"users"`
 	WorkItemComments *[]WorkItemComment `json:"work_item_comments"`
 	WorkItemId       *int               `json:"work_item_id,omitempty"`
+	WorkItemTypeId   *int               `json:"work_item_type_id,omitempty"`
 }
 
 // WorkItemComment defines model for WorkItemComment.
@@ -182,5 +182,14 @@ type WorkItemComment struct {
 	WorkItemId        *int       `json:"work_item_id,omitempty"`
 }
 
+// WorkItemRole Role in work item for a member.
+type WorkItemRole string
+
+// UserID defines model for UserID.
+type UserID = string
+
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 type UpdateUserJSONRequestBody = UpdateUserRequest
+
+// UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
+type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest

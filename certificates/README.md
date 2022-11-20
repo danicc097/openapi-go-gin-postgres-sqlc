@@ -1,13 +1,6 @@
 # Certificates
 
-Create with `mkcert`:
-
-```bash
-mkcert --cert-file localhost.pem --key-file localhost-key.pem  localhost 127.0.0.1 ::1 host.docker.internal
-mkcert -install
-```
-
-to work outside the guest machine, do the following in host, e.g. in Windows:
+Create with `mkcert`, see `bin/scripts/install-mkcert.sh`.
 
 ```powershell
 mkcert.exe -install

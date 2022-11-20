@@ -20,7 +20,7 @@ type User struct {
 	LastName   *string    `json:"last_name" db:"last_name"`     // last_name
 	FullName   *string    `json:"full_name" db:"full_name"`     // full_name
 	ExternalID *string    `json:"external_id" db:"external_id"` // external_id
-	APIKeyID   *int64     `json:"api_key_id" db:"api_key_id"`   // api_key_id
+	APIKeyID   *int       `json:"api_key_id" db:"api_key_id"`   // api_key_id
 	Scopes     []string   `json:"scopes" db:"scopes"`           // scopes
 	RoleRank   *int16     `json:"role_rank" db:"role_rank"`     // role_rank
 	CreatedAt  *time.Time `json:"created_at" db:"created_at"`   // created_at
@@ -30,17 +30,24 @@ type User struct {
 }
 
 type UserSelectConfig struct {
-	limit   string
-	orderBy string
-	joins   UserJoins
+	limit     string
+	orderBy   string
+	joins     UserJoins
+	deletedAt string
 }
-
 type UserSelectConfigOption func(*UserSelectConfig)
 
-// UserWithLimit limits row selection.
-func UserWithLimit(limit int) UserSelectConfigOption {
+// WithUserLimit limits row selection.
+func WithUserLimit(limit int) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
+	}
+}
+
+// WithDeletedUserOnly limits result to records marked as deleted.
+func WithDeletedUserOnly() UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.deletedAt = " not null "
 	}
 }
 
@@ -61,17 +68,22 @@ const (
 	UserDeletedAtAscNullsLast   UserOrderBy = " deleted_at ASC NULLS LAST "
 )
 
-// UserWithOrderBy orders results by the given columns.
-func UserWithOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
+// WithUserOrderBy orders results by the given columns.
+func WithUserOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
+		if len(rows) == 0 {
+			s.orderBy = ""
+			return
+		}
+		s.orderBy = " order by "
+		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 
 type UserJoins struct{}
 
-// UserWithJoin orders results by the given columns.
-func UserWithJoin(joins UserJoins) UserSelectConfigOption {
+// WithUserJoin orders results by the given columns.
+func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		s.joins = joins
 	}
@@ -81,15 +93,14 @@ func UserWithJoin(joins UserJoins) UserSelectConfigOption {
 //
 // Generated from index 'users_external_id_idx'.
 func UsersByExternalID(ctx context.Context, db DB, externalID *string, opts ...UserSelectConfigOption) ([]*User, error) {
-	c := &UserSelectConfig{
-		joins: UserJoins{},
-	}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := `SELECT ` +
+	sqlstr := fmt.Sprintf(`SELECT `+
 		`users.user_id,
 users.username,
 users.email,
@@ -103,10 +114,10 @@ users.role_rank,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-users.teams ` +
-		`FROM cache.users ` +
-		`` +
-		` WHERE external_id = $1 `
+users.teams `+
+		`FROM cache.users `+
+		``+
+		` WHERE users.external_id = $1  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

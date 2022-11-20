@@ -12,6 +12,24 @@
       "!merge",
       "!!merge",
     ],
+    "remote.SSH.defaultForwardedPorts": [
+      // use zipkin instead: https://github.com/jaegertracing/jaeger/issues/3479#issuecomment-1012199971
+      // {
+      //   "localPort": 4318,
+      //   "remotePort": 4318,
+      //   "name": "jaeger otlp collector"
+      // },
+      {
+        "localPort": 9411,
+        "remotePort": 9411,
+        "name": "jaeger zipkin collector"
+      },
+      {
+        "localPort": 16686,
+        "remotePort": 16686,
+        "name": "jaeger UI"
+      }
+    ],
     "plpgsqlLanguageServer.database": "gen_db",
     "plpgsqlLanguageServer.user": "postgres",
     "plpgsqlLanguageServer.password": "postgres",
@@ -28,5 +46,20 @@
     "files.associations": {
       "*.sql": "postgres"
     },
+    "launch": {
+      "version": "0.2.0",
+      "configurations": [
+        {
+          "type": "bashdb",
+          "request": "launch",
+          "name": "Bash-Debug (hardcoded script name)",
+          "cwd": "${workspaceFolder}",
+          "program": "${workspaceFolder}/bin/project",
+          "args": ["pregen"],
+          "terminalKind": "integrated"
+        }
+      ],
+      "compounds": []
+    }
   }
 }

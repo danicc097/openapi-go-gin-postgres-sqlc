@@ -12,19 +12,24 @@ import (
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	redis "github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
-var pool *pgxpool.Pool
+var testpool *pgxpool.Pool
 
 func TestMain(m *testing.M) {
 	os.Exit(testMain(m))
@@ -36,17 +41,17 @@ func testMain(m *testing.M) int {
 	// call flag.Parse() here if TestMain uses flags
 	var err error
 
-	pool, err = testutil.NewDB()
+	testpool, err = testutil.NewDB()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Couldn't create pool: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Couldn't create testpool: %s\n", err)
 		os.Exit(1)
 	}
-	defer pool.Close()
+	defer testpool.Close()
 
 	return m.Run()
 }
 
-func runTestServer(t *testing.T, pool *pgxpool.Pool, middlewares []gin.HandlerFunc) (*http.Server, error) {
+func runTestServer(t *testing.T, testpool *pgxpool.Pool, middlewares []gin.HandlerFunc) (*http.Server, error) {
 	ctx := context.Background()
 
 	if err := envvar.Load(fmt.Sprintf("../../.env.%s", os.Getenv("APP_ENV"))); err != nil {
@@ -64,6 +69,7 @@ func runTestServer(t *testing.T, pool *pgxpool.Pool, middlewares []gin.HandlerFu
 	rdb := redis.NewClient(&redis.Options{
 		Addr: s.Addr(),
 	})
+
 	// sanity check
 	rdb.Set(ctx, "foo", "bar", 10*time.Second)
 	assert.Equal(t, "bar", rdb.Get(ctx, "foo").Val())
@@ -80,7 +86,7 @@ func runTestServer(t *testing.T, pool *pgxpool.Pool, middlewares []gin.HandlerFu
 
 	srv, err := NewServer(Config{
 		Address:         ":0", // random next available for each test server
-		Pool:            pool,
+		Pool:            testpool,
 		Redis:           rdb,
 		Logger:          logger,
 		SpecPath:        "../../openapi.yaml",
@@ -93,4 +99,17 @@ func runTestServer(t *testing.T, pool *pgxpool.Pool, middlewares []gin.HandlerFu
 	}
 
 	return srv.httpsrv, nil
+}
+
+func newTestFixtureFactory(t *testing.T) *resttestutil.FixtureFactory {
+	logger := zaptest.NewLogger(t)
+	authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
+	if err != nil {
+		t.Fatalf("services.NewAuthorization: %v", err)
+	}
+	usvc := services.NewUser(logger, repos.NewUserWrapped(postgresql.NewUser(), postgresql.OtelName, repos.UserWrappedConfig{}, nil), authzsvc)
+	authnsvc := services.NewAuthentication(logger, usvc, testpool)
+
+	ff := resttestutil.NewFixtureFactory(usvc, testpool, authnsvc, authzsvc)
+	return ff
 }

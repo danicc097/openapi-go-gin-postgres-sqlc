@@ -76,6 +76,7 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 			}
 
 			c.Abort()
+			return
 		}
 
 		c.Next()

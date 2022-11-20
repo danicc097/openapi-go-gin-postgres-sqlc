@@ -15,31 +15,31 @@ import (
 // for specific actions regardless of scopes assigned to a user.
 // It is also associated with a collection of scopes that get assigned/revoked upon role change.
 type Role struct {
-	Description string `json:description`
-	Rank        int16  `json:rank` // to avoid casting. postgres smallint with check > 0
+	Description string `json:"description"`
+	Rank        int16  `json:"rank"` // to avoid casting. postgres smallint with check > 0
 }
 
 type Scope struct {
-	Description string `json:description`
+	Description string `json:"description"`
 }
 
 type (
-	UserRoles  = map[models.Role]Role
-	UserScopes = map[models.Scope]Scope
+	userRoles  = map[models.Role]Role
+	userScopes = map[models.Scope]Scope
 )
 
 // Authorization represents a service for authorization.
 type Authorization struct {
 	logger *zap.Logger
-	roles  UserRoles
-	scopes UserScopes
+	roles  userRoles
+	scopes userScopes
 }
 
 // NewAuthorization returns a new Authorization service.
 // Existing roles and scopes will be loaded from the given policy JSON file paths.
 func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string) (*Authorization, error) {
-	roles := make(UserRoles)
-	scopes := make(UserScopes)
+	roles := make(userRoles)
+	scopes := make(userScopes)
 
 	scopeBlob, err := os.ReadFile(scopePolicy)
 	if err != nil {
@@ -49,10 +49,10 @@ func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string)
 	if err != nil {
 		return nil, fmt.Errorf("role policy: %w", err)
 	}
-	if err := json.Unmarshal([]byte(scopeBlob), &scopes); err != nil {
+	if err := json.Unmarshal(scopeBlob, &scopes); err != nil {
 		return nil, fmt.Errorf("scope policy: %w", err)
 	}
-	if err := json.Unmarshal([]byte(roleBlob), &roles); err != nil {
+	if err := json.Unmarshal(roleBlob, &roles); err != nil {
 		return nil, fmt.Errorf("role policy: %w", err)
 	}
 
@@ -62,16 +62,6 @@ func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string)
 		scopes: scopes,
 	}, nil
 }
-
-// TODO ABAC:
-// for scope structure references (not roles logic obv) see:
-// https://incidentio.notion.site/Proposal-Product-RBAC-265201563d884ec5aeecbb246c02ddc6
-// last resort: casbin. too much scope, poor docs, maintenance
-// for frontend https://casbin.org/docs/en/frontend
-// load policy from db: https://github.com/casbin/casbin-pg-adapter
-
-// TODO public get role by name
-// TODO public get scope by name
 
 func (a *Authorization) RoleByName(role string) (Role, error) {
 	rl, ok := a.roles[models.Role(role)]
@@ -123,18 +113,7 @@ func (a *Authorization) HasRequiredScopes(scopes []string, requiredScopes []mode
 	return nil
 }
 
-/* TODO this is part of the authorization server.
-For this app (resource server), all the auth server will do is ensure the user is registered.
-Email, username, password changes, password reset requests, user verification is all done externally in
-the auth server frontend.
-Roles and other user data are up to us.
-We should just have an inmemory mock of the auth server with predefined users and tokens
-every time we start the app
-and thats the end of it. we dont need /auth or /token routes in the resource server,
- just /user since we need
-persistent storage for application specific data.
-
-
+/*
 In the future, clone the project and implement the auth server openapi spec, etc.
 for jwt, refresh token, redis...
 https://developer.vonage.com/blog/2020/03/13/using-jwt-for-authentication-in-a-golang-application-dr

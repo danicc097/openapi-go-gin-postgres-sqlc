@@ -29,11 +29,10 @@ type WorkItemCommentSelectConfig struct {
 	orderBy string
 	joins   WorkItemCommentJoins
 }
-
 type WorkItemCommentSelectConfigOption func(*WorkItemCommentSelectConfig)
 
-// WorkItemCommentWithLimit limits row selection.
-func WorkItemCommentWithLimit(limit int) WorkItemCommentSelectConfigOption {
+// WithWorkItemCommentLimit limits row selection.
+func WithWorkItemCommentLimit(limit int) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -52,17 +51,22 @@ const (
 	WorkItemCommentUpdatedAtAscNullsLast   WorkItemCommentOrderBy = " updated_at ASC NULLS LAST "
 )
 
-// WorkItemCommentWithOrderBy orders results by the given columns.
-func WorkItemCommentWithOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentSelectConfigOption {
+// WithWorkItemCommentOrderBy orders results by the given columns.
+func WithWorkItemCommentOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
+		if len(rows) == 0 {
+			s.orderBy = ""
+			return
+		}
+		s.orderBy = " order by "
+		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 
 type WorkItemCommentJoins struct{}
 
-// WorkItemCommentWithJoin orders results by the given columns.
-func WorkItemCommentWithJoin(joins WorkItemCommentJoins) WorkItemCommentSelectConfigOption {
+// WithWorkItemCommentJoin orders results by the given columns.
+func WithWorkItemCommentJoin(joins WorkItemCommentJoins) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
 		s.joins = joins
 	}
@@ -92,10 +96,10 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) error {
 		`work_item_id, user_id, message` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) RETURNING work_item_comment_id `
+		`) RETURNING work_item_comment_id, created_at, updated_at `
 	// run
 	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message)
-	if err := db.QueryRow(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message).Scan(&wic.WorkItemCommentID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message).Scan(&wic.WorkItemCommentID, &wic.CreatedAt, &wic.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -114,10 +118,11 @@ func (wic *WorkItemComment) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_comments SET ` +
 		`work_item_id = $1, user_id = $2, message = $3 ` +
-		`WHERE work_item_comment_id = $4 `
+		`WHERE work_item_comment_id = $4 ` +
+		`RETURNING work_item_comment_id, created_at, updated_at `
 	// run
 	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID)
-	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.WorkItemCommentID).Scan(&wic.WorkItemCommentID, &wic.CreatedAt, &wic.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -181,9 +186,8 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_comments_pkey'.
 func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID int64, opts ...WorkItemCommentSelectConfigOption) (*WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{
-		joins: WorkItemCommentJoins{},
-	}
+	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -198,7 +202,7 @@ work_item_comments.created_at,
 work_item_comments.updated_at ` +
 		`FROM public.work_item_comments ` +
 		`` +
-		` WHERE work_item_comment_id = $1 `
+		` WHERE work_item_comments.work_item_comment_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -218,9 +222,8 @@ work_item_comments.updated_at ` +
 //
 // Generated from index 'work_item_comments_work_item_id_idx'.
 func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemCommentSelectConfigOption) ([]*WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{
-		joins: WorkItemCommentJoins{},
-	}
+	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -235,7 +238,7 @@ work_item_comments.created_at,
 work_item_comments.updated_at ` +
 		`FROM public.work_item_comments ` +
 		`` +
-		` WHERE work_item_id = $1 `
+		` WHERE work_item_comments.work_item_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

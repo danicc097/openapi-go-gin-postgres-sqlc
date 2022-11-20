@@ -1,6 +1,6 @@
 import { configureStore, ThunkAction, Action, Store } from '@reduxjs/toolkit'
+import rootReducer from 'src/redux/rootReducer'
 import { internalApi } from 'src/redux/slices/gen/internalApi'
-import rootReducer from './rootReducer'
 
 // thunk mw already in rtk's configureStore
 const store = configureStore({

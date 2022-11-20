@@ -41,7 +41,10 @@ func TestAnalyzeSpec(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+
 			var stderr bytes.Buffer
 
 			og := NewOpenapiGenerator(&Conf{}, &stderr, path.Join(baseDir, tc.File))

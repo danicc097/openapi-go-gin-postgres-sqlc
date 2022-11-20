@@ -25,9 +25,15 @@ type UserWrapped struct {
 type UserWrappedConfig struct {
 	CreateTimeout time.Duration
 
-	UpsertTimeout time.Duration
+	CreateAPIKeyTimeout time.Duration
+
+	UpdateTimeout time.Duration
+
+	UserByAPIKeyTimeout time.Duration
 
 	UserByEmailTimeout time.Duration
+
+	UserByIDTimeout time.Duration
 }
 
 // NewUserWrapped returns a decorated User with tracing and timeout options.
@@ -77,16 +83,17 @@ func (_d UserWrapped) Create(ctx context.Context, d db.DBTX, user *db.User) (err
 	return _d.User.Create(ctx, d, user)
 }
 
-// Upsert implements User.
-func (_d UserWrapped) Upsert(ctx context.Context, d db.DBTX, user *db.User) (err error) {
+// CreateAPIKey implements User.
+func (_d UserWrapped) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (up1 *db.UserAPIKey, err error) {
 	// -- tracing
-	ctx, _span := otel.Tracer(_d._otelName).Start(ctx, "User.Upsert")
+	ctx, _span := otel.Tracer(_d._otelName).Start(ctx, "User.CreateAPIKey")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
 				"ctx":  ctx,
 				"d":    d,
 				"user": user}, map[string]interface{}{
+				"up1": up1,
 				"err": err})
 		} else if err != nil {
 			_span.RecordError(err)
@@ -101,12 +108,78 @@ func (_d UserWrapped) Upsert(ctx context.Context, d db.DBTX, user *db.User) (err
 
 	// -- timeout
 	var cancelFunc func()
-	if _d.config.UpsertTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpsertTimeout)
+	if _d.config.CreateAPIKeyTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.CreateAPIKeyTimeout)
 		defer cancelFunc()
 	}
 
-	return _d.User.Upsert(ctx, d, user)
+	return _d.User.CreateAPIKey(ctx, d, user)
+}
+
+// Update implements User.
+func (_d UserWrapped) Update(ctx context.Context, d db.DBTX, params UserUpdateParams) (up1 *db.User, err error) {
+	// -- tracing
+	ctx, _span := otel.Tracer(_d._otelName).Start(ctx, "User.Update")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":    ctx,
+				"d":      d,
+				"params": params}, map[string]interface{}{
+				"up1": up1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+
+	// -- timeout
+	var cancelFunc func()
+	if _d.config.UpdateTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)
+		defer cancelFunc()
+	}
+
+	return _d.User.Update(ctx, d, params)
+}
+
+// UserByAPIKey implements User.
+func (_d UserWrapped) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.User, err error) {
+	// -- tracing
+	ctx, _span := otel.Tracer(_d._otelName).Start(ctx, "User.UserByAPIKey")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":    ctx,
+				"d":      d,
+				"apiKey": apiKey}, map[string]interface{}{
+				"up1": up1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+
+	// -- timeout
+	var cancelFunc func()
+	if _d.config.UserByAPIKeyTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UserByAPIKeyTimeout)
+		defer cancelFunc()
+	}
+
+	return _d.User.UserByAPIKey(ctx, d, apiKey)
 }
 
 // UserByEmail implements User.
@@ -140,4 +213,37 @@ func (_d UserWrapped) UserByEmail(ctx context.Context, d db.DBTX, email string) 
 	}
 
 	return _d.User.UserByEmail(ctx, d, email)
+}
+
+// UserByID implements User.
+func (_d UserWrapped) UserByID(ctx context.Context, d db.DBTX, id string) (up1 *db.User, err error) {
+	// -- tracing
+	ctx, _span := otel.Tracer(_d._otelName).Start(ctx, "User.UserByID")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx": ctx,
+				"d":   d,
+				"id":  id}, map[string]interface{}{
+				"up1": up1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+
+	// -- timeout
+	var cancelFunc func()
+	if _d.config.UserByIDTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UserByIDTimeout)
+		defer cancelFunc()
+	}
+
+	return _d.User.UserByID(ctx, d, id)
 }

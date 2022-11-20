@@ -8,7 +8,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/gin-gonic/gin"
-	"go.opentelemetry.io/otel"
 )
 
 // ErrorResponse represents a response containing an error message.
@@ -23,10 +22,10 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 	status := http.StatusInternalServerError
 
 	var ierr *internal.Error
+	fmt.Printf("err: %v\n", err)
 	if !errors.As(err, &ierr) {
 		resp.Error = "internal error"
 		resp.Message = msg
-		fmt.Printf("err:%s\n", err)
 	} else {
 		resp.Message = ierr.Cause().Error()
 		switch ierr.Code() {
@@ -58,7 +57,8 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 	}
 
 	if err != nil {
-		_, span := otel.Tracer(otelName).Start(c.Request.Context(), "renderErrorResponse")
+
+		span := newOTELSpan(c.Request.Context(), "renderErrorResponse")
 		defer span.End()
 
 		span.RecordError(err)
@@ -72,7 +72,7 @@ func renderResponse(c *gin.Context, res interface{}, status int) {
 
 	content, err := json.Marshal(res)
 	if err != nil {
-		// XXX Do something with the error ;)
+		// TODO Do something with the error
 		fmt.Printf("error in renderResponse Marshal: %s", err)
 		// c.Status(http.StatusInternalServerError)
 
@@ -82,7 +82,7 @@ func renderResponse(c *gin.Context, res interface{}, status int) {
 	c.Status(status)
 
 	if _, err = c.Writer.Write(content); err != nil { //nolint: staticcheck
-		// XXX Do something with the error ;)
+		// TODO Do something with the error
 		fmt.Printf("error in renderResponse Write: %s", err)
 	}
 }

@@ -45,6 +45,8 @@ func doPost(t *testing.T, handler http.Handler, rawURL string, jsonBody interfac
 }
 
 func TestOapiRequestValidator(t *testing.T) {
+	t.Parallel()
+
 	openapi, err := openapi3.NewLoader().LoadFromData(testSchema)
 	require.NoError(t, err, "Error initializing openapi")
 
@@ -192,6 +194,8 @@ func TestOapiRequestValidator(t *testing.T) {
 }
 
 func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
+	t.Parallel()
+
 	openapi, err := openapi3.NewLoader().LoadFromData([]byte(testSchema))
 	require.NoError(t, err, "Error initializing openapi")
 
@@ -295,6 +299,8 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 }
 
 func TestRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T) {
+	t.Parallel()
+
 	openapi, err := openapi3.NewLoader().LoadFromData([]byte(testSchema))
 	require.NoError(t, err, "Error initializing openapi")
 

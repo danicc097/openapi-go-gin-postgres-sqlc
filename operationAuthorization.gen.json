@@ -18,6 +18,10 @@
     "scopes": null,
     "role": null
   },
+  "UpdateUserAuthorization": {
+    "scopes": null,
+    "role": "user"
+  },
   "DeleteUser": {
     "scopes": [
       "test-scope",

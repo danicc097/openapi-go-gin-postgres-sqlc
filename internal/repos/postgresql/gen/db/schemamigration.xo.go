@@ -21,11 +21,10 @@ type SchemaMigrationSelectConfig struct {
 	orderBy string
 	joins   SchemaMigrationJoins
 }
-
 type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
 
-// SchemaMigrationWithLimit limits row selection.
-func SchemaMigrationWithLimit(limit int) SchemaMigrationSelectConfigOption {
+// WithSchemaMigrationLimit limits row selection.
+func WithSchemaMigrationLimit(limit int) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -35,8 +34,8 @@ type SchemaMigrationOrderBy = string
 
 type SchemaMigrationJoins struct{}
 
-// SchemaMigrationWithJoin orders results by the given columns.
-func SchemaMigrationWithJoin(joins SchemaMigrationJoins) SchemaMigrationSelectConfigOption {
+// WithSchemaMigrationJoin orders results by the given columns.
+func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
 		s.joins = joins
 	}
@@ -88,10 +87,11 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.schema_migrations SET ` +
 		`dirty = $1 ` +
-		`WHERE version = $2 `
+		`WHERE version = $2 ` +
+		`RETURNING version `
 	// run
 	logf(sqlstr, sm.Dirty, sm.Version)
-	if _, err := db.Exec(ctx, sqlstr, sm.Dirty, sm.Version); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, sm.Dirty, sm.Version).Scan(); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -155,9 +155,8 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'schema_migrations_pkey'.
 func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ...SchemaMigrationSelectConfigOption) (*SchemaMigration, error) {
-	c := &SchemaMigrationSelectConfig{
-		joins: SchemaMigrationJoins{},
-	}
+	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -168,7 +167,7 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ..
 schema_migrations.dirty ` +
 		`FROM public.schema_migrations ` +
 		`` +
-		` WHERE version = $1 `
+		` WHERE schema_migrations.version = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

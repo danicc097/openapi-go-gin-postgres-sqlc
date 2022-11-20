@@ -2,7 +2,6 @@ package rest
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/gin-gonic/gin"
@@ -11,13 +10,13 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const otelName = "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
+const OtelName = "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 
 // When creating a Span it is recommended to provide all known span attributes
 // using the `WithAttributes()` SpanOption as samplers will only have access
 // to the attributes provided when a Span is created
 func newOTELSpan(ctx context.Context, name string, opts ...trace.SpanStartOption) trace.Span {
-	_, span := otel.Tracer(otelName).Start(ctx, name, opts...)
+	_, span := otel.Tracer(OtelName).Start(ctx, name)
 
 	return span
 }
@@ -25,7 +24,7 @@ func newOTELSpan(ctx context.Context, name string, opts ...trace.SpanStartOption
 func userIDAttribute(c *gin.Context) attribute.KeyValue {
 	uid := ""
 	if u := getUserFromCtx(c); u != nil {
-		uid = fmt.Sprintf("%d", u.UserID)
+		uid = u.UserID.String()
 	}
 
 	return tracing.UserIDAttribute.String(uid)

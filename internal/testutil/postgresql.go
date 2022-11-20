@@ -55,5 +55,5 @@ func NewDB() (*pgxpool.Pool, error) {
 		return nil, err
 	}
 
-	return testpool, err
+	return testpool, nil
 }

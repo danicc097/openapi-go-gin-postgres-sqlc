@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // UserAPIKey represents a row from 'public.user_api_keys'.
@@ -14,7 +16,9 @@ type UserAPIKey struct {
 	UserAPIKeyID int       `json:"user_api_key_id" db:"user_api_key_id"` // user_api_key_id
 	APIKey       string    `json:"api_key" db:"api_key"`                 // api_key
 	ExpiresOn    time.Time `json:"expires_on" db:"expires_on"`           // expires_on
+	UserID       uuid.UUID `json:"user_id" db:"user_id"`                 // user_id
 
+	User *User `json:"user"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -24,11 +28,10 @@ type UserAPIKeySelectConfig struct {
 	orderBy string
 	joins   UserAPIKeyJoins
 }
-
 type UserAPIKeySelectConfigOption func(*UserAPIKeySelectConfig)
 
-// UserAPIKeyWithLimit limits row selection.
-func UserAPIKeyWithLimit(limit int) UserAPIKeySelectConfigOption {
+// WithUserAPIKeyLimit limits row selection.
+func WithUserAPIKeyLimit(limit int) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -43,17 +46,24 @@ const (
 	UserAPIKeyExpiresOnAscNullsLast   UserAPIKeyOrderBy = " expires_on ASC NULLS LAST "
 )
 
-// UserAPIKeyWithOrderBy orders results by the given columns.
-func UserAPIKeyWithOrderBy(rows ...UserAPIKeyOrderBy) UserAPIKeySelectConfigOption {
+// WithUserAPIKeyOrderBy orders results by the given columns.
+func WithUserAPIKeyOrderBy(rows ...UserAPIKeyOrderBy) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
+		if len(rows) == 0 {
+			s.orderBy = ""
+			return
+		}
+		s.orderBy = " order by "
+		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 
-type UserAPIKeyJoins struct{}
+type UserAPIKeyJoins struct {
+	User bool
+}
 
-// UserAPIKeyWithJoin orders results by the given columns.
-func UserAPIKeyWithJoin(joins UserAPIKeyJoins) UserAPIKeySelectConfigOption {
+// WithUserAPIKeyJoin orders results by the given columns.
+func WithUserAPIKeyJoin(joins UserAPIKeyJoins) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
 		s.joins = joins
 	}
@@ -80,13 +90,13 @@ func (uak *UserAPIKey) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.user_api_keys (` +
-		`api_key, expires_on` +
+		`api_key, expires_on, user_id` +
 		`) VALUES (` +
-		`$1, $2` +
+		`$1, $2, $3` +
 		`) RETURNING user_api_key_id `
 	// run
-	logf(sqlstr, uak.APIKey, uak.ExpiresOn)
-	if err := db.QueryRow(ctx, sqlstr, uak.APIKey, uak.ExpiresOn).Scan(&uak.UserAPIKeyID); err != nil {
+	logf(sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID)
+	if err := db.QueryRow(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID).Scan(&uak.UserAPIKeyID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -104,11 +114,12 @@ func (uak *UserAPIKey) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.user_api_keys SET ` +
-		`api_key = $1, expires_on = $2 ` +
-		`WHERE user_api_key_id = $3 `
+		`api_key = $1, expires_on = $2, user_id = $3 ` +
+		`WHERE user_api_key_id = $4 ` +
+		`RETURNING user_api_key_id `
 	// run
-	logf(sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserAPIKeyID)
-	if _, err := db.Exec(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserAPIKeyID); err != nil {
+	logf(sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID)
+	if err := db.QueryRow(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID).Scan(&uak.UserAPIKeyID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -130,16 +141,16 @@ func (uak *UserAPIKey) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.user_api_keys (` +
-		`user_api_key_id, api_key, expires_on` +
+		`user_api_key_id, api_key, expires_on, user_id` +
 		`) VALUES (` +
-		`$1, $2, $3` +
+		`$1, $2, $3, $4` +
 		`)` +
 		` ON CONFLICT (user_api_key_id) DO ` +
 		`UPDATE SET ` +
-		`api_key = EXCLUDED.api_key, expires_on = EXCLUDED.expires_on  `
+		`api_key = EXCLUDED.api_key, expires_on = EXCLUDED.expires_on, user_id = EXCLUDED.user_id  `
 	// run
-	logf(sqlstr, uak.UserAPIKeyID, uak.APIKey, uak.ExpiresOn)
-	if _, err := db.Exec(ctx, sqlstr, uak.UserAPIKeyID, uak.APIKey, uak.ExpiresOn); err != nil {
+	logf(sqlstr, uak.UserAPIKeyID, uak.APIKey, uak.ExpiresOn, uak.UserID)
+	if _, err := db.Exec(ctx, sqlstr, uak.UserAPIKeyID, uak.APIKey, uak.ExpiresOn, uak.UserID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -172,9 +183,8 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'user_api_keys_api_key_key'.
 func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
-	c := &UserAPIKeySelectConfig{
-		joins: UserAPIKeyJoins{},
-	}
+	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -183,10 +193,13 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 	sqlstr := `SELECT ` +
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
-user_api_keys.expires_on ` +
+user_api_keys.expires_on,
+user_api_keys.user_id,
+(case when $1::boolean = true then row_to_json(users.*) end)::jsonb as user ` +
 		`FROM public.user_api_keys ` +
-		`` +
-		` WHERE api_key = $1 `
+		`-- O2O join generated from "user_api_keys_user_id_fkey"
+left join users on users.user_id = user_api_keys.user_id` +
+		` WHERE user_api_keys.api_key = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -196,7 +209,7 @@ user_api_keys.expires_on ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, apiKey).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.User, apiKey).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID, &uak.User); err != nil {
 		return nil, logerror(err)
 	}
 	return &uak, nil
@@ -206,9 +219,8 @@ user_api_keys.expires_on ` +
 //
 // Generated from index 'user_api_keys_pkey'.
 func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
-	c := &UserAPIKeySelectConfig{
-		joins: UserAPIKeyJoins{},
-	}
+	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -217,10 +229,13 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 	sqlstr := `SELECT ` +
 		`user_api_keys.user_api_key_id,
 user_api_keys.api_key,
-user_api_keys.expires_on ` +
+user_api_keys.expires_on,
+user_api_keys.user_id,
+(case when $1::boolean = true then row_to_json(users.*) end)::jsonb as user ` +
 		`FROM public.user_api_keys ` +
-		`` +
-		` WHERE user_api_key_id = $1 `
+		`-- O2O join generated from "user_api_keys_user_id_fkey"
+left join users on users.user_id = user_api_keys.user_id` +
+		` WHERE user_api_keys.user_api_key_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -230,8 +245,51 @@ user_api_keys.expires_on ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, userAPIKeyID).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.User, userAPIKeyID).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID, &uak.User); err != nil {
 		return nil, logerror(err)
 	}
 	return &uak, nil
+}
+
+// UserAPIKeyByUserID retrieves a row from 'public.user_api_keys' as a UserAPIKey.
+//
+// Generated from index 'user_api_keys_user_id_key'.
+func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
+	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`user_api_keys.user_api_key_id,
+user_api_keys.api_key,
+user_api_keys.expires_on,
+user_api_keys.user_id,
+(case when $1::boolean = true then row_to_json(users.*) end)::jsonb as user ` +
+		`FROM public.user_api_keys ` +
+		`-- O2O join generated from "user_api_keys_user_id_fkey"
+left join users on users.user_id = user_api_keys.user_id` +
+		` WHERE user_api_keys.user_id = $2 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, userID)
+	uak := UserAPIKey{
+		_exists: true,
+	}
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.User, userID).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID, &uak.User); err != nil {
+		return nil, logerror(err)
+	}
+	return &uak, nil
+}
+
+// FKUser returns the User associated with the UserAPIKey's (UserID).
+//
+// Generated from foreign key 'user_api_keys_user_id_fkey'.
+func (uak *UserAPIKey) FKUser(ctx context.Context, db DB) (*User, error) {
+	return UserByUserID(ctx, db, uak.UserID)
 }

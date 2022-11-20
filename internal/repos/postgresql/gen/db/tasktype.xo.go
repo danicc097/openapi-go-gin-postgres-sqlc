@@ -24,11 +24,10 @@ type TaskTypeSelectConfig struct {
 	orderBy string
 	joins   TaskTypeJoins
 }
-
 type TaskTypeSelectConfigOption func(*TaskTypeSelectConfig)
 
-// TaskTypeWithLimit limits row selection.
-func TaskTypeWithLimit(limit int) TaskTypeSelectConfigOption {
+// WithTaskTypeLimit limits row selection.
+func WithTaskTypeLimit(limit int) TaskTypeSelectConfigOption {
 	return func(s *TaskTypeSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -38,8 +37,8 @@ type TaskTypeOrderBy = string
 
 type TaskTypeJoins struct{}
 
-// TaskTypeWithJoin orders results by the given columns.
-func TaskTypeWithJoin(joins TaskTypeJoins) TaskTypeSelectConfigOption {
+// WithTaskTypeJoin orders results by the given columns.
+func WithTaskTypeJoin(joins TaskTypeJoins) TaskTypeSelectConfigOption {
 	return func(s *TaskTypeSelectConfig) {
 		s.joins = joins
 	}
@@ -91,10 +90,11 @@ func (tt *TaskType) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.task_types SET ` +
 		`team_id = $1, name = $2, description = $3, color = $4 ` +
-		`WHERE task_type_id = $5 `
+		`WHERE task_type_id = $5 ` +
+		`RETURNING task_type_id `
 	// run
 	logf(sqlstr, tt.TeamID, tt.Name, tt.Description, tt.Color, tt.TaskTypeID)
-	if _, err := db.Exec(ctx, sqlstr, tt.TeamID, tt.Name, tt.Description, tt.Color, tt.TaskTypeID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, tt.TeamID, tt.Name, tt.Description, tt.Color, tt.TaskTypeID).Scan(&tt.TaskTypeID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -158,9 +158,8 @@ func (tt *TaskType) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'task_types_pkey'.
 func TaskTypeByTaskTypeID(ctx context.Context, db DB, taskTypeID int, opts ...TaskTypeSelectConfigOption) (*TaskType, error) {
-	c := &TaskTypeSelectConfig{
-		joins: TaskTypeJoins{},
-	}
+	c := &TaskTypeSelectConfig{joins: TaskTypeJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -174,7 +173,7 @@ task_types.description,
 task_types.color ` +
 		`FROM public.task_types ` +
 		`` +
-		` WHERE task_type_id = $1 `
+		` WHERE task_types.task_type_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -194,9 +193,8 @@ task_types.color ` +
 //
 // Generated from index 'task_types_team_id_name_key'.
 func TaskTypeByTeamIDName(ctx context.Context, db DB, teamID int64, name string, opts ...TaskTypeSelectConfigOption) (*TaskType, error) {
-	c := &TaskTypeSelectConfig{
-		joins: TaskTypeJoins{},
-	}
+	c := &TaskTypeSelectConfig{joins: TaskTypeJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -210,7 +208,7 @@ task_types.description,
 task_types.color ` +
 		`FROM public.task_types ` +
 		`` +
-		` WHERE team_id = $1 AND name = $2 `
+		` WHERE task_types.team_id = $1 AND task_types.name = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -34,4 +34,4 @@ drop table if exists projects cascade;
 
 drop type if exists role cascade;
 
-drop type if exists task_role cascade;
+drop type if exists work_item_role cascade;

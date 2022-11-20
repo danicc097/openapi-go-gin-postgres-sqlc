@@ -8,7 +8,7 @@ x-logging: &default-logging
 # Debug config with docker-compose --env-file <...> config
 services:
   jaeger:
-    image: jaegertracing/all-in-one:1.38
+    image: jaegertracing/all-in-one:1.39
     networks:
       - traefik-net
       - otel-network
@@ -26,9 +26,9 @@ services:
     # https://www.jaegertracing.io/docs/1.14/cli/#jaeger-all-in-one-elasticsearch
     depends_on:
       - promscale
-    command: --log-level=debug #--collector.zipkin.allowed-origins="*" --collector.zipkin.allowed-headers="*"
+    command: --log-level=debug --collector.zipkin.allowed-origins="*" --collector.zipkin.allowed-headers="*"
     environment:
-      # COLLECTOR_ZIPKIN_HOST_PORT: 9411
+      COLLECTOR_ZIPKIN_HOST_PORT: 9411 # for frontend
       SPAN_STORAGE_TYPE: grpc-plugin
       GRPC_STORAGE_SERVER: "promscale:9202"
     extra_hosts:

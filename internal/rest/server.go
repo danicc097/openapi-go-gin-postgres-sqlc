@@ -30,7 +30,9 @@ import (
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
@@ -214,7 +216,9 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	// with the returned tokens from the token endpoint
 	// in this example the callback function itself is wrapped by the UserinfoCallback which
 	// will call the Userinfo endpoint, check the sub and pass the info into the callback function
-	// TODO in reality we would redirect to our app frontend instead
+	// TODO in reality we would redirect back to our app frontend instead
+	// this callback must also be extended to create an access token (or any other login method) for our own
+	// app (and create user if not found) once the external auth request is authorized
 	vg.Any(conf.MyProviderCallbackPath, gin.WrapH(rp.CodeExchangeHandler(rp.UserinfoCallback(marshalUserinfo), provider)))
 
 	// if you would use the callback without calling the userinfo endpoint, simply switch the callback handler for:
@@ -270,18 +274,20 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	// - repos must not be concerned with transaction details
 	// - also note services dont necessarily need an equivalently named repository or viceversa.
 
-	rlMw := newRateLimitMiddleware(conf.Logger, 15, 3)
+	rlMw := newRateLimitMiddleware(conf.Logger, 25, 10)
 	switch os.Getenv("APP_ENV") {
 	case "prod":
 		vg.Use(rlMw.Limit())
 	}
 
-	usvc := services.NewUser(postgresql.NewUser(), conf.Logger)
 	authzsvc, err := services.NewAuthorization(conf.Logger, conf.ScopePolicyPath, conf.RolePolicyPath)
 	if err != nil {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)
 	}
-	authnsvc := services.NewAuthentication(conf.Logger, usvc)
+
+	usvc := services.NewUser(conf.Logger, repos.NewUserWrapped(postgresql.NewUser(), postgresql.OtelName, repos.UserWrappedConfig{}, nil), authzsvc)
+
+	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
 
 	vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))
 
@@ -291,7 +297,17 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	RegisterHandlersWithOptions(vg, handlers, GinServerOptions{BaseURL: ""})
 
+	// TODO use pgx logger instead (v5) https://github.com/jackc/pgx/issues/1381
+	switch os.Getenv("APP_ENV") {
+	case "prod":
+		db.SetErrorLogger(conf.Logger.Sugar().Errorf)
+	default:
+		db.SetLogger(conf.Logger.Sugar().Infof)
+		db.SetErrorLogger(conf.Logger.Sugar().Errorf)
+	}
+
 	conf.Logger.Info("Server started")
+
 	srv.httpsrv = &http.Server{
 		Handler:           router,
 		Addr:              conf.Address,

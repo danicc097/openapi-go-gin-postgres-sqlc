@@ -16,27 +16,7 @@
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "UpdateUserRequest": {
-      "description": "represents User data to update",
-      "properties": {
-        "role": {
-          "$ref": "#/definitions/Role"
-        },
-        "first_name": {
-          "type": "string",
-          "pattern": "^[ a-zA-Z0-9_-]+$"
-        },
-        "last_name": {
-          "type": "string",
-          "pattern": "^[ a-zA-Z0-9_-]+$"
-        }
-      },
-      "title": "a User",
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "Scope": {
-      "description": "Scope automatically generated from scopes.json keys",
       "type": "string",
       "enum": [
         "test-scope",
@@ -50,7 +30,6 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Role": {
-      "description": "Role automatically generated from roles.json keys",
       "type": "string",
       "enum": [
         "guest",
@@ -62,21 +41,50 @@
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "TaskRole": {
-      "title": "Task role",
-      "description": "Role in task for a member.",
+    "WorkItemRole": {
+      "title": "WorkItem role",
+      "description": "Role in work item for a member.",
       "type": "string",
-      "x-db-enum": "task_role",
+      "x-db-enum": "work_item_role",
       "enum": [
         "preparer",
         "reviewer"
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "Organization": {
-      "title": "Organization",
-      "description": "Organization a user belongs to.",
-      "type": "string",
+    "UpdateUserRequest": {
+      "description": "represents User data to update",
+      "properties": {
+        "first_name": {
+          "description": "originally from auth server but updatable",
+          "type": "string",
+          "pattern": "^[ a-zA-Z0-9_-]+$"
+        },
+        "last_name": {
+          "description": "originally from auth server but updatable",
+          "type": "string",
+          "pattern": "^[ a-zA-Z0-9_-]+$"
+        }
+      },
+      "title": "a User",
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UpdateUserAuthRequest": {
+      "description": "represents User authorization data to update",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/Role"
+        },
+        "scopes": {
+          "items": {
+            "$ref": "#/definitions/Scope"
+          },
+          "type": "array"
+        }
+      },
+      "title": "a User",
+      "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "User": {
@@ -102,10 +110,7 @@
           "type": "string"
         },
         "external_id": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": "string"
         },
         "first_name": {
           "type": [
@@ -158,9 +163,6 @@
         "updated_at": {
           "format": "date-time",
           "type": "string"
-        },
-        "user_api_key": {
-          "$ref": "#/definitions/UserAPIKey"
         },
         "user_id": {
           "$ref": "#/definitions/UuidUUID"
@@ -226,15 +228,14 @@
             "null"
           ]
         },
+        "finished": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "metadata": {
           "$ref": "#/definitions/PgtypeJSONB"
-        },
-        "target_date": {
-          "format": "date-time",
-          "type": "string"
-        },
-        "target_date_timezone": {
-          "type": "string"
         },
         "task_id": {
           "type": "integer"
@@ -244,15 +245,6 @@
         },
         "task_type_id": {
           "type": "integer"
-        },
-        "time_entries": {
-          "items": {
-            "$ref": "#/definitions/TimeEntry"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         },
         "title": {
           "type": "string"
@@ -357,12 +349,6 @@
           "format": "date-time",
           "type": "string"
         },
-        "task_id": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        },
         "team_id": {
           "type": [
             "integer",
@@ -374,6 +360,12 @@
         },
         "user_id": {
           "$ref": "#/definitions/UuidUUID"
+        },
+        "work_item_id": {
+          "type": [
+            "integer",
+            "null"
+          ]
         }
       },
       "type": "object",
@@ -390,6 +382,9 @@
         },
         "user_api_key_id": {
           "type": "integer"
+        },
+        "user_id": {
+          "$ref": "#/definitions/UuidUUID"
         }
       },
       "type": [
@@ -436,6 +431,15 @@
         "team_id": {
           "type": "integer"
         },
+        "time_entries": {
+          "items": {
+            "$ref": "#/definitions/TimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
         "title": {
           "type": "string"
         },
@@ -462,6 +466,9 @@
           ]
         },
         "work_item_id": {
+          "type": "integer"
+        },
+        "work_item_type_id": {
           "type": "integer"
         }
       },
@@ -499,20 +506,20 @@
     "HTTPValidationError": {
       "$ref": "#/definitions/HTTPValidationError"
     },
-    "UpdateUserRequest": {
-      "$ref": "#/definitions/UpdateUserRequest"
-    },
     "Scope": {
       "$ref": "#/definitions/Scope"
     },
     "Role": {
       "$ref": "#/definitions/Role"
     },
-    "TaskRole": {
-      "$ref": "#/definitions/TaskRole"
+    "WorkItemRole": {
+      "$ref": "#/definitions/WorkItemRole"
     },
-    "Organization": {
-      "$ref": "#/definitions/Organization"
+    "UpdateUserRequest": {
+      "$ref": "#/definitions/UpdateUserRequest"
+    },
+    "UpdateUserAuthRequest": {
+      "$ref": "#/definitions/UpdateUserAuthRequest"
     },
     "User": {
       "$ref": "#/definitions/User"

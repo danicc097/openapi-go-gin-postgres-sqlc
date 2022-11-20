@@ -32,11 +32,10 @@ type TeamSelectConfig struct {
 	orderBy string
 	joins   TeamJoins
 }
-
 type TeamSelectConfigOption func(*TeamSelectConfig)
 
-// TeamWithLimit limits row selection.
-func TeamWithLimit(limit int) TeamSelectConfigOption {
+// WithTeamLimit limits row selection.
+func WithTeamLimit(limit int) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -55,10 +54,15 @@ const (
 	TeamUpdatedAtAscNullsLast   TeamOrderBy = " updated_at ASC NULLS LAST "
 )
 
-// TeamWithOrderBy orders results by the given columns.
-func TeamWithOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
+// WithTeamOrderBy orders results by the given columns.
+func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
+		if len(rows) == 0 {
+			s.orderBy = ""
+			return
+		}
+		s.orderBy = " order by "
+		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 
@@ -67,8 +71,8 @@ type TeamJoins struct {
 	Users       bool
 }
 
-// TeamWithJoin orders results by the given columns.
-func TeamWithJoin(joins TeamJoins) TeamSelectConfigOption {
+// WithTeamJoin orders results by the given columns.
+func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
 		s.joins = joins
 	}
@@ -98,10 +102,10 @@ func (t *Team) Insert(ctx context.Context, db DB) error {
 		`project_id, name, description, metadata` +
 		`) VALUES (` +
 		`$1, $2, $3, $4` +
-		`) RETURNING team_id `
+		`) RETURNING team_id, created_at, updated_at `
 	// run
 	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata)
-	if err := db.QueryRow(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata).Scan(&t.TeamID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata).Scan(&t.TeamID, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -120,10 +124,11 @@ func (t *Team) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.teams SET ` +
 		`project_id = $1, name = $2, description = $3, metadata = $4 ` +
-		`WHERE team_id = $5 `
+		`WHERE team_id = $5 ` +
+		`RETURNING team_id, created_at, updated_at `
 	// run
 	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata, t.CreatedAt, t.UpdatedAt, t.TeamID)
-	if _, err := db.Exec(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata, t.CreatedAt, t.UpdatedAt, t.TeamID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata, t.TeamID).Scan(&t.TeamID, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -187,9 +192,8 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'teams_name_project_id_key'.
 func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...TeamSelectConfigOption) (*Team, error) {
-	c := &TeamSelectConfig{
-		joins: TeamJoins{},
-	}
+	c := &TeamSelectConfig{joins: TeamJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -237,7 +241,7 @@ left join (
 						users))
 			group by
 				team_id) joined_users on joined_users.users_team_id = teams.team_id` +
-		` WHERE name = $3 AND project_id = $4 `
+		` WHERE teams.name = $3 AND teams.project_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -257,9 +261,8 @@ left join (
 //
 // Generated from index 'teams_pkey'.
 func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) (*Team, error) {
-	c := &TeamSelectConfig{
-		joins: TeamJoins{},
-	}
+	c := &TeamSelectConfig{joins: TeamJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -307,7 +310,7 @@ left join (
 						users))
 			group by
 				team_id) joined_users on joined_users.users_team_id = teams.team_id` +
-		` WHERE team_id = $3 `
+		` WHERE teams.team_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

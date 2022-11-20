@@ -31,15 +31,16 @@ type TraceProviderProps = {
   children?: React.ReactNode
 }
 
-// IMPORTANT: For host browser in localhost, ensure ports 9411 are forwarded.
-// not everything will work if dynamic ports are used most likely, but behind traefik
-// it should be fine
+// IMPORTANT: For host browser in localhost, ensure port 9411 forwarded.
+// TODO return early if not authenticated
 export default function TraceProvider({ children }: TraceProviderProps) {
   const provider = new WebTracerProvider({
     resource: new Resource({
       [SemanticResourceAttributes.SERVICE_NAME]: 'frontend',
     }),
   })
+  // OTLPTraceExporter not supported by jaeger https://github.com/jaegertracing/jaeger/issues/3479#issuecomment-1012199971
+  // use zipkin
   const zipKinSpanProcessor = new BatchSpanProcessor(
     new ZipkinExporter({
       // TODO traefik label for prod since calls are made from outside
@@ -50,19 +51,6 @@ export default function TraceProvider({ children }: TraceProviderProps) {
     }),
   )
   provider.addSpanProcessor(zipKinSpanProcessor)
-
-  // possibly not supported by jaeger https://github.com/jaegertracing/jaeger/issues/3479#issuecomment-1012199971
-  // since there's a CORS error and no way to set allowed origins
-  // provider.addSpanProcessor(
-  //   new BatchSpanProcessor(
-  //     new OTLPTraceExporter({
-  //       // url: 'http://localhost:4318/v1/traces',
-  //       // https://github.com/open-telemetry/opentelemetry-js/issues/3062
-  //       // {} so it uses xhr instead of sendBeacon, but gives the same cors error
-  //       headers: {},
-  //     }),
-  //   ),
-  // )
 
   const contextManager = new ZoneContextManager()
   provider.register({

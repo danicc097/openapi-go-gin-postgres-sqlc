@@ -20,12 +20,20 @@ const injectedRtkApi = api
         query: () => ({ url: `/user/me` }),
         providesTags: ['user'],
       }),
+      updateUserAuthorization: build.mutation<UpdateUserAuthorizationRes, UpdateUserAuthorizationArgs>({
+        query: (queryArg) => ({
+          url: `/user/${queryArg.id}/authorization`,
+          method: 'PATCH',
+          body: queryArg.updateUserAuthRequest,
+        }),
+        invalidatesTags: ['user'],
+      }),
       deleteUser: build.mutation<DeleteUserRes, DeleteUserArgs>({
         query: (queryArg) => ({ url: `/user/${queryArg}`, method: 'DELETE' }),
         invalidatesTags: ['user'],
       }),
       updateUser: build.mutation<UpdateUserRes, UpdateUserArgs>({
-        query: (queryArg) => ({ url: `/user/${queryArg.id}`, method: 'PUT', body: queryArg.updateUserRequest }),
+        query: (queryArg) => ({ url: `/user/${queryArg.id}`, method: 'PATCH', body: queryArg.updateUserRequest }),
         invalidatesTags: ['user'],
       }),
     }),
@@ -36,18 +44,25 @@ export type PingRes = /** status 200 OK */ string
 export type PingArgs = void
 export type OpenapiYamlGetRes = unknown
 export type OpenapiYamlGetArgs = void
-export type AdminPingRes = /** status 200 OK */ string
+export type AdminPingRes = unknown
 export type AdminPingArgs = void
 export type GetCurrentUserRes = /** status 200 ok */ User
 export type GetCurrentUserArgs = void
+export type UpdateUserAuthorizationRes = /** status 200 ok */ User
+export type UpdateUserAuthorizationArgs = {
+  /** user_id that needs to be updated */
+  id: string
+  /** Updated user object */
+  updateUserAuthRequest: AUser
+}
 export type DeleteUserRes = unknown
-export type DeleteUserArgs = /** user_id that needs to be deleted */ string
-export type UpdateUserRes = unknown
+export type DeleteUserArgs = /** user_id that needs to be updated */ string
+export type UpdateUserRes = /** status 200 ok */ User
 export type UpdateUserArgs = {
   /** user_id that needs to be updated */
   id: string
   /** Updated user object */
-  updateUserRequest: AUser
+  updateUserRequest: AUser2
 }
 export type ValidationError = {
   loc: string[]
@@ -64,10 +79,10 @@ export type TimeEntry = {
   comment?: string
   duration_minutes?: number | null
   start?: string
-  task_id?: number | null
   team_id?: number | null
   time_entry_id?: number
   user_id?: UuidUuid
+  work_item_id?: number | null
 }
 export type Team = {
   created_at?: string
@@ -80,11 +95,6 @@ export type Team = {
   updated_at?: string
   users?: User[] | null
 }
-export type UserApiKey = {
-  api_key?: string
-  expires_on?: string
-  user_api_key_id?: number
-} | null
 export type TaskType = {
   color?: string
   description?: string
@@ -95,13 +105,11 @@ export type TaskType = {
 export type Task = {
   created_at?: string
   deleted_at?: string | null
+  finished?: boolean | null
   metadata?: PgtypeJsonb
-  target_date?: string
-  target_date_timezone?: string
   task_id?: number
   task_type?: TaskType
   task_type_id?: number
-  time_entries?: TimeEntry[] | null
   title?: string
   updated_at?: string
   work_item_id?: number
@@ -122,18 +130,20 @@ export type WorkItem = {
   metadata?: PgtypeJsonb
   tasks?: Task[] | null
   team_id?: number
+  time_entries?: TimeEntry[] | null
   title?: string
   updated_at?: string
   users?: User[] | null
   work_item_comments?: WorkItemComment[] | null
   work_item_id?: number
+  work_item_type_id?: number
 }
 export type User = {
   api_key_id?: number | null
   created_at?: string
   deleted_at?: string | null
   email?: string
-  external_id?: string | null
+  external_id?: string
   first_name?: string | null
   full_name?: string | null
   last_name?: string | null
@@ -142,14 +152,24 @@ export type User = {
   teams?: Team[] | null
   time_entries?: TimeEntry[] | null
   updated_at?: string
-  user_api_key?: UserApiKey
   user_id?: UuidUuid
   username?: string
   work_items?: WorkItem[] | null
 }
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
+export type Scope =
+  | 'test-scope'
+  | 'users:read'
+  | 'users:write'
+  | 'scopes:write'
+  | 'team-settings:write'
+  | 'project-settings:write'
+  | 'work-item:review'
 export type AUser = {
   role?: Role
+  scopes?: Scope[]
+}
+export type AUser2 = {
   first_name?: string
   last_name?: string
 }
@@ -158,6 +178,7 @@ export const {
   useOpenapiYamlGetQuery,
   useAdminPingQuery,
   useGetCurrentUserQuery,
+  useUpdateUserAuthorizationMutation,
   useDeleteUserMutation,
   useUpdateUserMutation,
 } = injectedRtkApi

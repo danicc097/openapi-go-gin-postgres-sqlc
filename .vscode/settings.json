@@ -5,7 +5,7 @@
     // "-c",
     // "./.golangci.yml",
     "--issues-exit-code=0",
-    "--fast" // breaks some linters like errcheck, if its too slow then enable back
+    // "--fast" // breaks some linters like errcheck, if its too slow then enable back
   ],
   "go.lintOnSave": "package",
   // --

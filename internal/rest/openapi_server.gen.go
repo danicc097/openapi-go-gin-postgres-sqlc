@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	externalRef0 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/gin-gonic/gin"
 )
@@ -28,10 +28,13 @@ type ServerInterface interface {
 	GetCurrentUser(c *gin.Context)
 	// deletes the user by id
 	// (DELETE /user/{id})
-	DeleteUser(c *gin.Context, id string)
+	DeleteUser(c *gin.Context, id externalRef0.UserID)
 	// updates the user by id
-	// (PUT /user/{id})
-	UpdateUser(c *gin.Context, id string)
+	// (PATCH /user/{id})
+	UpdateUser(c *gin.Context, id externalRef0.UserID)
+	// updates user role and scopes by id
+	// (PATCH /user/{id}/authorization)
+	UpdateUserAuthorization(c *gin.Context, id externalRef0.UserID)
 
 	middlewares(opID operationID) []gin.HandlerFunc
 }
@@ -43,61 +46,85 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(c *gin.Context)
 
-// AdminPing operation middleware.
+// AdminPing operation with its own middleware.
 func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 
-	c.Set(models.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
 
-	c.Set(models.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{""})
 
 	// apply middlewares for operation "AdminPing".
 	for _, mw := range siw.Handler.middlewares(AdminPing) {
 		mw(c)
+
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
 	}
 
 	siw.Handler.AdminPing(c)
 }
 
-// OpenapiYamlGet operation middleware.
+// OpenapiYamlGet operation with its own middleware.
 func (siw *ServerInterfaceWrapper) OpenapiYamlGet(c *gin.Context) {
 
 	// apply middlewares for operation "OpenapiYamlGet".
 	for _, mw := range siw.Handler.middlewares(OpenapiYamlGet) {
 		mw(c)
+
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
 	}
 
 	siw.Handler.OpenapiYamlGet(c)
 }
 
-// Ping operation middleware.
+// Ping operation with its own middleware.
 func (siw *ServerInterfaceWrapper) Ping(c *gin.Context) {
 
 	// apply middlewares for operation "Ping".
 	for _, mw := range siw.Handler.middlewares(Ping) {
 		mw(c)
+
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
 	}
 
 	siw.Handler.Ping(c)
 }
 
-// GetCurrentUser operation middleware.
+// GetCurrentUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
+
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
+
+	c.Set(externalRef0.Api_keyScopes, []string{""})
 
 	// apply middlewares for operation "GetCurrentUser".
 	for _, mw := range siw.Handler.middlewares(GetCurrentUser) {
 		mw(c)
+
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
 	}
 
 	siw.Handler.GetCurrentUser(c)
 }
 
-// DeleteUser operation middleware.
+// DeleteUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id string
+	var id externalRef0.UserID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -105,25 +132,30 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	c.Set(models.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
 
-	c.Set(models.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{""})
 
 	// apply middlewares for operation "DeleteUser".
 	for _, mw := range siw.Handler.middlewares(DeleteUser) {
 		mw(c)
+
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
 	}
 
 	siw.Handler.DeleteUser(c, id)
 }
 
-// UpdateUser operation middleware.
+// UpdateUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id string
+	var id externalRef0.UserID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -131,16 +163,52 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	c.Set(models.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
 
-	c.Set(models.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{""})
 
 	// apply middlewares for operation "UpdateUser".
 	for _, mw := range siw.Handler.middlewares(UpdateUser) {
 		mw(c)
+
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
 	}
 
 	siw.Handler.UpdateUser(c, id)
+}
+
+// UpdateUserAuthorization operation with its own middleware.
+func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.UserID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
+
+	c.Set(externalRef0.Api_keyScopes, []string{""})
+
+	// apply middlewares for operation "UpdateUserAuthorization".
+	for _, mw := range siw.Handler.middlewares(UpdateUserAuthorization) {
+		mw(c)
+
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.UpdateUserAuthorization(c, id)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -169,7 +237,9 @@ func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, op
 
 	router.DELETE(options.BaseURL+"/user/:id", wrapper.DeleteUser)
 
-	router.PUT(options.BaseURL+"/user/:id", wrapper.UpdateUser)
+	router.PATCH(options.BaseURL+"/user/:id", wrapper.UpdateUser)
+
+	router.PATCH(options.BaseURL+"/user/:id/authorization", wrapper.UpdateUserAuthorization)
 
 	return router
 }

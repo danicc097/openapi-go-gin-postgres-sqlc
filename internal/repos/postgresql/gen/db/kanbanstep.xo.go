@@ -27,11 +27,10 @@ type KanbanStepSelectConfig struct {
 	orderBy string
 	joins   KanbanStepJoins
 }
-
 type KanbanStepSelectConfigOption func(*KanbanStepSelectConfig)
 
-// KanbanStepWithLimit limits row selection.
-func KanbanStepWithLimit(limit int) KanbanStepSelectConfigOption {
+// WithKanbanStepLimit limits row selection.
+func WithKanbanStepLimit(limit int) KanbanStepSelectConfigOption {
 	return func(s *KanbanStepSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -41,8 +40,8 @@ type KanbanStepOrderBy = string
 
 type KanbanStepJoins struct{}
 
-// KanbanStepWithJoin orders results by the given columns.
-func KanbanStepWithJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
+// WithKanbanStepJoin orders results by the given columns.
+func WithKanbanStepJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
 	return func(s *KanbanStepSelectConfig) {
 		s.joins = joins
 	}
@@ -94,10 +93,11 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.kanban_steps SET ` +
 		`team_id = $1, step_order = $2, name = $3, description = $4, color = $5, time_trackable = $6, disabled = $7 ` +
-		`WHERE kanban_step_id = $8 `
+		`WHERE kanban_step_id = $8 ` +
+		`RETURNING kanban_step_id `
 	// run
 	logf(sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID)
-	if _, err := db.Exec(ctx, sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID).Scan(&ks.KanbanStepID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -161,9 +161,8 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'kanban_steps_pkey'.
 func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
-	c := &KanbanStepSelectConfig{
-		joins: KanbanStepJoins{},
-	}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -180,7 +179,7 @@ kanban_steps.time_trackable,
 kanban_steps.disabled ` +
 		`FROM public.kanban_steps ` +
 		`` +
-		` WHERE kanban_step_id = $1 `
+		` WHERE kanban_steps.kanban_step_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -200,9 +199,8 @@ kanban_steps.disabled ` +
 //
 // Generated from index 'kanban_steps_team_id_step_order_key'.
 func KanbanStepByTeamIDStepOrder(ctx context.Context, db DB, teamID int, stepOrder *int16, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
-	c := &KanbanStepSelectConfig{
-		joins: KanbanStepJoins{},
-	}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -219,7 +217,7 @@ kanban_steps.time_trackable,
 kanban_steps.disabled ` +
 		`FROM public.kanban_steps ` +
 		`` +
-		` WHERE team_id = $1 AND step_order = $2 `
+		` WHERE kanban_steps.team_id = $1 AND kanban_steps.step_order = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

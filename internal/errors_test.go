@@ -10,6 +10,8 @@ import (
 )
 
 func TestErrorCause(t *testing.T) {
+	t.Parallel()
+
 	var ierr *internal.Error
 
 	err := internal.NewErrorf(internal.ErrorCodeUnknown, "root")

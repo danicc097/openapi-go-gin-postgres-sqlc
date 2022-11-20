@@ -9,12 +9,6 @@
 #   - `x-required-scopes` is an array of required scope keys from scopes.json
 #   - `x-required-role` is a required role name from role.json
 #
-x-uuid-pattern: &uuid-pattern ^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}
-# merge so that openapi validator middleware does a header precheck before going deeper
-x-path-security: &path-security
-  security:
-    - bearer_auth: []
-    - api_key: []
 #######################################
 openapi: 3.0.3
 info:
@@ -66,17 +60,12 @@ paths:
                 format: binary
   /admin/ping:
     get:
-      <<: *path-security
+      security:
+        - bearer_auth: []
+        - api_key: []
       summary: Ping pongs
       operationId: AdminPing
       responses:
-        "200":
-          description: OK
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: pong
         "422":
           description: Validation Error
           content:
@@ -90,7 +79,9 @@ paths:
       x-required-role: admin
   /user/me:
     get:
-      # <<: *path-security
+      security:
+        - bearer_auth: []
+        - api_key: []
       summary: returns the logged in user
       operationId: GetCurrentUser
       responses:
@@ -102,20 +93,41 @@ paths:
           description: ok
       tags:
         - user
+  /user/{id}/authorization:
+    patch:
+      security:
+        - bearer_auth: []
+        - api_key: []
+      summary: updates user role and scopes by id
+      operationId: UpdateUserAuthorization
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserAuthRequest'
+        description: Updated user object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ok
+      tags:
+        - user
+      x-required-role: user
   /user/{id}:
     delete:
-      <<: *path-security
+      security:
+        - bearer_auth: []
+        - api_key: []
       summary: deletes the user by id
       operationId: DeleteUser
       parameters:
-        - description: user_id that needs to be deleted
-          explode: false
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-          style: simple
+        - $ref: '#/components/parameters/UserID'
       responses:
         "404":
           description: User not found
@@ -125,20 +137,14 @@ paths:
         - test-scope
         - users:write
       x-required-role: admin
-    put:
-      <<: *path-security
+    patch:
+      security:
+        - bearer_auth: []
+        - api_key: []
       summary: updates the user by id
       operationId: UpdateUser
       parameters:
-        - description: user_id that needs to be updated
-          explode: false
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            pattern: *uuid-pattern
-          style: simple
+        - $ref: '#/components/parameters/UserID'
       requestBody:
         content:
           application/json:
@@ -147,12 +153,28 @@ paths:
         description: Updated user object
         required: true
       responses:
-        "404":
-          description: User not found
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ok
       tags:
         - user
       x-required-role: user
 components:
+  parameters:
+    UserID:
+      description: user_id that needs to be updated
+      explode: false
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+      example: 123e4567-e89b-12d3-a456-426614174000
+      style: simple
   schemas:
     HTTPValidationError:
       title: HTTPValidationError
@@ -163,32 +185,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationError'
-    UpdateUserRequest:
-      description: represents User data to update
-      example:
-        role: manager
-        first_name: Jane
-        last_name: Doe
-      properties:
-        role:
-          $ref: '#/components/schemas/Role'
-        first_name:
-          type: string
-          pattern: ^[ a-zA-Z0-9_-]+$
-        last_name:
-          type: string
-          pattern: ^[ a-zA-Z0-9_-]+$
-      title: a User
-      type: object
     # TODO bookstack style ABAC
-    # allow per user global list of scopes in token
-    # so we can use openapi scopes security as well. Then internally
-    # check if other conditions met via middleware, etc.
-    # e.g. invoicing/billing scopes should be extremely specific so RBAC is
-    # not an option
-    # used as x-required-role: ?? (rank-based, at most one)
-    Scope:
-      description: Scope automatically generated from scopes.json keys
+    Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string
       enum:
         - test-scope
@@ -198,8 +196,7 @@ components:
         - team-settings:write
         - project-settings:write
         - work-item:review
-    Role:
-      description: Role automatically generated from roles.json keys
+    Role: # Generated from roles.json keys. DO NOT EDIT.
       type: string
       enum:
         - guest
@@ -208,21 +205,45 @@ components:
         - manager
         - admin
         - superAdmin
-    TaskRole:
-      title: Task role
-      description: Role in task for a member.
+    WorkItemRole:
+      title: WorkItem role
+      description: Role in work item for a member.
       type: string
-      x-db-enum: task_role
+      x-db-enum: work_item_role
       enum:
         - preparer
         - reviewer
-    Organization:
-      title: Organization
-      description: Organization a user belongs to.
-      type: string
-      # x-db-enum: org
-      # enum: ["team 1", "team 2", "team 3"]
-    # generated later from db struct
+    UpdateUserRequest:
+      description: represents User data to update
+      example:
+        first_name: Jane
+        last_name: Doe
+      properties:
+        first_name:
+          description: originally from auth server but updatable
+          type: string
+          pattern: ^[ a-zA-Z0-9_-]+$
+        last_name:
+          description: originally from auth server but updatable
+          type: string
+          pattern: ^[ a-zA-Z0-9_-]+$
+      title: a User
+      type: object
+    UpdateUserAuthRequest:
+      description: represents User authorization data to update
+      example:
+        role: manager
+        scopes:
+          - test-scope
+      properties:
+        role:
+          $ref: '#/components/schemas/Role'
+        scopes:
+          items:
+            $ref: '#/components/schemas/Scope'
+          type: array
+      title: a User
+      type: object
     User: # Generated from db package structs. DO NOT EDIT.
       properties:
         api_key_id:
@@ -238,7 +259,6 @@ components:
         email:
           type: string
         external_id:
-          nullable: true
           type: string
         first_name:
           nullable: true
@@ -269,8 +289,6 @@ components:
         updated_at:
           format: date-time
           type: string
-        user_api_key:
-          $ref: '#/components/schemas/UserAPIKey'
         user_id:
           $ref: '#/components/schemas/UuidUUID'
         username:
@@ -313,24 +331,17 @@ components:
           format: date-time
           nullable: true
           type: string
+        finished:
+          nullable: true
+          type: boolean
         metadata:
           $ref: '#/components/schemas/PgtypeJSONB'
-        target_date:
-          format: date-time
-          type: string
-        target_date_timezone:
-          type: string
         task_id:
           type: integer
         task_type:
           $ref: '#/components/schemas/TaskType'
         task_type_id:
           type: integer
-        time_entries:
-          items:
-            $ref: '#/components/schemas/TimeEntry'
-          nullable: true
-          type: array
         title:
           type: string
         updated_at:
@@ -394,9 +405,6 @@ components:
         start:
           format: date-time
           type: string
-        task_id:
-          nullable: true
-          type: integer
         team_id:
           nullable: true
           type: integer
@@ -404,6 +412,9 @@ components:
           type: integer
         user_id:
           $ref: '#/components/schemas/UuidUUID'
+        work_item_id:
+          nullable: true
+          type: integer
       type: object
     UserAPIKey: # Generated from db package structs. DO NOT EDIT.
       nullable: true
@@ -415,6 +426,8 @@ components:
           type: string
         user_api_key_id:
           type: integer
+        user_id:
+          $ref: '#/components/schemas/UuidUUID'
       type: object
     UuidUUID: # Generated from db package structs. DO NOT EDIT.
       type: string
@@ -440,6 +453,11 @@ components:
           type: array
         team_id:
           type: integer
+        time_entries:
+          items:
+            $ref: '#/components/schemas/TimeEntry'
+          nullable: true
+          type: array
         title:
           type: string
         updated_at:
@@ -456,6 +474,8 @@ components:
           nullable: true
           type: array
         work_item_id:
+          type: integer
+        work_item_type_id:
           type: integer
       type: object
     WorkItemComment: # Generated from db package structs. DO NOT EDIT.

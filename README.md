@@ -7,7 +7,25 @@
 API-first and Database-first approach with OpenAPI v3, sqlc+xo codegen,
 generated backend, frontend client and validators and an unimaginative title.
 
-You also get dynamic `x` function and `x` flags arguments documentation _and_
+## What's this for?
+
+Your OpenAPI v3 spec becomes a real single source of truth for the full stack. Any
+change to it is validated and cascades down to:
+
+- **frontend**: generated API queries (`rtk-query`). User-friendly [generated] client-side validation
+  (fork of `openapi-typescript-validator`).
+- **backend**: generated Gin server (custom `oapi-codegen` and post-generation).
+  Request and response validation (`kin-openapi`). Generated CRUD and index queries via `xo`
+  and custom queries via `sqlc` by leveraging custom `xo` template generation
+  that ensures compatibility.
+
+Additionally, it features OpenTelemetry in both browser (automatic and
+manual instrumentation) and backend services (manual instrumentation) via
+Jaeger, TimescaleDB and Promscale (certified storage backend).
+
+## Makefile alternative
+
+You get dynamic `x` function and `x` options parameters documentation _and_
 autocompletion (`complete -C project project`) for
 free (from your own source itself and comments)
 so they're always up to date without any repetitive work: add/remove functions
@@ -25,22 +43,11 @@ with `--x-help`:
 
 ![](.github/help-x-function.png)
 
+## Code generation
 
-## What's this for?
+Docs WIP
 
-Your OpenAPI v3 spec becomes a real single source of truth for the full stack. Any
-change to it is validated and cascades down to:
-
-- **frontend**: generated API queries (`rtk-query`). User-friendly [generated] client-side validation
-  (fork of `openapi-typescript-validator`).
-- **backend**: generated Gin server (custom `oapi-codegen` and post-generation).
-  Request and response validation (`kin-openapi`). Generated CRUD and index queries via `xo`
-  and custom queries via `sqlc` by leveraging custom `xo` template generation
-  that ensures compatibility.
-
-Additionally, it features OpenTelemetry in both browser (automatic and
-manual instrumentation) and backend services (manual instrumentation) via
-Jaeger, TimescaleDB and Promscale (certified storage backend).
+<!-- xo custom templates with cardinality comments for join generation, schema from structs, spec sync -->
 
 ## Architecture
 
@@ -64,7 +71,9 @@ Simplified:
 
 ## TODOs
 
-- remove elasticsearch in favor of postgres with promscale (recent addition)
+- Pgx v5 + [logging](https://github.com/jackc/pgx/issues/1381) (dependent on
+  sqlc support) to support custom struct tag scanning and allow switch to json
+  camel
 
 - Meaningful project name.
 
@@ -86,9 +95,14 @@ Simplified:
 
 - frontend miscellanea:
   1. codegen from oas:
-  - ts client (openapitools)
+  - ~~ts client (openapitools)~~ keep away from this project
   - react-query components (fabien0102/openapi-codegen)
-  - React Query hooks, Axios requests and Typescript types (rametta/rapini)
+  - React Query hooks, Axios requests and Typescript types (rametta/rapini) generation
   - Redux toolkit has its [own
     generator](https://github.com/reduxjs/redux-toolkit/tree/master/packages/rtk-query-codegen-openapi)
-    and can generate hooks. Uses rtk-query.
+    and can generate hooks. Uses rtk-query, in essenceequivalent to react-query.
+    Creators don't use openapi so that's a red flag for the generator itself.
+
+  2. state management:
+    - zustand + react-query should by far cover all needs. Data will be heavily
+      dependent on backend.

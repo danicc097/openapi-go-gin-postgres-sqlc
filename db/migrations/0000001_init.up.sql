@@ -49,7 +49,7 @@ create table users (
   else
     first_name || ' ' || last_name
   end) stored
-  , external_id text
+  , external_id text not null unique
   , api_key_id int
   , scopes text[] default '{}' not null
   , role_rank smallint default 1 not null check (role_rank > 0)
@@ -66,17 +66,25 @@ create table users (
   , foreign key (api_key_id) references user_api_keys (user_api_key_id) on delete cascade
 );
 
-comment on column users.api_key_id is 'cardinality:O2O';
+alter table user_api_keys
+  add column user_id uuid not null unique;
 
--- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
-create unique index on users (user_id , external_id)
-where
-  external_id is not null;
+alter table user_api_keys
+  add foreign key (user_id) references users (user_id) on delete cascade;
 
-create unique index on users (user_id)
-where
-  external_id is null;
+-- circular schema ref. (users' join is ultimately useless, we will start from an apikey
+-- and go from there to the user that owns it)
+--  generates join in users table
+-- comment on column users.api_key_id IS 'cardinality:O2O';
+comment on column user_api_keys.user_id is 'cardinality:O2O';
 
+-- -- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
+-- create unique index on users (user_id , external_id)
+-- where
+--   external_id is not null;
+-- create unique index on users (user_id)
+-- where
+--   external_id is null;
 create index on users (deleted_at);
 
 create index on users (created_at);
@@ -111,9 +119,21 @@ create table kanban_steps (
   , foreign key (team_id) references teams (team_id) on delete cascade
 );
 
+create table work_item_types (
+  work_item_type_id serial
+  , project_id bigint not null
+  , name text not null
+  , description text not null
+  , color text not null
+  , primary key (work_item_type_id)
+  , unique (project_id , name)
+  , foreign key (project_id) references projects (project_id) on delete cascade
+);
+
 create table work_items (
   work_item_id bigserial not null
   , title text not null
+  , work_item_type_id int not null
   , metadata jsonb not null
   , team_id int not null
   , kanban_step_id int not null
@@ -123,6 +143,7 @@ create table work_items (
   , deleted_at timestamp with time zone
   , primary key (work_item_id)
   , foreign key (team_id) references teams (team_id) on delete cascade
+  , foreign key (work_item_type_id) references work_item_types (work_item_type_id) on delete cascade
   , foreign key (kanban_step_id) references kanban_steps (kanban_step_id) on delete cascade
 );
 
@@ -166,12 +187,11 @@ create table work_item_work_item_tag (
 create index on work_item_work_item_tag (work_item_tag_id , work_item_id);
 
 -- dont need to index by user_id, there's no use case to filter by user_id
-create type task_role as ENUM (
+create type work_item_role as ENUM (
   'preparer'
   , 'reviewer'
 );
 
--- only need different types for tasks. work items are all the same, just containers
 create table task_types (
   task_type_id serial
   , team_id bigint not null
@@ -198,10 +218,7 @@ create table tasks (
   , work_item_id bigint not null
   , title text not null
   , metadata jsonb not null
-  , target_date timestamp with time zone not null
-  -- don't use,  see https://github.com/jackc/pgx/issues/924
-  --, target_date timestamp without time zone not null
-  , target_date_timezone text not null
+  , finished boolean default false
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
@@ -243,7 +260,7 @@ create table activities (
 -- no unique indexes at all
 create table time_entries (
   time_entry_id bigserial not null
-  , task_id bigint
+  , work_item_id bigint
   , activity_id int not null
   , team_id int
   , user_id uuid not null
@@ -252,10 +269,10 @@ create table time_entries (
   , duration_minutes int -- NULL -> active
   , primary key (time_entry_id)
   , foreign key (user_id) references users (user_id) on delete cascade
-  , foreign key (task_id) references tasks (task_id) on delete cascade
+  , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
   , foreign key (activity_id) references activities (activity_id) on delete cascade -- need to know where we're allocating time
   , foreign key (team_id) references teams (team_id) on delete cascade -- need to know where we're allocating time
-  , check (num_nonnulls (team_id , task_id) = 1) -- team_id null when a task id is associated and viceversa
+  , check (num_nonnulls (team_id , work_item_id) = 1) -- team_id null when a work_item id is associated and viceversa
 );
 
 -- TODO revisit all comments and fix.
@@ -266,7 +283,7 @@ create table time_entries (
 -- select for time_entries that joins with:
 -- a task can be associated to many time entries, and any time entry is linked back to only one task: O2M
 -- another way to see it: one task shares many time_entries, and time_entries are part of only one task.
-comment on column time_entries.task_id is 'cardinality:O2M';
+comment on column time_entries.work_item_id is 'cardinality:O2M';
 
 -- a team can be associated to many time entries, and any time entry is linked back to only one team: O2M
 comment on column time_entries.team_id is 'cardinality:O2M';
@@ -282,7 +299,7 @@ comment on column time_entries.user_id is 'cardinality:O2M';
 create index on time_entries (user_id , team_id);
 
 -- show user his timelog based on what projects are selected
-create index on time_entries (task_id , team_id);
+create index on time_entries (work_item_id , team_id);
 
 
 /*

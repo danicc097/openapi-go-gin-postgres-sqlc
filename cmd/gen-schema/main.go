@@ -60,6 +60,7 @@ func main() {
 		if strings.HasPrefix(defaultDefName, "Db") {
 			return strings.TrimPrefix(defaultDefName, "Db")
 		}
+
 		return defaultDefName
 	})
 

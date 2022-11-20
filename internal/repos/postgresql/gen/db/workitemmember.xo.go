@@ -23,11 +23,10 @@ type WorkItemMemberSelectConfig struct {
 	orderBy string
 	joins   WorkItemMemberJoins
 }
-
 type WorkItemMemberSelectConfigOption func(*WorkItemMemberSelectConfig)
 
-// WorkItemMemberWithLimit limits row selection.
-func WorkItemMemberWithLimit(limit int) WorkItemMemberSelectConfigOption {
+// WithWorkItemMemberLimit limits row selection.
+func WithWorkItemMemberLimit(limit int) WorkItemMemberSelectConfigOption {
 	return func(s *WorkItemMemberSelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -37,8 +36,8 @@ type WorkItemMemberOrderBy = string
 
 type WorkItemMemberJoins struct{}
 
-// WorkItemMemberWithJoin orders results by the given columns.
-func WorkItemMemberWithJoin(joins WorkItemMemberJoins) WorkItemMemberSelectConfigOption {
+// WithWorkItemMemberJoin orders results by the given columns.
+func WithWorkItemMemberJoin(joins WorkItemMemberJoins) WorkItemMemberSelectConfigOption {
 	return func(s *WorkItemMemberSelectConfig) {
 		s.joins = joins
 	}
@@ -106,9 +105,8 @@ func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_member_member_work_item_id_idx'.
 func WorkItemMemberByMemberWorkItemID(ctx context.Context, db DB, member uuid.UUID, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
-	c := &WorkItemMemberSelectConfig{
-		joins: WorkItemMemberJoins{},
-	}
+	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -119,7 +117,7 @@ func WorkItemMemberByMemberWorkItemID(ctx context.Context, db DB, member uuid.UU
 work_item_member.member ` +
 		`FROM public.work_item_member ` +
 		`` +
-		` WHERE member = $1 AND work_item_id = $2 `
+		` WHERE work_item_member.member = $1 AND work_item_member.work_item_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -152,9 +150,8 @@ work_item_member.member ` +
 //
 // Generated from index 'work_item_member_pkey'.
 func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, workItemID int64, member uuid.UUID, opts ...WorkItemMemberSelectConfigOption) (*WorkItemMember, error) {
-	c := &WorkItemMemberSelectConfig{
-		joins: WorkItemMemberJoins{},
-	}
+	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -165,7 +162,7 @@ func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, workItemID int
 work_item_member.member ` +
 		`FROM public.work_item_member ` +
 		`` +
-		` WHERE work_item_id = $1 AND member = $2 `
+		` WHERE work_item_member.work_item_id = $1 AND work_item_member.member = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

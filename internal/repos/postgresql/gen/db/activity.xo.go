@@ -24,11 +24,10 @@ type ActivitySelectConfig struct {
 	orderBy string
 	joins   ActivityJoins
 }
-
 type ActivitySelectConfigOption func(*ActivitySelectConfig)
 
-// ActivityWithLimit limits row selection.
-func ActivityWithLimit(limit int) ActivitySelectConfigOption {
+// WithActivityLimit limits row selection.
+func WithActivityLimit(limit int) ActivitySelectConfigOption {
 	return func(s *ActivitySelectConfig) {
 		s.limit = fmt.Sprintf(" limit %d ", limit)
 	}
@@ -40,8 +39,8 @@ type ActivityJoins struct {
 	TimeEntries bool
 }
 
-// ActivityWithJoin orders results by the given columns.
-func ActivityWithJoin(joins ActivityJoins) ActivitySelectConfigOption {
+// WithActivityJoin orders results by the given columns.
+func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 	return func(s *ActivitySelectConfig) {
 		s.joins = joins
 	}
@@ -93,10 +92,11 @@ func (a *Activity) Update(ctx context.Context, db DB) error {
 	// update with composite primary key
 	sqlstr := `UPDATE public.activities SET ` +
 		`name = $1, description = $2, is_productive = $3 ` +
-		`WHERE activity_id = $4 `
+		`WHERE activity_id = $4 ` +
+		`RETURNING activity_id `
 	// run
 	logf(sqlstr, a.Name, a.Description, a.IsProductive, a.ActivityID)
-	if _, err := db.Exec(ctx, sqlstr, a.Name, a.Description, a.IsProductive, a.ActivityID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, a.Name, a.Description, a.IsProductive, a.ActivityID).Scan(&a.ActivityID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -160,9 +160,8 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'activities_name_key'.
 func ActivityByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{
-		joins: ActivityJoins{},
-	}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -184,7 +183,7 @@ left join (
     time_entries
    group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE name = $2 `
+		` WHERE activities.name = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -204,9 +203,8 @@ left join (
 //
 // Generated from index 'activities_pkey'.
 func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{
-		joins: ActivityJoins{},
-	}
+	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+
 	for _, o := range opts {
 		o(c)
 	}
@@ -228,7 +226,7 @@ left join (
     time_entries
    group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activity_id = $2 `
+		` WHERE activities.activity_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

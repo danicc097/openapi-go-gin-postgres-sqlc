@@ -205,6 +205,8 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Desc:       "field tag",
 				Short:      "g",
 				// migrate to camel once Response structs and adapters done
+				// TODO bring camel back once pgx v5 and sqlc work correctly
+				// scan to custom tag recently a feature in pgx: https://github.com/jackc/pgx/commit/14be51536bbf5e183b68ee9a5fcadaf0d045e503
 				// Default:    `json:"{{ camel .GoName }}" db:"{{ .SQLName }}"`,
 				Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
 			},
@@ -969,6 +971,8 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"context":         f.contextfn,
 		"context_both":    f.context_both,
 		"context_disable": f.context_disable,
+		// func opts
+		"initial_opts": f.initial_opts,
 		// func and query
 		"func_name_context":   f.func_name_context,
 		"func_name":           f.func_name_none,
@@ -1159,6 +1163,7 @@ func (f *Funcs) func_name_context(v interface{}) string {
 		}
 		return n
 	case Index:
+		// these are e.g.(external_id IS NOT NULL)
 		if _, _, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
 			return x.Func + "_" + x.SQLName
 		}
@@ -1215,6 +1220,31 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
 	return fmt.Sprintf("func %s(%s) (%s)", name, strings.Join(params, ", "), strings.Join(returns, ", "))
 }
 
+// initial_opts returns base conf for select queries.
+func (f *Funcs) initial_opts(v interface{}) string {
+	var hasDeletedAt bool
+	var buf strings.Builder
+
+	switch x := v.(type) {
+	case Table:
+		for _, field := range x.Fields {
+			if field.SQLName == "deleted_at" {
+				hasDeletedAt = true
+			}
+		}
+		buf.WriteString(fmt.Sprintf(`c := &%sSelectConfig{`, x.GoName))
+		if hasDeletedAt {
+			buf.WriteString(`deletedAt: " null ",`)
+		}
+		buf.WriteString(fmt.Sprintf(`joins: %sJoins{},
+  }`, x.GoName))
+	default:
+		return ""
+	}
+
+	return buf.String()
+}
+
 // funcfn builds a type definition.
 func (f *Funcs) extratypes(name string, sqlname string, constraints interface{}, v interface{}) string {
 	// -- emit ORDER BY opts
@@ -1227,6 +1257,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 	default:
 		break
 	}
+	var hasDeletedAt bool
 	var orderbys []Field
 	var cc []Constraint
 	switch x := v.(type) {
@@ -1234,6 +1265,9 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 		for _, z := range x.Fields {
 			if z.IsDateOrTime {
 				orderbys = append(orderbys, z)
+			}
+			if z.SQLName == "deleted_at" {
+				hasDeletedAt = true
 			}
 		}
 		if tablecc, ok := f.tableConstraints[x.SQLName]; ok {
@@ -1256,21 +1290,39 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 	type %[1]sSelectConfig struct {
 		limit       string
 		orderBy     string
-		joins  %[1]sJoins
+		joins  %[1]sJoins`, name))
+	if hasDeletedAt {
+		buf.WriteString(`
+			deletedAt   string`)
 	}
-
+	buf.WriteString(`
+	}`)
+	buf.WriteString(fmt.Sprintf(`
 	type %[1]sSelectConfigOption func(*%[1]sSelectConfig)
 
-	// %[1]sWithLimit limits row selection.
-	func %[1]sWithLimit(limit int) %[1]sSelectConfigOption {
+	// With%[1]sLimit limits row selection.
+	func With%[1]sLimit(limit int) %[1]sSelectConfigOption {
 		return func(s *%[1]sSelectConfig) {
 			s.limit = fmt.Sprintf(" limit %%d ", limit)
 		}
-	}
-	type %[1]sOrderBy = string
-	`, name))
+	}`, name))
 
-	buf.WriteString("const (\n")
+	if hasDeletedAt {
+		buf.WriteString(fmt.Sprintf(`
+	// WithDeleted%[1]sOnly limits result to records marked as deleted.
+	func WithDeleted%[1]sOnly() %[1]sSelectConfigOption {
+		return func(s *%[1]sSelectConfig) {
+			s.deletedAt = " not null "
+		}
+	}`, name))
+	}
+
+	buf.WriteString(fmt.Sprintf(`
+	type %[1]sOrderBy = string`, name))
+
+	buf.WriteString(`
+	const (
+	`)
 	for _, ob := range orderbys {
 		for _, opt := range orderByOpts {
 			buf.WriteString(fmt.Sprintf(`%s%s%s %sOrderBy = " %s %s "
@@ -1281,10 +1333,15 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 
 	if len(orderbys) > 0 {
 		buf.WriteString(fmt.Sprintf(`
-	// %[1]sWithOrderBy orders results by the given columns.
-func %[1]sWithOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
+	// With%[1]sOrderBy orders results by the given columns.
+func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
-		s.orderBy = strings.Join(rows, ", ")
+		if len(rows) == 0 {
+			s.orderBy = ""
+			return
+		}
+		s.orderBy = " order by "
+		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 	`, name))
@@ -1313,8 +1370,8 @@ func %[1]sWithOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	buf.WriteString("}\n")
 
 	buf.WriteString(fmt.Sprintf(`
-	// %[1]sWithJoin orders results by the given columns.
-func %[1]sWithJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
+	// With%[1]sJoin orders results by the given columns.
+func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
 		s.joins = joins
 	}
@@ -1475,6 +1532,9 @@ func (f *Funcs) db_update(name string, v interface{}) string {
 			ignore = append(ignore, pk.GoName)
 		}
 		for _, pk := range x.PrimaryKeys {
+			ignore = append(ignore, pk.GoName)
+		}
+		for _, pk := range x.Ignored {
 			ignore = append(ignore, pk.GoName)
 		}
 		p = append(p, f.names_ignore(prefix, x, ignore...), f.names(prefix, x.PrimaryKeys))
@@ -1777,7 +1837,7 @@ func (f *Funcs) sqlstr_insert(v interface{}) []string {
 		var generatedFields []string
 		var count int
 		for _, field := range x.Fields {
-			if field.IsGenerated {
+			if field.IsGenerated || field.IsIgnored {
 				generatedFields = append(generatedFields, f.colname(field))
 			} else {
 				count++
@@ -1837,12 +1897,18 @@ func (f *Funcs) sqlstr_update(v interface{}) []string {
 	// build pkey vals
 	switch x := v.(type) {
 	case Table:
-		var list []string
+		var list, returns []string
+		for _, z := range x.Fields {
+			if z.IsPrimary || z.IsGenerated || z.IsIgnored {
+				returns = append(returns, z.SQLName)
+			}
+		}
 		n, lines := f.sqlstr_update_base("", v)
 		for i, z := range x.PrimaryKeys {
-			list = append(list, fmt.Sprintf("%s = %s", f.colname(z), f.nth(n+i)))
+			list = append(list, fmt.Sprintf("%s = %s ", f.colname(z), f.nth(n+i)))
 		}
-		return append(lines, "WHERE "+strings.Join(list, " AND "))
+
+		return append(lines, "WHERE "+strings.Join(list, " AND "), "RETURNING "+strings.Join(returns, ", "))
 	}
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 20: %T ]]", v)}
 }
@@ -1957,6 +2023,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			break
 		}
 		var n int
+		var hasDeletedAt bool
 		// build table fieldnames
 		for _, z := range x.Table.Fields {
 			// add current table fields
@@ -1978,10 +2045,20 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		}
 		// index fields
 		for _, z := range x.Fields {
-			filters = append(filters, fmt.Sprintf("%s = %s", f.colname(z), f.nth(n)))
+			filters = append(filters, fmt.Sprintf("%s.%s = %s", x.Table.SQLName, f.colname(z), f.nth(n)))
 			n++
 		}
+		for _, field := range x.Table.Fields {
+			if field.SQLName == "deleted_at" {
+				hasDeletedAt = true
+			}
+		}
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
+			fmt.Printf("after : %s\n", after)
+			// TODO this also needs to have table name prepended.
+			// after : (external_id IS NOT NULL)after : (external_id IS NULL)
+			// hacky solution is to loop through current table columns and if found .Cut() and construct a new string
+			// that simply inserts the table in between
 			filters = append(filters, after)
 		}
 
@@ -1998,7 +2075,15 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			strings.Join(joins, "\n"),
 			" WHERE " + strings.Join(filters, " AND "),
 		}
-		return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
+
+		if hasDeletedAt {
+			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s `, c.deletedAt)",
+				strings.Join(lines, "` +\n\t `"),
+				fmt.Sprintf(" AND %s.deleted_at is %%s", x.Table.SQLName),
+			)
+		} else {
+			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
+		}
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
 }

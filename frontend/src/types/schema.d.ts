@@ -8,23 +8,39 @@ export type schemas = components['schemas']
  * Do not make direct changes to the file.
  */
 
+
+/** Type helpers */
+type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
+type XOR<T, U> = (T | U) extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U;
+type OneOf<T extends any[]> = T extends [infer Only] ? Only : T extends [infer A, infer B, ...infer Rest] ? OneOf<[XOR<A, B>, ...Rest]> : never;
+
 export interface paths {
-  '/ping': {
-    get: operations['Ping']
-  }
-  '/openapi.yaml': {
-    get: operations['OpenapiYamlGet']
-  }
-  '/admin/ping': {
-    get: operations['AdminPing']
-  }
-  '/user/me': {
-    get: operations['GetCurrentUser']
-  }
-  [key: `/user/${string}`]: {
-    put: operations['UpdateUser']
-    delete: operations['DeleteUser']
-  }
+  "/ping": {
+    /** Ping pongs */
+    get: operations["Ping"];
+  };
+  "/openapi.yaml": {
+    /** Returns this very OpenAPI spec. */
+    get: operations["OpenapiYamlGet"];
+  };
+  "/admin/ping": {
+    /** Ping pongs */
+    get: operations["AdminPing"];
+  };
+  "/user/me": {
+    /** returns the logged in user */
+    get: operations["GetCurrentUser"];
+  };
+  "/user/{id}/authorization": {
+    /** updates user role and scopes by id */
+    patch: operations["UpdateUserAuthorization"];
+  };
+  "/user/{id}": {
+    /** deletes the user by id */
+    delete: operations["DeleteUser"];
+    /** updates the user by id */
+    patch: operations["UpdateUser"];
+  };
 }
 
 export interface components {
@@ -32,251 +48,267 @@ export interface components {
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
-      detail?: components['schemas']['ValidationError'][]
-    }
+      detail?: (components["schemas"]["ValidationError"])[];
+    };
+    /** @enum {string} */
+    Scope: "test-scope" | "users:read" | "users:write" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item:review";
+    /** @enum {string} */
+    Role: "guest" | "user" | "advancedUser" | "manager" | "admin" | "superAdmin";
     /**
-     * a User
-     * @description represents User data to update
+     * WorkItem role 
+     * @description Role in work item for a member. 
+     * @enum {string}
+     */
+    WorkItemRole: "preparer" | "reviewer";
+    /**
+     * a User 
+     * @description represents User data to update 
      * @example {
-     *   "role": "manager",
      *   "first_name": "Jane",
      *   "last_name": "Doe"
      * }
      */
     UpdateUserRequest: {
-      role?: components['schemas']['Role']
-      first_name?: string
-      last_name?: string
-    }
+      /** @description originally from auth server but updatable */
+      first_name?: string;
+      /** @description originally from auth server but updatable */
+      last_name?: string;
+    };
     /**
-     * @description Scope automatically generated from scopes.json keys
-     * @enum {string}
+     * a User 
+     * @description represents User authorization data to update 
+     * @example {
+     *   "role": "manager",
+     *   "scopes": [
+     *     "test-scope"
+     *   ]
+     * }
      */
-    Scope:
-      | 'test-scope'
-      | 'users:read'
-      | 'users:write'
-      | 'scopes:write'
-      | 'team-settings:write'
-      | 'project-settings:write'
-      | 'work-item:review'
-    /**
-     * @description Role automatically generated from roles.json keys
-     * @enum {string}
-     */
-    Role: 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
-    /**
-     * Task role
-     * @description Role in task for a member.
-     * @enum {string}
-     */
-    TaskRole: 'preparer' | 'reviewer'
-    /**
-     * Organization
-     * @description Organization a user belongs to.
-     */
-    Organization: string
+    UpdateUserAuthRequest: {
+      role?: components["schemas"]["Role"];
+      scopes?: (components["schemas"]["Scope"])[];
+    };
     User: {
-      api_key_id?: number | null
+      api_key_id?: number | null;
       /** Format: date-time */
-      created_at?: string
+      created_at?: string;
       /** Format: date-time */
-      deleted_at?: string | null
-      email?: string
-      external_id?: string | null
-      first_name?: string | null
-      full_name?: string | null
-      last_name?: string | null
-      role_rank?: number
-      scopes?: string[] | null
-      teams?: components['schemas']['Team'][] | null
-      time_entries?: components['schemas']['TimeEntry'][] | null
+      deleted_at?: string | null;
+      email?: string;
+      external_id?: string;
+      first_name?: string | null;
+      full_name?: string | null;
+      last_name?: string | null;
+      role_rank?: number;
+      scopes?: (string)[] | null;
+      teams?: (components["schemas"]["Team"])[] | null;
+      time_entries?: (components["schemas"]["TimeEntry"])[] | null;
       /** Format: date-time */
-      updated_at?: string
-      user_api_key?: components['schemas']['UserAPIKey']
-      user_id?: components['schemas']['UuidUUID']
-      username?: string
-      work_items?: components['schemas']['WorkItem'][] | null
-    }
+      updated_at?: string;
+      user_id?: components["schemas"]["UuidUUID"];
+      username?: string;
+      work_items?: (components["schemas"]["WorkItem"])[] | null;
+    };
     /** ValidationError */
     ValidationError: {
       /** Location */
-      loc: string[]
+      loc: (string)[];
       /** Message */
-      msg: string
+      msg: string;
       /** Error Type */
-      type: string
-    }
-    PgtypeJSONB: { [key: string]: unknown }
+      type: string;
+    };
+    PgtypeJSONB: Record<string, never>;
     Task: {
       /** Format: date-time */
-      created_at?: string
+      created_at?: string;
       /** Format: date-time */
-      deleted_at?: string | null
-      metadata?: components['schemas']['PgtypeJSONB']
+      deleted_at?: string | null;
+      finished?: boolean | null;
+      metadata?: components["schemas"]["PgtypeJSONB"];
+      task_id?: number;
+      task_type?: components["schemas"]["TaskType"];
+      task_type_id?: number;
+      title?: string;
       /** Format: date-time */
-      target_date?: string
-      target_date_timezone?: string
-      task_id?: number
-      task_type?: components['schemas']['TaskType']
-      task_type_id?: number
-      time_entries?: components['schemas']['TimeEntry'][] | null
-      title?: string
-      /** Format: date-time */
-      updated_at?: string
-      work_item_id?: number
-    }
+      updated_at?: string;
+      work_item_id?: number;
+    };
     TaskType: {
-      color?: string
-      description?: string
-      name?: string
-      task_type_id?: number
-      team_id?: number
-    } | null
+      color?: string;
+      description?: string;
+      name?: string;
+      task_type_id?: number;
+      team_id?: number;
+    } | null;
     Team: {
       /** Format: date-time */
-      created_at?: string
-      description?: string
-      metadata?: components['schemas']['PgtypeJSONB']
-      name?: string
-      project_id?: number
-      team_id?: number
-      time_entries?: components['schemas']['TimeEntry'][] | null
+      created_at?: string;
+      description?: string;
+      metadata?: components["schemas"]["PgtypeJSONB"];
+      name?: string;
+      project_id?: number;
+      team_id?: number;
+      time_entries?: (components["schemas"]["TimeEntry"])[] | null;
       /** Format: date-time */
-      updated_at?: string
-      users?: components['schemas']['User'][] | null
-    }
+      updated_at?: string;
+      users?: (components["schemas"]["User"])[] | null;
+    };
     TimeEntry: {
-      activity_id?: number
-      comment?: string
-      duration_minutes?: number | null
+      activity_id?: number;
+      comment?: string;
+      duration_minutes?: number | null;
       /** Format: date-time */
-      start?: string
-      task_id?: number | null
-      team_id?: number | null
-      time_entry_id?: number
-      user_id?: components['schemas']['UuidUUID']
-    }
+      start?: string;
+      team_id?: number | null;
+      time_entry_id?: number;
+      user_id?: components["schemas"]["UuidUUID"];
+      work_item_id?: number | null;
+    };
     UserAPIKey: {
-      api_key?: string
+      api_key?: string;
       /** Format: date-time */
-      expires_on?: string
-      user_api_key_id?: number
-    } | null
-    UuidUUID: string
+      expires_on?: string;
+      user_api_key_id?: number;
+      user_id?: components["schemas"]["UuidUUID"];
+    } | null;
+    UuidUUID: string;
     WorkItem: {
-      closed?: boolean
+      closed?: boolean;
       /** Format: date-time */
-      created_at?: string
+      created_at?: string;
       /** Format: date-time */
-      deleted_at?: string | null
-      kanban_step_id?: number
-      metadata?: components['schemas']['PgtypeJSONB']
-      tasks?: components['schemas']['Task'][] | null
-      team_id?: number
-      title?: string
+      deleted_at?: string | null;
+      kanban_step_id?: number;
+      metadata?: components["schemas"]["PgtypeJSONB"];
+      tasks?: (components["schemas"]["Task"])[] | null;
+      team_id?: number;
+      time_entries?: (components["schemas"]["TimeEntry"])[] | null;
+      title?: string;
       /** Format: date-time */
-      updated_at?: string
-      users?: components['schemas']['User'][] | null
-      work_item_comments?: components['schemas']['WorkItemComment'][] | null
-      work_item_id?: number
-    }
+      updated_at?: string;
+      users?: (components["schemas"]["User"])[] | null;
+      work_item_comments?: (components["schemas"]["WorkItemComment"])[] | null;
+      work_item_id?: number;
+      work_item_type_id?: number;
+    };
     WorkItemComment: {
       /** Format: date-time */
-      created_at?: string
-      message?: string
+      created_at?: string;
+      message?: string;
       /** Format: date-time */
-      updated_at?: string
-      user_id?: components['schemas']['UuidUUID']
-      work_item_comment_id?: number
-      work_item_id?: number
-    }
-  }
+      updated_at?: string;
+      user_id?: components["schemas"]["UuidUUID"];
+      work_item_comment_id?: number;
+      work_item_id?: number;
+    };
+  };
+  responses: never;
+  parameters: {
+    /**
+     * @description user_id that needs to be updated 
+     * @example 123e4567-e89b-12d3-a456-426614174000
+     */
+    UserID: string;
+  };
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
+
+export type external = Record<string, never>;
 
 export interface operations {
+
   Ping: {
+    /** Ping pongs */
     responses: {
-      /** OK */
+      /** @description OK */
       200: {
         content: {
-          'text/plain': string
-        }
-      }
-      /** Validation Error */
+          "text/plain": string;
+        };
+      };
+      /** @description Validation Error */
       422: {
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
-        }
-      }
-    }
-  }
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   OpenapiYamlGet: {
+    /** Returns this very OpenAPI spec. */
     responses: {
-      /** OpenAPI YAML file. */
+      /** @description OpenAPI YAML file. */
       200: {
         content: {
-          'text/yaml': string
-        }
-      }
-    }
-  }
+          "text/yaml": string;
+        };
+      };
+    };
+  };
   AdminPing: {
+    /** Ping pongs */
     responses: {
-      /** OK */
-      200: {
-        content: {
-          'text/plain': string
-        }
-      }
-      /** Validation Error */
+      /** @description Validation Error */
       422: {
         content: {
-          'application/json': components['schemas']['HTTPValidationError']
-        }
-      }
-    }
-  }
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   GetCurrentUser: {
+    /** returns the logged in user */
     responses: {
-      /** ok */
+      /** @description ok */
       200: {
         content: {
-          'application/json': components['schemas']['User']
-        }
-      }
-    }
-  }
-  UpdateUser: {
-    parameters: {
-      path: {
-        /** user_id that needs to be updated */
-        id: string
-      }
-    }
-    responses: {
-      /** User not found */
-      404: unknown
-    }
-    /** Updated user object */
+          "application/json": components["schemas"]["User"];
+        };
+      };
+    };
+  };
+  UpdateUserAuthorization: {
+    /** updates user role and scopes by id */
+    /** @description Updated user object */
     requestBody: {
       content: {
-        'application/json': components['schemas']['UpdateUserRequest']
-      }
-    }
-  }
-  DeleteUser: {
-    parameters: {
-      path: {
-        /** user_id that needs to be deleted */
-        id: string
-      }
-    }
+        "application/json": components["schemas"]["UpdateUserAuthRequest"];
+      };
+    };
     responses: {
-      /** User not found */
-      404: unknown
-    }
-  }
+      /** @description ok */
+      200: {
+        content: {
+          "application/json": components["schemas"]["User"];
+        };
+      };
+    };
+  };
+  DeleteUser: {
+    /** deletes the user by id */
+    responses: {
+      /** @description User not found */
+      404: never;
+    };
+  };
+  UpdateUser: {
+    /** updates the user by id */
+    /** @description Updated user object */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateUserRequest"];
+      };
+    };
+    responses: {
+      /** @description ok */
+      200: {
+        content: {
+          "application/json": components["schemas"]["User"];
+        };
+      };
+    };
+  };
 }
-
-export interface external {}
