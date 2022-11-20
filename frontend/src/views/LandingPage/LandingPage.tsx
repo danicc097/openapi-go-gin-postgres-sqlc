@@ -1,59 +1,41 @@
 import { EuiPage, EuiPageBody, EuiFlexGroup, EuiFlexItem, EuiTitle, EuiText, EuiButton } from '@elastic/eui'
 import { useEffect } from 'react'
+import KanbanBoard from 'src/components/KanbanBoard/KanbanBoard'
+import PageTemplate from 'src/components/PageTemplate/PageTemplate'
 import { useUISlice } from 'src/slices/ui'
 import { ToastId } from 'src/utils/toasts'
-import * as S from './LandingPage.styles'
 
 export default function LandingPage() {
-  const { switchTheme, addToast, removeToast } = useUISlice()
+  const { switchTheme, addToast, dismissToast } = useUISlice()
 
   useEffect(() => {
-    addToast({
-      id: ToastId.AuthRedirect,
-      title: 'redirecting',
-      color: 'warning',
-      iconType: 'alert',
-      toastLifeTimeMs: 15000,
-      text: 'A message about redirection.',
-    })
-  }, [addToast])
+    null
+  }, [])
 
   return (
-    <EuiPage>
-      <EuiPageBody component="section" align="center">
-        <EuiFlexGroup direction="column" alignItems="center">
-          <EuiFlexItem>
-            <EuiTitle>
-              <EuiText>My App</EuiText>
-            </EuiTitle>
-          </EuiFlexItem>
-          <EuiFlexItem>
-            <EuiButton
-              onClick={() =>
-                addToast({
-                  id: ToastId.AuthzError,
-                  title: 'clicked',
-                  color: 'success',
-                  iconType: 'alert',
-                  toastLifeTimeMs: 15000,
-                  text: 'clicked.',
-                })
-              }
-            >
-              Submit
-            </EuiButton>
-            <EuiButton
-              onClick={() =>
-                removeToast({
-                  id: ToastId.AuthzError,
-                })
-              }
-            >
-              Submit
-            </EuiButton>
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      </EuiPageBody>
-    </EuiPage>
+    <PageTemplate
+      content={<KanbanBoard></KanbanBoard>}
+      header={{ description: 'My header' }}
+      buttons={[
+        <EuiButton
+          key={1}
+          onClick={() =>
+            addToast({
+              id: ToastId.AuthzError,
+              title: 'clicked',
+              color: 'success',
+              iconType: 'alert',
+              toastLifeTimeMs: 15000,
+              text: 'clicked.',
+            })
+          }
+        >
+          New toast
+        </EuiButton>,
+        <EuiButton key={2} onClick={() => switchTheme()}>
+          Switch theme
+        </EuiButton>,
+      ]}
+    ></PageTemplate>
   )
 }

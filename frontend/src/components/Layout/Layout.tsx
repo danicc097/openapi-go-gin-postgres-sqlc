@@ -3,12 +3,13 @@ import { useEffect, useRef } from 'react'
 import { Helmet } from 'react-helmet'
 import { EuiGlobalToastList, useEuiTheme } from '@elastic/eui'
 // import Navbar from '../Navbar/Navbar'
-import { StyledLayout, StyledFooter } from './Layout.styles'
+import { StyledLayout } from './Layout.styles'
 import { css } from '@emotion/react'
 import { Fragment } from 'react'
 import * as S from './Layout.styles'
 import { useUISlice } from 'src/slices/ui'
 import shallow from 'zustand/shallow'
+import Navbar from 'src/components/Navbar/Navbar'
 
 type LayoutProps = {
   children: React.ReactElement
@@ -16,7 +17,7 @@ type LayoutProps = {
 
 export default function Layout({ children }: LayoutProps) {
   const toasts = useUISlice((state) => state?.toastList, shallow)
-  const { addToast, removeToast } = useUISlice()
+  const { addToast, dismissToast } = useUISlice()
 
   const { euiTheme } = useEuiTheme()
 
@@ -52,21 +53,23 @@ export default function Layout({ children }: LayoutProps) {
       </Helmet>
       {/* <ThemeProvider theme={providerTheme}> */}
       <S.StyledLayout>
-        {/* <Navbar /> */}
-        <S.StyledMain>{children}</S.StyledMain>
-        <footer className="footer" css={footerCSS}>
-          <span className="footer-info">
-            <p>Copyright © {new Date().getFullYear()}</p>
-            <p>Build version: {import.meta.env.VITE_BUILD_NUMBER ?? 'DEVELOPMENT'}</p>
-          </span>
-        </footer>
+        <Navbar />
+        <S.StyledMain>
+          {children}
+          <footer className="footer" css={footerCSS}>
+            <span className="footer-info">
+              <p>Copyright © {new Date().getFullYear()}</p>
+              <p>Build version: {import.meta.env.VITE_BUILD_NUMBER ?? 'DEVELOPMENT'}</p>
+            </span>
+          </footer>
+        </S.StyledMain>
 
         <EuiGlobalToastList
           toasts={toasts}
-          dismissToast={removeToast}
+          dismissToast={dismissToast}
           toastLifeTimeMs={10000}
           side="right"
-          className="auth-toast-list"
+          className="toast-list"
         />
       </S.StyledLayout>
       {/* </ThemeProvider> */}
