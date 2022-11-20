@@ -278,11 +278,13 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 		vg.Use(rlMw.Limit())
 	}
 
-	usvc := services.NewUser(repos.NewUserWrapped(postgresql.NewUser(), postgresql.OtelName, repos.UserWrappedConfig{}, nil), conf.Logger)
 	authzsvc, err := services.NewAuthorization(conf.Logger, conf.ScopePolicyPath, conf.RolePolicyPath)
 	if err != nil {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)
 	}
+
+	usvc := services.NewUser(conf.Logger, repos.NewUserWrapped(postgresql.NewUser(), postgresql.OtelName, repos.UserWrappedConfig{}, nil), authzsvc)
+
 	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
 
 	vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))

@@ -120,9 +120,7 @@ type UpdateUserRequest struct {
 	FirstName *string `json:"first_name,omitempty"`
 
 	// LastName originally from auth server but updatable
-	LastName *string  `json:"last_name,omitempty"`
-	Role     *Role    `json:"role,omitempty"`
-	Scopes   *[]Scope `json:"scopes,omitempty"`
+	LastName *string `json:"last_name,omitempty"`
 }
 
 // User defines model for User.
@@ -151,6 +149,12 @@ type UserAPIKey struct {
 	ExpiresOn    *time.Time `json:"expires_on,omitempty"`
 	UserApiKeyId *int       `json:"user_api_key_id,omitempty"`
 	UserId       *UuidUUID  `json:"user_id,omitempty"`
+}
+
+// UpdateUserAuthRequest represents User authorization data to update
+type UpdateUserAuthRequest struct {
+	Role   *Role    `json:"role,omitempty"`
+	Scopes *[]Scope `json:"scopes,omitempty"`
 }
 
 // UuidUUID defines model for UuidUUID.
@@ -199,6 +203,9 @@ type UserID = string
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 type UpdateUserJSONRequestBody = UpdateUserRequest
+
+// UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
+type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -292,6 +299,11 @@ type ClientInterface interface {
 	UpdateUserWithBody(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateUser(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateUserAuthorization request with any body
+	UpdateUserAuthorizationWithBody(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateUserAuthorization(ctx context.Context, id UserID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -368,6 +380,30 @@ func (c *Client) UpdateUserWithBody(ctx context.Context, id UserID, contentType 
 
 func (c *Client) UpdateUser(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateUserAuthorizationRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateUserAuthorization(ctx context.Context, id UserID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateUserAuthorizationRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -567,6 +603,53 @@ func NewUpdateUserRequestWithBody(server string, id UserID, contentType string, 
 	return req, nil
 }
 
+// NewUpdateUserAuthorizationRequest calls the generic UpdateUserAuthorization builder with application/json body
+func NewUpdateUserAuthorizationRequest(server string, id UserID, body UpdateUserAuthorizationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateUserAuthorizationRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateUserAuthorizationRequestWithBody generates requests for UpdateUserAuthorization with any type of body
+func NewUpdateUserAuthorizationRequestWithBody(server string, id UserID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/user/%s/authorization", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -629,6 +712,11 @@ type ClientWithResponsesInterface interface {
 	UpdateUserWithBodyWithResponse(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
 	UpdateUserWithResponse(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+
+	// UpdateUserAuthorization request with any body
+	UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
+
+	UpdateUserAuthorizationWithResponse(ctx context.Context, id UserID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
 }
 
 type AdminPingResponse struct {
@@ -761,6 +849,27 @@ func (r UpdateUserResponse) StatusCode() int {
 	return 0
 }
 
+type UpdateUserAuthorizationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateUserAuthorizationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateUserAuthorizationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // AdminPingWithResponse request returning *AdminPingResponse
 func (c *ClientWithResponses) AdminPingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*AdminPingResponse, error) {
 	rsp, err := c.AdminPing(ctx, reqEditors...)
@@ -821,6 +930,23 @@ func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id Use
 		return nil, err
 	}
 	return ParseUpdateUserResponse(rsp)
+}
+
+// UpdateUserAuthorizationWithBodyWithResponse request with arbitrary body returning *UpdateUserAuthorizationResponse
+func (c *ClientWithResponses) UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
+	rsp, err := c.UpdateUserAuthorizationWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateUserAuthorizationResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateUserAuthorizationWithResponse(ctx context.Context, id UserID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
+	rsp, err := c.UpdateUserAuthorization(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateUserAuthorizationResponse(rsp)
 }
 
 // ParseAdminPingResponse parses an HTTP response from a AdminPingWithResponse call
@@ -952,6 +1078,22 @@ func ParseUpdateUserResponse(rsp *http.Response) (*UpdateUserResponse, error) {
 	}
 
 	response := &UpdateUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUpdateUserAuthorizationResponse parses an HTTP response from a UpdateUserAuthorizationWithResponse call
+func ParseUpdateUserAuthorizationResponse(rsp *http.Response) (*UpdateUserAuthorizationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateUserAuthorizationResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

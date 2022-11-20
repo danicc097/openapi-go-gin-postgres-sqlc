@@ -2,12 +2,10 @@ package rest
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4"
 	"go.opentelemetry.io/otel/trace"
@@ -51,14 +49,19 @@ func (h *Handlers) DeleteUser(c *gin.Context, id string) {
 
 // GetCurrentUser returns the logged in user.
 func (h *Handlers) GetCurrentUser(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	defer newOTELSpan(ctx, "User.UpdateUser", trace.WithAttributes(userIDAttribute(c))).End()
+
 	//  user from context isntead has the appropiate joins already (teams, etc.)
-	u := getUserFromCtx(c)
-	if u == nil {
+	user := getUserFromCtx(c)
+	if user == nil {
 		renderErrorResponse(c, "user not found", errors.New("user not found"))
 
 		return
 	}
-	c.JSON(http.StatusOK, u)
+
+	c.JSON(http.StatusOK, user)
 }
 
 // UpdateUser updates the user by id.
@@ -71,9 +74,10 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 	s.AddEvent("update-user") // filterable with event="update-user"
 	defer s.End()
 
-	tx, err := h.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable})
+	tx, err := h.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		renderErrorResponse(c, "database error", err)
+
 		return
 	}
 	defer tx.Rollback(ctx)
@@ -81,54 +85,79 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 	body := &models.UpdateUserRequest{}
 
 	if err := c.BindJSON(body); err != nil {
-		renderErrorResponse(c, "invalid data", internal.NewErrorf(internal.ErrorCodeInvalidArgument, "invalid data", err))
+		renderErrorResponse(c, "invalid data", internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "invalid data"))
 
 		return
 	}
 
-	user := getUserFromCtx(c)
-	if user == nil {
+	caller := getUserFromCtx(c)
+	if caller == nil {
 		renderErrorResponse(c, "Could not get user from context.", nil)
 
 		return
 	}
 
-	var rank *int16
-	if body.Role != nil {
-		role, err := h.authmw.authzsvc.RoleByName(string(*body.Role))
-		if err != nil {
-			renderErrorResponse(c, fmt.Sprintf("Could not find role %q", *body.Role), err)
-		}
-		rank = &role.Rank
-	}
-
-	var scopes *[]string
-	if body.Scopes != nil {
-		ss := make([]string, 0, len(*body.Scopes))
-		for _, r := range *body.Scopes {
-			ss = append(ss, string(r))
-		}
-		scopes = &ss
-	}
-	// get target user by path param id. if target != current user and user rank <admin
-	// not allowed to modify personal data.
-	// NOTE: case for role and scopes update: any user can ADD (never delete unless rank >admin) another user's role and scope
-	// as long as the current user has that scope.
-	// but this belong in another operation: PATCH /user/:id/auth  op id UpdateUserAuth. INternally the service is the same: usvc.Update()
-	u, err := h.usvc.Update(c, tx, repos.UserUpdateParams{
-		FirstName: body.FirstName,
-		LastName:  body.LastName,
-		ID:        id,
-		Rank:      rank,
-		Scopes:    scopes,
-	})
+	user, err := h.usvc.Update(c, tx, id, caller, body)
 	if err != nil {
 		renderErrorResponse(c, "err: ", err)
 
 		return
 	}
 
-	renderResponse(c, u, http.StatusOK)
+	err = tx.Commit(ctx)
+	if err != nil {
+		renderErrorResponse(c, "could not save changes", err)
 
-	tx.Commit(ctx)
+		return
+	}
+
+	renderResponse(c, user, http.StatusOK)
+}
+
+// UpdateUserAuthorization updates authorizastion information, e.g. roles and scopes.
+func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
+	ctx := c.Request.Context()
+
+	s := newOTELSpan(ctx, "User.UpdateUserAuthorization", trace.WithAttributes(userIDAttribute(c)))
+	s.AddEvent("update-user") // filterable with event="update-user"
+	defer s.End()
+
+	tx, err := h.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		renderErrorResponse(c, "database error", err)
+
+		return
+	}
+	defer tx.Rollback(ctx)
+
+	body := &models.UpdateUserAuthRequest{}
+
+	if err := c.BindJSON(body); err != nil {
+		renderErrorResponse(c, "invalid data", internal.WrapErrorf(err, internal.ErrorCodeInvalidArgument, "invalid data"))
+
+		return
+	}
+
+	caller := getUserFromCtx(c)
+	if caller == nil {
+		renderErrorResponse(c, "Could not get user from context.", nil)
+
+		return
+	}
+
+	user, err := h.usvc.UpdateUserAuthorization(c, tx, id, caller, body)
+	if err != nil {
+		renderErrorResponse(c, "err: ", err)
+
+		return
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		renderErrorResponse(c, "could not save changes", err)
+
+		return
+	}
+
+	renderResponse(c, user, http.StatusOK)
 }

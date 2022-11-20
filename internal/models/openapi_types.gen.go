@@ -107,9 +107,7 @@ type UpdateUserRequest struct {
 	FirstName *string `json:"first_name,omitempty"`
 
 	// LastName originally from auth server but updatable
-	LastName *string  `json:"last_name,omitempty"`
-	Role     *Role    `json:"role,omitempty"`
-	Scopes   *[]Scope `json:"scopes,omitempty"`
+	LastName *string `json:"last_name,omitempty"`
 }
 
 // User defines model for User.
@@ -138,6 +136,12 @@ type UserAPIKey struct {
 	ExpiresOn    *time.Time `json:"expires_on,omitempty"`
 	UserApiKeyId *int       `json:"user_api_key_id,omitempty"`
 	UserId       *UuidUUID  `json:"user_id,omitempty"`
+}
+
+// UpdateUserAuthRequest represents User authorization data to update
+type UpdateUserAuthRequest struct {
+	Role   *Role    `json:"role,omitempty"`
+	Scopes *[]Scope `json:"scopes,omitempty"`
 }
 
 // UuidUUID defines model for UuidUUID.
@@ -186,3 +190,6 @@ type UserID = string
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 type UpdateUserJSONRequestBody = UpdateUserRequest
+
+// UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
+type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest

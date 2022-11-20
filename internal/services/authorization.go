@@ -24,22 +24,22 @@ type Scope struct {
 }
 
 type (
-	UserRoles  = map[models.Role]Role
-	UserScopes = map[models.Scope]Scope
+	userRoles  = map[models.Role]Role
+	userScopes = map[models.Scope]Scope
 )
 
 // Authorization represents a service for authorization.
 type Authorization struct {
 	logger *zap.Logger
-	roles  UserRoles
-	scopes UserScopes
+	roles  userRoles
+	scopes userScopes
 }
 
 // NewAuthorization returns a new Authorization service.
 // Existing roles and scopes will be loaded from the given policy JSON file paths.
 func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string) (*Authorization, error) {
-	roles := make(UserRoles)
-	scopes := make(UserScopes)
+	roles := make(userRoles)
+	scopes := make(userScopes)
 
 	scopeBlob, err := os.ReadFile(scopePolicy)
 	if err != nil {

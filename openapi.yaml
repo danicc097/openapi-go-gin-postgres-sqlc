@@ -93,6 +93,32 @@ paths:
           description: ok
       tags:
         - user
+  /user/{id}/authorization:
+    patch:
+      security:
+        - bearer_auth: []
+        - api_key: []
+      summary: updates user role and scopes by id
+      operationId: UpdateUserAuthorization
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserAuthRequest'
+        description: Updated user object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ok
+      tags:
+        - user
+      x-required-role: user
   /user/{id}:
     delete:
       security:
@@ -127,8 +153,12 @@ paths:
         description: Updated user object
         required: true
       responses:
-        "404":
-          description: User not found
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ok
       tags:
         - user
       x-required-role: user
@@ -155,29 +185,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationError'
-    UpdateUserRequest:
-      description: represents User data to update
-      example:
-        role: manager
-        first_name: Jane
-        last_name: Doe
-      properties:
-        first_name:
-          description: originally from auth server but updatable
-          type: string
-          pattern: ^[ a-zA-Z0-9_-]+$
-        last_name:
-          description: originally from auth server but updatable
-          type: string
-          pattern: ^[ a-zA-Z0-9_-]+$
-        role:
-          $ref: '#/components/schemas/Role'
-        scopes:
-          items:
-            $ref: '#/components/schemas/Scope'
-          type: array
-      title: a User
-      type: object
     # TODO bookstack style ABAC
     Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string
@@ -206,6 +213,37 @@ components:
       enum:
         - preparer
         - reviewer
+    UpdateUserRequest:
+      description: represents User data to update
+      example:
+        first_name: Jane
+        last_name: Doe
+      properties:
+        first_name:
+          description: originally from auth server but updatable
+          type: string
+          pattern: ^[ a-zA-Z0-9_-]+$
+        last_name:
+          description: originally from auth server but updatable
+          type: string
+          pattern: ^[ a-zA-Z0-9_-]+$
+      title: a User
+      type: object
+    UpdateUserAuthRequest:
+      description: represents User authorization data to update
+      example:
+        role: manager
+        scopes:
+          - test-scope
+      properties:
+        role:
+          $ref: '#/components/schemas/Role'
+        scopes:
+          items:
+            $ref: '#/components/schemas/Scope'
+          type: array
+      title: a User
+      type: object
     User: # Generated from db package structs. DO NOT EDIT.
       properties:
         api_key_id:

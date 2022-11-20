@@ -16,6 +16,7 @@ type UserUpdateParams struct {
 
 // User defines the datastore/repository handling persisting User records.
 type User interface {
+	UserByID(ctx context.Context, d db.DBTX, id string) (*db.User, error)
 	UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error)
 	UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error)
 	Create(ctx context.Context, d db.DBTX, user *db.User) error

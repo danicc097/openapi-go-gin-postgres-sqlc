@@ -60,7 +60,7 @@ func TestGetUserRoute(t *testing.T) {
 	})
 }
 
-// TODO test PATCH route
+// TODO test PATCH update user and update user authorixation routes
 // func TestUpdateUserRoute(t *testing.T) {
 // 	t.Parallel()
 

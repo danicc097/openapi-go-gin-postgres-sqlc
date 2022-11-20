@@ -3,28 +3,41 @@ package services
 import (
 	"context"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 )
 
-const synopsis = `
-Asian horror cinema often depicts stomach-churning scenes of gore and zombie outbreaks quite vividly and The Sadness ticks all the right boxes.
-Chaos and anarchy descend on the city of Taipei as residents turn into mass killers. In the wake of such a deadly viral pandemic, Jim and Kat are a young couple who seek to find each other. Violence, killing and massacre only seem to rise while the government and authorities remain complacent.
-Among the most gruesome horror movies of 2022, The Sadness lives up to its name and is not for the faint-hearted. In fact, a trigger warning is also issued at the beginning for those who may not be able to endure watching all the slashing and blood.
-`
-
 type User struct {
-	logger *zap.Logger
-	urepo  repos.User
+	logger   *zap.Logger
+	urepo    repos.User
+	authzsvc *Authorization
+}
+
+type UserUpdateParams struct {
+	FirstName      *string
+	LastName       *string
+	ID             string
+	RequestingUser *db.User
+}
+
+type UserUpdateAuthorizationParams struct {
+	Rank           *int16
+	Scopes         *[]string
+	ID             string
+	RequestingUser *db.User
 }
 
 // NewUser returns a new User service.
-func NewUser(urepo repos.User, logger *zap.Logger) *User {
+func NewUser(logger *zap.Logger, urepo repos.User, authzsvc *Authorization) *User {
 	return &User{
-		logger: logger,
-		urepo:  urepo,
+		logger:   logger,
+		urepo:    urepo,
+		authzsvc: authzsvc,
 	}
 }
 
@@ -37,6 +50,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, user *db.User) error {
 	defer newOTELSpan(ctx, "User.Register").End()
 
 	// TODO construct db.User and fill missing fields with default roles, etc.
+	// instead of passing it directly
 
 	if err := u.urepo.Create(ctx, d, user); err != nil {
 		return errors.Wrap(err, "urepo.Create")
@@ -46,11 +60,95 @@ func (u *User) Register(ctx context.Context, d db.DBTX, user *db.User) error {
 }
 
 // Update updates a user.
-func (u *User) Update(ctx context.Context, d db.DBTX, params repos.UserUpdateParams) (*db.User, error) {
+func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User, params *models.UpdateUserRequest) (*db.User, error) {
 	defer newOTELSpan(ctx, "User.Update").End()
 
-	// TODO construct db.User and fill missing fields with default roles, etc.
-	user, err := u.urepo.Update(ctx, d, params)
+	user, err := u.urepo.UserByID(ctx, d, id)
+	if err != nil {
+		return nil, errors.Wrap(err, "urepo.UserByID")
+	}
+
+	adminRole, err := u.authzsvc.RoleByName(string(models.RoleAdmin))
+	if err != nil {
+		return nil, errors.Wrap(err, "authzsvc.RoleByName")
+	}
+
+	if user.UserID != caller.UserID &&
+		caller.RoleRank < adminRole.Rank {
+		return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot change another user's information")
+	}
+
+	user, err = u.urepo.Update(ctx, d, repos.UserUpdateParams{
+		FirstName: params.FirstName,
+		LastName:  params.LastName,
+		ID:        id,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "urepo.Update")
+	}
+
+	return user, nil
+}
+
+func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string, caller *db.User, params *models.UpdateUserAuthRequest) (*db.User, error) {
+	defer newOTELSpan(ctx, "User.UpdateUserAuthorization").End()
+
+	user, err := u.urepo.UserByID(ctx, d, id)
+	if err != nil {
+		return nil, errors.Wrap(err, "urepo.UserByID")
+	}
+
+	adminRole, err := u.authzsvc.RoleByName(string(models.RoleAdmin))
+	if err != nil {
+		return nil, errors.Wrap(err, "authzsvc.RoleByName")
+	}
+
+	if caller.RoleRank < adminRole.Rank {
+		if user.UserID == caller.UserID {
+			// ensure not removing existing scopes from target user
+			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot update your own authorization information")
+		}
+	}
+
+	var rank *int16
+	if params.Role != nil {
+		role, err := u.authzsvc.RoleByName(string(*params.Role))
+		if err != nil {
+			return nil, errors.Wrap(err, "authzsvc.RoleByName")
+		}
+		if role.Rank > user.RoleRank {
+			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set an user rank higher than self")
+		}
+		rank = &role.Rank
+	}
+
+	var scopes *[]string
+	if params.Scopes != nil {
+		ss := make([]string, 0, len(*params.Scopes))
+		for _, s := range *params.Scopes {
+			if !slices.Contains(caller.Scopes, string(s)) {
+				return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set a scope unassigned to self")
+			}
+
+			ss = append(ss, string(s))
+		}
+
+		if caller.RoleRank < adminRole.Rank {
+			for _, s := range user.Scopes {
+				if !slices.Contains(ss, s) {
+					return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot unassign a user's scope")
+				}
+			}
+		}
+
+		scopes = &ss
+	}
+
+	user, err = u.urepo.Update(ctx, d, repos.UserUpdateParams{
+		Scopes: scopes,
+		Rank:   rank,
+		ID:     id,
+	})
 	if err != nil {
 		return nil, errors.Wrap(err, "urepo.Update")
 	}

@@ -32,6 +32,9 @@ type ServerInterface interface {
 	// updates the user by id
 	// (PATCH /user/{id})
 	UpdateUser(c *gin.Context, id externalRef0.UserID)
+	// updates user role and scopes by id
+	// (PATCH /user/{id}/authorization)
+	UpdateUserAuthorization(c *gin.Context, id externalRef0.UserID)
 
 	middlewares(opID operationID) []gin.HandlerFunc
 }
@@ -177,6 +180,37 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 	siw.Handler.UpdateUser(c, id)
 }
 
+// UpdateUserAuthorization operation with its own middleware.
+func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.UserID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
+
+	c.Set(externalRef0.Api_keyScopes, []string{""})
+
+	// apply middlewares for operation "UpdateUserAuthorization".
+	for _, mw := range siw.Handler.middlewares(UpdateUserAuthorization) {
+		mw(c)
+
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.UpdateUserAuthorization(c, id)
+}
+
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL string
@@ -204,6 +238,8 @@ func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, op
 	router.DELETE(options.BaseURL+"/user/:id", wrapper.DeleteUser)
 
 	router.PATCH(options.BaseURL+"/user/:id", wrapper.UpdateUser)
+
+	router.PATCH(options.BaseURL+"/user/:id/authorization", wrapper.UpdateUserAuthorization)
 
 	return router
 }
