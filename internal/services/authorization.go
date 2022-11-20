@@ -63,16 +63,6 @@ func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string)
 	}, nil
 }
 
-// TODO ABAC:
-// for scope structure references (not roles logic obv) see:
-// https://incidentio.notion.site/Proposal-Product-RBAC-265201563d884ec5aeecbb246c02ddc6
-// last resort: casbin. too much scope, poor docs, maintenance
-// for frontend https://casbin.org/docs/en/frontend
-// load policy from db: https://github.com/casbin/casbin-pg-adapter
-
-// TODO public get role by name
-// TODO public get scope by name
-
 func (a *Authorization) RoleByName(role string) (Role, error) {
 	rl, ok := a.roles[models.Role(role)]
 	if !ok {

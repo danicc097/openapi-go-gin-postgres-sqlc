@@ -63,6 +63,13 @@ func (u *User) Register(ctx context.Context, d db.DBTX, user *db.User) error {
 func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User, params *models.UpdateUserRequest) (*db.User, error) {
 	defer newOTELSpan(ctx, "User.Update").End()
 
+	if caller == nil {
+		return nil, errors.New("caller cannot be nil")
+	}
+	if params == nil {
+		return nil, errors.New("params cannot be nil")
+	}
+
 	user, err := u.urepo.UserByID(ctx, d, id)
 	if err != nil {
 		return nil, errors.Wrap(err, "urepo.UserByID")
@@ -92,6 +99,13 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 
 func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string, caller *db.User, params *models.UpdateUserAuthRequest) (*db.User, error) {
 	defer newOTELSpan(ctx, "User.UpdateUserAuthorization").End()
+
+	if caller == nil {
+		return nil, errors.New("caller cannot be nil")
+	}
+	if params == nil {
+		return nil, errors.New("params cannot be nil")
+	}
 
 	user, err := u.urepo.UserByID(ctx, d, id)
 	if err != nil {

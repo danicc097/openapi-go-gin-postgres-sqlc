@@ -32,7 +32,7 @@ func (f *fakeUserStore) set(id string, user *db.User) {
 	f.users[id] = user
 }
 
-// NewFakeUser returns a stub for the User repository.
+// NewFakeUser returns a mock for the User repository.
 func NewFakeUser() *FakeUser {
 	fks := &fakeUserStore{
 		users: make(map[string]*db.User),
