@@ -92,7 +92,7 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 		return nil, fmt.Errorf("could not save api key: %w", parseErrorDetail(err))
 	}
 
-	user.APIKeyID = pointers.Int(uak.UserAPIKeyID)
+	user.APIKeyID = pointers.New(uak.UserAPIKeyID)
 	if err := user.Update(ctx, d); err != nil {
 		return nil, fmt.Errorf("could not update user: %w", parseErrorDetail(err))
 	}

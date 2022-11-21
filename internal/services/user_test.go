@@ -60,22 +60,22 @@ func TestUser_UpdateUser(t *testing.T) {
 					UpdateStub: func(ctx context.Context, d db.DBTX, uup repos.UserUpdateParams) (*db.User, error) {
 						return &db.User{
 							UserID:    uuid1,
-							FirstName: pointers.String("changed"),
-							LastName:  pointers.String("last"),
+							FirstName: pointers.New("changed"),
+							LastName:  pointers.New("last"),
 						}, nil
 					},
 				},
 			},
 			args: args{
 				params: &models.UpdateUserRequest{
-					FirstName: pointers.String("changed"),
+					FirstName: pointers.New("changed"),
 				},
 				id:     uuid1.String(),
 				caller: &db.User{UserID: uuid1},
 			},
 			want: want{
-				FirstName: pointers.String("changed"),
-				LastName:  pointers.String("last"),
+				FirstName: pointers.New("changed"),
+				LastName:  pointers.New("last"),
 			},
 		},
 		{
@@ -200,7 +200,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			args: args{
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &[]models.Scope{models.ScopeUsersRead, models.ScopeTestScope},
-					Role:   (*models.Role)(pointers.String(string(models.RoleManager))),
+					Role:   (*models.Role)(pointers.New(string(models.RoleManager))),
 				},
 				id:     normalUser.UserID.String(),
 				caller: managerUser,
@@ -221,7 +221,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			},
 			args: args{
 				params: &models.UpdateUserAuthRequest{
-					Role: (*models.Role)(pointers.String(string(models.RoleAdmin))),
+					Role: (*models.Role)(pointers.New(string(models.RoleAdmin))),
 				},
 				id:     normalUser.UserID.String(),
 				caller: managerUser,
@@ -275,7 +275,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			},
 			args: args{
 				params: &models.UpdateUserAuthRequest{
-					Role: (*models.Role)(pointers.String(string(models.RoleGuest))),
+					Role: (*models.Role)(pointers.New(string(models.RoleGuest))),
 				},
 				id:     advancedUser.UserID.String(),
 				caller: managerUser,
@@ -343,7 +343,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			},
 			args: args{
 				params: &models.UpdateUserAuthRequest{
-					Role: (*models.Role)(pointers.String(string(models.RoleGuest))),
+					Role: (*models.Role)(pointers.New(string(models.RoleGuest))),
 				},
 				id:     advancedUser.UserID.String(),
 				caller: adminUser,

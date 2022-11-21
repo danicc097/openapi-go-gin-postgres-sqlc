@@ -516,8 +516,6 @@ x.test() {
 # Test and build the entire project.
 x.build() {
   { { {
-    x.lint
-    x.test ""
     go build -o rest-server "$PWD"/cmd/rest-server
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }

@@ -45,8 +45,8 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	user := &db.User{
 		Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
 		Email:      testutil.RandomEmail(),
-		FirstName:  pointers.String(testutil.RandomFirstName()),
-		LastName:   pointers.String(testutil.RandomLastName()),
+		FirstName:  pointers.New(testutil.RandomFirstName()),
+		LastName:   pointers.New(testutil.RandomLastName()),
 		ExternalID: testutil.RandomString(10),
 		Scopes:     scopes,
 		RoleRank:   role.Rank,
