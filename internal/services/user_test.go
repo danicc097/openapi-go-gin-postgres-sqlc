@@ -39,9 +39,9 @@ func TestUser_UpdateUser(t *testing.T) {
 		LastName  *string
 	}
 
-	// TODO same as auth tests below
-	uuid1 := uuid.New()
-	uuid2 := uuid.New()
+	userRole, advancedUserRole, managerRole, adminRole := getRoles(t, authzsvc)
+
+	normalUser, advancedUser, _, adminUser := fakeUsers(userRole, advancedUserRole, managerRole, adminRole)
 
 	tests := []struct {
 		name   string
@@ -55,14 +55,13 @@ func TestUser_UpdateUser(t *testing.T) {
 			fields: fields{
 				urepo: &repostesting.FakeUser{
 					UserByIDStub: func(ctx context.Context, d db.DBTX, s string) (*db.User, error) {
-						return &db.User{UserID: uuid1}, nil
+						return normalUser, nil
 					},
 					UpdateStub: func(ctx context.Context, d db.DBTX, uup repos.UserUpdateParams) (*db.User, error) {
-						return &db.User{
-							UserID:    uuid1,
-							FirstName: pointers.New("changed"),
-							LastName:  pointers.New("last"),
-						}, nil
+						u := *normalUser
+						u.FirstName = uup.FirstName
+
+						return &u, nil
 					},
 				},
 			},
@@ -70,12 +69,12 @@ func TestUser_UpdateUser(t *testing.T) {
 				params: &models.UpdateUserRequest{
 					FirstName: pointers.New("changed"),
 				},
-				id:     uuid1.String(),
-				caller: &db.User{UserID: uuid1},
+				id:     normalUser.UserID.String(),
+				caller: normalUser,
 			},
 			want: want{
 				FirstName: pointers.New("changed"),
-				LastName:  pointers.New("last"),
+				LastName:  advancedUser.LastName,
 			},
 		},
 		{
@@ -83,16 +82,45 @@ func TestUser_UpdateUser(t *testing.T) {
 			fields: fields{
 				urepo: &repostesting.FakeUser{
 					UserByIDStub: func(ctx context.Context, d db.DBTX, s string) (*db.User, error) {
-						return &db.User{UserID: uuid1}, nil
+						return normalUser, nil
 					},
 				},
 			},
 			args: args{
 				params: &models.UpdateUserRequest{},
-				id:     uuid1.String(),
-				caller: &db.User{UserID: uuid2},
+				id:     normalUser.UserID.String(),
+				caller: advancedUser,
 			},
 			error: "cannot change another user's information",
+		},
+		{
+			name: "admin_can_update_different_user",
+			fields: fields{
+				urepo: &repostesting.FakeUser{
+					UserByIDStub: func(ctx context.Context, d db.DBTX, s string) (*db.User, error) {
+						return normalUser, nil
+					},
+					UpdateStub: func(ctx context.Context, d db.DBTX, uup repos.UserUpdateParams) (*db.User, error) {
+						u := *normalUser
+						u.FirstName = uup.FirstName
+						u.LastName = uup.LastName
+
+						return &u, nil
+					},
+				},
+			},
+			args: args{
+				params: &models.UpdateUserRequest{
+					FirstName: pointers.New("changed"),
+					LastName:  pointers.New("changed"),
+				},
+				id:     normalUser.UserID.String(),
+				caller: adminUser,
+			},
+			want: want{
+				FirstName: pointers.New("changed"),
+				LastName:  pointers.New("changed"),
+			},
 		},
 	}
 
@@ -104,9 +132,12 @@ func TestUser_UpdateUser(t *testing.T) {
 			u := services.NewUser(logger, tc.fields.urepo, authzsvc)
 			got, err := u.Update(context.Background(), &pgxpool.Pool{}, tc.args.id, tc.args.caller, tc.args.params)
 			if (err != nil) && tc.error == "" {
-				t.Fatalf("User.Create() error = %v, error %v", err, tc.error)
+				t.Fatalf("unexpected error = %v", err)
 			}
 			if tc.error != "" {
+				if err == nil {
+					t.Fatalf("expected error = '%v' but got nothing", tc.error)
+				}
 				assert.Equal(t, tc.error, err.Error())
 
 				return
@@ -127,39 +158,9 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 		t.Fatalf("NewAuthorization: %v", err)
 	}
 
-	userRank, err := authzsvc.RoleByName(string(models.RoleUser))
-	if err != nil {
-		t.Fatalf("RoleByName: %v", err)
-	}
-	managerRank, err := authzsvc.RoleByName(string(models.RoleManager))
-	if err != nil {
-		t.Fatalf("RoleByName: %v", err)
-	}
-	adminRank, err := authzsvc.RoleByName(string(models.RoleAdmin))
-	if err != nil {
-		t.Fatalf("RoleByName: %v", err)
-	}
+	userRole, advancedUserRole, managerRole, adminRole := getRoles(t, authzsvc)
 
-	normalUser := &db.User{
-		UserID:   uuid.New(),
-		RoleRank: userRank.Rank,
-		Scopes:   []string{string(models.ScopeTestScope)},
-	}
-	advancedUser := &db.User{
-		UserID:   uuid.New(),
-		RoleRank: userRank.Rank,
-		Scopes:   []string{string(models.ScopeTestScope)},
-	}
-	managerUser := &db.User{
-		UserID:   uuid.New(),
-		RoleRank: managerRank.Rank,
-		Scopes:   []string{string(models.ScopeUsersRead), string(models.ScopeTestScope)},
-	}
-	adminUser := &db.User{
-		UserID:   uuid.New(),
-		RoleRank: adminRank.Rank,
-		Scopes:   []string{string(models.ScopeUsersRead), string(models.ScopeProjectSettingsWrite)},
-	}
+	normalUser, advancedUser, managerUser, adminUser := fakeUsers(userRole, advancedUserRole, managerRole, adminRole)
 
 	type fields struct {
 		urepo repos.User
@@ -207,7 +208,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			},
 			want: want{
 				Scopes: []string{string(models.ScopeUsersRead), string(models.ScopeTestScope)},
-				Rank:   managerRank.Rank,
+				Rank:   managerRole.Rank,
 			},
 		},
 		{
@@ -349,7 +350,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				caller: adminUser,
 			},
 			want: want{
-				Rank:   normalUser.RoleRank,
+				Rank:   advancedUser.RoleRank,
 				Scopes: advancedUser.Scopes,
 			},
 		},
@@ -377,4 +378,52 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			assert.Equal(t, tc.want.Rank, got.RoleRank)
 		})
 	}
+}
+
+func fakeUsers(userRole, advancedUserRole, managerRole, adminRole services.Role) (*db.User, *db.User, *db.User, *db.User) {
+	normalUser := &db.User{
+		UserID:   uuid.New(),
+		RoleRank: userRole.Rank,
+		Scopes:   []string{string(models.ScopeTestScope)},
+	}
+	advancedUser := &db.User{
+		UserID:   uuid.New(),
+		RoleRank: advancedUserRole.Rank,
+		Scopes:   []string{string(models.ScopeTestScope)},
+	}
+	managerUser := &db.User{
+		UserID:   uuid.New(),
+		RoleRank: managerRole.Rank,
+		Scopes:   []string{string(models.ScopeUsersRead), string(models.ScopeTestScope)},
+	}
+	adminUser := &db.User{
+		UserID:   uuid.New(),
+		RoleRank: adminRole.Rank,
+		Scopes:   []string{string(models.ScopeUsersRead), string(models.ScopeProjectSettingsWrite)},
+	}
+
+	return normalUser, advancedUser, managerUser, adminUser
+}
+
+func getRoles(t *testing.T, authzsvc *services.Authorization) (services.Role, services.Role, services.Role, services.Role) {
+	t.Helper()
+
+	userRole, err := authzsvc.RoleByName(string(models.RoleUser))
+	if err != nil {
+		t.Fatalf("RoleByName: %v", err)
+	}
+	advancedUserRole, err := authzsvc.RoleByName(string(models.RoleAdvancedUser))
+	if err != nil {
+		t.Fatalf("RoleByName: %v", err)
+	}
+	managerRole, err := authzsvc.RoleByName(string(models.RoleManager))
+	if err != nil {
+		t.Fatalf("RoleByName: %v", err)
+	}
+	adminRole, err := authzsvc.RoleByName(string(models.RoleAdmin))
+	if err != nil {
+		t.Fatalf("RoleByName: %v", err)
+	}
+
+	return userRole, advancedUserRole, managerRole, adminRole
 }
