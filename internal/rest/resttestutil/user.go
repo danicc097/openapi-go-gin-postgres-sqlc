@@ -67,7 +67,10 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 		}
 	}
 	if params.WithToken {
-		accessToken = ff.authnsvc.CreateAccessTokenForUser(ctx, user) // TODO simply returns a jwt
+		accessToken, err = ff.authnsvc.CreateAccessTokenForUser(ctx, user) // TODO simply returns a jwt
+		if err != nil {
+			return nil, errors.Wrap(err, "authnsvc.CreateAPIKeyForUser")
+		}
 	}
 
 	return &CreateUserResult{

@@ -2,12 +2,22 @@ package services
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
+
+type MyAppClaims struct {
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	jwt.RegisteredClaims
+}
 
 type Authentication struct {
 	pool   *pgxpool.Pool
@@ -34,8 +44,31 @@ func (a *Authentication) GetUserFromAPIKey(ctx context.Context, apiKey string) (
 }
 
 // CreateAccessTokenForUser creates a new token for a user.
-func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.User) string {
-	return ""
+func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.User) (string, error) {
+	issuer := os.Getenv("DOMAIN")
+	claims := MyAppClaims{
+		Email:    user.Email,
+		Username: user.Username,
+		RegisteredClaims: jwt.RegisteredClaims{
+			// A usual scenario is to set the expiration time relative to the current time
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)), // mandatory
+			Issuer:    issuer,                                             // mandatory
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+			Subject:   user.ExternalID,
+			// ID:        "1", // to explicitly revoke tokens. No longer stateless
+			Audience: []string{"myapp"},
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	ss, err := token.SignedString(os.Getenv("SIGNING_KEY"))
+	if err != nil {
+		return "", errors.Wrap(err, "could not sign token")
+	}
+	fmt.Printf("%v :error is %v\n", ss, err)
+
+	return ss, nil
 }
 
 // CreateAccessTokenForUser creates a new API key for a user.
@@ -48,7 +81,18 @@ func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User)
 	return uak, nil
 }
 
-// GetClaimFromToken retrieves a claim from a token.
-func (a *Authentication) GetClaimFromToken(ctx context.Context, token string, claim string) any {
-	return nil
+// ParseToken returns a token string claims.
+func (a *Authentication) ParseToken(ctx context.Context, tokenString string, claim string) (*MyAppClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &MyAppClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return os.Getenv("SIGNING_KEY"), nil
+	})
+
+	claims, ok := token.Claims.(*MyAppClaims)
+	if ok && token.Valid {
+		fmt.Printf("%v %v", claims.Email, claims.Username)
+	} else {
+		return nil, errors.Wrap(err, "could not parse token string")
+	}
+
+	return claims, nil
 }
