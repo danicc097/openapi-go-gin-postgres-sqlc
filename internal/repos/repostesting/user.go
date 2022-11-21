@@ -32,11 +32,17 @@ func (f *fakeUserStore) set(id string, user *db.User) {
 	f.users[id] = user
 }
 
-// NewFakeUser returns a mock for the User repository.
-func NewFakeUser() *FakeUser {
+// NewFakeUser returns a mock for the User repository, initializing it with copies of
+// the passed users.
+func NewFakeUser(users []*db.User) *FakeUser {
 	fks := &fakeUserStore{
 		users: make(map[string]*db.User),
 		mu:    sync.Mutex{},
+	}
+
+	for _, u := range users {
+		uc := *u
+		fks.set(u.UserID.String(), &uc)
 	}
 
 	fakeUserRepo := &FakeUser{}
@@ -51,7 +57,7 @@ func NewFakeUser() *FakeUser {
 	}
 
 	fakeUserRepo.UpdateStub = func(ctx context.Context, d db.DBTX, params repos.UserUpdateParams) (*db.User, error) {
-		user, err := fakeUserRepo.UserByIDStub(ctx, d, params.ID)
+		user, err := fakeUserRepo.UserByID(ctx, d, params.ID)
 		if err != nil {
 			return &db.User{}, fmt.Errorf("UserByIDStub: %w", err)
 		}

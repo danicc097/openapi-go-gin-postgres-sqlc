@@ -87,6 +87,10 @@ func (a *Authentication) ParseToken(ctx context.Context, tokenString string, cla
 		return os.Getenv("SIGNING_KEY"), nil
 	})
 
+	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+	}
+
 	claims, ok := token.Claims.(*MyAppClaims)
 	if ok && token.Valid {
 		fmt.Printf("%v %v", claims.Email, claims.Username)
