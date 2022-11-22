@@ -87,7 +87,16 @@
     "**/*.pgsql"
   ],
   "plpgsqlLanguageServer.enableExecuteFileQueryCommand": false,
-  "plpgsqlLanguageServer.migrationsFolder": "./db/migrations/",
+  "plpgsqlLanguageServer.migrations": {
+    "upFilePattern": "*.up.sql",
+    "downFilePattern": "*.down.sql",
+    "folder": "./db/migrations/",
+    "postMigrations": {
+      "filePattern": "*.sql",
+      "folder": "./db/post-migration/"
+    }
+  },
+  "plpgsqlLanguageServer.analyzeOn": "save",
   // "plpgsqlLanguageServer.queryParameterPattern": ":[A-Za-z_][A-Za-z0-9_]*",
   "plpgsqlLanguageServer.keywordQueryParameterPattern": [
     "@{keyword}",
