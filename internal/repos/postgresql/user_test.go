@@ -10,6 +10,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,6 +46,7 @@ func TestUser_Update(t *testing.T) {
 			got, err := u.Update(context.Background(), testpool, tt.args.params)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("User.Update() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
@@ -78,6 +80,7 @@ func TestUser_UserByEmail(t *testing.T) {
 			got, err := u.UserByEmail(context.Background(), testpool, tt.args.email)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("User.UserByEmail() error = %v, wantErr %v", err, tt.wantErr)
+
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
@@ -119,68 +122,81 @@ func TestUser_UserByID(t *testing.T) {
 	}
 }
 
-func TestUser_UserByAPIKey(t *testing.T) {
+func TestUser_UserAPIKeys(t *testing.T) {
 	t.Parallel()
 
-	type args struct {
-		apiKey string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *db.User
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+	userRepo := postgresql.NewUser()
 
-			u := postgresql.NewUser()
-			got, err := u.UserByAPIKey(context.Background(), testpool, tt.args.apiKey)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("User.UserByAPIKey() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("User.UserByAPIKey() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+	t.Run("correct api key creation", func(t *testing.T) {
+		t.Parallel()
 
-func TestUser_CreateAPIKey(t *testing.T) {
-	t.Parallel()
+		ucp := randomUserCreateParams(t)
 
-	type args struct {
-		user *db.User
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *db.UserAPIKey
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+		user, err := userRepo.Create(context.Background(), testpool, ucp)
+		if err != nil {
+			t.Fatalf("unexpected error = %v", err)
+		}
 
-			u := postgresql.NewUser()
-			got, err := u.CreateAPIKey(context.Background(), testpool, tt.args.user)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("User.CreateAPIKey() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("User.CreateAPIKey() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+		uak, err := userRepo.CreateAPIKey(context.Background(), testpool, user)
+		if err != nil {
+			t.Fatalf("unexpected error = %v", err)
+		}
+		assert.NotEmpty(t, uak.APIKey)
+		assert.Equal(t, uak.UserID, user.UserID)
+		assert.Equal(t, uak.UserAPIKeyID, *user.APIKeyID)
+	})
+
+	t.Run("no api key created when user does not exist", func(t *testing.T) {
+		t.Parallel()
+
+		errContains := "could not save api key"
+
+		_, err := userRepo.CreateAPIKey(context.Background(), testpool, &db.User{UserID: uuid.New()})
+		if err == nil {
+			t.Fatalf("expected error = '%v' but got nothing", errContains)
+		}
+		assert.Contains(t, err.Error(), errContains)
+	})
+
+	t.Run("can get user by api key", func(t *testing.T) {
+		t.Parallel()
+
+		ucp := randomUserCreateParams(t)
+
+		newUser, err := userRepo.Create(context.Background(), testpool, ucp)
+		if err != nil {
+			t.Fatalf("unexpected error = %v", err)
+		}
+
+		uak, err := userRepo.CreateAPIKey(context.Background(), testpool, newUser)
+		if err != nil {
+			t.Fatalf("unexpected error = %v", err)
+		}
+
+		user, err := userRepo.UserByAPIKey(context.Background(), testpool, uak.APIKey)
+		if err != nil {
+			t.Fatalf("unexpected error = %v", err)
+		}
+
+		assert.Equal(t, user.UserID, newUser.UserID)
+		assert.Equal(t, *user.APIKeyID, uak.UserAPIKeyID)
+	})
+
+	t.Run("cannot get user by api key if key does not exist", func(t *testing.T) {
+		t.Parallel()
+
+		errContains := "no rows in result set"
+
+		_, err := userRepo.UserByAPIKey(context.Background(), testpool, "missing")
+		if err == nil {
+			t.Fatalf("expected error = '%v' but got nothing", errContains)
+		}
+		assert.Contains(t, err.Error(), errContains)
+	})
+
+	t.Run("can delete an api key", func(t *testing.T) {
+		// TODO
+	})
 }
 
 func TestUser_Create(t *testing.T) {
@@ -188,10 +204,6 @@ func TestUser_Create(t *testing.T) {
 
 	userRepo := postgresql.NewUser()
 
-	// role, err := ff.authzsvc.RoleByName(string(params.Role))
-	// if err != nil {
-	// 	return nil, fmt.Errorf("authzsvc.RoleByName: %w", err)
-	// }
 	type want struct {
 		FullName *string
 		repos.UserCreateParams
@@ -204,15 +216,7 @@ func TestUser_Create(t *testing.T) {
 	t.Run("correct user", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := repos.UserCreateParams{
-			Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
-			Email:      testutil.RandomEmail(),
-			FirstName:  pointers.New(testutil.RandomFirstName()),
-			LastName:   pointers.New(testutil.RandomLastName()),
-			ExternalID: testutil.RandomString(10),
-			Scopes:     []string{"scope1", "scope2"},
-			RoleRank:   int16(1),
-		}
+		ucp := randomUserCreateParams(t)
 
 		want := want{
 			FullName:         pointers.New(*ucp.FirstName + " " + *ucp.LastName),
@@ -241,15 +245,8 @@ func TestUser_Create(t *testing.T) {
 	t.Run("role rank less than zero", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := repos.UserCreateParams{
-			Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
-			Email:      testutil.RandomEmail(),
-			FirstName:  pointers.New(testutil.RandomFirstName()),
-			LastName:   pointers.New(testutil.RandomLastName()),
-			ExternalID: testutil.RandomString(10),
-			Scopes:     []string{"scope1", "scope2"},
-			RoleRank:   int16(-1),
-		}
+		ucp := randomUserCreateParams(t)
+		ucp.RoleRank = int16(-1)
 
 		args := args{
 			params: ucp,
@@ -263,4 +260,18 @@ func TestUser_Create(t *testing.T) {
 		}
 		assert.Contains(t, err.Error(), errContains)
 	})
+}
+
+func randomUserCreateParams(t *testing.T) repos.UserCreateParams {
+	t.Helper()
+
+	return repos.UserCreateParams{
+		Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
+		Email:      testutil.RandomEmail(),
+		FirstName:  pointers.New(testutil.RandomFirstName()),
+		LastName:   pointers.New(testutil.RandomLastName()),
+		ExternalID: testutil.RandomString(10),
+		Scopes:     []string{"scope1", "scope2"},
+		RoleRank:   int16(2),
+	}
 }

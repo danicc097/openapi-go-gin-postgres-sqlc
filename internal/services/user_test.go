@@ -35,6 +35,7 @@ func TestUser_UpdateUser(t *testing.T) {
 		LastName  *string
 	}
 
+	// TODO structs instead for both roles and users
 	guestRole, userRole, advancedUserRole, managerRole, adminRole := getRoles(t, authzsvc)
 
 	_, normalUser, advancedUser, _, adminUser := fakeUsers(guestRole, userRole, advancedUserRole, managerRole, adminRole)
