@@ -33,6 +33,8 @@ type UserWrappedConfig struct {
 
 	UserByEmailTimeout time.Duration
 
+	UserByExternalIDTimeout time.Duration
+
 	UserByIDTimeout time.Duration
 }
 
@@ -214,6 +216,39 @@ func (_d UserWrapped) UserByEmail(ctx context.Context, d db.DBTX, email string) 
 	}
 
 	return _d.User.UserByEmail(ctx, d, email)
+}
+
+// UserByExternalID implements User.
+func (_d UserWrapped) UserByExternalID(ctx context.Context, d db.DBTX, extID string) (up1 *db.User, err error) {
+	// -- tracing
+	ctx, _span := otel.Tracer(_d._otelName).Start(ctx, "User.UserByExternalID")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":   ctx,
+				"d":     d,
+				"extID": extID}, map[string]interface{}{
+				"up1": up1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+
+	// -- timeout
+	var cancelFunc func()
+	if _d.config.UserByExternalIDTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UserByExternalIDTimeout)
+		defer cancelFunc()
+	}
+
+	return _d.User.UserByExternalID(ctx, d, extID)
 }
 
 // UserByID implements User.

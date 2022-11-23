@@ -71,8 +71,22 @@ func (u *User) Update(ctx context.Context, d db.DBTX, params repos.UserUpdatePar
 	return user, err
 }
 
+func (u *User) UserByExternalID(ctx context.Context, d db.DBTX, extID string) (*db.User, error) {
+	user, err := db.UserByExternalID(ctx, d, extID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
+	}
+
+	return user, nil
+}
+
 func (u *User) UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error) {
-	return db.UserByEmail(ctx, d, email)
+	user, err := db.UserByEmail(ctx, d, email)
+	if err != nil {
+		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
+	}
+
+	return user, nil
 }
 
 func (u *User) UserByID(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
@@ -80,7 +94,13 @@ func (u *User) UserByID(ctx context.Context, d db.DBTX, id string) (*db.User, er
 	if err != nil {
 		return nil, fmt.Errorf("could not parse id as UUID: %w", parseErrorDetail(err))
 	}
-	return db.UserByUserID(ctx, d, uid)
+
+	user, err := db.UserByUserID(ctx, d, uid)
+	if err != nil {
+		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
+	}
+
+	return user, nil
 }
 
 func (u *User) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error) {

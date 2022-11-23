@@ -14,6 +14,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const errNoRows = "no rows in result set"
+
 /**
  *
  * TODO integration tests only
@@ -56,68 +58,76 @@ func TestUser_Update(t *testing.T) {
 	}
 }
 
-// TODO at least one index query test should test joins, orderby...
-func TestUser_UserByEmail(t *testing.T) {
+func TestUser_UserByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
-	type args struct {
-		email string
+	userRepo := postgresql.NewUser()
+
+	ucp := randomUserCreateParams(t)
+
+	user, err := userRepo.Create(context.Background(), testpool, ucp)
+	if err != nil {
+		t.Fatalf("unexpected error = %v", err)
 	}
+
+	type args struct {
+		filter string
+		fn     func(context.Context, db.DBTX, string) (*db.User, error)
+	}
+
 	tests := []struct {
 		name    string
 		args    args
 		want    *db.User
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "external_id",
+			args: args{
+				filter: user.ExternalID,
+				fn:     (userRepo.UserByExternalID),
+			},
+		},
+		{
+			name: "user_id",
+			args: args{
+				filter: user.UserID.String(),
+				fn:     (userRepo.UserByID),
+			},
+		},
+		{
+			name: "email",
+			args: args{
+				filter: user.Email,
+				fn:     (userRepo.UserByEmail),
+			},
+		},
 	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			u := postgresql.NewUser()
-			got, err := u.UserByEmail(context.Background(), testpool, tt.args.email)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("User.UserByEmail() error = %v, wantErr %v", err, tt.wantErr)
-
-				return
+			foundUser, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
+			if err != nil {
+				t.Fatalf("unexpected error = %v", err)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("User.UserByEmail() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, foundUser.UserID, user.UserID)
 		})
-	}
-}
 
-func TestUser_UserByID(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		id string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *db.User
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tc.name+"no rows when record does not exist", func(t *testing.T) {
 			t.Parallel()
 
-			u := postgresql.NewUser()
-			got, err := u.UserByID(context.Background(), testpool, tt.args.id)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("User.UserByID() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			errContains := errNoRows
+
+			// valid as of now for any text and uuid index unless there are specific table checks
+			filter := uuid.New().String()
+
+			_, err := tc.args.fn(context.Background(), testpool, filter)
+			if err == nil {
+				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("User.UserByID() = %v, want %v", got, tt.want)
-			}
+			assert.Contains(t, err.Error(), errContains)
 		})
 	}
 }
@@ -185,7 +195,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	t.Run("cannot get user by api key if key does not exist", func(t *testing.T) {
 		t.Parallel()
 
-		errContains := "no rows in result set"
+		errContains := errNoRows
 
 		_, err := userRepo.UserByAPIKey(context.Background(), testpool, "missing")
 		if err == nil {

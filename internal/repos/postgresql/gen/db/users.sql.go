@@ -149,7 +149,6 @@ func (q *Queries) RegisterNewUser(ctx context.Context, db DBTX, arg RegisterNewU
 }
 
 const Test = `-- name: Test :exec
-
 select
   user_id
   , username
