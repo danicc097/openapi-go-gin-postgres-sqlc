@@ -103,7 +103,12 @@
     "sqlc\\.arg\\('{keyword}'\\)",
     "sqlc\\.narg\\('{keyword}'\\)"
   ],
-  "plpgsqlLanguageServer.statementSeparatorPattern": "-- name:[\\s]+.*",
+  "plpgsqlLanguageServer.statements": {
+    "separatorPattern": "-- name:[\\s]+.*",
+    "diagnosticsLevels": {
+      "disableFlag": "warning"
+    },
+  },
   "files.associations": {
     "*.sql": "postgres"
   }

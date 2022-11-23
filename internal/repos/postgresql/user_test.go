@@ -5,10 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/go-playground/assert/v2"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/stretchr/testify/assert"
 )
 
 /**
@@ -184,57 +186,81 @@ func TestUser_CreateAPIKey(t *testing.T) {
 func TestUser_Create(t *testing.T) {
 	t.Parallel()
 
+	userRepo := postgresql.NewUser()
+
 	// role, err := ff.authzsvc.RoleByName(string(params.Role))
 	// if err != nil {
 	// 	return nil, fmt.Errorf("authzsvc.RoleByName: %w", err)
 	// }
+	type want struct {
+		FullName *string
+		repos.UserCreateParams
+	}
 
 	type args struct {
 		params repos.UserCreateParams
 	}
-	tests := []struct {
-		name  string
-		args  args
-		want  *db.User
-		error string
-	}{
-		// {
-		// 	name: "test",
-		// 	args: args{
-		// 		params: repos.UserCreateParams{
-		// 			Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
-		// 			Email:      testutil.RandomEmail(),
-		// 			FirstName:  pointers.New(testutil.RandomFirstName()),
-		// 			LastName:   pointers.New(testutil.RandomLastName()),
-		// 			ExternalID: testutil.RandomString(10),
-		// 			Scopes:     []string{"scope1", "scope2"},
-		// 			RoleRank:   int16(1),
-		// 		},
-		// 	},
-		// 	want: &db.User{},
-		// },
-	}
-	for _, tc := range tests {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
 
-			u := postgresql.NewUser()
-			got, err := u.Create(context.Background(), testpool, tc.args.params)
-			if (err != nil) && tc.error == "" {
-				t.Fatalf("unexpected error = %v", err)
-			}
-			if tc.error != "" {
-				if err == nil {
-					t.Fatalf("expected error = '%v' but got nothing", tc.error)
-				}
-				assert.Equal(t, tc.error, err.Error())
+	t.Run("correct user", func(t *testing.T) {
+		t.Parallel()
 
-				return
-			}
+		ucp := repos.UserCreateParams{
+			Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
+			Email:      testutil.RandomEmail(),
+			FirstName:  pointers.New(testutil.RandomFirstName()),
+			LastName:   pointers.New(testutil.RandomLastName()),
+			ExternalID: testutil.RandomString(10),
+			Scopes:     []string{"scope1", "scope2"},
+			RoleRank:   int16(1),
+		}
 
-			assert.Equal(t, tc.want.FullName, got.FullName)
-			assert.Equal(t, tc.want.Teams, got.Teams)
-		})
-	}
+		want := want{
+			FullName:         pointers.New(*ucp.FirstName + " " + *ucp.LastName),
+			UserCreateParams: ucp,
+		}
+
+		args := args{
+			params: ucp,
+		}
+
+		got, err := userRepo.Create(context.Background(), testpool, args.params)
+		if err != nil {
+			t.Fatalf("unexpected error = %v", err)
+		}
+
+		assert.Equal(t, want.FullName, got.FullName)
+		assert.Equal(t, want.ExternalID, got.ExternalID)
+		assert.Equal(t, want.Email, got.Email)
+		assert.Equal(t, want.Username, got.Username)
+		assert.Equal(t, want.RoleRank, got.RoleRank)
+		assert.Equal(t, want.Scopes, got.Scopes)
+		assert.Equal(t, want.FirstName, got.FirstName)
+		assert.Equal(t, want.LastName, got.LastName)
+	})
+
+	t.Run("role rank less than zero", func(t *testing.T) {
+		t.Parallel()
+
+		ucp := repos.UserCreateParams{
+			Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
+			Email:      testutil.RandomEmail(),
+			FirstName:  pointers.New(testutil.RandomFirstName()),
+			LastName:   pointers.New(testutil.RandomLastName()),
+			ExternalID: testutil.RandomString(10),
+			Scopes:     []string{"scope1", "scope2"},
+			RoleRank:   int16(-1),
+		}
+
+		args := args{
+			params: ucp,
+		}
+
+		errContains := "violates check constraint"
+
+		_, err := userRepo.Create(context.Background(), testpool, args.params)
+		if err == nil {
+			t.Fatalf("expected error = '%v' but got nothing", errContains)
+		}
+		assert.Contains(t, err.Error(), errContains)
+	})
 }
