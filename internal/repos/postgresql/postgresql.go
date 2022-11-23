@@ -10,8 +10,8 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/jackc/pgx/v4/pgxpool"
-	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
@@ -56,9 +56,9 @@ func New(conf *envvar.Configuration) (*pgxpool.Pool, error) {
 
 	dsn.RawQuery = q.Encode()
 
-	pool, err := pgxpool.Connect(context.Background(), dsn.String())
+	pool, err := pgxpool.New(context.Background(), dsn.String())
 	if err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "pgxpool.Connect")
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "pgxpool.New")
 	}
 
 	if err := pool.Ping(context.Background()); err != nil {

@@ -6,7 +6,8 @@ import (
 	"regexp"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v5/pgconn"
+
 	"github.com/jackc/pgerrcode"
 )
 

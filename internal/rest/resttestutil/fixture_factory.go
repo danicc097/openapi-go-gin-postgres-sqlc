@@ -2,7 +2,7 @@ package resttestutil
 
 import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // FixtureFactory provides fixtures to create randomized elements

@@ -7,9 +7,8 @@ package db
 
 import (
 	"context"
-	"time"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const GetUser = `-- name: GetUser :one
@@ -35,18 +34,18 @@ limit 1
 `
 
 type GetUserParams struct {
-	Email    *string    `db:"email" json:"email"`
-	Username *string    `db:"username" json:"username"`
-	UserID   *uuid.UUID `db:"user_id" json:"user_id"`
+	Email    pgtype.Text `db:"email" json:"email"`
+	Username pgtype.Text `db:"username" json:"username"`
+	UserID   pgtype.UUID `db:"user_id" json:"user_id"`
 }
 
 type GetUserRow struct {
-	Username  string    `db:"username" json:"username"`
-	Email     string    `db:"email" json:"email"`
-	RoleRank  int16     `db:"role_rank" json:"role_rank"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
-	UserID    uuid.UUID `db:"user_id" json:"user_id"`
+	Username  string             `db:"username" json:"username"`
+	Email     string             `db:"email" json:"email"`
+	RoleRank  int16              `db:"role_rank" json:"role_rank"`
+	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
+	UserID    pgtype.UUID        `db:"user_id" json:"user_id"`
 }
 
 func (q *Queries) GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetUserRow, error) {
@@ -76,12 +75,12 @@ from
 `
 
 type ListAllUsers2Row struct {
-	UserID    uuid.UUID `db:"user_id" json:"user_id"`
-	Username  string    `db:"username" json:"username"`
-	Email     string    `db:"email" json:"email"`
-	RoleRank  int16     `db:"role_rank" json:"role_rank"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+	UserID    pgtype.UUID        `db:"user_id" json:"user_id"`
+	Username  string             `db:"username" json:"username"`
+	Email     string             `db:"email" json:"email"`
+	RoleRank  int16              `db:"role_rank" json:"role_rank"`
+	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
 
 func (q *Queries) ListAllUsers2(ctx context.Context, db DBTX) ([]ListAllUsers2Row, error) {
@@ -125,12 +124,12 @@ type RegisterNewUserParams struct {
 }
 
 type RegisterNewUserRow struct {
-	UserID    uuid.UUID `db:"user_id" json:"user_id"`
-	Username  string    `db:"username" json:"username"`
-	Email     string    `db:"email" json:"email"`
-	RoleRank  int16     `db:"role_rank" json:"role_rank"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+	UserID    pgtype.UUID        `db:"user_id" json:"user_id"`
+	Username  string             `db:"username" json:"username"`
+	Email     string             `db:"email" json:"email"`
+	RoleRank  int16              `db:"role_rank" json:"role_rank"`
+	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
 
 // plpgsql-language-server:disable
@@ -161,12 +160,12 @@ from
 `
 
 type TestRow struct {
-	UserID    uuid.UUID `db:"user_id" json:"user_id"`
-	Username  string    `db:"username" json:"username"`
-	Email     string    `db:"email" json:"email"`
-	RoleRank  int16     `db:"role_rank" json:"role_rank"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+	UserID    pgtype.UUID        `db:"user_id" json:"user_id"`
+	Username  string             `db:"username" json:"username"`
+	Email     string             `db:"email" json:"email"`
+	RoleRank  int16              `db:"role_rank" json:"role_rank"`
+	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
 
 // update

@@ -13,8 +13,8 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/jackc/pgx/v4/pgxpool"
-	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 // NewDB returns a new testing Postgres pool.
@@ -56,7 +56,7 @@ func NewDB() (*pgxpool.Pool, error) {
 		return nil, err
 	}
 
-	testpool, err := pgxpool.Connect(context.Background(), pool.Config().ConnString())
+	testpool, err := pgxpool.New(context.Background(), pool.Config().ConnString())
 	if err != nil {
 		fmt.Printf("Couldn't open Pool: %s\n", err)
 		return nil, err

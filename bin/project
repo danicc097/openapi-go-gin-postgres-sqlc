@@ -271,7 +271,7 @@ x.postgen() {
 x.gen.sqlc() {
   { { {
     echo "Running generation"
-    sqlc generate -f "$PG_REPO"/sqlc.yaml || err "Failed sqlc generation"
+    sqlc generate --experimental -f "$PG_REPO"/sqlc.yaml || err "Failed sqlc generation"
     rm "$PG_REPO_GEN"/db/models.go # sqlc enums
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
