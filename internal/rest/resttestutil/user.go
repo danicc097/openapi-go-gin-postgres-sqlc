@@ -7,6 +7,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/pkg/errors"
@@ -42,7 +43,7 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 		return nil, fmt.Errorf("authzsvc.RoleByName: %w", err)
 	}
 
-	user := &db.User{
+	ucp := repos.UserCreateParams{
 		Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
 		Email:      testutil.RandomEmail(),
 		FirstName:  pointers.New(testutil.RandomFirstName()),
@@ -50,13 +51,16 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 		ExternalID: testutil.RandomString(10),
 		Scopes:     scopes,
 		RoleRank:   role.Rank,
-		DeletedAt:  params.DeletedAt,
 	}
-
-	err = ff.usvc.Register(ctx, ff.pool, user)
+	user, err := ff.usvc.Register(ctx, ff.pool, ucp)
 	if err != nil {
 		return nil, errors.Wrap(err, "usvc.Register")
 	}
+
+	if params.DeletedAt != nil {
+		// TODO delete user (merely setting deleted_at != null)
+	}
+
 	var accessToken string
 	var apiKey *db.UserAPIKey
 

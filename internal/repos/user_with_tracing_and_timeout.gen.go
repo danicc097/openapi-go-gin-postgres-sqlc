@@ -52,15 +52,16 @@ func NewUserWrapped(base User, otelName string, config UserWrappedConfig, spanDe
 }
 
 // Create implements User.
-func (_d UserWrapped) Create(ctx context.Context, d db.DBTX, user *db.User) (err error) {
+func (_d UserWrapped) Create(ctx context.Context, d db.DBTX, params UserCreateParams) (up1 *db.User, err error) {
 	// -- tracing
 	ctx, _span := otel.Tracer(_d._otelName).Start(ctx, "User.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
-				"ctx":  ctx,
-				"d":    d,
-				"user": user}, map[string]interface{}{
+				"ctx":    ctx,
+				"d":      d,
+				"params": params}, map[string]interface{}{
+				"up1": up1,
 				"err": err})
 		} else if err != nil {
 			_span.RecordError(err)
@@ -80,7 +81,7 @@ func (_d UserWrapped) Create(ctx context.Context, d db.DBTX, user *db.User) (err
 		defer cancelFunc()
 	}
 
-	return _d.User.Create(ctx, d, user)
+	return _d.User.Create(ctx, d, params)
 }
 
 // CreateAPIKey implements User.

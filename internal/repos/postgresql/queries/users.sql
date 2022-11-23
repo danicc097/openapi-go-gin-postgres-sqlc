@@ -1,5 +1,4 @@
 -- plpgsql-language-server:use-keyword-query-parameter
-
 -- name: GetUser :one
 select
   username
@@ -36,7 +35,6 @@ returning
 --   , email = COALESCE(LOWER(sqlc.narg('email')) , email)
 -- where
 --   user_id = @user_id;
-
 -- name: ListAllUsers :many
 select
   user_id

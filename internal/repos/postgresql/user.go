@@ -25,8 +25,22 @@ func NewUser() *User {
 
 var _ repos.User = (*User)(nil)
 
-func (u *User) Create(ctx context.Context, d db.DBTX, user *db.User) error {
-	return user.Save(ctx, d)
+func (u *User) Create(ctx context.Context, d db.DBTX, params repos.UserCreateParams) (*db.User, error) {
+	user := &db.User{
+		Username:   params.Username,
+		Email:      params.Email,
+		FirstName:  params.FirstName,
+		LastName:   params.LastName,
+		ExternalID: params.ExternalID,
+		RoleRank:   params.RoleRank,
+		Scopes:     params.Scopes,
+	}
+
+	if err := user.Save(ctx, d); err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func (u *User) Update(ctx context.Context, d db.DBTX, params repos.UserUpdateParams) (*db.User, error) {

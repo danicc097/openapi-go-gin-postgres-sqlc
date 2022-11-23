@@ -10,18 +10,20 @@ import (
 )
 
 type FakeUser struct {
-	CreateStub        func(context.Context, db.DBTX, *db.User) error
+	CreateStub        func(context.Context, db.DBTX, repos.UserCreateParams) (*db.User, error)
 	createMutex       sync.RWMutex
 	createArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 *db.User
+		arg3 repos.UserCreateParams
 	}
 	createReturns struct {
-		result1 error
+		result1 *db.User
+		result2 error
 	}
 	createReturnsOnCall map[int]struct {
-		result1 error
+		result1 *db.User
+		result2 error
 	}
 	CreateAPIKeyStub        func(context.Context, db.DBTX, *db.User) (*db.UserAPIKey, error)
 	createAPIKeyMutex       sync.RWMutex
@@ -102,13 +104,13 @@ type FakeUser struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeUser) Create(arg1 context.Context, arg2 db.DBTX, arg3 *db.User) error {
+func (fake *FakeUser) Create(arg1 context.Context, arg2 db.DBTX, arg3 repos.UserCreateParams) (*db.User, error) {
 	fake.createMutex.Lock()
 	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
 	fake.createArgsForCall = append(fake.createArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 *db.User
+		arg3 repos.UserCreateParams
 	}{arg1, arg2, arg3})
 	stub := fake.CreateStub
 	fakeReturns := fake.createReturns
@@ -118,9 +120,9 @@ func (fake *FakeUser) Create(arg1 context.Context, arg2 db.DBTX, arg3 *db.User) 
 		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
-		return ret.result1
+		return ret.result1, ret.result2
 	}
-	return fakeReturns.result1
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeUser) CreateCallCount() int {
@@ -129,40 +131,43 @@ func (fake *FakeUser) CreateCallCount() int {
 	return len(fake.createArgsForCall)
 }
 
-func (fake *FakeUser) CreateCalls(stub func(context.Context, db.DBTX, *db.User) error) {
+func (fake *FakeUser) CreateCalls(stub func(context.Context, db.DBTX, repos.UserCreateParams) (*db.User, error)) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = stub
 }
 
-func (fake *FakeUser) CreateArgsForCall(i int) (context.Context, db.DBTX, *db.User) {
+func (fake *FakeUser) CreateArgsForCall(i int) (context.Context, db.DBTX, repos.UserCreateParams) {
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
 	argsForCall := fake.createArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeUser) CreateReturns(result1 error) {
+func (fake *FakeUser) CreateReturns(result1 *db.User, result2 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	fake.createReturns = struct {
-		result1 error
-	}{result1}
+		result1 *db.User
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeUser) CreateReturnsOnCall(i int, result1 error) {
+func (fake *FakeUser) CreateReturnsOnCall(i int, result1 *db.User, result2 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	if fake.createReturnsOnCall == nil {
 		fake.createReturnsOnCall = make(map[int]struct {
-			result1 error
+			result1 *db.User
+			result2 error
 		})
 	}
 	fake.createReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
+		result1 *db.User
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeUser) CreateAPIKey(arg1 context.Context, arg2 db.DBTX, arg3 *db.User) (*db.UserAPIKey, error) {

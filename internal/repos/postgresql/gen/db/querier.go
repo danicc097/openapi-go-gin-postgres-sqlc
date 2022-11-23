@@ -10,9 +10,17 @@ import (
 
 type Querier interface {
 	GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetUserRow, error)
-	ListAllUsers(ctx context.Context, db DBTX) ([]ListAllUsersRow, error)
 	ListAllUsers2(ctx context.Context, db DBTX) ([]ListAllUsers2Row, error)
+	// plpgsql-language-server:disable
 	RegisterNewUser(ctx context.Context, db DBTX, arg RegisterNewUserParams) (RegisterNewUserRow, error)
+	// update
+	//   users
+	// set
+	//   username = null
+	//   , email = COALESCE(LOWER(sqlc.narg('email')) , email)
+	// where
+	//   user_id = @user_id;
+	Test(ctx context.Context, db DBTX) error
 }
 
 var _ Querier = (*Queries)(nil)
