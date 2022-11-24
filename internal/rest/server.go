@@ -297,15 +297,6 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	RegisterHandlersWithOptions(vg, handlers, GinServerOptions{BaseURL: ""})
 
-	// TODO use pgx logger instead (v5) https://github.com/jackc/pgx/issues/1381
-	switch os.Getenv("APP_ENV") {
-	case "prod":
-		db.SetErrorLogger(conf.Logger.Sugar().Errorf)
-	default:
-		db.SetLogger(conf.Logger.Sugar().Infof)
-		db.SetErrorLogger(conf.Logger.Sugar().Errorf)
-	}
-
 	conf.Logger.Info("Server started")
 
 	srv.httpsrv = &http.Server{
@@ -366,6 +357,16 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 	)
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "movieSvcConn")
+	}
+
+	// TODO use pgx logger instead (v5) https://github.com/jackc/pgx/issues/1381
+	// don't set xo logger for tests - race condition
+	switch os.Getenv("APP_ENV") {
+	case "prod":
+		db.SetErrorLogger(logger.Sugar().Errorf)
+	default:
+		db.SetLogger(logger.Sugar().Infof)
+		db.SetErrorLogger(logger.Sugar().Errorf)
 	}
 
 	srv, err := NewServer(Config{
