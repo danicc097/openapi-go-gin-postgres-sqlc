@@ -2372,7 +2372,7 @@ func (f *Funcs) join_fields(sqlname string, constraints interface{}) (string, er
 		switch c.Cardinality {
 		case "M2M":
 			goName = camelExport(singularize(c.RefTableName))
-			tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(snaker.CamelToSnake(goName)))
+			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(snaker.CamelToSnake(goName)), inflector.Pluralize(c.RefTableName))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), goName, tag, c.Cardinality))
 		case "O2M", "M2O":
 			if c.RefTableName != sqlname {
@@ -2380,14 +2380,14 @@ func (f *Funcs) join_fields(sqlname string, constraints interface{}) (string, er
 			}
 			goName = camelExport(singularize(c.TableName))
 			// TODO revisit. O2M and M2O from different viewpoints.
-			tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(snaker.CamelToSnake(goName)))
+			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(snaker.CamelToSnake(goName)), inflector.Pluralize(c.TableName))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), goName, tag, c.Cardinality))
 		case "O2O":
 			if c.TableName != sqlname {
 				continue
 			}
 			goName = camelExport(singularize(c.RefTableName))
-			tag = fmt.Sprintf("`json:\"%s\"`", snaker.CamelToSnake(goName))
+			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", snaker.CamelToSnake(goName), inflector.Singularize(c.RefTableName))
 			buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, goName, tag, c.Cardinality))
 		default:
 			continue

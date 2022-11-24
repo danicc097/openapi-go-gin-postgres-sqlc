@@ -21,8 +21,8 @@ type Team struct {
 	CreatedAt   time.Time    `json:"created_at" db:"created_at"`   // created_at
 	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at"`   // updated_at
 
-	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
-	Users       *[]User      `json:"users"`        // M2M
+	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
+	Users       *[]User      `json:"users" db:"users"`               // M2M
 	// xo fields
 	_exists, _deleted bool
 }

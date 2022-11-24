@@ -18,7 +18,7 @@ type UserAPIKey struct {
 	ExpiresOn    time.Time `json:"expires_on" db:"expires_on"`           // expires_on
 	UserID       uuid.UUID `json:"user_id" db:"user_id"`                 // user_id
 
-	User *User `json:"user"` // O2O
+	User *User `json:"user" db:"user"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }

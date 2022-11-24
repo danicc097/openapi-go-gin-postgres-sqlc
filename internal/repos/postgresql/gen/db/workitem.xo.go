@@ -24,10 +24,10 @@ type WorkItem struct {
 	UpdatedAt      time.Time    `json:"updated_at" db:"updated_at"`               // updated_at
 	DeletedAt      *time.Time   `json:"deleted_at" db:"deleted_at"`               // deleted_at
 
-	Tasks            *[]Task            `json:"tasks"`              // O2M
-	TimeEntries      *[]TimeEntry       `json:"time_entries"`       // O2M
-	WorkItemComments *[]WorkItemComment `json:"work_item_comments"` // O2M
-	Users            *[]User            `json:"users"`              // M2M
+	Tasks            *[]Task            `json:"tasks" db:"tasks"`                           // O2M
+	TimeEntries      *[]TimeEntry       `json:"time_entries" db:"time_entries"`             // O2M
+	WorkItemComments *[]WorkItemComment `json:"work_item_comments" db:"work_item_comments"` // O2M
+	Users            *[]User            `json:"users" db:"users"`                           // M2M
 	// xo fields
 	_exists, _deleted bool
 }

@@ -27,9 +27,9 @@ type User struct {
 	UpdatedAt  time.Time  `json:"updated_at" db:"updated_at"`   // updated_at
 	DeletedAt  *time.Time `json:"deleted_at" db:"deleted_at"`   // deleted_at
 
-	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
-	Teams       *[]Team      `json:"teams"`        // M2M
-	WorkItems   *[]WorkItem  `json:"work_items"`   // M2M
+	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
+	Teams       *[]Team      `json:"teams" db:"teams"`               // M2M
+	WorkItems   *[]WorkItem  `json:"work_items" db:"work_items"`     // M2M
 	// xo fields
 	_exists, _deleted bool
 }

@@ -23,7 +23,7 @@ type Task struct {
 	UpdatedAt  time.Time    `json:"updated_at" db:"updated_at"`     // updated_at
 	DeletedAt  *time.Time   `json:"deleted_at" db:"deleted_at"`     // deleted_at
 
-	TaskType *TaskType `json:"task_type"` // O2O
+	TaskType *TaskType `json:"task_type" db:"task_type"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }

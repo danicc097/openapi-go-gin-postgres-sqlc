@@ -14,7 +14,7 @@ type Activity struct {
 	Description  string `json:"description" db:"description"`     // description
 	IsProductive bool   `json:"is_productive" db:"is_productive"` // is_productive
 
-	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
+	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
 	// xo fields
 	_exists, _deleted bool
 }
