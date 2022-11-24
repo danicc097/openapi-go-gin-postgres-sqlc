@@ -15,12 +15,15 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"go.uber.org/zap"
 )
 
 // NewDB returns a new testing Postgres pool.
 func NewDB() (*pgxpool.Pool, error) {
 	conf := envvar.New()
-	pool, err := postgresql.New(conf)
+	logger, _ := zap.NewDevelopment()
+
+	pool, err := postgresql.New(conf, logger)
 	if err != nil {
 		fmt.Printf("Couldn't create pool: %s\n", err)
 		return nil, err

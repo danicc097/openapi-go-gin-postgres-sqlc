@@ -682,6 +682,10 @@ x.migrate.create() {
 
 ########################## db ##########################
 
+x.db.psql() {
+  docker exec -it postgres_db_"$PROJECT_PREFIX" psql -d $POSTGRES_DB
+}
+
 # Show active and max number of connections for the current environment.
 x.db.conns() {
   { { {

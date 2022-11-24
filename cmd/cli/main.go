@@ -13,6 +13,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"go.uber.org/zap"
 )
 
 // clear && go run cmd/cli/main.go -env .env.dev
@@ -50,8 +51,9 @@ func main() {
 	// 	errAndExit(out, err)
 	// }
 
+	logger, _ := zap.NewDevelopment()
 	conf := envvar.New()
-	pool, err := postgresql.New(conf)
+	pool, err := postgresql.New(conf, logger)
 	if err != nil {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}

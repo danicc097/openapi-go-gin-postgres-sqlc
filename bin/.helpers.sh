@@ -204,8 +204,6 @@ drop_and_recreate_db() {
     -c "CREATE DATABASE $db OWNER $POSTGRES_USER;"
 }
 
-# TODO should be dockerdb and accept anything
-# (should work via bash -c "...")
 dockerdb() {
   docker exec -i postgres_db_"$PROJECT_PREFIX" "$@"
 }

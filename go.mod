@@ -17,6 +17,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgerrcode v0.0.0-20201024163028-a0d42d470451
 	github.com/jackc/pgtype v1.11.0
+	github.com/jackc/pgx-zap v0.0.0-20220909013905-c08a18c611dd
 	github.com/jackc/pgx/v5 v5.1.1
 	github.com/joho/godotenv v1.4.0
 	github.com/kenshaw/inflector v0.2.0
@@ -36,7 +37,7 @@ require (
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.10.0
 	go.opentelemetry.io/otel/sdk v1.10.0
 	go.opentelemetry.io/otel/trace v1.10.0
-	go.uber.org/zap v1.19.1
+	go.uber.org/zap v1.23.0
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	golang.org/x/sync v0.0.0-20220923202941-7f9b1623fab7
 	mvdan.cc/gofumpt v0.4.0
@@ -45,6 +46,7 @@ require (
 require (
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
+	github.com/benbjohnson/clock v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

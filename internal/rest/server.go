@@ -32,7 +32,6 @@ import (
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
@@ -312,24 +311,15 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 // Run configures a server and underlying services with the given configuration.
 func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, error) {
-	if err := envvar.Load(env); err != nil {
+	var err error
+
+	if err = envvar.Load(env); err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
 	}
 
 	conf := envvar.New()
 
-	pool, err := postgresql.New(conf)
-	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "postgresql.New")
-	}
-
-	rdb, err := redis.New(conf)
-	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "redis.New")
-	}
-
 	var logger *zap.Logger
-
 	// XXX there's work being done in https://github.com/uptrace/opentelemetry-go-extra/tree/main/otelzap
 	switch os.Getenv("APP_ENV") {
 	case "prod":
@@ -340,6 +330,16 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "zap.New")
+	}
+
+	pool, err := postgresql.New(conf, logger)
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "postgresql.New")
+	}
+
+	rdb, err := redis.New(conf)
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "redis.New")
 	}
 
 	tp := tracing.InitTracer()
@@ -357,16 +357,6 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 	)
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "movieSvcConn")
-	}
-
-	// TODO use pgx logger instead (v5) https://github.com/jackc/pgx/issues/1381
-	// don't set xo logger for tests - race condition
-	switch os.Getenv("APP_ENV") {
-	case "prod":
-		db.SetErrorLogger(logger.Sugar().Errorf)
-	default:
-		db.SetLogger(logger.Sugar().Infof)
-		db.SetErrorLogger(logger.Sugar().Errorf)
 	}
 
 	srv, err := NewServer(Config{
