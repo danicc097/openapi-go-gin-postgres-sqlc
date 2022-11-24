@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"gopkg.in/yaml.v3"
 )
@@ -60,6 +61,10 @@ func (o *PreGen) Generate() error {
 
 	if err := o.analyzeSpec(); err != nil {
 		return fmt.Errorf("analyze spec: %w", err)
+	}
+
+	if err := internal.GenerateConfigTemplate(); err != nil {
+		return fmt.Errorf("generate app config template: %w", err)
 	}
 
 	return nil

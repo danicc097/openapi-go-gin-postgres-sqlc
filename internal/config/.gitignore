@@ -1,0 +1,3 @@
+*.json
+!ci.json
+!template.json
