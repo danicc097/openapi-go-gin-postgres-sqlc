@@ -26,6 +26,8 @@ const (
 	ErrorCodeUnauthorized
 	ErrorCodeUnauthenticated
 	ErrorCodeValidationError
+
+	ErrorCodeInvalidRole
 )
 
 // WrapErrorf returns a wrapped error.
