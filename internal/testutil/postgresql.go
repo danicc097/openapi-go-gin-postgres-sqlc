@@ -51,6 +51,8 @@ func NewDB() (*pgxpool.Pool, error) {
 		return nil, err
 	}
 
+	// migrate down before tests externally if needed. This function will be called
+	// by any test package that needs a db and `up` will be a no-op.
 	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		fmt.Printf("Couldnt' migrate (3): %s\n", err)
 		return nil, err

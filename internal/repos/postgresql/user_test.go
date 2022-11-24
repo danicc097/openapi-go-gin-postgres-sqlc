@@ -76,10 +76,8 @@ func TestUser_UserByIndexedQueries(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		args    args
-		want    *db.User
-		wantErr bool
+		name string
+		args args
 	}{
 		{
 			name: "external_id",
