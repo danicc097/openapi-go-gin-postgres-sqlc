@@ -109,10 +109,6 @@ func (u *User) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.
 		return nil, fmt.Errorf("could not get api key: %w", parseErrorDetail(err))
 	}
 
-	if uak.User == nil {
-		return nil, fmt.Errorf("could not join user by api key")
-	}
-
 	return uak.User, nil
 }
 

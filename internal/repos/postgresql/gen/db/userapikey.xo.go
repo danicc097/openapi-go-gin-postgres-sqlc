@@ -18,6 +18,7 @@ type UserAPIKey struct {
 	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on"`         // expires_on
 	UserID       uuid.UUID `json:"userID" db:"user_id"`               // user_id
 
+	// Usedr *User `json:"uñser" db:"userd"` // O2O
 	User *User `json:"user" db:"user"` // O2O
 	// xo fields
 	_exists, _deleted bool
@@ -218,7 +219,8 @@ left join users on users.user_id = user_api_keys.user_id` +
 	// 	return nil, errors.Wrap(err, "pgx.RowToStructByNam")
 	// }
 	// fmt.Printf("uakk: %v\n", uakk)
-	slice, err := pgx.CollectRows(rows, pgx.RowToStructByName[UserAPIKey])
+	// slice, err := pgx.CollectRows(rows, pgx.RowToStructByName[UserAPIKey]) // for single return
+	slice, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[UserAPIKey]) // for array_agg
 	// _, err := pgx.RowToStructByName[UserAPIKey](row)
 	if err != nil {
 		return nil, errors.Wrap(err, "CollectRows")
@@ -226,7 +228,7 @@ left join users on users.user_id = user_api_keys.user_id` +
 
 	fmt.Printf("slice: %v\n", slice)
 
-	return &slice[0], nil
+	return &slice, nil
 }
 
 // UserAPIKeyByUserAPIKeyID retrieves a row from 'public.user_api_keys' as a UserAPIKey.
