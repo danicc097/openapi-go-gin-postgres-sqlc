@@ -91,7 +91,7 @@ func TestUser_UpdateUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			urepo := repostesting.NewFakeUser([]*db.User{normalUser, advancedUser, adminUser})
+			urepo := repostesting.NewFakeUser(normalUser, advancedUser, adminUser)
 
 			u := services.NewUser(logger, urepo, authzsvc)
 			got, err := u.Update(context.Background(), &pgxpool.Pool{}, tc.args.id, tc.args.caller, tc.args.params)
@@ -122,10 +122,10 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 		t.Fatalf("NewAuthorization: %v", err)
 	}
 
-	// TODO create users on demand with parameterized tests.
+	// TODO create users on demand with parameterized tests. same as repo ucp but using FakeUserRepo instead
 	// e.g. cannot_set_scope_unassigned_to_self  and can_set_scopes_asigned_to_self
-	// should have test struct field{callerScopes: []...} , therefore
-	// with all relevant parameters set.
+	// should have test struct field{callerScopes: []...} , therefore when we look at the test case
+	// we see all relevant parameters and input.
 	guestRole, userRole, advancedUserRole, managerRole, adminRole := getRoles(t, authzsvc)
 
 	guestUser, normalUser, advancedUser, managerUser, adminUser := fakeUsers(guestRole, userRole, advancedUserRole, managerRole, adminRole)
@@ -265,7 +265,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			urepo := repostesting.NewFakeUser([]*db.User{normalUser, advancedUser, managerUser, adminUser})
+			urepo := repostesting.NewFakeUser(normalUser, advancedUser, managerUser, adminUser)
 
 			u := services.NewUser(logger, urepo, authzsvc)
 			got, err := u.UpdateUserAuthorization(context.Background(), &pgxpool.Pool{}, tc.args.id, tc.args.caller, tc.args.params)

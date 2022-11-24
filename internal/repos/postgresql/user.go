@@ -89,6 +89,15 @@ func (u *User) UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.Us
 	return user, nil
 }
 
+func (u *User) UserByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error) {
+	user, err := db.UserByUsername(ctx, d, username)
+	if err != nil {
+		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
+	}
+
+	return user, nil
+}
+
 func (u *User) UserByID(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
 	uid, err := uuid.Parse(id)
 	if err != nil {

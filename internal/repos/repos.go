@@ -28,6 +28,7 @@ type UserUpdateParams struct {
 type User interface {
 	UserByID(ctx context.Context, d db.DBTX, id string) (*db.User, error)
 	UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error)
+	UserByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error)
 	UserByExternalID(ctx context.Context, d db.DBTX, extID string) (*db.User, error)
 	UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error)
 	Create(ctx context.Context, d db.DBTX, params UserCreateParams) (*db.User, error)

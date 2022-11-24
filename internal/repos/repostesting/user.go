@@ -34,7 +34,7 @@ func (f *fakeUserStore) set(id string, user *db.User) {
 
 // NewFakeUser returns a mock for the User repository, initializing it with copies of
 // the passed users.
-func NewFakeUser(users []*db.User) *FakeUser {
+func NewFakeUser(users ...*db.User) *FakeUser {
 	fks := &fakeUserStore{
 		users: make(map[string]*db.User),
 		mu:    sync.Mutex{},

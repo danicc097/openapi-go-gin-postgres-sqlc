@@ -100,6 +100,13 @@ func TestUser_UserByIndexedQueries(t *testing.T) {
 				fn:     (userRepo.UserByEmail),
 			},
 		},
+		{
+			name: "username",
+			args: args{
+				filter: user.Username,
+				fn:     (userRepo.UserByUsername),
+			},
+		},
 	}
 	for _, tc := range tests {
 		tc := tc
