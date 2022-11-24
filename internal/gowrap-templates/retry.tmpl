@@ -1,0 +1,48 @@
+import(
+  "time"
+)
+
+{{ $decorator := (or .Vars.DecoratorName (printf "%sWithRetry" .Interface.Name)) }}
+
+// {{$decorator}} implements {{.Interface.Type}} interface instrumented with retries
+type {{$decorator}} struct {
+  {{.Interface.Type}}
+  _retryCount int
+  _retryInterval time.Duration
+}
+
+// New{{$decorator}} returns {{$decorator}}
+func New{{$decorator}} (base {{.Interface.Type}}, retryCount int, retryInterval time.Duration) {{$decorator}} {
+  return {{$decorator}} {
+    {{.Interface.Name}}: base,
+    _retryCount: retryCount,
+    _retryInterval: retryInterval,
+  }
+}
+
+{{range $method := .Interface.Methods}}
+  {{if $method.ReturnsError}}
+    // {{$method.Name}} implements {{$.Interface.Type}}
+    func (_d {{$decorator}}) {{$method.Declaration}} {
+      {{$method.ResultsNames}} = _d.{{$.Interface.Name}}.{{$method.Call}}
+      if err == nil || _d._retryCount < 1 {
+        return
+      }
+      _ticker:= time.NewTicker(_d._retryInterval)
+      defer _ticker.Stop()
+      for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+        {{- if $method.AcceptsContext}}
+          select {
+          case <-ctx.Done():
+            return
+          case <-_ticker.C:
+          }
+        {{else}}
+          <-_ticker.C
+        {{end -}}
+        {{$method.ResultsNames}} = _d.{{$.Interface.Name}}.{{$method.Call}}
+      }
+      return
+    }
+  {{end}}
+{{end}}

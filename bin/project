@@ -308,15 +308,32 @@ x.gen.xo() {
 x.gen.gowrap() {
   { { {
     echo "Running generation"
-    repo_interfaces="User"
+
+    local templates=(
+      "retry:with_retry"
+      "timeout:with_timeout"
+      "otel:with_otel"
+      "prometheus:with_prometheus"
+    )
+
+    local repo_interfaces="User"
     for iface in ${repo_interfaces[@]}; do
-      gowrap gen \
-        -g \
-        -p $GOMOD_PKG/internal/repos \
-        -i $iface \
-        -t internal/gowrap-templates/otel-with-timeout.tmpl \
-        -o internal/repos/${iface,,}_with_tracing_and_timeout.gen.go
+      for template in ${templates[@]}; do
+        {
+          IFS=":" read -r -a arr <<<${template}
+          local tmpl="${arr[0]}"
+          local suffix="${arr[1]}"
+          gowrap gen \
+            -g \
+            -p $GOMOD_PKG/internal/repos \
+            -i $iface \
+            -t "internal/gowrap-templates/$tmpl.tmpl" \
+            -o "internal/repos/${iface,,}_$suffix.gen.go"
+        } &
+      done
     done
+
+    wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

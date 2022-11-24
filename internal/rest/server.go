@@ -283,8 +283,18 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)
 	}
-
-	usvc := services.NewUser(conf.Logger, repos.NewUserWrapped(postgresql.NewUser(), postgresql.OtelName, repos.UserWrappedConfig{}, nil), authzsvc)
+	retryCount := 2
+	retryInterval := 1 * time.Second
+	usvc := services.NewUser(
+		conf.Logger,
+		repos.NewUserWithTracing(
+			repos.NewUserWithRetry(
+				repos.NewUserWithTimeout(
+					postgresql.NewUser(), repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second}),
+				retryCount, retryInterval),
+			postgresql.OtelName, nil),
+		authzsvc,
+	)
 
 	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
 
