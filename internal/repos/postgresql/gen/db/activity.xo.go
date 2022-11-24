@@ -9,10 +9,10 @@ import (
 
 // Activity represents a row from 'public.activities'.
 type Activity struct {
-	ActivityID   int    `json:"activity_id" db:"activity_id"`     // activity_id
-	Name         string `json:"name" db:"name"`                   // name
-	Description  string `json:"description" db:"description"`     // description
-	IsProductive bool   `json:"is_productive" db:"is_productive"` // is_productive
+	ActivityID   int    `json:"activityID" db:"activity_id"`     // activity_id
+	Name         string `json:"name" db:"name"`                  // name
+	Description  string `json:"description" db:"description"`    // description
+	IsProductive bool   `json:"isProductive" db:"is_productive"` // is_productive
 
 	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
 	// xo fields
@@ -172,13 +172,13 @@ func ActivityByName(ctx context.Context, db DB, name string, opts ...ActivitySel
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -215,13 +215,13 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...Ac
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by

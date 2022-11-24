@@ -9,11 +9,11 @@ import (
 
 // WorkItemType represents a row from 'public.work_item_types'.
 type WorkItemType struct {
-	WorkItemTypeID int    `json:"work_item_type_id" db:"work_item_type_id"` // work_item_type_id
-	ProjectID      int64  `json:"project_id" db:"project_id"`               // project_id
-	Name           string `json:"name" db:"name"`                           // name
-	Description    string `json:"description" db:"description"`             // description
-	Color          string `json:"color" db:"color"`                         // color
+	WorkItemTypeID int    `json:"workItemTypeID" db:"work_item_type_id"` // work_item_type_id
+	ProjectID      int64  `json:"projectID" db:"project_id"`             // project_id
+	Name           string `json:"name" db:"name"`                        // name
+	Description    string `json:"description" db:"description"`          // description
+	Color          string `json:"color" db:"color"`                      // color
 
 	// xo fields
 	_exists, _deleted bool

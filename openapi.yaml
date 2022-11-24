@@ -246,30 +246,30 @@ components:
       type: object
     User: # Generated from db package structs. DO NOT EDIT.
       properties:
-        api_key_id:
+        apiKeyID:
           nullable: true
           type: integer
-        created_at:
+        createdAt:
           format: date-time
           type: string
-        deleted_at:
+        deletedAt:
           format: date-time
           nullable: true
           type: string
         email:
           type: string
-        external_id:
+        externalID:
           type: string
-        first_name:
+        firstName:
           nullable: true
           type: string
-        full_name:
+        fullName:
           nullable: true
           type: string
-        last_name:
+        lastName:
           nullable: true
           type: string
-        role_rank:
+        roleRank:
           type: integer
         scopes:
           items:
@@ -286,10 +286,10 @@ components:
             $ref: '#/components/schemas/TimeEntry'
           nullable: true
           type: array
-        updated_at:
+        updatedAt:
           format: date-time
           type: string
-        user_id:
+        userID:
           $ref: '#/components/schemas/UuidUUID'
         username:
           type: string
@@ -324,10 +324,10 @@ components:
       type: object
     Task: # Generated from db package structs. DO NOT EDIT.
       properties:
-        created_at:
+        createdAt:
           format: date-time
           type: string
-        deleted_at:
+        deletedAt:
           format: date-time
           nullable: true
           type: string
@@ -336,18 +336,18 @@ components:
           type: boolean
         metadata:
           $ref: '#/components/schemas/PgtypeJSONB'
-        task_id:
-          type: integer
         task_type:
           $ref: '#/components/schemas/TaskType'
-        task_type_id:
+        taskID:
+          type: integer
+        taskTypeID:
           type: integer
         title:
           type: string
-        updated_at:
+        updatedAt:
           format: date-time
           type: string
-        work_item_id:
+        workItemID:
           type: integer
       type: object
     TaskType: # Generated from db package structs. DO NOT EDIT.
@@ -359,14 +359,14 @@ components:
           type: string
         name:
           type: string
-        task_type_id:
+        taskTypeID:
           type: integer
-        team_id:
+        teamID:
           type: integer
       type: object
     Team: # Generated from db package structs. DO NOT EDIT.
       properties:
-        created_at:
+        createdAt:
           format: date-time
           type: string
         description:
@@ -375,16 +375,16 @@ components:
           $ref: '#/components/schemas/PgtypeJSONB'
         name:
           type: string
-        project_id:
+        projectID:
           type: integer
-        team_id:
+        teamID:
           type: integer
         time_entries:
           items:
             $ref: '#/components/schemas/TimeEntry'
           nullable: true
           type: array
-        updated_at:
+        updatedAt:
           format: date-time
           type: string
         users:
@@ -395,24 +395,24 @@ components:
       type: object
     TimeEntry: # Generated from db package structs. DO NOT EDIT.
       properties:
-        activity_id:
+        activityID:
           type: integer
         comment:
           type: string
-        duration_minutes:
+        durationMinutes:
           nullable: true
           type: integer
         start:
           format: date-time
           type: string
-        team_id:
+        teamID:
           nullable: true
           type: integer
-        time_entry_id:
+        timeEntryID:
           type: integer
-        user_id:
+        userID:
           $ref: '#/components/schemas/UuidUUID'
-        work_item_id:
+        workItemID:
           nullable: true
           type: integer
       type: object
@@ -435,14 +435,14 @@ components:
       properties:
         closed:
           type: boolean
-        created_at:
+        createdAt:
           format: date-time
           type: string
-        deleted_at:
+        deletedAt:
           format: date-time
           nullable: true
           type: string
-        kanban_step_id:
+        kanbanStepID:
           type: integer
         metadata:
           $ref: '#/components/schemas/PgtypeJSONB'
@@ -451,7 +451,7 @@ components:
             $ref: '#/components/schemas/Task'
           nullable: true
           type: array
-        team_id:
+        teamID:
           type: integer
         time_entries:
           items:
@@ -460,7 +460,7 @@ components:
           type: array
         title:
           type: string
-        updated_at:
+        updatedAt:
           format: date-time
           type: string
         users:
@@ -473,26 +473,26 @@ components:
             $ref: '#/components/schemas/WorkItemComment'
           nullable: true
           type: array
-        work_item_id:
+        workItemID:
           type: integer
-        work_item_type_id:
+        workItemTypeID:
           type: integer
       type: object
     WorkItemComment: # Generated from db package structs. DO NOT EDIT.
       properties:
-        created_at:
+        createdAt:
           format: date-time
           type: string
         message:
           type: string
-        updated_at:
+        updatedAt:
           format: date-time
           type: string
-        user_id:
+        userID:
           $ref: '#/components/schemas/UuidUUID'
-        work_item_comment_id:
+        workItemCommentID:
           type: integer
-        work_item_id:
+        workItemID:
           type: integer
       type: object
   examples:

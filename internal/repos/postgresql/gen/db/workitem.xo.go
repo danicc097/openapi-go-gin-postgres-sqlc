@@ -13,16 +13,16 @@ import (
 
 // WorkItem represents a row from 'public.work_items'.
 type WorkItem struct {
-	WorkItemID     int64        `json:"work_item_id" db:"work_item_id"`           // work_item_id
-	Title          string       `json:"title" db:"title"`                         // title
-	WorkItemTypeID int          `json:"work_item_type_id" db:"work_item_type_id"` // work_item_type_id
-	Metadata       pgtype.JSONB `json:"metadata" db:"metadata"`                   // metadata
-	TeamID         int          `json:"team_id" db:"team_id"`                     // team_id
-	KanbanStepID   int          `json:"kanban_step_id" db:"kanban_step_id"`       // kanban_step_id
-	Closed         bool         `json:"closed" db:"closed"`                       // closed
-	CreatedAt      time.Time    `json:"created_at" db:"created_at"`               // created_at
-	UpdatedAt      time.Time    `json:"updated_at" db:"updated_at"`               // updated_at
-	DeletedAt      *time.Time   `json:"deleted_at" db:"deleted_at"`               // deleted_at
+	WorkItemID     int64        `json:"workItemID" db:"work_item_id"`          // work_item_id
+	Title          string       `json:"title" db:"title"`                      // title
+	WorkItemTypeID int          `json:"workItemTypeID" db:"work_item_type_id"` // work_item_type_id
+	Metadata       pgtype.JSONB `json:"metadata" db:"metadata"`                // metadata
+	TeamID         int          `json:"teamID" db:"team_id"`                   // team_id
+	KanbanStepID   int          `json:"kanbanStepID" db:"kanban_step_id"`      // kanban_step_id
+	Closed         bool         `json:"closed" db:"closed"`                    // closed
+	CreatedAt      time.Time    `json:"createdAt" db:"created_at"`             // created_at
+	UpdatedAt      time.Time    `json:"updatedAt" db:"updated_at"`             // updated_at
+	DeletedAt      *time.Time   `json:"deletedAt" db:"deleted_at"`             // deleted_at
 
 	Tasks            *[]Task            `json:"tasks"`              // O2M
 	TimeEntries      *[]TimeEntry       `json:"time_entries"`       // O2M
@@ -229,16 +229,16 @@ work_items.closed,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then joined_tasks.tasks end)::jsonb as tasks,
-(case when $2::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $3::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
-(case when $4::boolean = true then joined_users.users end)::jsonb as users `+
+(case when $1::boolean = true then joined_tasks.tasks end) as tasks,
+(case when $2::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $3::boolean = true then joined_work_item_comments.work_item_comments end) as work_item_comments,
+(case when $4::boolean = true then joined_users.users end) as users `+
 		`FROM public.work_items `+
 		`-- O2M join generated from "tasks_work_item_id_fkey"
 left join (
   select
   work_item_id as tasks_work_item_id
-    , json_agg(tasks.*) as tasks
+    , array_agg(tasks.*) as tasks
   from
     tasks
    group by
@@ -247,7 +247,7 @@ left join (
 left join (
   select
   work_item_id as time_entries_work_item_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -256,7 +256,7 @@ left join (
 left join (
   select
   work_item_id as work_item_comments_work_item_id
-    , json_agg(work_item_comments.*) as work_item_comments
+    , array_agg(work_item_comments.*) as work_item_comments
   from
     work_item_comments
    group by
@@ -265,7 +265,7 @@ left join (
 left join (
 	select
 		work_item_id as users_work_item_id
-		, json_agg(users.*) as users
+		, array_agg(users.*) as users
 	from
 		work_item_member
 		join users using (user_id)

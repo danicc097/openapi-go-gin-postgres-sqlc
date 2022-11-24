@@ -208,8 +208,8 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				// TODO bring camel back once pgx v5 and sqlc work correctly
 				// scan to custom tag recently a feature in pgx: https://github.com/jackc/pgx/commit/14be51536bbf5e183b68ee9a5fcadaf0d045e503
 				// see tests: https://github.com/jackc/pgx/blob/fbfafb3edfc378681c2bad91b1a126e7e6df3f5b/rows_test.go#L545
-				// Default:    `json:"{{ camel .GoName }}" db:"{{ .SQLName }}"`,
-				Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
+				Default: `json:"{{ camel .GoName }}" db:"{{ .SQLName }}"`,
+				// Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
 			},
 			{
 				ContextKey: ContextKey,
@@ -1963,9 +1963,9 @@ func (f *Funcs) sqlstr_delete(v interface{}) []string {
 }
 
 const (
-	M2MSelect = `(case when {{.Nth}}::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end)::jsonb as {{.JoinTable}}`
+	M2MSelect = `(case when {{.Nth}}::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end) as {{.JoinTable}}`
 	O2MSelect = M2MSelect
-	O2OSelect = `(case when {{.Nth}}::boolean = true then row_to_json({{.JoinTable}}.*) end)::jsonb as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
+	O2OSelect = `(case when {{.Nth}}::boolean = true then {{.JoinTable}}.* end) as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
 )
 
 const (
@@ -1973,7 +1973,7 @@ const (
 left join (
 	select
 		{{.LookupColumn}} as {{.JoinTable}}_{{.LookupRefColumn}}
-		, json_agg({{.JoinTable}}.*) as {{.JoinTable}}
+		, array_agg({{.JoinTable}}.*) as {{.JoinTable}}
 	from
 		{{.LookupTable}}
 		join {{.JoinTable}} using ({{.JoinTablePK}})
@@ -1995,7 +1995,7 @@ left join (
 left join (
   select
   {{.JoinColumn}} as {{.JoinTable}}_{{.JoinRefColumn}}
-    , json_agg({{.JoinTable}}.*) as {{.JoinTable}}
+    , array_agg({{.JoinTable}}.*) as {{.JoinTable}}
   from
     {{.JoinTable}}
    group by

@@ -13,13 +13,13 @@ import (
 
 // Team represents a row from 'public.teams'.
 type Team struct {
-	TeamID      int          `json:"team_id" db:"team_id"`         // team_id
-	ProjectID   int          `json:"project_id" db:"project_id"`   // project_id
+	TeamID      int          `json:"teamID" db:"team_id"`          // team_id
+	ProjectID   int          `json:"projectID" db:"project_id"`    // project_id
 	Name        string       `json:"name" db:"name"`               // name
 	Description string       `json:"description" db:"description"` // description
 	Metadata    pgtype.JSONB `json:"metadata" db:"metadata"`       // metadata
-	CreatedAt   time.Time    `json:"created_at" db:"created_at"`   // created_at
-	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at"`   // updated_at
+	CreatedAt   time.Time    `json:"createdAt" db:"created_at"`    // created_at
+	UpdatedAt   time.Time    `json:"updatedAt" db:"updated_at"`    // updated_at
 
 	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
 	Users       *[]User      `json:"users"`        // M2M
@@ -207,14 +207,14 @@ teams.description,
 teams.metadata,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then joined_users.users end)::jsonb as users ` +
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then joined_users.users end) as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
   select
   team_id as time_entries_team_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -223,7 +223,7 @@ left join (
 left join (
 	select
 		team_id as users_team_id
-		, json_agg(users.*) as users
+		, array_agg(users.*) as users
 	from
 		user_team
 		join users using (user_id)
@@ -276,14 +276,14 @@ teams.description,
 teams.metadata,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then joined_users.users end)::jsonb as users ` +
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then joined_users.users end) as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
   select
   team_id as time_entries_team_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -292,7 +292,7 @@ left join (
 left join (
 	select
 		team_id as users_team_id
-		, json_agg(users.*) as users
+		, array_agg(users.*) as users
 	from
 		user_team
 		join users using (user_id)
