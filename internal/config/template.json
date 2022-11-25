@@ -1,6 +1,13 @@
 {
-  "test": "",
-  "testOptional": null,
+  "oidc": {
+    "clientId": "",
+    "clientSecret": "",
+    "domain": "",
+    "issuer": "",
+    "scopes": "",
+    "serverPort": null
+  },
+  "signingKey": "",
   "testArray": null,
   "testArrayOptional": null
 }
