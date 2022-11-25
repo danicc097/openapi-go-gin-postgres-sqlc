@@ -10,6 +10,25 @@ import (
 	"github.com/google/uuid"
 )
 
+// UserPublic represents fields that may be exposed from 'v.users'
+// and embedded in other response models.
+type UserPublic struct {
+	UserID     *uuid.UUID `json:"userID"`     // user_id
+	Username   *string    `json:"username"`   // username
+	Email      *string    `json:"email"`      // email
+	FirstName  *string    `json:"firstName"`  // first_name
+	LastName   *string    `json:"lastName"`   // last_name
+	FullName   *string    `json:"fullName"`   // full_name
+	ExternalID *string    `json:"externalID"` // external_id
+	APIKeyID   *int       `json:"apiKeyID"`   // api_key_id
+	Scopes     []string   `json:"scopes"`     // scopes
+	RoleRank   *int16     `json:"roleRank"`   // role_rank
+	CreatedAt  *time.Time `json:"createdAt"`  // created_at
+	UpdatedAt  *time.Time `json:"updatedAt"`  // updated_at
+	DeletedAt  *time.Time `json:"deletedAt"`  // deleted_at
+	Teams      []any      `json:"teams"`      // teams
+}
+
 // User represents a row from 'v.users'.
 type User struct {
 	UserID     *uuid.UUID `json:"user_id" db:"user_id" openapi-json:"userID"`             // user_id

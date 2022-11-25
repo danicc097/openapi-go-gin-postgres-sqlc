@@ -11,6 +11,21 @@ import (
 	"github.com/jackc/pgtype"
 )
 
+// TeamPublic represents fields that may be exposed from 'public.teams'
+// and embedded in other response models.
+type TeamPublic struct {
+	TeamID      int          `json:"teamID"`      // team_id
+	ProjectID   int          `json:"projectID"`   // project_id
+	Name        string       `json:"name"`        // name
+	Description string       `json:"description"` // description
+	Metadata    pgtype.JSONB `json:"metadata"`    // metadata
+	CreatedAt   time.Time    `json:"createdAt"`   // created_at
+	UpdatedAt   time.Time    `json:"updatedAt"`   // updated_at
+
+	TimeEntries *[]TimeEntryPublic `json:"timeEntries"` // O2M
+	Users       *[]UserPublic      `json:"users"`       // M2M
+}
+
 // Team represents a row from 'public.teams'.
 type Team struct {
 	TeamID      int          `json:"team_id" db:"team_id" openapi-json:"teamID"`              // team_id

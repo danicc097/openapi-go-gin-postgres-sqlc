@@ -11,6 +11,19 @@ import (
 	"github.com/google/uuid"
 )
 
+// TimeEntryPublic represents fields that may be exposed from 'public.time_entries'
+// and embedded in other response models.
+type TimeEntryPublic struct {
+	TimeEntryID     int64     `json:"timeEntryID"`     // time_entry_id
+	WorkItemID      *int64    `json:"workItemID"`      // work_item_id
+	ActivityID      int       `json:"activityID"`      // activity_id
+	TeamID          *int      `json:"teamID"`          // team_id
+	UserID          uuid.UUID `json:"userID"`          // user_id
+	Comment         string    `json:"comment"`         // comment
+	Start           time.Time `json:"start"`           // start
+	DurationMinutes *int      `json:"durationMinutes"` // duration_minutes
+}
+
 // TimeEntry represents a row from 'public.time_entries'.
 type TimeEntry struct {
 	TimeEntryID     int64     `json:"time_entry_id" db:"time_entry_id" openapi-json:"timeEntryID"`           // time_entry_id

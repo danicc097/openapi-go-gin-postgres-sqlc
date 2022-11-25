@@ -7,6 +7,19 @@ import (
 	"fmt"
 )
 
+// KanbanStepPublic represents fields that may be exposed from 'public.kanban_steps'
+// and embedded in other response models.
+type KanbanStepPublic struct {
+	KanbanStepID  int    `json:"kanbanStepID"`  // kanban_step_id
+	TeamID        int    `json:"teamID"`        // team_id
+	StepOrder     *int16 `json:"stepOrder"`     // step_order
+	Name          string `json:"name"`          // name
+	Description   string `json:"description"`   // description
+	Color         string `json:"color"`         // color
+	TimeTrackable bool   `json:"timeTrackable"` // time_trackable
+	Disabled      bool   `json:"disabled"`      // disabled
+}
+
 // KanbanStep represents a row from 'public.kanban_steps'.
 type KanbanStep struct {
 	KanbanStepID  int    `json:"kanban_step_id" db:"kanban_step_id" openapi-json:"kanbanStepID"`  // kanban_step_id

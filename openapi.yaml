@@ -89,7 +89,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserPublic'
           description: ok
       tags:
         - user
@@ -114,7 +114,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserPublic'
           description: ok
       tags:
         - user
@@ -157,7 +157,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserPublic'
           description: ok
       tags:
         - user
@@ -227,7 +227,6 @@ components:
           description: originally from auth server but updatable
           type: string
           pattern: ^[ a-zA-Z0-9_-]+$
-      title: a User
       type: object
     UpdateUserAuthRequest:
       description: represents User authorization data to update
@@ -242,34 +241,33 @@ components:
           items:
             $ref: '#/components/schemas/Scope'
           type: array
-      title: a User
       type: object
-    User: # Generated from db package structs. DO NOT EDIT.
+    UserPublic: # Generated from db package structs. DO NOT EDIT.
       properties:
-        api_key_id:
+        apiKeyID:
           nullable: true
           type: integer
-        created_at:
+        createdAt:
           format: date-time
           type: string
-        deleted_at:
+        deletedAt:
           format: date-time
           nullable: true
           type: string
         email:
           type: string
-        external_id:
+        externalID:
           type: string
-        first_name:
+        firstName:
           nullable: true
           type: string
-        full_name:
+        fullName:
           nullable: true
           type: string
-        last_name:
+        lastName:
           nullable: true
           type: string
-        role_rank:
+        roleRank:
           type: integer
         scopes:
           items:
@@ -278,28 +276,27 @@ components:
           type: array
         teams:
           items:
-            $ref: '#/components/schemas/Team'
+            $ref: '#/components/schemas/TeamPublic'
           nullable: true
           type: array
-        time_entries:
+        timeEntries:
           items:
-            $ref: '#/components/schemas/TimeEntry'
+            $ref: '#/components/schemas/TimeEntryPublic'
           nullable: true
           type: array
-        updated_at:
+        updatedAt:
           format: date-time
           type: string
-        user_id:
+        userID:
           $ref: '#/components/schemas/UuidUUID'
         username:
           type: string
-        work_items:
+        workItems:
           items:
-            $ref: '#/components/schemas/WorkItem'
+            $ref: '#/components/schemas/WorkItemPublic'
           nullable: true
           type: array
       type: object
-      x-db-struct: User
     # à la FastAPI
     ValidationError:
       title: ValidationError
@@ -322,12 +319,14 @@ components:
           type: string
     PgtypeJSONB: # Generated from db package structs. DO NOT EDIT.
       type: object
-    Task: # Generated from db package structs. DO NOT EDIT.
+    UuidUUID: # Generated from db package structs. DO NOT EDIT.
+      type: string
+    TaskPublic:
       properties:
-        created_at:
+        createdAt:
           format: date-time
           type: string
-        deleted_at:
+        deletedAt:
           format: date-time
           nullable: true
           type: string
@@ -336,21 +335,21 @@ components:
           type: boolean
         metadata:
           $ref: '#/components/schemas/PgtypeJSONB'
-        task_id:
+        taskID:
           type: integer
-        task_type:
-          $ref: '#/components/schemas/TaskType'
-        task_type_id:
+        taskType:
+          $ref: '#/components/schemas/TaskTypePublic'
+        taskTypeID:
           type: integer
         title:
           type: string
-        updated_at:
+        updatedAt:
           format: date-time
           type: string
-        work_item_id:
+        workItemID:
           type: integer
       type: object
-    TaskType: # Generated from db package structs. DO NOT EDIT.
+    TaskTypePublic:
       nullable: true
       properties:
         color:
@@ -359,14 +358,14 @@ components:
           type: string
         name:
           type: string
-        task_type_id:
+        taskTypeID:
           type: integer
-        team_id:
+        teamID:
           type: integer
       type: object
-    Team: # Generated from db package structs. DO NOT EDIT.
+    TeamPublic:
       properties:
-        created_at:
+        createdAt:
           format: date-time
           type: string
         description:
@@ -375,126 +374,171 @@ components:
           $ref: '#/components/schemas/PgtypeJSONB'
         name:
           type: string
-        project_id:
+        projectID:
           type: integer
-        team_id:
+        teamID:
           type: integer
-        time_entries:
+        timeEntries:
           items:
-            $ref: '#/components/schemas/TimeEntry'
+            $ref: '#/components/schemas/TimeEntryPublic'
           nullable: true
           type: array
-        updated_at:
+        updatedAt:
           format: date-time
           type: string
         users:
           items:
-            $ref: '#/components/schemas/User'
+            $ref: '#/components/schemas/UserPublic'
           nullable: true
           type: array
       type: object
-    TimeEntry: # Generated from db package structs. DO NOT EDIT.
+    TimeEntryPublic:
       properties:
-        activity_id:
+        activityID:
           type: integer
         comment:
           type: string
-        duration_minutes:
+        durationMinutes:
           nullable: true
           type: integer
         start:
           format: date-time
           type: string
-        team_id:
+        teamID:
           nullable: true
           type: integer
-        time_entry_id:
+        timeEntryID:
           type: integer
-        user_id:
+        userID:
           $ref: '#/components/schemas/UuidUUID'
-        work_item_id:
+        workItemID:
           nullable: true
           type: integer
       type: object
-    UserAPIKey: # Generated from db package structs. DO NOT EDIT.
-      nullable: true
+    WorkItemCommentPublic:
       properties:
-        api_key:
-          type: string
-        expires_on:
+        createdAt:
           format: date-time
           type: string
-        user_api_key_id:
-          type: integer
-        user_id:
+        message:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        userID:
           $ref: '#/components/schemas/UuidUUID'
+        workItemCommentID:
+          type: integer
+        workItemID:
+          type: integer
       type: object
-    UuidUUID: # Generated from db package structs. DO NOT EDIT.
-      type: string
-    WorkItem: # Generated from db package structs. DO NOT EDIT.
+    WorkItemPublic:
       properties:
         closed:
           type: boolean
-        created_at:
+        createdAt:
           format: date-time
           type: string
-        deleted_at:
+        deletedAt:
           format: date-time
           nullable: true
           type: string
-        kanban_step_id:
+        kanbanStepID:
           type: integer
         metadata:
           $ref: '#/components/schemas/PgtypeJSONB'
         tasks:
           items:
-            $ref: '#/components/schemas/Task'
+            $ref: '#/components/schemas/TaskPublic'
           nullable: true
           type: array
-        team_id:
+        teamID:
           type: integer
-        time_entries:
+        timeEntries:
           items:
-            $ref: '#/components/schemas/TimeEntry'
+            $ref: '#/components/schemas/TimeEntryPublic'
           nullable: true
           type: array
         title:
           type: string
-        updated_at:
+        updatedAt:
           format: date-time
           type: string
         users:
           items:
-            $ref: '#/components/schemas/User'
+            $ref: '#/components/schemas/UserPublic'
           nullable: true
           type: array
-        work_item_comments:
+        workItemComments:
           items:
-            $ref: '#/components/schemas/WorkItemComment'
+            $ref: '#/components/schemas/WorkItemCommentPublic'
           nullable: true
           type: array
-        work_item_id:
+        workItemID:
           type: integer
-        work_item_type_id:
+        workItemTypeID:
           type: integer
       type: object
-    WorkItemComment: # Generated from db package structs. DO NOT EDIT.
+    ModelsRole:
+      type: string
+    UserResponse:
       properties:
-        created_at:
+        apiKeyID:
+          nullable: true
+          type: integer
+        createdAt:
           format: date-time
           type: string
-        message:
+        deletedAt:
+          format: date-time
+          nullable: true
           type: string
-        updated_at:
+        email:
+          type: string
+        externalID:
+          type: string
+        firstName:
+          nullable: true
+          type: string
+        fullName:
+          nullable: true
+          type: string
+        lastName:
+          nullable: true
+          type: string
+        role:
+          $ref: '#/components/schemas/ModelsRole'
+        roleRank:
+          type: integer
+        scopes:
+          items:
+            type: string
+          nullable: true
+          type: array
+        teams:
+          items:
+            $ref: '#/components/schemas/TeamPublic'
+          nullable: true
+          type: array
+        timeEntries:
+          items:
+            $ref: '#/components/schemas/TimeEntryPublic'
+          nullable: true
+          type: array
+        updatedAt:
           format: date-time
           type: string
-        user_id:
+        userID:
           $ref: '#/components/schemas/UuidUUID'
-        work_item_comment_id:
-          type: integer
-        work_item_id:
-          type: integer
+        username:
+          type: string
+        workItems:
+          items:
+            $ref: '#/components/schemas/WorkItemPublic'
+          nullable: true
+          type: array
       type: object
+      x-db-struct: UserResponse
   examples:
     User:
       value:

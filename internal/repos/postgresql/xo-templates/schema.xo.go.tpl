@@ -237,13 +237,27 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{if $t.Comment -}}
 // {{ $t.Comment | eval $t.GoName }}
 {{- else -}}
+// {{ $t.GoName }}Public represents fields that may be exposed from '{{ schema $t.SQLName }}'
+// and embedded in other response models.
+//
+{{- end }}
+type {{ $t.GoName }}Public struct {
+{{ range $t.Fields -}}
+	{{ field . true }}
+{{ end }}
+{{ join_fields $t.SQLName true $constraints }}
+}
+
+{{if $t.Comment -}}
+// {{ $t.Comment | eval $t.GoName }}
+{{- else -}}
 // {{ $t.GoName }} represents a row from '{{ schema $t.SQLName }}'.
 {{- end }}
 type {{ $t.GoName }} struct {
 {{ range $t.Fields -}}
-	{{ field . }}
+	{{ field . false }}
 {{ end }}
-{{ join_fields $t.SQLName $constraints }}
+{{ join_fields $t.SQLName false $constraints }}
 {{- if $t.PrimaryKeys -}}
 	// xo fields
 	_exists, _deleted bool

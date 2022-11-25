@@ -11,6 +11,17 @@ import (
 	"github.com/jackc/pgtype"
 )
 
+// ProjectPublic represents fields that may be exposed from 'public.projects'
+// and embedded in other response models.
+type ProjectPublic struct {
+	ProjectID   int          `json:"projectID"`   // project_id
+	Name        string       `json:"name"`        // name
+	Description string       `json:"description"` // description
+	Metadata    pgtype.JSONB `json:"metadata"`    // metadata
+	CreatedAt   time.Time    `json:"createdAt"`   // created_at
+	UpdatedAt   time.Time    `json:"updatedAt"`   // updated_at
+}
+
 // Project represents a row from 'public.projects'.
 type Project struct {
 	ProjectID   int          `json:"project_id" db:"project_id" openapi-json:"projectID"`     // project_id

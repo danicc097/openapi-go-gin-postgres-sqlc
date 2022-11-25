@@ -8,7 +8,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
 
@@ -22,27 +21,27 @@ func handleError(err error) {
 	}
 }
 
-type req struct {
-	ID     string `path:"id" example:"XXX-XXXXX"`
-	Locale string `query:"locale" pattern:"^[a-z]{2}-[A-Z]{2}$"`
-	Title  string `json:"string"`
-	Amount uint   `json:"amount"`
-	Items  []struct {
-		Count uint   `json:"count"`
-		Name  string `json:"name"`
-	} `json:"items,omitempty"`
-	DeletedAt *time.Time `json:"deleted_at" db:"deleted_at"`
-}
+// type req struct {
+// 	ID     string `path:"id" example:"XXX-XXXXX"`
+// 	Locale string `query:"locale" pattern:"^[a-z]{2}-[A-Z]{2}$"`
+// 	Title  string `json:"string"`
+// 	Amount uint   `json:"amount"`
+// 	Items  []struct {
+// 		Count uint   `json:"count"`
+// 		Name  string `json:"name"`
+// 	} `json:"items,omitempty"`
+// 	DeletedAt *time.Time `json:"deleted_at" db:"deleted_at"`
+// }
 
-type resp struct {
-	ID     string `json:"id" example:"XXX-XXXXX"`
-	Amount uint   `json:"amount"`
-	Items  []struct {
-		Count uint   `json:"count"`
-		Name  string `json:"name"`
-	} `json:"items,omitempty"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
+// type resp struct {
+// 	ID     string `json:"id" example:"XXX-XXXXX"`
+// 	Amount uint   `json:"amount"`
+// 	Items  []struct {
+// 		Count uint   `json:"count"`
+// 		Name  string `json:"name"`
+// 	} `json:"items,omitempty"`
+// 	UpdatedAt time.Time `json:"updated_at"`
+// }
 
 func main() {
 	var structNamesList string
@@ -61,36 +60,40 @@ func main() {
 		if strings.HasPrefix(defaultDefName, "Db") {
 			return strings.TrimPrefix(defaultDefName, "Db")
 		}
-
+		if strings.HasPrefix(defaultDefName, "Rest") {
+			return strings.TrimPrefix(defaultDefName, "Rest")
+		}
 		return defaultDefName
 	})
 
 	for i, sn := range structNames {
 		dummyOp := openapi3.Operation{}
-		st, ok := postgen.DbStructs[sn]
+		st, ok := postgen.PublicStructs[sn]
 		if !ok {
 			log.Fatalf("struct-name %s does not exist in db package", sn)
 		}
 		// db structs's json tag is for db driver usage only
-		var fields []reflect.StructField
-		for i := 0; i < reflect.TypeOf(st).NumField(); i++ {
-			// TODO would need to replace fields which reference other db.* structs,
-			// else they will use the wrong json tags...
-			// we will be better off having xo generate a UserResponse struct with the correct type...
-			// after all that's all they might be used for, if at all.
-			field := reflect.TypeOf(st).Field(i)
-			if strings.HasPrefix(field.Name, "_") {
-				continue
-			}
-			t := field.Tag.Get("openapi-json")
-			if t == "" {
-				log.Fatalf("field %v in struct-name %s does not have an `openapi-json` tag", field, sn)
-			}
-			field.Tag = reflect.StructTag(fmt.Sprintf("json:\"%s\"", t))
-			fields = append(fields, field)
-		}
-		newSt := reflect.StructOf(fields)
-		handleError(reflector.SetJSONResponse(&dummyOp, reflect.New(newSt).Interface(), http.StatusTeapot))
+		// var fields []reflect.StructField
+		// for i := 0; i < reflect.TypeOf(st).NumField(); i++ {
+		// 	// TODO would need to replace fields which reference other db.* structs,
+		// 	// else they will use the wrong json tags...
+		// 	// we will be better off having xo generate a UserResponse struct with the correct type...
+		// 	// after all that's all they might be used for, if at all.
+		// 	field := reflect.TypeOf(st).Field(i)
+		// 	if strings.HasPrefix(field.Name, "_") {
+		// 		continue
+		// 	}
+		// 	t := field.Tag.Get("openapi-json")
+		// 	if t == "" {
+		// 		log.Fatalf("field %v in struct-name %s does not have an `openapi-json` tag", field, sn)
+		// 	}
+		// 	field.Tag = reflect.StructTag(fmt.Sprintf("json:\"%s\"", t))
+		// 	fields = append(fields, field)
+		// }
+		// newSt := reflect.StructOf(fields)
+		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
+		// works but would need to recursively replace in field structs...
+		// handleError(reflector.SetJSONResponse(&dummyOp, reflect.New(newSt).Interface(), http.StatusTeapot))
 		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-db-struct": sn}
 		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
 		// reflector.Spec.Paths.MapOfPathItemValues["mypath"].MapOfOperationValues["method"].

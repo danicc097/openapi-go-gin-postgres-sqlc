@@ -212,6 +212,12 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}" openapi-json:"{{ camel .GoName }}"`,
 			},
 			{
+				ContextKey: PublicFieldTagKey,
+				Type:       "string",
+				Desc:       "public field tag",
+				Default:    `json:"{{ camel .GoName }}"`,
+			},
+			{
 				ContextKey: ContextKey,
 				Type:       "string",
 				Desc:       "context mode",
@@ -897,6 +903,7 @@ type Funcs struct {
 	escTable         bool
 	escColumn        bool
 	fieldtag         *template.Template
+	publicfieldtag   *template.Template
 	context          string
 	inject           string
 	// knownTypes is the collection of known Go types.
@@ -909,6 +916,10 @@ type Funcs struct {
 // NewFuncs creates custom template funcs for the context.
 func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 	first := !NotFirst(ctx)
+	publicfieldtag, err := template.New("publicfieldtag").Funcs(template.FuncMap{"camel": camel}).Parse(PublicFieldTag(ctx))
+	if err != nil {
+		return nil, err
+	}
 	// parse field tag template
 	fieldtag, err := template.New("fieldtag").Funcs(template.FuncMap{"camel": camel}).Parse(FieldTag(ctx))
 	if err != nil {
@@ -943,6 +954,7 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 		escTable:         Esc(ctx, "table"),
 		escColumn:        Esc(ctx, "column"),
 		fieldtag:         fieldtag,
+		publicfieldtag:   publicfieldtag,
 		context:          Context(ctx),
 		inject:           inject,
 		knownTypes:       KnownTypes(ctx),
@@ -2330,10 +2342,16 @@ func (f *Funcs) typefn(typ string) string {
 }
 
 // field generates a field definition for a struct.
-func (f *Funcs) field(field Field) (string, error) {
+func (f *Funcs) field(field Field, public bool) (string, error) {
 	buf := new(bytes.Buffer)
-	if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, field); err != nil {
-		return "", err
+	if public {
+		if err := f.publicfieldtag.Funcs(f.FuncMap()).Execute(buf, field); err != nil {
+			return "", err
+		}
+	} else {
+		if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, field); err != nil {
+			return "", err
+		}
 	}
 	var tag string
 	if s := buf.String(); s != "" {
@@ -2350,7 +2368,7 @@ func (f *Funcs) field(field Field) (string, error) {
 }
 
 // join_fields generates a struct field definition from join constraints
-func (f *Funcs) join_fields(sqlname string, constraints interface{}) (string, error) {
+func (f *Funcs) join_fields(sqlname string, public bool, constraints interface{}) (string, error) {
 	switch x := constraints.(type) {
 	case []Constraint:
 		if len(x) > 0 {
@@ -2366,29 +2384,47 @@ func (f *Funcs) join_fields(sqlname string, constraints interface{}) (string, er
 	}
 	var buf strings.Builder
 
-	var goName, tag string
+	var goName, tag, typ string
 	for _, c := range cc {
 		// sync with extratypes
 		switch c.Cardinality {
 		case "M2M":
 			goName = camelExport(singularize(c.RefTableName))
-			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-json:\"%s\"`", inflector.Pluralize(c.RefTableName), inflector.Pluralize(c.RefTableName), inflector.Pluralize(camel(goName)))
-			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), goName, tag, c.Cardinality))
+			typ = goName
+			if public {
+				typ = typ + "Public"
+				tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(camel(goName)))
+			} else {
+				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-json:\"%s\"`", inflector.Pluralize(c.RefTableName), inflector.Pluralize(c.RefTableName), inflector.Pluralize(camel(goName)))
+			}
+			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
+			// TODO revisit. O2M and M2O from different viewpoints.
 		case "O2M", "M2O":
 			if c.RefTableName != sqlname {
 				continue
 			}
 			goName = camelExport(singularize(c.TableName))
-			// TODO revisit. O2M and M2O from different viewpoints.
-			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-json:\"%s\"`", inflector.Pluralize(c.TableName), inflector.Pluralize(c.TableName), inflector.Pluralize(camel(goName)))
-			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), goName, tag, c.Cardinality))
+			typ = goName
+			if public {
+				typ = typ + "Public"
+				tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(camel(goName)))
+			} else {
+				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-json:\"%s\"`", inflector.Pluralize(c.TableName), inflector.Pluralize(c.TableName), inflector.Pluralize(camel(goName)))
+			}
+			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
 		case "O2O":
 			if c.TableName != sqlname {
 				continue
 			}
 			goName = camelExport(singularize(c.RefTableName))
-			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-json:\"%s\"`", snaker.CamelToSnake(goName), inflector.Singularize(c.RefTableName), inflector.Pluralize(camel(goName)))
-			buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, goName, tag, c.Cardinality))
+			typ = goName
+			if public {
+				typ = typ + "Public"
+				tag = fmt.Sprintf("`json:\"%s\"`", inflector.Singularize(camel(goName)))
+			} else {
+				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-json:\"%s\"`", snaker.CamelToSnake(goName), inflector.Singularize(c.RefTableName), inflector.Singularize(camel(goName)))
+			}
+			buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, c.Cardinality))
 		default:
 			continue
 		}
@@ -2553,26 +2589,27 @@ var goReservedNames = map[string]string{
 
 // Context keys.
 var (
-	AppendKey     xo.ContextKey = "append"
-	KnownTypesKey xo.ContextKey = "known-types"
-	ShortsKey     xo.ContextKey = "shorts"
-	NotFirstKey   xo.ContextKey = "not-first"
-	Int32Key      xo.ContextKey = "int32"
-	Uint32Key     xo.ContextKey = "uint32"
-	ArrayModeKey  xo.ContextKey = "array-mode"
-	PkgKey        xo.ContextKey = "pkg"
-	TagKey        xo.ContextKey = "tag"
-	ImportKey     xo.ContextKey = "import"
-	UUIDKey       xo.ContextKey = "uuid"
-	CustomKey     xo.ContextKey = "custom"
-	ConflictKey   xo.ContextKey = "conflict"
-	InitialismKey xo.ContextKey = "initialism"
-	EscKey        xo.ContextKey = "esc"
-	FieldTagKey   xo.ContextKey = "field-tag"
-	ContextKey    xo.ContextKey = "context"
-	InjectKey     xo.ContextKey = "inject"
-	InjectFileKey xo.ContextKey = "inject-file"
-	LegacyKey     xo.ContextKey = "legacy"
+	AppendKey         xo.ContextKey = "append"
+	KnownTypesKey     xo.ContextKey = "known-types"
+	ShortsKey         xo.ContextKey = "shorts"
+	NotFirstKey       xo.ContextKey = "not-first"
+	Int32Key          xo.ContextKey = "int32"
+	Uint32Key         xo.ContextKey = "uint32"
+	ArrayModeKey      xo.ContextKey = "array-mode"
+	PkgKey            xo.ContextKey = "pkg"
+	TagKey            xo.ContextKey = "tag"
+	ImportKey         xo.ContextKey = "import"
+	UUIDKey           xo.ContextKey = "uuid"
+	CustomKey         xo.ContextKey = "custom"
+	ConflictKey       xo.ContextKey = "conflict"
+	InitialismKey     xo.ContextKey = "initialism"
+	EscKey            xo.ContextKey = "esc"
+	FieldTagKey       xo.ContextKey = "field-tag"
+	PublicFieldTagKey xo.ContextKey = "public-field-tag"
+	ContextKey        xo.ContextKey = "context"
+	InjectKey         xo.ContextKey = "inject"
+	InjectFileKey     xo.ContextKey = "inject-file"
+	LegacyKey         xo.ContextKey = "legacy"
 )
 
 // Append returns append from the context.
@@ -2677,6 +2714,12 @@ func Esc(ctx context.Context, esc string) bool {
 // FieldTag returns field-tag from the context.
 func FieldTag(ctx context.Context) string {
 	s, _ := ctx.Value(FieldTagKey).(string)
+	return s
+}
+
+// PublicFieldTag returns field-tag from the context.
+func PublicFieldTag(ctx context.Context) string {
+	s, _ := ctx.Value(PublicFieldTagKey).(string)
 	return s
 }
 

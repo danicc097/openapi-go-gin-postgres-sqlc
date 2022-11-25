@@ -9,6 +9,13 @@ import (
 	"github.com/google/uuid"
 )
 
+// UserTeamPublic represents fields that may be exposed from 'public.user_team'
+// and embedded in other response models.
+type UserTeamPublic struct {
+	TeamID int       `json:"teamID"` // team_id
+	UserID uuid.UUID `json:"userID"` // user_id
+}
+
 // UserTeam represents a row from 'public.user_team'.
 type UserTeam struct {
 	TeamID int       `json:"team_id" db:"team_id" openapi-json:"teamID"` // team_id

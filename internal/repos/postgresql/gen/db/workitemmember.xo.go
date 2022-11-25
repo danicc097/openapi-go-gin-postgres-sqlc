@@ -9,6 +9,13 @@ import (
 	"github.com/google/uuid"
 )
 
+// WorkItemMemberPublic represents fields that may be exposed from 'public.work_item_member'
+// and embedded in other response models.
+type WorkItemMemberPublic struct {
+	WorkItemID int64     `json:"workItemID"` // work_item_id
+	Member     uuid.UUID `json:"member"`     // member
+}
+
 // WorkItemMember represents a row from 'public.work_item_member'.
 type WorkItemMember struct {
 	WorkItemID int64     `json:"work_item_id" db:"work_item_id" openapi-json:"workItemID"` // work_item_id

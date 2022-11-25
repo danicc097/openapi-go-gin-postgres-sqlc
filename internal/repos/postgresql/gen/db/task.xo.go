@@ -11,6 +11,22 @@ import (
 	"github.com/jackc/pgtype"
 )
 
+// TaskPublic represents fields that may be exposed from 'public.tasks'
+// and embedded in other response models.
+type TaskPublic struct {
+	TaskID     int64        `json:"taskID"`     // task_id
+	TaskTypeID int          `json:"taskTypeID"` // task_type_id
+	WorkItemID int64        `json:"workItemID"` // work_item_id
+	Title      string       `json:"title"`      // title
+	Metadata   pgtype.JSONB `json:"metadata"`   // metadata
+	Finished   *bool        `json:"finished"`   // finished
+	CreatedAt  time.Time    `json:"createdAt"`  // created_at
+	UpdatedAt  time.Time    `json:"updatedAt"`  // updated_at
+	DeletedAt  *time.Time   `json:"deletedAt"`  // deleted_at
+
+	TaskType *TaskTypePublic `json:"taskType"` // O2O
+}
+
 // Task represents a row from 'public.tasks'.
 type Task struct {
 	TaskID     int64        `json:"task_id" db:"task_id" openapi-json:"taskID"`               // task_id
@@ -23,7 +39,7 @@ type Task struct {
 	UpdatedAt  time.Time    `json:"updated_at" db:"updated_at" openapi-json:"updatedAt"`      // updated_at
 	DeletedAt  *time.Time   `json:"deleted_at" db:"deleted_at" openapi-json:"deletedAt"`      // deleted_at
 
-	TaskType *TaskType `json:"task_type" db:"task_type" openapi-json:"taskTypes"` // O2O
+	TaskType *TaskType `json:"task_type" db:"task_type" openapi-json:"taskType"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }

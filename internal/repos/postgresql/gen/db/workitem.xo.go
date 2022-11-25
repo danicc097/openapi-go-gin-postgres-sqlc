@@ -11,6 +11,26 @@ import (
 	"github.com/jackc/pgtype"
 )
 
+// WorkItemPublic represents fields that may be exposed from 'public.work_items'
+// and embedded in other response models.
+type WorkItemPublic struct {
+	WorkItemID     int64        `json:"workItemID"`     // work_item_id
+	Title          string       `json:"title"`          // title
+	WorkItemTypeID int          `json:"workItemTypeID"` // work_item_type_id
+	Metadata       pgtype.JSONB `json:"metadata"`       // metadata
+	TeamID         int          `json:"teamID"`         // team_id
+	KanbanStepID   int          `json:"kanbanStepID"`   // kanban_step_id
+	Closed         bool         `json:"closed"`         // closed
+	CreatedAt      time.Time    `json:"createdAt"`      // created_at
+	UpdatedAt      time.Time    `json:"updatedAt"`      // updated_at
+	DeletedAt      *time.Time   `json:"deletedAt"`      // deleted_at
+
+	Tasks            *[]TaskPublic            `json:"tasks"`            // O2M
+	TimeEntries      *[]TimeEntryPublic       `json:"timeEntries"`      // O2M
+	WorkItemComments *[]WorkItemCommentPublic `json:"workItemComments"` // O2M
+	Users            *[]UserPublic            `json:"users"`            // M2M
+}
+
 // WorkItem represents a row from 'public.work_items'.
 type WorkItem struct {
 	WorkItemID     int64        `json:"work_item_id" db:"work_item_id" openapi-json:"workItemID"`               // work_item_id

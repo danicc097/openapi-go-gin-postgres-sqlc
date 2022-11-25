@@ -7,6 +7,16 @@ import (
 	"fmt"
 )
 
+// TaskTypePublic represents fields that may be exposed from 'public.task_types'
+// and embedded in other response models.
+type TaskTypePublic struct {
+	TaskTypeID  int    `json:"taskTypeID"`  // task_type_id
+	TeamID      int64  `json:"teamID"`      // team_id
+	Name        string `json:"name"`        // name
+	Description string `json:"description"` // description
+	Color       string `json:"color"`       // color
+}
+
 // TaskType represents a row from 'public.task_types'.
 type TaskType struct {
 	TaskTypeID  int    `json:"task_type_id" db:"task_type_id" openapi-json:"taskTypeID"` // task_type_id

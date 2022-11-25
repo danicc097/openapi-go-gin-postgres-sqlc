@@ -11,6 +11,17 @@ import (
 	"github.com/google/uuid"
 )
 
+// UserAPIKeyPublic represents fields that may be exposed from 'public.user_api_keys'
+// and embedded in other response models.
+type UserAPIKeyPublic struct {
+	UserAPIKeyID int       `json:"userAPIKeyID"` // user_api_key_id
+	APIKey       string    `json:"apiKey"`       // api_key
+	ExpiresOn    time.Time `json:"expiresOn"`    // expires_on
+	UserID       uuid.UUID `json:"userID"`       // user_id
+
+	User *UserPublic `json:"user"` // O2O
+}
+
 // UserAPIKey represents a row from 'public.user_api_keys'.
 type UserAPIKey struct {
 	UserAPIKeyID int       `json:"user_api_key_id" db:"user_api_key_id" openapi-json:"userAPIKeyID"` // user_api_key_id
@@ -18,7 +29,7 @@ type UserAPIKey struct {
 	ExpiresOn    time.Time `json:"expires_on" db:"expires_on" openapi-json:"expiresOn"`              // expires_on
 	UserID       uuid.UUID `json:"user_id" db:"user_id" openapi-json:"userID"`                       // user_id
 
-	User *User `json:"user" db:"user" openapi-json:"users"` // O2O
+	User *User `json:"user" db:"user" openapi-json:"user"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }

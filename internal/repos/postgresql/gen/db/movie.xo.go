@@ -7,6 +7,15 @@ import (
 	"fmt"
 )
 
+// MoviePublic represents fields that may be exposed from 'public.movies'
+// and embedded in other response models.
+type MoviePublic struct {
+	MovieID  int    `json:"movieID"`  // movie_id
+	Title    string `json:"title"`    // title
+	Year     int    `json:"year"`     // year
+	Synopsis string `json:"synopsis"` // synopsis
+}
+
 // Movie represents a row from 'public.movies'.
 type Movie struct {
 	MovieID  int    `json:"movie_id" db:"movie_id" openapi-json:"movieID"`  // movie_id

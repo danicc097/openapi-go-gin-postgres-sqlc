@@ -7,6 +7,17 @@ import (
 	"fmt"
 )
 
+// ActivityPublic represents fields that may be exposed from 'public.activities'
+// and embedded in other response models.
+type ActivityPublic struct {
+	ActivityID   int    `json:"activityID"`   // activity_id
+	Name         string `json:"name"`         // name
+	Description  string `json:"description"`  // description
+	IsProductive bool   `json:"isProductive"` // is_productive
+
+	TimeEntries *[]TimeEntryPublic `json:"timeEntries"` // O2M
+}
+
 // Activity represents a row from 'public.activities'.
 type Activity struct {
 	ActivityID   int    `json:"activity_id" db:"activity_id" openapi-json:"activityID"`       // activity_id

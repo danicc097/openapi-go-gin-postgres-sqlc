@@ -7,6 +7,13 @@ import (
 	"fmt"
 )
 
+// SchemaMigrationPublic represents fields that may be exposed from 'public.schema_migrations'
+// and embedded in other response models.
+type SchemaMigrationPublic struct {
+	Version int64 `json:"version"` // version
+	Dirty   bool  `json:"dirty"`   // dirty
+}
+
 // SchemaMigration represents a row from 'public.schema_migrations'.
 type SchemaMigration struct {
 	Version int64 `json:"version" db:"version" openapi-json:"version"` // version

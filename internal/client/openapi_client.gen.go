@@ -27,12 +27,12 @@ const (
 
 // Defines values for Role.
 const (
-	RoleAdmin        Role = "admin"
-	RoleAdvancedUser Role = "advancedUser"
-	RoleGuest        Role = "guest"
-	RoleManager      Role = "manager"
-	RoleSuperAdmin   Role = "superAdmin"
-	RoleUser         Role = "user"
+	Admin        Role = "admin"
+	AdvancedUser Role = "advancedUser"
+	Guest        Role = "guest"
+	Manager      Role = "manager"
+	SuperAdmin   Role = "superAdmin"
+	User         Role = "user"
 )
 
 // Defines values for Scope.
@@ -57,6 +57,9 @@ type HTTPValidationError struct {
 	Detail *[]ValidationError `json:"detail,omitempty"`
 }
 
+// ModelsRole defines model for ModelsRole.
+type ModelsRole = string
+
 // PgtypeJSONB defines model for PgtypeJSONB.
 type PgtypeJSONB = map[string]interface{}
 
@@ -66,52 +69,52 @@ type Role string
 // Scope defines model for Scope.
 type Scope string
 
-// Task defines model for Task.
-type Task struct {
-	CreatedAt  *time.Time   `json:"created_at,omitempty"`
-	DeletedAt  *time.Time   `json:"deleted_at"`
-	Finished   *bool        `json:"finished"`
-	Metadata   *PgtypeJSONB `json:"metadata,omitempty"`
-	TaskId     *int         `json:"task_id,omitempty"`
-	TaskType   *TaskType    `json:"task_type"`
-	TaskTypeId *int         `json:"task_type_id,omitempty"`
-	Title      *string      `json:"title,omitempty"`
-	UpdatedAt  *time.Time   `json:"updated_at,omitempty"`
-	WorkItemId *int         `json:"work_item_id,omitempty"`
+// TaskPublic defines model for TaskPublic.
+type TaskPublic struct {
+	CreatedAt  *time.Time      `json:"createdAt,omitempty"`
+	DeletedAt  *time.Time      `json:"deletedAt"`
+	Finished   *bool           `json:"finished"`
+	Metadata   *PgtypeJSONB    `json:"metadata,omitempty"`
+	TaskID     *int            `json:"taskID,omitempty"`
+	TaskType   *TaskTypePublic `json:"taskType"`
+	TaskTypeID *int            `json:"taskTypeID,omitempty"`
+	Title      *string         `json:"title,omitempty"`
+	UpdatedAt  *time.Time      `json:"updatedAt,omitempty"`
+	WorkItemID *int            `json:"workItemID,omitempty"`
 }
 
-// TaskType defines model for TaskType.
-type TaskType struct {
+// TaskTypePublic defines model for TaskTypePublic.
+type TaskTypePublic struct {
 	Color       *string `json:"color,omitempty"`
 	Description *string `json:"description,omitempty"`
 	Name        *string `json:"name,omitempty"`
-	TaskTypeId  *int    `json:"task_type_id,omitempty"`
-	TeamId      *int    `json:"team_id,omitempty"`
+	TaskTypeID  *int    `json:"taskTypeID,omitempty"`
+	TeamID      *int    `json:"teamID,omitempty"`
 }
 
-// Team defines model for Team.
-type Team struct {
-	CreatedAt   *time.Time   `json:"created_at,omitempty"`
-	Description *string      `json:"description,omitempty"`
-	Metadata    *PgtypeJSONB `json:"metadata,omitempty"`
-	Name        *string      `json:"name,omitempty"`
-	ProjectId   *int         `json:"project_id,omitempty"`
-	TeamId      *int         `json:"team_id,omitempty"`
-	TimeEntries *[]TimeEntry `json:"time_entries"`
-	UpdatedAt   *time.Time   `json:"updated_at,omitempty"`
-	Users       *[]User      `json:"users"`
+// TeamPublic defines model for TeamPublic.
+type TeamPublic struct {
+	CreatedAt   *time.Time         `json:"createdAt,omitempty"`
+	Description *string            `json:"description,omitempty"`
+	Metadata    *PgtypeJSONB       `json:"metadata,omitempty"`
+	Name        *string            `json:"name,omitempty"`
+	ProjectID   *int               `json:"projectID,omitempty"`
+	TeamID      *int               `json:"teamID,omitempty"`
+	TimeEntries *[]TimeEntryPublic `json:"timeEntries"`
+	UpdatedAt   *time.Time         `json:"updatedAt,omitempty"`
+	Users       *[]UserPublic      `json:"users"`
 }
 
-// TimeEntry defines model for TimeEntry.
-type TimeEntry struct {
-	ActivityId      *int       `json:"activity_id,omitempty"`
+// TimeEntryPublic defines model for TimeEntryPublic.
+type TimeEntryPublic struct {
+	ActivityID      *int       `json:"activityID,omitempty"`
 	Comment         *string    `json:"comment,omitempty"`
-	DurationMinutes *int       `json:"duration_minutes"`
+	DurationMinutes *int       `json:"durationMinutes"`
 	Start           *time.Time `json:"start,omitempty"`
-	TeamId          *int       `json:"team_id"`
-	TimeEntryId     *int       `json:"time_entry_id,omitempty"`
-	UserId          *UuidUUID  `json:"user_id,omitempty"`
-	WorkItemId      *int       `json:"work_item_id"`
+	TeamID          *int       `json:"teamID"`
+	TimeEntryID     *int       `json:"timeEntryID,omitempty"`
+	UserID          *UuidUUID  `json:"userID,omitempty"`
+	WorkItemID      *int       `json:"workItemID"`
 }
 
 // UpdateUserAuthRequest represents User authorization data to update
@@ -129,32 +132,45 @@ type UpdateUserRequest struct {
 	LastName *string `json:"last_name,omitempty"`
 }
 
-// User defines model for User.
-type User struct {
-	ApiKeyId    *int         `json:"api_key_id"`
-	CreatedAt   *time.Time   `json:"created_at,omitempty"`
-	DeletedAt   *time.Time   `json:"deleted_at"`
-	Email       *string      `json:"email,omitempty"`
-	ExternalId  *string      `json:"external_id,omitempty"`
-	FirstName   *string      `json:"first_name"`
-	FullName    *string      `json:"full_name"`
-	LastName    *string      `json:"last_name"`
-	RoleRank    *int         `json:"role_rank,omitempty"`
-	Scopes      *[]string    `json:"scopes"`
-	Teams       *[]Team      `json:"teams"`
-	TimeEntries *[]TimeEntry `json:"time_entries"`
-	UpdatedAt   *time.Time   `json:"updated_at,omitempty"`
-	UserId      *UuidUUID    `json:"user_id,omitempty"`
-	Username    *string      `json:"username,omitempty"`
-	WorkItems   *[]WorkItem  `json:"work_items"`
+// UserPublic defines model for UserPublic.
+type UserPublic struct {
+	ApiKeyID    *int               `json:"apiKeyID"`
+	CreatedAt   *time.Time         `json:"createdAt,omitempty"`
+	DeletedAt   *time.Time         `json:"deletedAt"`
+	Email       *string            `json:"email,omitempty"`
+	ExternalID  *string            `json:"externalID,omitempty"`
+	FirstName   *string            `json:"firstName"`
+	FullName    *string            `json:"fullName"`
+	LastName    *string            `json:"lastName"`
+	RoleRank    *int               `json:"roleRank,omitempty"`
+	Scopes      *[]string          `json:"scopes"`
+	Teams       *[]TeamPublic      `json:"teams"`
+	TimeEntries *[]TimeEntryPublic `json:"timeEntries"`
+	UpdatedAt   *time.Time         `json:"updatedAt,omitempty"`
+	UserID      *UuidUUID          `json:"userID,omitempty"`
+	Username    *string            `json:"username,omitempty"`
+	WorkItems   *[]WorkItemPublic  `json:"workItems"`
 }
 
-// UserAPIKey defines model for UserAPIKey.
-type UserAPIKey struct {
-	ApiKey       *string    `json:"api_key,omitempty"`
-	ExpiresOn    *time.Time `json:"expires_on,omitempty"`
-	UserApiKeyId *int       `json:"user_api_key_id,omitempty"`
-	UserId       *UuidUUID  `json:"user_id,omitempty"`
+// UserResponse defines model for UserResponse.
+type UserResponse struct {
+	ApiKeyID    *int               `json:"apiKeyID"`
+	CreatedAt   *time.Time         `json:"createdAt,omitempty"`
+	DeletedAt   *time.Time         `json:"deletedAt"`
+	Email       *string            `json:"email,omitempty"`
+	ExternalID  *string            `json:"externalID,omitempty"`
+	FirstName   *string            `json:"firstName"`
+	FullName    *string            `json:"fullName"`
+	LastName    *string            `json:"lastName"`
+	Role        *ModelsRole        `json:"role,omitempty"`
+	RoleRank    *int               `json:"roleRank,omitempty"`
+	Scopes      *[]string          `json:"scopes"`
+	Teams       *[]TeamPublic      `json:"teams"`
+	TimeEntries *[]TimeEntryPublic `json:"timeEntries"`
+	UpdatedAt   *time.Time         `json:"updatedAt,omitempty"`
+	UserID      *UuidUUID          `json:"userID,omitempty"`
+	Username    *string            `json:"username,omitempty"`
+	WorkItems   *[]WorkItemPublic  `json:"workItems"`
 }
 
 // UuidUUID defines model for UuidUUID.
@@ -167,32 +183,32 @@ type ValidationError struct {
 	Type string   `json:"type"`
 }
 
-// WorkItem defines model for WorkItem.
-type WorkItem struct {
-	Closed           *bool              `json:"closed,omitempty"`
-	CreatedAt        *time.Time         `json:"created_at,omitempty"`
-	DeletedAt        *time.Time         `json:"deleted_at"`
-	KanbanStepId     *int               `json:"kanban_step_id,omitempty"`
-	Metadata         *PgtypeJSONB       `json:"metadata,omitempty"`
-	Tasks            *[]Task            `json:"tasks"`
-	TeamId           *int               `json:"team_id,omitempty"`
-	TimeEntries      *[]TimeEntry       `json:"time_entries"`
-	Title            *string            `json:"title,omitempty"`
-	UpdatedAt        *time.Time         `json:"updated_at,omitempty"`
-	Users            *[]User            `json:"users"`
-	WorkItemComments *[]WorkItemComment `json:"work_item_comments"`
-	WorkItemId       *int               `json:"work_item_id,omitempty"`
-	WorkItemTypeId   *int               `json:"work_item_type_id,omitempty"`
+// WorkItemCommentPublic defines model for WorkItemCommentPublic.
+type WorkItemCommentPublic struct {
+	CreatedAt         *time.Time `json:"createdAt,omitempty"`
+	Message           *string    `json:"message,omitempty"`
+	UpdatedAt         *time.Time `json:"updatedAt,omitempty"`
+	UserID            *UuidUUID  `json:"userID,omitempty"`
+	WorkItemCommentID *int       `json:"workItemCommentID,omitempty"`
+	WorkItemID        *int       `json:"workItemID,omitempty"`
 }
 
-// WorkItemComment defines model for WorkItemComment.
-type WorkItemComment struct {
-	CreatedAt         *time.Time `json:"created_at,omitempty"`
-	Message           *string    `json:"message,omitempty"`
-	UpdatedAt         *time.Time `json:"updated_at,omitempty"`
-	UserId            *UuidUUID  `json:"user_id,omitempty"`
-	WorkItemCommentId *int       `json:"work_item_comment_id,omitempty"`
-	WorkItemId        *int       `json:"work_item_id,omitempty"`
+// WorkItemPublic defines model for WorkItemPublic.
+type WorkItemPublic struct {
+	Closed           *bool                    `json:"closed,omitempty"`
+	CreatedAt        *time.Time               `json:"createdAt,omitempty"`
+	DeletedAt        *time.Time               `json:"deletedAt"`
+	KanbanStepID     *int                     `json:"kanbanStepID,omitempty"`
+	Metadata         *PgtypeJSONB             `json:"metadata,omitempty"`
+	Tasks            *[]TaskPublic            `json:"tasks"`
+	TeamID           *int                     `json:"teamID,omitempty"`
+	TimeEntries      *[]TimeEntryPublic       `json:"timeEntries"`
+	Title            *string                  `json:"title,omitempty"`
+	UpdatedAt        *time.Time               `json:"updatedAt,omitempty"`
+	Users            *[]UserPublic            `json:"users"`
+	WorkItemComments *[]WorkItemCommentPublic `json:"workItemComments"`
+	WorkItemID       *int                     `json:"workItemID,omitempty"`
+	WorkItemTypeID   *int                     `json:"workItemTypeID,omitempty"`
 }
 
 // WorkItemRole Role in work item for a member.
@@ -788,7 +804,7 @@ func (r PingResponse) StatusCode() int {
 type GetCurrentUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *User
+	JSON200      *UserPublic
 }
 
 // Status returns HTTPResponse.Status
@@ -831,7 +847,7 @@ func (r DeleteUserResponse) StatusCode() int {
 type UpdateUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *User
+	JSON200      *UserPublic
 }
 
 // Status returns HTTPResponse.Status
@@ -853,7 +869,7 @@ func (r UpdateUserResponse) StatusCode() int {
 type UpdateUserAuthorizationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *User
+	JSON200      *UserPublic
 }
 
 // Status returns HTTPResponse.Status
@@ -1044,7 +1060,7 @@ func ParseGetCurrentUserResponse(rsp *http.Response) (*GetCurrentUserResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest User
+		var dest UserPublic
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1086,7 +1102,7 @@ func ParseUpdateUserResponse(rsp *http.Response) (*UpdateUserResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest User
+		var dest UserPublic
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1112,7 +1128,7 @@ func ParseUpdateUserAuthorizationResponse(rsp *http.Response) (*UpdateUserAuthor
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest User
+		var dest UserPublic
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

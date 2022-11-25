@@ -7,6 +7,15 @@ import (
 	"fmt"
 )
 
+// WorkItemTagPublic represents fields that may be exposed from 'public.work_item_tags'
+// and embedded in other response models.
+type WorkItemTagPublic struct {
+	WorkItemTagID int    `json:"workItemTagID"` // work_item_tag_id
+	Name          string `json:"name"`          // name
+	Description   string `json:"description"`   // description
+	Color         string `json:"color"`         // color
+}
+
 // WorkItemTag represents a row from 'public.work_item_tags'.
 type WorkItemTag struct {
 	WorkItemTagID int    `json:"work_item_tag_id" db:"work_item_tag_id" openapi-json:"workItemTagID"` // work_item_tag_id

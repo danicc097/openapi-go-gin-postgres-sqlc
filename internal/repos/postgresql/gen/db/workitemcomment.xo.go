@@ -11,6 +11,17 @@ import (
 	"github.com/google/uuid"
 )
 
+// WorkItemCommentPublic represents fields that may be exposed from 'public.work_item_comments'
+// and embedded in other response models.
+type WorkItemCommentPublic struct {
+	WorkItemCommentID int64     `json:"workItemCommentID"` // work_item_comment_id
+	WorkItemID        int64     `json:"workItemID"`        // work_item_id
+	UserID            uuid.UUID `json:"userID"`            // user_id
+	Message           string    `json:"message"`           // message
+	CreatedAt         time.Time `json:"createdAt"`         // created_at
+	UpdatedAt         time.Time `json:"updatedAt"`         // updated_at
+}
+
 // WorkItemComment represents a row from 'public.work_item_comments'.
 type WorkItemComment struct {
 	WorkItemCommentID int64     `json:"work_item_comment_id" db:"work_item_comment_id" openapi-json:"workItemCommentID"` // work_item_comment_id
