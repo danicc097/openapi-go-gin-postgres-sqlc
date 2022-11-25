@@ -528,6 +528,29 @@ x.test() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
+# Test the entire project on file changes. Accepts `go test` parameters.
+# Args: [...]
+x.test-watch() {
+  { { {
+    clear
+
+    latency=2
+    while true; do
+      inotifywait \
+        --monitor ./internal/**/* \
+        --event=close_write \
+        --format='%T %f' \
+        --timefmt='%s' |
+        while read -r event_time event_file 2>/dev/null || sleep $latency; do
+          clear
+          {
+            APP_ENV="$env" go test "$@" ./... || printf "FAIL\nFAIL\nFAIL"
+          } | grep --color=always FAIL || echo "${GREEN}✓ All tests passing${OFF}"
+        done
+    done
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
 # Test and build the entire project.
 x.build() {
   { { {
