@@ -71,9 +71,13 @@ func main() {
 		if !ok {
 			log.Fatalf("struct-name %s does not exist in db package", sn)
 		}
-		// TODO for every field in st, set tags to be `json="<value of openapi-json tag>"`
+		// db structs's json tag is for db driver usage only
 		var fields []reflect.StructField
 		for i := 0; i < reflect.TypeOf(st).NumField(); i++ {
+			// TODO would need to replace fields which reference other db.* structs,
+			// else they will use the wrong json tags...
+			// we will be better off having xo generate a UserResponse struct with the correct type...
+			// after all that's all they might be used for, if at all.
 			field := reflect.TypeOf(st).Field(i)
 			if strings.HasPrefix(field.Name, "_") {
 				continue
@@ -84,36 +88,9 @@ func main() {
 			}
 			field.Tag = reflect.StructTag(fmt.Sprintf("json:\"%s\"", t))
 			fields = append(fields, field)
-			x, _ := field.Tag.Lookup("json")
-			fmt.Printf("field.Tag json is: %#v\n", x)
 		}
 		newSt := reflect.StructOf(fields)
-
-		// output: struct .... {UserID:uuid.UUID{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, Username:"", Email:"", FirstName:(*string)(nil), LastName:(*string)(nil), FullName:(*string)(nil), ExternalID:"", APIKeyID:(*int)(nil), Scopes:[]string(nil), RoleRank:0, CreatedAt:time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC), UpdatedAt:time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC), DeletedAt:<nil>, TimeEntries:(*[]db.TimeEntry)(nil), Teams:(*[]db.Team)(nil), WorkItems:(*[]db.WorkItem)(nil)}
-		handleError(reflector.SetJSONResponse(&dummyOp, reflect.Indirect(reflect.New(newSt)), http.StatusTeapot))
-		// output: db.User{UserID:uuid.UUID{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, Username:"", Email:"", FirstName:(*string)(nil), LastName:(*string)(nil), FullName:(*string)(nil), ExternalID:"", APIKeyID:(*int)(nil), Scopes:[]string(nil), RoleRank:0, CreatedAt:time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC), UpdatedAt:time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC), DeletedAt:<nil>, TimeEntries:(*[]db.TimeEntry)(nil), Teams:(*[]db.Team)(nil), WorkItems:(*[]db.WorkItem)(nil), _exists:false, _deleted:false}
-		// last booleans xo "_XXX" fields
-		// handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
-		// custom struct
-		// handleError(reflector.SetJSONResponse(&dummyOp, struct {
-		// 	UserID      uuid.UUID       `json:"userID"`
-		// 	Username    string          `json:"username"`
-		// 	Email       string          `json:"email"`
-		// 	FirstName   *string         `json:"firstName"`
-		// 	LastName    *string         `json:"lastName"`
-		// 	FullName    *string         `json:"fullName"`
-		// 	ExternalID  string          `json:"externalID"`
-		// 	APIKeyID    *int            `json:"apiKeyID"`
-		// 	Scopes      []string        `json:"scopes"`
-		// 	RoleRank    int16           `json:"roleRank"`
-		// 	CreatedAt   time.Time       `json:"createdAt"`
-		// 	UpdatedAt   time.Time       `json:"updatedAt"`
-		// 	DeletedAt   *time.Time      `json:"deletedAt"`
-		// 	TimeEntries *[]db.TimeEntry `json:"timeEntries"`
-		// 	Teams       *[]db.Team      `json:"teams"`
-		// 	WorkItems   *[]db.WorkItem  `json:"workItems"`
-		// }{}, http.StatusTeapot))
-		fmt.Printf("dummyOp: %#v\n", dummyOp)
+		handleError(reflector.SetJSONResponse(&dummyOp, reflect.New(newSt).Interface(), http.StatusTeapot))
 		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-db-struct": sn}
 		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
 		// reflector.Spec.Paths.MapOfPathItemValues["mypath"].MapOfOperationValues["method"].
