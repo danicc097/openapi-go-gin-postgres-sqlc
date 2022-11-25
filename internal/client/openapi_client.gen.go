@@ -162,7 +162,7 @@ type UserResponse struct {
 	FirstName   *string            `json:"firstName"`
 	FullName    *string            `json:"fullName"`
 	LastName    *string            `json:"lastName"`
-	Role        *ModelsRole        `json:"role,omitempty"`
+	Role        *Role              `json:"role,omitempty"`
 	RoleRank    *int               `json:"roleRank,omitempty"`
 	Scopes      *[]string          `json:"scopes"`
 	Teams       *[]TeamPublic      `json:"teams"`

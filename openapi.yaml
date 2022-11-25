@@ -507,7 +507,7 @@ components:
           nullable: true
           type: string
         role:
-          $ref: '#/components/schemas/ModelsRole'
+          $ref: '#/components/schemas/Role'
         roleRank:
           type: integer
         scopes:
