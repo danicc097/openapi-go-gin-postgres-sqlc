@@ -209,7 +209,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				// scan to custom tag recently a feature in pgx: https://github.com/jackc/pgx/commit/14be51536bbf5e183b68ee9a5fcadaf0d045e503
 				// see tests: https://github.com/jackc/pgx/blob/fbfafb3edfc378681c2bad91b1a126e7e6df3f5b/rows_test.go#L545
 				// Default:    `json:"{{ camel .GoName }}" db:"{{ .SQLName }}"`,
-				Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
+				Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}" openapi-json:"{{ camel .GoName }}"`,
 			},
 			{
 				ContextKey: ContextKey,
@@ -2372,7 +2372,7 @@ func (f *Funcs) join_fields(sqlname string, constraints interface{}) (string, er
 		switch c.Cardinality {
 		case "M2M":
 			goName = camelExport(singularize(c.RefTableName))
-			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(snaker.CamelToSnake(goName)), inflector.Pluralize(c.RefTableName))
+			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-json:\"%s\"`", inflector.Pluralize(c.RefTableName), inflector.Pluralize(c.RefTableName), inflector.Pluralize(camel(goName)))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), goName, tag, c.Cardinality))
 		case "O2M", "M2O":
 			if c.RefTableName != sqlname {
@@ -2380,14 +2380,14 @@ func (f *Funcs) join_fields(sqlname string, constraints interface{}) (string, er
 			}
 			goName = camelExport(singularize(c.TableName))
 			// TODO revisit. O2M and M2O from different viewpoints.
-			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(snaker.CamelToSnake(goName)), inflector.Pluralize(c.TableName))
+			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-json:\"%s\"`", inflector.Pluralize(c.TableName), inflector.Pluralize(c.TableName), inflector.Pluralize(camel(goName)))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), goName, tag, c.Cardinality))
 		case "O2O":
 			if c.TableName != sqlname {
 				continue
 			}
 			goName = camelExport(singularize(c.RefTableName))
-			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", snaker.CamelToSnake(goName), inflector.Singularize(c.RefTableName))
+			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-json:\"%s\"`", snaker.CamelToSnake(goName), inflector.Singularize(c.RefTableName), inflector.Pluralize(camel(goName)))
 			buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, goName, tag, c.Cardinality))
 		default:
 			continue

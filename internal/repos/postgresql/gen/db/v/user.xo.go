@@ -12,20 +12,20 @@ import (
 
 // User represents a row from 'v.users'.
 type User struct {
-	UserID     *uuid.UUID `json:"user_id" db:"user_id"`         // user_id
-	Username   *string    `json:"username" db:"username"`       // username
-	Email      *string    `json:"email" db:"email"`             // email
-	FirstName  *string    `json:"first_name" db:"first_name"`   // first_name
-	LastName   *string    `json:"last_name" db:"last_name"`     // last_name
-	FullName   *string    `json:"full_name" db:"full_name"`     // full_name
-	ExternalID *string    `json:"external_id" db:"external_id"` // external_id
-	APIKeyID   *int       `json:"api_key_id" db:"api_key_id"`   // api_key_id
-	Scopes     []string   `json:"scopes" db:"scopes"`           // scopes
-	RoleRank   *int16     `json:"role_rank" db:"role_rank"`     // role_rank
-	CreatedAt  *time.Time `json:"created_at" db:"created_at"`   // created_at
-	UpdatedAt  *time.Time `json:"updated_at" db:"updated_at"`   // updated_at
-	DeletedAt  *time.Time `json:"deleted_at" db:"deleted_at"`   // deleted_at
-	Teams      []any      `json:"teams" db:"teams"`             // teams
+	UserID     *uuid.UUID `json:"user_id" db:"user_id" openapi-json:"userID"`             // user_id
+	Username   *string    `json:"username" db:"username" openapi-json:"username"`         // username
+	Email      *string    `json:"email" db:"email" openapi-json:"email"`                  // email
+	FirstName  *string    `json:"first_name" db:"first_name" openapi-json:"firstName"`    // first_name
+	LastName   *string    `json:"last_name" db:"last_name" openapi-json:"lastName"`       // last_name
+	FullName   *string    `json:"full_name" db:"full_name" openapi-json:"fullName"`       // full_name
+	ExternalID *string    `json:"external_id" db:"external_id" openapi-json:"externalID"` // external_id
+	APIKeyID   *int       `json:"api_key_id" db:"api_key_id" openapi-json:"apiKeyID"`     // api_key_id
+	Scopes     []string   `json:"scopes" db:"scopes" openapi-json:"scopes"`               // scopes
+	RoleRank   *int16     `json:"role_rank" db:"role_rank" openapi-json:"roleRank"`       // role_rank
+	CreatedAt  *time.Time `json:"created_at" db:"created_at" openapi-json:"createdAt"`    // created_at
+	UpdatedAt  *time.Time `json:"updated_at" db:"updated_at" openapi-json:"updatedAt"`    // updated_at
+	DeletedAt  *time.Time `json:"deleted_at" db:"deleted_at" openapi-json:"deletedAt"`    // deleted_at
+	Teams      []any      `json:"teams" db:"teams" openapi-json:"teams"`                  // teams
 }
 
 type UserSelectConfig struct {

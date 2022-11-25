@@ -13,16 +13,16 @@ import (
 
 // Team represents a row from 'public.teams'.
 type Team struct {
-	TeamID      int          `json:"team_id" db:"team_id"`         // team_id
-	ProjectID   int          `json:"project_id" db:"project_id"`   // project_id
-	Name        string       `json:"name" db:"name"`               // name
-	Description string       `json:"description" db:"description"` // description
-	Metadata    pgtype.JSONB `json:"metadata" db:"metadata"`       // metadata
-	CreatedAt   time.Time    `json:"created_at" db:"created_at"`   // created_at
-	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at"`   // updated_at
+	TeamID      int          `json:"team_id" db:"team_id" openapi-json:"teamID"`              // team_id
+	ProjectID   int          `json:"project_id" db:"project_id" openapi-json:"projectID"`     // project_id
+	Name        string       `json:"name" db:"name" openapi-json:"name"`                      // name
+	Description string       `json:"description" db:"description" openapi-json:"description"` // description
+	Metadata    pgtype.JSONB `json:"metadata" db:"metadata" openapi-json:"metadata"`          // metadata
+	CreatedAt   time.Time    `json:"created_at" db:"created_at" openapi-json:"createdAt"`     // created_at
+	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at" openapi-json:"updatedAt"`     // updated_at
 
-	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
-	Users       *[]User      `json:"users" db:"users"`               // M2M
+	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries" openapi-json:"timeEntries"` // O2M
+	Users       *[]User      `json:"users" db:"users" openapi-json:"users"`                     // M2M
 	// xo fields
 	_exists, _deleted bool
 }

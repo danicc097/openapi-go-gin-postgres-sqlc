@@ -7,7 +7,5 @@
     "scopes": "",
     "serverPort": null
   },
-  "signingKey": "",
-  "testArray": null,
-  "testArrayOptional": null
+  "signingKey": ""
 }

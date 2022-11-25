@@ -11,8 +11,8 @@ import (
 
 // WorkItemMember represents a row from 'public.work_item_member'.
 type WorkItemMember struct {
-	WorkItemID int64     `json:"work_item_id" db:"work_item_id"` // work_item_id
-	Member     uuid.UUID `json:"member" db:"member"`             // member
+	WorkItemID int64     `json:"work_item_id" db:"work_item_id" openapi-json:"workItemID"` // work_item_id
+	Member     uuid.UUID `json:"member" db:"member" openapi-json:"member"`                 // member
 
 	// xo fields
 	_exists, _deleted bool

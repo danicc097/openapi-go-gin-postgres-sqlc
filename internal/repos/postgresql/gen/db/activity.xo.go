@@ -9,12 +9,12 @@ import (
 
 // Activity represents a row from 'public.activities'.
 type Activity struct {
-	ActivityID   int    `json:"activity_id" db:"activity_id"`     // activity_id
-	Name         string `json:"name" db:"name"`                   // name
-	Description  string `json:"description" db:"description"`     // description
-	IsProductive bool   `json:"is_productive" db:"is_productive"` // is_productive
+	ActivityID   int    `json:"activity_id" db:"activity_id" openapi-json:"activityID"`       // activity_id
+	Name         string `json:"name" db:"name" openapi-json:"name"`                           // name
+	Description  string `json:"description" db:"description" openapi-json:"description"`      // description
+	IsProductive bool   `json:"is_productive" db:"is_productive" openapi-json:"isProductive"` // is_productive
 
-	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
+	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries" openapi-json:"timeEntries"` // O2M
 	// xo fields
 	_exists, _deleted bool
 }

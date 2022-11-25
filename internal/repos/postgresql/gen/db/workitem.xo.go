@@ -13,21 +13,21 @@ import (
 
 // WorkItem represents a row from 'public.work_items'.
 type WorkItem struct {
-	WorkItemID     int64        `json:"work_item_id" db:"work_item_id"`           // work_item_id
-	Title          string       `json:"title" db:"title"`                         // title
-	WorkItemTypeID int          `json:"work_item_type_id" db:"work_item_type_id"` // work_item_type_id
-	Metadata       pgtype.JSONB `json:"metadata" db:"metadata"`                   // metadata
-	TeamID         int          `json:"team_id" db:"team_id"`                     // team_id
-	KanbanStepID   int          `json:"kanban_step_id" db:"kanban_step_id"`       // kanban_step_id
-	Closed         bool         `json:"closed" db:"closed"`                       // closed
-	CreatedAt      time.Time    `json:"created_at" db:"created_at"`               // created_at
-	UpdatedAt      time.Time    `json:"updated_at" db:"updated_at"`               // updated_at
-	DeletedAt      *time.Time   `json:"deleted_at" db:"deleted_at"`               // deleted_at
+	WorkItemID     int64        `json:"work_item_id" db:"work_item_id" openapi-json:"workItemID"`               // work_item_id
+	Title          string       `json:"title" db:"title" openapi-json:"title"`                                  // title
+	WorkItemTypeID int          `json:"work_item_type_id" db:"work_item_type_id" openapi-json:"workItemTypeID"` // work_item_type_id
+	Metadata       pgtype.JSONB `json:"metadata" db:"metadata" openapi-json:"metadata"`                         // metadata
+	TeamID         int          `json:"team_id" db:"team_id" openapi-json:"teamID"`                             // team_id
+	KanbanStepID   int          `json:"kanban_step_id" db:"kanban_step_id" openapi-json:"kanbanStepID"`         // kanban_step_id
+	Closed         bool         `json:"closed" db:"closed" openapi-json:"closed"`                               // closed
+	CreatedAt      time.Time    `json:"created_at" db:"created_at" openapi-json:"createdAt"`                    // created_at
+	UpdatedAt      time.Time    `json:"updated_at" db:"updated_at" openapi-json:"updatedAt"`                    // updated_at
+	DeletedAt      *time.Time   `json:"deleted_at" db:"deleted_at" openapi-json:"deletedAt"`                    // deleted_at
 
-	Tasks            *[]Task            `json:"tasks" db:"tasks"`                           // O2M
-	TimeEntries      *[]TimeEntry       `json:"time_entries" db:"time_entries"`             // O2M
-	WorkItemComments *[]WorkItemComment `json:"work_item_comments" db:"work_item_comments"` // O2M
-	Users            *[]User            `json:"users" db:"users"`                           // M2M
+	Tasks            *[]Task            `json:"tasks" db:"tasks" openapi-json:"tasks"`                                      // O2M
+	TimeEntries      *[]TimeEntry       `json:"time_entries" db:"time_entries" openapi-json:"timeEntries"`                  // O2M
+	WorkItemComments *[]WorkItemComment `json:"work_item_comments" db:"work_item_comments" openapi-json:"workItemComments"` // O2M
+	Users            *[]User            `json:"users" db:"users" openapi-json:"users"`                                      // M2M
 	// xo fields
 	_exists, _deleted bool
 }
