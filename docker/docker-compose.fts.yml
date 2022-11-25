@@ -1,0 +1,97 @@
+version: "3.8"
+x-logging: &default-logging
+  options:
+    max-size: "10m"
+    max-file: "2"
+  driver: json-file
+
+services:
+  # solr:
+  #   image: solr:9
+  #   container_name:
+  #   networks:
+  #     - traefik-net
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 1G
+  #   ports:
+  #     - "8983:8983"
+  #   volumes:
+  #     - openapi_solr_data:/var/solr
+  #     - ./solr/config/:/my_core_config/conf
+  #   command:
+  #     - solr-precreate
+  #     - gettingstarted
+  #   environment:
+  #     SOLR_HEAP: 200m
+  #   labels:
+  #     - traefik.enable=true
+  #     - traefik.http.routers.solr-${PROJECT_PREFIX}.rule=Host(`solr.dev.localhost`) # ui auto-redirect
+  #     - traefik.docker.network=traefik-net
+  #     - traefik.http.routers.solr-${PROJECT_PREFIX}.entrypoints=websecure
+  #     - traefik.http.routers.solr-${PROJECT_PREFIX}.tls=true
+  #     - traefik.http.services.solr-${PROJECT_PREFIX}.loadbalancer.server.port=8983
+  #   restart: unless-stopped
+  #   logging: *default-logging
+
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.2
+    container_name: elastic-${PROJECT_PREFIX}
+    environment:
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms200m -Xmx200m
+      - logger.level=info
+    network_mode: host
+    deploy:
+      resources:
+       # hard limits. always respected
+        limits:
+          cpus: "0.5"
+          memory: 500M
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+      # - 9300:9300 # internode communication
+    healthcheck:
+      interval: 2s
+      retries: 3
+      test: curl -s 127.0.0.1:9200 &>/dev/null
+    volumes:
+     - openapi_elasticsearch_data:/usr/share/elasticsearch/data
+    restart: unless-stopped
+    logging: *default-logging
+
+  # Go to http://0.0.0.0:5601/?code=XXXXXXX to get started.
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.5.2
+    ports:
+      - "5601:5601"
+    network_mode: host
+    environment:
+      # SERVER_NAME: <domain>
+      # SERVER_BASEPATH: </something>
+      # SERVER_REWRITEBASEPATH: "true"
+      ELASTICSEARCH_HOSTS: '["http://localhost:9200"]'
+    # volumes:
+    #   - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    depends_on:
+      - elastic
+    restart: unless-stopped
+    logging: *default-logging
+
+networks:
+  traefik-net:
+    name: traefik-net
+    external: true
+  internal-fts:
+    name: internal-fts
+    internal: true
+
+volumes:
+  openapi_solr_data:
+  openapi_elasticsearch_data:

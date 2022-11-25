@@ -1,4 +1,9 @@
 version: "3.8"
+x-logging: &default-logging
+  options:
+    max-size: "10m"
+    max-file: "2"
+  driver: json-file
 
 services:
   oidcserver:
@@ -24,6 +29,7 @@ services:
       - traefik.http.routers.simple-oidc-server.tls=true
       - traefik.http.services.simple-oidc-server.loadbalancer.server.port=10001
     restart: unless-stopped
+    logging: *default-logging
 
 networks:
   traefik-net:
