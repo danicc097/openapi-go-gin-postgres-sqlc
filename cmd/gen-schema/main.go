@@ -11,6 +11,7 @@ import (
 	"time"
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
+
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen"
 	"github.com/swaggest/openapi-go/openapi3"
 )
@@ -70,7 +71,28 @@ func main() {
 		if !ok {
 			log.Fatalf("struct-name %s does not exist in db package", sn)
 		}
-		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
+		// TODO for every field in st, set tags to be `json="<value of openapi-json tag>"`
+		var fields []reflect.StructField
+		for i := 0; i < reflect.TypeOf(st).NumField(); i++ {
+			field := reflect.TypeOf(st).Field(i)
+			if strings.HasPrefix(field.Name, "_") {
+				continue
+			}
+			t := field.Tag.Get("openapi-json")
+			if t == "" {
+				log.Fatalf("field %v in struct-name %s does not have an `openapi-json` tag", field, sn)
+			}
+			field.Tag = reflect.StructTag(fmt.Sprintf("json=\"%s\"", t))
+			fields = append(fields, field)
+		}
+		newSt := reflect.StructOf(fields)
+		fmt.Printf("reflect.New(newSt): %#v\n", reflect.New(newSt))
+
+		// output: {00000000-0000-0000-0000-000000000000   <nil> <nil> <nil>  <nil> [] 0 0001-01-01 00:00:00 +0000 UTC 0001-01-01 00:00:00 +0000 UTC <nil> <nil> <nil> <nil>}
+		handleError(reflector.SetJSONResponse(&dummyOp, reflect.Indirect(reflect.New(newSt)), http.StatusTeapot))
+		// output: {00000000-0000-0000-0000-000000000000   <nil> <nil> <nil>  <nil> [] 0 0001-01-01 00:00:00 +0000 UTC 0001-01-01 00:00:00 +0000 UTC <nil> <nil> <nil> <nil> false false} // last booleans xo "_XXX" fields
+		// handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
+		fmt.Printf("dummyOp: %#v\n", dummyOp)
 		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-db-struct": sn}
 		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
 		// reflector.Spec.Paths.MapOfPathItemValues["mypath"].MapOfOperationValues["method"].
