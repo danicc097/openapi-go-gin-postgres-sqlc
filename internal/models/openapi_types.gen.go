@@ -47,6 +47,9 @@ type HTTPValidationError struct {
 // ModelsRole defines model for ModelsRole.
 type ModelsRole = string
 
+// ModelsScope defines model for ModelsScope.
+type ModelsScope = string
+
 // PgtypeJSONB defines model for PgtypeJSONB.
 type PgtypeJSONB = map[string]interface{}
 
@@ -55,6 +58,9 @@ type Role string
 
 // Scope defines model for Scope.
 type Scope string
+
+// Scopes defines model for Scopes.
+type Scopes = []Scope
 
 // TaskPublic defines model for TaskPublic.
 type TaskPublic struct {
@@ -106,8 +112,8 @@ type TimeEntryPublic struct {
 
 // UpdateUserAuthRequest represents User authorization data to update
 type UpdateUserAuthRequest struct {
-	Role   *Role    `json:"role,omitempty"`
-	Scopes *[]Scope `json:"scopes,omitempty"`
+	Role   *Role   `json:"role,omitempty"`
+	Scopes *Scopes `json:"scopes,omitempty"`
 }
 
 // UpdateUserRequest represents User data to update
@@ -125,15 +131,11 @@ type UserPublic struct {
 	CreatedAt   *time.Time         `json:"createdAt,omitempty"`
 	DeletedAt   *time.Time         `json:"deletedAt"`
 	Email       *string            `json:"email,omitempty"`
-	ExternalID  *string            `json:"externalID,omitempty"`
 	FirstName   *string            `json:"firstName"`
 	FullName    *string            `json:"fullName"`
 	LastName    *string            `json:"lastName"`
-	RoleRank    *int               `json:"roleRank,omitempty"`
-	Scopes      *[]string          `json:"scopes"`
 	Teams       *[]TeamPublic      `json:"teams"`
 	TimeEntries *[]TimeEntryPublic `json:"timeEntries"`
-	UpdatedAt   *time.Time         `json:"updatedAt,omitempty"`
 	UserID      *UuidUUID          `json:"userID,omitempty"`
 	Username    *string            `json:"username,omitempty"`
 	WorkItems   *[]WorkItemPublic  `json:"workItems"`
@@ -145,16 +147,13 @@ type UserResponse struct {
 	CreatedAt   *time.Time         `json:"createdAt,omitempty"`
 	DeletedAt   *time.Time         `json:"deletedAt"`
 	Email       *string            `json:"email,omitempty"`
-	ExternalID  *string            `json:"externalID,omitempty"`
 	FirstName   *string            `json:"firstName"`
 	FullName    *string            `json:"fullName"`
 	LastName    *string            `json:"lastName"`
 	Role        *Role              `json:"role,omitempty"`
-	RoleRank    *int               `json:"roleRank,omitempty"`
-	Scopes      *[]string          `json:"scopes"`
+	Scopes      *Scopes            `json:"scopes,omitempty"`
 	Teams       *[]TeamPublic      `json:"teams"`
 	TimeEntries *[]TimeEntryPublic `json:"timeEntries"`
-	UpdatedAt   *time.Time         `json:"updatedAt,omitempty"`
 	UserID      *UuidUUID          `json:"userID,omitempty"`
 	Username    *string            `json:"username,omitempty"`
 	WorkItems   *[]WorkItemPublic  `json:"workItems"`

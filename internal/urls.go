@@ -6,9 +6,9 @@ import (
 	"os"
 )
 
-// BuildApiURL returns a fully-qualified URL with the given path elements
+// BuildAPIURL returns a fully-qualified URL with the given path elements
 // accounting for reverse proxy configuration.
-func BuildApiURL(subpaths ...string) string {
+func BuildAPIURL(subpaths ...string) string {
 	elems := []string{os.Getenv("API_PREFIX"), os.Getenv("API_VERSION")}
 	elems = append(elems, subpaths...)
 

@@ -47,7 +47,7 @@ with `--x-help`:
 
 Docs WIP
 
-<!-- xo custom templates with cardinality comments for join generation, schema from structs, spec sync -->
+<!-- xo custom templates with cardinality, property comments for join and public model generation for embedding, schema from structs, spec sync -->
 
 ## Architecture
 

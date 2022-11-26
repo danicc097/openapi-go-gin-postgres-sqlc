@@ -46,23 +46,23 @@ export type OpenapiYamlGetRes = unknown
 export type OpenapiYamlGetArgs = void
 export type AdminPingRes = unknown
 export type AdminPingArgs = void
-export type GetCurrentUserRes = /** status 200 ok */ User
+export type GetCurrentUserRes = /** status 200 ok */ UserPublic
 export type GetCurrentUserArgs = void
-export type UpdateUserAuthorizationRes = /** status 200 ok */ User
+export type UpdateUserAuthorizationRes = /** status 200 ok */ UserPublic
 export type UpdateUserAuthorizationArgs = {
   /** user_id that needs to be updated */
   id: string
   /** Updated user object */
-  updateUserAuthRequest: AUser
+  updateUserAuthRequest: UpdateUserAuthRequest
 }
 export type DeleteUserRes = unknown
 export type DeleteUserArgs = /** user_id that needs to be updated */ string
-export type UpdateUserRes = /** status 200 ok */ User
+export type UpdateUserRes = /** status 200 ok */ UserPublic
 export type UpdateUserArgs = {
   /** user_id that needs to be updated */
   id: string
   /** Updated user object */
-  updateUserRequest: AUser2
+  updateUserRequest: UpdateUserRequest
 }
 export type ValidationError = {
   loc: string[]
@@ -74,87 +74,83 @@ export type HttpValidationError = {
 }
 export type PgtypeJsonb = object
 export type UuidUuid = string
-export type TimeEntry = {
-  activity_id?: number
+export type TimeEntryPublic = {
+  activityID?: number
   comment?: string
-  duration_minutes?: number | null
+  durationMinutes?: number | null
   start?: string
-  team_id?: number | null
-  time_entry_id?: number
-  user_id?: UuidUuid
-  work_item_id?: number | null
+  teamID?: number | null
+  timeEntryID?: number
+  userID?: UuidUuid
+  workItemID?: number | null
 }
-export type Team = {
-  created_at?: string
+export type TeamPublic = {
+  createdAt?: string
   description?: string
   metadata?: PgtypeJsonb
   name?: string
-  project_id?: number
-  team_id?: number
-  time_entries?: TimeEntry[] | null
-  updated_at?: string
-  users?: User[] | null
+  projectID?: number
+  teamID?: number
+  timeEntries?: TimeEntryPublic[] | null
+  updatedAt?: string
+  users?: UserPublic[] | null
 }
-export type TaskType = {
+export type TaskTypePublic = {
   color?: string
   description?: string
   name?: string
-  task_type_id?: number
-  team_id?: number
+  taskTypeID?: number
+  teamID?: number
 } | null
-export type Task = {
-  created_at?: string
-  deleted_at?: string | null
+export type TaskPublic = {
+  createdAt?: string
+  deletedAt?: string | null
   finished?: boolean | null
   metadata?: PgtypeJsonb
-  task_id?: number
-  task_type?: TaskType
-  task_type_id?: number
+  taskID?: number
+  taskType?: TaskTypePublic
+  taskTypeID?: number
   title?: string
-  updated_at?: string
-  work_item_id?: number
+  updatedAt?: string
+  workItemID?: number
 }
-export type WorkItemComment = {
-  created_at?: string
+export type WorkItemCommentPublic = {
+  createdAt?: string
   message?: string
-  updated_at?: string
-  user_id?: UuidUuid
-  work_item_comment_id?: number
-  work_item_id?: number
+  updatedAt?: string
+  userID?: UuidUuid
+  workItemCommentID?: number
+  workItemID?: number
 }
-export type WorkItem = {
+export type WorkItemPublic = {
   closed?: boolean
-  created_at?: string
-  deleted_at?: string | null
-  kanban_step_id?: number
+  createdAt?: string
+  deletedAt?: string | null
+  kanbanStepID?: number
   metadata?: PgtypeJsonb
-  tasks?: Task[] | null
-  team_id?: number
-  time_entries?: TimeEntry[] | null
+  tasks?: TaskPublic[] | null
+  teamID?: number
+  timeEntries?: TimeEntryPublic[] | null
   title?: string
-  updated_at?: string
-  users?: User[] | null
-  work_item_comments?: WorkItemComment[] | null
-  work_item_id?: number
-  work_item_type_id?: number
+  updatedAt?: string
+  users?: UserPublic[] | null
+  workItemComments?: WorkItemCommentPublic[] | null
+  workItemID?: number
+  workItemTypeID?: number
 }
-export type User = {
-  api_key_id?: number | null
-  created_at?: string
-  deleted_at?: string | null
+export type UserPublic = {
+  apiKeyID?: number | null
+  createdAt?: string
+  deletedAt?: string | null
   email?: string
-  external_id?: string
-  first_name?: string | null
-  full_name?: string | null
-  last_name?: string | null
-  role_rank?: number
-  scopes?: string[] | null
-  teams?: Team[] | null
-  time_entries?: TimeEntry[] | null
-  updated_at?: string
-  user_id?: UuidUuid
+  firstName?: string | null
+  fullName?: string | null
+  lastName?: string | null
+  teams?: TeamPublic[] | null
+  timeEntries?: TimeEntryPublic[] | null
+  userID?: UuidUuid
   username?: string
-  work_items?: WorkItem[] | null
+  workItems?: WorkItemPublic[] | null
 }
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 export type Scope =
@@ -165,11 +161,12 @@ export type Scope =
   | 'team-settings:write'
   | 'project-settings:write'
   | 'work-item:review'
-export type AUser = {
+export type Scopes = Scope[]
+export type UpdateUserAuthRequest = {
   role?: Role
-  scopes?: Scope[]
+  scopes?: Scopes
 }
-export type AUser2 = {
+export type UpdateUserRequest = {
   first_name?: string
   last_name?: string
 }

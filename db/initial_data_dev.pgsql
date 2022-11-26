@@ -43,7 +43,6 @@ begin
     values ('team 2' , 1 , 'This is team 2 from project 1' , '{}');
   insert into teams ("name" , project_id , description , metadata)
     values ('team 1' , 2 , 'This is team 1 from project 2' , '{}');
-
   insert into user_team (team_id , user_id)
     values (1 , user_ids[1]);
   insert into user_team (team_id , user_id)
@@ -127,7 +126,6 @@ begin
     values (2 , 1 , 'Task for work item 1' , '{}' , null);
   insert into tasks (task_type_id , work_item_id , title , metadata , deleted_at)
     values (2 , 1 , '(deleted) Task with restore possibility' , '{}' , NOW());
-
   insert into work_item_member (work_item_id , "member")
     values (1 , user_ids[1]);
   insert into work_item_member (work_item_id , "member")
@@ -140,7 +138,6 @@ begin
     values (1 , 2);
   insert into work_item_work_item_tag (work_item_tag_id , work_item_id)
     values (2 , 2);
-
   insert into work_item_member (work_item_id , "member")
     values (2 , user_ids[1]);
   insert into work_item_member (work_item_id , "member")
@@ -187,7 +184,6 @@ begin
     api_key_id = u_api_key
   where
     user_id = user_ids[2];
-
 end;
 $BODY$
 language plpgsql;

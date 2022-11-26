@@ -61,7 +61,7 @@ func main() {
 		log.Fatalf("Couldn't run: %s", err)
 	}
 
-	docs := internal.BuildApiURL("docs")
+	docs := internal.BuildAPIURL("docs")
 	fmt.Printf("\n%sVisit the docs at %s%s\n\n", colors.G, docs, colors.Off)
 
 	if err := <-errC; err != nil {

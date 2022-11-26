@@ -42,7 +42,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	url := internal.BuildApiURL("openapi.yaml")
+	url := internal.BuildAPIURL("openapi.yaml")
 
 	if err := postgen.SetupSwaggerUI(url); err != nil {
 		fmt.Fprintln(os.Stderr, err)
