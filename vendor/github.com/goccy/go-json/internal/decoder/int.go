@@ -67,24 +67,20 @@ func (d *intDecoder) parseInt(b []byte) (int64, error) {
 	return sum, nil
 }
 
-var (
-	numTable = [256]bool{
-		'0': true,
-		'1': true,
-		'2': true,
-		'3': true,
-		'4': true,
-		'5': true,
-		'6': true,
-		'7': true,
-		'8': true,
-		'9': true,
-	}
-)
+var numTable = [256]bool{
+	'0': true,
+	'1': true,
+	'2': true,
+	'3': true,
+	'4': true,
+	'5': true,
+	'6': true,
+	'7': true,
+	'8': true,
+	'9': true,
+}
 
-var (
-	numZeroBuf = []byte{'0'}
-)
+var numZeroBuf = []byte{'0'}
 
 func (d *intDecoder) decodeStreamByte(s *Stream) ([]byte, error) {
 	for {

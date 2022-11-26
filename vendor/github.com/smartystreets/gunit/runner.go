@@ -32,10 +32,9 @@ func allSequentialForGo1Dot14(options []option) []option {
 // parallel with other fixtures in the same package, nor will test cases of the
 // corresponding fixture be run in parallel with each other.
 //
-// Deprecated
+// # Deprecated
 //
 // Use Run(fixture, t, Options.AllSequential()) instead.
-//
 func RunSequential(fixture interface{}, t *testing.T) {
 	t.Helper()
 

@@ -43,10 +43,12 @@ const (
 	lFileProcess
 )
 
-const fileDefOutIndex = 1
-const fileDefInIndex = 2
-const fileDefaultWriteBuffer = 4096
-const fileDefaultReadBuffer = 4096
+const (
+	fileDefOutIndex        = 1
+	fileDefInIndex         = 2
+	fileDefaultWriteBuffer = 4096
+	fileDefaultReadBuffer  = 4096
+)
 
 func checkFile(L *LState) *lFile {
 	ud := L.CheckUserData(1)
@@ -405,8 +407,8 @@ normalreturn:
 
 errreturn:
 	L.RaiseError(err.Error())
-	//L.Push(LNil)
-	//L.Push(LString(err.Error()))
+	// L.Push(LNil)
+	// L.Push(LString(err.Error()))
 	return 2
 }
 
@@ -543,7 +545,7 @@ func ioInput(L *LState) int {
 	}
 	switch lv := L.Get(1).(type) {
 	case LString:
-		file, err := newFile(L, nil, string(lv), os.O_RDONLY, 0600, false, true)
+		file, err := newFile(L, nil, string(lv), os.O_RDONLY, 0o600, false, true)
 		if err != nil {
 			L.RaiseError(err.Error())
 		}
@@ -605,7 +607,7 @@ func ioLines(L *LState) int {
 	}
 
 	path := L.CheckString(1)
-	ud, err := newFile(L, nil, path, os.O_RDONLY, os.FileMode(0600), false, true)
+	ud, err := newFile(L, nil, path, os.O_RDONLY, os.FileMode(0o600), false, true)
 	if err != nil {
 		return 0
 	}
@@ -621,7 +623,7 @@ func ioOpenFile(L *LState) int {
 		L.Push(LString("r"))
 	}
 	mode := os.O_RDONLY
-	perm := 0600
+	perm := 0o600
 	writable := true
 	readable := true
 	switch ioOpenOpions[L.CheckOption(2, ioOpenOpions)] {
@@ -649,7 +651,6 @@ func ioOpenFile(L *LState) int {
 	}
 	L.Push(file)
 	return 1
-
 }
 
 var ioPopenOptions = []string{"r", "w"}
@@ -720,7 +721,7 @@ func ioOutput(L *LState) int {
 	}
 	switch lv := L.Get(1).(type) {
 	case LString:
-		file, err := newFile(L, nil, string(lv), os.O_WRONLY|os.O_CREATE, 0600, true, false)
+		file, err := newFile(L, nil, string(lv), os.O_WRONLY|os.O_CREATE, 0o600, true, false)
 		if err != nil {
 			L.RaiseError(err.Error())
 		}

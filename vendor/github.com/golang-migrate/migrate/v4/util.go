@@ -16,7 +16,6 @@ type MultiError struct {
 // NewMultiError returns an error type holding multiple errors.
 //
 // Deprecated: Use github.com/hashicorp/go-multierror instead
-//
 func NewMultiError(errs ...error) MultiError {
 	compactErrs := make([]error, 0)
 	for _, e := range errs {
@@ -29,7 +28,7 @@ func NewMultiError(errs ...error) MultiError {
 
 // Error implements error. Multiple errors are concatenated with 'and's.
 func (m MultiError) Error() string {
-	var strs = make([]string, 0)
+	strs := make([]string, 0)
 	for _, e := range m.Errs {
 		if len(e.Error()) > 0 {
 			strs = append(strs, e.Error())

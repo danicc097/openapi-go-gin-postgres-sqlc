@@ -13,9 +13,10 @@ import (
 )
 
 // keep in sync with
-//    $GOROOT/src/cmd/compile/internal/gc/reflect.go: MAXKEYSIZE, MAXELEMSIZE
-//    $GOROOT/src/runtime/map.go: maxKeySize, maxElemSize
-//    $GOROOT/src/reflect/type.go: maxKeySize, maxElemSize
+//
+//	$GOROOT/src/cmd/compile/internal/gc/reflect.go: MAXKEYSIZE, MAXELEMSIZE
+//	$GOROOT/src/runtime/map.go: maxKeySize, maxElemSize
+//	$GOROOT/src/reflect/type.go: maxKeySize, maxElemSize
 //
 // We use these to determine whether the type is stored indirectly in the map or not.
 const (
@@ -42,11 +43,11 @@ func mapStoresElemIndirect(elemsize uintptr) bool {
 }
 
 func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) {
-	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
-	var kptr = unsafeMapKVPtr(urv)
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&k))
+	kptr := unsafeMapKVPtr(urv)
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&v))
-	var vtyp = urv.typ
-	var vptr = unsafeMapKVPtr(urv)
+	vtyp := urv.typ
+	vptr := unsafeMapKVPtr(urv)
 
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
 	mptr := rvRefPtr(urv)
@@ -88,8 +89,8 @@ func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, va
 }
 
 func mapGet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) (_ reflect.Value) {
-	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
-	var kptr = unsafeMapKVPtr(urv)
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&k))
+	kptr := unsafeMapKVPtr(urv)
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
 	mptr := rvRefPtr(urv)
 

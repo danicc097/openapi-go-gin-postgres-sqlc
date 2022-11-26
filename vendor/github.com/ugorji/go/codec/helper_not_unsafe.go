@@ -19,8 +19,10 @@ import (
 
 const safeMode = true
 
-const transientSizeMax = 0
-const transientValueHasStringSlice = true
+const (
+	transientSizeMax             = 0
+	transientValueHasStringSlice = true
+)
 
 func stringView(v []byte) string {
 	return string(v)
@@ -144,10 +146,10 @@ func isEmptyValue(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 }
 
 // isEmptyStruct is only called from isEmptyValue, and checks if a struct is empty:
-//    - does it implement IsZero() bool
-//    - is it comparable, and can i compare directly using ==
-//    - if checkStruct, then walk through the encodable fields
-//      and check if they are empty or not.
+//   - does it implement IsZero() bool
+//   - is it comparable, and can i compare directly using ==
+//   - if checkStruct, then walk through the encodable fields
+//     and check if they are empty or not.
 func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	// v is a struct kind - no need to check again.
 	// We only check isZero on a struct kind, to reduce the amount of times
@@ -226,7 +228,7 @@ type encPerType struct {
 func (x *perType) elem(t reflect.Type) *perTypeElem {
 	rtid := rt2id(t)
 	var h, i uint
-	var j = uint(len(x.v))
+	j := uint(len(x.v))
 LOOP:
 	if i < j {
 		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
@@ -328,21 +330,27 @@ func (x *atomicRtidFnSlice) store(p []codecRtidFn) {
 func (n *fauxUnion) ru() reflect.Value {
 	return reflect.ValueOf(&n.u).Elem()
 }
+
 func (n *fauxUnion) ri() reflect.Value {
 	return reflect.ValueOf(&n.i).Elem()
 }
+
 func (n *fauxUnion) rf() reflect.Value {
 	return reflect.ValueOf(&n.f).Elem()
 }
+
 func (n *fauxUnion) rl() reflect.Value {
 	return reflect.ValueOf(&n.l).Elem()
 }
+
 func (n *fauxUnion) rs() reflect.Value {
 	return reflect.ValueOf(&n.s).Elem()
 }
+
 func (n *fauxUnion) rt() reflect.Value {
 	return reflect.ValueOf(&n.t).Elem()
 }
+
 func (n *fauxUnion) rb() reflect.Value {
 	return reflect.ValueOf(&n.b).Elem()
 }

@@ -229,7 +229,7 @@ x.pregen() {
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
 
     # don't want this to block when getting bad gen
-    go build -o pregen "$PWD"/cmd/pregen/main.go 2>/dev/null || echo "Could not rebuild pregen" >&2
+    go build -o pregen cmd/pregen/main.go 2>/dev/null || echo "Could not rebuild pregen" >&2
 
     ./pregen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -260,7 +260,7 @@ x.postgen() {
 
     update_spec_with_structs
 
-    go build -o postgen "$PWD"/cmd/postgen/main.go
+    go build -o postgen cmd/postgen/main.go
     ./postgen -env=".env.$env"
   } \
     2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -340,7 +340,7 @@ x.gen.gowrap() {
 # Generate Go client and server.
 x.gen.client-server() {
   { { {
-    go build -o oapi-codegen "$PWD"/cmd/oapi-codegen
+    go build -o oapi-codegen cmd/oapi-codegen/main.go
 
     echo "Running generation"
     local paths=".openapi.paths.yaml"
@@ -539,9 +539,7 @@ x.test-watch() {
         --timefmt='%s' |
         while read -r event_time event_file 2>/dev/null || sleep $latency; do
           clear
-          {
-            APP_ENV="$env" go test "$@" ./... || printf "FAIL\nFAIL\nFAIL"
-          } | grep --color=always FAIL || echo "${GREEN}✓ All tests passing${OFF}"
+          APP_ENV="$env" go test "$@" ./... && echo "${GREEN}✓ All tests passing${OFF}"
         done
     done
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

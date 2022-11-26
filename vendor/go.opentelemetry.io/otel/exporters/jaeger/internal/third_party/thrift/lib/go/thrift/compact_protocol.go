@@ -54,9 +54,7 @@ const (
 	COMPACT_STRUCT        = 0x0C
 )
 
-var (
-	ttypeToCompactType map[TType]tCompactType
-)
+var ttypeToCompactType map[TType]tCompactType
 
 func init() {
 	ttypeToCompactType = map[TType]tCompactType{
@@ -167,7 +165,6 @@ func (p *TCompactProtocol) WriteMessageBegin(ctx context.Context, name string, t
 	}
 	e := p.WriteString(ctx, name)
 	return e
-
 }
 
 func (p *TCompactProtocol) WriteMessageEnd(ctx context.Context) error { return nil }

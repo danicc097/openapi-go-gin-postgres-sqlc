@@ -48,7 +48,6 @@ func (m *Miniredis) cmdXadd(c *server.Peer, cmd string, args []string) {
 	key, args := args[0], args[1:]
 
 	withTx(m, c, func(c *server.Peer, ctx *connCtx) {
-
 		maxlen := -1
 		if strings.ToLower(args[0]) == "maxlen" {
 			args = args[1:]
@@ -238,7 +237,7 @@ func (m *Miniredis) makeCmdXrange(reverse bool) server.Cmd {
 				return
 			}
 
-			var entries = db.streamKeys[opts.key].entries
+			entries := db.streamKeys[opts.key].entries
 			if reverse {
 				entries = reversedStreamEntries(entries)
 			}
@@ -317,8 +316,7 @@ func (m *Miniredis) cmdXgroup(c *server.Peer, cmd string, args []string) {
 		m.cmdXgroupCreateconsumer(c, cmd, args)
 	case "DELCONSUMER":
 		m.cmdXgroupDelconsumer(c, cmd, args)
-	case "HELP",
-		"SETID":
+	case "HELP", "SETID":
 		err := fmt.Sprintf("ERR 'XGROUP %s' not supported", subCmd)
 		setDirty(c)
 		c.WriteError(err)
@@ -978,7 +976,7 @@ func xread(db *RedisDB, streams []string, ids []string, count int) map[string][]
 		stream := streams[i]
 		id := ids[i]
 
-		var s, ok = db.streamKeys[stream]
+		s, ok := db.streamKeys[stream]
 		if !ok {
 			continue
 		}

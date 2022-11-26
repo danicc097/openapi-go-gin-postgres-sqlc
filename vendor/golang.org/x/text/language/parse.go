@@ -147,8 +147,10 @@ func update(b *language.Builder, part ...interface{}) (err error) {
 	return
 }
 
-var errInvalidWeight = errors.New("ParseAcceptLanguage: invalid weight")
-var errTagListTooLarge = errors.New("tag list exceeds max length")
+var (
+	errInvalidWeight   = errors.New("ParseAcceptLanguage: invalid weight")
+	errTagListTooLarge = errors.New("tag list exceeds max length")
+)
 
 // ParseAcceptLanguage parses the contents of an Accept-Language header as
 // defined in http://www.ietf.org/rfc/rfc2616.txt and returns a list of Tags and

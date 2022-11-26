@@ -15,20 +15,20 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type UserPublic struct {
-	UserID     *uuid.UUID `json:"userID"`     // user_id
-	Username   *string    `json:"username"`   // username
-	Email      *string    `json:"email"`      // email
-	FirstName  *string    `json:"firstName"`  // first_name
-	LastName   *string    `json:"lastName"`   // last_name
-	FullName   *string    `json:"fullName"`   // full_name
-	ExternalID *string    `json:"externalID"` // external_id
-	APIKeyID   *int       `json:"apiKeyID"`   // api_key_id
-	Scopes     []string   `json:"scopes"`     // scopes
-	RoleRank   *int16     `json:"roleRank"`   // role_rank
-	CreatedAt  *time.Time `json:"createdAt"`  // created_at
-	UpdatedAt  *time.Time `json:"updatedAt"`  // updated_at
-	DeletedAt  *time.Time `json:"deletedAt"`  // deleted_at
-	Teams      []any      `json:"teams"`      // teams
+	UserID     *uuid.UUID `json:"userID" required:"true"`     // user_id
+	Username   *string    `json:"username" required:"true"`   // username
+	Email      *string    `json:"email" required:"true"`      // email
+	FirstName  *string    `json:"firstName" required:"true"`  // first_name
+	LastName   *string    `json:"lastName" required:"true"`   // last_name
+	FullName   *string    `json:"fullName" required:"true"`   // full_name
+	ExternalID *string    `json:"externalID" required:"true"` // external_id
+	APIKeyID   *int       `json:"apiKeyID" required:"true"`   // api_key_id
+	Scopes     []string   `json:"scopes" required:"true"`     // scopes
+	RoleRank   *int16     `json:"roleRank" required:"true"`   // role_rank
+	CreatedAt  *time.Time `json:"createdAt" required:"true"`  // created_at
+	UpdatedAt  *time.Time `json:"updatedAt" required:"true"`  // updated_at
+	DeletedAt  *time.Time `json:"deletedAt" required:"true"`  // deleted_at
+	Teams      []any      `json:"teams" required:"true"`      // teams
 }
 
 // User represents a row from 'v.users'.

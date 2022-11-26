@@ -25,13 +25,14 @@
 package grpc_binarylog_v1
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	proto "github.com/golang/protobuf/proto"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (
@@ -694,12 +695,12 @@ func (x *Message) GetData() []byte {
 // Header keys added by gRPC are omitted. To be more specific,
 // implementations will not log the following entries, and this is
 // not to be treated as a truncation:
-// - entries handled by grpc that are not user visible, such as those
-//   that begin with 'grpc-' (with exception of grpc-trace-bin)
-//   or keys like 'lb-token'
-// - transport specific entries, including but not limited to:
-//   ':path', ':authority', 'content-encoding', 'user-agent', 'te', etc
-// - entries added for call credentials
+//   - entries handled by grpc that are not user visible, such as those
+//     that begin with 'grpc-' (with exception of grpc-trace-bin)
+//     or keys like 'lb-token'
+//   - transport specific entries, including but not limited to:
+//     ':path', ':authority', 'content-encoding', 'user-agent', 'te', etc
+//   - entries added for call credentials
 //
 // Implementations must always log grpc-trace-bin if it is present.
 // Practically speaking it will only be visible on server side because
@@ -1017,23 +1018,25 @@ func file_grpc_binlog_v1_binarylog_proto_rawDescGZIP() []byte {
 	return file_grpc_binlog_v1_binarylog_proto_rawDescData
 }
 
-var file_grpc_binlog_v1_binarylog_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_grpc_binlog_v1_binarylog_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
-var file_grpc_binlog_v1_binarylog_proto_goTypes = []interface{}{
-	(GrpcLogEntry_EventType)(0),   // 0: grpc.binarylog.v1.GrpcLogEntry.EventType
-	(GrpcLogEntry_Logger)(0),      // 1: grpc.binarylog.v1.GrpcLogEntry.Logger
-	(Address_Type)(0),             // 2: grpc.binarylog.v1.Address.Type
-	(*GrpcLogEntry)(nil),          // 3: grpc.binarylog.v1.GrpcLogEntry
-	(*ClientHeader)(nil),          // 4: grpc.binarylog.v1.ClientHeader
-	(*ServerHeader)(nil),          // 5: grpc.binarylog.v1.ServerHeader
-	(*Trailer)(nil),               // 6: grpc.binarylog.v1.Trailer
-	(*Message)(nil),               // 7: grpc.binarylog.v1.Message
-	(*Metadata)(nil),              // 8: grpc.binarylog.v1.Metadata
-	(*MetadataEntry)(nil),         // 9: grpc.binarylog.v1.MetadataEntry
-	(*Address)(nil),               // 10: grpc.binarylog.v1.Address
-	(*timestamppb.Timestamp)(nil), // 11: google.protobuf.Timestamp
-	(*durationpb.Duration)(nil),   // 12: google.protobuf.Duration
-}
+var (
+	file_grpc_binlog_v1_binarylog_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+	file_grpc_binlog_v1_binarylog_proto_msgTypes  = make([]protoimpl.MessageInfo, 8)
+	file_grpc_binlog_v1_binarylog_proto_goTypes   = []interface{}{
+		(GrpcLogEntry_EventType)(0),   // 0: grpc.binarylog.v1.GrpcLogEntry.EventType
+		(GrpcLogEntry_Logger)(0),      // 1: grpc.binarylog.v1.GrpcLogEntry.Logger
+		(Address_Type)(0),             // 2: grpc.binarylog.v1.Address.Type
+		(*GrpcLogEntry)(nil),          // 3: grpc.binarylog.v1.GrpcLogEntry
+		(*ClientHeader)(nil),          // 4: grpc.binarylog.v1.ClientHeader
+		(*ServerHeader)(nil),          // 5: grpc.binarylog.v1.ServerHeader
+		(*Trailer)(nil),               // 6: grpc.binarylog.v1.Trailer
+		(*Message)(nil),               // 7: grpc.binarylog.v1.Message
+		(*Metadata)(nil),              // 8: grpc.binarylog.v1.Metadata
+		(*MetadataEntry)(nil),         // 9: grpc.binarylog.v1.MetadataEntry
+		(*Address)(nil),               // 10: grpc.binarylog.v1.Address
+		(*timestamppb.Timestamp)(nil), // 11: google.protobuf.Timestamp
+		(*durationpb.Duration)(nil),   // 12: google.protobuf.Duration
+	}
+)
 var file_grpc_binlog_v1_binarylog_proto_depIdxs = []int32{
 	11, // 0: grpc.binarylog.v1.GrpcLogEntry.timestamp:type_name -> google.protobuf.Timestamp
 	0,  // 1: grpc.binarylog.v1.GrpcLogEntry.type:type_name -> grpc.binarylog.v1.GrpcLogEntry.EventType

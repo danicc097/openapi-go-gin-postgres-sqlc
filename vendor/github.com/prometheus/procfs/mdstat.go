@@ -103,7 +103,6 @@ func parseMDStat(mdStatData []byte) ([]MDStat, error) {
 		fail := int64(strings.Count(line, "(F)"))
 		spare := int64(strings.Count(line, "(S)"))
 		active, total, down, size, err := evalStatusLine(lines[i], lines[i+1])
-
 		if err != nil {
 			return nil, fmt.Errorf("error parsing md device lines: %w", err)
 		}

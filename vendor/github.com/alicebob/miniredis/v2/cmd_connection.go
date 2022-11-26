@@ -75,7 +75,7 @@ func (m *Miniredis) cmdAuth(c *server.Peer, cmd string, args []string) {
 		return
 	}
 
-	var opts = struct {
+	opts := struct {
 		username string
 		password string
 	}{

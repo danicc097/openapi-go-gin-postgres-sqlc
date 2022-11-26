@@ -15,10 +15,12 @@ import (
 	"github.com/yuin/gopher-lua/parse"
 )
 
-const MultRet = -1
-const RegistryIndex = -10000
-const EnvironIndex = -10001
-const GlobalsIndex = -10002
+const (
+	MultRet       = -1
+	RegistryIndex = -10000
+	EnvironIndex  = -10001
+	GlobalsIndex  = -10002
+)
 
 /* ApiError {{{ */
 
@@ -216,15 +218,17 @@ const FramesPerSegment = 8
 type callFrameStackSegment struct {
 	array [FramesPerSegment]callFrame
 }
-type segIdx uint16
-type autoGrowingCallFrameStack struct {
-	segments []*callFrameStackSegment
-	segIdx   segIdx
-	// segSp is the number of frames in the current segment which are used. Full 'sp' value is segIdx * FramesPerSegment + segSp.
-	// It points to the next stack slot to use, so 0 means to use the 0th element in the segment, and a value of
-	// FramesPerSegment indicates that the segment is full and cannot accommodate another frame.
-	segSp uint8
-}
+type (
+	segIdx                    uint16
+	autoGrowingCallFrameStack struct {
+		segments []*callFrameStackSegment
+		segIdx   segIdx
+		// segSp is the number of frames in the current segment which are used. Full 'sp' value is segIdx * FramesPerSegment + segSp.
+		// It points to the next stack slot to use, so 0 means to use the 0th element in the segment, and a value of
+		// FramesPerSegment indicates that the segment is full and cannot accommodate another frame.
+		segSp uint8
+	}
+)
 
 var segmentPool sync.Pool
 
@@ -398,6 +402,7 @@ func (rg *registry) forceResize(newSize int) {
 	copy(newSlice, rg.array[:rg.top]) // should we copy the area beyond top? there shouldn't be any valid values there so it shouldn't be necessary.
 	rg.array = newSlice
 }
+
 func (rg *registry) SetTop(top int) {
 	// +inline-call rg.checkSize top
 	oldtop := rg.top
@@ -709,12 +714,12 @@ func (ls *LState) stackTrace(level int) string {
 		}
 	}
 	buf = append(buf, fmt.Sprintf("\t%v: %v", "[G]", "?"))
-	buf = buf[intMax(0, intMin(level, len(buf))):len(buf)]
+	buf = buf[intMax(0, intMin(level, len(buf))):]
 	if len(buf) > 20 {
 		newbuf := make([]string, 0, 20)
 		newbuf = append(newbuf, buf[0:7]...)
 		newbuf = append(newbuf, "\t...")
-		newbuf = append(newbuf, buf[len(buf)-7:len(buf)]...)
+		newbuf = append(newbuf, buf[len(buf)-7:]...)
 		buf = newbuf
 	}
 	return fmt.Sprintf("%s\n%s", header, strings.Join(buf, "\n"))
@@ -982,9 +987,9 @@ func (ls *LState) initCallFrame(cf *callFrame) { // +inline-start
 
 			ls.reg.SetTop(cf.LocalBase + nargs + np)
 			for i := 0; i < np; i++ {
-				//ls.reg.Set(cf.LocalBase+nargs+i, ls.reg.Get(cf.LocalBase+i))
+				// ls.reg.Set(cf.LocalBase+nargs+i, ls.reg.Get(cf.LocalBase+i))
 				ls.reg.array[cf.LocalBase+nargs+i] = ls.reg.array[cf.LocalBase+i]
-				//ls.reg.Set(cf.LocalBase+i, LNil)
+				// ls.reg.Set(cf.LocalBase+i, LNil)
 				ls.reg.array[cf.LocalBase+i] = LNil
 			}
 
@@ -996,7 +1001,7 @@ func (ls *LState) initCallFrame(cf *callFrame) { // +inline-start
 						argtb.RawSetInt(i+1, ls.reg.Get(cf.LocalBase+np+i))
 					}
 					argtb.RawSetString("n", LNumber(nvarargs))
-					//ls.reg.Set(cf.LocalBase+nargs+np, argtb)
+					// ls.reg.Set(cf.LocalBase+nargs+np, argtb)
 					ls.reg.array[cf.LocalBase+nargs+np] = argtb
 				} else {
 					ls.reg.array[cf.LocalBase+nargs+np] = LNil
@@ -1579,7 +1584,6 @@ func (ls *LState) GetInfo(what string, dbg *Debug, fn LValue) (LValue, error) {
 		return f, nil
 	}
 	return LNil, nil
-
 }
 
 func (ls *LState) GetStack(level int) (*Debug, bool) {
@@ -2023,7 +2027,7 @@ func (ls *LState) SetMx(mx int) {
 		ls.RaiseError("sub threads are not allowed to set a memory limit")
 	}
 	go func() {
-		limit := uint64(mx * 1024 * 1024) //MB
+		limit := uint64(mx * 1024 * 1024) // MB
 		var s runtime.MemStats
 		for atomic.LoadInt32(&ls.stop) == 0 {
 			runtime.ReadMemStats(&s)

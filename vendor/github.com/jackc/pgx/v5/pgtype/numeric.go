@@ -27,33 +27,41 @@ const (
 	pgNumericNegInfSign = 0xf000
 )
 
-var big0 *big.Int = big.NewInt(0)
-var big1 *big.Int = big.NewInt(1)
-var big10 *big.Int = big.NewInt(10)
-var big100 *big.Int = big.NewInt(100)
-var big1000 *big.Int = big.NewInt(1000)
+var (
+	big0    *big.Int = big.NewInt(0)
+	big1    *big.Int = big.NewInt(1)
+	big10   *big.Int = big.NewInt(10)
+	big100  *big.Int = big.NewInt(100)
+	big1000 *big.Int = big.NewInt(1000)
+)
 
-var bigMaxInt8 *big.Int = big.NewInt(math.MaxInt8)
-var bigMinInt8 *big.Int = big.NewInt(math.MinInt8)
-var bigMaxInt16 *big.Int = big.NewInt(math.MaxInt16)
-var bigMinInt16 *big.Int = big.NewInt(math.MinInt16)
-var bigMaxInt32 *big.Int = big.NewInt(math.MaxInt32)
-var bigMinInt32 *big.Int = big.NewInt(math.MinInt32)
-var bigMaxInt64 *big.Int = big.NewInt(math.MaxInt64)
-var bigMinInt64 *big.Int = big.NewInt(math.MinInt64)
-var bigMaxInt *big.Int = big.NewInt(int64(maxInt))
-var bigMinInt *big.Int = big.NewInt(int64(minInt))
+var (
+	bigMaxInt8  *big.Int = big.NewInt(math.MaxInt8)
+	bigMinInt8  *big.Int = big.NewInt(math.MinInt8)
+	bigMaxInt16 *big.Int = big.NewInt(math.MaxInt16)
+	bigMinInt16 *big.Int = big.NewInt(math.MinInt16)
+	bigMaxInt32 *big.Int = big.NewInt(math.MaxInt32)
+	bigMinInt32 *big.Int = big.NewInt(math.MinInt32)
+	bigMaxInt64 *big.Int = big.NewInt(math.MaxInt64)
+	bigMinInt64 *big.Int = big.NewInt(math.MinInt64)
+	bigMaxInt   *big.Int = big.NewInt(int64(maxInt))
+	bigMinInt   *big.Int = big.NewInt(int64(minInt))
+)
 
-var bigMaxUint8 *big.Int = big.NewInt(math.MaxUint8)
-var bigMaxUint16 *big.Int = big.NewInt(math.MaxUint16)
-var bigMaxUint32 *big.Int = big.NewInt(math.MaxUint32)
-var bigMaxUint64 *big.Int = (&big.Int{}).SetUint64(uint64(math.MaxUint64))
-var bigMaxUint *big.Int = (&big.Int{}).SetUint64(uint64(maxUint))
+var (
+	bigMaxUint8  *big.Int = big.NewInt(math.MaxUint8)
+	bigMaxUint16 *big.Int = big.NewInt(math.MaxUint16)
+	bigMaxUint32 *big.Int = big.NewInt(math.MaxUint32)
+	bigMaxUint64 *big.Int = (&big.Int{}).SetUint64(uint64(math.MaxUint64))
+	bigMaxUint   *big.Int = (&big.Int{}).SetUint64(uint64(maxUint))
+)
 
-var bigNBase *big.Int = big.NewInt(nbase)
-var bigNBaseX2 *big.Int = big.NewInt(nbase * nbase)
-var bigNBaseX3 *big.Int = big.NewInt(nbase * nbase * nbase)
-var bigNBaseX4 *big.Int = big.NewInt(nbase * nbase * nbase * nbase)
+var (
+	bigNBase   *big.Int = big.NewInt(nbase)
+	bigNBaseX2 *big.Int = big.NewInt(nbase * nbase)
+	bigNBaseX3 *big.Int = big.NewInt(nbase * nbase * nbase)
+	bigNBaseX4 *big.Int = big.NewInt(nbase * nbase * nbase * nbase)
+)
 
 type NumericScanner interface {
 	ScanNumeric(v Numeric) error
@@ -531,7 +539,6 @@ func encodeNumericText(n Numeric, buf []byte) (newBuf []byte, err error) {
 }
 
 func (NumericCodec) PlanScan(m *Map, oid uint32, format int16, target any) ScanPlan {
-
 	switch format {
 	case BinaryFormatCode:
 		switch target.(type) {

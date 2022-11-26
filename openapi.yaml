@@ -66,6 +66,13 @@ paths:
       summary: Ping pongs
       operationId: AdminPing
       responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: pong
         "422":
           description: Validation Error
           content:
@@ -371,6 +378,14 @@ components:
         updatedAt:
           format: date-time
           type: string
+      required:
+        - teamID
+        - projectID
+        - name
+        - description
+        - metadata
+        - createdAt
+        - updatedAt
       type: object
     TimeEntryPublic:
       properties:
@@ -496,6 +511,15 @@ components:
           $ref: '#/components/schemas/UuidUUID'
         username:
           type: string
+      required:
+        - userID
+        - username
+        - email
+        - firstName
+        - lastName
+        - fullName
+        - createdAt
+        - deletedAt
       type: object
       x-db-struct: UserResponse
     ModelsScope:
@@ -510,6 +534,10 @@ components:
           type: string
         userID:
           $ref: '#/components/schemas/UuidUUID'
+      required:
+        - apiKey
+        - expiresOn
+        - userID
       type: object
   examples:
     User:

@@ -55,18 +55,16 @@ const (
 	bufSize = 1024
 )
 
-var (
-	runtimeContextPool = sync.Pool{
-		New: func() interface{} {
-			return &RuntimeContext{
-				Buf:      make([]byte, 0, bufSize),
-				Ptrs:     make([]uintptr, 128),
-				KeepRefs: make([]unsafe.Pointer, 0, 8),
-				Option:   &Option{},
-			}
-		},
-	}
-)
+var runtimeContextPool = sync.Pool{
+	New: func() interface{} {
+		return &RuntimeContext{
+			Buf:      make([]byte, 0, bufSize),
+			Ptrs:     make([]uintptr, 128),
+			KeepRefs: make([]unsafe.Pointer, 0, 8),
+			Option:   &Option{},
+		}
+	},
+}
 
 type RuntimeContext struct {
 	Context    context.Context

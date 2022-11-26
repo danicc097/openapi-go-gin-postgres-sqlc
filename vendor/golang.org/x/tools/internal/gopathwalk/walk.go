@@ -250,5 +250,4 @@ func (w *walker) shouldTraverse(path string) bool {
 		}
 		path = parent
 	}
-
 }

@@ -43,7 +43,6 @@ const (
 // NOTE: some values are returned as a []byte just in case the caller
 // wishes to add more and can help avoid allocations; otherwise just cast as string
 type Translator interface {
-
 	// The following Functions are for overriding, debugging or developing
 	// with a Translator Locale
 
@@ -156,7 +155,6 @@ type Translator interface {
 
 // String returns the string value  of PluralRule
 func (p PluralRule) String() string {
-
 	switch p {
 	case PluralRuleZero:
 		return pluralsString[7:11]
@@ -225,7 +223,6 @@ func (p PluralRule) String() string {
 
 // W returns the number of visible fraction digits in N, without trailing zeros.
 func W(n float64, v uint64) (w int64) {
-
 	s := strconv.FormatFloat(n-float64(int64(n)), 'f', int(v), 64)
 
 	// with either be '0' or '0.xxxx', so if 1 then w will be zero
@@ -250,13 +247,11 @@ func W(n float64, v uint64) (w int64) {
 
 // F returns the visible fractional digits in N, with trailing zeros.
 func F(n float64, v uint64) (f int64) {
-
 	s := strconv.FormatFloat(n-float64(int64(n)), 'f', int(v), 64)
 
 	// with either be '0' or '0.xxxx', so if 1 then f will be zero
 	// otherwise need to parse
 	if len(s) != 1 {
-
 		// ignoring error, because it can't fail as we generated
 		// the string internally from a real number
 		f, _ = strconv.ParseInt(s[2:], 10, 64)
@@ -267,7 +262,6 @@ func F(n float64, v uint64) (f int64) {
 
 // T returns the visible fractional digits in N, without trailing zeros.
 func T(n float64, v uint64) (t int64) {
-
 	s := strconv.FormatFloat(n-float64(int64(n)), 'f', int(v), 64)
 
 	// with either be '0' or '0.xxxx', so if 1 then t will be zero

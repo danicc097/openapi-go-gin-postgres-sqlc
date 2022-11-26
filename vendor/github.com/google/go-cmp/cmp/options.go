@@ -218,6 +218,7 @@ func (validator) filter(_ *state, _ reflect.Type, vx, vy reflect.Value) applicab
 	}
 	return nil
 }
+
 func (validator) apply(s *state, vx, vy reflect.Value) {
 	// Implies missing slice element or map entry.
 	if !vx.IsValid() || !vy.IsValid() {
@@ -506,16 +507,19 @@ func Reporter(r interface {
 	// PopStep ascends back up the value tree.
 	// There is always a matching pop call for every push call.
 	PopStep()
-}) Option {
+},
+) Option {
 	return reporter{r}
 }
 
-type reporter struct{ reporterIface }
-type reporterIface interface {
-	PushStep(PathStep)
-	Report(Result)
-	PopStep()
-}
+type (
+	reporter      struct{ reporterIface }
+	reporterIface interface {
+		PushStep(PathStep)
+		Report(Result)
+		PopStep()
+	}
+)
 
 func (reporter) filter(_ *state, _ reflect.Type, _, _ reflect.Value) applicableOption {
 	panic("not implemented")

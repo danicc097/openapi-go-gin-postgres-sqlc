@@ -5,8 +5,10 @@ import (
 	"strings"
 )
 
-var errNoScheme = errors.New("no scheme")
-var errEmptyURL = errors.New("URL cannot be empty")
+var (
+	errNoScheme = errors.New("no scheme")
+	errEmptyURL = errors.New("URL cannot be empty")
+)
 
 // schemeFromURL returns the scheme from a URL string
 func SchemeFromURL(url string) (string, error) {

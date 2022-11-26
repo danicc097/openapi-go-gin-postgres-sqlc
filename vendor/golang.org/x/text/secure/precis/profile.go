@@ -17,9 +17,7 @@ import (
 	"golang.org/x/text/width"
 )
 
-var (
-	errDisallowedRune = errors.New("precis: disallowed rune encountered")
-)
+var errDisallowedRune = errors.New("precis: disallowed rune encountered")
 
 var dpTrie = newDerivedPropertiesTrie(0)
 

@@ -93,6 +93,7 @@ func ptrToSlice(p uintptr) *runtime.SliceHeader { return *(**runtime.SliceHeader
 func ptrToPtr(p uintptr) uintptr {
 	return uintptr(**(**unsafe.Pointer)(unsafe.Pointer(&p)))
 }
+
 func ptrToNPtr(p uintptr, ptrNum uint8) uintptr {
 	for i := uint8(0); i < ptrNum; i++ {
 		if p == 0 {
@@ -106,6 +107,7 @@ func ptrToNPtr(p uintptr, ptrNum uint8) uintptr {
 func ptrToUnsafePtr(p uintptr) unsafe.Pointer {
 	return *(*unsafe.Pointer)(unsafe.Pointer(&p))
 }
+
 func ptrToInterface(code *encoder.Opcode, p uintptr) interface{} {
 	return *(*interface{})(unsafe.Pointer(&emptyInterface{
 		typ: code.Type,

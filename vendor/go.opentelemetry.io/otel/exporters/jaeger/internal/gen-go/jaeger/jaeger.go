@@ -14,11 +14,13 @@ import (
 )
 
 // (needed to ensure safety because of naive import list construction.)
-var _ = thrift.ZERO
-var _ = fmt.Printf
-var _ = context.Background
-var _ = time.Now
-var _ = bytes.Equal
+var (
+	_ = thrift.ZERO
+	_ = fmt.Printf
+	_ = context.Background
+	_ = time.Now
+	_ = bytes.Equal
+)
 
 type TagType int64
 
@@ -152,13 +154,13 @@ func (p *SpanRefType) Value() (driver.Value, error) {
 }
 
 // Attributes:
-//  - Key
-//  - VType
-//  - VStr
-//  - VDouble
-//  - VBool
-//  - VLong
-//  - VBinary
+//   - Key
+//   - VType
+//   - VStr
+//   - VDouble
+//   - VBool
+//   - VLong
+//   - VBinary
 type Tag struct {
 	Key     string   `thrift:"key,1,required" db:"key" json:"key"`
 	VType   TagType  `thrift:"vType,2,required" db:"vType" json:"vType"`
@@ -222,6 +224,7 @@ var Tag_VBinary_DEFAULT []byte
 func (p *Tag) GetVBinary() []byte {
 	return p.VBinary
 }
+
 func (p *Tag) IsSetVStr() bool {
 	return p.VStr != nil
 }
@@ -611,8 +614,8 @@ func (p *Tag) String() string {
 }
 
 // Attributes:
-//  - Timestamp
-//  - Fields
+//   - Timestamp
+//   - Fields
 type Log struct {
 	Timestamp int64  `thrift:"timestamp,1,required" db:"timestamp" json:"timestamp"`
 	Fields    []*Tag `thrift:"fields,2,required" db:"fields" json:"fields"`
@@ -629,6 +632,7 @@ func (p *Log) GetTimestamp() int64 {
 func (p *Log) GetFields() []*Tag {
 	return p.Fields
 }
+
 func (p *Log) Read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
@@ -802,10 +806,10 @@ func (p *Log) String() string {
 }
 
 // Attributes:
-//  - RefType
-//  - TraceIdLow
-//  - TraceIdHigh
-//  - SpanId
+//   - RefType
+//   - TraceIdLow
+//   - TraceIdHigh
+//   - SpanId
 type SpanRef struct {
 	RefType     SpanRefType `thrift:"refType,1,required" db:"refType" json:"refType"`
 	TraceIdLow  int64       `thrift:"traceIdLow,2,required" db:"traceIdLow" json:"traceIdLow"`
@@ -832,6 +836,7 @@ func (p *SpanRef) GetTraceIdHigh() int64 {
 func (p *SpanRef) GetSpanId() int64 {
 	return p.SpanId
 }
+
 func (p *SpanRef) Read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
@@ -1067,17 +1072,17 @@ func (p *SpanRef) String() string {
 }
 
 // Attributes:
-//  - TraceIdLow
-//  - TraceIdHigh
-//  - SpanId
-//  - ParentSpanId
-//  - OperationName
-//  - References
-//  - Flags
-//  - StartTime
-//  - Duration
-//  - Tags
-//  - Logs
+//   - TraceIdLow
+//   - TraceIdHigh
+//   - SpanId
+//   - ParentSpanId
+//   - OperationName
+//   - References
+//   - Flags
+//   - StartTime
+//   - Duration
+//   - Tags
+//   - Logs
 type Span struct {
 	TraceIdLow    int64      `thrift:"traceIdLow,1,required" db:"traceIdLow" json:"traceIdLow"`
 	TraceIdHigh   int64      `thrift:"traceIdHigh,2,required" db:"traceIdHigh" json:"traceIdHigh"`
@@ -1145,6 +1150,7 @@ var Span_Logs_DEFAULT []*Log
 func (p *Span) GetLogs() []*Log {
 	return p.Logs
 }
+
 func (p *Span) IsSetReferences() bool {
 	return p.References != nil
 }
@@ -1758,8 +1764,8 @@ func (p *Span) String() string {
 }
 
 // Attributes:
-//  - ServiceName
-//  - Tags
+//   - ServiceName
+//   - Tags
 type Process struct {
 	ServiceName string `thrift:"serviceName,1,required" db:"serviceName" json:"serviceName"`
 	Tags        []*Tag `thrift:"tags,2" db:"tags" json:"tags,omitempty"`
@@ -1778,6 +1784,7 @@ var Process_Tags_DEFAULT []*Tag
 func (p *Process) GetTags() []*Tag {
 	return p.Tags
 }
+
 func (p *Process) IsSetTags() bool {
 	return p.Tags != nil
 }
@@ -1952,9 +1959,9 @@ func (p *Process) String() string {
 }
 
 // Attributes:
-//  - FullQueueDroppedSpans
-//  - TooLargeDroppedSpans
-//  - FailedToEmitSpans
+//   - FullQueueDroppedSpans
+//   - TooLargeDroppedSpans
+//   - FailedToEmitSpans
 type ClientStats struct {
 	FullQueueDroppedSpans int64 `thrift:"fullQueueDroppedSpans,1,required" db:"fullQueueDroppedSpans" json:"fullQueueDroppedSpans"`
 	TooLargeDroppedSpans  int64 `thrift:"tooLargeDroppedSpans,2,required" db:"tooLargeDroppedSpans" json:"tooLargeDroppedSpans"`
@@ -1976,6 +1983,7 @@ func (p *ClientStats) GetTooLargeDroppedSpans() int64 {
 func (p *ClientStats) GetFailedToEmitSpans() int64 {
 	return p.FailedToEmitSpans
 }
+
 func (p *ClientStats) Read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
@@ -2167,10 +2175,10 @@ func (p *ClientStats) String() string {
 }
 
 // Attributes:
-//  - Process
-//  - Spans
-//  - SeqNo
-//  - Stats
+//   - Process
+//   - Spans
+//   - SeqNo
+//   - Stats
 type Batch struct {
 	Process *Process     `thrift:"process,1,required" db:"process" json:"process"`
 	Spans   []*Span      `thrift:"spans,2,required" db:"spans" json:"spans"`
@@ -2212,6 +2220,7 @@ func (p *Batch) GetStats() *ClientStats {
 	}
 	return p.Stats
 }
+
 func (p *Batch) IsSetProcess() bool {
 	return p.Process != nil
 }
@@ -2480,7 +2489,7 @@ func (p *Batch) String() string {
 }
 
 // Attributes:
-//  - Ok
+//   - Ok
 type BatchSubmitResponse struct {
 	Ok bool `thrift:"ok,1,required" db:"ok" json:"ok"`
 }
@@ -2492,6 +2501,7 @@ func NewBatchSubmitResponse() *BatchSubmitResponse {
 func (p *BatchSubmitResponse) GetOk() bool {
 	return p.Ok
 }
+
 func (p *BatchSubmitResponse) Read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
@@ -2638,7 +2648,7 @@ func (p *CollectorClient) SetLastResponseMeta_(meta thrift.ResponseMeta) {
 }
 
 // Parameters:
-//  - Batches
+//   - Batches
 func (p *CollectorClient) SubmitBatches(ctx context.Context, batches []*Batch) (_r []*BatchSubmitResponse, _err error) {
 	var _args12 CollectorSubmitBatchesArgs
 	_args12.Batches = batches
@@ -2671,7 +2681,6 @@ func (p *CollectorProcessor) ProcessorMap() map[string]thrift.TProcessorFunction
 }
 
 func NewCollectorProcessor(handler Collector) *CollectorProcessor {
-
 	self15 := &CollectorProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
 	self15.processorMap["submitBatches"] = &collectorProcessorSubmitBatches{handler: handler}
 	return self15
@@ -2693,7 +2702,6 @@ func (p *CollectorProcessor) Process(ctx context.Context, iprot, oprot thrift.TP
 	oprot.WriteMessageEnd(ctx)
 	oprot.Flush(ctx)
 	return false, x16
-
 }
 
 type collectorProcessorSubmitBatches struct {
@@ -2778,7 +2786,7 @@ func (p *collectorProcessorSubmitBatches) Process(ctx context.Context, seqId int
 // HELPER FUNCTIONS AND STRUCTURES
 
 // Attributes:
-//  - Batches
+//   - Batches
 type CollectorSubmitBatchesArgs struct {
 	Batches []*Batch `thrift:"batches,1" db:"batches" json:"batches"`
 }
@@ -2790,6 +2798,7 @@ func NewCollectorSubmitBatchesArgs() *CollectorSubmitBatchesArgs {
 func (p *CollectorSubmitBatchesArgs) GetBatches() []*Batch {
 	return p.Batches
 }
+
 func (p *CollectorSubmitBatchesArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
@@ -2896,7 +2905,7 @@ func (p *CollectorSubmitBatchesArgs) String() string {
 }
 
 // Attributes:
-//  - Success
+//   - Success
 type CollectorSubmitBatchesResult struct {
 	Success []*BatchSubmitResponse `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
@@ -2910,6 +2919,7 @@ var CollectorSubmitBatchesResult_Success_DEFAULT []*BatchSubmitResponse
 func (p *CollectorSubmitBatchesResult) GetSuccess() []*BatchSubmitResponse {
 	return p.Success
 }
+
 func (p *CollectorSubmitBatchesResult) IsSetSuccess() bool {
 	return p.Success != nil
 }

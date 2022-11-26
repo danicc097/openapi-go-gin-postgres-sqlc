@@ -181,7 +181,7 @@ func (currentNode *Node) CreateNode(path string, options *Options) (*Node, error
 	var variableNames []string
 loop:
 	for {
-		//remaining = strings.TrimPrefix(remaining, "/")
+		// remaining = strings.TrimPrefix(remaining, "/")
 		if len(remaining) == 0 {
 			// This node is the right one
 			// Check whether another route already leads to this node

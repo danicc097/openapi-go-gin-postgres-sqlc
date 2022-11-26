@@ -8,10 +8,8 @@ import (
 	"math/big"
 )
 
-var (
-	// Sadly this is missing from crypto/ecdsa compared to crypto/rsa
-	ErrECDSAVerification = errors.New("crypto/ecdsa: verification error")
-)
+// Sadly this is missing from crypto/ecdsa compared to crypto/rsa
+var ErrECDSAVerification = errors.New("crypto/ecdsa: verification error")
 
 // SigningMethodECDSA implements the ECDSA family of signing methods.
 // Expects *ecdsa.PrivateKey for signing and *ecdsa.PublicKey for verification

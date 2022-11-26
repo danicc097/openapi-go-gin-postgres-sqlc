@@ -16,16 +16,16 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type UserPublic struct {
-	UserID    uuid.UUID `json:"userID"`    // user_id
-	Username  string    `json:"username"`  // username
-	Email     string    `json:"email"`     // email
-	FirstName *string   `json:"firstName"` // first_name
-	LastName  *string   `json:"lastName"`  // last_name
-	FullName  *string   `json:"fullName"`  // full_name
+	UserID    uuid.UUID `json:"userID" required:"true"`    // user_id
+	Username  string    `json:"username" required:"true"`  // username
+	Email     string    `json:"email" required:"true"`     // email
+	FirstName *string   `json:"firstName" required:"true"` // first_name
+	LastName  *string   `json:"lastName" required:"true"`  // last_name
+	FullName  *string   `json:"fullName" required:"true"`  // full_name
 
-	CreatedAt time.Time `json:"createdAt"` // created_at
+	CreatedAt time.Time `json:"createdAt" required:"true"` // created_at
 
-	DeletedAt *time.Time `json:"deletedAt"` // deleted_at
+	DeletedAt *time.Time `json:"deletedAt" required:"true"` // deleted_at
 }
 
 // User represents a row from 'public.users'.

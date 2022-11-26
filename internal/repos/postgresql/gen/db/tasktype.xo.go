@@ -12,11 +12,11 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type TaskTypePublic struct {
-	TaskTypeID  int    `json:"taskTypeID"`  // task_type_id
-	TeamID      int64  `json:"teamID"`      // team_id
-	Name        string `json:"name"`        // name
-	Description string `json:"description"` // description
-	Color       string `json:"color"`       // color
+	TaskTypeID  int    `json:"taskTypeID" required:"true"`  // task_type_id
+	TeamID      int64  `json:"teamID" required:"true"`      // team_id
+	Name        string `json:"name" required:"true"`        // name
+	Description string `json:"description" required:"true"` // description
+	Color       string `json:"color" required:"true"`       // color
 }
 
 // TaskType represents a row from 'public.task_types'.

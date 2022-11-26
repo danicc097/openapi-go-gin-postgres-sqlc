@@ -201,5 +201,4 @@ func (dst *JSON) UnmarshalJSON(b []byte) error {
 		*dst = JSON{Bytes: b, Status: Present}
 	}
 	return nil
-
 }

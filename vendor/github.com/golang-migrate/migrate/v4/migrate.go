@@ -845,7 +845,6 @@ func (m *Migrate) newMigration(version uint, targetVersion int) (*Migration, err
 
 		} else if err != nil {
 			return nil, err
-
 		} else {
 			// create migration from up source
 			migr, err = NewMigration(r, identifier, version, targetVersion)
@@ -865,7 +864,6 @@ func (m *Migrate) newMigration(version uint, targetVersion int) (*Migration, err
 
 		} else if err != nil {
 			return nil, err
-
 		} else {
 			// create migration from down source
 			migr, err = NewMigration(r, identifier, version, targetVersion)

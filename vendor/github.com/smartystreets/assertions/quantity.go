@@ -79,6 +79,7 @@ func ShouldNotBeBetween(actual interface{}, expected ...interface{}) string {
 	}
 	return success
 }
+
 func deriveBounds(values []interface{}) (lower interface{}, upper interface{}, fail string) {
 	lower = values[0]
 	upper = values[1]
@@ -90,6 +91,7 @@ func deriveBounds(values []interface{}) (lower interface{}, upper interface{}, f
 	}
 	return lower, upper, success
 }
+
 func isBetween(value, lower, upper interface{}) bool {
 	if ShouldBeGreaterThan(value, lower) != success {
 		return false

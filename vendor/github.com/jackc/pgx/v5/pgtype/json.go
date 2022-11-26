@@ -85,7 +85,6 @@ func (JSONCodec) PlanScan(m *Map, oid uint32, format int16, target any) ScanPlan
 	default:
 		return scanPlanJSONToJSONUnmarshal{}
 	}
-
 }
 
 type scanPlanAnyToString struct{}

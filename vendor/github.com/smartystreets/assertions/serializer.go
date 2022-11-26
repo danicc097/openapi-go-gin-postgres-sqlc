@@ -58,6 +58,7 @@ type noopSerializer struct{}
 func (self *noopSerializer) serialize(expected, actual interface{}, message string) string {
 	return message
 }
+
 func (self *noopSerializer) serializeDetailed(expected, actual interface{}, message string) string {
 	return message
 }

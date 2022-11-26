@@ -186,7 +186,7 @@ func (sk *Sketch) toNormal() {
 func (sk *Sketch) insert(i uint32, r uint8) bool {
 	changed := false
 	if r-sk.b >= capacity {
-		//overflow
+		// overflow
 		db := sk.regs.min()
 		if db > 0 {
 			sk.b += db

@@ -599,7 +599,7 @@ func (m *Miniredis) cmdCopy(c *server.Peer, cmd string, args []string) {
 		return
 	}
 
-	var opts = struct {
+	opts := struct {
 		from          string
 		to            string
 		destinationDB int

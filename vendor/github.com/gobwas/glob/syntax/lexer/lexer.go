@@ -3,8 +3,9 @@ package lexer
 import (
 	"bytes"
 	"fmt"
-	"github.com/gobwas/glob/util/runes"
 	"unicode/utf8"
+
+	"github.com/gobwas/glob/util/runes"
 )
 
 const (
@@ -146,8 +147,10 @@ func (l *lexer) termsLeave() {
 	l.termsLevel--
 }
 
-var inTextBreakers = []rune{char_single, char_any, char_range_open, char_terms_open}
-var inTermsBreakers = append(inTextBreakers, char_terms_close, char_comma)
+var (
+	inTextBreakers  = []rune{char_single, char_any, char_range_open, char_terms_open}
+	inTermsBreakers = append(inTextBreakers, char_terms_close, char_comma)
+)
 
 func (l *lexer) fetchItem() {
 	r := l.read()

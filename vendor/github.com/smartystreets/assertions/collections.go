@@ -87,6 +87,7 @@ func mapKeys(m interface{}) ([]reflect.Value, bool) {
 	}
 	return value.MapKeys(), true
 }
+
 func keyFound(keys []reflect.Value, expectedKey interface{}) bool {
 	found := false
 	for _, key := range keys {
@@ -111,6 +112,7 @@ func ShouldBeIn(actual interface{}, expected ...interface{}) string {
 	}
 	return shouldBeIn(actual, expected)
 }
+
 func shouldBeIn(actual interface{}, expected interface{}) string {
 	if matchError := oglematchers.Contains(actual).Matches(expected); matchError != nil {
 		return fmt.Sprintf(shouldHaveBeenIn, actual, reflect.TypeOf(expected))
@@ -132,6 +134,7 @@ func ShouldNotBeIn(actual interface{}, expected ...interface{}) string {
 	}
 	return shouldNotBeIn(actual, expected)
 }
+
 func shouldNotBeIn(actual interface{}, expected interface{}) string {
 	if matchError := oglematchers.Contains(actual).Matches(expected); matchError == nil {
 		return fmt.Sprintf(shouldNotHaveBeenIn, actual, reflect.TypeOf(expected))

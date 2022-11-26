@@ -23,7 +23,7 @@ func getIntField(L *LState, tb *LTable, key string, v int) int {
 		slv := string(lv)
 		slv = strings.TrimLeft(slv, " ")
 		if strings.HasPrefix(slv, "0") && !strings.HasPrefix(slv, "0x") && !strings.HasPrefix(slv, "0X") {
-			//Standard lua interpreter only support decimal and hexadecimal
+			// Standard lua interpreter only support decimal and hexadecimal
 			slv = strings.TrimLeft(slv, "0")
 		}
 		if num, err := parseNumber(slv); err == nil {

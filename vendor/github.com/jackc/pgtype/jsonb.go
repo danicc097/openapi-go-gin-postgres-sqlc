@@ -44,7 +44,6 @@ func (dst *JSONB) DecodeBinary(ci *ConnInfo, src []byte) error {
 
 	*dst = JSONB{Bytes: src[1:], Status: Present}
 	return nil
-
 }
 
 func (JSONB) PreferredParamFormat() int16 {

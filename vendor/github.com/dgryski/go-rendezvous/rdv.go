@@ -35,7 +35,7 @@ func (r *Rendezvous) Lookup(k string) string {
 	khash := r.hash(k)
 
 	var midx int
-	var mhash = xorshiftMult64(khash ^ r.nhash[0])
+	mhash := xorshiftMult64(khash ^ r.nhash[0])
 
 	for i, nhash := range r.nhash[1:] {
 		if h := xorshiftMult64(khash ^ nhash); h > mhash {

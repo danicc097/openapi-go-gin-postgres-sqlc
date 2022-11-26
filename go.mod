@@ -6,7 +6,7 @@ require (
 	github.com/danicc097/xo v0.0.0-20221026201620-fb9af03a943d
 	github.com/dave/dst v0.27.0
 	github.com/deepmap/oapi-codegen v1.12.2
-	github.com/getkin/kin-openapi v0.107.0
+	github.com/getkin/kin-openapi v0.109.0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/zap v0.0.2
 	github.com/gin-gonic/gin v1.8.1

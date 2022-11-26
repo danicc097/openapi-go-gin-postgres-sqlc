@@ -101,8 +101,10 @@ func (bl LBool) assertFloat64() (float64, bool)     { return 0, false }
 func (bl LBool) assertString() (string, bool)       { return "", false }
 func (bl LBool) assertFunction() (*LFunction, bool) { return nil, false }
 
-var LTrue = LBool(true)
-var LFalse = LBool(false)
+var (
+	LTrue  = LBool(true)
+	LFalse = LBool(false)
+)
 
 type LString string
 

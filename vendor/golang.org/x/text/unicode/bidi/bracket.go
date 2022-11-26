@@ -116,7 +116,6 @@ type bracketPairer struct {
 
 	codesIsolatedRun []Class // directional bidi codes for an isolated run
 	indexes          []int   // array of index values into the original string
-
 }
 
 // matchOpener reports whether characters at given positions form a matching

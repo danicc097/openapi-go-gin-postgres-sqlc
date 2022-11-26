@@ -61,7 +61,7 @@ func (h *Handlers) GetCurrentUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, user.ToPublic())
 }
 
 // UpdateUser updates the user by id.

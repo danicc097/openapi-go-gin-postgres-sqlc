@@ -14,8 +14,8 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type UserTeamPublic struct {
-	TeamID int       `json:"teamID"` // team_id
-	UserID uuid.UUID `json:"userID"` // user_id
+	TeamID int       `json:"teamID" required:"true"` // team_id
+	UserID uuid.UUID `json:"userID" required:"true"` // user_id
 }
 
 // UserTeam represents a row from 'public.user_team'.

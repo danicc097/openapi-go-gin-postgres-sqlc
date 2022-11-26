@@ -7,8 +7,10 @@ import (
 	"github.com/goccy/go-json/internal/encoder"
 )
 
-type EncodeOption = encoder.Option
-type EncodeOptionFunc func(*EncodeOption)
+type (
+	EncodeOption     = encoder.Option
+	EncodeOptionFunc func(*EncodeOption)
+)
 
 // UnorderedMap doesn't sort when encoding map type.
 func UnorderedMap() EncodeOptionFunc {
@@ -56,8 +58,10 @@ func Colorize(scheme *ColorScheme) EncodeOptionFunc {
 	}
 }
 
-type DecodeOption = decoder.Option
-type DecodeOptionFunc func(*DecodeOption)
+type (
+	DecodeOption     = decoder.Option
+	DecodeOptionFunc func(*DecodeOption)
+)
 
 // DecodeFieldPriorityFirstWin
 // in the default behavior, go-json, like encoding/json,

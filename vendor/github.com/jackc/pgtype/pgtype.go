@@ -207,8 +207,10 @@ type TextEncoder interface {
 	EncodeText(ci *ConnInfo, buf []byte) (newBuf []byte, err error)
 }
 
-var errUndefined = errors.New("cannot encode status undefined")
-var errBadStatus = errors.New("invalid status")
+var (
+	errUndefined = errors.New("cannot encode status undefined")
+	errBadStatus = errors.New("invalid status")
+)
 
 type nullAssignmentError struct {
 	dst interface{}

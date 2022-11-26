@@ -126,8 +126,10 @@ type API interface {
 	Type2(type1 reflect.Type) Type
 }
 
-var ConfigUnsafe = Config{UseSafeImplementation: false}.Froze()
-var ConfigSafe = Config{UseSafeImplementation: true}.Froze()
+var (
+	ConfigUnsafe = Config{UseSafeImplementation: false}.Froze()
+	ConfigSafe   = Config{UseSafeImplementation: true}.Froze()
+)
 
 type frozenConfig struct {
 	useSafeImplementation bool
@@ -282,6 +284,7 @@ func likePtrType(typ reflect.Type) bool {
 // output depends on the input.  noescape is inlined and currently
 // compiles down to zero instructions.
 // USE CAREFULLY!
+//
 //go:nosplit
 func NoEscape(p unsafe.Pointer) unsafe.Pointer {
 	x := uintptr(p)

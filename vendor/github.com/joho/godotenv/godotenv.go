@@ -4,11 +4,11 @@
 //
 // The TL;DR is that you make a .env file that looks something like
 //
-// 		SOME_ENV_VAR=somevalue
+//	SOME_ENV_VAR=somevalue
 //
 // and then in your go code you can call
 //
-// 		godotenv.Load()
+//	godotenv.Load()
 //
 // and all the env vars declared in .env will be available through os.Getenv("SOME_ENV_VAR")
 package godotenv
@@ -32,11 +32,11 @@ const doubleQuoteSpecialChars = "\\\n\r\"!$`"
 //
 // Call this function as close as possible to the start of your program (ideally in main)
 //
-// If you call Load without any args it will default to loading .env in the current path
+// # If you call Load without any args it will default to loading .env in the current path
 //
 // You can otherwise tell it which files to load (there can be more than one) like
 //
-//		godotenv.Load("fileone", "filetwo")
+//	godotenv.Load("fileone", "filetwo")
 //
 // It's important to note that it WILL NOT OVERRIDE an env variable that already exists - consider the .env file to set dev vars or sensible defaults
 func Load(filenames ...string) (err error) {
@@ -55,11 +55,11 @@ func Load(filenames ...string) (err error) {
 //
 // Call this function as close as possible to the start of your program (ideally in main)
 //
-// If you call Overload without any args it will default to loading .env in the current path
+// # If you call Overload without any args it will default to loading .env in the current path
 //
 // You can otherwise tell it which files to load (there can be more than one) like
 //
-//		godotenv.Overload("fileone", "filetwo")
+//	godotenv.Overload("fileone", "filetwo")
 //
 // It's important to note this WILL OVERRIDE an env variable that already exists - consider the .env file to forcefilly set all vars.
 func Overload(filenames ...string) (err error) {
@@ -124,7 +124,7 @@ func Parse(r io.Reader) (envMap map[string]string, err error) {
 	return
 }
 
-//Unmarshal reads an env file from a string, returning a map of keys and values.
+// Unmarshal reads an env file from a string, returning a map of keys and values.
 func Unmarshal(str string) (envMap map[string]string, err error) {
 	return Parse(strings.NewReader(str))
 }
@@ -254,7 +254,7 @@ func parseLine(line string, envMap map[string]string) (key string, value string,
 	firstColon := strings.Index(line, ":")
 	splitString := strings.SplitN(line, "=", 2)
 	if firstColon != -1 && (firstColon < firstEquals || firstEquals == -1) {
-		//this is a yaml-style line
+		// this is a yaml-style line
 		splitString = strings.SplitN(line, ":", 2)
 	}
 
@@ -285,7 +285,6 @@ var (
 )
 
 func parseValue(value string, envMap map[string]string) string {
-
 	// trim
 	value = strings.Trim(value, " ")
 

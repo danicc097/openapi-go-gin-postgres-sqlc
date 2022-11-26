@@ -1,14 +1,13 @@
 //line parser.go.y:2
 package parse
 
-import __yyfmt__ "fmt"
-
-//line parser.go.y:2
 import (
-	"github.com/yuin/gopher-lua/ast"
-)
+	__yyfmt__ "fmt"
 
+	"github.com/yuin/gopher-lua/ast"
+) //line parser.go.y:2
 //line parser.go.y:34
+
 type yySymType struct {
 	yys   int
 	token ast.Token
@@ -30,37 +29,39 @@ type yySymType struct {
 	parlist  *ast.ParList
 }
 
-const TAnd = 57346
-const TBreak = 57347
-const TDo = 57348
-const TElse = 57349
-const TElseIf = 57350
-const TEnd = 57351
-const TFalse = 57352
-const TFor = 57353
-const TFunction = 57354
-const TIf = 57355
-const TIn = 57356
-const TLocal = 57357
-const TNil = 57358
-const TNot = 57359
-const TOr = 57360
-const TReturn = 57361
-const TRepeat = 57362
-const TThen = 57363
-const TTrue = 57364
-const TUntil = 57365
-const TWhile = 57366
-const TEqeq = 57367
-const TNeq = 57368
-const TLte = 57369
-const TGte = 57370
-const T2Comma = 57371
-const T3Comma = 57372
-const TIdent = 57373
-const TNumber = 57374
-const TString = 57375
-const UNARY = 57376
+const (
+	TAnd      = 57346
+	TBreak    = 57347
+	TDo       = 57348
+	TElse     = 57349
+	TElseIf   = 57350
+	TEnd      = 57351
+	TFalse    = 57352
+	TFor      = 57353
+	TFunction = 57354
+	TIf       = 57355
+	TIn       = 57356
+	TLocal    = 57357
+	TNil      = 57358
+	TNot      = 57359
+	TOr       = 57360
+	TReturn   = 57361
+	TRepeat   = 57362
+	TThen     = 57363
+	TTrue     = 57364
+	TUntil    = 57365
+	TWhile    = 57366
+	TEqeq     = 57367
+	TNeq      = 57368
+	TLte      = 57369
+	TGte      = 57370
+	T2Comma   = 57371
+	T3Comma   = 57372
+	TIdent    = 57373
+	TNumber   = 57374
+	TString   = 57375
+	UNARY     = 57376
+)
 
 var yyToknames = []string{
 	"TAnd",
@@ -85,8 +86,7 @@ var yyToknames = []string{
 	"TUntil",
 	"TWhile",
 	"TEqeq",
-	"TNeq",
-	"TLte",
+	"TNeq", "TLte",
 	"TGte",
 	"T2Comma",
 	"T3Comma",
@@ -107,9 +107,11 @@ var yyToknames = []string{
 }
 var yyStatenames = []string{}
 
-const yyEofCode = 1
-const yyErrCode = 2
-const yyMaxDepth = 200
+const (
+	yyEofCode  = 1
+	yyErrCode  = 2
+	yyMaxDepth = 200
+)
 
 //line parser.go.y:514
 func TokenName(c int) string {
@@ -132,22 +134,24 @@ var yyExca = []int{
 	-2, 68,
 	-1, 93,
 	46, 32,
-	47, 32,
-	-2, 68,
+	47, 32, -2, 68,
 }
 
-const yyNprod = 95
-const yyPrivate = 57344
+const (
+	yyNprod   = 95
+	yyPrivate = 57344
+)
 
-var yyTokenNames []string
-var yyStates []string
+var (
+	yyTokenNames []string
+	yyStates     []string
+)
 
 const yyLast = 579
 
 var yyAct = []int{
 
-	24, 88, 50, 23, 45, 84, 56, 65, 137, 153,
-	136, 113, 52, 142, 54, 53, 33, 134, 65, 132,
+	24, 88, 50, 23, 45, 84, 56, 65, 137, 153, 136, 113, 52, 142, 54, 53, 33, 134, 65, 132,
 	62, 63, 32, 61, 108, 109, 48, 111, 106, 41,
 	42, 105, 49, 155, 166, 81, 82, 83, 138, 104,
 	22, 91, 131, 80, 95, 92, 162, 74, 48, 85,
@@ -169,8 +173,7 @@ var yyAct = []int{
 	46, 44, 43, 8, 58, 72, 73, 71, 70, 74,
 	57, 67, 168, 169, 167, 3, 68, 69, 75, 76,
 	77, 78, 79, 160, 80, 66, 4, 2, 0, 0,
-	0, 158, 72, 73, 71, 70, 74, 0, 0, 0,
-	0, 0, 0, 68, 69, 75, 76, 77, 78, 79,
+	0, 158, 72, 73, 71, 70, 74, 0, 0, 0, 0, 0, 0, 68, 69, 75, 76, 77, 78, 79,
 	26, 80, 37, 0, 0, 0, 25, 35, 140, 0,
 	0, 0, 27, 0, 0, 0, 0, 0, 0, 0,
 	29, 21, 28, 39, 40, 20, 26, 0, 37, 34,
@@ -192,8 +195,7 @@ var yyAct = []int{
 	75, 76, 77, 78, 79, 0, 80, 66, 0, 0,
 	103, 0, 0, 0, 72, 73, 71, 70, 74, 0,
 	67, 0, 101, 0, 0, 68, 69, 75, 76, 77,
-	78, 79, 0, 80, 66, 0, 0, 0, 0, 0,
-	0, 72, 73, 71, 70, 74, 0, 67, 0, 0,
+	78, 79, 0, 80, 66, 0, 0, 0, 0, 0, 0, 72, 73, 71, 70, 74, 0, 67, 0, 0,
 	0, 0, 68, 69, 75, 76, 77, 78, 79, 0,
 	80, 66, 0, 0, 0, 0, 0, 0, 72, 73,
 	71, 70, 74, 0, 0, 0, 0, 0, 0, 68,
@@ -205,11 +207,11 @@ var yyAct = []int{
 	0, 0, 0, 0, 21, 0, 0, 0, 20, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 5,
 }
+
 var yyPact = []int{
 
 	-1000, -1000, 533, -5, -1000, -1000, 292, -1000, -17, 152,
-	-1000, 292, -1000, 292, 107, 97, 88, -1000, -1000, -1000,
-	292, -1000, -1000, -29, 473, -1000, -1000, -1000, -1000, -1000,
+	-1000, 292, -1000, 292, 107, 97, 88, -1000, -1000, -1000, 292, -1000, -1000, -29, 473, -1000, -1000, -1000, -1000, -1000,
 	-1000, 152, -1000, -1000, 292, 292, 292, 14, -1000, -1000,
 	142, 292, 116, 292, 95, -1000, 82, 240, -1000, -1000,
 	171, -1000, 446, 112, 419, -7, 17, 14, -24, -1000,
@@ -227,12 +229,14 @@ var yyPact = []int{
 	311, 151, -1000, 473, 146, 392, -1000, 292, -1000, -1000,
 	-1000, 144, 365, -1000, -1000, -1000, 140, -1000,
 }
+
 var yyPgo = []int{
 
 	0, 190, 227, 2, 226, 223, 215, 210, 204, 203,
 	118, 6, 3, 0, 22, 107, 168, 199, 4, 197,
 	5, 195, 16, 193, 1, 182,
 }
+
 var yyR1 = []int{
 
 	0, 1, 1, 1, 2, 2, 2, 3, 4, 4,
@@ -246,6 +250,7 @@ var yyR1 = []int{
 	20, 20, 21, 21, 21, 22, 22, 23, 23, 23,
 	24, 24, 24, 25, 25,
 }
+
 var yyR2 = []int{
 
 	0, 1, 2, 3, 0, 2, 2, 1, 3, 1,
@@ -259,6 +264,7 @@ var yyR2 = []int{
 	5, 4, 1, 1, 3, 2, 3, 1, 3, 2,
 	3, 5, 1, 1, 1,
 }
+
 var yyChk = []int{
 
 	-1000, -1, -2, -6, -4, 45, 19, 5, -9, -15,
@@ -281,6 +287,7 @@ var yyChk = []int{
 	-13, -3, 9, -13, -3, -13, 6, 47, 9, 9,
 	21, -3, -13, -3, 9, 6, -3, 9,
 }
+
 var yyDef = []int{
 
 	4, -2, 1, 2, 5, 6, 24, 26, 0, 9,
@@ -303,6 +310,7 @@ var yyDef = []int{
 	0, 0, 80, 91, 0, 0, 4, 0, 17, 14,
 	4, 0, 0, 23, 15, 4, 0, 16,
 }
+
 var yyTok1 = []int{
 
 	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -319,6 +327,7 @@ var yyTok1 = []int{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 34, 3, 54,
 }
+
 var yyTok2 = []int{
 
 	2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
@@ -326,15 +335,17 @@ var yyTok2 = []int{
 	22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
 	32, 33, 43,
 }
-var yyTok3 = []int{
-	0,
-}
+var (
+	yyTok3 = []int{
+		0,
+	}
 
 //line yaccpar:1
 
-/*	parser for yacc output	*/
+	/*	parser for yacc output	*/
 
-var yyDebug = 0
+	yyDebug = 0
+)
 
 type yyLexer interface {
 	Lex(lval *yySymType) int

@@ -476,7 +476,7 @@ func (m *Miniredis) cmdZlexcount(c *server.Peer, cmd string, args []string) {
 		return
 	}
 
-	var opts = struct {
+	opts := struct {
 		Key string
 		Min string
 		Max string
@@ -631,7 +631,7 @@ func (m *Miniredis) cmdZrevrange(c *server.Peer, cmd string, args []string) {
 		return
 	}
 
-	var opts = optsRange{
+	opts := optsRange{
 		Reverse: true,
 		Key:     args[0],
 		Min:     args[1],
@@ -719,7 +719,7 @@ func (m *Miniredis) makeCmdZrangebyscore(reverse bool) server.Cmd {
 			return
 		}
 
-		var opts = optsRangeByScore{
+		opts := optsRangeByScore{
 			Reverse: reverse,
 			Key:     args[0],
 			Min:     args[1],
@@ -853,7 +853,7 @@ func (m *Miniredis) cmdZremrangebylex(c *server.Peer, cmd string, args []string)
 		return
 	}
 
-	var opts = struct {
+	opts := struct {
 		Key string
 		Min string
 		Max string

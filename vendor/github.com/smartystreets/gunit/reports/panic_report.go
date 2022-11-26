@@ -27,5 +27,4 @@ func PanicReport(r interface{}, stack []byte) string {
 	}
 
 	return strings.TrimSpace(builder.String())
-
 }

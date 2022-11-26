@@ -16,12 +16,12 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type WorkItemCommentPublic struct {
-	WorkItemCommentID int64     `json:"workItemCommentID"` // work_item_comment_id
-	WorkItemID        int64     `json:"workItemID"`        // work_item_id
-	UserID            uuid.UUID `json:"userID"`            // user_id
-	Message           string    `json:"message"`           // message
-	CreatedAt         time.Time `json:"createdAt"`         // created_at
-	UpdatedAt         time.Time `json:"updatedAt"`         // updated_at
+	WorkItemCommentID int64     `json:"workItemCommentID" required:"true"` // work_item_comment_id
+	WorkItemID        int64     `json:"workItemID" required:"true"`        // work_item_id
+	UserID            uuid.UUID `json:"userID" required:"true"`            // user_id
+	Message           string    `json:"message" required:"true"`           // message
+	CreatedAt         time.Time `json:"createdAt" required:"true"`         // created_at
+	UpdatedAt         time.Time `json:"updatedAt" required:"true"`         // updated_at
 }
 
 // WorkItemComment represents a row from 'public.work_item_comments'.

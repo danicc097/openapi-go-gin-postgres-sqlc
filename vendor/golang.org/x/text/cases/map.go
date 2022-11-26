@@ -186,7 +186,6 @@ func (t undLowerIgnoreSigmaCaser) Transform(dst, src []byte, atEOF bool) (nDst, 
 		c.checkpoint()
 	}
 	return c.ret()
-
 }
 
 // Span implements a generic lower-casing. This is possible as isLower works

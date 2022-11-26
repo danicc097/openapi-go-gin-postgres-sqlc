@@ -12,10 +12,10 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type ActivityPublic struct {
-	ActivityID   int    `json:"activityID"`   // activity_id
-	Name         string `json:"name"`         // name
-	Description  string `json:"description"`  // description
-	IsProductive bool   `json:"isProductive"` // is_productive
+	ActivityID   int    `json:"activityID" required:"true"`   // activity_id
+	Name         string `json:"name" required:"true"`         // name
+	Description  string `json:"description" required:"true"`  // description
+	IsProductive bool   `json:"isProductive" required:"true"` // is_productive
 }
 
 // Activity represents a row from 'public.activities'.

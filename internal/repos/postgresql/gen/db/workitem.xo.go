@@ -16,16 +16,16 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type WorkItemPublic struct {
-	WorkItemID     int64        `json:"workItemID"`     // work_item_id
-	Title          string       `json:"title"`          // title
-	WorkItemTypeID int          `json:"workItemTypeID"` // work_item_type_id
-	Metadata       pgtype.JSONB `json:"metadata"`       // metadata
-	TeamID         int          `json:"teamID"`         // team_id
-	KanbanStepID   int          `json:"kanbanStepID"`   // kanban_step_id
-	Closed         bool         `json:"closed"`         // closed
-	CreatedAt      time.Time    `json:"createdAt"`      // created_at
-	UpdatedAt      time.Time    `json:"updatedAt"`      // updated_at
-	DeletedAt      *time.Time   `json:"deletedAt"`      // deleted_at
+	WorkItemID     int64        `json:"workItemID" required:"true"`     // work_item_id
+	Title          string       `json:"title" required:"true"`          // title
+	WorkItemTypeID int          `json:"workItemTypeID" required:"true"` // work_item_type_id
+	Metadata       pgtype.JSONB `json:"metadata" required:"true"`       // metadata
+	TeamID         int          `json:"teamID" required:"true"`         // team_id
+	KanbanStepID   int          `json:"kanbanStepID" required:"true"`   // kanban_step_id
+	Closed         bool         `json:"closed" required:"true"`         // closed
+	CreatedAt      time.Time    `json:"createdAt" required:"true"`      // created_at
+	UpdatedAt      time.Time    `json:"updatedAt" required:"true"`      // updated_at
+	DeletedAt      *time.Time   `json:"deletedAt" required:"true"`      // deleted_at
 }
 
 // WorkItem represents a row from 'public.work_items'.

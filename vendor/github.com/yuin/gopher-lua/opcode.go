@@ -23,18 +23,22 @@ import (
 
 const opInvalidInstruction = ^uint32(0)
 
-const opSizeCode = 6
-const opSizeA = 8
-const opSizeB = 9
-const opSizeC = 9
-const opSizeBx = 18
-const opSizesBx = 18
+const (
+	opSizeCode = 6
+	opSizeA    = 8
+	opSizeB    = 9
+	opSizeC    = 9
+	opSizeBx   = 18
+	opSizesBx  = 18
+)
 
-const opMaxArgsA = (1 << opSizeA) - 1
-const opMaxArgsB = (1 << opSizeB) - 1
-const opMaxArgsC = (1 << opSizeC) - 1
-const opMaxArgBx = (1 << opSizeBx) - 1
-const opMaxArgSbx = opMaxArgBx >> 1
+const (
+	opMaxArgsA  = (1 << opSizeA) - 1
+	opMaxArgsB  = (1 << opSizeB) - 1
+	opMaxArgsC  = (1 << opSizeC) - 1
+	opMaxArgBx  = (1 << opSizeBx) - 1
+	opMaxArgSbx = opMaxArgBx >> 1
+)
 
 const (
 	OP_MOVE     int = iota /*      A B     R(A) := R(B)                            */
@@ -126,48 +130,48 @@ type opProp struct {
 }
 
 var opProps = []opProp{
-	opProp{"MOVE", false, true, opArgModeR, opArgModeN, opTypeABC},
-	opProp{"MOVEN", false, true, opArgModeR, opArgModeN, opTypeABC},
-	opProp{"LOADK", false, true, opArgModeK, opArgModeN, opTypeABx},
-	opProp{"LOADBOOL", false, true, opArgModeU, opArgModeU, opTypeABC},
-	opProp{"LOADNIL", false, true, opArgModeR, opArgModeN, opTypeABC},
-	opProp{"GETUPVAL", false, true, opArgModeU, opArgModeN, opTypeABC},
-	opProp{"GETGLOBAL", false, true, opArgModeK, opArgModeN, opTypeABx},
-	opProp{"GETTABLE", false, true, opArgModeR, opArgModeK, opTypeABC},
-	opProp{"GETTABLEKS", false, true, opArgModeR, opArgModeK, opTypeABC},
-	opProp{"SETGLOBAL", false, false, opArgModeK, opArgModeN, opTypeABx},
-	opProp{"SETUPVAL", false, false, opArgModeU, opArgModeN, opTypeABC},
-	opProp{"SETTABLE", false, false, opArgModeK, opArgModeK, opTypeABC},
-	opProp{"SETTABLEKS", false, false, opArgModeK, opArgModeK, opTypeABC},
-	opProp{"NEWTABLE", false, true, opArgModeU, opArgModeU, opTypeABC},
-	opProp{"SELF", false, true, opArgModeR, opArgModeK, opTypeABC},
-	opProp{"ADD", false, true, opArgModeK, opArgModeK, opTypeABC},
-	opProp{"SUB", false, true, opArgModeK, opArgModeK, opTypeABC},
-	opProp{"MUL", false, true, opArgModeK, opArgModeK, opTypeABC},
-	opProp{"DIV", false, true, opArgModeK, opArgModeK, opTypeABC},
-	opProp{"MOD", false, true, opArgModeK, opArgModeK, opTypeABC},
-	opProp{"POW", false, true, opArgModeK, opArgModeK, opTypeABC},
-	opProp{"UNM", false, true, opArgModeR, opArgModeN, opTypeABC},
-	opProp{"NOT", false, true, opArgModeR, opArgModeN, opTypeABC},
-	opProp{"LEN", false, true, opArgModeR, opArgModeN, opTypeABC},
-	opProp{"CONCAT", false, true, opArgModeR, opArgModeR, opTypeABC},
-	opProp{"JMP", false, false, opArgModeR, opArgModeN, opTypeASbx},
-	opProp{"EQ", true, false, opArgModeK, opArgModeK, opTypeABC},
-	opProp{"LT", true, false, opArgModeK, opArgModeK, opTypeABC},
-	opProp{"LE", true, false, opArgModeK, opArgModeK, opTypeABC},
-	opProp{"TEST", true, true, opArgModeR, opArgModeU, opTypeABC},
-	opProp{"TESTSET", true, true, opArgModeR, opArgModeU, opTypeABC},
-	opProp{"CALL", false, true, opArgModeU, opArgModeU, opTypeABC},
-	opProp{"TAILCALL", false, true, opArgModeU, opArgModeU, opTypeABC},
-	opProp{"RETURN", false, false, opArgModeU, opArgModeN, opTypeABC},
-	opProp{"FORLOOP", false, true, opArgModeR, opArgModeN, opTypeASbx},
-	opProp{"FORPREP", false, true, opArgModeR, opArgModeN, opTypeASbx},
-	opProp{"TFORLOOP", true, false, opArgModeN, opArgModeU, opTypeABC},
-	opProp{"SETLIST", false, false, opArgModeU, opArgModeU, opTypeABC},
-	opProp{"CLOSE", false, false, opArgModeN, opArgModeN, opTypeABC},
-	opProp{"CLOSURE", false, true, opArgModeU, opArgModeN, opTypeABx},
-	opProp{"VARARG", false, true, opArgModeU, opArgModeN, opTypeABC},
-	opProp{"NOP", false, false, opArgModeR, opArgModeN, opTypeASbx},
+	{"MOVE", false, true, opArgModeR, opArgModeN, opTypeABC},
+	{"MOVEN", false, true, opArgModeR, opArgModeN, opTypeABC},
+	{"LOADK", false, true, opArgModeK, opArgModeN, opTypeABx},
+	{"LOADBOOL", false, true, opArgModeU, opArgModeU, opTypeABC},
+	{"LOADNIL", false, true, opArgModeR, opArgModeN, opTypeABC},
+	{"GETUPVAL", false, true, opArgModeU, opArgModeN, opTypeABC},
+	{"GETGLOBAL", false, true, opArgModeK, opArgModeN, opTypeABx},
+	{"GETTABLE", false, true, opArgModeR, opArgModeK, opTypeABC},
+	{"GETTABLEKS", false, true, opArgModeR, opArgModeK, opTypeABC},
+	{"SETGLOBAL", false, false, opArgModeK, opArgModeN, opTypeABx},
+	{"SETUPVAL", false, false, opArgModeU, opArgModeN, opTypeABC},
+	{"SETTABLE", false, false, opArgModeK, opArgModeK, opTypeABC},
+	{"SETTABLEKS", false, false, opArgModeK, opArgModeK, opTypeABC},
+	{"NEWTABLE", false, true, opArgModeU, opArgModeU, opTypeABC},
+	{"SELF", false, true, opArgModeR, opArgModeK, opTypeABC},
+	{"ADD", false, true, opArgModeK, opArgModeK, opTypeABC},
+	{"SUB", false, true, opArgModeK, opArgModeK, opTypeABC},
+	{"MUL", false, true, opArgModeK, opArgModeK, opTypeABC},
+	{"DIV", false, true, opArgModeK, opArgModeK, opTypeABC},
+	{"MOD", false, true, opArgModeK, opArgModeK, opTypeABC},
+	{"POW", false, true, opArgModeK, opArgModeK, opTypeABC},
+	{"UNM", false, true, opArgModeR, opArgModeN, opTypeABC},
+	{"NOT", false, true, opArgModeR, opArgModeN, opTypeABC},
+	{"LEN", false, true, opArgModeR, opArgModeN, opTypeABC},
+	{"CONCAT", false, true, opArgModeR, opArgModeR, opTypeABC},
+	{"JMP", false, false, opArgModeR, opArgModeN, opTypeASbx},
+	{"EQ", true, false, opArgModeK, opArgModeK, opTypeABC},
+	{"LT", true, false, opArgModeK, opArgModeK, opTypeABC},
+	{"LE", true, false, opArgModeK, opArgModeK, opTypeABC},
+	{"TEST", true, true, opArgModeR, opArgModeU, opTypeABC},
+	{"TESTSET", true, true, opArgModeR, opArgModeU, opTypeABC},
+	{"CALL", false, true, opArgModeU, opArgModeU, opTypeABC},
+	{"TAILCALL", false, true, opArgModeU, opArgModeU, opTypeABC},
+	{"RETURN", false, false, opArgModeU, opArgModeN, opTypeABC},
+	{"FORLOOP", false, true, opArgModeR, opArgModeN, opTypeASbx},
+	{"FORPREP", false, true, opArgModeR, opArgModeN, opTypeASbx},
+	{"TFORLOOP", true, false, opArgModeN, opArgModeU, opTypeABC},
+	{"SETLIST", false, false, opArgModeU, opArgModeU, opTypeABC},
+	{"CLOSE", false, false, opArgModeN, opArgModeN, opTypeABC},
+	{"CLOSURE", false, true, opArgModeU, opArgModeN, opTypeABx},
+	{"VARARG", false, true, opArgModeU, opArgModeN, opTypeABC},
+	{"NOP", false, false, opArgModeR, opArgModeN, opTypeASbx},
 }
 
 func opGetOpCode(inst uint32) int {
@@ -243,8 +247,10 @@ func opCreateASbx(op int, a int, sbx int) uint32 {
 	return inst
 }
 
-const opBitRk = 1 << (opSizeB - 1)
-const opMaxIndexRk = opBitRk - 1
+const (
+	opBitRk      = 1 << (opSizeB - 1)
+	opMaxIndexRk = opBitRk - 1
+)
 
 func opIsK(value int) bool {
 	return bool((value & opBitRk) != 0)

@@ -87,13 +87,13 @@ type TaskTypePublic struct {
 
 // TeamPublic defines model for TeamPublic.
 type TeamPublic struct {
-	CreatedAt   *time.Time   `json:"createdAt,omitempty"`
-	Description *string      `json:"description,omitempty"`
-	Metadata    *PgtypeJSONB `json:"metadata,omitempty"`
-	Name        *string      `json:"name,omitempty"`
-	ProjectID   *int         `json:"projectID,omitempty"`
-	TeamID      *int         `json:"teamID,omitempty"`
-	UpdatedAt   *time.Time   `json:"updatedAt,omitempty"`
+	CreatedAt   time.Time   `json:"createdAt"`
+	Description string      `json:"description"`
+	Metadata    PgtypeJSONB `json:"metadata"`
+	Name        string      `json:"name"`
+	ProjectID   int         `json:"projectID"`
+	TeamID      int         `json:"teamID"`
+	UpdatedAt   time.Time   `json:"updatedAt"`
 }
 
 // TimeEntryPublic defines model for TimeEntryPublic.
@@ -125,9 +125,9 @@ type UpdateUserRequest struct {
 
 // UserAPIKeyPublic defines model for UserAPIKeyPublic.
 type UserAPIKeyPublic struct {
-	ApiKey    *string    `json:"apiKey,omitempty"`
-	ExpiresOn *time.Time `json:"expiresOn,omitempty"`
-	UserID    *UuidUUID  `json:"userID,omitempty"`
+	ApiKey    string    `json:"apiKey"`
+	ExpiresOn time.Time `json:"expiresOn"`
+	UserID    UuidUUID  `json:"userID"`
 }
 
 // UserPublic defines model for UserPublic.
@@ -149,17 +149,17 @@ type UserPublic struct {
 // UserResponse defines model for UserResponse.
 type UserResponse struct {
 	ApiKey    *UserAPIKeyPublic `json:"apiKey"`
-	CreatedAt *time.Time        `json:"createdAt,omitempty"`
+	CreatedAt time.Time         `json:"createdAt"`
 	DeletedAt *time.Time        `json:"deletedAt"`
-	Email     *string           `json:"email,omitempty"`
+	Email     string            `json:"email"`
 	FirstName *string           `json:"firstName"`
 	FullName  *string           `json:"fullName"`
 	LastName  *string           `json:"lastName"`
 	Role      *Role             `json:"role,omitempty"`
 	Scopes    *Scopes           `json:"scopes,omitempty"`
 	Teams     *[]TeamPublic     `json:"teams"`
-	UserID    *UuidUUID         `json:"userID,omitempty"`
-	Username  *string           `json:"username,omitempty"`
+	UserID    UuidUUID          `json:"userID"`
+	Username  string            `json:"username"`
 }
 
 // UuidUUID defines model for UuidUUID.

@@ -30,9 +30,11 @@ import (
 
 var DumpMaxLineLen = 60
 
-type hashKey map[string]string
-type listKey []string
-type setKey map[string]struct{}
+type (
+	hashKey map[string]string
+	listKey []string
+	setKey  map[string]struct{}
+)
 
 // RedisDB holds a single (numbered) Redis database.
 type RedisDB struct {
@@ -219,7 +221,6 @@ func (m *Miniredis) Close() {
 
 	// the OnDisconnect callbacks can lock m, so run Close() outside the lock.
 	srv.Close()
-
 }
 
 // RequireAuth makes every connection need to AUTH first. This is the old 'AUTH [password] command.

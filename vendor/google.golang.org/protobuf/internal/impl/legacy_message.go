@@ -90,6 +90,7 @@ var legacyMessageDescCache sync.Map // map[reflect.Type]protoreflect.MessageDesc
 func LegacyLoadMessageDesc(t reflect.Type) protoreflect.MessageDescriptor {
 	return legacyLoadMessageDesc(t, "")
 }
+
 func legacyLoadMessageDesc(t reflect.Type, name protoreflect.FullName) protoreflect.MessageDescriptor {
 	// Fast-path: check if a MessageDescriptor is cached for this concrete type.
 	if mi, ok := legacyMessageDescCache.Load(t); ok {
@@ -170,6 +171,7 @@ func aberrantLoadMessageDesc(t reflect.Type, name protoreflect.FullName) protore
 	}
 	return aberrantLoadMessageDescReentrant(t, name)
 }
+
 func aberrantLoadMessageDescReentrant(t reflect.Type, name protoreflect.FullName) protoreflect.MessageDescriptor {
 	// Fast-path: check if an MessageDescriptor is cached for this concrete type.
 	if md, ok := aberrantMessageDescCache[t]; ok {
@@ -467,12 +469,15 @@ func (mt aberrantMessageType) New() protoreflect.Message {
 	}
 	return aberrantMessage{reflect.Zero(mt.t)}
 }
+
 func (mt aberrantMessageType) Zero() protoreflect.Message {
 	return aberrantMessage{reflect.Zero(mt.t)}
 }
+
 func (mt aberrantMessageType) GoType() reflect.Type {
 	return mt.t
 }
+
 func (mt aberrantMessageType) Descriptor() protoreflect.MessageDescriptor {
 	return LegacyLoadMessageDesc(mt.t)
 }
@@ -504,60 +509,76 @@ func (m aberrantMessage) ProtoReflect() protoreflect.Message {
 func (m aberrantMessage) Descriptor() protoreflect.MessageDescriptor {
 	return LegacyLoadMessageDesc(m.v.Type())
 }
+
 func (m aberrantMessage) Type() protoreflect.MessageType {
 	return aberrantMessageType{m.v.Type()}
 }
+
 func (m aberrantMessage) New() protoreflect.Message {
 	if m.v.Type().Kind() == reflect.Ptr {
 		return aberrantMessage{reflect.New(m.v.Type().Elem())}
 	}
 	return aberrantMessage{reflect.Zero(m.v.Type())}
 }
+
 func (m aberrantMessage) Interface() protoreflect.ProtoMessage {
 	return m
 }
+
 func (m aberrantMessage) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	return
 }
+
 func (m aberrantMessage) Has(protoreflect.FieldDescriptor) bool {
 	return false
 }
+
 func (m aberrantMessage) Clear(protoreflect.FieldDescriptor) {
 	panic("invalid Message.Clear on " + string(m.Descriptor().FullName()))
 }
+
 func (m aberrantMessage) Get(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	if fd.Default().IsValid() {
 		return fd.Default()
 	}
 	panic("invalid Message.Get on " + string(m.Descriptor().FullName()))
 }
+
 func (m aberrantMessage) Set(protoreflect.FieldDescriptor, protoreflect.Value) {
 	panic("invalid Message.Set on " + string(m.Descriptor().FullName()))
 }
+
 func (m aberrantMessage) Mutable(protoreflect.FieldDescriptor) protoreflect.Value {
 	panic("invalid Message.Mutable on " + string(m.Descriptor().FullName()))
 }
+
 func (m aberrantMessage) NewField(protoreflect.FieldDescriptor) protoreflect.Value {
 	panic("invalid Message.NewField on " + string(m.Descriptor().FullName()))
 }
+
 func (m aberrantMessage) WhichOneof(protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	panic("invalid Message.WhichOneof descriptor on " + string(m.Descriptor().FullName()))
 }
+
 func (m aberrantMessage) GetUnknown() protoreflect.RawFields {
 	return nil
 }
+
 func (m aberrantMessage) SetUnknown(protoreflect.RawFields) {
 	// SetUnknown discards its input on messages which don't support unknown field storage.
 }
+
 func (m aberrantMessage) IsValid() bool {
 	if m.v.Kind() == reflect.Ptr {
 		return !m.v.IsNil()
 	}
 	return false
 }
+
 func (m aberrantMessage) ProtoMethods() *protoiface.Methods {
 	return aberrantProtoMethods
 }
+
 func (m aberrantMessage) protoUnwrap() interface{} {
 	return m.v.Interface()
 }

@@ -12,14 +12,14 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type KanbanStepPublic struct {
-	KanbanStepID  int    `json:"kanbanStepID"`  // kanban_step_id
-	TeamID        int    `json:"teamID"`        // team_id
-	StepOrder     *int16 `json:"stepOrder"`     // step_order
-	Name          string `json:"name"`          // name
-	Description   string `json:"description"`   // description
-	Color         string `json:"color"`         // color
-	TimeTrackable bool   `json:"timeTrackable"` // time_trackable
-	Disabled      bool   `json:"disabled"`      // disabled
+	KanbanStepID  int    `json:"kanbanStepID" required:"true"`  // kanban_step_id
+	TeamID        int    `json:"teamID" required:"true"`        // team_id
+	StepOrder     *int16 `json:"stepOrder" required:"true"`     // step_order
+	Name          string `json:"name" required:"true"`          // name
+	Description   string `json:"description" required:"true"`   // description
+	Color         string `json:"color" required:"true"`         // color
+	TimeTrackable bool   `json:"timeTrackable" required:"true"` // time_trackable
+	Disabled      bool   `json:"disabled" required:"true"`      // disabled
 }
 
 // KanbanStep represents a row from 'public.kanban_steps'.

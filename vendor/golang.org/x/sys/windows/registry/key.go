@@ -124,7 +124,7 @@ func (k Key) ReadSubKeyNames(n int) ([]string, error) {
 	names := make([]string, 0)
 	// Registry key size limit is 255 bytes and described there:
 	// https://msdn.microsoft.com/library/windows/desktop/ms724872.aspx
-	buf := make([]uint16, 256) //plus extra room for terminating zero byte
+	buf := make([]uint16, 256) // plus extra room for terminating zero byte
 loopItems:
 	for i := uint32(0); ; i++ {
 		if n > 0 {

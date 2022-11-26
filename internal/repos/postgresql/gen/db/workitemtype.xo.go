@@ -12,11 +12,11 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type WorkItemTypePublic struct {
-	WorkItemTypeID int    `json:"workItemTypeID"` // work_item_type_id
-	ProjectID      int64  `json:"projectID"`      // project_id
-	Name           string `json:"name"`           // name
-	Description    string `json:"description"`    // description
-	Color          string `json:"color"`          // color
+	WorkItemTypeID int    `json:"workItemTypeID" required:"true"` // work_item_type_id
+	ProjectID      int64  `json:"projectID" required:"true"`      // project_id
+	Name           string `json:"name" required:"true"`           // name
+	Description    string `json:"description" required:"true"`    // description
+	Color          string `json:"color" required:"true"`          // color
 }
 
 // WorkItemType represents a row from 'public.work_item_types'.

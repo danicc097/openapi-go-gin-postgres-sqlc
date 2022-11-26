@@ -49,9 +49,8 @@ func TestGetUserRoute(t *testing.T) {
 		resp := httptest.NewRecorder()
 
 		srv.Handler.ServeHTTP(resp, req)
-		t.Logf("%v", resp)
 		assert.Equal(t, http.StatusOK, resp.Code)
-		userj, err := json.Marshal(ufixture.User)
+		userj, err := json.Marshal(ufixture.User.ToPublic())
 		if err != nil {
 			t.Fatalf("could not marshal user fixture")
 		}

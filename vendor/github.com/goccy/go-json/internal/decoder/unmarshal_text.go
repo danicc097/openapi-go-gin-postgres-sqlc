@@ -36,9 +36,7 @@ func (d *unmarshalTextDecoder) annotateError(cursor int64, err error) {
 	}
 }
 
-var (
-	nullbytes = []byte(`null`)
-)
+var nullbytes = []byte(`null`)
 
 func (d *unmarshalTextDecoder) DecodeStream(s *Stream, depth int64, p unsafe.Pointer) error {
 	s.skipWhiteSpace()

@@ -1087,7 +1087,6 @@ func addExternalCandidates(pass *pass, refs references, filename string) error {
 			defer wg.Done()
 
 			found, err := findImport(ctx, pass, found[pkgName], pkgName, symbols, filename)
-
 			if err != nil {
 				firstErrOnce.Do(func() {
 					firstErr = err

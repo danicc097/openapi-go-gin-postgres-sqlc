@@ -110,9 +110,7 @@ func blocking(
 	cb blockCmd,
 	onTimeout func(*server.Peer),
 ) {
-	var (
-		ctx = getCtx(c)
-	)
+	ctx := getCtx(c)
 	if inTx(ctx) {
 		addTxCmd(ctx, func(c *server.Peer, ctx *connCtx) {
 			if !cb(c, ctx) {

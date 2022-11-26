@@ -31,6 +31,7 @@ func extString(extPropValue interface{}) (string, error) {
 
 	return str, nil
 }
+
 func extTypeName(extPropValue interface{}) (string, error) {
 	return extString(extPropValue)
 }

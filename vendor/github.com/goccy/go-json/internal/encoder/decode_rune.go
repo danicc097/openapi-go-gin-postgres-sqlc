@@ -4,8 +4,8 @@ import "unicode/utf8"
 
 const (
 	// The default lowest and highest continuation byte.
-	locb = 128 //0b10000000
-	hicb = 191 //0b10111111
+	locb = 128 // 0b10000000
+	hicb = 191 // 0b10111111
 
 	// These names of these constants are chosen to give nice alignment in the
 	// table below. The first nibble is an index into acceptRanges or F for

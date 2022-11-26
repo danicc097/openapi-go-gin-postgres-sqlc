@@ -31,7 +31,6 @@ type validate struct {
 
 // parent and current will be the same the first run of validateStruct
 func (v *validate) validateStruct(ctx context.Context, parent reflect.Value, current reflect.Value, typ reflect.Type, ns []byte, structNs []byte, ct *cTag) {
-
 	cs, ok := v.v.structCache.Get(typ)
 	if !ok {
 		cs = v.v.extractStructCache(current, typ.Name())
@@ -57,13 +56,11 @@ func (v *validate) validateStruct(ctx context.Context, parent reflect.Value, cur
 			f = cs.fields[i]
 
 			if v.isPartial {
-
 				if v.ffn != nil {
 					// used with StructFiltered
 					if v.ffn(append(structNs, f.name...)) {
 						continue
 					}
-
 				} else {
 					// used with StructPartial & StructExcept
 					_, ok = v.includeExclude[string(append(structNs, f.name...))]
@@ -399,7 +396,6 @@ OUTER:
 					}
 
 					if ct.hasAlias {
-
 						v.errs = append(v.errs,
 							&fieldError{
 								v:              v.v,
@@ -415,7 +411,6 @@ OUTER:
 								typ:            typ,
 							},
 						)
-
 					} else {
 
 						tVal := string(v.misc)[1:]
@@ -482,5 +477,4 @@ OUTER:
 			ct = ct.next
 		}
 	}
-
 }

@@ -304,11 +304,11 @@ func parseHstore(s string) (k []string, v []Text, err error) {
 			}
 		case hsKey:
 			switch r {
-			case '"': //End of the key
+			case '"': // End of the key
 				keys = append(keys, buf.String())
 				buf = bytes.Buffer{}
 				state = hsSep
-			case '\\': //Potential escaped character
+			case '\\': // Potential escaped character
 				n, end := p.Consume()
 				switch {
 				case end:
@@ -319,7 +319,7 @@ func parseHstore(s string) (k []string, v []Text, err error) {
 					buf.WriteRune(r)
 					buf.WriteRune(n)
 				}
-			default: //Any other character
+			default: // Any other character
 				buf.WriteRune(r)
 			}
 		case hsSep:
@@ -348,11 +348,11 @@ func parseHstore(s string) (k []string, v []Text, err error) {
 			}
 		case hsVal:
 			switch r {
-			case '"': //End of the value
+			case '"': // End of the value
 				values = append(values, Text{String: buf.String(), Status: Present})
 				buf = bytes.Buffer{}
 				state = hsNext
-			case '\\': //Potential escaped character
+			case '\\': // Potential escaped character
 				n, end := p.Consume()
 				switch {
 				case end:
@@ -363,7 +363,7 @@ func parseHstore(s string) (k []string, v []Text, err error) {
 					buf.WriteRune(r)
 					buf.WriteRune(n)
 				}
-			default: //Any other character
+			default: // Any other character
 				buf.WriteRune(r)
 			}
 		case hsNul:

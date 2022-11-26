@@ -16,15 +16,15 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type TaskPublic struct {
-	TaskID     int64        `json:"taskID"`     // task_id
-	TaskTypeID int          `json:"taskTypeID"` // task_type_id
-	WorkItemID int64        `json:"workItemID"` // work_item_id
-	Title      string       `json:"title"`      // title
-	Metadata   pgtype.JSONB `json:"metadata"`   // metadata
-	Finished   *bool        `json:"finished"`   // finished
-	CreatedAt  time.Time    `json:"createdAt"`  // created_at
-	UpdatedAt  time.Time    `json:"updatedAt"`  // updated_at
-	DeletedAt  *time.Time   `json:"deletedAt"`  // deleted_at
+	TaskID     int64        `json:"taskID" required:"true"`     // task_id
+	TaskTypeID int          `json:"taskTypeID" required:"true"` // task_type_id
+	WorkItemID int64        `json:"workItemID" required:"true"` // work_item_id
+	Title      string       `json:"title" required:"true"`      // title
+	Metadata   pgtype.JSONB `json:"metadata" required:"true"`   // metadata
+	Finished   *bool        `json:"finished" required:"true"`   // finished
+	CreatedAt  time.Time    `json:"createdAt" required:"true"`  // created_at
+	UpdatedAt  time.Time    `json:"updatedAt" required:"true"`  // updated_at
+	DeletedAt  *time.Time   `json:"deletedAt" required:"true"`  // deleted_at
 }
 
 // Task represents a row from 'public.tasks'.

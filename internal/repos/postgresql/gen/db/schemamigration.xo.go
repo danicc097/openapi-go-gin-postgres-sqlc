@@ -12,8 +12,8 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type SchemaMigrationPublic struct {
-	Version int64 `json:"version"` // version
-	Dirty   bool  `json:"dirty"`   // dirty
+	Version int64 `json:"version" required:"true"` // version
+	Dirty   bool  `json:"dirty" required:"true"`   // dirty
 }
 
 // SchemaMigration represents a row from 'public.schema_migrations'.

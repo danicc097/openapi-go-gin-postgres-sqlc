@@ -130,7 +130,6 @@ func (doc *T) addResponseToSpec(r *ResponseRef, refNameResolver RefNameResolver)
 	}
 	doc.Components.Responses[name] = &ResponseRef{Value: r.Value}
 	r.Ref = "#/components/responses/" + name
-
 }
 
 func (doc *T) addSecuritySchemeToSpec(ss *SecuritySchemeRef, refNameResolver RefNameResolver) {
@@ -147,7 +146,6 @@ func (doc *T) addSecuritySchemeToSpec(ss *SecuritySchemeRef, refNameResolver Ref
 	}
 	doc.Components.SecuritySchemes[name] = &SecuritySchemeRef{Value: ss.Value}
 	ss.Ref = "#/components/securitySchemes/" + name
-
 }
 
 func (doc *T) addExampleToSpec(e *ExampleRef, refNameResolver RefNameResolver) {
@@ -164,7 +162,6 @@ func (doc *T) addExampleToSpec(e *ExampleRef, refNameResolver RefNameResolver) {
 	}
 	doc.Components.Examples[name] = &ExampleRef{Value: e.Value}
 	e.Ref = "#/components/examples/" + name
-
 }
 
 func (doc *T) addLinkToSpec(l *LinkRef, refNameResolver RefNameResolver) {
@@ -181,7 +178,6 @@ func (doc *T) addLinkToSpec(l *LinkRef, refNameResolver RefNameResolver) {
 	}
 	doc.Components.Links[name] = &LinkRef{Value: l.Value}
 	l.Ref = "#/components/links/" + name
-
 }
 
 func (doc *T) addCallbackToSpec(c *CallbackRef, refNameResolver RefNameResolver) {

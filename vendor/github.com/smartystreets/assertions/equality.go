@@ -23,6 +23,7 @@ func ShouldEqual(actual interface{}, expected ...interface{}) string {
 	}
 	return shouldEqual(actual, expected[0])
 }
+
 func shouldEqual(actual, expected interface{}) (message string) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -102,7 +103,6 @@ func cleanAlmostEqualInput(actual interface{}, expected ...interface{}) (float64
 		return 0.0, 0.0, 0.0, "This assertion requires exactly one comparison value and an optional delta (you provided neither)"
 	} else if len(expected) == 2 {
 		delta, err := getFloat(expected[1])
-
 		if err != nil {
 			return 0.0, 0.0, 0.0, "The delta value " + err.Error()
 		}
@@ -168,6 +168,7 @@ func ShouldEqualJSON(actual interface{}, expected ...interface{}) string {
 
 	return ShouldEqual(actualString, expectedString)
 }
+
 func remarshal(value string) (string, error) {
 	var structured map[string]interface{}
 	err := json.Unmarshal([]byte(value), &structured)
@@ -208,8 +209,8 @@ func ShouldPointTo(actual interface{}, expected ...interface{}) string {
 		return message
 	}
 	return shouldPointTo(actual, expected[0])
-
 }
+
 func shouldPointTo(actual, expected interface{}) string {
 	actualValue := reflect.ValueOf(actual)
 	expectedValue := reflect.ValueOf(expected)
@@ -257,6 +258,7 @@ func ShouldBeNil(actual interface{}, expected ...interface{}) string {
 	}
 	return fmt.Sprintf(shouldHaveBeenNil, actual)
 }
+
 func interfaceHasNilValue(actual interface{}) bool {
 	value := reflect.ValueOf(actual)
 	kind := value.Kind()

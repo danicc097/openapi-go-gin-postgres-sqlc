@@ -16,14 +16,14 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type TimeEntryPublic struct {
-	TimeEntryID     int64     `json:"timeEntryID"`     // time_entry_id
-	WorkItemID      *int64    `json:"workItemID"`      // work_item_id
-	ActivityID      int       `json:"activityID"`      // activity_id
-	TeamID          *int      `json:"teamID"`          // team_id
-	UserID          uuid.UUID `json:"userID"`          // user_id
-	Comment         string    `json:"comment"`         // comment
-	Start           time.Time `json:"start"`           // start
-	DurationMinutes *int      `json:"durationMinutes"` // duration_minutes
+	TimeEntryID     int64     `json:"timeEntryID" required:"true"`     // time_entry_id
+	WorkItemID      *int64    `json:"workItemID" required:"true"`      // work_item_id
+	ActivityID      int       `json:"activityID" required:"true"`      // activity_id
+	TeamID          *int      `json:"teamID" required:"true"`          // team_id
+	UserID          uuid.UUID `json:"userID" required:"true"`          // user_id
+	Comment         string    `json:"comment" required:"true"`         // comment
+	Start           time.Time `json:"start" required:"true"`           // start
+	DurationMinutes *int      `json:"durationMinutes" required:"true"` // duration_minutes
 }
 
 // TimeEntry represents a row from 'public.time_entries'.

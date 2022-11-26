@@ -74,7 +74,8 @@ type Migration struct {
 // last down migration, there is no next down migration, the targetVersion should
 // be nil. Nil in this case is represented by -1 (because type int).
 func NewMigration(body io.ReadCloser, identifier string,
-	version uint, targetVersion int) (*Migration, error) {
+	version uint, targetVersion int,
+) (*Migration, error) {
 	tnow := time.Now()
 	m := &Migration{
 		Identifier:    identifier,

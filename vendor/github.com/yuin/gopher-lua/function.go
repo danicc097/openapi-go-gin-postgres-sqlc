@@ -53,11 +53,11 @@ type Upvalue struct {
 }
 
 func (uv *Upvalue) Value() LValue {
-	//if uv.IsClosed() {
+	// if uv.IsClosed() {
 	if uv.closed || uv.reg == nil {
 		return uv.value
 	}
-	//return uv.reg.Get(uv.index)
+	// return uv.reg.Get(uv.index)
 	return uv.reg.array[uv.index]
 }
 

@@ -228,10 +228,11 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	// -- openapi
 	oaOptions := OAValidatorOptions{
+		ValidateResponse: true,
 		Options: openapi3filter.Options{
 			ExcludeRequestBody:    false,
 			ExcludeResponseBody:   false,
-			IncludeResponseStatus: true,
+			IncludeResponseStatus: false, // fails on response status not defined in OpenAPI spec
 			MultiError:            true,
 			AuthenticationFunc:    verifyAuthentication,
 		},

@@ -54,9 +54,11 @@ func (this *testCase) Run(t *testing.T) {
 func (this *testCase) skip(innerT *testing.T) {
 	innerT.Skip("\n" + this.positions[innerT.Name()])
 }
+
 func (this *testCase) skipLong(innerT *testing.T) {
 	innerT.Skipf("Skipped long-running test:\n" + this.positions[innerT.Name()])
 }
+
 func (this *testCase) run(innerT *testing.T) {
 	innerT.Helper()
 
@@ -67,6 +69,7 @@ func (this *testCase) run(innerT *testing.T) {
 	defer this.innerFixture.finalize()
 	this.runWithSetupAndTeardown()
 }
+
 func (this *testCase) initializeFixture(innerT *testing.T) {
 	innerT.Log("Test definition:\n" + this.positions[innerT.Name()])
 	this.innerFixture = newFixture(innerT, testing.Verbose())

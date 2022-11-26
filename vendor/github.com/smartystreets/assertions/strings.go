@@ -21,6 +21,7 @@ func ShouldStartWith(actual interface{}, expected ...interface{}) string {
 
 	return shouldStartWith(value, prefix)
 }
+
 func shouldStartWith(value, prefix string) string {
 	if !strings.HasPrefix(value, prefix) {
 		shortval := value
@@ -47,6 +48,7 @@ func ShouldNotStartWith(actual interface{}, expected ...interface{}) string {
 
 	return shouldNotStartWith(value, prefix)
 }
+
 func shouldNotStartWith(value, prefix string) string {
 	if strings.HasPrefix(value, prefix) {
 		if value == "" {
@@ -75,6 +77,7 @@ func ShouldEndWith(actual interface{}, expected ...interface{}) string {
 
 	return shouldEndWith(value, suffix)
 }
+
 func shouldEndWith(value, suffix string) string {
 	if !strings.HasSuffix(value, suffix) {
 		shortval := value
@@ -101,6 +104,7 @@ func ShouldNotEndWith(actual interface{}, expected ...interface{}) string {
 
 	return shouldNotEndWith(value, suffix)
 }
+
 func shouldNotEndWith(value, suffix string) string {
 	if strings.HasSuffix(value, suffix) {
 		if value == "" {

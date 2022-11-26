@@ -16,9 +16,9 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type UserAPIKeyPublic struct {
-	APIKey    string    `json:"apiKey"`    // api_key
-	ExpiresOn time.Time `json:"expiresOn"` // expires_on
-	UserID    uuid.UUID `json:"userID"`    // user_id
+	APIKey    string    `json:"apiKey" required:"true"`    // api_key
+	ExpiresOn time.Time `json:"expiresOn" required:"true"` // expires_on
+	UserID    uuid.UUID `json:"userID" required:"true"`    // user_id
 }
 
 // UserAPIKey represents a row from 'public.user_api_keys'.

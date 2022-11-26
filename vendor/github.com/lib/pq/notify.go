@@ -330,11 +330,11 @@ func (l *ListenerConn) sendSimpleQuery(q string) (err error) {
 
 // ExecSimpleQuery executes a "simple query" (i.e. one with no bindable
 // parameters) on the connection. The possible return values are:
-//   1) "executed" is true; the query was executed to completion on the
-//      database server.  If the query failed, err will be set to the error
-//      returned by the database, otherwise err will be nil.
-//   2) If "executed" is false, the query could not be executed on the remote
-//      server.  err will be non-nil.
+//  1. "executed" is true; the query was executed to completion on the
+//     database server.  If the query failed, err will be set to the error
+//     returned by the database, otherwise err will be nil.
+//  2. If "executed" is false, the query could not be executed on the remote
+//     server.  err will be non-nil.
 //
 // After a call to ExecSimpleQuery has returned an executed=false value, the
 // connection has either been closed or will be closed shortly thereafter, and
@@ -498,7 +498,8 @@ type Listener struct {
 func NewListener(name string,
 	minReconnectInterval time.Duration,
 	maxReconnectInterval time.Duration,
-	eventCallback EventCallbackType) *Listener {
+	eventCallback EventCallbackType,
+) *Listener {
 	return NewDialListener(defaultDialer{}, name, minReconnectInterval, maxReconnectInterval, eventCallback)
 }
 
@@ -507,8 +508,8 @@ func NewDialListener(d Dialer,
 	name string,
 	minReconnectInterval time.Duration,
 	maxReconnectInterval time.Duration,
-	eventCallback EventCallbackType) *Listener {
-
+	eventCallback EventCallbackType,
+) *Listener {
 	l := &Listener{
 		name:                 name,
 		minReconnectInterval: minReconnectInterval,
@@ -541,12 +542,12 @@ func (l *Listener) NotificationChannel() <-chan *Notification {
 // connection can not be re-established.
 //
 // Listen will only fail in three conditions:
-//   1) The channel is already open.  The returned error will be
-//      ErrChannelAlreadyOpen.
-//   2) The query was executed on the remote server, but PostgreSQL returned an
-//      error message in response to the query.  The returned error will be a
-//      pq.Error containing the information the server supplied.
-//   3) Close is called on the Listener before the request could be completed.
+//  1. The channel is already open.  The returned error will be
+//     ErrChannelAlreadyOpen.
+//  2. The query was executed on the remote server, but PostgreSQL returned an
+//     error message in response to the query.  The returned error will be a
+//     pq.Error containing the information the server supplied.
+//  3. Close is called on the Listener before the request could be completed.
 //
 // The channel name is case-sensitive.
 func (l *Listener) Listen(channel string) error {

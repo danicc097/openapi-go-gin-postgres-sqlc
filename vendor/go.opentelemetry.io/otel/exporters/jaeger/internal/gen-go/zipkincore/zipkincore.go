@@ -14,11 +14,13 @@ import (
 )
 
 // (needed to ensure safety because of naive import list construction.)
-var _ = thrift.ZERO
-var _ = fmt.Printf
-var _ = context.Background
-var _ = time.Now
-var _ = bytes.Equal
+var (
+	_ = thrift.ZERO
+	_ = fmt.Printf
+	_ = context.Background
+	_ = time.Now
+	_ = bytes.Equal
+)
 
 type AnnotationType int64
 
@@ -112,18 +114,18 @@ func (p *AnnotationType) Value() (driver.Value, error) {
 // clients such as web browsers.
 //
 // Attributes:
-//  - Ipv4: IPv4 host address packed into 4 bytes.
+//   - Ipv4: IPv4 host address packed into 4 bytes.
 //
 // Ex for the ip 1.2.3.4, it would be (1 << 24) | (2 << 16) | (3 << 8) | 4
-//  - Port: IPv4 port
+//   - Port: IPv4 port
 //
 // Note: this is to be treated as an unsigned integer, so watch for negatives.
 //
 // Conventionally, when the port isn't known, port = 0.
-//  - ServiceName: Service name in lowercase, such as "memcache" or "zipkin-web"
+//   - ServiceName: Service name in lowercase, such as "memcache" or "zipkin-web"
 //
 // Conventionally, when the service name isn't known, service_name = "unknown".
-//  - Ipv6: IPv6 host address packed into 16 bytes. Ex Inet6Address.getBytes()
+//   - Ipv6: IPv6 host address packed into 16 bytes. Ex Inet6Address.getBytes()
 type Endpoint struct {
 	Ipv4        int32  `thrift:"ipv4,1" db:"ipv4" json:"ipv4"`
 	Port        int16  `thrift:"port,2" db:"port" json:"port"`
@@ -152,6 +154,7 @@ var Endpoint_Ipv6_DEFAULT []byte
 func (p *Endpoint) GetIpv6() []byte {
 	return p.Ipv6
 }
+
 func (p *Endpoint) IsSetIpv6() bool {
 	return p.Ipv6 != nil
 }
@@ -374,12 +377,13 @@ func (p *Endpoint) String() string {
 // allows these events to be attributed properly, and also aggregatable.
 //
 // Attributes:
-//  - Timestamp: Microseconds from epoch.
+//   - Timestamp: Microseconds from epoch.
 //
 // This value should use the most precise value possible. For example,
 // gettimeofday or syncing nanoTime against a tick of currentTimeMillis.
-//  - Value
-//  - Host: Always the host that recorded the event. By specifying the host you allow
+//   - Value
+//   - Host: Always the host that recorded the event. By specifying the host you allow
+//
 // rollup of all events (such as client requests to a service) by IP address.
 type Annotation struct {
 	Timestamp int64     `thrift:"timestamp,1" db:"timestamp" json:"timestamp"`
@@ -407,6 +411,7 @@ func (p *Annotation) GetHost() *Endpoint {
 	}
 	return p.Host
 }
+
 func (p *Annotation) IsSetHost() bool {
 	return p.Host != nil
 }
@@ -601,10 +606,11 @@ func (p *Annotation) String() string {
 // you can see the different points of view, which often help in debugging.
 //
 // Attributes:
-//  - Key
-//  - Value
-//  - AnnotationType
-//  - Host: The host that recorded tag, which allows you to differentiate between
+//   - Key
+//   - Value
+//   - AnnotationType
+//   - Host: The host that recorded tag, which allows you to differentiate between
+//
 // multiple tags with the same key. There are two exceptions to this.
 //
 // When the key is CLIENT_ADDR or SERVER_ADDR, host indicates the source or
@@ -641,6 +647,7 @@ func (p *BinaryAnnotation) GetHost() *Endpoint {
 	}
 	return p.Host
 }
+
 func (p *BinaryAnnotation) IsSetHost() bool {
 	return p.Host != nil
 }
@@ -866,16 +873,16 @@ func (p *BinaryAnnotation) String() string {
 // annotation and ending with a SERVER_SEND.
 //
 // Attributes:
-//  - TraceID
-//  - Name: Span name in lowercase, rpc method for example
+//   - TraceID
+//   - Name: Span name in lowercase, rpc method for example
 //
 // Conventionally, when the span name isn't known, name = "unknown".
-//  - ID
-//  - ParentID
-//  - Annotations
-//  - BinaryAnnotations
-//  - Debug
-//  - Timestamp: Microseconds from epoch of the creation of this span.
+//   - ID
+//   - ParentID
+//   - Annotations
+//   - BinaryAnnotations
+//   - Debug
+//   - Timestamp: Microseconds from epoch of the creation of this span.
 //
 // This value should be set directly by instrumentation, using the most
 // precise value possible. For example, gettimeofday or syncing nanoTime
@@ -887,7 +894,7 @@ func (p *BinaryAnnotation) String() string {
 //
 // This field is optional for compatibility with old data: first-party span
 // stores are expected to support this at time of introduction.
-//  - Duration: Measurement of duration in microseconds, used to support queries.
+//   - Duration: Measurement of duration in microseconds, used to support queries.
 //
 // This value should be set directly, where possible. Doing so encourages
 // precise measurement decoupled from problems of clocks, such as skew or NTP
@@ -902,7 +909,8 @@ func (p *BinaryAnnotation) String() string {
 // this field non-atomically is implementation-specific.
 //
 // This field is i64 vs i32 to support spans longer than 35 minutes.
-//  - TraceIDHigh: Optional unique 8-byte additional identifier for a trace. If non zero, this
+//   - TraceIDHigh: Optional unique 8-byte additional identifier for a trace. If non zero, this
+//
 // means the trace uses 128 bit traceIds instead of 64 bit.
 type Span struct {
 	TraceID int64 `thrift:"trace_id,1" db:"trace_id" json:"trace_id"`
@@ -984,6 +992,7 @@ func (p *Span) GetTraceIDHigh() int64 {
 	}
 	return *p.TraceIDHigh
 }
+
 func (p *Span) IsSetParentID() bool {
 	return p.ParentID != nil
 }
@@ -1525,7 +1534,7 @@ func (p *Span) String() string {
 }
 
 // Attributes:
-//  - Ok
+//   - Ok
 type Response struct {
 	Ok bool `thrift:"ok,1,required" db:"ok" json:"ok"`
 }
@@ -1537,6 +1546,7 @@ func NewResponse() *Response {
 func (p *Response) GetOk() bool {
 	return p.Ok
 }
+
 func (p *Response) Read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
@@ -1683,7 +1693,7 @@ func (p *ZipkinCollectorClient) SetLastResponseMeta_(meta thrift.ResponseMeta) {
 }
 
 // Parameters:
-//  - Spans
+//   - Spans
 func (p *ZipkinCollectorClient) SubmitZipkinBatch(ctx context.Context, spans []*Span) (_r []*Response, _err error) {
 	var _args4 ZipkinCollectorSubmitZipkinBatchArgs
 	_args4.Spans = spans
@@ -1716,7 +1726,6 @@ func (p *ZipkinCollectorProcessor) ProcessorMap() map[string]thrift.TProcessorFu
 }
 
 func NewZipkinCollectorProcessor(handler ZipkinCollector) *ZipkinCollectorProcessor {
-
 	self7 := &ZipkinCollectorProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
 	self7.processorMap["submitZipkinBatch"] = &zipkinCollectorProcessorSubmitZipkinBatch{handler: handler}
 	return self7
@@ -1738,7 +1747,6 @@ func (p *ZipkinCollectorProcessor) Process(ctx context.Context, iprot, oprot thr
 	oprot.WriteMessageEnd(ctx)
 	oprot.Flush(ctx)
 	return false, x8
-
 }
 
 type zipkinCollectorProcessorSubmitZipkinBatch struct {
@@ -1823,7 +1831,7 @@ func (p *zipkinCollectorProcessorSubmitZipkinBatch) Process(ctx context.Context,
 // HELPER FUNCTIONS AND STRUCTURES
 
 // Attributes:
-//  - Spans
+//   - Spans
 type ZipkinCollectorSubmitZipkinBatchArgs struct {
 	Spans []*Span `thrift:"spans,1" db:"spans" json:"spans"`
 }
@@ -1835,6 +1843,7 @@ func NewZipkinCollectorSubmitZipkinBatchArgs() *ZipkinCollectorSubmitZipkinBatch
 func (p *ZipkinCollectorSubmitZipkinBatchArgs) GetSpans() []*Span {
 	return p.Spans
 }
+
 func (p *ZipkinCollectorSubmitZipkinBatchArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
@@ -1941,7 +1950,7 @@ func (p *ZipkinCollectorSubmitZipkinBatchArgs) String() string {
 }
 
 // Attributes:
-//  - Success
+//   - Success
 type ZipkinCollectorSubmitZipkinBatchResult struct {
 	Success []*Response `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
@@ -1955,6 +1964,7 @@ var ZipkinCollectorSubmitZipkinBatchResult_Success_DEFAULT []*Response
 func (p *ZipkinCollectorSubmitZipkinBatchResult) GetSuccess() []*Response {
 	return p.Success
 }
+
 func (p *ZipkinCollectorSubmitZipkinBatchResult) IsSetSuccess() bool {
 	return p.Success != nil
 }

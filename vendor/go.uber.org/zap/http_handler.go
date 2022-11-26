@@ -129,5 +129,4 @@ func decodePutJSON(body io.Reader) (zapcore.Level, error) {
 		return 0, errors.New("must specify logging level")
 	}
 	return *pld.Level, nil
-
 }

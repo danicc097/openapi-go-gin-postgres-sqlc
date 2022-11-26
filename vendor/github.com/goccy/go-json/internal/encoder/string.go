@@ -41,9 +41,7 @@ func appendNormalizedHTMLString(buf []byte, s string) []byte {
 		return append(buf, `""`...)
 	}
 	buf = append(buf, '"')
-	var (
-		i, j int
-	)
+	var i, j int
 	if valLen >= 8 {
 		chunks := stringToUint64Slice(s)
 		for _, n := range chunks {
@@ -166,9 +164,7 @@ func appendHTMLString(buf []byte, s string) []byte {
 		return append(buf, `""`...)
 	}
 	buf = append(buf, '"')
-	var (
-		i, j int
-	)
+	var i, j int
 	if valLen >= 8 {
 		chunks := stringToUint64Slice(s)
 		for _, n := range chunks {
@@ -263,9 +259,7 @@ func appendNormalizedString(buf []byte, s string) []byte {
 		return append(buf, `""`...)
 	}
 	buf = append(buf, '"')
-	var (
-		i, j int
-	)
+	var i, j int
 	if valLen >= 8 {
 		chunks := stringToUint64Slice(s)
 		for _, n := range chunks {
@@ -378,9 +372,7 @@ func appendString(buf []byte, s string) []byte {
 		return append(buf, `""`...)
 	}
 	buf = append(buf, '"')
-	var (
-		i, j int
-	)
+	var i, j int
 	if valLen >= 8 {
 		chunks := stringToUint64Slice(s)
 		for _, n := range chunks {

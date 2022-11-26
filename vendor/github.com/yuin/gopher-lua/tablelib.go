@@ -66,7 +66,7 @@ func tableConcat(L *LState) int {
 		L.Push(emptyLString)
 		return 1
 	}
-	//TODO should flushing?
+	// TODO should flushing?
 	retbottom := L.GetTop()
 	for ; i <= j; i++ {
 		v := tbl.RawGetInt(i)

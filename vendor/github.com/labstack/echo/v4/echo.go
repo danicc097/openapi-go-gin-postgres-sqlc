@@ -3,34 +3,34 @@ Package echo implements high performance, minimalist Go web framework.
 
 Example:
 
-  package main
+	package main
 
-  import (
-    "net/http"
+	import (
+	  "net/http"
 
-    "github.com/labstack/echo/v4"
-    "github.com/labstack/echo/v4/middleware"
-  )
+	  "github.com/labstack/echo/v4"
+	  "github.com/labstack/echo/v4/middleware"
+	)
 
-  // Handler
-  func hello(c echo.Context) error {
-    return c.String(http.StatusOK, "Hello, World!")
-  }
+	// Handler
+	func hello(c echo.Context) error {
+	  return c.String(http.StatusOK, "Hello, World!")
+	}
 
-  func main() {
-    // Echo instance
-    e := echo.New()
+	func main() {
+	  // Echo instance
+	  e := echo.New()
 
-    // Middleware
-    e.Use(middleware.Logger())
-    e.Use(middleware.Recover())
+	  // Middleware
+	  e.Use(middleware.Logger())
+	  e.Use(middleware.Recover())
 
-    // Routes
-    e.GET("/", hello)
+	  // Routes
+	  e.GET("/", hello)
 
-    // Start server
-    e.Logger.Fatal(e.Start(":1323"))
-  }
+	  // Start server
+	  e.Logger.Fatal(e.Start(":1323"))
+	}
 
 Learn more at https://echo.labstack.com
 */
@@ -263,21 +263,19 @@ ____________________________________O/_______
 `
 )
 
-var (
-	methods = [...]string{
-		http.MethodConnect,
-		http.MethodDelete,
-		http.MethodGet,
-		http.MethodHead,
-		http.MethodOptions,
-		http.MethodPatch,
-		http.MethodPost,
-		PROPFIND,
-		http.MethodPut,
-		http.MethodTrace,
-		REPORT,
-	}
-)
+var methods = [...]string{
+	http.MethodConnect,
+	http.MethodDelete,
+	http.MethodGet,
+	http.MethodHead,
+	http.MethodOptions,
+	http.MethodPatch,
+	http.MethodPost,
+	PROPFIND,
+	http.MethodPut,
+	http.MethodTrace,
+	REPORT,
+}
 
 // Errors
 var (
@@ -377,7 +375,6 @@ func (e *Echo) Routers() map[string]*Router {
 // handler. Then the error that global error handler received will be ignored because we have already "commited" the
 // response and status code header has been sent to the client.
 func (e *Echo) DefaultHTTPErrorHandler(err error, c Context) {
-
 	if c.Response().Committed {
 		return
 	}
@@ -516,7 +513,8 @@ func (e *Echo) Match(methods []string, path string, handler HandlerFunc, middlew
 }
 
 func (common) file(path, file string, get func(string, HandlerFunc, ...MiddlewareFunc) *Route,
-	m ...MiddlewareFunc) *Route {
+	m ...MiddlewareFunc,
+) *Route {
 	return get(path, func(c Context) error {
 		return c.File(file)
 	}, m...)
@@ -913,8 +911,8 @@ func WrapMiddleware(m func(http.Handler) http.Handler) MiddlewareFunc {
 
 // GetPath returns RawPath, if it's empty returns Path from URL
 // Difference between RawPath and Path is:
-//  * Path is where request path is stored. Value is stored in decoded form: /%47%6f%2f becomes /Go/.
-//  * RawPath is an optional field which only gets set if the default encoding is different from Path.
+//   - Path is where request path is stored. Value is stored in decoded form: /%47%6f%2f becomes /Go/.
+//   - RawPath is an optional field which only gets set if the default encoding is different from Path.
 func GetPath(r *http.Request) string {
 	path := r.URL.RawPath
 	if path == "" {

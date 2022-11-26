@@ -102,7 +102,7 @@ func (m *Merger) Merge(data, patch interface{}) interface{} {
 
 // MergeBytesIndent merges patch document buffer to data document buffer
 //
-// Use prefix and indent for set indentation like in json.MarshalIndent
+// # Use prefix and indent for set indentation like in json.MarshalIndent
 //
 // Returning merged document buffer and error if any.
 func (m *Merger) MergeBytesIndent(dataBuff, patchBuff []byte, prefix, indent string) (mergedBuff []byte, err error) {

@@ -80,9 +80,9 @@ func (this *Assertion) So(actual interface{}, assert assertion, expected ...inte
 //
 // Example:
 //
-//   if ok, message := So(x, ShouldBeGreaterThan, y); !ok {
-//        log.Println(message)
-//   }
+//	if ok, message := So(x, ShouldBeGreaterThan, y); !ok {
+//	     log.Println(message)
+//	}
 //
 // For an alternative implementation of So (that provides more flexible return options)
 // see the `So` function in the package at github.com/smartystreets/assertions/assert.

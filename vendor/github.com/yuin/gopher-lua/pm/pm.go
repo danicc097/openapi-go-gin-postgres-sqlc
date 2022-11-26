@@ -5,8 +5,10 @@ import (
 	"fmt"
 )
 
-const EOS = -1
-const _UNKNOWN = -2
+const (
+	EOS      = -1
+	_UNKNOWN = -2
+)
 
 /* Error {{{ */
 
@@ -319,7 +321,7 @@ func parseClass(sc *scanner, allowset bool) class {
 			return parseClassSet(sc)
 		}
 		return &charClass{ch}
-	//case '^' '$', '(', ')', ']', '*', '+', '-', '?':
+	// case '^' '$', '(', ')', ']', '*', '+', '-', '?':
 	//	panic(newError(sc.CurrentPos(), "invalid %c", ch))
 	case EOS:
 		panic(newError(sc.CurrentPos(), "unexpected EOS"))
@@ -402,7 +404,7 @@ func parsePattern(sc *scanner, toplevel bool) *seqPattern {
 			}
 		case '.', '[', ']':
 			pat.Patterns = append(pat.Patterns, &singlePattern{parseClass(sc, true)})
-		//case ']':
+		// case ']':
 		//	panic(newError(sc.CurrentPos(), "invalid ']'"))
 		case ')':
 			if toplevel {
@@ -462,7 +464,7 @@ func compilePattern(p pattern, ps ...*iptr) []inst {
 	toplevel := false
 	if len(ps) == 0 {
 		toplevel = true
-		ptr = &iptr{[]inst{inst{opSave, nil, 0, -1}}, 2}
+		ptr = &iptr{[]inst{{opSave, nil, 0, -1}}, 2}
 	} else {
 		ptr = ps[0]
 	}

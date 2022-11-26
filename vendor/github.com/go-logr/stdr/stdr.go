@@ -117,8 +117,10 @@ type logger struct {
 	std StdLogger
 }
 
-var _ logr.LogSink = &logger{}
-var _ logr.CallDepthLogSink = &logger{}
+var (
+	_ logr.LogSink          = &logger{}
+	_ logr.CallDepthLogSink = &logger{}
+)
 
 func (l logger) Enabled(level int) bool {
 	return globalVerbosity >= level

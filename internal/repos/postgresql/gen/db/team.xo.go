@@ -16,13 +16,13 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type TeamPublic struct {
-	TeamID      int          `json:"teamID"`      // team_id
-	ProjectID   int          `json:"projectID"`   // project_id
-	Name        string       `json:"name"`        // name
-	Description string       `json:"description"` // description
-	Metadata    pgtype.JSONB `json:"metadata"`    // metadata
-	CreatedAt   time.Time    `json:"createdAt"`   // created_at
-	UpdatedAt   time.Time    `json:"updatedAt"`   // updated_at
+	TeamID      int          `json:"teamID" required:"true"`      // team_id
+	ProjectID   int          `json:"projectID" required:"true"`   // project_id
+	Name        string       `json:"name" required:"true"`        // name
+	Description string       `json:"description" required:"true"` // description
+	Metadata    pgtype.JSONB `json:"metadata" required:"true"`    // metadata
+	CreatedAt   time.Time    `json:"createdAt" required:"true"`   // created_at
+	UpdatedAt   time.Time    `json:"updatedAt" required:"true"`   // updated_at
 }
 
 // Team represents a row from 'public.teams'.

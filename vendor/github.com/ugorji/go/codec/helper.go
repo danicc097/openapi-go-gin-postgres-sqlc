@@ -715,9 +715,10 @@ var SelfExt = &extFailWrapper{}
 // By definition, it is not allowed for a Selfer to directly call Encode or Decode on itself.
 // If that is done, Encode/Decode will rightfully fail with a Stack Overflow style error.
 // For example, the snippet below will cause such an error.
-//     type testSelferRecur struct{}
-//     func (s *testSelferRecur) CodecEncodeSelf(e *Encoder) { e.MustEncode(s) }
-//     func (s *testSelferRecur) CodecDecodeSelf(d *Decoder) { d.MustDecode(s) }
+//
+//	type testSelferRecur struct{}
+//	func (s *testSelferRecur) CodecEncodeSelf(e *Encoder) { e.MustEncode(s) }
+//	func (s *testSelferRecur) CodecDecodeSelf(d *Decoder) { d.MustDecode(s) }
 //
 // Note: *the first set of bytes of any value MUST NOT represent nil in the format*.
 // This is because, during each decode, we first check the the next set of bytes
@@ -761,13 +762,14 @@ type MissingFielder interface {
 // This affords storing a map in a specific sequence in the stream.
 //
 // Example usage:
-//    type T1 []string         // or []int or []Point or any other "slice" type
-//    func (_ T1) MapBySlice{} // T1 now implements MapBySlice, and will be encoded as a map
-//    type T2 struct { KeyValues T1 }
 //
-//    var kvs = []string{"one", "1", "two", "2", "three", "3"}
-//    var v2 = T2{ KeyValues: T1(kvs) }
-//    // v2 will be encoded like the map: {"KeyValues": {"one": "1", "two": "2", "three": "3"} }
+//	type T1 []string         // or []int or []Point or any other "slice" type
+//	func (_ T1) MapBySlice{} // T1 now implements MapBySlice, and will be encoded as a map
+//	type T2 struct { KeyValues T1 }
+//
+//	var kvs = []string{"one", "1", "two", "2", "three", "3"}
+//	var v2 = T2{ KeyValues: T1(kvs) }
+//	// v2 will be encoded like the map: {"KeyValues": {"one": "1", "two": "2", "three": "3"} }
 //
 // The support of MapBySlice affords the following:
 //   - A slice or array type which implements MapBySlice will be encoded as a map
@@ -874,7 +876,6 @@ type BasicHandle struct {
 
 	// ---- cache line
 	inited uint32 // holds if inited, and also handle flags (binary encoding, json handler, etc)
-
 }
 
 // initHandle does a one-time initialization of the handle.
@@ -969,6 +970,7 @@ func (x *basicHandleRuntimeState) setExt(rt reflect.Type, tag uint64, ext Ext) (
 
 // initHandle should be called only from codec.initHandle global function.
 // make it uninlineable, as it is called at most once for each handle.
+//
 //go:noinline
 func (x *BasicHandle) initHandle(hh Handle) {
 	handleInitMu.Lock()
@@ -1013,7 +1015,7 @@ func findRtidFn(s []codecRtidFn, rtid uintptr) (i uint, fn *codecFn) {
 
 	// h, i, j := 0, 0, len(s)
 	var h uint // var h, i uint
-	var j = uint(len(s))
+	j := uint(len(s))
 LOOP:
 	if i < j {
 		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
@@ -1136,7 +1138,7 @@ func (x *basicHandleRuntimeState) fnLoad(rt reflect.Type, rtid uintptr, tinfos *
 	} else if supportMarshalInterfaces && !x.isBe() && x.isJs() &&
 		(ti.flagJsonMarshaler || ti.flagJsonMarshalerPtr) &&
 		(ti.flagJsonUnmarshaler || ti.flagJsonUnmarshalerPtr) {
-		//If JSON, we should check JSONMarshal before textMarshal
+		// If JSON, we should check JSONMarshal before textMarshal
 		fn.fe = (*Encoder).jsonMarshal
 		fn.fd = (*Decoder).jsonUnmarshal
 		fi.addrD = ti.flagJsonUnmarshalerPtr
@@ -1431,6 +1433,7 @@ func (bytesExtFailer) WriteExt(v interface{}) []byte {
 	halt.onerror(errExtFnWriteExtUnsupported)
 	return nil
 }
+
 func (bytesExtFailer) ReadExt(v interface{}, bs []byte) {
 	halt.onerror(errExtFnReadExtUnsupported)
 }
@@ -1441,6 +1444,7 @@ func (interfaceExtFailer) ConvertExt(v interface{}) interface{} {
 	halt.onerror(errExtFnConvertExtUnsupported)
 	return nil
 }
+
 func (interfaceExtFailer) UpdateExt(dest interface{}, v interface{}) {
 	halt.onerror(errExtFnUpdateExtUnsupported)
 }
@@ -1577,7 +1581,8 @@ type extHandle []extTypeTagFn
 // Deprecated: Use SetBytesExt or SetInterfaceExt on the Handle instead.
 func (x *BasicHandle) AddExt(rt reflect.Type, tag byte,
 	encfn func(reflect.Value) ([]byte, error),
-	decfn func(reflect.Value, []byte) error) (err error) {
+	decfn func(reflect.Value, []byte) error,
+) (err error) {
 	if encfn == nil || decfn == nil {
 		return x.SetExt(rt, uint64(tag), nil)
 	}
@@ -1989,7 +1994,7 @@ func transientBitsetFlags() *bitset32 {
 }
 
 func isCanTransient(t reflect.Type, k reflect.Kind) (v bool) {
-	var bs = transientBitsetFlags()
+	bs := transientBitsetFlags()
 	if bs.isset(byte(k)) {
 		v = true
 	} else if k == reflect.Slice {
@@ -2068,7 +2073,7 @@ func findTypeInfo(s []rtid2ti, rtid uintptr) (i uint, ti *typeInfo) {
 	// Note: we use goto (instead of for loop) so this can be inlined.
 
 	var h uint
-	var j = uint(len(s))
+	j := uint(len(s))
 LOOP:
 	if i < j {
 		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
@@ -2286,7 +2291,8 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 }
 
 func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr,
-	path *structFieldInfoPathNode, pv *typeInfoLoad, omitEmpty bool) {
+	path *structFieldInfoPathNode, pv *typeInfoLoad, omitEmpty bool,
+) {
 	// Read up fields and store how to access the value.
 	//
 	// It uses go's rules for message selectors,
@@ -2562,12 +2568,14 @@ func (checkOverflow) Float32(v float64) (overflow bool) {
 	}
 	return math.MaxFloat32 < v && v <= math.MaxFloat64
 }
+
 func (checkOverflow) Uint(v uint64, bitsize uint8) (overflow bool) {
 	if v != 0 && v != (v<<(64-bitsize))>>(64-bitsize) {
 		overflow = true
 	}
 	return
 }
+
 func (checkOverflow) Int(v int64, bitsize uint8) (overflow bool) {
 	if v != 0 && v != (v<<(64-bitsize))>>(64-bitsize) {
 		overflow = true
@@ -2580,7 +2588,7 @@ func (checkOverflow) Uint2Int(v uint64, neg bool) (overflow bool) {
 }
 
 func (checkOverflow) SignedInt(v uint64) (overflow bool) {
-	//e.g. -127 to 128 for int8
+	// e.g. -127 to 128 for int8
 	pos := (v >> 63) == 0
 	ui2 := v & 0x7fffffffffffffff
 	if pos {
@@ -2601,18 +2609,21 @@ func (x checkOverflow) Float32V(v float64) float64 {
 	}
 	return v
 }
+
 func (x checkOverflow) UintV(v uint64, bitsize uint8) uint64 {
 	if x.Uint(v, bitsize) {
 		halt.errorf("uint64 overflow: %v", v)
 	}
 	return v
 }
+
 func (x checkOverflow) IntV(v int64, bitsize uint8) int64 {
 	if x.Int(v, bitsize) {
 		halt.errorf("int64 overflow: %v", v)
 	}
 	return v
 }
+
 func (x checkOverflow) SignedIntV(v uint64) int64 {
 	if x.SignedInt(v) {
 		halt.errorf("uint64 to int64 overflow: %v", v)
@@ -2687,6 +2698,7 @@ func (x *bitset32) set(pos byte) *bitset32 {
 	x[pos&31] = true // x[pos%32] = true
 	return x
 }
+
 func (x *bitset32) isset(pos byte) bool {
 	return x[pos&31] // x[pos%32]
 }
@@ -2697,6 +2709,7 @@ func (x *bitset256) set(pos byte) *bitset256 {
 	x[pos] = true
 	return x
 }
+
 func (x *bitset256) isset(pos byte) bool {
 	return x[pos]
 }
@@ -2746,14 +2759,17 @@ func (mustHdl) String(s string, err error) string {
 	halt.onerror(err)
 	return s
 }
+
 func (mustHdl) Int(s int64, err error) int64 {
 	halt.onerror(err)
 	return s
 }
+
 func (mustHdl) Uint(s uint64, err error) uint64 {
 	halt.onerror(err)
 	return s
 }
+
 func (mustHdl) Float(s float64, err error) float64 {
 	halt.onerror(err)
 	return s
@@ -2774,22 +2790,23 @@ func freelistCapacity(length int) (capacity int) {
 // without bounds checking is sufficient.
 //
 // Typical usage model:
-//   peek may go together with put, iff pop=true. peek gets largest byte slice temporarily.
-//   check is used to switch a []byte if necessary
-//   get/put go together
+//
+//	peek may go together with put, iff pop=true. peek gets largest byte slice temporarily.
+//	check is used to switch a []byte if necessary
+//	get/put go together
 //
 // Given that folks may get a []byte, and then append to it a lot which may re-allocate
 // a new []byte, we should try to return both (one received from blist and new one allocated).
 //
 // Typical usage model for get/put, when we don't know whether we may need more than requested
-//   v0 := blist.get()
-//   v1 := v0
-//   ... use v1 ...
-//   blist.put(v1)
-//   if byteSliceAddr(v0) != byteSliceAddr(v1) {
-//     blist.put(v0)
-//   }
 //
+//	v0 := blist.get()
+//	v1 := v0
+//	... use v1 ...
+//	blist.put(v1)
+//	if byteSliceAddr(v0) != byteSliceAddr(v1) {
+//	  blist.put(v0)
+//	}
 type bytesFreelist [][]byte
 
 // peek returns a slice of possibly non-zero'ed bytes, with len=0,
@@ -2885,7 +2902,7 @@ func (x *bytesFreelist) checkPutGet(v []byte, length int) []byte {
 
 	// assume cap(v) < length, so put must happen before get
 	y := *x
-	var put = cap(v) == 0 // if empty, consider it already put
+	put := cap(v) == 0 // if empty, consider it already put
 	if !put {
 		y = append(y, v)
 		*x = y

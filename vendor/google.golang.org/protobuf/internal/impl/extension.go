@@ -92,21 +92,27 @@ func InitExtensionInfo(xi *ExtensionInfo, xd protoreflect.ExtensionDescriptor, g
 func (xi *ExtensionInfo) New() protoreflect.Value {
 	return xi.lazyInit().New()
 }
+
 func (xi *ExtensionInfo) Zero() protoreflect.Value {
 	return xi.lazyInit().Zero()
 }
+
 func (xi *ExtensionInfo) ValueOf(v interface{}) protoreflect.Value {
 	return xi.lazyInit().PBValueOf(reflect.ValueOf(v))
 }
+
 func (xi *ExtensionInfo) InterfaceOf(v protoreflect.Value) interface{} {
 	return xi.lazyInit().GoValueOf(v).Interface()
 }
+
 func (xi *ExtensionInfo) IsValidValue(v protoreflect.Value) bool {
 	return xi.lazyInit().IsValidPB(v)
 }
+
 func (xi *ExtensionInfo) IsValidInterface(v interface{}) bool {
 	return xi.lazyInit().IsValidGo(reflect.ValueOf(v))
 }
+
 func (xi *ExtensionInfo) TypeDescriptor() protoreflect.ExtensionTypeDescriptor {
 	if atomic.LoadUint32(&xi.init) < extensionInfoDescInit {
 		xi.lazyInitSlow()
@@ -151,6 +157,7 @@ type extensionTypeDescriptor struct {
 func (xtd *extensionTypeDescriptor) Type() protoreflect.ExtensionType {
 	return xtd.xi
 }
+
 func (xtd *extensionTypeDescriptor) Descriptor() protoreflect.ExtensionDescriptor {
 	return xtd.ExtensionDescriptor
 }

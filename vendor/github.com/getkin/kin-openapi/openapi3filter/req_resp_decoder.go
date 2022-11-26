@@ -1034,10 +1034,10 @@ func multipartBodyDecoder(body io.Reader, header http.Header, schema *openapi3.S
 			if anyProperties != nil {
 				switch *anyProperties {
 				case true:
-					//additionalProperties: true
+					// additionalProperties: true
 					continue
 				default:
-					//additionalProperties: false
+					// additionalProperties: false
 					return nil, &ParseError{Kind: KindOther, Cause: fmt.Errorf("part %s: undefined", name)}
 				}
 			}

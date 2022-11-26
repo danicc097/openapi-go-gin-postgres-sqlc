@@ -217,7 +217,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				ContextKey: PublicFieldTagKey,
 				Type:       "string",
 				Desc:       "public field tag",
-				Default:    `json:"{{ camel .GoName }}"`,
+				Default:    `json:"{{ camel .GoName }}" required:"true"`,
 			},
 			{
 				ContextKey: PrivateFieldTagKey,

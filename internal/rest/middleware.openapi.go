@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -24,6 +25,7 @@ type MultiErrorHandler func(openapi3.MultiError) error
 
 // OAValidatorOptions customizes request validation.
 type OAValidatorOptions struct {
+	ValidateResponse  bool
 	ErrorHandler      ErrorHandler
 	Options           openapi3filter.Options
 	ParamDecoder      openapi3filter.ContentParameterDecoder
@@ -64,6 +66,8 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 	return func(c *gin.Context) {
 		defer newOTELSpan(c.Request.Context(), "RequestValidatorWithOptions").End()
 
+		rbw := &responseBodyWriter{body: &bytes.Buffer{}, ResponseWriter: c.Writer}
+		c.Writer = rbw
 		err := ValidateRequestFromContext(c, o.router, options)
 		if err != nil {
 			if options != nil && options.ErrorHandler != nil {
@@ -80,7 +84,60 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 		}
 
 		c.Next()
+
+		if !options.ValidateResponse {
+			return
+		}
+
+		rvi, err := buildRequestValidationInput(o.router, c.Request, &options.Options)
+		if err != nil {
+			renderErrorResponse(c, fmt.Sprintf("could not validate response: %v", err), err)
+
+			return
+		}
+		input := &openapi3filter.ResponseValidationInput{
+			RequestValidationInput: rvi,
+			Status:                 rbw.Status(),
+			Header:                 rbw.Header(),
+			Options:                &options.Options,
+		}
+		// if input.Status == 0 {
+		// 	input.Status = http.StatusOK
+		// }
+		bodyBytes := rbw.body.Bytes()
+		input.SetBodyBytes(bodyBytes)
+
+		if err := openapi3filter.ValidateResponse(c.Request.Context(), input); err != nil {
+			renderErrorResponse(c, fmt.Sprintf("OpenAPI response validation failed: %v", err), err)
+
+			return
+		}
 	}
+}
+
+type responseBodyWriter struct {
+	gin.ResponseWriter
+	body *bytes.Buffer
+}
+
+func (r responseBodyWriter) Write(b []byte) (int, error) {
+	r.body.Write(b)
+
+	return r.ResponseWriter.Write(b)
+}
+
+func buildRequestValidationInput(router routers.Router, r *http.Request, options *openapi3filter.Options) (*openapi3filter.RequestValidationInput, error) {
+	route, pathParams, err := router.FindRoute(r)
+	if err != nil {
+		return nil, fmt.Errorf("route not found: %w", err)
+	}
+	input := &openapi3filter.RequestValidationInput{
+		Request:    r,
+		PathParams: pathParams,
+		Route:      route,
+		Options:    options,
+	}
+	return input, nil
 }
 
 // ValidateRequestFromContext is called from the middleware above and actually does the work

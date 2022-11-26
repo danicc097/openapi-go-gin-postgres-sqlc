@@ -93,7 +93,6 @@ var errEmptyJSONContextStack = NewTProtocolExceptionWithType(INVALID_DATA, error
 // This protocol produces/consumes a simple output format
 // suitable for parsing by scripting languages.  It should not be
 // confused with the full-featured TJSONProtocol.
-//
 type TSimpleJSONProtocol struct {
 	trans TTransport
 
@@ -106,7 +105,8 @@ type TSimpleJSONProtocol struct {
 
 // Constructor
 func NewTSimpleJSONProtocol(t TTransport) *TSimpleJSONProtocol {
-	v := &TSimpleJSONProtocol{trans: t,
+	v := &TSimpleJSONProtocol{
+		trans:  t,
 		writer: bufio.NewWriter(t),
 		reader: bufio.NewReader(t),
 	}
@@ -1179,7 +1179,6 @@ func (p *TSimpleJSONProtocol) readSingleValue() (interface{}, TType, error) {
 	}
 	e = fmt.Errorf("Cannot read a single element while parsing JSON.")
 	return nil, VOID, NewTProtocolExceptionWithType(INVALID_DATA, e)
-
 }
 
 func (p *TSimpleJSONProtocol) readIfNull() (bool, error) {

@@ -46,6 +46,7 @@ func (this *equalityMethodSpecification) bothAreSameType() bool {
 	this.bType = reflect.TypeOf(this.b)
 	return this.aType == this.bType
 }
+
 func (this *equalityMethodSpecification) typeHasEqualMethod() bool {
 	aInstance := reflect.ValueOf(this.a)
 	this.equalMethod = aInstance.MethodByName("Equal")
@@ -67,6 +68,7 @@ func (this *equalityMethodSpecification) AreEqual() bool {
 	b := reflect.ValueOf(this.b)
 	return areEqual(a, b) && areEqual(b, a)
 }
+
 func areEqual(receiver reflect.Value, argument reflect.Value) bool {
 	equalMethod := receiver.MethodByName("Equal")
 	argumentList := []reflect.Value{argument}

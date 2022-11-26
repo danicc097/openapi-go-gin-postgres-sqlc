@@ -4,16 +4,19 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/yuin/gopher-lua/ast"
 	"io"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/yuin/gopher-lua/ast"
 )
 
-const EOF = -1
-const whitespace1 = 1<<'\t' | 1<<' '
-const whitespace2 = 1<<'\t' | 1<<'\n' | 1<<'\r' | 1<<' '
+const (
+	EOF         = -1
+	whitespace1 = 1<<'\t' | 1<<' '
+	whitespace2 = 1<<'\t' | 1<<'\n' | 1<<'\r' | 1<<' '
+)
 
 type Error struct {
 	Pos     ast.Position
@@ -286,7 +289,8 @@ var reservedWords = map[string]int{
 	"end": TEnd, "false": TFalse, "for": TFor, "function": TFunction,
 	"if": TIf, "in": TIn, "local": TLocal, "nil": TNil, "not": TNot, "or": TOr,
 	"return": TReturn, "repeat": TRepeat, "then": TThen, "true": TTrue,
-	"until": TUntil, "while": TWhile}
+	"until": TUntil, "while": TWhile,
+}
 
 func (sc *Scanner) Scan(lexer *Lexer) (ast.Token, error) {
 redo:
