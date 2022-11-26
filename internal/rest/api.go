@@ -16,15 +16,18 @@ type Handlers struct {
 	pool           *pgxpool.Pool
 	movieSvcClient v1.MovieGenreClient
 	authmw         *authMiddleware
+	authzsvc       *services.Authorization
+	authnsvc       *services.Authentication
 }
 
 // NewHandlers returns an server implementation of an openapi specification.
-// TODO retry wrapper
 func NewHandlers(
 	logger *zap.Logger,
 	pool *pgxpool.Pool,
 	movieSvcClient v1.MovieGenreClient,
 	usvc *services.User,
+	authzsvc *services.Authorization,
+	authnsvc *services.Authentication,
 	authmw *authMiddleware,
 ) *Handlers {
 	return &Handlers{
@@ -32,6 +35,8 @@ func NewHandlers(
 		pool:           pool,
 		movieSvcClient: movieSvcClient,
 		usvc:           usvc,
+		authzsvc:       authzsvc,
+		authnsvc:       authnsvc,
 		authmw:         authmw,
 	}
 }

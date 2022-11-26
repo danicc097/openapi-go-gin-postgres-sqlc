@@ -17,8 +17,9 @@ import (
 // for specific actions regardless of scopes assigned to a user.
 // It is also associated with a collection of scopes that get assigned/revoked upon role change.
 type Role struct {
-	Description string `json:"description"`
-	Rank        int16  `json:"rank"` // to avoid casting. postgres smallint with check > 0
+	Description string      `json:"description"`
+	Rank        int16       `json:"rank"` // to avoid casting. postgres smallint with check > 0
+	Role        models.Role `json:"name"`
 }
 
 func (r *Role) Validate() error {

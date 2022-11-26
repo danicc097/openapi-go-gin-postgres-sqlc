@@ -32,9 +32,13 @@ func TestGetUserRoute(t *testing.T) {
 	t.Run("authenticated user", func(t *testing.T) {
 		t.Parallel()
 
+		role := models.RoleAdvancedUser
+		scopes := []models.Scope{models.ScopeProjectSettingsWrite}
+
 		ufixture, err := ff.CreateUser(context.Background(), resttestutil.CreateUserParams{
-			Role:       models.RoleAdmin,
+			Role:       role,
 			WithAPIKey: true,
+			Scopes:     scopes,
 		})
 		if err != nil {
 			t.Fatalf("ff.CreateUser: %s", err)
@@ -49,13 +53,16 @@ func TestGetUserRoute(t *testing.T) {
 		resp := httptest.NewRecorder()
 
 		srv.Handler.ServeHTTP(resp, req)
-		assert.Equal(t, http.StatusOK, resp.Code)
-		userj, err := json.Marshal(ufixture.User.ToPublic())
+
+		ures := UserResponse{UserPublic: ufixture.User.ToPublic(), Role: role, Scopes: ufixture.User.Scopes}
+
+		res, err := json.Marshal(ures)
 		if err != nil {
 			t.Fatalf("could not marshal user fixture")
 		}
 
-		assert.Equal(t, string(userj), resp.Body.String())
+		assert.Equal(t, http.StatusOK, resp.Code)
+		assert.Equal(t, string(res), resp.Body.String())
 	})
 }
 

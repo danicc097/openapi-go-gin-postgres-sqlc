@@ -473,6 +473,7 @@ x.lint.go() {
       -not -path "**/$PG_REPO_GEN/*" \
       -not -path "**/testdata/*" \
       -not -path "**/*.cache/*" \
+      -not -path "**/vendor/*" \
       -not -path "**/*.gen.*" \
       -name "*.go")
 

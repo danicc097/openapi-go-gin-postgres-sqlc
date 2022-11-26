@@ -303,7 +303,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 
-	handlers := NewHandlers(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authmw)
+	handlers := NewHandlers(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authzsvc, authnsvc, authmw)
 
 	RegisterHandlersWithOptions(vg, handlers, GinServerOptions{BaseURL: ""})
 

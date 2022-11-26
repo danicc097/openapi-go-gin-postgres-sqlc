@@ -512,6 +512,8 @@ components:
         username:
           type: string
       required:
+        - role
+        - scopes
         - userID
         - username
         - email
