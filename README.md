@@ -45,7 +45,11 @@ with `--x-help`:
 
 ## Code generation
 
-Docs WIP
+Docs WIP:
+
+- Backend generation pipeline
+- Frontend generation pipeline
+- External tooling summary and upgrades
 
 <!-- xo custom templates with cardinality, property comments for join and public model generation for embedding, schema from structs, spec sync -->
 

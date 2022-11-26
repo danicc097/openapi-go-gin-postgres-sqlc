@@ -4,7 +4,8 @@
 #
 # Component schemas:
 #   - `x-db-enum` generates and syncs a Postgres enum type.
-#   - `x-db-struct` generates and syncs a db package struct.
+#   - `x-postgen-struct` generates and creates/replaces a component schema from a struct.
+#      Possible tructs to generate from are listed in the postgen package.
 # Path operations:
 #   - `x-required-scopes` is an array of required scope keys from scopes.json
 #   - `x-required-role` is a required role name from role.json
@@ -523,7 +524,7 @@ components:
         - createdAt
         - deletedAt
       type: object
-      x-db-struct: UserResponse
+      x-postgen-struct: UserResponse
     ModelsScope:
       type: string
     UserAPIKeyPublic:

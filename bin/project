@@ -958,7 +958,7 @@ EOF
 }
 
 update_spec_with_structs() {
-  vext="x-db-struct"
+  vext="x-postgen-struct"
   struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC)
   struct_names=$(join_by "," ${struct_names[*]})
   ((${#struct_names} == 0)) && return

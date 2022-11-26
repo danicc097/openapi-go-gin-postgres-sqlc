@@ -54,7 +54,7 @@ func main() {
 		}
 
 		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
-		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-db-struct": sn}
+		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-postgen-struct": sn}
 		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
 		// reflector.Spec.Paths.MapOfPathItemValues["mypath"].MapOfOperationValues["method"].
 	}

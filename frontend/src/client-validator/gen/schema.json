@@ -546,7 +546,7 @@
         }
       },
       "type": "object",
-      "x-db-struct": "UserResponse",
+      "x-postgen-struct": "UserResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "ModelsScope": {
