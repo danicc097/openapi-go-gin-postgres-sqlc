@@ -16,19 +16,16 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type UserPublic struct {
-	UserID     uuid.UUID  `json:"userID"`    // user_id
-	Username   string     `json:"username"`  // username
-	Email      string     `json:"email"`     // email
-	FirstName  *string    `json:"firstName"` // first_name
-	LastName   *string    `json:"lastName"`  // last_name
-	FullName   *string    `json:"fullName"`  // full_name
-	ExternalID string     `json:"-"`         // external_id
-	APIKeyID   *int       `json:"-"`         // api_key_id
-	Scopes     []string   `json:"-"`         // scopes
-	RoleRank   int16      `json:"-"`         // role_rank
-	CreatedAt  time.Time  `json:"createdAt"` // created_at
-	UpdatedAt  time.Time  `json:"-"`         // updated_at
-	DeletedAt  *time.Time `json:"deletedAt"` // deleted_at
+	UserID    uuid.UUID `json:"userID"`    // user_id
+	Username  string    `json:"username"`  // username
+	Email     string    `json:"email"`     // email
+	FirstName *string   `json:"firstName"` // first_name
+	LastName  *string   `json:"lastName"`  // last_name
+	FullName  *string   `json:"fullName"`  // full_name
+
+	CreatedAt time.Time `json:"createdAt"` // created_at
+
+	DeletedAt *time.Time `json:"deletedAt"` // deleted_at
 }
 
 // User represents a row from 'public.users'.
@@ -56,19 +53,7 @@ type User struct {
 
 func (x *User) ToPublic() UserPublic {
 	return UserPublic{
-		UserID:     x.UserID,
-		Username:   x.Username,
-		Email:      x.Email,
-		FirstName:  x.FirstName,
-		LastName:   x.LastName,
-		FullName:   x.FullName,
-		ExternalID: x.ExternalID,
-		APIKeyID:   x.APIKeyID,
-		Scopes:     x.Scopes,
-		RoleRank:   x.RoleRank,
-		CreatedAt:  x.CreatedAt,
-		UpdatedAt:  x.UpdatedAt,
-		DeletedAt:  x.DeletedAt,
+		UserID: x.UserID, Username: x.Username, Email: x.Email, FirstName: x.FirstName, LastName: x.LastName, FullName: x.FullName, CreatedAt: x.CreatedAt, DeletedAt: x.DeletedAt,
 	}
 }
 

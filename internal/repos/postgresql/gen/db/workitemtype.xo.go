@@ -33,11 +33,7 @@ type WorkItemType struct {
 
 func (x *WorkItemType) ToPublic() WorkItemTypePublic {
 	return WorkItemTypePublic{
-		WorkItemTypeID: x.WorkItemTypeID,
-		ProjectID:      x.ProjectID,
-		Name:           x.Name,
-		Description:    x.Description,
-		Color:          x.Color,
+		WorkItemTypeID: x.WorkItemTypeID, ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Color: x.Color,
 	}
 }
 

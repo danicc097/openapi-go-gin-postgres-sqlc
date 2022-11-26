@@ -43,14 +43,7 @@ type TimeEntry struct {
 
 func (x *TimeEntry) ToPublic() TimeEntryPublic {
 	return TimeEntryPublic{
-		TimeEntryID:     x.TimeEntryID,
-		WorkItemID:      x.WorkItemID,
-		ActivityID:      x.ActivityID,
-		TeamID:          x.TeamID,
-		UserID:          x.UserID,
-		Comment:         x.Comment,
-		Start:           x.Start,
-		DurationMinutes: x.DurationMinutes,
+		TimeEntryID: x.TimeEntryID, WorkItemID: x.WorkItemID, ActivityID: x.ActivityID, TeamID: x.TeamID, UserID: x.UserID, Comment: x.Comment, Start: x.Start, DurationMinutes: x.DurationMinutes,
 	}
 }
 

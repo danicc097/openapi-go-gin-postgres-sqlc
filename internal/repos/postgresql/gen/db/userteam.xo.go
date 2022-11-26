@@ -29,8 +29,7 @@ type UserTeam struct {
 
 func (x *UserTeam) ToPublic() UserTeamPublic {
 	return UserTeamPublic{
-		TeamID: x.TeamID,
-		UserID: x.UserID,
+		TeamID: x.TeamID, UserID: x.UserID,
 	}
 }
 

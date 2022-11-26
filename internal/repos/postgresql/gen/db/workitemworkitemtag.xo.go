@@ -27,8 +27,7 @@ type WorkItemWorkItemTag struct {
 
 func (x *WorkItemWorkItemTag) ToPublic() WorkItemWorkItemTagPublic {
 	return WorkItemWorkItemTagPublic{
-		WorkItemTagID: x.WorkItemTagID,
-		WorkItemID:    x.WorkItemID,
+		WorkItemTagID: x.WorkItemTagID, WorkItemID: x.WorkItemID,
 	}
 }
 

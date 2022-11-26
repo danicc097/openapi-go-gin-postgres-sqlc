@@ -43,13 +43,7 @@ type Team struct {
 
 func (x *Team) ToPublic() TeamPublic {
 	return TeamPublic{
-		TeamID:      x.TeamID,
-		ProjectID:   x.ProjectID,
-		Name:        x.Name,
-		Description: x.Description,
-		Metadata:    x.Metadata,
-		CreatedAt:   x.CreatedAt,
-		UpdatedAt:   x.UpdatedAt,
+		TeamID: x.TeamID, ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Metadata: x.Metadata, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
 	}
 }
 

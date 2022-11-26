@@ -27,8 +27,7 @@ type SchemaMigration struct {
 
 func (x *SchemaMigration) ToPublic() SchemaMigrationPublic {
 	return SchemaMigrationPublic{
-		Version: x.Version,
-		Dirty:   x.Dirty,
+		Version: x.Version, Dirty: x.Dirty,
 	}
 }
 

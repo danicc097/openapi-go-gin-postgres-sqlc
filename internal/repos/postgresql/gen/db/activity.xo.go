@@ -32,10 +32,7 @@ type Activity struct {
 
 func (x *Activity) ToPublic() ActivityPublic {
 	return ActivityPublic{
-		ActivityID:   x.ActivityID,
-		Name:         x.Name,
-		Description:  x.Description,
-		IsProductive: x.IsProductive,
+		ActivityID: x.ActivityID, Name: x.Name, Description: x.Description, IsProductive: x.IsProductive,
 	}
 }
 

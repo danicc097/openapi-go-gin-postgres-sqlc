@@ -16,10 +16,9 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type UserAPIKeyPublic struct {
-	UserAPIKeyID int       `json:"-"`         // user_api_key_id
-	APIKey       string    `json:"apiKey"`    // api_key
-	ExpiresOn    time.Time `json:"expiresOn"` // expires_on
-	UserID       uuid.UUID `json:"userID"`    // user_id
+	APIKey    string    `json:"apiKey"`    // api_key
+	ExpiresOn time.Time `json:"expiresOn"` // expires_on
+	UserID    uuid.UUID `json:"userID"`    // user_id
 }
 
 // UserAPIKey represents a row from 'public.user_api_keys'.
@@ -36,10 +35,7 @@ type UserAPIKey struct {
 
 func (x *UserAPIKey) ToPublic() UserAPIKeyPublic {
 	return UserAPIKeyPublic{
-		UserAPIKeyID: x.UserAPIKeyID,
-		APIKey:       x.APIKey,
-		ExpiresOn:    x.ExpiresOn,
-		UserID:       x.UserID,
+		APIKey: x.APIKey, ExpiresOn: x.ExpiresOn, UserID: x.UserID,
 	}
 }
 

@@ -52,20 +52,7 @@ type User struct {
 
 func (x *User) ToPublic() UserPublic {
 	return UserPublic{
-		UserID:     x.UserID,
-		Username:   x.Username,
-		Email:      x.Email,
-		FirstName:  x.FirstName,
-		LastName:   x.LastName,
-		FullName:   x.FullName,
-		ExternalID: x.ExternalID,
-		APIKeyID:   x.APIKeyID,
-		Scopes:     x.Scopes,
-		RoleRank:   x.RoleRank,
-		CreatedAt:  x.CreatedAt,
-		UpdatedAt:  x.UpdatedAt,
-		DeletedAt:  x.DeletedAt,
-		Teams:      x.Teams,
+		UserID: x.UserID, Username: x.Username, Email: x.Email, FirstName: x.FirstName, LastName: x.LastName, FullName: x.FullName, ExternalID: x.ExternalID, APIKeyID: x.APIKeyID, Scopes: x.Scopes, RoleRank: x.RoleRank, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt, DeletedAt: x.DeletedAt, Teams: x.Teams,
 	}
 }
 

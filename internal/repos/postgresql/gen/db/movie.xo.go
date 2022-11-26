@@ -31,10 +31,7 @@ type Movie struct {
 
 func (x *Movie) ToPublic() MoviePublic {
 	return MoviePublic{
-		MovieID:  x.MovieID,
-		Title:    x.Title,
-		Year:     x.Year,
-		Synopsis: x.Synopsis,
+		MovieID: x.MovieID, Title: x.Title, Year: x.Year, Synopsis: x.Synopsis,
 	}
 }
 

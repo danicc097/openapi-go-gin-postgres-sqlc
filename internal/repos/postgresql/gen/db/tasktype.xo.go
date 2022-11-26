@@ -33,11 +33,7 @@ type TaskType struct {
 
 func (x *TaskType) ToPublic() TaskTypePublic {
 	return TaskTypePublic{
-		TaskTypeID:  x.TaskTypeID,
-		TeamID:      x.TeamID,
-		Name:        x.Name,
-		Description: x.Description,
-		Color:       x.Color,
+		TaskTypeID: x.TaskTypeID, TeamID: x.TeamID, Name: x.Name, Description: x.Description, Color: x.Color,
 	}
 }
 

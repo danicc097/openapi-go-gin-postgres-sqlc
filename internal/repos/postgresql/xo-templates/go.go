@@ -34,6 +34,8 @@ func formatJSON(obj interface{}) string {
 
 var ErrNoSingle = errors.New("in query exec mode, the --single or -S must be provided")
 
+const privateFieldProperty = "private"
+
 func IsUpper(s string) bool {
 	for _, r := range s {
 		if !unicode.IsUpper(r) && unicode.IsLetter(r) {
@@ -1025,6 +1027,7 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"zero":         f.zero,
 		"type":         f.typefn,
 		"field":        f.field,
+		"fieldmapping": f.fieldmapping,
 		"join_fields":  f.join_fields,
 		"short":        f.short,
 		// sqlstr funcs
@@ -2358,10 +2361,8 @@ func (f *Funcs) typefn(typ string) string {
 func (f *Funcs) field(field Field, public bool) (string, error) {
 	buf := new(bytes.Buffer)
 	if public {
-		if contains(field.Properties, "private") {
-			if err := f.privatefieldtag.Funcs(f.FuncMap()).Execute(buf, field); err != nil {
-				return "", err
-			}
+		if contains(field.Properties, privateFieldProperty) {
+			return "", nil
 		} else {
 			if err := f.publicfieldtag.Funcs(f.FuncMap()).Execute(buf, field); err != nil {
 				return "", err
@@ -2384,6 +2385,16 @@ func (f *Funcs) field(field Field, public bool) (string, error) {
 	}
 
 	return fmt.Sprintf("\t%s %s%s // %s", field.GoName, fieldType, tag, field.SQLName), nil
+}
+
+// fieldmapping generates field mappings from a struct to another.
+func (f *Funcs) fieldmapping(field Field, recv string, public bool) (string, error) {
+	if public {
+		if contains(field.Properties, privateFieldProperty) {
+			return "", nil
+		}
+	}
+	return fmt.Sprintf("\t%s: %s.%s,", field.GoName, recv, field.GoName), nil
 }
 
 // join_fields generates a struct field definition from join constraints

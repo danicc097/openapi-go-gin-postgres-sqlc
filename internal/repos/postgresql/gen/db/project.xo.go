@@ -39,12 +39,7 @@ type Project struct {
 
 func (x *Project) ToPublic() ProjectPublic {
 	return ProjectPublic{
-		ProjectID:   x.ProjectID,
-		Name:        x.Name,
-		Description: x.Description,
-		Metadata:    x.Metadata,
-		CreatedAt:   x.CreatedAt,
-		UpdatedAt:   x.UpdatedAt,
+		ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Metadata: x.Metadata, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
 	}
 }
 

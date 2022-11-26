@@ -51,16 +51,7 @@ type WorkItem struct {
 
 func (x *WorkItem) ToPublic() WorkItemPublic {
 	return WorkItemPublic{
-		WorkItemID:     x.WorkItemID,
-		Title:          x.Title,
-		WorkItemTypeID: x.WorkItemTypeID,
-		Metadata:       x.Metadata,
-		TeamID:         x.TeamID,
-		KanbanStepID:   x.KanbanStepID,
-		Closed:         x.Closed,
-		CreatedAt:      x.CreatedAt,
-		UpdatedAt:      x.UpdatedAt,
-		DeletedAt:      x.DeletedAt,
+		WorkItemID: x.WorkItemID, Title: x.Title, WorkItemTypeID: x.WorkItemTypeID, Metadata: x.Metadata, TeamID: x.TeamID, KanbanStepID: x.KanbanStepID, Closed: x.Closed, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt, DeletedAt: x.DeletedAt,
 	}
 }
 

@@ -29,8 +29,7 @@ type WorkItemMember struct {
 
 func (x *WorkItemMember) ToPublic() WorkItemMemberPublic {
 	return WorkItemMemberPublic{
-		WorkItemID: x.WorkItemID,
-		Member:     x.Member,
+		WorkItemID: x.WorkItemID, Member: x.Member,
 	}
 }
 

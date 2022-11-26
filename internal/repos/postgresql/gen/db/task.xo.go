@@ -46,15 +46,7 @@ type Task struct {
 
 func (x *Task) ToPublic() TaskPublic {
 	return TaskPublic{
-		TaskID:     x.TaskID,
-		TaskTypeID: x.TaskTypeID,
-		WorkItemID: x.WorkItemID,
-		Title:      x.Title,
-		Metadata:   x.Metadata,
-		Finished:   x.Finished,
-		CreatedAt:  x.CreatedAt,
-		UpdatedAt:  x.UpdatedAt,
-		DeletedAt:  x.DeletedAt,
+		TaskID: x.TaskID, TaskTypeID: x.TaskTypeID, WorkItemID: x.WorkItemID, Title: x.Title, Metadata: x.Metadata, Finished: x.Finished, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt, DeletedAt: x.DeletedAt,
 	}
 }
 

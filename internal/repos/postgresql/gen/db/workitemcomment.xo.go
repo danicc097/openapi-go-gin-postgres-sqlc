@@ -39,12 +39,7 @@ type WorkItemComment struct {
 
 func (x *WorkItemComment) ToPublic() WorkItemCommentPublic {
 	return WorkItemCommentPublic{
-		WorkItemCommentID: x.WorkItemCommentID,
-		WorkItemID:        x.WorkItemID,
-		UserID:            x.UserID,
-		Message:           x.Message,
-		CreatedAt:         x.CreatedAt,
-		UpdatedAt:         x.UpdatedAt,
+		WorkItemCommentID: x.WorkItemCommentID, WorkItemID: x.WorkItemID, UserID: x.UserID, Message: x.Message, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
 	}
 }
 

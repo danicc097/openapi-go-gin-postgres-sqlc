@@ -39,14 +39,7 @@ type KanbanStep struct {
 
 func (x *KanbanStep) ToPublic() KanbanStepPublic {
 	return KanbanStepPublic{
-		KanbanStepID:  x.KanbanStepID,
-		TeamID:        x.TeamID,
-		StepOrder:     x.StepOrder,
-		Name:          x.Name,
-		Description:   x.Description,
-		Color:         x.Color,
-		TimeTrackable: x.TimeTrackable,
-		Disabled:      x.Disabled,
+		KanbanStepID: x.KanbanStepID, TeamID: x.TeamID, StepOrder: x.StepOrder, Name: x.Name, Description: x.Description, Color: x.Color, TimeTrackable: x.TimeTrackable, Disabled: x.Disabled,
 	}
 }
 

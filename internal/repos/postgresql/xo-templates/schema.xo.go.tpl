@@ -268,9 +268,9 @@ type {{ $t.GoName }} struct {
 func (x *{{ $t.GoName }}) ToPublic() {{ $t.GoName }}Public {
 	return {{ $t.GoName }}Public{
   {{ range $t.Fields -}}
-	{{ .GoName }}: x.{{ .GoName }},
-{{ end }}
-}
+  {{ fieldmapping . "x" true }}
+  {{- end }}
+  }
 }
 
 {{ extratypes $t.GoName $t.SQLName $constraints $t }}

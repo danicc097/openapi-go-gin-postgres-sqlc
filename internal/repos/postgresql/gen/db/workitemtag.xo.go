@@ -31,10 +31,7 @@ type WorkItemTag struct {
 
 func (x *WorkItemTag) ToPublic() WorkItemTagPublic {
 	return WorkItemTagPublic{
-		WorkItemTagID: x.WorkItemTagID,
-		Name:          x.Name,
-		Description:   x.Description,
-		Color:         x.Color,
+		WorkItemTagID: x.WorkItemTagID, Name: x.Name, Description: x.Description, Color: x.Color,
 	}
 }
 
