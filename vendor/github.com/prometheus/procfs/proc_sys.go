@@ -30,6 +30,7 @@ func (fs FS) SysctlStrings(sysctl string) ([]string, error) {
 		return nil, err
 	}
 	return strings.Fields(value), nil
+
 }
 
 func (fs FS) SysctlInts(sysctl string) ([]int, error) {

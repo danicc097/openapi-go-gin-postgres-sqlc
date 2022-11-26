@@ -350,10 +350,10 @@ func (e *jsonEncDriver) encodeUint(neg bool, quotes bool, u uint64) {
 		"80818283848586878889" +
 		"90919293949596979899"
 
-		// typically, 19 or 20 bytes sufficient for decimal encoding a uint64
-		// var a [24]byte
-	a := e.b[0:24]
-	i := uint8(len(a))
+	// typically, 19 or 20 bytes sufficient for decimal encoding a uint64
+	// var a [24]byte
+	var a = e.b[0:24]
+	var i = uint8(len(a))
 
 	if quotes {
 		i--
@@ -361,7 +361,7 @@ func (e *jsonEncDriver) encodeUint(neg bool, quotes bool, u uint64) {
 	}
 	// u guaranteed to fit into a uint (as we are not 32bit OS)
 	var is uint
-	us := uint(u)
+	var us = uint(u)
 	for us >= 100 {
 		is = us % 100 * 2
 		us /= 100
@@ -758,7 +758,7 @@ func (d *jsonDecDriver) nextValueBytes(v []byte) []byte {
 
 func (d *jsonDecDriver) nextValueBytesR(v0 []byte) (v []byte, cursor uint) {
 	v = v0
-	h := decNextValueBytesHelper{d: &d.d}
+	var h = decNextValueBytesHelper{d: &d.d}
 	dr := &d.d.decRd
 
 	consumeString := func() {
@@ -1275,13 +1275,13 @@ func (d *jsonDecDriver) DecodeNaked() {
 // JsonHandle is a handle for JSON encoding format.
 //
 // Json is comprehensively supported:
-//   - decodes numbers into interface{} as int, uint or float64
-//     based on how the number looks and some config parameters e.g. PreferFloat, SignedInt, etc.
-//   - decode integers from float formatted numbers e.g. 1.27e+8
-//   - decode any json value (numbers, bool, etc) from quoted strings
-//   - configurable way to encode/decode []byte .
-//     by default, encodes and decodes []byte using base64 Std Encoding
-//   - UTF-8 support for encoding and decoding
+//    - decodes numbers into interface{} as int, uint or float64
+//      based on how the number looks and some config parameters e.g. PreferFloat, SignedInt, etc.
+//    - decode integers from float formatted numbers e.g. 1.27e+8
+//    - decode any json value (numbers, bool, etc) from quoted strings
+//    - configurable way to encode/decode []byte .
+//      by default, encodes and decodes []byte using base64 Std Encoding
+//    - UTF-8 support for encoding and decoding
 //
 // It has better performance than the json library in the standard library,
 // by leveraging the performance improvements of the codec library.
@@ -1366,7 +1366,7 @@ func (h *JsonHandle) typical() bool {
 }
 
 func (h *JsonHandle) newEncDriver() encDriver {
-	e := &jsonEncDriver{h: h}
+	var e = &jsonEncDriver{h: h}
 	// var x []byte
 	// e.buf = &x
 	e.e.e = e
@@ -1377,7 +1377,7 @@ func (h *JsonHandle) newEncDriver() encDriver {
 }
 
 func (h *JsonHandle) newDecDriver() decDriver {
-	d := &jsonDecDriver{h: h}
+	var d = &jsonDecDriver{h: h}
 	var x []byte
 	d.buf = &x
 	d.d.d = d
@@ -1450,10 +1450,8 @@ func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 	return
 }
 
-var (
-	_ decDriverContainerTracker = (*jsonDecDriver)(nil)
-	_ encDriverContainerTracker = (*jsonEncDriver)(nil)
-	_ decDriver                 = (*jsonDecDriver)(nil)
-)
+var _ decDriverContainerTracker = (*jsonDecDriver)(nil)
+var _ encDriverContainerTracker = (*jsonEncDriver)(nil)
+var _ decDriver = (*jsonDecDriver)(nil)
 
 var _ encDriver = (*jsonEncDriver)(nil)

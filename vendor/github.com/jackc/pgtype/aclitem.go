@@ -17,6 +17,7 @@ import (
 // it should appear in double-quotes:
 //
 //	postgres=arwdDxt/"role with spaces"
+//
 type ACLItem struct {
 	String string
 	Status Status

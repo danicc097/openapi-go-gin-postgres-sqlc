@@ -256,15 +256,12 @@ func (p *OneofFields) Get(i int) protoreflect.FieldDescriptor { return p.List[i]
 func (p *OneofFields) ByName(s protoreflect.Name) protoreflect.FieldDescriptor {
 	return p.lazyInit().byName[s]
 }
-
 func (p *OneofFields) ByJSONName(s string) protoreflect.FieldDescriptor {
 	return p.lazyInit().byJSON[s]
 }
-
 func (p *OneofFields) ByTextName(s string) protoreflect.FieldDescriptor {
 	return p.lazyInit().byText[s]
 }
-
 func (p *OneofFields) ByNumber(n protoreflect.FieldNumber) protoreflect.FieldDescriptor {
 	return p.lazyInit().byNum[n]
 }
@@ -313,11 +310,9 @@ func (p *SourceLocations) byKey(k pathKey) protoreflect.SourceLocation {
 	}
 	return protoreflect.SourceLocation{}
 }
-
 func (p *SourceLocations) ByPath(path protoreflect.SourcePath) protoreflect.SourceLocation {
 	return p.byKey(newPathKey(path))
 }
-
 func (p *SourceLocations) ByDescriptor(desc protoreflect.Descriptor) protoreflect.SourceLocation {
 	if p.File != nil && desc != nil && p.File != desc.ParentFile() {
 		return protoreflect.SourceLocation{} // mismatching parent files
@@ -416,7 +411,6 @@ func (p *SourceLocations) ByDescriptor(desc protoreflect.Descriptor) protoreflec
 		}
 	}
 }
-
 func (p *SourceLocations) lazyInit() *SourceLocations {
 	p.once.Do(func() {
 		if len(p.List) > 0 {

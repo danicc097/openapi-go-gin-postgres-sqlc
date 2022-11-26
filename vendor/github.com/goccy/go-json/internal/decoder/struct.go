@@ -37,7 +37,9 @@ type structDecoder struct {
 	keyStreamDecoder   func(*structDecoder, *Stream) (*structFieldSet, string, error)
 }
 
-var largeToSmallTable [256]byte
+var (
+	largeToSmallTable [256]byte
+)
 
 func init() {
 	for i := 0; i < 256; i++ {
@@ -202,7 +204,9 @@ func decodeKeyCharByEscapedChar(buf []byte, cursor int64) ([]byte, int64) {
 }
 
 func decodeKeyByBitmapUint8(d *structDecoder, buf []byte, cursor int64) (int64, *structFieldSet, error) {
-	var curBit uint8 = math.MaxUint8
+	var (
+		curBit uint8 = math.MaxUint8
+	)
 	b := (*sliceHeader)(unsafe.Pointer(&buf)).data
 	for {
 		switch char(b, cursor) {
@@ -263,7 +267,9 @@ func decodeKeyByBitmapUint8(d *structDecoder, buf []byte, cursor int64) (int64, 
 }
 
 func decodeKeyByBitmapUint16(d *structDecoder, buf []byte, cursor int64) (int64, *structFieldSet, error) {
-	var curBit uint16 = math.MaxUint16
+	var (
+		curBit uint16 = math.MaxUint16
+	)
 	b := (*sliceHeader)(unsafe.Pointer(&buf)).data
 	for {
 		switch char(b, cursor) {
@@ -356,7 +362,9 @@ func decodeKey(d *structDecoder, buf []byte, cursor int64) (int64, *structFieldS
 }
 
 func decodeKeyByBitmapUint8Stream(d *structDecoder, s *Stream) (*structFieldSet, string, error) {
-	var curBit uint8 = math.MaxUint8
+	var (
+		curBit uint8 = math.MaxUint8
+	)
 	_, cursor, p := s.stat()
 	for {
 		switch char(p, cursor) {
@@ -441,7 +449,9 @@ func decodeKeyByBitmapUint8Stream(d *structDecoder, s *Stream) (*structFieldSet,
 }
 
 func decodeKeyByBitmapUint16Stream(d *structDecoder, s *Stream) (*structFieldSet, string, error) {
-	var curBit uint16 = math.MaxUint16
+	var (
+		curBit uint16 = math.MaxUint16
+	)
 	_, cursor, p := s.stat()
 	for {
 		switch char(p, cursor) {

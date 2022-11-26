@@ -7,11 +7,9 @@ import (
 	"strings"
 )
 
-const (
-	lenOne  = 1
-	lenZero = 0
-	lenNo   = -1
-)
+const lenOne = 1
+const lenZero = 0
+const lenNo = -1
 
 type Matcher interface {
 	Match(string) bool

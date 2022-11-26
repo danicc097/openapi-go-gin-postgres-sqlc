@@ -112,13 +112,11 @@ type defaultDialer struct {
 func (d defaultDialer) Dial(network, address string) (net.Conn, error) {
 	return d.d.Dial(network, address)
 }
-
 func (d defaultDialer) DialTimeout(network, address string, timeout time.Duration) (net.Conn, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	return d.DialContext(ctx, network, address)
 }
-
 func (d defaultDialer) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
 	return d.d.DialContext(ctx, network, address)
 }
@@ -1331,10 +1329,8 @@ func (cn *conn) auth(r *readBuf, o values) {
 
 type format int
 
-const (
-	formatText   format = 0
-	formatBinary format = 1
-)
+const formatText format = 0
+const formatBinary format = 1
 
 // One result-column format code with the value 1 (i.e. all binary).
 var colFmtDataAllBinary = []byte{0, 1, 0, 1}
@@ -1451,6 +1447,7 @@ func (st *stmt) exec(v []driver.Value) {
 
 	cn.readBindResponse()
 	cn.postExecuteWorkaround()
+
 }
 
 func (st *stmt) NumInput() int {
@@ -1634,10 +1631,10 @@ func (rs *rows) NextResultSet() error {
 // QuoteIdentifier quotes an "identifier" (e.g. a table or a column name) to be
 // used as part of an SQL statement.  For example:
 //
-//	tblname := "my_table"
-//	data := "my_data"
-//	quoted := pq.QuoteIdentifier(tblname)
-//	err := db.Exec(fmt.Sprintf("INSERT INTO %s VALUES ($1)", quoted), data)
+//    tblname := "my_table"
+//    data := "my_data"
+//    quoted := pq.QuoteIdentifier(tblname)
+//    err := db.Exec(fmt.Sprintf("INSERT INTO %s VALUES ($1)", quoted), data)
 //
 // Any double quotes in name will be escaped.  The quoted identifier will be
 // case sensitive when used in a query.  If the input string contains a zero
@@ -1654,8 +1651,8 @@ func QuoteIdentifier(name string) string {
 // to DDL and other statements that do not accept parameters) to be used as part
 // of an SQL statement.  For example:
 //
-//	exp_date := pq.QuoteLiteral("2023-01-05 15:00:00Z")
-//	err := db.Exec(fmt.Sprintf("CREATE ROLE my_user VALID UNTIL %s", exp_date))
+//    exp_date := pq.QuoteLiteral("2023-01-05 15:00:00Z")
+//    err := db.Exec(fmt.Sprintf("CREATE ROLE my_user VALID UNTIL %s", exp_date))
 //
 // Any single quotes in name will be escaped. Any backslashes (i.e. "\") will be
 // replaced by two backslashes (i.e. "\\") and the C-style escape identifier

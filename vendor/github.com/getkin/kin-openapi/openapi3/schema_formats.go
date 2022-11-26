@@ -92,6 +92,7 @@ func init() {
 
 	// date-time
 	DefineStringFormat("date-time", `^[0-9]{4}-(0[0-9]|10|11|12)-([0-2][0-9]|30|31)T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?(Z|(\+|-)[0-9]{2}:[0-9]{2})?$`)
+
 }
 
 // DefineIPv4Format opts in ipv4 format validation on top of OAS 3 spec

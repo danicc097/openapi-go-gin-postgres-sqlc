@@ -1891,6 +1891,7 @@ func isGt(fl FieldLevel) bool {
 	case reflect.Struct:
 
 		if field.Type().ConvertibleTo(timeType) {
+
 			return field.Convert(timeType).Interface().(time.Time).After(time.Now().UTC())
 		}
 	}
@@ -2112,6 +2113,7 @@ func isLt(fl FieldLevel) bool {
 	case reflect.Struct:
 
 		if field.Type().ConvertibleTo(timeType) {
+
 			return field.Convert(timeType).Interface().(time.Time).Before(time.Now().UTC())
 		}
 	}

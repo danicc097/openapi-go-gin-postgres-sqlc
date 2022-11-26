@@ -67,13 +67,11 @@ type mapReflect struct {
 func (ms *mapReflect) Len() int {
 	return ms.v.Len()
 }
-
 func (ms *mapReflect) Has(k protoreflect.MapKey) bool {
 	rk := ms.keyConv.GoValueOf(k.Value())
 	rv := ms.v.MapIndex(rk)
 	return rv.IsValid()
 }
-
 func (ms *mapReflect) Get(k protoreflect.MapKey) protoreflect.Value {
 	rk := ms.keyConv.GoValueOf(k.Value())
 	rv := ms.v.MapIndex(rk)
@@ -82,18 +80,15 @@ func (ms *mapReflect) Get(k protoreflect.MapKey) protoreflect.Value {
 	}
 	return ms.valConv.PBValueOf(rv)
 }
-
 func (ms *mapReflect) Set(k protoreflect.MapKey, v protoreflect.Value) {
 	rk := ms.keyConv.GoValueOf(k.Value())
 	rv := ms.valConv.GoValueOf(v)
 	ms.v.SetMapIndex(rk, rv)
 }
-
 func (ms *mapReflect) Clear(k protoreflect.MapKey) {
 	rk := ms.keyConv.GoValueOf(k.Value())
 	ms.v.SetMapIndex(rk, reflect.Value{})
 }
-
 func (ms *mapReflect) Mutable(k protoreflect.MapKey) protoreflect.Value {
 	if _, ok := ms.valConv.(*messageConverter); !ok {
 		panic("invalid Mutable on map with non-message value type")
@@ -105,7 +100,6 @@ func (ms *mapReflect) Mutable(k protoreflect.MapKey) protoreflect.Value {
 	}
 	return v
 }
-
 func (ms *mapReflect) Range(f func(protoreflect.MapKey, protoreflect.Value) bool) {
 	iter := mapRange(ms.v)
 	for iter.Next() {
@@ -116,15 +110,12 @@ func (ms *mapReflect) Range(f func(protoreflect.MapKey, protoreflect.Value) bool
 		}
 	}
 }
-
 func (ms *mapReflect) NewValue() protoreflect.Value {
 	return ms.valConv.New()
 }
-
 func (ms *mapReflect) IsValid() bool {
 	return !ms.v.IsNil()
 }
-
 func (ms *mapReflect) protoUnwrap() interface{} {
 	return ms.v.Interface()
 }

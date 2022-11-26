@@ -43,11 +43,11 @@ func unsafeGrowslice(typ unsafe.Pointer, old unsafeSlice, cap, incr int) (v unsa
 func mapStoresElemIndirect(elemsize uintptr) bool { return false }
 
 func mapSet(m, k, v reflect.Value, _ mapKeyFastKind, _, valIsRef bool) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&k))
-	kptr := unsafeMapKVPtr(urv)
+	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
+	var kptr = unsafeMapKVPtr(urv)
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&v))
-	vtyp := urv.typ
-	vptr := unsafeMapKVPtr(urv)
+	var vtyp = urv.typ
+	var vptr = unsafeMapKVPtr(urv)
 
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
 	mptr := rvRefPtr(urv)
@@ -57,8 +57,8 @@ func mapSet(m, k, v reflect.Value, _ mapKeyFastKind, _, valIsRef bool) {
 }
 
 func mapGet(m, k, v reflect.Value, _ mapKeyFastKind, _, valIsRef bool) (_ reflect.Value) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&k))
-	kptr := unsafeMapKVPtr(urv)
+	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
+	var kptr = unsafeMapKVPtr(urv)
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
 	mptr := rvRefPtr(urv)
 

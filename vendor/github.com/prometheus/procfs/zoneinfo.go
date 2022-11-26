@@ -85,6 +85,7 @@ func (fs FS) Zoneinfo() ([]Zoneinfo, error) {
 }
 
 func parseZoneinfo(zoneinfoData []byte) ([]Zoneinfo, error) {
+
 	zoneinfo := []Zoneinfo{}
 
 	zoneinfoBlocks := bytes.Split(zoneinfoData, []byte("\nNode"))

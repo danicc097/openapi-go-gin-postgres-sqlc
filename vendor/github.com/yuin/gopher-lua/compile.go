@@ -2,10 +2,9 @@ package lua
 
 import (
 	"fmt"
+	"github.com/yuin/gopher-lua/ast"
 	"math"
 	"reflect"
-
-	"github.com/yuin/gopher-lua/ast"
 )
 
 /* internal constants & structs  {{{ */
@@ -24,10 +23,8 @@ const (
 	ecNone
 )
 
-const (
-	regNotDefined = opMaxArgsA + 1
-	labelNoJump   = 0
-)
+const regNotDefined = opMaxArgsA + 1
+const labelNoJump = 0
 
 type expcontext struct {
 	ctype expContextType
@@ -62,12 +59,10 @@ type constLValueExpr struct {
 // }}}
 
 /* utilities {{{ */
-var (
-	_ecnone0  = &expcontext{ecNone, regNotDefined, 0}
-	_ecnonem1 = &expcontext{ecNone, regNotDefined, -1}
-	_ecnonem2 = &expcontext{ecNone, regNotDefined, -2}
-	ecfuncdef = &expcontext{ecMethod, regNotDefined, 0}
-)
+var _ecnone0 = &expcontext{ecNone, regNotDefined, 0}
+var _ecnonem1 = &expcontext{ecNone, regNotDefined, -1}
+var _ecnonem2 = &expcontext{ecNone, regNotDefined, -2}
+var ecfuncdef = &expcontext{ecMethod, regNotDefined, 0}
 
 func ecupdate(ec *expcontext, ctype expContextType, reg, varargopt int) {
 	if ec == _ecnone0 || ec == _ecnonem1 || ec == _ecnonem2 {
@@ -766,6 +761,7 @@ func compileIfStmt(context *funcContext, stmt *ast.IfStmt) { // {{{
 		compileBlock(context, stmt.Else)
 		context.SetLabelPc(endlabel, context.Code.LastPC())
 	}
+
 } // }}}
 
 func compileBranchCondition(context *funcContext, reg int, expr ast.Expr, thenlabel, elselabel int, hasnextcond bool) { // {{{
@@ -854,6 +850,7 @@ func compileRepeatStmt(context *funcContext, stmt *ast.RepeatStmt) { // {{{
 		context.Code.AddASbx(OP_JMP, 0, initlabel, eline(stmt))
 		context.SetLabelPc(label, context.Code.LastPC())
 	}
+
 } // }}}
 
 func compileBreakStmt(context *funcContext, stmt *ast.BreakStmt) { // {{{
@@ -924,6 +921,7 @@ func compileNumberForStmt(context *funcContext, stmt *ast.NumberForStmt) { // {{
 
 	context.SetLabelPc(endlabel, code.LastPC())
 	code.SetSbx(bodypc, flpc-bodypc)
+
 } // }}}
 
 func compileGenericForStmt(context *funcContext, stmt *ast.GenericForStmt) { // {{{
@@ -1065,6 +1063,7 @@ func compileExpr(context *funcContext, reg int, expr ast.Expr, ec *expcontext) i
 	default:
 		panic(fmt.Sprintf("expr %v not implemented.", reflect.TypeOf(ex).Elem().Name()))
 	}
+
 } // }}}
 
 func compileExprWithPropagation(context *funcContext, expr ast.Expr, reg *int, save *int, propergator func(int, *int, *int, int)) { // {{{

@@ -86,10 +86,8 @@ type enumsByName = map[string]int32
 // enumsByNumber maps enum values by number to their name counterpart.
 type enumsByNumber = map[int32]string
 
-var (
-	enumCache     sync.Map // map[enumName]enumsByName
-	numFilesCache sync.Map // map[protoreflect.FullName]int
-)
+var enumCache sync.Map     // map[enumName]enumsByName
+var numFilesCache sync.Map // map[protoreflect.FullName]int
 
 // RegisterEnum is called from the generated code to register the mapping of
 // enum value names to enum numbers for the enum identified by s.
@@ -158,8 +156,7 @@ func EnumValueMap(s enumName) enumsByName {
 func walkEnums(d interface {
 	Enums() protoreflect.EnumDescriptors
 	Messages() protoreflect.MessageDescriptors
-}, f func(protoreflect.EnumDescriptor),
-) {
+}, f func(protoreflect.EnumDescriptor)) {
 	eds := d.Enums()
 	for i := eds.Len() - 1; i >= 0; i-- {
 		f(eds.Get(i))

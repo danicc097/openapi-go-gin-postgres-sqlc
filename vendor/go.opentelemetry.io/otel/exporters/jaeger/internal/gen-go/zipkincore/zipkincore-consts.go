@@ -12,32 +12,28 @@ import (
 )
 
 // (needed to ensure safety because of naive import list construction.)
-var (
-	_ = thrift.ZERO
-	_ = fmt.Printf
-	_ = context.Background
-	_ = time.Now
-	_ = bytes.Equal
-)
+var _ = thrift.ZERO
+var _ = fmt.Printf
+var _ = context.Background
+var _ = time.Now
+var _ = bytes.Equal
 
-const (
-	CLIENT_SEND          = "cs"
-	CLIENT_RECV          = "cr"
-	SERVER_SEND          = "ss"
-	SERVER_RECV          = "sr"
-	MESSAGE_SEND         = "ms"
-	MESSAGE_RECV         = "mr"
-	WIRE_SEND            = "ws"
-	WIRE_RECV            = "wr"
-	CLIENT_SEND_FRAGMENT = "csf"
-	CLIENT_RECV_FRAGMENT = "crf"
-	SERVER_SEND_FRAGMENT = "ssf"
-	SERVER_RECV_FRAGMENT = "srf"
-	LOCAL_COMPONENT      = "lc"
-	CLIENT_ADDR          = "ca"
-	SERVER_ADDR          = "sa"
-	MESSAGE_ADDR         = "ma"
-)
+const CLIENT_SEND = "cs"
+const CLIENT_RECV = "cr"
+const SERVER_SEND = "ss"
+const SERVER_RECV = "sr"
+const MESSAGE_SEND = "ms"
+const MESSAGE_RECV = "mr"
+const WIRE_SEND = "ws"
+const WIRE_RECV = "wr"
+const CLIENT_SEND_FRAGMENT = "csf"
+const CLIENT_RECV_FRAGMENT = "crf"
+const SERVER_SEND_FRAGMENT = "ssf"
+const SERVER_RECV_FRAGMENT = "srf"
+const LOCAL_COMPONENT = "lc"
+const CLIENT_ADDR = "ca"
+const SERVER_ADDR = "sa"
+const MESSAGE_ADDR = "ma"
 
 func init() {
 }

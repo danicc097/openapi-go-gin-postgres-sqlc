@@ -23,10 +23,8 @@ import (
 	"github.com/jackc/pgx/v5/internal/iobufpool"
 )
 
-var (
-	errClosed     = errors.New("closed")
-	ErrWouldBlock = new(wouldBlockError)
-)
+var errClosed = errors.New("closed")
+var ErrWouldBlock = new(wouldBlockError)
 
 const fakeNonblockingWaitDuration = 100 * time.Millisecond
 

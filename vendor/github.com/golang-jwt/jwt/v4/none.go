@@ -8,10 +8,8 @@ const UnsafeAllowNoneSignatureType unsafeNoneMagicConstant = "none signing metho
 
 var NoneSignatureTypeDisallowedError error
 
-type (
-	signingMethodNone       struct{}
-	unsafeNoneMagicConstant string
-)
+type signingMethodNone struct{}
+type unsafeNoneMagicConstant string
 
 func init() {
 	SigningMethodNone = &signingMethodNone{}

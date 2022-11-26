@@ -44,7 +44,6 @@ func NewContentWithJSONSchema(schema *Schema) Content {
 		"application/json": NewMediaType().WithSchema(schema),
 	}
 }
-
 func NewContentWithJSONSchemaRef(schema *SchemaRef) Content {
 	return Content{
 		"application/json": NewMediaType().WithSchemaRef(schema),

@@ -192,6 +192,7 @@ func (encodePlanTextInt64Valuer) Encode(value any, buf []byte) (newBuf []byte, e
 }
 
 func (Float8Codec) PlanScan(m *Map, oid uint32, format int16, target any) ScanPlan {
+
 	switch format {
 	case BinaryFormatCode:
 		switch target.(type) {

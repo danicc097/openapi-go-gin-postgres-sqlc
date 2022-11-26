@@ -167,7 +167,6 @@ func PtrToSlice(p uintptr) *runtime.SliceHeader { return *(**runtime.SliceHeader
 func PtrToPtr(p uintptr) uintptr {
 	return uintptr(**(**unsafe.Pointer)(unsafe.Pointer(&p)))
 }
-
 func PtrToNPtr(p uintptr, ptrNum int) uintptr {
 	for i := 0; i < ptrNum; i++ {
 		if p == 0 {
@@ -181,7 +180,6 @@ func PtrToNPtr(p uintptr, ptrNum int) uintptr {
 func PtrToUnsafePtr(p uintptr) unsafe.Pointer {
 	return *(*unsafe.Pointer)(unsafe.Pointer(&p))
 }
-
 func PtrToInterface(code *Opcode, p uintptr) interface{} {
 	return *(*interface{})(unsafe.Pointer(&emptyInterface{
 		typ: code.Type,
@@ -364,23 +362,25 @@ func AppendBool(_ *RuntimeContext, b []byte, v bool) []byte {
 	return append(b, "false"...)
 }
 
-var floatTable = [256]bool{
-	'0': true,
-	'1': true,
-	'2': true,
-	'3': true,
-	'4': true,
-	'5': true,
-	'6': true,
-	'7': true,
-	'8': true,
-	'9': true,
-	'.': true,
-	'e': true,
-	'E': true,
-	'+': true,
-	'-': true,
-}
+var (
+	floatTable = [256]bool{
+		'0': true,
+		'1': true,
+		'2': true,
+		'3': true,
+		'4': true,
+		'5': true,
+		'6': true,
+		'7': true,
+		'8': true,
+		'9': true,
+		'.': true,
+		'e': true,
+		'E': true,
+		'+': true,
+		'-': true,
+	}
+)
 
 func AppendNumber(_ *RuntimeContext, b []byte, n json.Number) ([]byte, error) {
 	if len(n) == 0 {

@@ -66,6 +66,7 @@ func getBuf(size int) []byte {
 
 // Buffer is a buffer optimized for serialization without extra copying.
 type Buffer struct {
+
 	// Buf is the current chunk that can be used for serialization.
 	Buf []byte
 

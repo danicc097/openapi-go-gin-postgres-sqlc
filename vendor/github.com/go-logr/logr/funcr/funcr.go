@@ -21,13 +21,13 @@ limitations under the License.
 // github.com/go-logr/logr.LogSink with output through an arbitrary
 // "write" function.  See New and NewJSON for details.
 //
-// # Custom LogSinks
+// Custom LogSinks
 //
 // For users who need more control, a funcr.Formatter can be embedded inside
 // your own custom LogSink implementation. This is useful when the LogSink
 // needs to implement additional methods, for example.
 //
-// # Formatting
+// Formatting
 //
 // This will respect logr.Marshaler, fmt.Stringer, and error interfaces for
 // values which are being logged.  When rendering a struct, funcr will use Go's
@@ -187,11 +187,9 @@ func (l fnlogger) GetUnderlying() func(prefix, args string) {
 }
 
 // Assert conformance to the interfaces.
-var (
-	_ logr.LogSink          = &fnlogger{}
-	_ logr.CallDepthLogSink = &fnlogger{}
-	_ Underlier             = &fnlogger{}
-)
+var _ logr.LogSink = &fnlogger{}
+var _ logr.CallDepthLogSink = &fnlogger{}
+var _ Underlier = &fnlogger{}
 
 // NewFormatter constructs a Formatter which emits a JSON-like key=value format.
 func NewFormatter(opts Options) Formatter {
@@ -204,10 +202,8 @@ func NewFormatterJSON(opts Options) Formatter {
 }
 
 // Defaults for Options.
-const (
-	defaultTimestampFormat = "2006-01-02 15:04:05.000000"
-	defaultMaxLogDepth     = 16
-)
+const defaultTimestampFormat = "2006-01-02 15:04:05.000000"
+const defaultMaxLogDepth = 16
 
 func newFormatter(opts Options, outfmt outputFormat) Formatter {
 	if opts.TimestampFormat == "" {

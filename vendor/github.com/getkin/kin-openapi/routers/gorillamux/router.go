@@ -181,7 +181,7 @@ func makeServers(in openapi3.Servers) ([]srv, error) {
 			path = path[:len(path)-1]
 		}
 		servers = append(servers, srv{
-			host:        bDecode(u.Host), // u.Hostname()?
+			host:        bDecode(u.Host), //u.Hostname()?
 			base:        path,
 			schemes:     schemes, // scheme: []string{scheme0}, TODO: https://github.com/gorilla/mux/issues/624
 			server:      server,
@@ -228,7 +228,6 @@ func bEncode(s string) string {
 	s = strings.Replace(s, "}", brURL, -1)
 	return s
 }
-
 func bDecode(s string) string {
 	s = strings.Replace(s, blURL, "{", -1)
 	s = strings.Replace(s, brURL, "}", -1)

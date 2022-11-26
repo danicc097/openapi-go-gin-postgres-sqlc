@@ -193,6 +193,7 @@ func normalizeTemplatedPath(path string) (string, uint, map[string]struct{}) {
 				buffVar.WriteRune(c)
 				continue
 			}
+
 		} else if c == '{' {
 			// Begin path variable
 			isVariable = true

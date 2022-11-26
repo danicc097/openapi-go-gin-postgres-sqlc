@@ -343,7 +343,7 @@ func (e *Encoder) kSeqFn(rtelem reflect.Type) (fn *codecFn) {
 }
 
 func (e *Encoder) kSliceWMbs(rv reflect.Value, ti *typeInfo) {
-	l := rvLenSlice(rv)
+	var l = rvLenSlice(rv)
 	if l == 0 {
 		e.mapStart(0)
 	} else {
@@ -363,7 +363,7 @@ func (e *Encoder) kSliceWMbs(rv reflect.Value, ti *typeInfo) {
 }
 
 func (e *Encoder) kSliceW(rv reflect.Value, ti *typeInfo) {
-	l := rvLenSlice(rv)
+	var l = rvLenSlice(rv)
 	e.arrayStart(l)
 	if l > 0 {
 		fn := e.kSeqFn(ti.elem)
@@ -376,7 +376,7 @@ func (e *Encoder) kSliceW(rv reflect.Value, ti *typeInfo) {
 }
 
 func (e *Encoder) kArrayWMbs(rv reflect.Value, ti *typeInfo) {
-	l := rv.Len()
+	var l = rv.Len()
 	if l == 0 {
 		e.mapStart(0)
 	} else {
@@ -396,7 +396,7 @@ func (e *Encoder) kArrayWMbs(rv reflect.Value, ti *typeInfo) {
 }
 
 func (e *Encoder) kArrayW(rv reflect.Value, ti *typeInfo) {
-	l := rv.Len()
+	var l = rv.Len()
 	e.arrayStart(l)
 	if l > 0 {
 		fn := e.kSeqFn(ti.elem)
@@ -547,7 +547,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	tisfi := ti.sfi.source()
 	newlen += len(tisfi)
 
-	fkvs := e.slist.get(newlen)[:newlen]
+	var fkvs = e.slist.get(newlen)[:newlen]
 
 	recur := e.h.RecursiveEmptyCheck
 
@@ -633,7 +633,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			if si.path.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 				switch kv.r.Kind() {
 				case reflect.Struct, reflect.Interface, reflect.Ptr, reflect.Array, reflect.Map, reflect.Slice:
-					kv.r = reflect.Value{} // encode as nil
+					kv.r = reflect.Value{} //encode as nil
 				}
 			}
 			fkvs[i] = kv
@@ -684,7 +684,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		valFn = e.h.fn(rtval)
 	}
 
-	rvv := mapAddrLoopvarRV(f.ti.elem, vtypeKind)
+	var rvv = mapAddrLoopvarRV(f.ti.elem, vtypeKind)
 
 	if e.h.Canonical {
 		e.kMapCanonical(f.ti, rv, rvv, valFn)
@@ -693,7 +693,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	}
 
 	rtkey := f.ti.key
-	keyTypeIsString := stringTypId == rt2id(rtkey) // rtkeyid
+	var keyTypeIsString = stringTypId == rt2id(rtkey) // rtkeyid
 	if !keyTypeIsString {
 		for rtkey.Kind() == reflect.Ptr {
 			rtkey = rtkey.Elem()
@@ -703,7 +703,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		}
 	}
 
-	rvk := mapAddrLoopvarRV(f.ti.key, ktypeKind)
+	var rvk = mapAddrLoopvarRV(f.ti.key, ktypeKind)
 
 	var it mapIter
 	mapRange(&it, rv, rvk, rvv, true)
@@ -1010,17 +1010,16 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 // To set an option on all fields (e.g. omitempty on all fields), you
 // can create a field called _struct, and set flags on it. The options
 // which can be set on _struct are:
-//   - omitempty: so all fields are omitted if empty
-//   - toarray: so struct is encoded as an array
-//   - int: so struct key names are encoded as signed integers (instead of strings)
-//   - uint: so struct key names are encoded as unsigned integers (instead of strings)
-//   - float: so struct key names are encoded as floats (instead of strings)
-//
+//    - omitempty: so all fields are omitted if empty
+//    - toarray: so struct is encoded as an array
+//    - int: so struct key names are encoded as signed integers (instead of strings)
+//    - uint: so struct key names are encoded as unsigned integers (instead of strings)
+//    - float: so struct key names are encoded as floats (instead of strings)
 // More details on these below.
 //
 // Struct values "usually" encode as maps. Each exported struct field is encoded unless:
-//   - the field's tag is "-", OR
-//   - the field is empty (empty or the zero value) and its tag specifies the "omitempty" option.
+//    - the field's tag is "-", OR
+//    - the field is empty (empty or the zero value) and its tag specifies the "omitempty" option.
 //
 // When encoding as a map, the first string in the tag (before the comma)
 // is the map key string to use when encoding.
@@ -1033,9 +1032,8 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 // This is done with the int,uint or float option on the _struct field (see above).
 //
 // However, struct values may encode as arrays. This happens when:
-//   - StructToArray Encode option is set, OR
-//   - the tag on the _struct field sets the "toarray" option
-//
+//    - StructToArray Encode option is set, OR
+//    - the tag on the _struct field sets the "toarray" option
 // Note that omitempty is ignored when encoding struct values as arrays,
 // as an entry must be encoded for each field, to maintain its position.
 //
@@ -1045,33 +1043,33 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 // or interface value, and any array, slice, map, or string of length zero.
 //
 // Anonymous fields are encoded inline except:
-//   - the struct tag specifies a replacement name (first value)
-//   - the field is of an interface type
+//    - the struct tag specifies a replacement name (first value)
+//    - the field is of an interface type
 //
 // Examples:
 //
-//	// NOTE: 'json:' can be used as struct tag key, in place 'codec:' below.
-//	type MyStruct struct {
-//	    _struct bool    `codec:",omitempty"`   //set omitempty for every field
-//	    Field1 string   `codec:"-"`            //skip this field
-//	    Field2 int      `codec:"myName"`       //Use key "myName" in encode stream
-//	    Field3 int32    `codec:",omitempty"`   //use key "Field3". Omit if empty.
-//	    Field4 bool     `codec:"f4,omitempty"` //use key "f4". Omit if empty.
-//	    io.Reader                              //use key "Reader".
-//	    MyStruct        `codec:"my1"           //use key "my1".
-//	    MyStruct                               //inline it
-//	    ...
-//	}
+//      // NOTE: 'json:' can be used as struct tag key, in place 'codec:' below.
+//      type MyStruct struct {
+//          _struct bool    `codec:",omitempty"`   //set omitempty for every field
+//          Field1 string   `codec:"-"`            //skip this field
+//          Field2 int      `codec:"myName"`       //Use key "myName" in encode stream
+//          Field3 int32    `codec:",omitempty"`   //use key "Field3". Omit if empty.
+//          Field4 bool     `codec:"f4,omitempty"` //use key "f4". Omit if empty.
+//          io.Reader                              //use key "Reader".
+//          MyStruct        `codec:"my1"           //use key "my1".
+//          MyStruct                               //inline it
+//          ...
+//      }
 //
-//	type MyStruct struct {
-//	    _struct bool    `codec:",toarray"`     //encode struct as an array
-//	}
+//      type MyStruct struct {
+//          _struct bool    `codec:",toarray"`     //encode struct as an array
+//      }
 //
-//	type MyStruct struct {
-//	    _struct bool    `codec:",uint"`        //encode struct with "unsigned integer" keys
-//	    Field1 string   `codec:"1"`            //encode Field1 key using: EncodeInt(1)
-//	    Field2 string   `codec:"2"`            //encode Field2 key using: EncodeInt(2)
-//	}
+//      type MyStruct struct {
+//          _struct bool    `codec:",uint"`        //encode struct with "unsigned integer" keys
+//          Field1 string   `codec:"1"`            //encode Field1 key using: EncodeInt(1)
+//          Field2 string   `codec:"2"`            //encode Field2 key using: EncodeInt(2)
+//      }
 //
 // The mode of encoding is based on the type of the value. When a value is seen:
 //   - If a Selfer, call its CodecEncodeSelf method
@@ -1459,8 +1457,7 @@ func encInBytes(out *[]byte) (in []byte) {
 }
 
 func encStructFieldKey(encName string, ee encDriver, w *encWr,
-	keyType valueType, encNameAsciiAlphaNum bool, js bool,
-) {
+	keyType valueType, encNameAsciiAlphaNum bool, js bool) {
 	// use if-else-if, not switch (which compiles to binary-search)
 	// since keyType is typically valueTypeString, branch prediction is pretty good.
 

@@ -1,13 +1,16 @@
 package jwt
 
 import (
+	"errors"
+
 	"crypto"
 	"crypto/ed25519"
 	"crypto/rand"
-	"errors"
 )
 
-var ErrEd25519Verification = errors.New("ed25519: verification error")
+var (
+	ErrEd25519Verification = errors.New("ed25519: verification error")
+)
 
 // SigningMethodEd25519 implements the EdDSA family.
 // Expects ed25519.PrivateKey for signing and ed25519.PublicKey for verification

@@ -29,9 +29,11 @@ type Coverage interface {
 	Regions() []Region
 }
 
-// Supported defines a Coverage that lists all supported subtags. Tags
-// always returns nil.
-var Supported Coverage = allSubtags{}
+var (
+	// Supported defines a Coverage that lists all supported subtags. Tags
+	// always returns nil.
+	Supported Coverage = allSubtags{}
+)
 
 // TODO:
 // - Support Variants, numbering systems.

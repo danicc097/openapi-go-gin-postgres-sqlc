@@ -2,7 +2,6 @@ package match
 
 import (
 	"fmt"
-
 	"github.com/gobwas/glob/util/strings"
 )
 

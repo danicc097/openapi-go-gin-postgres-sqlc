@@ -211,6 +211,7 @@ func (p *Postgres) Open(url string) (database.Driver, error) {
 		MultiStatementEnabled: multiStatementEnabled,
 		MultiStatementMaxSize: multiStatementMaxSize,
 	})
+
 	if err != nil {
 		return nil, err
 	}

@@ -219,7 +219,7 @@ func okBytes8(b []byte) [8]byte {
 // This applies to references like map/ptr/unsafepointer/chan/func,
 // and non-reference values like interface/slice.
 func isNil(v interface{}) (rv reflect.Value, isnil bool) {
-	ui := (*unsafeIntf)(unsafe.Pointer(&v))
+	var ui = (*unsafeIntf)(unsafe.Pointer(&v))
 	isnil = ui.ptr == nil
 	if !isnil {
 		rv, isnil = unsafeIsNilIntfOrSlice(ui, v)
@@ -377,8 +377,8 @@ func i2rtid(i interface{}) uintptr {
 
 func unsafeCmpZero(ptr unsafe.Pointer, size int) bool {
 	// verified that size is always within right range, so no chance of OOM
-	s1 := unsafeString{ptr, size}
-	s2 := unsafeString{unsafeZeroAddr, size}
+	var s1 = unsafeString{ptr, size}
+	var s2 = unsafeString{unsafeZeroAddr, size}
 	if size > len(unsafeZeroArr) {
 		arr := make([]byte, size)
 		s2.Data = unsafe.Pointer(&arr[0])
@@ -596,37 +596,31 @@ func (n *fauxUnion) ru() (v reflect.Value) {
 	((*unsafeReflectValue)(unsafe.Pointer(&v))).ptr = unsafe.Pointer(&n.u)
 	return
 }
-
 func (n *fauxUnion) ri() (v reflect.Value) {
 	v = defUnsafeDecNakedWrapper.ri
 	((*unsafeReflectValue)(unsafe.Pointer(&v))).ptr = unsafe.Pointer(&n.i)
 	return
 }
-
 func (n *fauxUnion) rf() (v reflect.Value) {
 	v = defUnsafeDecNakedWrapper.rf
 	((*unsafeReflectValue)(unsafe.Pointer(&v))).ptr = unsafe.Pointer(&n.f)
 	return
 }
-
 func (n *fauxUnion) rl() (v reflect.Value) {
 	v = defUnsafeDecNakedWrapper.rl
 	((*unsafeReflectValue)(unsafe.Pointer(&v))).ptr = unsafe.Pointer(&n.l)
 	return
 }
-
 func (n *fauxUnion) rs() (v reflect.Value) {
 	v = defUnsafeDecNakedWrapper.rs
 	((*unsafeReflectValue)(unsafe.Pointer(&v))).ptr = unsafe.Pointer(&n.s)
 	return
 }
-
 func (n *fauxUnion) rt() (v reflect.Value) {
 	v = defUnsafeDecNakedWrapper.rt
 	((*unsafeReflectValue)(unsafe.Pointer(&v))).ptr = unsafe.Pointer(&n.t)
 	return
 }
-
 func (n *fauxUnion) rb() (v reflect.Value) {
 	v = defUnsafeDecNakedWrapper.rb
 	((*unsafeReflectValue)(unsafe.Pointer(&v))).ptr = unsafe.Pointer(&n.b)
@@ -1233,7 +1227,6 @@ func len_map(m unsafe.Pointer) int {
 	// return maplen(m)
 	return len_map_chan(m)
 }
-
 func len_chan(m unsafe.Pointer) int {
 	// return chanlen(m)
 	return len_map_chan(m)

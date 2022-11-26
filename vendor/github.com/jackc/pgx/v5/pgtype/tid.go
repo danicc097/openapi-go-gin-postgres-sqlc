@@ -22,7 +22,7 @@ type TIDValuer interface {
 //
 // When one does
 //
-//	select ctid, * from some_table;
+// 	select ctid, * from some_table;
 //
 // it is the data type of the ctid hidden system column.
 //
@@ -131,6 +131,7 @@ func (encodePlanTIDCodecText) Encode(value any, buf []byte) (newBuf []byte, err 
 }
 
 func (TIDCodec) PlanScan(m *Map, oid uint32, format int16, target any) ScanPlan {
+
 	switch format {
 	case BinaryFormatCode:
 		switch target.(type) {

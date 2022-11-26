@@ -4,10 +4,8 @@ import (
 	"math"
 )
 
-type (
-	reg      uint8
-	tailcuts []reg
-)
+type reg uint8
+type tailcuts []reg
 
 type registers struct {
 	tailcuts

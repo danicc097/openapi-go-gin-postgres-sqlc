@@ -699,5 +699,6 @@ func (m *Miniredis) cmdSscan(c *server.Peer, cmd string, args []string) {
 		for _, k := range members {
 			c.WriteBulk(k)
 		}
+
 	})
 }

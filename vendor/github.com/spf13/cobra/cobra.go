@@ -39,10 +39,8 @@ var templateFuncs = template.FuncMap{
 	"eq":                      Eq,
 }
 
-var (
-	initializers []func()
-	finalizers   []func()
-)
+var initializers []func()
+var finalizers []func()
 
 const (
 	defaultPrefixMatching  = false
@@ -212,6 +210,7 @@ func ld(s, t string, ignoreCase bool) int {
 				d[i][j] = min + 1
 			}
 		}
+
 	}
 	return d[len(s)][len(t)]
 }

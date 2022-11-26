@@ -13,10 +13,8 @@ type iface struct {
 
 const preloadLimit LNumber = 128
 
-var (
-	_fv float64
-	_uv uintptr
-)
+var _fv float64
+var _uv uintptr
 
 var preloads [int(preloadLimit)]LValue
 

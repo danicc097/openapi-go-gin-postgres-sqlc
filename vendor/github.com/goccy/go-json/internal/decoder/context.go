@@ -12,13 +12,15 @@ type RuntimeContext struct {
 	Option *Option
 }
 
-var runtimeContextPool = sync.Pool{
-	New: func() interface{} {
-		return &RuntimeContext{
-			Option: &Option{},
-		}
-	},
-}
+var (
+	runtimeContextPool = sync.Pool{
+		New: func() interface{} {
+			return &RuntimeContext{
+				Option: &Option{},
+			}
+		},
+	}
+)
 
 func TakeRuntimeContext() *RuntimeContext {
 	return runtimeContextPool.Get().(*RuntimeContext)
@@ -28,7 +30,9 @@ func ReleaseRuntimeContext(ctx *RuntimeContext) {
 	runtimeContextPool.Put(ctx)
 }
 
-var isWhiteSpace = [256]bool{}
+var (
+	isWhiteSpace = [256]bool{}
+)
 
 func init() {
 	isWhiteSpace[' '] = true

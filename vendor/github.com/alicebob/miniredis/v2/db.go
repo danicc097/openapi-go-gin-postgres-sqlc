@@ -9,7 +9,9 @@ import (
 	"time"
 )
 
-var errInvalidEntryID = errors.New("stream ID is invalid")
+var (
+	errInvalidEntryID = errors.New("stream ID is invalid")
+)
 
 func (db *RedisDB) exists(k string) bool {
 	_, ok := db.keys[k]

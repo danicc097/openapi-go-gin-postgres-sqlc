@@ -2,19 +2,18 @@
 // Use of this source code is governed by the Apache 2.0
 // license that can be found in the LICENSE file.
 
-//go:build appengine
 // +build appengine
 
 package internal
 
 import (
-	"appengine"
-	"appengine_internal"
 	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
+	"appengine"
+	"appengine_internal"
 	basepb "appengine_internal/base"
 
 	"github.com/golang/protobuf/proto"

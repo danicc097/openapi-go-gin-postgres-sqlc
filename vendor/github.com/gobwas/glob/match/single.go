@@ -2,9 +2,8 @@ package match
 
 import (
 	"fmt"
-	"unicode/utf8"
-
 	"github.com/gobwas/glob/util/runes"
+	"unicode/utf8"
 )
 
 // single represents ?

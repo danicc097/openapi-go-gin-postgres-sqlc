@@ -246,8 +246,7 @@ func expandWithIPs(ctx context.Context, lookupFn LookupFunc, fallbacks []*Fallba
 }
 
 func connect(ctx context.Context, config *Config, fallbackConfig *FallbackConfig,
-	ignoreNotPreferredErr bool,
-) (*PgConn, error) {
+	ignoreNotPreferredErr bool) (*PgConn, error) {
 	pgConn := new(PgConn)
 	pgConn.config = config
 	pgConn.cleanupDone = make(chan struct{})
@@ -446,8 +445,7 @@ func (pgConn *PgConn) ReceiveMessage(ctx context.Context) (pgproto3.BackendMessa
 		err = &pgconnError{
 			msg:         "receive message failed",
 			err:         normalizeTimeoutError(ctx, err),
-			safeToRetry: true,
-		}
+			safeToRetry: true}
 	}
 	return msg, err
 }
@@ -459,6 +457,7 @@ func (pgConn *PgConn) peekMessage() (pgproto3.BackendMessage, error) {
 	}
 
 	msg, err := pgConn.frontend.Receive()
+
 	if err != nil {
 		if errors.Is(err, nbconn.ErrWouldBlock) {
 			return nil, err
@@ -1275,6 +1274,7 @@ func (mrr *MultiResultReader) ReadAll() ([]*Result, error) {
 
 func (mrr *MultiResultReader) receiveMessage() (pgproto3.BackendMessage, error) {
 	msg, err := mrr.pgConn.receiveMessage()
+
 	if err != nil {
 		mrr.pgConn.contextWatcher.Unwatch()
 		mrr.err = normalizeTimeoutError(mrr.ctx, err)
@@ -1887,6 +1887,7 @@ func (p *Pipeline) GetResults() (results any, err error) {
 		}
 
 	}
+
 }
 
 func (p *Pipeline) getResultsPrepare() (*StatementDescription, error) {

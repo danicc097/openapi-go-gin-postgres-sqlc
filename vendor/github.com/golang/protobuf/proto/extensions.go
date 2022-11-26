@@ -335,8 +335,7 @@ func isScalarKind(k reflect.Kind) bool {
 // clearUnknown removes unknown fields from m where remover.Has reports true.
 func clearUnknown(m protoreflect.Message, remover interface {
 	Has(protoreflect.FieldNumber) bool
-},
-) {
+}) {
 	var bo protoreflect.RawFields
 	for bi := m.GetUnknown(); len(bi) > 0; {
 		num, _, n := protowire.ConsumeField(bi)

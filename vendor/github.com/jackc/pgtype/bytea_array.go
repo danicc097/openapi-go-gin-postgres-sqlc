@@ -176,6 +176,7 @@ func (src *ByteaArray) AssignTo(dst interface{}) error {
 		if len(src.Dimensions) <= 1 {
 			// Attempt to match to select common types:
 			switch v := dst.(type) {
+
 			case *[][]byte:
 				*v = make([][]byte, len(src.Elements))
 				for i := range src.Elements {
@@ -184,6 +185,7 @@ func (src *ByteaArray) AssignTo(dst interface{}) error {
 					}
 				}
 				return nil
+
 			}
 		}
 

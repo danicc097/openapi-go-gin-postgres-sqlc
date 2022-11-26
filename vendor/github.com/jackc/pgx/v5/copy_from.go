@@ -167,6 +167,7 @@ func (ct *copyFrom) run(ctx context.Context) (int64, error) {
 }
 
 func (ct *copyFrom) buildCopyBuf(buf []byte, sd *pgconn.StatementDescription) (bool, []byte, error) {
+
 	for ct.rowSrc.Next() {
 		values, err := ct.rowSrc.Values()
 		if err != nil {

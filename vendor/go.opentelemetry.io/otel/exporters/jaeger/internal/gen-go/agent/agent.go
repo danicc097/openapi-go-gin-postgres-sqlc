@@ -14,18 +14,14 @@ import (
 )
 
 // (needed to ensure safety because of naive import list construction.)
-var (
-	_ = thrift.ZERO
-	_ = fmt.Printf
-	_ = context.Background
-	_ = time.Now
-	_ = bytes.Equal
-)
+var _ = thrift.ZERO
+var _ = fmt.Printf
+var _ = context.Background
+var _ = time.Now
+var _ = bytes.Equal
 
-var (
-	_ = jaeger.GoUnusedProtection__
-	_ = zipkincore.GoUnusedProtection__
-)
+var _ = jaeger.GoUnusedProtection__
+var _ = zipkincore.GoUnusedProtection__
 
 type Agent interface {
 	// Parameters:
@@ -72,7 +68,7 @@ func (p *AgentClient) SetLastResponseMeta_(meta thrift.ResponseMeta) {
 }
 
 // Parameters:
-//   - Spans
+//  - Spans
 func (p *AgentClient) EmitZipkinBatch(ctx context.Context, spans []*zipkincore.Span) (_err error) {
 	var _args0 AgentEmitZipkinBatchArgs
 	_args0.Spans = spans
@@ -84,7 +80,7 @@ func (p *AgentClient) EmitZipkinBatch(ctx context.Context, spans []*zipkincore.S
 }
 
 // Parameters:
-//   - Batch
+//  - Batch
 func (p *AgentClient) EmitBatch(ctx context.Context, batch *jaeger.Batch) (_err error) {
 	var _args1 AgentEmitBatchArgs
 	_args1.Batch = batch
@@ -114,6 +110,7 @@ func (p *AgentProcessor) ProcessorMap() map[string]thrift.TProcessorFunction {
 }
 
 func NewAgentProcessor(handler Agent) *AgentProcessor {
+
 	self2 := &AgentProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
 	self2.processorMap["emitZipkinBatch"] = &agentProcessorEmitZipkinBatch{handler: handler}
 	self2.processorMap["emitBatch"] = &agentProcessorEmitBatch{handler: handler}
@@ -136,6 +133,7 @@ func (p *AgentProcessor) Process(ctx context.Context, iprot, oprot thrift.TProto
 	oprot.WriteMessageEnd(ctx)
 	oprot.Flush(ctx)
 	return false, x3
+
 }
 
 type agentProcessorEmitZipkinBatch struct {
@@ -189,7 +187,7 @@ func (p *agentProcessorEmitBatch) Process(ctx context.Context, seqId int32, ipro
 // HELPER FUNCTIONS AND STRUCTURES
 
 // Attributes:
-//   - Spans
+//  - Spans
 type AgentEmitZipkinBatchArgs struct {
 	Spans []*zipkincore.Span `thrift:"spans,1" db:"spans" json:"spans"`
 }
@@ -201,7 +199,6 @@ func NewAgentEmitZipkinBatchArgs() *AgentEmitZipkinBatchArgs {
 func (p *AgentEmitZipkinBatchArgs) GetSpans() []*zipkincore.Span {
 	return p.Spans
 }
-
 func (p *AgentEmitZipkinBatchArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(ctx); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
@@ -308,7 +305,7 @@ func (p *AgentEmitZipkinBatchArgs) String() string {
 }
 
 // Attributes:
-//   - Batch
+//  - Batch
 type AgentEmitBatchArgs struct {
 	Batch *jaeger.Batch `thrift:"batch,1" db:"batch" json:"batch"`
 }
@@ -325,7 +322,6 @@ func (p *AgentEmitBatchArgs) GetBatch() *jaeger.Batch {
 	}
 	return p.Batch
 }
-
 func (p *AgentEmitBatchArgs) IsSetBatch() bool {
 	return p.Batch != nil
 }

@@ -40,12 +40,10 @@ func init() {
 	}
 }
 
-var (
-	typeOfString = reflect.TypeOf("")
-	typeOfInt    = reflect.TypeOf(int(1))
-	typeOfUint   = reflect.TypeOf(uint(1))
-	typeOfFloat  = reflect.TypeOf(10.1)
-)
+var typeOfString = reflect.TypeOf("")
+var typeOfInt = reflect.TypeOf(int(1))
+var typeOfUint = reflect.TypeOf(uint(1))
+var typeOfFloat = reflect.TypeOf(10.1)
 
 // Render converts a structure to a string representation. Unline the "%#v"
 // format string, this resolves pointer types' contents in structs, maps, and

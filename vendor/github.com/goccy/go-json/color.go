@@ -54,13 +54,15 @@ func resetColor() string {
 	return wrapColor(colorAttr(0))
 }
 
-var DefaultColorScheme = &ColorScheme{
-	Int:       createColorFormat(fgHiMagentaColor),
-	Uint:      createColorFormat(fgHiMagentaColor),
-	Float:     createColorFormat(fgHiMagentaColor),
-	Bool:      createColorFormat(fgHiYellowColor),
-	String:    createColorFormat(fgHiGreenColor),
-	Binary:    createColorFormat(fgHiRedColor),
-	ObjectKey: createColorFormat(fgHiCyanColor),
-	Null:      createColorFormat(fgBlueColor),
-}
+var (
+	DefaultColorScheme = &ColorScheme{
+		Int:       createColorFormat(fgHiMagentaColor),
+		Uint:      createColorFormat(fgHiMagentaColor),
+		Float:     createColorFormat(fgHiMagentaColor),
+		Bool:      createColorFormat(fgHiYellowColor),
+		String:    createColorFormat(fgHiGreenColor),
+		Binary:    createColorFormat(fgHiRedColor),
+		ObjectKey: createColorFormat(fgHiCyanColor),
+		Null:      createColorFormat(fgBlueColor),
+	}
+)

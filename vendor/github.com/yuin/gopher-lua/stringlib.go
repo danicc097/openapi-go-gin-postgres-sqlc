@@ -197,6 +197,7 @@ func capturedString(L *LState, m *pm.MatchData, str string, idx int) string {
 	} else {
 		return str[m.Capture(idx):m.Capture(idx+1)]
 	}
+
 }
 
 func strGsubDoReplace(str string, info []replaceInfo) string {
@@ -208,7 +209,7 @@ func strGsubDoReplace(str string, info []replaceInfo) string {
 		b2 := []byte("")
 		index2 := offset + replace.Indicies[1]
 		if index2 <= len(buf) {
-			b2 = append(b2, buf[index2:]...)
+			b2 = append(b2, buf[index2:len(buf)]...)
 		}
 		buf = append(b1, replace.String...)
 		buf = append(buf, b2...)

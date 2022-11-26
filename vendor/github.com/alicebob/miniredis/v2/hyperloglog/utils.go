@@ -1,10 +1,9 @@
 package hyperloglog
 
 import (
+	"github.com/alicebob/miniredis/v2/metro"
 	"math"
 	"math/bits"
-
-	"github.com/alicebob/miniredis/v2/metro"
 )
 
 var hash = hashFunc

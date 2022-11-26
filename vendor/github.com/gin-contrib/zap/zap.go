@@ -29,8 +29,8 @@ type Config struct {
 // Requests without errors are logged using zap.Info().
 //
 // It receives:
-//  1. A time package format string (e.g. time.RFC3339).
-//  2. A boolean stating whether to use UTC time zone or local.
+//   1. A time package format string (e.g. time.RFC3339).
+//   2. A boolean stating whether to use UTC time zone or local.
 func Ginzap(logger *zap.Logger, timeFormat string, utc bool) gin.HandlerFunc {
 	return GinzapWithConfig(logger, &Config{TimeFormat: timeFormat, UTC: utc})
 }

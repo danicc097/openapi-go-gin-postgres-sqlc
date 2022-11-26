@@ -42,12 +42,10 @@ const (
 	consoleTextmodeBuffer = 0x1
 )
 
-type (
-	wchar uint16
-	short int16
-	dword uint32
-	word  uint16
-)
+type wchar uint16
+type short int16
+type dword uint32
+type word uint16
 
 type coord struct {
 	x short
@@ -699,9 +697,10 @@ loop:
 					case (1 <= n && n <= 3) || n == 5:
 						attr |= foregroundIntensity
 					case n == 7 || n == 27:
-						attr = (attr &^ (foregroundMask | backgroundMask)) |
-							((attr & foregroundMask) << 4) |
-							((attr & backgroundMask) >> 4)
+						attr =
+							(attr &^ (foregroundMask | backgroundMask)) |
+								((attr & foregroundMask) << 4) |
+								((attr & backgroundMask) >> 4)
 					case n == 22:
 						attr &^= foregroundIntensity
 					case n == 24:
@@ -1013,10 +1012,8 @@ func minmax3f(a, b, c float32) (min, max float32) {
 	}
 }
 
-var (
-	n256foreAttr []word
-	n256backAttr []word
-)
+var n256foreAttr []word
+var n256backAttr []word
 
 func n256setup() {
 	n256foreAttr = make([]word, 256)

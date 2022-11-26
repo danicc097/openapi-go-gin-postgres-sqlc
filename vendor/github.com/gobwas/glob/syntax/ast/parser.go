@@ -3,9 +3,8 @@ package ast
 import (
 	"errors"
 	"fmt"
-	"unicode/utf8"
-
 	"github.com/gobwas/glob/syntax/lexer"
+	"unicode/utf8"
 )
 
 type Lexer interface {

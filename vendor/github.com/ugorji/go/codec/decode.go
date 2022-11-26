@@ -370,7 +370,7 @@ func (d *Decoder) jsonUnmarshal(f *codecFnInfo, rv reflect.Value) {
 
 func (d *Decoder) jsonUnmarshalV(tm jsonUnmarshaler) {
 	// grab the bytes to be read, as UnmarshalJSON needs the full JSON so as to unmarshal it itself.
-	bs0 := []byte{}
+	var bs0 = []byte{}
 	if !d.bytes {
 		bs0 = d.blist.get(256)
 	}
@@ -527,7 +527,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 	case valueTypeExt:
 		tag, bytes := n.u, n.l // calling decode below might taint the values
 		bfn := d.h.getExtForTag(tag)
-		re := RawExt{Tag: tag}
+		var re = RawExt{Tag: tag}
 		if bytes == nil {
 			// it is one of the InterfaceExt ones: json and cbor.
 			// most likely cbor, as json decoding never reveals valueTypeExt (no tagging support)
@@ -809,7 +809,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	var rvChanged bool
 
-	rv0 := rv
+	var rv0 = rv
 	var rv9 reflect.Value
 
 	rvlen := rvLenSlice(rv)
@@ -845,7 +845,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	}
 
 	// consider creating new element once, and just decoding into it.
-	elemReset := d.h.SliceElementReset
+	var elemReset = d.h.SliceElementReset
 
 	var j int
 
@@ -960,7 +960,7 @@ func (d *Decoder) kArray(f *codecFnInfo, rv reflect.Value) {
 	}
 
 	// consider creating new element once, and just decoding into it.
-	elemReset := d.h.SliceElementReset
+	var elemReset = d.h.SliceElementReset
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		// note that you cannot expand the array if indefinite and we go past array length
@@ -1009,7 +1009,7 @@ func (d *Decoder) kChan(f *codecFnInfo, rv reflect.Value) {
 		return
 	}
 
-	rvCanset := rv.CanSet()
+	var rvCanset = rv.CanSet()
 
 	// only expects valueType(Array|Map - nil handled above)
 	slh, containerLenS := d.decSliceHelperStart()
@@ -1033,7 +1033,7 @@ func (d *Decoder) kChan(f *codecFnInfo, rv reflect.Value) {
 	var fn *codecFn
 
 	var rvChanged bool
-	rv0 := rv
+	var rv0 = rv
 	var rv9 reflect.Value
 
 	var rvlen int // = rv.Len()
@@ -1076,6 +1076,7 @@ func (d *Decoder) kChan(f *codecFnInfo, rv reflect.Value) {
 	if rvChanged { // infers rvCanset=true, so it can be reset
 		rvSetDirect(rv0, rv)
 	}
+
 }
 
 func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
@@ -1108,7 +1109,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	var vtypeElem reflect.Type
 
 	var keyFn, valFn *codecFn
-	ktypeLo, vtypeLo := ktype, vtype
+	var ktypeLo, vtypeLo = ktype, vtype
 
 	if ktypeKind == reflect.Ptr {
 		for ktypeLo = ktype.Elem(); ktypeLo.Kind() == reflect.Ptr; ktypeLo = ktypeLo.Elem() {
@@ -1504,15 +1505,14 @@ func (d *Decoder) naked() *fauxUnion {
 // We will decode and store a value in that nil interface.
 //
 // Sample usages:
+//   // Decoding into a non-nil typed value
+//   var f float32
+//   err = codec.NewDecoder(r, handle).Decode(&f)
 //
-//	// Decoding into a non-nil typed value
-//	var f float32
-//	err = codec.NewDecoder(r, handle).Decode(&f)
-//
-//	// Decoding into nil interface
-//	var v interface{}
-//	dec := codec.NewDecoder(r, handle)
-//	err = dec.Decode(&v)
+//   // Decoding into nil interface
+//   var v interface{}
+//   dec := codec.NewDecoder(r, handle)
+//   err = dec.Decode(&v)
 //
 // When decoding into a nil interface{}, we will decode into an appropriate value based
 // on the contents of the stream:
@@ -1520,7 +1520,6 @@ func (d *Decoder) naked() *fauxUnion {
 //   - Other values are decoded appropriately depending on the type:
 //     bool, string, []byte, time.Time, etc
 //   - Extensions are decoded as RawExt (if no ext function registered for the tag)
-//
 // Configurations exist on the Handle to override defaults
 // (e.g. for MapType, SliceType and how to decode raw bytes).
 //
@@ -2046,8 +2045,7 @@ func (d *Decoder) sideDecode(v interface{}, basetype reflect.Type, bs []byte) {
 	// NewDecoderBytes(bs, d.hh).decodeValue(baseRV(v), d.h.fnNoExt(basetype))
 
 	defer func(rb bytesDecReader, bytes bool,
-		c containerState, dbs decByteState, depth int16, r decReader, state interface{},
-	) {
+		c containerState, dbs decByteState, depth int16, r decReader, state interface{}) {
 		d.rb = rb
 		d.bytes = bytes
 		d.c = c
@@ -2159,9 +2157,9 @@ func (x decSliceHelper) arrayCannotExpand(hasLen bool, lenv, j, containerLenS in
 // decNextValueBytesHelper helps with NextValueBytes calls.
 //
 // Typical usage:
-//   - each Handle's decDriver will implement a high level nextValueBytes,
-//     which will track the current cursor, delegate to a nextValueBytesR
-//     method, and then potentially call bytesRdV at the end.
+//    - each Handle's decDriver will implement a high level nextValueBytes,
+//      which will track the current cursor, delegate to a nextValueBytesR
+//      method, and then potentially call bytesRdV at the end.
 //
 // See simple.go for typical usage model.
 type decNextValueBytesHelper struct {
@@ -2307,10 +2305,10 @@ func decByteSlice(r *decRd, clen, maxInitLen int, bs []byte) (bsOut []byte) {
 }
 
 // decInferLen will infer a sensible length, given the following:
-//   - clen: length wanted.
-//   - maxlen: max length to be returned.
-//     if <= 0, it is unset, and we infer it based on the unit size
-//   - unit: number of bytes for each element of the collection
+//    - clen: length wanted.
+//    - maxlen: max length to be returned.
+//      if <= 0, it is unset, and we infer it based on the unit size
+//    - unit: number of bytes for each element of the collection
 func decInferLen(clen, maxlen, unit int) int {
 	// anecdotal testing showed increase in allocation with map length of 16.
 	// We saw same typical alloc from 0-8, then a 20% increase at 16.

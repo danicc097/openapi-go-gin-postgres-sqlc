@@ -3,6 +3,7 @@ package metro
 import "encoding/binary"
 
 func Hash64(buffer []byte, seed uint64) uint64 {
+
 	const (
 		k0 = 0xD6D018F5
 		k1 = 0xA2AA033B

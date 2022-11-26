@@ -3,9 +3,10 @@
 //
 // Example:
 //
-//	inflector.Singularize("People") // returns "Person"
+// 	inflector.Singularize("People") // returns "Person"
 //
-//	inflector.Pluralize("octopus) // returns "octopuses"
+// 	inflector.Pluralize("octopus) // returns "octopuses"
+//
 package inflector
 
 import (

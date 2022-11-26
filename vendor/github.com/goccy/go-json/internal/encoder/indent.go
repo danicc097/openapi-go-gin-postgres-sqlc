@@ -65,8 +65,7 @@ func indentValue(
 	cursor int64,
 	prefix []byte,
 	indentBytes []byte,
-	escape bool,
-) ([]byte, int64, error) {
+	escape bool) ([]byte, int64, error) {
 	for {
 		switch src[cursor] {
 		case ' ', '\t', '\n', '\r':
@@ -103,8 +102,7 @@ func indentObject(
 	cursor int64,
 	prefix []byte,
 	indentBytes []byte,
-	escape bool,
-) ([]byte, int64, error) {
+	escape bool) ([]byte, int64, error) {
 	if src[cursor] == '{' {
 		dst = append(dst, '{')
 	} else {
@@ -168,8 +166,7 @@ func indentArray(
 	cursor int64,
 	prefix []byte,
 	indentBytes []byte,
-	escape bool,
-) ([]byte, int64, error) {
+	escape bool) ([]byte, int64, error) {
 	if src[cursor] == '[' {
 		dst = append(dst, '[')
 	} else {

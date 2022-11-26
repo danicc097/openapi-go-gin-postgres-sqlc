@@ -157,6 +157,7 @@ func (src *TstzrangeArray) AssignTo(dst interface{}) error {
 		if len(src.Dimensions) <= 1 {
 			// Attempt to match to select common types:
 			switch v := dst.(type) {
+
 			case *[]Tstzrange:
 				*v = make([]Tstzrange, len(src.Elements))
 				for i := range src.Elements {
@@ -165,6 +166,7 @@ func (src *TstzrangeArray) AssignTo(dst interface{}) error {
 					}
 				}
 				return nil
+
 			}
 		}
 

@@ -1,9 +1,7 @@
 package lua
 
-const (
-	defaultArrayCap = 32
-	defaultHashCap  = 32
-)
+const defaultArrayCap = 32
+const defaultHashCap = 32
 
 type lValueArraySorter struct {
 	L      *LState

@@ -199,6 +199,7 @@ func (c CanonType) Canonicalize(t Tag) (Tag, error) {
 		return makeTag(tag), nil
 	}
 	return t, nil
+
 }
 
 // Confidence indicates the level of certainty for a given return value.

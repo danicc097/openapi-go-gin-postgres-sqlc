@@ -1,13 +1,10 @@
-//go:build gofuzz
 // +build gofuzz
 
 package securecookie
 
-var (
-	hashKey  = []byte("very-secret12345")
-	blockKey = []byte("a-lot-secret1234")
-	s        = New(hashKey, blockKey)
-)
+var hashKey = []byte("very-secret12345")
+var blockKey = []byte("a-lot-secret1234")
+var s = New(hashKey, blockKey)
 
 type Cookie struct {
 	B bool

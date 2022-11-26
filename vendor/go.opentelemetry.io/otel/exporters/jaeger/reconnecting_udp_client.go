@@ -40,10 +40,8 @@ type reconnectingUDPConn struct {
 	closeChan chan struct{}
 }
 
-type (
-	resolveFunc func(network string, hostPort string) (*net.UDPAddr, error)
-	dialFunc    func(network string, laddr, raddr *net.UDPAddr) (*net.UDPConn, error)
-)
+type resolveFunc func(network string, hostPort string) (*net.UDPAddr, error)
+type dialFunc func(network string, laddr, raddr *net.UDPAddr) (*net.UDPConn, error)
 
 // newReconnectingUDPConn returns a new udpConn that resolves hostPort every resolveTimeout, if the resolved address is
 // different than the current conn then the new address is dialed and the conn is swapped.

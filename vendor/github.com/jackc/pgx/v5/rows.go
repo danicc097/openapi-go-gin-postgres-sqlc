@@ -578,6 +578,7 @@ func (rs *namedStructRowScanner) ScanRow(rows Rows) error {
 
 	dstElemValue := dstValue.Elem()
 	scanTargets, err := rs.appendScanTargets(dstElemValue, nil, rows.FieldDescriptions())
+
 	if err != nil {
 		return err
 	}

@@ -12,9 +12,11 @@ import (
 	"time"
 )
 
-var DefaultHTTPClient = &http.Client{
-	Timeout: 30 * time.Second,
-}
+var (
+	DefaultHTTPClient = &http.Client{
+		Timeout: 30 * time.Second,
+	}
+)
 
 type Decoder interface {
 	Decode(dst interface{}, src map[string][]string) error
@@ -23,10 +25,8 @@ type Encoder interface {
 	Encode(src interface{}, dst map[string][]string) error
 }
 
-type (
-	FormAuthorization    func(url.Values)
-	RequestAuthorization func(*http.Request)
-)
+type FormAuthorization func(url.Values)
+type RequestAuthorization func(*http.Request)
 
 func AuthorizeBasic(user, password string) RequestAuthorization {
 	return func(req *http.Request) {

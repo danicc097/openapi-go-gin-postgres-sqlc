@@ -321,6 +321,9 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 }
 
 // Run configures a server and underlying services with the given configuration.
+// TODO should take in AppConfig.
+// RunTestServer also takes AppConfig
+// NewServer takes its own config as is now
 func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, error) {
 	var err error
 
