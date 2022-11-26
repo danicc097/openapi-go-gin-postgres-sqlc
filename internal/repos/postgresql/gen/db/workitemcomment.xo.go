@@ -13,6 +13,7 @@ import (
 
 // WorkItemCommentPublic represents fields that may be exposed from 'public.work_item_comments'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type WorkItemCommentPublic struct {
 	WorkItemCommentID int64     `json:"workItemCommentID"` // work_item_comment_id
 	WorkItemID        int64     `json:"workItemID"`        // work_item_id

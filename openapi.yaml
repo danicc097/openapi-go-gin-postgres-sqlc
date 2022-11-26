@@ -89,7 +89,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserPublic'
+                $ref: '#/components/schemas/UserResponse'
           description: ok
       tags:
         - user
@@ -114,7 +114,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserPublic'
+                $ref: '#/components/schemas/UserResponse'
           description: ok
       tags:
         - user
@@ -196,6 +196,10 @@ components:
         - team-settings:write
         - project-settings:write
         - work-item:review
+    Scopes: # workaround for openapi-go gen
+      type: array
+      items:
+        $ref: '#/components/schemas/Scope'
     Role: # Generated from roles.json keys. DO NOT EDIT.
       type: string
       enum:
@@ -238,9 +242,7 @@ components:
         role:
           $ref: '#/components/schemas/Role'
         scopes:
-          items:
-            $ref: '#/components/schemas/Scope'
-          type: array
+          $ref: '#/components/schemas/Scopes'
       type: object
     UserPublic: # Generated from db package structs. DO NOT EDIT.
       properties:
@@ -256,8 +258,6 @@ components:
           type: string
         email:
           type: string
-        externalID:
-          type: string
         firstName:
           nullable: true
           type: string
@@ -267,13 +267,6 @@ components:
         lastName:
           nullable: true
           type: string
-        roleRank:
-          type: integer
-        scopes:
-          items:
-            type: string
-          nullable: true
-          type: array
         teams:
           items:
             $ref: '#/components/schemas/TeamPublic'
@@ -284,9 +277,6 @@ components:
             $ref: '#/components/schemas/TimeEntryPublic'
           nullable: true
           type: array
-        updatedAt:
-          format: date-time
-          type: string
         userID:
           $ref: '#/components/schemas/UuidUUID'
         username:
@@ -495,8 +485,6 @@ components:
           type: string
         email:
           type: string
-        externalID:
-          type: string
         firstName:
           nullable: true
           type: string
@@ -508,13 +496,8 @@ components:
           type: string
         role:
           $ref: '#/components/schemas/Role'
-        roleRank:
-          type: integer
         scopes:
-          items:
-            type: string
-          nullable: true
-          type: array
+          $ref: '#/components/schemas/Scopes'
         teams:
           items:
             $ref: '#/components/schemas/TeamPublic'
@@ -525,9 +508,6 @@ components:
             $ref: '#/components/schemas/TimeEntryPublic'
           nullable: true
           type: array
-        updatedAt:
-          format: date-time
-          type: string
         userID:
           $ref: '#/components/schemas/UuidUUID'
         username:
@@ -539,6 +519,8 @@ components:
           type: array
       type: object
       x-db-struct: UserResponse
+    ModelsScope:
+      type: string
   examples:
     User:
       value:

@@ -158,7 +158,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	issuer := os.Getenv("OIDC_ISSUER")
 	scopes := strings.Split(os.Getenv("OIDC_SCOPES"), " ")
 
-	redirectURI := internaldomain.BuildApiURL(conf.MyProviderCallbackPath)
+	redirectURI := internaldomain.BuildAPIURL(conf.MyProviderCallbackPath)
 	cookieHandler := httphelper.NewCookieHandler(key, key, httphelper.WithUnsecure())
 
 	options := []rp.Option{

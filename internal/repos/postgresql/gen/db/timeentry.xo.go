@@ -13,6 +13,7 @@ import (
 
 // TimeEntryPublic represents fields that may be exposed from 'public.time_entries'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type TimeEntryPublic struct {
 	TimeEntryID     int64     `json:"timeEntryID"`     // time_entry_id
 	WorkItemID      *int64    `json:"workItemID"`      // work_item_id

@@ -13,20 +13,21 @@ import (
 
 // UserPublic represents fields that may be exposed from 'public.users'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type UserPublic struct {
-	UserID     uuid.UUID  `json:"userID"`     // user_id
-	Username   string     `json:"username"`   // username
-	Email      string     `json:"email"`      // email
-	FirstName  *string    `json:"firstName"`  // first_name
-	LastName   *string    `json:"lastName"`   // last_name
-	FullName   *string    `json:"fullName"`   // full_name
-	ExternalID string     `json:"externalID"` // external_id
-	APIKeyID   *int       `json:"apiKeyID"`   // api_key_id
-	Scopes     []string   `json:"scopes"`     // scopes
-	RoleRank   int16      `json:"roleRank"`   // role_rank
-	CreatedAt  time.Time  `json:"createdAt"`  // created_at
-	UpdatedAt  time.Time  `json:"updatedAt"`  // updated_at
-	DeletedAt  *time.Time `json:"deletedAt"`  // deleted_at
+	UserID     uuid.UUID  `json:"userID"`    // user_id
+	Username   string     `json:"username"`  // username
+	Email      string     `json:"email"`     // email
+	FirstName  *string    `json:"firstName"` // first_name
+	LastName   *string    `json:"lastName"`  // last_name
+	FullName   *string    `json:"fullName"`  // full_name
+	ExternalID string     `json:"-"`         // external_id
+	APIKeyID   *int       `json:"apiKeyID"`  // api_key_id
+	Scopes     []string   `json:"-"`         // scopes
+	RoleRank   int16      `json:"-"`         // role_rank
+	CreatedAt  time.Time  `json:"createdAt"` // created_at
+	UpdatedAt  time.Time  `json:"-"`         // updated_at
+	DeletedAt  *time.Time `json:"deletedAt"` // deleted_at
 
 	TimeEntries *[]TimeEntryPublic `json:"timeEntries"` // O2M
 	Teams       *[]TeamPublic      `json:"teams"`       // M2M

@@ -11,6 +11,7 @@ import (
 
 // WorkItemMemberPublic represents fields that may be exposed from 'public.work_item_member'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type WorkItemMemberPublic struct {
 	WorkItemID int64     `json:"workItemID"` // work_item_id
 	Member     uuid.UUID `json:"member"`     // member

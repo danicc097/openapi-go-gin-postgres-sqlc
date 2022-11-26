@@ -239,6 +239,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- else -}}
 // {{ $t.GoName }}Public represents fields that may be exposed from '{{ schema $t.SQLName }}'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 //
 {{- end }}
 type {{ $t.GoName }}Public struct {

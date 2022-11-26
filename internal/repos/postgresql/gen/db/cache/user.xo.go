@@ -13,6 +13,7 @@ import (
 
 // UserPublic represents fields that may be exposed from 'cache.users'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type UserPublic struct {
 	UserID     *uuid.UUID `json:"userID"`     // user_id
 	Username   *string    `json:"username"`   // username

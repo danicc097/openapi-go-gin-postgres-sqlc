@@ -13,6 +13,7 @@ import (
 
 // TaskPublic represents fields that may be exposed from 'public.tasks'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type TaskPublic struct {
 	TaskID     int64        `json:"taskID"`     // task_id
 	TaskTypeID int          `json:"taskTypeID"` // task_type_id

@@ -9,6 +9,7 @@ import (
 
 // SchemaMigrationPublic represents fields that may be exposed from 'public.schema_migrations'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type SchemaMigrationPublic struct {
 	Version int64 `json:"version"` // version
 	Dirty   bool  `json:"dirty"`   // dirty

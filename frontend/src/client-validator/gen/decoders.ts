@@ -10,21 +10,24 @@ import { validateJson } from '../validate'
 import {
   HTTPValidationError,
   Scope,
+  Scopes,
   Role,
   WorkItemRole,
   UpdateUserRequest,
   UpdateUserAuthRequest,
-  User,
+  UserPublic,
   ValidationError,
   PgtypeJSONB,
-  Task,
-  TaskType,
-  Team,
-  TimeEntry,
-  UserAPIKey,
   UuidUUID,
-  WorkItem,
-  WorkItemComment,
+  TaskPublic,
+  TaskTypePublic,
+  TeamPublic,
+  TimeEntryPublic,
+  WorkItemCommentPublic,
+  WorkItemPublic,
+  ModelsRole,
+  UserResponse,
+  ModelsScope,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -55,6 +58,18 @@ export const ScopeDecoder: Decoder<Scope> = {
       throw new Error(`Schema ${ScopeDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ScopeDecoder.definitionName)
+  },
+}
+export const ScopesDecoder: Decoder<Scopes> = {
+  definitionName: 'Scopes',
+  schemaRef: '#/definitions/Scopes',
+
+  decode(json: unknown): Scopes {
+    const schema = ajv.getSchema(ScopesDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ScopesDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ScopesDecoder.definitionName)
   },
 }
 export const RoleDecoder: Decoder<Role> = {
@@ -105,16 +120,16 @@ export const UpdateUserAuthRequestDecoder: Decoder<UpdateUserAuthRequest> = {
     return validateJson(json, schema, UpdateUserAuthRequestDecoder.definitionName)
   },
 }
-export const UserDecoder: Decoder<User> = {
-  definitionName: 'User',
-  schemaRef: '#/definitions/User',
+export const UserPublicDecoder: Decoder<UserPublic> = {
+  definitionName: 'UserPublic',
+  schemaRef: '#/definitions/UserPublic',
 
-  decode(json: unknown): User {
-    const schema = ajv.getSchema(UserDecoder.schemaRef)
+  decode(json: unknown): UserPublic {
+    const schema = ajv.getSchema(UserPublicDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${UserDecoder.definitionName} not found`)
+      throw new Error(`Schema ${UserPublicDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, UserDecoder.definitionName)
+    return validateJson(json, schema, UserPublicDecoder.definitionName)
   },
 }
 export const ValidationErrorDecoder: Decoder<ValidationError> = {
@@ -141,66 +156,6 @@ export const PgtypeJSONBDecoder: Decoder<PgtypeJSONB> = {
     return validateJson(json, schema, PgtypeJSONBDecoder.definitionName)
   },
 }
-export const TaskDecoder: Decoder<Task> = {
-  definitionName: 'Task',
-  schemaRef: '#/definitions/Task',
-
-  decode(json: unknown): Task {
-    const schema = ajv.getSchema(TaskDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${TaskDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, TaskDecoder.definitionName)
-  },
-}
-export const TaskTypeDecoder: Decoder<TaskType> = {
-  definitionName: 'TaskType',
-  schemaRef: '#/definitions/TaskType',
-
-  decode(json: unknown): TaskType {
-    const schema = ajv.getSchema(TaskTypeDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${TaskTypeDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, TaskTypeDecoder.definitionName)
-  },
-}
-export const TeamDecoder: Decoder<Team> = {
-  definitionName: 'Team',
-  schemaRef: '#/definitions/Team',
-
-  decode(json: unknown): Team {
-    const schema = ajv.getSchema(TeamDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${TeamDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, TeamDecoder.definitionName)
-  },
-}
-export const TimeEntryDecoder: Decoder<TimeEntry> = {
-  definitionName: 'TimeEntry',
-  schemaRef: '#/definitions/TimeEntry',
-
-  decode(json: unknown): TimeEntry {
-    const schema = ajv.getSchema(TimeEntryDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${TimeEntryDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, TimeEntryDecoder.definitionName)
-  },
-}
-export const UserAPIKeyDecoder: Decoder<UserAPIKey> = {
-  definitionName: 'UserAPIKey',
-  schemaRef: '#/definitions/UserAPIKey',
-
-  decode(json: unknown): UserAPIKey {
-    const schema = ajv.getSchema(UserAPIKeyDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${UserAPIKeyDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, UserAPIKeyDecoder.definitionName)
-  },
-}
 export const UuidUUIDDecoder: Decoder<UuidUUID> = {
   definitionName: 'UuidUUID',
   schemaRef: '#/definitions/UuidUUID',
@@ -213,27 +168,111 @@ export const UuidUUIDDecoder: Decoder<UuidUUID> = {
     return validateJson(json, schema, UuidUUIDDecoder.definitionName)
   },
 }
-export const WorkItemDecoder: Decoder<WorkItem> = {
-  definitionName: 'WorkItem',
-  schemaRef: '#/definitions/WorkItem',
+export const TaskPublicDecoder: Decoder<TaskPublic> = {
+  definitionName: 'TaskPublic',
+  schemaRef: '#/definitions/TaskPublic',
 
-  decode(json: unknown): WorkItem {
-    const schema = ajv.getSchema(WorkItemDecoder.schemaRef)
+  decode(json: unknown): TaskPublic {
+    const schema = ajv.getSchema(TaskPublicDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${WorkItemDecoder.definitionName} not found`)
+      throw new Error(`Schema ${TaskPublicDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, WorkItemDecoder.definitionName)
+    return validateJson(json, schema, TaskPublicDecoder.definitionName)
   },
 }
-export const WorkItemCommentDecoder: Decoder<WorkItemComment> = {
-  definitionName: 'WorkItemComment',
-  schemaRef: '#/definitions/WorkItemComment',
+export const TaskTypePublicDecoder: Decoder<TaskTypePublic> = {
+  definitionName: 'TaskTypePublic',
+  schemaRef: '#/definitions/TaskTypePublic',
 
-  decode(json: unknown): WorkItemComment {
-    const schema = ajv.getSchema(WorkItemCommentDecoder.schemaRef)
+  decode(json: unknown): TaskTypePublic {
+    const schema = ajv.getSchema(TaskTypePublicDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${WorkItemCommentDecoder.definitionName} not found`)
+      throw new Error(`Schema ${TaskTypePublicDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, WorkItemCommentDecoder.definitionName)
+    return validateJson(json, schema, TaskTypePublicDecoder.definitionName)
+  },
+}
+export const TeamPublicDecoder: Decoder<TeamPublic> = {
+  definitionName: 'TeamPublic',
+  schemaRef: '#/definitions/TeamPublic',
+
+  decode(json: unknown): TeamPublic {
+    const schema = ajv.getSchema(TeamPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${TeamPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, TeamPublicDecoder.definitionName)
+  },
+}
+export const TimeEntryPublicDecoder: Decoder<TimeEntryPublic> = {
+  definitionName: 'TimeEntryPublic',
+  schemaRef: '#/definitions/TimeEntryPublic',
+
+  decode(json: unknown): TimeEntryPublic {
+    const schema = ajv.getSchema(TimeEntryPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${TimeEntryPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, TimeEntryPublicDecoder.definitionName)
+  },
+}
+export const WorkItemCommentPublicDecoder: Decoder<WorkItemCommentPublic> = {
+  definitionName: 'WorkItemCommentPublic',
+  schemaRef: '#/definitions/WorkItemCommentPublic',
+
+  decode(json: unknown): WorkItemCommentPublic {
+    const schema = ajv.getSchema(WorkItemCommentPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${WorkItemCommentPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, WorkItemCommentPublicDecoder.definitionName)
+  },
+}
+export const WorkItemPublicDecoder: Decoder<WorkItemPublic> = {
+  definitionName: 'WorkItemPublic',
+  schemaRef: '#/definitions/WorkItemPublic',
+
+  decode(json: unknown): WorkItemPublic {
+    const schema = ajv.getSchema(WorkItemPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${WorkItemPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, WorkItemPublicDecoder.definitionName)
+  },
+}
+export const ModelsRoleDecoder: Decoder<ModelsRole> = {
+  definitionName: 'ModelsRole',
+  schemaRef: '#/definitions/ModelsRole',
+
+  decode(json: unknown): ModelsRole {
+    const schema = ajv.getSchema(ModelsRoleDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ModelsRoleDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ModelsRoleDecoder.definitionName)
+  },
+}
+export const UserResponseDecoder: Decoder<UserResponse> = {
+  definitionName: 'UserResponse',
+  schemaRef: '#/definitions/UserResponse',
+
+  decode(json: unknown): UserResponse {
+    const schema = ajv.getSchema(UserResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${UserResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, UserResponseDecoder.definitionName)
+  },
+}
+export const ModelsScopeDecoder: Decoder<ModelsScope> = {
+  definitionName: 'ModelsScope',
+  schemaRef: '#/definitions/ModelsScope',
+
+  decode(json: unknown): ModelsScope {
+    const schema = ajv.getSchema(ModelsScopeDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ModelsScopeDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ModelsScopeDecoder.definitionName)
   },
 }

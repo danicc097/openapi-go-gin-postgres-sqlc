@@ -372,7 +372,7 @@ x.gen.counterfeiter() {
 
     echo "Running generation"
 
-    if ! md5sum -c "$cache/counterfeiter.md5" >/dev/null || [[ $force_regen -eq 1 ]]; then
+    if ! md5sum -c "$cache/counterfeiter.md5" >/dev/null || [[ $FORCE_REGEN -eq 1 ]]; then
       echo "Recreating mocks"
       {
         counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
@@ -434,9 +434,6 @@ x.gen() {
       go generate ./... &
       x.gen.gowrap &
       x.gen.sqlc &
-      # xo cannot use db files as input, needs an up-to-date schema
-      # not recreating db on every gen can lead to plain wrong generation based on an old dev schema
-      # use a unique db to prevent cosmic accidents
       x.gen.proto &
       wait
 
@@ -445,9 +442,9 @@ x.gen() {
       x.postgen &
       x.gen.counterfeiter "$cache" & # delay since it depends on generated output too
 
-      x.gen.client-server # depends on schemas generated in postgen
-
       wait
+
+      x.gen.client-server # depends on schemas generated in postgen
 
       # vscode will randomly lose connection when restarting
       # for pid in $(pidof gopls); do
@@ -499,7 +496,6 @@ x.lint.sql() {
         --keyword-case 1 \
         --placeholder "sqlc\\.(arg|narg)\\(:?[^)]*\\)" \
         --inplace \
-        --nogrouping \
         --keep-newline \
         --comma-start \
         $(find "$slq_dir" -maxdepth 3 -name '*.*sql')
@@ -989,6 +985,9 @@ update_spec_with_structs() {
 }
 
 xo_schema() {
+  # xo cannot use db files as input, needs an up-to-date schema
+  # not recreating db on every gen can lead to plain wrong generation based on an old dev schema.
+  # Also use a unique db to prevent cosmic accidents
   POSTGRES_DB=$GEN_POSTGRES_DB xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
     --src "$PG_REPO"/xo-templates \
     "$@"
@@ -1207,9 +1206,9 @@ while [[ "$#" -gt 0 ]]; do
     usage
     exit
     ;;
-  --x-force-regen) # this comment should be ignored
+  --x-force-regen)
     # Removes generation cache, forcing a new run.
-    force_regen=1
+    export FORCE_REGEN=1
     ;;
   --x-no-confirmation)
     # Bypasses confirmation messages.

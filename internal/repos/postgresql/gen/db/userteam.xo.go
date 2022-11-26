@@ -11,6 +11,7 @@ import (
 
 // UserTeamPublic represents fields that may be exposed from 'public.user_team'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type UserTeamPublic struct {
 	TeamID int       `json:"teamID"` // team_id
 	UserID uuid.UUID `json:"userID"` // user_id

@@ -9,6 +9,7 @@ import (
 
 // MoviePublic represents fields that may be exposed from 'public.movies'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type MoviePublic struct {
 	MovieID  int    `json:"movieID"`  // movie_id
 	Title    string `json:"title"`    // title

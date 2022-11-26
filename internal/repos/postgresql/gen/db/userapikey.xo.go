@@ -13,6 +13,7 @@ import (
 
 // UserAPIKeyPublic represents fields that may be exposed from 'public.user_api_keys'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type UserAPIKeyPublic struct {
 	UserAPIKeyID int       `json:"userAPIKeyID"` // user_api_key_id
 	APIKey       string    `json:"apiKey"`       // api_key

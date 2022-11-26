@@ -13,6 +13,7 @@ import (
 
 // ProjectPublic represents fields that may be exposed from 'public.projects'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type ProjectPublic struct {
 	ProjectID   int          `json:"projectID"`   // project_id
 	Name        string       `json:"name"`        // name

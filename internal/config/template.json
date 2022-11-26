@@ -2,10 +2,8 @@
   "oidc": {
     "clientId": "",
     "clientSecret": "",
-    "domain": "",
     "issuer": "",
-    "scopes": "",
-    "serverPort": null
+    "scopes": ""
   },
   "signingKey": ""
 }

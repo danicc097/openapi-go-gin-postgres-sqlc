@@ -13,6 +13,7 @@ import (
 
 // TeamPublic represents fields that may be exposed from 'public.teams'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type TeamPublic struct {
 	TeamID      int          `json:"teamID"`      // team_id
 	ProjectID   int          `json:"projectID"`   // project_id

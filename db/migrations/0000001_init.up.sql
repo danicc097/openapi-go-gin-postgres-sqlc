@@ -66,6 +66,14 @@ create table users (
   , foreign key (api_key_id) references user_api_keys (user_api_key_id) on delete cascade
 );
 
+comment on column users.external_id is 'property:private, property:something-else';
+
+comment on column users.role_rank is 'property:private';
+
+comment on column users.scopes is 'property:private';
+
+comment on column users.updated_at is 'property:private';
+
 alter table user_api_keys
   add column user_id uuid not null unique;
 

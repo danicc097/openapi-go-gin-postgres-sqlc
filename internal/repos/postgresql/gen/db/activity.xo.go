@@ -9,6 +9,7 @@ import (
 
 // ActivityPublic represents fields that may be exposed from 'public.activities'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type ActivityPublic struct {
 	ActivityID   int    `json:"activityID"`   // activity_id
 	Name         string `json:"name"`         // name

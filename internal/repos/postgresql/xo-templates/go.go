@@ -218,6 +218,12 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Default:    `json:"{{ camel .GoName }}"`,
 			},
 			{
+				ContextKey: PrivateFieldTagKey,
+				Type:       "string",
+				Desc:       "private field tag",
+				Default:    `json:"-"`,
+			},
+			{
 				ContextKey: ContextKey,
 				Type:       "string",
 				Desc:       "context mode",
@@ -853,6 +859,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		IsIgnored:    f.IsIgnored,
 		EnumPkg:      enumPkg,
 		IsDateOrTime: f.IsDateOrTime,
+		Properties:   strings.Split(f.Properties, "|"),
 		IsGenerated:  strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
 	}, nil
 }
@@ -904,6 +911,7 @@ type Funcs struct {
 	escColumn        bool
 	fieldtag         *template.Template
 	publicfieldtag   *template.Template
+	privatefieldtag  *template.Template
 	context          string
 	inject           string
 	// knownTypes is the collection of known Go types.
@@ -917,6 +925,10 @@ type Funcs struct {
 func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 	first := !NotFirst(ctx)
 	publicfieldtag, err := template.New("publicfieldtag").Funcs(template.FuncMap{"camel": camel}).Parse(PublicFieldTag(ctx))
+	if err != nil {
+		return nil, err
+	}
+	privatefieldtag, err := template.New("privatefieldtag").Funcs(template.FuncMap{"camel": camel}).Parse(PrivateFieldTag(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -955,6 +967,7 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 		escColumn:        Esc(ctx, "column"),
 		fieldtag:         fieldtag,
 		publicfieldtag:   publicfieldtag,
+		privatefieldtag:  privatefieldtag,
 		context:          Context(ctx),
 		inject:           inject,
 		knownTypes:       KnownTypes(ctx),
@@ -2345,8 +2358,14 @@ func (f *Funcs) typefn(typ string) string {
 func (f *Funcs) field(field Field, public bool) (string, error) {
 	buf := new(bytes.Buffer)
 	if public {
-		if err := f.publicfieldtag.Funcs(f.FuncMap()).Execute(buf, field); err != nil {
-			return "", err
+		if contains(field.Properties, "private") {
+			if err := f.privatefieldtag.Funcs(f.FuncMap()).Execute(buf, field); err != nil {
+				return "", err
+			}
+		} else {
+			if err := f.publicfieldtag.Funcs(f.FuncMap()).Execute(buf, field); err != nil {
+				return "", err
+			}
 		}
 	} else {
 		if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, field); err != nil {
@@ -2589,27 +2608,28 @@ var goReservedNames = map[string]string{
 
 // Context keys.
 var (
-	AppendKey         xo.ContextKey = "append"
-	KnownTypesKey     xo.ContextKey = "known-types"
-	ShortsKey         xo.ContextKey = "shorts"
-	NotFirstKey       xo.ContextKey = "not-first"
-	Int32Key          xo.ContextKey = "int32"
-	Uint32Key         xo.ContextKey = "uint32"
-	ArrayModeKey      xo.ContextKey = "array-mode"
-	PkgKey            xo.ContextKey = "pkg"
-	TagKey            xo.ContextKey = "tag"
-	ImportKey         xo.ContextKey = "import"
-	UUIDKey           xo.ContextKey = "uuid"
-	CustomKey         xo.ContextKey = "custom"
-	ConflictKey       xo.ContextKey = "conflict"
-	InitialismKey     xo.ContextKey = "initialism"
-	EscKey            xo.ContextKey = "esc"
-	FieldTagKey       xo.ContextKey = "field-tag"
-	PublicFieldTagKey xo.ContextKey = "public-field-tag"
-	ContextKey        xo.ContextKey = "context"
-	InjectKey         xo.ContextKey = "inject"
-	InjectFileKey     xo.ContextKey = "inject-file"
-	LegacyKey         xo.ContextKey = "legacy"
+	AppendKey          xo.ContextKey = "append"
+	KnownTypesKey      xo.ContextKey = "known-types"
+	ShortsKey          xo.ContextKey = "shorts"
+	NotFirstKey        xo.ContextKey = "not-first"
+	Int32Key           xo.ContextKey = "int32"
+	Uint32Key          xo.ContextKey = "uint32"
+	ArrayModeKey       xo.ContextKey = "array-mode"
+	PkgKey             xo.ContextKey = "pkg"
+	TagKey             xo.ContextKey = "tag"
+	ImportKey          xo.ContextKey = "import"
+	UUIDKey            xo.ContextKey = "uuid"
+	CustomKey          xo.ContextKey = "custom"
+	ConflictKey        xo.ContextKey = "conflict"
+	InitialismKey      xo.ContextKey = "initialism"
+	EscKey             xo.ContextKey = "esc"
+	FieldTagKey        xo.ContextKey = "field-tag"
+	PublicFieldTagKey  xo.ContextKey = "public-field-tag"
+	PrivateFieldTagKey xo.ContextKey = "private-field-tag"
+	ContextKey         xo.ContextKey = "context"
+	InjectKey          xo.ContextKey = "inject"
+	InjectFileKey      xo.ContextKey = "inject-file"
+	LegacyKey          xo.ContextKey = "legacy"
 )
 
 // Append returns append from the context.
@@ -2720,6 +2740,12 @@ func FieldTag(ctx context.Context) string {
 // PublicFieldTag returns field-tag from the context.
 func PublicFieldTag(ctx context.Context) string {
 	s, _ := ctx.Value(PublicFieldTagKey).(string)
+	return s
+}
+
+// PrivateFieldTag returns field-tag from the context.
+func PrivateFieldTag(ctx context.Context) string {
+	s, _ := ctx.Value(PrivateFieldTagKey).(string)
 	return s
 }
 
@@ -2888,6 +2914,7 @@ type Field struct {
 	IsGenerated  bool
 	EnumPkg      string
 	IsDateOrTime bool
+	Properties   []string
 }
 
 // QueryParam is a custom query parameter template.

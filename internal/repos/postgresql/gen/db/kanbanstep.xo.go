@@ -9,6 +9,7 @@ import (
 
 // KanbanStepPublic represents fields that may be exposed from 'public.kanban_steps'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type KanbanStepPublic struct {
 	KanbanStepID  int    `json:"kanbanStepID"`  // kanban_step_id
 	TeamID        int    `json:"teamID"`        // team_id

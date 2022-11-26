@@ -9,6 +9,7 @@ import (
 
 // WorkItemTypePublic represents fields that may be exposed from 'public.work_item_types'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type WorkItemTypePublic struct {
 	WorkItemTypeID int    `json:"workItemTypeID"` // work_item_type_id
 	ProjectID      int64  `json:"projectID"`      // project_id

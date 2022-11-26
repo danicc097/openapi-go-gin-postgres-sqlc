@@ -9,6 +9,7 @@ import (
 
 // WorkItemTagPublic represents fields that may be exposed from 'public.work_item_tags'
 // and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
 type WorkItemTagPublic struct {
 	WorkItemTagID int    `json:"workItemTagID"` // work_item_tag_id
 	Name          string `json:"name"`          // name
