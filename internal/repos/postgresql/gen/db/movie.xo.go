@@ -20,10 +20,10 @@ type MoviePublic struct {
 
 // Movie represents a row from 'public.movies'.
 type Movie struct {
-	MovieID  int    `json:"movie_id" db:"movie_id" openapi-json:"movieID"`  // movie_id
-	Title    string `json:"title" db:"title" openapi-json:"title"`          // title
-	Year     int    `json:"year" db:"year" openapi-json:"year"`             // year
-	Synopsis string `json:"synopsis" db:"synopsis" openapi-json:"synopsis"` // synopsis
+	MovieID  int    `json:"movie_id" db:"movie_id"` // movie_id
+	Title    string `json:"title" db:"title"`       // title
+	Year     int    `json:"year" db:"year"`         // year
+	Synopsis string `json:"synopsis" db:"synopsis"` // synopsis
 
 	// xo fields
 	_exists, _deleted bool

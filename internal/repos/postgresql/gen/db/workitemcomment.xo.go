@@ -26,12 +26,12 @@ type WorkItemCommentPublic struct {
 
 // WorkItemComment represents a row from 'public.work_item_comments'.
 type WorkItemComment struct {
-	WorkItemCommentID int64     `json:"work_item_comment_id" db:"work_item_comment_id" openapi-json:"workItemCommentID"` // work_item_comment_id
-	WorkItemID        int64     `json:"work_item_id" db:"work_item_id" openapi-json:"workItemID"`                        // work_item_id
-	UserID            uuid.UUID `json:"user_id" db:"user_id" openapi-json:"userID"`                                      // user_id
-	Message           string    `json:"message" db:"message" openapi-json:"message"`                                     // message
-	CreatedAt         time.Time `json:"created_at" db:"created_at" openapi-json:"createdAt"`                             // created_at
-	UpdatedAt         time.Time `json:"updated_at" db:"updated_at" openapi-json:"updatedAt"`                             // updated_at
+	WorkItemCommentID int64     `json:"work_item_comment_id" db:"work_item_comment_id"` // work_item_comment_id
+	WorkItemID        int64     `json:"work_item_id" db:"work_item_id"`                 // work_item_id
+	UserID            uuid.UUID `json:"user_id" db:"user_id"`                           // user_id
+	Message           string    `json:"message" db:"message"`                           // message
+	CreatedAt         time.Time `json:"created_at" db:"created_at"`                     // created_at
+	UpdatedAt         time.Time `json:"updated_at" db:"updated_at"`                     // updated_at
 
 	// xo fields
 	_exists, _deleted bool

@@ -209,7 +209,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				// scan to custom tag recently a feature in pgx: https://github.com/jackc/pgx/commit/14be51536bbf5e183b68ee9a5fcadaf0d045e503
 				// see tests: https://github.com/jackc/pgx/blob/fbfafb3edfc378681c2bad91b1a126e7e6df3f5b/rows_test.go#L545
 				// Default:    `json:"{{ camel .GoName }}" db:"{{ .SQLName }}"`,
-				Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}" openapi-json:"{{ camel .GoName }}"`,
+				Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
 			},
 			{
 				ContextKey: PublicFieldTagKey,
@@ -2414,7 +2414,7 @@ func (f *Funcs) join_fields(sqlname string, public bool, constraints interface{}
 				typ = typ + "Public"
 				tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(camel(goName)))
 			} else {
-				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-json:\"%s\"`", inflector.Pluralize(c.RefTableName), inflector.Pluralize(c.RefTableName), inflector.Pluralize(camel(goName)))
+				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(c.RefTableName), inflector.Pluralize(c.RefTableName))
 			}
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
 			// TODO revisit. O2M and M2O from different viewpoints.
@@ -2428,7 +2428,7 @@ func (f *Funcs) join_fields(sqlname string, public bool, constraints interface{}
 				typ = typ + "Public"
 				tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(camel(goName)))
 			} else {
-				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-json:\"%s\"`", inflector.Pluralize(c.TableName), inflector.Pluralize(c.TableName), inflector.Pluralize(camel(goName)))
+				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(c.TableName), inflector.Pluralize(c.TableName))
 			}
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
 		case "O2O":
@@ -2441,7 +2441,7 @@ func (f *Funcs) join_fields(sqlname string, public bool, constraints interface{}
 				typ = typ + "Public"
 				tag = fmt.Sprintf("`json:\"%s\"`", inflector.Singularize(camel(goName)))
 			} else {
-				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-json:\"%s\"`", snaker.CamelToSnake(goName), inflector.Singularize(c.RefTableName), inflector.Singularize(camel(goName)))
+				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", snaker.CamelToSnake(goName), inflector.Singularize(c.RefTableName))
 			}
 			buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, c.Cardinality))
 		default:

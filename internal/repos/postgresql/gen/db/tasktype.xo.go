@@ -21,11 +21,11 @@ type TaskTypePublic struct {
 
 // TaskType represents a row from 'public.task_types'.
 type TaskType struct {
-	TaskTypeID  int    `json:"task_type_id" db:"task_type_id" openapi-json:"taskTypeID"` // task_type_id
-	TeamID      int64  `json:"team_id" db:"team_id" openapi-json:"teamID"`               // team_id
-	Name        string `json:"name" db:"name" openapi-json:"name"`                       // name
-	Description string `json:"description" db:"description" openapi-json:"description"`  // description
-	Color       string `json:"color" db:"color" openapi-json:"color"`                    // color
+	TaskTypeID  int    `json:"task_type_id" db:"task_type_id"` // task_type_id
+	TeamID      int64  `json:"team_id" db:"team_id"`           // team_id
+	Name        string `json:"name" db:"name"`                 // name
+	Description string `json:"description" db:"description"`   // description
+	Color       string `json:"color" db:"color"`               // color
 
 	// xo fields
 	_exists, _deleted bool

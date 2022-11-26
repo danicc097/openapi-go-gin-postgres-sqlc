@@ -21,28 +21,6 @@ func handleError(err error) {
 	}
 }
 
-// type req struct {
-// 	ID     string `path:"id" example:"XXX-XXXXX"`
-// 	Locale string `query:"locale" pattern:"^[a-z]{2}-[A-Z]{2}$"`
-// 	Title  string `json:"string"`
-// 	Amount uint   `json:"amount"`
-// 	Items  []struct {
-// 		Count uint   `json:"count"`
-// 		Name  string `json:"name"`
-// 	} `json:"items,omitempty"`
-// 	DeletedAt *time.Time `json:"deleted_at" db:"deleted_at"`
-// }
-
-// type resp struct {
-// 	ID     string `json:"id" example:"XXX-XXXXX"`
-// 	Amount uint   `json:"amount"`
-// 	Items  []struct {
-// 		Count uint   `json:"count"`
-// 		Name  string `json:"name"`
-// 	} `json:"items,omitempty"`
-// 	UpdatedAt time.Time `json:"updated_at"`
-// }
-
 func main() {
 	var structNamesList string
 
@@ -56,6 +34,7 @@ func main() {
 
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
+	// update when adding new packages to gen structs map
 	reflector.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
 		if strings.HasPrefix(defaultDefName, "Db") {
 			return strings.TrimPrefix(defaultDefName, "Db")
@@ -63,6 +42,7 @@ func main() {
 		if strings.HasPrefix(defaultDefName, "Rest") {
 			return strings.TrimPrefix(defaultDefName, "Rest")
 		}
+
 		return defaultDefName
 	})
 
@@ -72,28 +52,8 @@ func main() {
 		if !ok {
 			log.Fatalf("struct-name %s does not exist in db package", sn)
 		}
-		// db structs's json tag is for db driver usage only
-		// var fields []reflect.StructField
-		// for i := 0; i < reflect.TypeOf(st).NumField(); i++ {
-		// 	// TODO would need to replace fields which reference other db.* structs,
-		// 	// else they will use the wrong json tags...
-		// 	// we will be better off having xo generate a UserResponse struct with the correct type...
-		// 	// after all that's all they might be used for, if at all.
-		// 	field := reflect.TypeOf(st).Field(i)
-		// 	if strings.HasPrefix(field.Name, "_") {
-		// 		continue
-		// 	}
-		// 	t := field.Tag.Get("openapi-json")
-		// 	if t == "" {
-		// 		log.Fatalf("field %v in struct-name %s does not have an `openapi-json` tag", field, sn)
-		// 	}
-		// 	field.Tag = reflect.StructTag(fmt.Sprintf("json:\"%s\"", t))
-		// 	fields = append(fields, field)
-		// }
-		// newSt := reflect.StructOf(fields)
+
 		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
-		// works but would need to recursively replace in field structs...
-		// handleError(reflector.SetJSONResponse(&dummyOp, reflect.New(newSt).Interface(), http.StatusTeapot))
 		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-db-struct": sn}
 		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
 		// reflector.Spec.Paths.MapOfPathItemValues["mypath"].MapOfOperationValues["method"].
@@ -102,7 +62,4 @@ func main() {
 	handleError(err)
 
 	fmt.Println(string(s))
-	// os.WriteFile("openapi.test.gen.yaml", schema, 0o777)
-
-	// fmt.Println(s.Components.Schemas.MapOfSchemaOrRefValues["Error"].Schema.Properties["code"].Schema.MapOfAnything["x-foo"])
 }

@@ -24,12 +24,12 @@ type UserAPIKeyPublic struct {
 
 // UserAPIKey represents a row from 'public.user_api_keys'.
 type UserAPIKey struct {
-	UserAPIKeyID int       `json:"user_api_key_id" db:"user_api_key_id" openapi-json:"userAPIKeyID"` // user_api_key_id
-	APIKey       string    `json:"api_key" db:"api_key" openapi-json:"apiKey"`                       // api_key
-	ExpiresOn    time.Time `json:"expires_on" db:"expires_on" openapi-json:"expiresOn"`              // expires_on
-	UserID       uuid.UUID `json:"user_id" db:"user_id" openapi-json:"userID"`                       // user_id
+	UserAPIKeyID int       `json:"user_api_key_id" db:"user_api_key_id"` // user_api_key_id
+	APIKey       string    `json:"api_key" db:"api_key"`                 // api_key
+	ExpiresOn    time.Time `json:"expires_on" db:"expires_on"`           // expires_on
+	UserID       uuid.UUID `json:"user_id" db:"user_id"`                 // user_id
 
-	User *User `json:"user" db:"user" openapi-json:"user"` // O2O
+	User *User `json:"user" db:"user"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }

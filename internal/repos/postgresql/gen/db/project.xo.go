@@ -26,12 +26,12 @@ type ProjectPublic struct {
 
 // Project represents a row from 'public.projects'.
 type Project struct {
-	ProjectID   int          `json:"project_id" db:"project_id" openapi-json:"projectID"`     // project_id
-	Name        string       `json:"name" db:"name" openapi-json:"name"`                      // name
-	Description string       `json:"description" db:"description" openapi-json:"description"` // description
-	Metadata    pgtype.JSONB `json:"metadata" db:"metadata" openapi-json:"metadata"`          // metadata
-	CreatedAt   time.Time    `json:"created_at" db:"created_at" openapi-json:"createdAt"`     // created_at
-	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at" openapi-json:"updatedAt"`     // updated_at
+	ProjectID   int          `json:"project_id" db:"project_id"`   // project_id
+	Name        string       `json:"name" db:"name"`               // name
+	Description string       `json:"description" db:"description"` // description
+	Metadata    pgtype.JSONB `json:"metadata" db:"metadata"`       // metadata
+	CreatedAt   time.Time    `json:"created_at" db:"created_at"`   // created_at
+	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at"`   // updated_at
 
 	// xo fields
 	_exists, _deleted bool

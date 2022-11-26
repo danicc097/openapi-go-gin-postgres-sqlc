@@ -29,17 +29,17 @@ type TaskPublic struct {
 
 // Task represents a row from 'public.tasks'.
 type Task struct {
-	TaskID     int64        `json:"task_id" db:"task_id" openapi-json:"taskID"`               // task_id
-	TaskTypeID int          `json:"task_type_id" db:"task_type_id" openapi-json:"taskTypeID"` // task_type_id
-	WorkItemID int64        `json:"work_item_id" db:"work_item_id" openapi-json:"workItemID"` // work_item_id
-	Title      string       `json:"title" db:"title" openapi-json:"title"`                    // title
-	Metadata   pgtype.JSONB `json:"metadata" db:"metadata" openapi-json:"metadata"`           // metadata
-	Finished   *bool        `json:"finished" db:"finished" openapi-json:"finished"`           // finished
-	CreatedAt  time.Time    `json:"created_at" db:"created_at" openapi-json:"createdAt"`      // created_at
-	UpdatedAt  time.Time    `json:"updated_at" db:"updated_at" openapi-json:"updatedAt"`      // updated_at
-	DeletedAt  *time.Time   `json:"deleted_at" db:"deleted_at" openapi-json:"deletedAt"`      // deleted_at
+	TaskID     int64        `json:"task_id" db:"task_id"`           // task_id
+	TaskTypeID int          `json:"task_type_id" db:"task_type_id"` // task_type_id
+	WorkItemID int64        `json:"work_item_id" db:"work_item_id"` // work_item_id
+	Title      string       `json:"title" db:"title"`               // title
+	Metadata   pgtype.JSONB `json:"metadata" db:"metadata"`         // metadata
+	Finished   *bool        `json:"finished" db:"finished"`         // finished
+	CreatedAt  time.Time    `json:"created_at" db:"created_at"`     // created_at
+	UpdatedAt  time.Time    `json:"updated_at" db:"updated_at"`     // updated_at
+	DeletedAt  *time.Time   `json:"deleted_at" db:"deleted_at"`     // deleted_at
 
-	TaskType *TaskType `json:"task_type" db:"task_type" openapi-json:"taskType"` // O2O
+	TaskType *TaskType `json:"task_type" db:"task_type"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }

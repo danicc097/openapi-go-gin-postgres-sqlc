@@ -24,14 +24,14 @@ type KanbanStepPublic struct {
 
 // KanbanStep represents a row from 'public.kanban_steps'.
 type KanbanStep struct {
-	KanbanStepID  int    `json:"kanban_step_id" db:"kanban_step_id" openapi-json:"kanbanStepID"`  // kanban_step_id
-	TeamID        int    `json:"team_id" db:"team_id" openapi-json:"teamID"`                      // team_id
-	StepOrder     *int16 `json:"step_order" db:"step_order" openapi-json:"stepOrder"`             // step_order
-	Name          string `json:"name" db:"name" openapi-json:"name"`                              // name
-	Description   string `json:"description" db:"description" openapi-json:"description"`         // description
-	Color         string `json:"color" db:"color" openapi-json:"color"`                           // color
-	TimeTrackable bool   `json:"time_trackable" db:"time_trackable" openapi-json:"timeTrackable"` // time_trackable
-	Disabled      bool   `json:"disabled" db:"disabled" openapi-json:"disabled"`                  // disabled
+	KanbanStepID  int    `json:"kanban_step_id" db:"kanban_step_id"` // kanban_step_id
+	TeamID        int    `json:"team_id" db:"team_id"`               // team_id
+	StepOrder     *int16 `json:"step_order" db:"step_order"`         // step_order
+	Name          string `json:"name" db:"name"`                     // name
+	Description   string `json:"description" db:"description"`       // description
+	Color         string `json:"color" db:"color"`                   // color
+	TimeTrackable bool   `json:"time_trackable" db:"time_trackable"` // time_trackable
+	Disabled      bool   `json:"disabled" db:"disabled"`             // disabled
 
 	// xo fields
 	_exists, _deleted bool
