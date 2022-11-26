@@ -14,13 +14,12 @@ import (
 // UserAPIKeyPublic represents fields that may be exposed from 'public.user_api_keys'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type UserAPIKeyPublic struct {
-	UserAPIKeyID int       `json:"userAPIKeyID"` // user_api_key_id
-	APIKey       string    `json:"apiKey"`       // api_key
-	ExpiresOn    time.Time `json:"expiresOn"`    // expires_on
-	UserID       uuid.UUID `json:"userID"`       // user_id
-
-	User *UserPublic `json:"user"` // O2O
+	UserAPIKeyID int       `json:"-"`         // user_api_key_id
+	APIKey       string    `json:"apiKey"`    // api_key
+	ExpiresOn    time.Time `json:"expiresOn"` // expires_on
+	UserID       uuid.UUID `json:"userID"`    // user_id
 }
 
 // UserAPIKey represents a row from 'public.user_api_keys'.
@@ -33,6 +32,15 @@ type UserAPIKey struct {
 	User *User `json:"user" db:"user" openapi-json:"user"` // O2O
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *UserAPIKey) ToPublic() UserAPIKeyPublic {
+	return UserAPIKeyPublic{
+		UserAPIKeyID: x.UserAPIKeyID,
+		APIKey:       x.APIKey,
+		ExpiresOn:    x.ExpiresOn,
+		UserID:       x.UserID,
+	}
 }
 
 type UserAPIKeySelectConfig struct {

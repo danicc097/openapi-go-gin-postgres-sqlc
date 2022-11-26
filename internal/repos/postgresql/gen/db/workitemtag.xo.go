@@ -10,6 +10,7 @@ import (
 // WorkItemTagPublic represents fields that may be exposed from 'public.work_item_tags'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type WorkItemTagPublic struct {
 	WorkItemTagID int    `json:"workItemTagID"` // work_item_tag_id
 	Name          string `json:"name"`          // name
@@ -26,6 +27,15 @@ type WorkItemTag struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *WorkItemTag) ToPublic() WorkItemTagPublic {
+	return WorkItemTagPublic{
+		WorkItemTagID: x.WorkItemTagID,
+		Name:          x.Name,
+		Description:   x.Description,
+		Color:         x.Color,
+	}
 }
 
 type WorkItemTagSelectConfig struct {

@@ -12,6 +12,7 @@ import (
 // WorkItemMemberPublic represents fields that may be exposed from 'public.work_item_member'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type WorkItemMemberPublic struct {
 	WorkItemID int64     `json:"workItemID"` // work_item_id
 	Member     uuid.UUID `json:"member"`     // member
@@ -24,6 +25,13 @@ type WorkItemMember struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *WorkItemMember) ToPublic() WorkItemMemberPublic {
+	return WorkItemMemberPublic{
+		WorkItemID: x.WorkItemID,
+		Member:     x.Member,
+	}
 }
 
 type WorkItemMemberSelectConfig struct {

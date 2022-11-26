@@ -10,6 +10,7 @@ import (
 // KanbanStepPublic represents fields that may be exposed from 'public.kanban_steps'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type KanbanStepPublic struct {
 	KanbanStepID  int    `json:"kanbanStepID"`  // kanban_step_id
 	TeamID        int    `json:"teamID"`        // team_id
@@ -34,6 +35,19 @@ type KanbanStep struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *KanbanStep) ToPublic() KanbanStepPublic {
+	return KanbanStepPublic{
+		KanbanStepID:  x.KanbanStepID,
+		TeamID:        x.TeamID,
+		StepOrder:     x.StepOrder,
+		Name:          x.Name,
+		Description:   x.Description,
+		Color:         x.Color,
+		TimeTrackable: x.TimeTrackable,
+		Disabled:      x.Disabled,
+	}
 }
 
 type KanbanStepSelectConfig struct {

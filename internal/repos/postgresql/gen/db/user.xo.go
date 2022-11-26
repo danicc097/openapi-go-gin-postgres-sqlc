@@ -14,6 +14,7 @@ import (
 // UserPublic represents fields that may be exposed from 'public.users'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type UserPublic struct {
 	UserID     uuid.UUID  `json:"userID"`    // user_id
 	Username   string     `json:"username"`  // username
@@ -22,16 +23,12 @@ type UserPublic struct {
 	LastName   *string    `json:"lastName"`  // last_name
 	FullName   *string    `json:"fullName"`  // full_name
 	ExternalID string     `json:"-"`         // external_id
-	APIKeyID   *int       `json:"apiKeyID"`  // api_key_id
+	APIKeyID   *int       `json:"-"`         // api_key_id
 	Scopes     []string   `json:"-"`         // scopes
 	RoleRank   int16      `json:"-"`         // role_rank
 	CreatedAt  time.Time  `json:"createdAt"` // created_at
 	UpdatedAt  time.Time  `json:"-"`         // updated_at
 	DeletedAt  *time.Time `json:"deletedAt"` // deleted_at
-
-	TimeEntries *[]TimeEntryPublic `json:"timeEntries"` // O2M
-	Teams       *[]TeamPublic      `json:"teams"`       // M2M
-	WorkItems   *[]WorkItemPublic  `json:"workItems"`   // M2M
 }
 
 // User represents a row from 'public.users'.
@@ -55,6 +52,24 @@ type User struct {
 	WorkItems   *[]WorkItem  `json:"work_items" db:"work_items" openapi-json:"workItems"`       // M2M
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *User) ToPublic() UserPublic {
+	return UserPublic{
+		UserID:     x.UserID,
+		Username:   x.Username,
+		Email:      x.Email,
+		FirstName:  x.FirstName,
+		LastName:   x.LastName,
+		FullName:   x.FullName,
+		ExternalID: x.ExternalID,
+		APIKeyID:   x.APIKeyID,
+		Scopes:     x.Scopes,
+		RoleRank:   x.RoleRank,
+		CreatedAt:  x.CreatedAt,
+		UpdatedAt:  x.UpdatedAt,
+		DeletedAt:  x.DeletedAt,
+	}
 }
 
 type UserSelectConfig struct {

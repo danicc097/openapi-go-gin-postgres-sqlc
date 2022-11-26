@@ -14,6 +14,7 @@ import (
 // TeamPublic represents fields that may be exposed from 'public.teams'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type TeamPublic struct {
 	TeamID      int          `json:"teamID"`      // team_id
 	ProjectID   int          `json:"projectID"`   // project_id
@@ -22,9 +23,6 @@ type TeamPublic struct {
 	Metadata    pgtype.JSONB `json:"metadata"`    // metadata
 	CreatedAt   time.Time    `json:"createdAt"`   // created_at
 	UpdatedAt   time.Time    `json:"updatedAt"`   // updated_at
-
-	TimeEntries *[]TimeEntryPublic `json:"timeEntries"` // O2M
-	Users       *[]UserPublic      `json:"users"`       // M2M
 }
 
 // Team represents a row from 'public.teams'.
@@ -41,6 +39,18 @@ type Team struct {
 	Users       *[]User      `json:"users" db:"users" openapi-json:"users"`                     // M2M
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *Team) ToPublic() TeamPublic {
+	return TeamPublic{
+		TeamID:      x.TeamID,
+		ProjectID:   x.ProjectID,
+		Name:        x.Name,
+		Description: x.Description,
+		Metadata:    x.Metadata,
+		CreatedAt:   x.CreatedAt,
+		UpdatedAt:   x.UpdatedAt,
+	}
 }
 
 type TeamSelectConfig struct {

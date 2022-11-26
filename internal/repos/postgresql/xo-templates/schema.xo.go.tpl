@@ -240,13 +240,13 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 // {{ $t.GoName }}Public represents fields that may be exposed from '{{ schema $t.SQLName }}'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 //
 {{- end }}
 type {{ $t.GoName }}Public struct {
 {{ range $t.Fields -}}
 	{{ field . true }}
 {{ end }}
-{{ join_fields $t.SQLName true $constraints }}
 }
 
 {{if $t.Comment -}}
@@ -263,6 +263,14 @@ type {{ $t.GoName }} struct {
 	// xo fields
 	_exists, _deleted bool
 {{ end -}}
+}
+
+func (x *{{ $t.GoName }}) ToPublic() {{ $t.GoName }}Public {
+	return {{ $t.GoName }}Public{
+  {{ range $t.Fields -}}
+	{{ .GoName }}: x.{{ .GoName }},
+{{ end }}
+}
 }
 
 {{ extratypes $t.GoName $t.SQLName $constraints $t }}

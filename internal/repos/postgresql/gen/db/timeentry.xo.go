@@ -14,6 +14,7 @@ import (
 // TimeEntryPublic represents fields that may be exposed from 'public.time_entries'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type TimeEntryPublic struct {
 	TimeEntryID     int64     `json:"timeEntryID"`     // time_entry_id
 	WorkItemID      *int64    `json:"workItemID"`      // work_item_id
@@ -38,6 +39,19 @@ type TimeEntry struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *TimeEntry) ToPublic() TimeEntryPublic {
+	return TimeEntryPublic{
+		TimeEntryID:     x.TimeEntryID,
+		WorkItemID:      x.WorkItemID,
+		ActivityID:      x.ActivityID,
+		TeamID:          x.TeamID,
+		UserID:          x.UserID,
+		Comment:         x.Comment,
+		Start:           x.Start,
+		DurationMinutes: x.DurationMinutes,
+	}
 }
 
 type TimeEntrySelectConfig struct {

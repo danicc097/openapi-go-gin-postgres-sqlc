@@ -10,6 +10,7 @@ import (
 // WorkItemTypePublic represents fields that may be exposed from 'public.work_item_types'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type WorkItemTypePublic struct {
 	WorkItemTypeID int    `json:"workItemTypeID"` // work_item_type_id
 	ProjectID      int64  `json:"projectID"`      // project_id
@@ -28,6 +29,16 @@ type WorkItemType struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *WorkItemType) ToPublic() WorkItemTypePublic {
+	return WorkItemTypePublic{
+		WorkItemTypeID: x.WorkItemTypeID,
+		ProjectID:      x.ProjectID,
+		Name:           x.Name,
+		Description:    x.Description,
+		Color:          x.Color,
+	}
 }
 
 type WorkItemTypeSelectConfig struct {

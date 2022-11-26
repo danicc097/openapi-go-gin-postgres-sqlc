@@ -368,19 +368,9 @@ components:
           type: integer
         teamID:
           type: integer
-        timeEntries:
-          items:
-            $ref: '#/components/schemas/TimeEntryPublic'
-          nullable: true
-          type: array
         updatedAt:
           format: date-time
           type: string
-        users:
-          items:
-            $ref: '#/components/schemas/UserPublic'
-          nullable: true
-          type: array
       type: object
     TimeEntryPublic:
       properties:
@@ -473,9 +463,8 @@ components:
       type: string
     UserResponse:
       properties:
-        apiKeyID:
-          nullable: true
-          type: integer
+        apiKey:
+          $ref: '#/components/schemas/UserAPIKeyPublic'
         createdAt:
           format: date-time
           type: string
@@ -503,24 +492,25 @@ components:
             $ref: '#/components/schemas/TeamPublic'
           nullable: true
           type: array
-        timeEntries:
-          items:
-            $ref: '#/components/schemas/TimeEntryPublic'
-          nullable: true
-          type: array
         userID:
           $ref: '#/components/schemas/UuidUUID'
         username:
           type: string
-        workItems:
-          items:
-            $ref: '#/components/schemas/WorkItemPublic'
-          nullable: true
-          type: array
       type: object
       x-db-struct: UserResponse
     ModelsScope:
       type: string
+    UserAPIKeyPublic:
+      nullable: true
+      properties:
+        apiKey:
+          type: string
+        expiresOn:
+          format: date-time
+          type: string
+        userID:
+          $ref: '#/components/schemas/UuidUUID'
+      type: object
   examples:
     User:
       value:

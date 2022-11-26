@@ -14,6 +14,7 @@ import (
 // WorkItemCommentPublic represents fields that may be exposed from 'public.work_item_comments'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type WorkItemCommentPublic struct {
 	WorkItemCommentID int64     `json:"workItemCommentID"` // work_item_comment_id
 	WorkItemID        int64     `json:"workItemID"`        // work_item_id
@@ -34,6 +35,17 @@ type WorkItemComment struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *WorkItemComment) ToPublic() WorkItemCommentPublic {
+	return WorkItemCommentPublic{
+		WorkItemCommentID: x.WorkItemCommentID,
+		WorkItemID:        x.WorkItemID,
+		UserID:            x.UserID,
+		Message:           x.Message,
+		CreatedAt:         x.CreatedAt,
+		UpdatedAt:         x.UpdatedAt,
+	}
 }
 
 type WorkItemCommentSelectConfig struct {

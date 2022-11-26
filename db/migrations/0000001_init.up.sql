@@ -68,6 +68,8 @@ create table users (
 
 comment on column users.external_id is 'property:private, property:something-else';
 
+comment on column users.api_key_id is 'property:private';
+
 comment on column users.role_rank is 'property:private';
 
 comment on column users.scopes is 'property:private';
@@ -85,6 +87,8 @@ alter table user_api_keys
 --  generates join in users table
 -- comment on column users.api_key_id IS 'cardinality:O2O';
 comment on column user_api_keys.user_id is 'cardinality:O2O';
+
+comment on column user_api_keys.user_api_key_id is 'property:private';
 
 -- -- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
 -- create unique index on users (user_id , external_id)

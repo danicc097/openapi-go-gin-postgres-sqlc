@@ -14,6 +14,7 @@ import (
 // WorkItemPublic represents fields that may be exposed from 'public.work_items'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type WorkItemPublic struct {
 	WorkItemID     int64        `json:"workItemID"`     // work_item_id
 	Title          string       `json:"title"`          // title
@@ -25,11 +26,6 @@ type WorkItemPublic struct {
 	CreatedAt      time.Time    `json:"createdAt"`      // created_at
 	UpdatedAt      time.Time    `json:"updatedAt"`      // updated_at
 	DeletedAt      *time.Time   `json:"deletedAt"`      // deleted_at
-
-	Tasks            *[]TaskPublic            `json:"tasks"`            // O2M
-	TimeEntries      *[]TimeEntryPublic       `json:"timeEntries"`      // O2M
-	WorkItemComments *[]WorkItemCommentPublic `json:"workItemComments"` // O2M
-	Users            *[]UserPublic            `json:"users"`            // M2M
 }
 
 // WorkItem represents a row from 'public.work_items'.
@@ -51,6 +47,21 @@ type WorkItem struct {
 	Users            *[]User            `json:"users" db:"users" openapi-json:"users"`                                      // M2M
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *WorkItem) ToPublic() WorkItemPublic {
+	return WorkItemPublic{
+		WorkItemID:     x.WorkItemID,
+		Title:          x.Title,
+		WorkItemTypeID: x.WorkItemTypeID,
+		Metadata:       x.Metadata,
+		TeamID:         x.TeamID,
+		KanbanStepID:   x.KanbanStepID,
+		Closed:         x.Closed,
+		CreatedAt:      x.CreatedAt,
+		UpdatedAt:      x.UpdatedAt,
+		DeletedAt:      x.DeletedAt,
+	}
 }
 
 type WorkItemSelectConfig struct {

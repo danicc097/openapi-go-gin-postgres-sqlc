@@ -10,13 +10,12 @@ import (
 // ActivityPublic represents fields that may be exposed from 'public.activities'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type ActivityPublic struct {
 	ActivityID   int    `json:"activityID"`   // activity_id
 	Name         string `json:"name"`         // name
 	Description  string `json:"description"`  // description
 	IsProductive bool   `json:"isProductive"` // is_productive
-
-	TimeEntries *[]TimeEntryPublic `json:"timeEntries"` // O2M
 }
 
 // Activity represents a row from 'public.activities'.
@@ -29,6 +28,15 @@ type Activity struct {
 	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries" openapi-json:"timeEntries"` // O2M
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *Activity) ToPublic() ActivityPublic {
+	return ActivityPublic{
+		ActivityID:   x.ActivityID,
+		Name:         x.Name,
+		Description:  x.Description,
+		IsProductive: x.IsProductive,
+	}
 }
 
 type ActivitySelectConfig struct {

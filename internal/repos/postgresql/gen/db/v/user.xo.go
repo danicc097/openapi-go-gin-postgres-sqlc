@@ -13,6 +13,7 @@ import (
 // UserPublic represents fields that may be exposed from 'v.users'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type UserPublic struct {
 	UserID     *uuid.UUID `json:"userID"`     // user_id
 	Username   *string    `json:"username"`   // username
@@ -46,6 +47,25 @@ type User struct {
 	UpdatedAt  *time.Time `json:"updated_at" db:"updated_at" openapi-json:"updatedAt"`    // updated_at
 	DeletedAt  *time.Time `json:"deleted_at" db:"deleted_at" openapi-json:"deletedAt"`    // deleted_at
 	Teams      []any      `json:"teams" db:"teams" openapi-json:"teams"`                  // teams
+}
+
+func (x *User) ToPublic() UserPublic {
+	return UserPublic{
+		UserID:     x.UserID,
+		Username:   x.Username,
+		Email:      x.Email,
+		FirstName:  x.FirstName,
+		LastName:   x.LastName,
+		FullName:   x.FullName,
+		ExternalID: x.ExternalID,
+		APIKeyID:   x.APIKeyID,
+		Scopes:     x.Scopes,
+		RoleRank:   x.RoleRank,
+		CreatedAt:  x.CreatedAt,
+		UpdatedAt:  x.UpdatedAt,
+		DeletedAt:  x.DeletedAt,
+		Teams:      x.Teams,
+	}
 }
 
 type UserSelectConfig struct {

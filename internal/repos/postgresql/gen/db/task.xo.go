@@ -14,6 +14,7 @@ import (
 // TaskPublic represents fields that may be exposed from 'public.tasks'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type TaskPublic struct {
 	TaskID     int64        `json:"taskID"`     // task_id
 	TaskTypeID int          `json:"taskTypeID"` // task_type_id
@@ -24,8 +25,6 @@ type TaskPublic struct {
 	CreatedAt  time.Time    `json:"createdAt"`  // created_at
 	UpdatedAt  time.Time    `json:"updatedAt"`  // updated_at
 	DeletedAt  *time.Time   `json:"deletedAt"`  // deleted_at
-
-	TaskType *TaskTypePublic `json:"taskType"` // O2O
 }
 
 // Task represents a row from 'public.tasks'.
@@ -43,6 +42,20 @@ type Task struct {
 	TaskType *TaskType `json:"task_type" db:"task_type" openapi-json:"taskType"` // O2O
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *Task) ToPublic() TaskPublic {
+	return TaskPublic{
+		TaskID:     x.TaskID,
+		TaskTypeID: x.TaskTypeID,
+		WorkItemID: x.WorkItemID,
+		Title:      x.Title,
+		Metadata:   x.Metadata,
+		Finished:   x.Finished,
+		CreatedAt:  x.CreatedAt,
+		UpdatedAt:  x.UpdatedAt,
+		DeletedAt:  x.DeletedAt,
+	}
 }
 
 type TaskSelectConfig struct {

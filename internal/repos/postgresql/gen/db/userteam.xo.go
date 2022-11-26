@@ -12,6 +12,7 @@ import (
 // UserTeamPublic represents fields that may be exposed from 'public.user_team'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type UserTeamPublic struct {
 	TeamID int       `json:"teamID"` // team_id
 	UserID uuid.UUID `json:"userID"` // user_id
@@ -24,6 +25,13 @@ type UserTeam struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *UserTeam) ToPublic() UserTeamPublic {
+	return UserTeamPublic{
+		TeamID: x.TeamID,
+		UserID: x.UserID,
+	}
 }
 
 type UserTeamSelectConfig struct {

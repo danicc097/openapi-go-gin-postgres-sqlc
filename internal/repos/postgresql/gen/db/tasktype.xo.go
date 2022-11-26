@@ -10,6 +10,7 @@ import (
 // TaskTypePublic represents fields that may be exposed from 'public.task_types'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type TaskTypePublic struct {
 	TaskTypeID  int    `json:"taskTypeID"`  // task_type_id
 	TeamID      int64  `json:"teamID"`      // team_id
@@ -28,6 +29,16 @@ type TaskType struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *TaskType) ToPublic() TaskTypePublic {
+	return TaskTypePublic{
+		TaskTypeID:  x.TaskTypeID,
+		TeamID:      x.TeamID,
+		Name:        x.Name,
+		Description: x.Description,
+		Color:       x.Color,
+	}
 }
 
 type TaskTypeSelectConfig struct {

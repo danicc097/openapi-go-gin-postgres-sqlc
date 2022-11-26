@@ -14,6 +14,7 @@ import (
 // ProjectPublic represents fields that may be exposed from 'public.projects'
 // and embedded in other response models.
 // Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
 type ProjectPublic struct {
 	ProjectID   int          `json:"projectID"`   // project_id
 	Name        string       `json:"name"`        // name
@@ -34,6 +35,17 @@ type Project struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *Project) ToPublic() ProjectPublic {
+	return ProjectPublic{
+		ProjectID:   x.ProjectID,
+		Name:        x.Name,
+		Description: x.Description,
+		Metadata:    x.Metadata,
+		CreatedAt:   x.CreatedAt,
+		UpdatedAt:   x.UpdatedAt,
+	}
 }
 
 type ProjectSelectConfig struct {
