@@ -11,12 +11,12 @@ import (
 )
 
 type fakeUserStore struct {
-	users map[string]*db.User
+	users map[string]db.User
 
 	mu sync.Mutex
 }
 
-func (f *fakeUserStore) get(id string) (*db.User, bool) {
+func (f *fakeUserStore) get(id string) (db.User, bool) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -29,14 +29,14 @@ func (f *fakeUserStore) set(id string, user *db.User) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	f.users[id] = user
+	f.users[id] = *user
 }
 
 // NewFakeUser returns a mock for the User repository, initializing it with copies of
 // the passed users.
 func NewFakeUser(users ...*db.User) *FakeUser {
 	fks := &fakeUserStore{
-		users: make(map[string]*db.User),
+		users: make(map[string]db.User),
 		mu:    sync.Mutex{},
 	}
 
@@ -53,7 +53,7 @@ func NewFakeUser(users ...*db.User) *FakeUser {
 			return &db.User{}, errors.New("could not get user by ID")
 		}
 
-		return user, nil
+		return &user, nil
 	}
 
 	fakeUserRepo.UpdateStub = func(ctx context.Context, d db.DBTX, params repos.UserUpdateParams) (*db.User, error) {

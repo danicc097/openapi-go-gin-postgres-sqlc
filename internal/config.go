@@ -69,9 +69,15 @@ type AppConfig struct {
 	SigningKey string `json:"signingKey" validate:"required"`
 }
 
+// don't. instead do it in NewConfig, so calling it without an error is enough to know its valid.
 func (ac *AppConfig) Validate() error {
 	// see https://github.com/go-playground/validator/blob/master/_examples/struct-level/main.go and other examples
 	return nil
+}
+
+// NewAppConfig returns a new AppConfig.
+func NewAppConfig() *AppConfig {
+	return &AppConfig{}
 }
 
 // Returns the directory of the file this function lives in.
