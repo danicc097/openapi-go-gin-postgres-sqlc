@@ -755,7 +755,6 @@ x.db.drop() {
 }
 
 # Drop and recreate the database used for code generation up to N, N-1 revisions or none.
-# Useful to get correct analyses on migration scripts.
 # Args: {up|up-1|drop}
 x.db.gen() {
   { { {

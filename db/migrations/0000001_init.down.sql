@@ -22,6 +22,8 @@ drop table if exists work_items cascade;
 
 drop table if exists kanban_steps cascade;
 
+drop table if exists work_item_types cascade;
+
 drop table if exists user_team cascade;
 
 drop table if exists users cascade;

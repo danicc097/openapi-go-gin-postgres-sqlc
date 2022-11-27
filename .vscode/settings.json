@@ -88,15 +88,18 @@
   ],
   "plpgsqlLanguageServer.enableExecuteFileQueryCommand": false,
   "plpgsqlLanguageServer.migrations": {
-    "upFilePattern": "*.up.sql",
-    "downFilePattern": "*.down.sql",
-    "folder": "./db/migrations/",
-    "postMigrations": {
-      "filePattern": "*.sql",
-      "folder": "./db/post-migration/"
-    }
+    "upFiles": [
+      "db/migrations/*.up.sql"
+    ],
+    "downFiles": [
+      "db/migrations/*.down.sql"
+    ],
+    "postMigrationFiles": [
+      "db/post-migration/*.sql"
+    ],
+    "target": "all",
   },
-  "plpgsqlLanguageServer.analyzeOn": "save",
+  "plpgsqlLanguageServer.validateOn": "save",
   // "plpgsqlLanguageServer.queryParameterPattern": ":[A-Za-z_][A-Za-z0-9_]*",
   "plpgsqlLanguageServer.keywordQueryParameterPattern": [
     "@{keyword}",
