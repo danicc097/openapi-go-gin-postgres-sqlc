@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-contrib/cors"
 	ginzap "github.com/gin-contrib/zap"
@@ -227,15 +228,19 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	// TODO /auth/logout
 
 	// -- openapi
+	oafilterOpts := openapi3filter.Options{
+		ExcludeRequestBody:    false,
+		ExcludeResponseBody:   false,
+		IncludeResponseStatus: false,
+		MultiError:            true,
+		AuthenticationFunc:    verifyAuthentication,
+	}
+	oafilterOpts.WithCustomSchemaErrorFunc(func(err *openapi3.SchemaError) string {
+		return fmt.Sprintf("%s: %s", err.SchemaField, err.Reason)
+	})
 	oaOptions := OAValidatorOptions{
 		ValidateResponse: true,
-		Options: openapi3filter.Options{
-			ExcludeRequestBody:    false,
-			ExcludeResponseBody:   false,
-			IncludeResponseStatus: false, // fails on response status not defined in OpenAPI spec
-			MultiError:            true,
-			AuthenticationFunc:    verifyAuthentication,
-		},
+		Options:          oafilterOpts,
 		// MultiErrorHandler: func(me openapi3.MultiError) error {
 		// 	return fmt.Errorf("multiple errors:  %s", me.Error())
 		// },

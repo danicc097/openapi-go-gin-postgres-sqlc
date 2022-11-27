@@ -68,29 +68,33 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 
 		rbw := &responseBodyWriter{body: &bytes.Buffer{}, ResponseWriter: c.Writer}
 		c.Writer = rbw
+
 		err := ValidateRequestFromContext(c, o.router, options)
 		if err != nil {
 			if options != nil && options.ErrorHandler != nil {
 				options.ErrorHandler(c, err.Error(), http.StatusBadRequest)
 			} else {
-				// TODO should parse errors to be more rfc7807 friendly
-				// or make kinapi return more structured errors on request.
-				// perhaps waiting for oas 3.1 support will be easier
+				// error response customized via WithCustomSchemaErrorFunc
 				renderErrorResponse(c, "OpenAPI validation failed", err)
 			}
 
+			rbw.ResponseWriter.Write(rbw.body.Bytes())
 			c.Abort()
+
 			return
 		}
 
 		c.Next()
 
 		if !options.ValidateResponse {
+			rbw.ResponseWriter.Write(rbw.body.Bytes())
+
 			return
 		}
 
 		rvi, err := buildRequestValidationInput(o.router, c.Request, &options.Options)
 		if err != nil {
+			// error response customized via WithCustomSchemaErrorFunc
 			renderErrorResponse(c, fmt.Sprintf("could not validate response: %v", err), err)
 
 			return
@@ -101,17 +105,16 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 			Header:                 rbw.Header(),
 			Options:                &options.Options,
 		}
-		// if input.Status == 0 {
-		// 	input.Status = http.StatusOK
-		// }
+
 		bodyBytes := rbw.body.Bytes()
 		input.SetBodyBytes(bodyBytes)
 
 		if err := openapi3filter.ValidateResponse(c.Request.Context(), input); err != nil {
+			rbw.body.Reset()
 			renderErrorResponse(c, fmt.Sprintf("OpenAPI response validation failed: %v", err), err)
-
-			return
 		}
+
+		rbw.ResponseWriter.Write(rbw.body.Bytes())
 	}
 }
 
@@ -121,9 +124,7 @@ type responseBodyWriter struct {
 }
 
 func (r responseBodyWriter) Write(b []byte) (int, error) {
-	r.body.Write(b)
-
-	return r.ResponseWriter.Write(b)
+	return r.body.Write(b)
 }
 
 func buildRequestValidationInput(router routers.Router, r *http.Request, options *openapi3filter.Options) (*openapi3filter.RequestValidationInput, error) {
