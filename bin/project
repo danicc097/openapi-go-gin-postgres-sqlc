@@ -499,6 +499,7 @@ x.lint.sql() {
         --inplace \
         --keep-newline \
         --comma-start \
+        --comma-break \
         $(find "$slq_dir" -maxdepth 3 -name '*.*sql')
     done
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
