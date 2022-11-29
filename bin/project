@@ -304,12 +304,33 @@ x.gen.xo() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
+# Generate a type-safe SQL builder.
+x.gen.jet() {
+  { { {
+    go build -o jet cmd/jet/main.go
+
+    # results may be combined with xo's *Public structs and not reinvent the wheel for jet.
+    # should not be hard to generate all adapters at once jet->xo *Public in a new file alongside jet gen.
+    # in the end fields are the same name if goName conventions are followed (configurable via custom jet cmd)
+    # if it gives problems for some fields (ID, API and the like)
+
+    local gen_path="$PG_REPO_GEN"/jet
+    local schema=public
+    rm -rf "$gen_path"
+    {
+      ./jet -dbname="$GEN_POSTGRES_DB" -env=.env."$env" --out=./"$gen_path" --schema=$schema
+      mv "./$gen_path"/$GEN_POSTGRES_DB/* "$gen_path"
+      rm -r "./$gen_path/$GEN_POSTGRES_DB/"
+    }
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
 # Generate interface wrappers with common logic: tracing, timeout...
 x.gen.gowrap() {
   { { {
     echo "Running generation"
 
-    local templates=(
+    local suffixes=(
       "retry:with_retry"
       "timeout:with_timeout"
       "otel:with_otel"
@@ -318,9 +339,9 @@ x.gen.gowrap() {
 
     local repo_interfaces="User"
     for iface in ${repo_interfaces[@]}; do
-      for template in ${templates[@]}; do
+      for suffix in ${suffixes[@]}; do
         {
-          IFS=":" read -r -a arr <<<${template}
+          IFS=":" read -r -a arr <<<${suffix}
           local tmpl="${arr[0]}"
           local suffix="${arr[1]}"
           gowrap gen \
@@ -437,7 +458,10 @@ x.gen() {
       x.gen.proto &
       wait
 
-      x.gen.xo
+      x.gen.xo &
+      x.gen.jet &
+
+      wait
 
       x.postgen &
       x.gen.counterfeiter "$cache" & # delay since it depends on generated output too
@@ -987,7 +1011,7 @@ xo_schema() {
   # xo cannot use db files as input, needs an up-to-date schema
   # not recreating db on every gen can lead to plain wrong generation based on an old dev schema.
   # Also use a unique db to prevent cosmic accidents
-  POSTGRES_DB=$GEN_POSTGRES_DB xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
+  xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
     --src "$PG_REPO"/xo-templates \
     "$@"
 }

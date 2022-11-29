@@ -29,8 +29,7 @@ func main() {
 
 	appEnv := envvar.GetEnv("APP_ENV", "dev")
 	if err := envvar.Load(path.Join(".env." + appEnv)); err != nil {
-		fmt.Fprintf(os.Stderr, "envvar.Load: %s\n", err)
-		os.Exit(1)
+		log.Fatalf("envvar.Load: %s\n", err)
 	}
 
 	cmd := exec.Command(
