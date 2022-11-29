@@ -6,5 +6,5 @@ type ServerInterface interface {
 {{end}}
 
 middlewares(opID OperationID) []gin.HandlerFunc
-//authMiddlewares(opID OperationID) []gin.HandlerFunc
+authMiddlewares(opID OperationID) []gin.HandlerFunc
 }

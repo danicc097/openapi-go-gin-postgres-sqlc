@@ -2,5 +2,74 @@
 
 package rest
 
+import (
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/gin-gonic/gin"
+)
 
-const ()
+func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
+	switch opID {
+	case AdminPing:
+		return []gin.HandlerFunc{
+			// TODO only if security key found in opID (requiresAuthn in .gen.json)
+			// and exit 1 if security key not found but there is scopes or role for an opID
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					MinimumRole:    models.Role("admin"),
+					RequiredScopes: []models.Scope{},
+				}),
+		}
+	case DeleteUser:
+		return []gin.HandlerFunc{
+			// TODO only if security key found in opID (requiresAuthn in .gen.json)
+			// and exit 1 if security key not found but there is scopes or role for an opID
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					MinimumRole:    models.Role("admin"),
+					RequiredScopes: []models.Scope{},
+				}),
+		}
+	case GetCurrentUser:
+		return []gin.HandlerFunc{
+			// TODO only if security key found in opID (requiresAuthn in .gen.json)
+			// and exit 1 if security key not found but there is scopes or role for an opID
+			h.authmw.EnsureAuthenticated(),
+		}
+	case OpenapiYamlGet:
+		return []gin.HandlerFunc{
+			// TODO only if security key found in opID (requiresAuthn in .gen.json)
+			// and exit 1 if security key not found but there is scopes or role for an opID
+			h.authmw.EnsureAuthenticated(),
+		}
+	case Ping:
+		return []gin.HandlerFunc{
+			// TODO only if security key found in opID (requiresAuthn in .gen.json)
+			// and exit 1 if security key not found but there is scopes or role for an opID
+			h.authmw.EnsureAuthenticated(),
+		}
+	case UpdateUser:
+		return []gin.HandlerFunc{
+			// TODO only if security key found in opID (requiresAuthn in .gen.json)
+			// and exit 1 if security key not found but there is scopes or role for an opID
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					MinimumRole: models.Role("user"),
+				}),
+		}
+	case UpdateUserAuthorization:
+		return []gin.HandlerFunc{
+			// TODO only if security key found in opID (requiresAuthn in .gen.json)
+			// and exit 1 if security key not found but there is scopes or role for an opID
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					MinimumRole: models.Role("user"),
+				}),
+		}
+	default:
+		return []gin.HandlerFunc{}
+	}
+}
