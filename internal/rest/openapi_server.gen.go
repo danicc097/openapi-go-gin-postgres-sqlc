@@ -36,7 +36,8 @@ type ServerInterface interface {
 	// (PATCH /user/{id}/authorization)
 	UpdateUserAuthorization(c *gin.Context, id externalRef0.UserID)
 
-	middlewares(opID operationID) []gin.HandlerFunc
+	middlewares(opID OperationID) []gin.HandlerFunc
+	// authMiddlewares(opID OperationID) []gin.HandlerFunc
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.

@@ -68,6 +68,20 @@ github.com/gin-gonic/gin/binding
 github.com/gin-gonic/gin/internal/bytesconv
 github.com/gin-gonic/gin/internal/json
 github.com/gin-gonic/gin/render
+# github.com/go-jet/jet/v2 v2.9.0
+## explicit; go 1.11
+github.com/go-jet/jet/v2/generator/metadata
+github.com/go-jet/jet/v2/generator/postgres
+github.com/go-jet/jet/v2/generator/template
+github.com/go-jet/jet/v2/internal/3rdparty/pq
+github.com/go-jet/jet/v2/internal/3rdparty/snaker
+github.com/go-jet/jet/v2/internal/jet
+github.com/go-jet/jet/v2/internal/utils
+github.com/go-jet/jet/v2/internal/utils/min
+github.com/go-jet/jet/v2/internal/utils/throw
+github.com/go-jet/jet/v2/postgres
+github.com/go-jet/jet/v2/qrm
+github.com/go-jet/jet/v2/qrm/internal
 # github.com/go-logr/logr v1.2.3
 ## explicit; go 1.16
 github.com/go-logr/logr
@@ -174,6 +188,13 @@ github.com/inconshreveable/mousetrap
 # github.com/invopop/yaml v0.1.0
 ## explicit; go 1.14
 github.com/invopop/yaml
+# github.com/jackc/chunkreader/v2 v2.0.1
+## explicit; go 1.12
+github.com/jackc/chunkreader/v2
+# github.com/jackc/pgconn v1.12.0
+## explicit; go 1.12
+github.com/jackc/pgconn
+github.com/jackc/pgconn/internal/ctxwatch
 # github.com/jackc/pgerrcode v0.0.0-20201024163028-a0d42d470451
 ## explicit; go 1.12
 github.com/jackc/pgerrcode
@@ -183,11 +204,14 @@ github.com/jackc/pgio
 # github.com/jackc/pgpassfile v1.0.0
 ## explicit; go 1.12
 github.com/jackc/pgpassfile
+# github.com/jackc/pgproto3/v2 v2.3.0
+## explicit; go 1.12
+github.com/jackc/pgproto3/v2
 # github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b
 ## explicit; go 1.14
 github.com/jackc/pgservicefile
-# github.com/jackc/pgtype v1.6.2
-## explicit; go 1.12
+# github.com/jackc/pgtype v1.11.0
+## explicit; go 1.13
 github.com/jackc/pgtype
 # github.com/jackc/pgx-zap v0.0.0-20220909013905-c08a18c611dd
 ## explicit; go 1.17
@@ -487,10 +511,6 @@ golang.org/x/tools/internal/gocommand
 golang.org/x/tools/internal/gopathwalk
 golang.org/x/tools/internal/imports
 golang.org/x/tools/internal/typeparams
-# golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
-## explicit; go 1.17
-golang.org/x/xerrors
-golang.org/x/xerrors/internal
 # google.golang.org/appengine v1.6.7
 ## explicit; go 1.11
 google.golang.org/appengine/internal

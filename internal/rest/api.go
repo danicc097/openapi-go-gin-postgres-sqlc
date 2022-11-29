@@ -41,7 +41,7 @@ func NewHandlers(
 	}
 }
 
-func (h *Handlers) middlewares(opID operationID) []gin.HandlerFunc {
+func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	switch opID {
 	case DeleteUser:
 		return []gin.HandlerFunc{

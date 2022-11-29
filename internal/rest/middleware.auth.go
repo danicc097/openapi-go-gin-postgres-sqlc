@@ -84,12 +84,12 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 
 // TODO EnsureAuthorizedRole and EnsureAuthorizedScopes(scopes ...Scopes)
 // 1. x-required-scopes read by yq in spec
-// 2. generate a JSON file for frontend and backend to use: {<operationID>: [<...scopes>], ...}.
-// 3.  new method authMiddleware.EnsureAuthorizedScopes(opID operationID, user *db.User), which
+// 2. generate a JSON file for frontend and backend to use: {<OperationID>: [<...scopes>], ...}.
+// 3.  new method authMiddleware.EnsureAuthorizedScopes(opID OperationID, user *db.User), which
 // 4. uses the loaded JSON to check if operationIDScopes[opID] exists, in which case
 // checks if user.scopes contains the required scopes as per spec
 // it belongs here, not in a service since this is specific to rest.
-type operationIDScopes = map[operationID][]string
+type operationIDScopes = map[OperationID][]string
 
 type AuthRestriction struct {
 	MinimumRole    models.Role

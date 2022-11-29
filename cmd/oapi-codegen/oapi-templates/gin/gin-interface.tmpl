@@ -5,5 +5,6 @@ type ServerInterface interface {
 {{.OperationId}}(c *gin.Context{{genParamArgs .PathParams}}{{if .RequiresParamObject}}, params {{.OperationId}}Params{{end}})
 {{end}}
 
-middlewares(opID operationID) []gin.HandlerFunc
+middlewares(opID OperationID) []gin.HandlerFunc
+//authMiddlewares(opID OperationID) []gin.HandlerFunc
 }
