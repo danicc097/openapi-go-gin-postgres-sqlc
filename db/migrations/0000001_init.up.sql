@@ -15,7 +15,7 @@ create table projects (
 
 create table teams (
   team_id serial not null primary key
-  , project_id int not null
+  , project_id int not null --limited to a project only
   , name text not null
   , description text not null
   , metadata jsonb not null
@@ -102,7 +102,7 @@ create index on users (updated_at);
 create table user_team (
   team_id int not null
   , user_id uuid not null
-  , primary key (user_id , team_id) -- M2M, user can be in multple teams. teams can have multiple users (same as book authors example)
+  , primary key (user_id , team_id)
   , foreign key (user_id) references users (user_id) on delete cascade
   , foreign key (team_id) references teams (team_id) on delete cascade
 );
@@ -125,6 +125,7 @@ create table kanban_steps (
   , unique (team_id , step_order)
   , foreign key (team_id) references teams (team_id) on delete cascade
   , check (color ~* '^#[a-f0-9]{6}$')
+  , check (step_order > 0)
 );
 
 create table work_item_types (
@@ -138,14 +139,33 @@ create table work_item_types (
   , check (color ~* '^#[a-f0-9]{6}$')
 );
 
+
+/*
+keep track of per-project overrides in shared json, indexed by project name (unique).
+Can be directly used in backend (codegen alternative struct) and frontend
+internally the storage is the same and doesn't affect in any way.
+ */
 create table work_items (
   work_item_id bigserial not null primary key
+  /* generic must-have fields. store naming overrides in business logic, if any
+  (json with project name (unique) as key should suffice to be used by both back and frontend)
+  as requested by clients to prevent useless joins.
+  yq will ensure keys do exist as db column */
   , title text not null
   , work_item_type_id int not null
   , metadata jsonb not null
   , team_id int not null
   , kanban_step_id int not null
-  , closed bool default false not null
+  , closed timestamp with time zone -- NULL: active
+  , target_date timestamp with time zone not null
+  /* if a project requests a new field that needs to be indexed (either manual or automated)
+  add it as nullable. in business logic that project_id will have this field marked as required .
+  If indexability is not required, dump it to metadata
+  it can use the same json as above.
+  since its not indexed (maybe just GIN) we dont care about schema changes over time
+  (no keys before existence) */
+  , some_custom_date timestamp with time zone
+  --
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
@@ -167,11 +187,6 @@ create table work_item_comments (
 
 comment on column work_item_comments.work_item_id is 'cardinality:O2M';
 
--- we want to generate the following:
--- work_items.xo.go --> joinComments (pluralize) to return all comments associated to a workitem
--- already done by xo: WorkItemCommentsByWorkItemID (returns []*WorkItemComment)
--- work_item_comments.xo.go --> joinWorkItem (singularize) to return the workitem object every time is useless in this case.
--- work_item_comments acts as a link table
 create index on work_item_comments (work_item_id);
 
 create table work_item_tags (
@@ -192,51 +207,12 @@ create table work_item_work_item_tag (
 
 create index on work_item_work_item_tag (work_item_tag_id , work_item_id);
 
--- dont need to index by user_id, there's no use case to filter by user_id
+-- roles are append-only
 create type work_item_role as ENUM (
   'preparer'
   , 'reviewer'
 );
 
-create table task_types (
-  task_type_id serial primary key
-  , team_id bigint not null
-  , name text not null
-  , description text not null
-  , color text not null
-  , unique (team_id , name)
-  , foreign key (team_id) references teams (team_id) on delete cascade
-  , check (color ~* '^#[a-f0-9]{6}$')
-);
-
--- NOTE: will not use. Everything hardcoded.
--- customize keys per project only.
--- these keys will be used to dynamically show data in ui, regardless of current project or team
--- create table work_item_fields (
---   project_id bigint not null
---   , key text not null -- for work_items.metadata->"key" filtering (and we can dynamically create indeces on work_items.metadata when a new key is added)
---   , primary key (project_id , key)
---   , foreign key (project_id) references projects (project_id) on delete cascade
--- );
-create table tasks (
-  task_id bigserial not null primary key
-  , task_type_id int not null
-  , work_item_id bigint not null
-  , title text not null
-  , metadata jsonb not null
-  , finished boolean default false
-  , created_at timestamp with time zone default current_timestamp not null
-  , updated_at timestamp with time zone default current_timestamp not null
-  , deleted_at timestamp with time zone
-  , foreign key (task_type_id) references task_types (task_type_id) on delete cascade
-  , foreign key (work_item_id) references work_items (work_item_id) on delete cascade -- not unique, many tasks for the same work_item_id
-);
-
-comment on column tasks.work_item_id is 'cardinality:O2M';
-
-comment on column tasks.task_type_id is 'cardinality:O2O';
-
--- we're doing it the wrong way. O2O
 create table work_item_member (
   work_item_id bigint not null
   , member uuid not null
@@ -254,14 +230,18 @@ comment on column work_item_member.member is 'cardinality:M2M';
 -- must be completely dynamic on a team basis
 create table activities (
   activity_id serial not null primary key
+  , project_id int
   , name text not null unique
   , description text not null
   , is_productive boolean not null
-  -- , foreign key (team_id) references teams (team_id) on delete cascade --not needed, shared for all teams and projects
-  -- and managed by admin
+  -- can't have multiple unrelated projects see each other's activities
+  , foreign key (project_id) references projects (project_id) on delete cascade
 );
 
--- no unique indexes at all
+-- will restrict available activities on a per-project basis
+-- where project_id is null (shared) and project_id = @project_id
+create index on activities (project_id);
+
 create table time_entries (
   time_entry_id bigserial not null primary key
   , work_item_id bigint
@@ -280,13 +260,10 @@ create table time_entries (
 
 comment on column time_entries.work_item_id is 'cardinality:O2M';
 
--- a team can be associated to many time entries, and any time entry is linked back to only one team: O2M
 comment on column time_entries.team_id is 'cardinality:O2M';
 
--- an activity can be associated to many time entries, and any time entry is linked back to only one activity: O2M
 comment on column time_entries.activity_id is 'cardinality:O2M';
 
--- a user can be associated to many time entries, and any time entry is linked back to only one user: O2M
 comment on column time_entries.user_id is 'cardinality:O2M';
 
 -- A multicolumn B-tree index can be used with query conditions that involve any subset of the index's
@@ -296,7 +273,7 @@ create index on time_entries (user_id , team_id);
 -- show user his timelog based on what projects are selected
 create index on time_entries (work_item_id , team_id);
 
-create index user_team_user_idx on user_team (user_id);
+create index on user_team (user_id);
 
 create table movies (
   movie_id serial not null primary key
@@ -304,38 +281,3 @@ create table movies (
   , year integer not null
   , synopsis text not null
 );
-
-create or replace view v.users as
-select
-  *
-from
-  users
-  left join (
-    select
-      user_id
-      , ARRAY_AGG(teams.*) as teams
-    from
-      user_team uo
-      left join teams using (team_id)
-    where
-      user_id in (
-        select
-          user_id
-        from
-          user_team
-        where
-          team_id = any (
-            select
-              team_id
-            from
-              teams))
-        group by
-          user_id) joined_teams using (user_id);
-
-create materialized view if not exists cache.users as
-select
-  *
-from
-  v.users with no data;
-
-create index on cache.users (external_id);
