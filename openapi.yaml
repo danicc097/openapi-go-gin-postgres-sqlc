@@ -4,8 +4,9 @@
 #
 # Component schemas:
 #   - `x-db-enum` generates and syncs a Postgres enum type.
-#   - `x-postgen-struct` generates and creates/replaces a component schema from a struct.
-#      Possible tructs to generate from are listed in the postgen package.
+#   - `x-postgen-struct` generates and creates/replaces a component schema from a struct,
+#      which can be tagged with OpenAPI fields.
+#      Possible structs to generate from are listed in the postgen package.
 # Path operations:
 #   - `x-required-scopes` is an array of required scope keys from scopes.json
 #   - `x-required-role` is a required role name from role.json

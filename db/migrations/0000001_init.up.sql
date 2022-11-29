@@ -287,14 +287,6 @@ create table time_entries (
   , check (num_nonnulls (team_id , work_item_id) = 1) -- team_id null when a work_item id is associated and viceversa
 );
 
--- TODO revisit all comments and fix.
--- We need cardinality comments only on FK columns, never base tables.
--- cardinality will be different for every table making use of a pk.
--- think of user api. For joins: we want to provide possibilities to:
--- user.xo.go:
--- select for time_entries that joins with:
--- a task can be associated to many time entries, and any time entry is linked back to only one task: O2M
--- another way to see it: one task shares many time_entries, and time_entries are part of only one task.
 comment on column time_entries.work_item_id is 'cardinality:O2M';
 
 -- a team can be associated to many time entries, and any time entry is linked back to only one team: O2M
@@ -313,37 +305,6 @@ create index on time_entries (user_id , team_id);
 -- show user his timelog based on what projects are selected
 create index on time_entries (work_item_id , team_id);
 
-
-/*
-get org names for a given user_id, etc.
-with xo we would have to make a ton of different queries to get the same result.
-alternative: tell xo when to inner join using (<fk>)
-user.xo.go could have a selectUserWith* query for each fk we tell it to join:
-e.g. selectUserWithprojects, which would join everything.
-we would specify an option in generation: public.users<user_team:name
-to indicate we want to use the lookup table to get an array aggregate of project names
-per user.
-we could have more than one of these:
-- public.users<user_team:name,
-- public.users<user_team:name
-on the other hand we would have:
-public.projects<user_team:email would give us an array of user emails per project
-UPDATE:
-or just join tables with json_agg: also supported in sqlc https://github.com/kyleconroy/sqlc/issues/1894
-that will generate the struct with a nested json object that is simply the same struct from another file,
-with json tags already solved.
-UPDATE 2: we will inner join and select every subfield `as <prefix>_...` then scan to nested struct
-projects projects `json:projects,...`
-UPDATE 3: sqlc - we get exactly the fields we want -> struct Get...Row with json tags
-and our openapi spec has x-db-model: db.Get...Row so we create the schema properties automatically in the spec
-and a type ***Res = db.Get...Row instead of oapi-codegen generated struct (either hack into oapi or remove with sed)
-
-~~However projects~~
-~~could have more fks that need to be joined. If we already told xo it should join those fk~~
-~~(selectprojectWith<fk1>, ...) it should use that same query when we selectUserWithprojects.~~
-~~we can select fields with a prefix to avoid clashes:~~
-~~select projects.name as projects_name~~
- */
 create index user_team_user_idx on user_team (user_id);
 
 create table movies (

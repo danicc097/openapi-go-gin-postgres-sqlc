@@ -11,49 +11,35 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 	switch opID {
 	case AdminPing:
 		return []gin.HandlerFunc{
-			// TODO only if security key found in opID (requiresAuthn in .gen.json)
-			// and exit 1 if security key not found but there is scopes or role for an opID
-			h.authmw.EnsureAuthenticated(),
-			h.authmw.EnsureAuthorized(
-				AuthRestriction{
-					MinimumRole:    models.Role("admin"),
-					RequiredScopes: []models.Scope{models.Scope("test-scope")},
-				}),
-		}
-	case DeleteUser:
-		return []gin.HandlerFunc{
-			// TODO only if security key found in opID (requiresAuthn in .gen.json)
-			// and exit 1 if security key not found but there is scopes or role for an opID
 			h.authmw.EnsureAuthenticated(),
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{
 					MinimumRole: models.Role("admin"),
-					RequiredScopes: []models.Scope{models.Scope("test-scope"),
+					RequiredScopes: []models.Scope{
+						models.Scope("test-scope")},
+				}),
+		}
+	case DeleteUser:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					MinimumRole: models.Role("admin"),
+					RequiredScopes: []models.Scope{
+						models.Scope("test-scope"),
 						models.Scope("users:write")},
 				}),
 		}
 	case GetCurrentUser:
 		return []gin.HandlerFunc{
-			// TODO only if security key found in opID (requiresAuthn in .gen.json)
-			// and exit 1 if security key not found but there is scopes or role for an opID
 			h.authmw.EnsureAuthenticated(),
 		}
 	case OpenapiYamlGet:
-		return []gin.HandlerFunc{
-			// TODO only if security key found in opID (requiresAuthn in .gen.json)
-			// and exit 1 if security key not found but there is scopes or role for an opID
-			h.authmw.EnsureAuthenticated(),
-		}
+		return []gin.HandlerFunc{}
 	case Ping:
-		return []gin.HandlerFunc{
-			// TODO only if security key found in opID (requiresAuthn in .gen.json)
-			// and exit 1 if security key not found but there is scopes or role for an opID
-			h.authmw.EnsureAuthenticated(),
-		}
+		return []gin.HandlerFunc{}
 	case UpdateUser:
 		return []gin.HandlerFunc{
-			// TODO only if security key found in opID (requiresAuthn in .gen.json)
-			// and exit 1 if security key not found but there is scopes or role for an opID
 			h.authmw.EnsureAuthenticated(),
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{
@@ -62,8 +48,6 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		}
 	case UpdateUserAuthorization:
 		return []gin.HandlerFunc{
-			// TODO only if security key found in opID (requiresAuthn in .gen.json)
-			// and exit 1 if security key not found but there is scopes or role for an opID
 			h.authmw.EnsureAuthenticated(),
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{

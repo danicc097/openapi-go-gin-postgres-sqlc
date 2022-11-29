@@ -780,7 +780,7 @@ func convertConstraints(ctx context.Context, constraints []xo.Constraint) []Cons
 	for i, constraint := range constraints {
 		cc[i] = Constraint{
 			Type:          constraint.Type,
-			Cardinality:   constraint.Cardinality,
+			Cardinality:   constraint.Cardinality, // cardinality comments only needed on FK columns, never base tables
 			Name:          constraint.Name,
 			TableName:     constraint.TableName,
 			RefTableName:  constraint.RefTableName,

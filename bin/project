@@ -42,7 +42,7 @@ readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
 readonly GEN_POSTGRES_DB="gen_db"
 pkg="$(head -1 go.mod)"
 readonly GOMOD_PKG="${pkg#module *}"
-readonly OPID_AUTH="operationAuthorization.gen.json"
+readonly OPID_AUTH="operationAuth.gen.json"
 
 pids=()
 env="dev"
@@ -215,7 +215,7 @@ x.pregen() {
     echo "Writing shared auth policies"
     yq -o=json e "
     .paths[][]
-    | {.operationId: { \"scopes\": .x-required-scopes, \"role\": .x-required-role}}
+    | {.operationId: { \"scopes\": .x-required-scopes, \"role\": .x-required-role, \"requiresAuthentication\": has(\"security\")}}
     | select(.[]) as \$i ireduce ({}; . + \$i)
   " openapi.yaml >$OPID_AUTH
 
