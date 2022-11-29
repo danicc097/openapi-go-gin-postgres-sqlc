@@ -1,8 +1,15 @@
 -- https://dba.stackexchange.com/questions/59006/what-is-a-valid-use-case-for-using-timestamp-without-time-zone
 create schema if not exists v;
 
-create schema if not exists
-cache;
+create schema if not exists "cache";
+
+create schema if not exists audit;
+
+create extension if not exists pg_stat_statements;
+
+create extension if not exists pg_trgm;
+
+create extension if not exists btree_gin;
 
 create table projects (
   project_id serial not null primary key
@@ -128,6 +135,7 @@ create table kanban_steps (
   , check (step_order > 0)
 );
 
+
 create table work_item_types (
   work_item_type_id serial primary key
   , project_id bigint not null
@@ -164,7 +172,8 @@ create table work_items (
   it can use the same json as above.
   since its not indexed (maybe just GIN) we dont care about schema changes over time
   (no keys before existence) */
-  , some_custom_date timestamp with time zone
+  , some_custom_date_for_project_1 timestamp with time zone
+  , some_custom_date_for_project_2 timestamp with time zone
   --
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
@@ -173,6 +182,7 @@ create table work_items (
   , foreign key (work_item_type_id) references work_item_types (work_item_type_id) on delete cascade
   , foreign key (kanban_step_id) references kanban_steps (kanban_step_id) on delete cascade
 );
+
 
 create table work_item_comments (
   work_item_comment_id bigserial not null primary key
@@ -275,9 +285,21 @@ create index on time_entries (work_item_id , team_id);
 
 create index on user_team (user_id);
 
+-- grpc demo
 create table movies (
   movie_id serial not null primary key
   , title text not null
   , year integer not null
   , synopsis text not null
 );
+
+
+--
+-- audit
+--
+
+select audit.enable_tracking('public.kanban_steps');
+select audit.enable_tracking('public.projects');
+select audit.enable_tracking('public.teams');
+
+select audit.enable_tracking('public.work_items');

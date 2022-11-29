@@ -120,7 +120,7 @@ func TestUser_UserByIndexedQueries(t *testing.T) {
 			assert.Equal(t, foundUser.UserID, user.UserID)
 		})
 
-		t.Run(tc.name+"no rows when record does not exist", func(t *testing.T) {
+		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
 			t.Parallel()
 
 			errContains := errNoRows

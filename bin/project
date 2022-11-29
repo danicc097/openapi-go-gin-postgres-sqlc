@@ -727,7 +727,7 @@ x.migrate() {
       -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$POSTGRES_DB?sslmode=disable" \
       "$@" 2>&1 # migrate outputs everything to stderr
 
-    if [[ "${*:1}" =~ up* ]]; then
+    if [[ "${*:1}" =~ (up)+ ]]; then
       echo "Running post-migration scripts"
       for file in $(find db/post-migration -maxdepth 1 -name '*.sql' | sort); do
         dockerdb_psql -U postgres -d "$POSTGRES_DB" <$file
