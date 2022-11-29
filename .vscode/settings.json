@@ -99,7 +99,7 @@
     ],
     "target": "all",
   },
-  "plpgsqlLanguageServer.validateOn": "save",
+  "plpgsqlLanguageServer.validateOn": "change",
   // "plpgsqlLanguageServer.queryParameterPattern": ":[A-Za-z_][A-Za-z0-9_]*",
   "plpgsqlLanguageServer.keywordQueryParameterPattern": [
     "@{keyword}",

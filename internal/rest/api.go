@@ -40,6 +40,7 @@ func NewHandlers(
 	}
 }
 
+// middlewares to be applied after authMiddlewares.
 func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	switch opID {
 	default:

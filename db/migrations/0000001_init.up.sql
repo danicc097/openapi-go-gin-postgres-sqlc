@@ -5,39 +5,36 @@ create schema if not exists
 cache;
 
 create table projects (
-  project_id serial not null
+  project_id serial not null primary key
   , name text not null unique
   , description text not null
   , metadata jsonb not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
-  , primary key (project_id)
 );
 
 create table teams (
-  team_id serial not null
+  team_id serial not null primary key
   , project_id int not null
   , name text not null
   , description text not null
   , metadata jsonb not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
-  , primary key (team_id)
   , foreign key (project_id) references projects (project_id) on delete cascade
   , unique (name , project_id)
 );
 
 create table user_api_keys (
-  user_api_key_id serial not null
+  user_api_key_id serial not null primary key
   , api_key text not null unique
   , expires_on timestamp with time zone not null
   -- don't use,  see https://github.com/jackc/pgx/issues/924
   --, expires_on timestamp without time zone not null
-  , primary key (user_api_key_id)
 );
 
 create table users (
-  user_id uuid default gen_random_uuid () not null
+  user_id uuid default gen_random_uuid () not null primary key
   , username text not null unique
   , email text not null unique
   , first_name text
@@ -51,18 +48,17 @@ create table users (
   end) stored
   , external_id text not null unique
   , api_key_id int
-  , scopes text[] default '{}' not null
-  , role_rank smallint default 1 not null check (role_rank > 0)
   -- so that later on we can (1) append scopes and remove duplicates:
   --    update users
   --    set    scopes = (select array_agg(distinct e) from unnest(scopes || '{"newscope-1","newscope-2"}') e)
   --    where  not scopes @> '{"newscope-1","newscope-2"}' and role_rank >= @minimum_role_rank
   -- and also (2) easily update if we add a new role:
   --    update ... set rank = rank +1 where rank >= @new_role_rank
+  , scopes text[] default '{}' not null
+  , role_rank smallint default 1 not null check (role_rank > 0)
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
-  , primary key (user_id)
   , foreign key (api_key_id) references user_api_keys (user_api_key_id) on delete cascade
 );
 
@@ -118,7 +114,7 @@ comment on column user_team.user_id is 'cardinality:M2M';
 comment on column user_team.team_id is 'cardinality:M2M';
 
 create table kanban_steps (
-  kanban_step_id serial not null
+  kanban_step_id serial not null primary key
   , team_id int not null
   , step_order smallint
   , name text not null
@@ -126,24 +122,24 @@ create table kanban_steps (
   , color text not null
   , time_trackable bool not null default false
   , disabled bool not null default false
-  , primary key (kanban_step_id)
   , unique (team_id , step_order)
   , foreign key (team_id) references teams (team_id) on delete cascade
+  , check (color ~* '^#[a-f0-9]{6}$')
 );
 
 create table work_item_types (
-  work_item_type_id serial
+  work_item_type_id serial primary key
   , project_id bigint not null
   , name text not null
   , description text not null
   , color text not null
-  , primary key (work_item_type_id)
   , unique (project_id , name)
   , foreign key (project_id) references projects (project_id) on delete cascade
+  , check (color ~* '^#[a-f0-9]{6}$')
 );
 
 create table work_items (
-  work_item_id bigserial not null
+  work_item_id bigserial not null primary key
   , title text not null
   , work_item_type_id int not null
   , metadata jsonb not null
@@ -153,20 +149,18 @@ create table work_items (
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
-  , primary key (work_item_id)
   , foreign key (team_id) references teams (team_id) on delete cascade
   , foreign key (work_item_type_id) references work_item_types (work_item_type_id) on delete cascade
   , foreign key (kanban_step_id) references kanban_steps (kanban_step_id) on delete cascade
 );
 
 create table work_item_comments (
-  work_item_comment_id bigserial not null
+  work_item_comment_id bigserial not null primary key
   , work_item_id bigint not null
   , user_id uuid not null
   , message text not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
-  , primary key (work_item_comment_id) -- work_item can have multiple comments. a comment is for a single work_item
   , foreign key (user_id) references users (user_id) on delete cascade
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
 );
@@ -181,11 +175,11 @@ comment on column work_item_comments.work_item_id is 'cardinality:O2M';
 create index on work_item_comments (work_item_id);
 
 create table work_item_tags (
-  work_item_tag_id serial not null
+  work_item_tag_id serial not null primary key
   , name text not null unique
   , description text not null
   , color text not null
-  , primary key (work_item_tag_id)
+  , check (color ~* '^#[a-f0-9]{6}$')
 );
 
 create table work_item_work_item_tag (
@@ -205,14 +199,14 @@ create type work_item_role as ENUM (
 );
 
 create table task_types (
-  task_type_id serial
+  task_type_id serial primary key
   , team_id bigint not null
   , name text not null
   , description text not null
   , color text not null
-  , primary key (task_type_id)
   , unique (team_id , name)
   , foreign key (team_id) references teams (team_id) on delete cascade
+  , check (color ~* '^#[a-f0-9]{6}$')
 );
 
 -- NOTE: will not use. Everything hardcoded.
@@ -225,7 +219,7 @@ create table task_types (
 --   , foreign key (project_id) references projects (project_id) on delete cascade
 -- );
 create table tasks (
-  task_id bigserial not null
+  task_id bigserial not null primary key
   , task_type_id int not null
   , work_item_id bigint not null
   , title text not null
@@ -234,7 +228,6 @@ create table tasks (
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
-  , primary key (task_id)
   , foreign key (task_type_id) references task_types (task_type_id) on delete cascade
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade -- not unique, many tasks for the same work_item_id
 );
@@ -260,18 +253,17 @@ comment on column work_item_member.member is 'cardinality:M2M';
 
 -- must be completely dynamic on a team basis
 create table activities (
-  activity_id serial not null
+  activity_id serial not null primary key
   , name text not null unique
   , description text not null
   , is_productive boolean not null
-  , primary key (activity_id)
   -- , foreign key (team_id) references teams (team_id) on delete cascade --not needed, shared for all teams and projects
   -- and managed by admin
 );
 
 -- no unique indexes at all
 create table time_entries (
-  time_entry_id bigserial not null
+  time_entry_id bigserial not null primary key
   , work_item_id bigint
   , activity_id int not null
   , team_id int
@@ -279,7 +271,6 @@ create table time_entries (
   , comment text not null
   , start timestamp with time zone default current_timestamp not null
   , duration_minutes int -- NULL -> active
-  , primary key (time_entry_id)
   , foreign key (user_id) references users (user_id) on delete cascade
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
   , foreign key (activity_id) references activities (activity_id) on delete cascade -- need to know where we're allocating time
@@ -308,11 +299,10 @@ create index on time_entries (work_item_id , team_id);
 create index user_team_user_idx on user_team (user_id);
 
 create table movies (
-  movie_id serial not null
+  movie_id serial not null primary key
   , title text not null
   , year integer not null
   , synopsis text not null
-  , primary key (movie_id)
 );
 
 create or replace view v.users as
