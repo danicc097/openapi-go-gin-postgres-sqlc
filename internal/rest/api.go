@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
@@ -43,28 +42,6 @@ func NewHandlers(
 
 func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	switch opID {
-	case DeleteUser:
-		return []gin.HandlerFunc{
-			h.authmw.EnsureAuthenticated(),
-			h.authmw.EnsureAuthorized(AuthRestriction{MinimumRole: models.RoleAdmin}),
-		}
-	case UpdateUser:
-		return []gin.HandlerFunc{
-			h.authmw.EnsureAuthenticated(),
-		}
-	case UpdateUserAuthorization:
-		return []gin.HandlerFunc{
-			h.authmw.EnsureAuthenticated(),
-		}
-	case AdminPing:
-		return []gin.HandlerFunc{
-			h.authmw.EnsureAuthenticated(),
-			h.authmw.EnsureAuthorized(AuthRestriction{MinimumRole: models.RoleAdmin}),
-		}
-	case GetCurrentUser:
-		return []gin.HandlerFunc{
-			h.authmw.EnsureAuthenticated(),
-		}
 	default:
 		return []gin.HandlerFunc{}
 	}

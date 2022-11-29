@@ -17,7 +17,7 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{
 					MinimumRole:    models.Role("admin"),
-					RequiredScopes: []models.Scope{},
+					RequiredScopes: []models.Scope{models.Scope("test-scope")},
 				}),
 		}
 	case DeleteUser:
@@ -27,8 +27,9 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthenticated(),
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{
-					MinimumRole:    models.Role("admin"),
-					RequiredScopes: []models.Scope{},
+					MinimumRole: models.Role("admin"),
+					RequiredScopes: []models.Scope{models.Scope("test-scope"),
+						models.Scope("users:write")},
 				}),
 		}
 	case GetCurrentUser:

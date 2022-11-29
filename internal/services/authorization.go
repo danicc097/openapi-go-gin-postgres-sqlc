@@ -111,7 +111,7 @@ func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) err
 		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown role %s", requiredRole)
 	}
 	if role.Rank < rl.Rank {
-		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted")
+		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted: unauthorized role")
 	}
 
 	return nil
@@ -120,7 +120,7 @@ func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) err
 func (a *Authorization) HasRequiredScopes(scopes []string, requiredScopes []models.Scope) error {
 	for _, rs := range requiredScopes {
 		if !slices.Contains(scopes, string(rs)) {
-			return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted")
+			return internal.NewErrorf(internal.ErrorCodeUnauthorized, fmt.Sprintf("access restricted: missing scope %s", rs))
 		}
 	}
 

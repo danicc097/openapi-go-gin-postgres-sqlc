@@ -88,6 +88,6 @@ func main() {
 			}),
 	)
 	if err != nil {
-		log.Fatalf("jet generation failed: %w", err)
+		log.Fatalf("jet generation failed: %v", err)
 	}
 }
