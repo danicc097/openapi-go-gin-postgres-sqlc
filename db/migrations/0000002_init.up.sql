@@ -158,7 +158,10 @@ create table work_items (
   /* generic must-have fields. store naming overrides in business logic, if any
   (json with project name (unique) as key should suffice to be used by both back and frontend)
   as requested by clients to prevent useless joins.
-  yq will ensure keys do exist as db column */
+  yq will ensure fields do exist as db column and project name exists (should make not editable once created)
+
+  projectOverrides.json is the same for all envs like roles and scopes. in the end its tied to the db schema
+  */
   , title text not null
   , work_item_type_id int not null
   , metadata jsonb not null
@@ -167,11 +170,17 @@ create table work_items (
   , closed timestamp with time zone -- NULL: active
   , target_date timestamp with time zone not null
   /* if a project requests a new field that needs to be indexed (either manual or automated)
-  add it as nullable. in business logic that project_id will have this field marked as required .
-  If indexability is not required, dump it to metadata
+  add it as nullable.
+  in business logic that project_id will have any column that appears in overrides.json marked as required .
+  If indexability is not required, dump it to metadata and mark as isMetadata (to track what's going on externally)
   it can use the same json as above.
   since its not indexed (maybe just GIN) we dont care about schema changes over time
-  (no keys before existence) */
+  (no keys before existence)
+
+  TODO instead of column key, it should be the openapi json key, so that frontend can
+  override for every key in received workitem info
+
+  */
   , some_custom_date_for_project_1 timestamp with time zone
   , some_custom_date_for_project_2 timestamp with time zone
   --

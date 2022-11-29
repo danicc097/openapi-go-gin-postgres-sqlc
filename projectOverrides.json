@@ -1,0 +1,28 @@
+{
+  "project 1 name": {
+    "workItems": [
+      {
+        "jsonField": "someCustomDateForProject_1",
+        "type": "iso-date",
+        "isMetadata": false,
+        "name": "Custom name shown in UI"
+      },
+      {
+        "jsonField": "metadataField_1ForProject_1",
+        "type": "array",
+        "isMetadata": true,
+        "name": "Custom name shown in UI"
+      }
+    ]
+  },
+  "project 2 name": {
+    "workItems": [
+      {
+        "jsonField": "someCustomDateForProject_2",
+        "type": "iso-date",
+        "isMetadata": false,
+        "name": "Custom name shown in UI"
+      }
+    ]
+  }
+}
