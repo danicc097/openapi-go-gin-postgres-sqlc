@@ -167,7 +167,12 @@ begin
   from
     notifications
   where
-    notification_id = old.notification_id into n_type;
+    notification_id = new.notification_id into n_type;
+
+  -- TODO trigger on notifications if notification is 'global' create user_notification for all affected
+  -- with rank >= receiver_rank
+  -- else if 'personal' create for the given receiver (user_id)
+  -- in both cases update users.has_*_notifications accordingly
 
   update
     users
@@ -183,9 +188,9 @@ begin
       has_global_notifications
     end
   where
-    user_id = old.user_id;
+    user_id = new.user_id;
   -- it's after trigger so wouldn't mattern anyway
-  return old;
+  return null;
 end;
 $function$;
 

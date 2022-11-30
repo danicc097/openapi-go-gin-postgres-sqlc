@@ -786,7 +786,7 @@ x.db.drop() {
 x.db.gen() {
   { { {
     latest_rev=$(find $MIGRATIONS_DIR/*.sql -maxdepth 0 | wc -l)
-    second_latest_rev=$((latest_rev - 2)) # up+down
+    second_latest_rev=$(((latest_rev - 2) / 2)) # up+down
     POSTGRES_DB=$GEN_POSTGRES_DB x.db.drop
     # TODO should be able to autocomplete x function nested cases
     # if it's called as $CMD
