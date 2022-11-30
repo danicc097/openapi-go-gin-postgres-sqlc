@@ -195,7 +195,7 @@ user_team.user_id ` +
 
 // UserTeamByUserID retrieves a row from 'public.user_team' as a UserTeam.
 //
-// Generated from index 'user_team_user_idx'.
+// Generated from index 'user_team_user_id_idx'.
 func UserTeamByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
 
@@ -238,16 +238,16 @@ user_team.user_id ` +
 	return res, nil
 }
 
-// FKTeam returns the Team associated with the UserTeam's (TeamID).
+// FKTeam_TeamID returns the Team associated with the UserTeam's (TeamID).
 //
 // Generated from foreign key 'user_team_team_id_fkey'.
-func (ut *UserTeam) FKTeam(ctx context.Context, db DB) (*Team, error) {
+func (ut *UserTeam) FKTeam_TeamID(ctx context.Context, db DB) (*Team, error) {
 	return TeamByTeamID(ctx, db, ut.TeamID)
 }
 
-// FKUser returns the User associated with the UserTeam's (UserID).
+// FKUser_UserID returns the User associated with the UserTeam's (UserID).
 //
 // Generated from foreign key 'user_team_user_id_fkey'.
-func (ut *UserTeam) FKUser(ctx context.Context, db DB) (*User, error) {
+func (ut *UserTeam) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, ut.UserID)
 }

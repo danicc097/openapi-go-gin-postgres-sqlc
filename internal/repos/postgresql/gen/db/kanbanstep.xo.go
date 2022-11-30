@@ -254,9 +254,9 @@ kanban_steps.disabled ` +
 	return &ks, nil
 }
 
-// FKTeam returns the Team associated with the KanbanStep's (TeamID).
+// FKTeam_TeamID returns the Team associated with the KanbanStep's (TeamID).
 //
 // Generated from foreign key 'kanban_steps_team_id_fkey'.
-func (ks *KanbanStep) FKTeam(ctx context.Context, db DB) (*Team, error) {
+func (ks *KanbanStep) FKTeam_TeamID(ctx context.Context, db DB) (*Team, error) {
 	return TeamByTeamID(ctx, db, ks.TeamID)
 }

@@ -218,6 +218,14 @@ components:
         - manager
         - admin
         - superAdmin
+    NotificationType:
+      title: Notification type
+      description: User notification type.
+      type: string
+      x-db-enum: notification_type
+      enum:
+        - personal
+        - global
     WorkItemRole:
       title: WorkItem role
       description: Role in work item for a member.

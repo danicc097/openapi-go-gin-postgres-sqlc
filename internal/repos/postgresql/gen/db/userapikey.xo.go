@@ -303,9 +303,9 @@ left join users on users.user_id = user_api_keys.user_id` +
 	return &uak, nil
 }
 
-// FKUser returns the User associated with the UserAPIKey's (UserID).
+// FKUser_UserID returns the User associated with the UserAPIKey's (UserID).
 //
 // Generated from foreign key 'user_api_keys_user_id_fkey'.
-func (uak *UserAPIKey) FKUser(ctx context.Context, db DB) (*User, error) {
+func (uak *UserAPIKey) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, uak.UserID)
 }

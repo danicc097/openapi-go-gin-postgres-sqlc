@@ -28,6 +28,10 @@ drop table if exists user_team cascade;
 
 drop table if exists users cascade;
 
+drop table if exists notifications cascade;
+
+drop table if exists user_notifications cascade;
+
 drop table if exists user_api_keys cascade;
 
 drop table if exists teams cascade;
@@ -35,5 +39,7 @@ drop table if exists teams cascade;
 drop table if exists projects cascade;
 
 drop type if exists role cascade;
+
+drop type if exists notification_type cascade;
 
 drop type if exists work_item_role cascade;

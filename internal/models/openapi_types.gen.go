@@ -12,6 +12,12 @@ const (
 	Bearer_authScopes = "bearer_auth.Scopes"
 )
 
+// Defines values for NotificationType.
+const (
+	NotificationTypeGlobal   NotificationType = "global"
+	NotificationTypePersonal NotificationType = "personal"
+)
+
 // Defines values for Role.
 const (
 	RoleAdmin        Role = "admin"
@@ -49,6 +55,9 @@ type ModelsRole = string
 
 // ModelsScope defines model for ModelsScope.
 type ModelsScope = string
+
+// NotificationType User notification.
+type NotificationType string
 
 // PgtypeJSONB defines model for PgtypeJSONB.
 type PgtypeJSONB = map[string]interface{}

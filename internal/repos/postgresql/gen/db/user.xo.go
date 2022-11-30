@@ -342,10 +342,10 @@ left join (
 	return res, nil
 }
 
-// UsersByDeletedAt retrieves a row from 'public.users' as a User.
+// UsersByDeletedAt_users_deleted_at_idx retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_deleted_at_idx'.
-func UsersByDeletedAt(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
+func UsersByDeletedAt_users_deleted_at_idx(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
 
 	for _, o := range opts {
@@ -424,7 +424,7 @@ left join (
 						work_items))
 			group by
 				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
-		` WHERE users.deleted_at = $4  AND users.deleted_at is %s `, c.deletedAt)
+		` WHERE users.deleted_at = $4 AND (deleted_at IS NOT NULL)  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -956,9 +956,9 @@ left join (
 	return &u, nil
 }
 
-// FKUserAPIKey returns the UserAPIKey associated with the User's (APIKeyID).
+// FKUserAPIKey_APIKeyID returns the UserAPIKey associated with the User's (APIKeyID).
 //
 // Generated from foreign key 'users_api_key_id_fkey'.
-func (u *User) FKUserAPIKey(ctx context.Context, db DB) (*UserAPIKey, error) {
+func (u *User) FKUserAPIKey_APIKeyID(ctx context.Context, db DB) (*UserAPIKey, error) {
 	return UserAPIKeyByUserAPIKeyID(ctx, db, *u.APIKeyID)
 }

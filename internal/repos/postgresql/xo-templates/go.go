@@ -1184,7 +1184,11 @@ func (f *Funcs) func_name_context(v interface{}) string {
 	case Table:
 		return x.GoName
 	case ForeignKey:
-		return "FK" + x.GoName // else clash with join fields in struct
+		var fields []string
+		for _, f := range x.Fields {
+			fields = append(fields, f.GoName)
+		}
+		return "FK" + x.GoName + "_" + strings.Join(fields, "") // else clash with join fields in struct
 	case Proc:
 		n := x.GoName
 		if x.Overloaded {

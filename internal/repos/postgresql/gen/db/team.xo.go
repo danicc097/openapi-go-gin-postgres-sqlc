@@ -346,9 +346,9 @@ left join (
 	return &t, nil
 }
 
-// FKProject returns the Project associated with the Team's (ProjectID).
+// FKProject_ProjectID returns the Project associated with the Team's (ProjectID).
 //
 // Generated from foreign key 'teams_project_id_fkey'.
-func (t *Team) FKProject(ctx context.Context, db DB) (*Project, error) {
+func (t *Team) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
 	return ProjectByProjectID(ctx, db, t.ProjectID)
 }

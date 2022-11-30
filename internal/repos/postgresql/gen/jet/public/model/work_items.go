@@ -12,14 +12,17 @@ import (
 )
 
 type WorkItems struct {
-	WorkItemID     int64      `sql:"primary_key" db:"work_item_id"`
-	Title          string     `db:"title"`
-	WorkItemTypeID int32      `db:"work_item_type_id"`
-	Metadata       string     `db:"metadata"`
-	TeamID         int32      `db:"team_id"`
-	KanbanStepID   int32      `db:"kanban_step_id"`
-	Closed         bool       `db:"closed"`
-	CreatedAt      time.Time  `db:"created_at"`
-	UpdatedAt      time.Time  `db:"updated_at"`
-	DeletedAt      *time.Time `db:"deleted_at"`
+	WorkItemID                int64      `sql:"primary_key" db:"work_item_id"`
+	Title                     string     `db:"title"`
+	WorkItemTypeID            int32      `db:"work_item_type_id"`
+	Metadata                  string     `db:"metadata"`
+	TeamID                    int32      `db:"team_id"`
+	KanbanStepID              int32      `db:"kanban_step_id"`
+	Closed                    *time.Time `db:"closed"`
+	TargetDate                time.Time  `db:"target_date"`
+	SomeCustomDateForProject1 *time.Time `db:"some_custom_date_for_project_1"`
+	SomeCustomDateForProject2 *time.Time `db:"some_custom_date_for_project_2"`
+	CreatedAt                 time.Time  `db:"created_at"`
+	UpdatedAt                 time.Time  `db:"updated_at"`
+	DeletedAt                 *time.Time `db:"deleted_at"`
 }

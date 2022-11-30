@@ -242,9 +242,9 @@ work_item_types.color ` +
 	return &wit, nil
 }
 
-// FKProject returns the Project associated with the WorkItemType's (ProjectID).
+// FKProject_ProjectID returns the Project associated with the WorkItemType's (ProjectID).
 //
 // Generated from foreign key 'work_item_types_project_id_fkey'.
-func (wit *WorkItemType) FKProject(ctx context.Context, db DB) (*Project, error) {
+func (wit *WorkItemType) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
 	return ProjectByProjectID(ctx, db, int(wit.ProjectID))
 }

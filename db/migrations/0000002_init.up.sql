@@ -3,13 +3,11 @@ create schema if not exists v;
 
 create schema if not exists "cache";
 
-create schema if not exists audit;
+create extension if not exists pg_stat_statements schema extensions;
 
-create extension if not exists pg_stat_statements;
+create extension if not exists pg_trgm schema extensions;
 
-create extension if not exists pg_trgm;
-
-create extension if not exists btree_gin;
+create extension if not exists btree_gin schema extensions;
 
 create table projects (
   project_id serial not null primary key
@@ -100,11 +98,51 @@ comment on column user_api_keys.user_api_key_id is 'property:private';
 -- create unique index on users (user_id)
 -- where
 --   external_id is null;
-create index on users (deleted_at);
-
+-- composite on id, deleted_at, email, deleted_at, etc. will not improve speed
+-- create unique index on users (user_id) where deleted_at is null; -- helps if you have much more deleted rows only
 create index on users (created_at);
 
+-- create index on users (deleted_at);  - not worth the extra overhead.
+create index on users (deleted_at)
+where (deleted_at is not null);
+
+-- for finding all deleted users exclusively
 create index on users (updated_at);
+
+-- notification_types are append-only
+create type notification_type as ENUM (
+  'personal'
+  , 'global'
+);
+
+create table notifications (
+  notification_id serial not null primary key
+  , receiver_rank smallint check (receiver_rank > 0) --check will not prevent null values
+  , title text not null
+  , body text not null
+  , label text not null
+  , link text null
+  , created_at timestamp with time zone default current_timestamp not null
+  , sender uuid not null
+  , receiver uuid -- null -> mass notification
+  , notification_type notification_type not null
+  , foreign key (sender) references users (user_id)
+  , foreign key (receiver) references users (user_id)
+  , check (num_nonnulls (receiver_rank , receiver) = 1)
+);
+
+create index on notifications (receiver_rank , notification_type , created_at);
+
+create table user_notifications (
+  user_notification_id serial not null primary key
+  , read_at timestamp with time zone
+  , deleted_at timestamp with time zone
+  , created_at timestamp with time zone default current_timestamp not null
+  , user_id uuid not null
+  , foreign key (user_id) references users (user_id)
+);
+
+create index on user_notifications (user_id , deleted_at);
 
 create table user_team (
   team_id int not null
@@ -135,7 +173,6 @@ create table kanban_steps (
   , check (step_order > 0)
 );
 
-
 create table work_item_types (
   work_item_type_id serial primary key
   , project_id bigint not null
@@ -156,12 +193,12 @@ internally the storage is the same and doesn't affect in any way.
 create table work_items (
   work_item_id bigserial not null primary key
   /* generic must-have fields. store naming overrides in business logic, if any
-  (json with project name (unique) as key should suffice to be used by both back and frontend)
-  as requested by clients to prevent useless joins.
-  yq will ensure fields do exist as db column and project name exists (should make not editable once created)
+   (json with project name (unique) as key should suffice to be used by both back and frontend)
+   as requested by clients to prevent useless joins.
+   yq will ensure fields do exist as db column and project name exists (should make not editable once created)
 
-  projectOverrides.json is the same for all envs like roles and scopes. in the end its tied to the db schema
-  */
+   projectOverrides.json is the same for all envs like roles and scopes. in the end its tied to the db schema
+   */
   , title text not null
   , work_item_type_id int not null
   , metadata jsonb not null
@@ -170,17 +207,16 @@ create table work_items (
   , closed timestamp with time zone -- NULL: active
   , target_date timestamp with time zone not null
   /* if a project requests a new field that needs to be indexed (either manual or automated)
-  add it as nullable.
-  in business logic that project_id will have any column that appears in overrides.json marked as required .
-  If indexability is not required, dump it to metadata and mark as isMetadata (to track what's going on externally)
-  it can use the same json as above.
-  since its not indexed (maybe just GIN) we dont care about schema changes over time
-  (no keys before existence)
+   add it as nullable.
+   in business logic that project_id will have any column that appears in overrides.json marked as required .
+   If indexability is not required, dump it to metadata and mark as isMetadata (to track what's going on externally)
+   it can use the same json as above.
+   since its not indexed (maybe just GIN) we dont care about schema changes over time
+   (no keys before existence)
 
-  TODO instead of column key, it should be the openapi json key, so that frontend can
-  override for every key in received workitem info
-
-  */
+   TODO instead of column key, it should be the openapi json key, so that frontend can
+   override for every key in received workitem info
+   */
   , some_custom_date_for_project_1 timestamp with time zone
   , some_custom_date_for_project_2 timestamp with time zone
   --
@@ -192,7 +228,10 @@ create table work_items (
   , foreign key (kanban_step_id) references kanban_steps (kanban_step_id) on delete cascade
 );
 
+create index on work_items (deleted_at)
+where (deleted_at is not null);
 
+-- for finding all deleted work items exclusively
 create table work_item_comments (
   work_item_comment_id bigserial not null primary key
   , work_item_id bigint not null
@@ -302,13 +341,17 @@ create table movies (
   , synopsis text not null
 );
 
-
 --
 -- audit
 --
+select
+  audit.enable_tracking ('public.kanban_steps');
 
-select audit.enable_tracking('public.kanban_steps');
-select audit.enable_tracking('public.projects');
-select audit.enable_tracking('public.teams');
+select
+  audit.enable_tracking ('public.projects');
 
-select audit.enable_tracking('public.work_items');
+select
+  audit.enable_tracking ('public.teams');
+
+select
+  audit.enable_tracking ('public.work_items');

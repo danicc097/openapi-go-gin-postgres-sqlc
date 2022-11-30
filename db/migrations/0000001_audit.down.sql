@@ -1,1 +1,1 @@
-drop schema if exists audit;
+drop schema if exists audit cascade;
