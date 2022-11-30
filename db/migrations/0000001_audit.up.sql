@@ -28,6 +28,8 @@ create schema if not exists audit;
 
 create extension if not exists "uuid-ossp" schema extensions;
 
+create extension if not exists plpgsql_check schema extensions;
+
 -- Create enum type for SQL operations to reduce disk/memory usage vs text
 create type audit.operation as enum (
   'INSERT'

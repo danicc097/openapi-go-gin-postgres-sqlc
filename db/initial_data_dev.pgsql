@@ -601,30 +601,81 @@ returning
     api_key_id = u_api_key
   where
     user_id = user_ids[2];
+  -- notifications
+  insert into notifications (
+    receiver_rank
+    , title
+    , body
+    , "label"
+    , link
+    , created_at
+    , sender
+    , receiver
+    , notification_type)
+  values (
+    1
+    , 'global notif title'
+    , 'body'
+    , 'label'
+    , 'https://hello.com'
+    , current_timestamp
+    , admin_id
+    , null
+    , 'global');
+  insert into notifications (
+    receiver_rank
+    , title
+    , body
+    , "label"
+    , link
+    , created_at
+    , sender
+    , receiver
+    , notification_type)
+  values (
+    null
+    , 'global notif title'
+    , 'body'
+    , 'label'
+    , 'https://hello.com'
+    , current_timestamp
+    , admin_id
+    , user_ids[1]
+    , 'personal');
+  -- send them to users
+  -- TODO this part must be replaced by a trigger based on notif type
+  insert into user_notifications (
+    notification_id
+    , "read"
+    , created_at
+    , user_id)
+  values (
+    1
+    , false
+    , current_timestamp
+    , user_ids[1]);
+  insert into user_notifications (
+    notification_id
+    , "read"
+    , created_at
+    , user_id)
+  values (
+    1
+    , false
+    , current_timestamp
+    , user_ids[2]);
 
-
-    -- notifications
-    INSERT INTO notifications
-(receiver_rank, title, body, "label", link, created_at, sender, receiver, notification_type)
-VALUES(1, 'global notif title', 'body', 'label', 'https://hello.com', CURRENT_TIMESTAMP, admin_id, null, 'global');
-    INSERT INTO notifications
-(receiver_rank, title, body, "label", link, created_at, sender, receiver, notification_type)
-VALUES(null, 'global notif title', 'body', 'label', 'https://hello.com', CURRENT_TIMESTAMP, admin_id, user_ids[1], 'personal');
-
- -- send them to users
- -- TODO this part must be replaced by a trigger based on notif type
- INSERT INTO user_notifications
-(notification_id, "read", created_at, user_id)
-VALUES(1, false, CURRENT_TIMESTAMP, user_ids[1]);
- INSERT INTO user_notifications
-(notification_id, "read", created_at, user_id)
-VALUES(1, false, CURRENT_TIMESTAMP, user_ids[2]);
-
- INSERT INTO user_notifications
-(notification_id, "read", created_at, user_id)
-VALUES(2, false, CURRENT_TIMESTAMP, user_ids[2]);
- -- end TODO this part must be replaced by a trigger based on notif type
-
+  insert into user_notifications (
+    notification_id
+    , "read"
+    , created_at
+    , user_id)
+  values (
+    2
+    , false
+    , current_timestamp
+    , user_ids[2]);
+  -- end TODO this part must be replaced by a trigger based on notif type
 end;
 $BODY$
 language plpgsql;

@@ -106,13 +106,13 @@ func (un *UserNotification) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.user_notifications (` +
-		`user_notification_id, notification_id, read, user_id` +
+		`notification_id, read, user_id` +
 		`) VALUES (` +
-		`$1, $2, $3, $4` +
-		`) RETURNING created_at `
+		`$1, $2, $3` +
+		`) RETURNING user_notification_id, created_at `
 	// run
-	logf(sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID)
-	if err := db.QueryRow(ctx, sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID).Scan(&un.CreatedAt); err != nil {
+	logf(sqlstr, un.NotificationID, un.Read, un.UserID)
+	if err := db.QueryRow(ctx, sqlstr, un.NotificationID, un.Read, un.UserID).Scan(&un.UserNotificationID, &un.CreatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -135,7 +135,7 @@ func (un *UserNotification) Update(ctx context.Context, db DB) error {
 		`RETURNING user_notification_id, created_at `
 	// run
 	logf(sqlstr, un.NotificationID, un.Read, un.CreatedAt, un.UserID, un.UserNotificationID)
-	if err := db.QueryRow(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID).Scan(&un.CreatedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID).Scan(&un.UserNotificationID, &un.CreatedAt); err != nil {
 		return logerror(err)
 	}
 	return nil
