@@ -61,6 +61,8 @@ create table users (
   --    update ... set rank = rank +1 where rank >= @new_role_rank
   , scopes text[] default '{}' not null
   , role_rank smallint default 1 not null check (role_rank > 0)
+  , has_personal_notifications boolean default false not null
+  , has_global_notifications boolean default false not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
@@ -134,15 +136,62 @@ create table notifications (
 create index on notifications (receiver_rank , notification_type , created_at);
 
 create table user_notifications (
-  user_notification_id serial not null primary key
-  , read_at timestamp with time zone
-  , deleted_at timestamp with time zone
+  user_notification_id bigserial not null primary key
+  , notification_id int not null
+  , read boolean default false not null
   , created_at timestamp with time zone default current_timestamp not null
   , user_id uuid not null
   , foreign key (user_id) references users (user_id)
+  , foreign key (notification_id) references notifications (notification_id)
 );
 
-create index on user_notifications (user_id , deleted_at);
+create index on user_notifications (user_id);
+
+-- read field simply used to show 'NEW' label but there is no filtering
+/*
+trigger on user_notifications. we simply want has_new_*** = true or false
+
+pubsub:
+ - https://eli.thegreenplace.net/2020/pubsub-using-channels-in-go/
+ - redis: https://stackoverflow.com/questions/59873784/redis-pub-sub-max-subscribers-and-publishers
+ */
+create or replace function user_notifications_users_update ()
+  returns trigger
+  language plpgsql
+  as $function$
+declare
+  n_type notification_type;
+begin
+  select
+    notification_type
+  from
+    notifications
+  where
+    notification_id = old.notification_id into n_type;
+
+  update
+    users
+  set
+    has_personal_notifications = case when n_type = 'personal' then
+      true
+    else
+      has_personal_notifications
+    end
+    , has_global_notifications = case when n_type = 'global' then
+      true
+    else
+      has_global_notifications
+    end
+  where
+    user_id = old.user_id;
+  -- it's after trigger so wouldn't mattern anyway
+  return old;
+end;
+$function$;
+
+create trigger user_notifications_users_update
+  after insert on user_notifications for each row
+  execute function user_notifications_users_update ();
 
 create table user_team (
   team_id int not null
@@ -291,7 +340,7 @@ create table activities (
   , project_id int
   , name text not null unique
   , description text not null
-  , is_productive boolean not null
+  , is_productive boolean default false not null
   -- can't have multiple unrelated projects see each other's activities
   , foreign key (project_id) references projects (project_id) on delete cascade
 );

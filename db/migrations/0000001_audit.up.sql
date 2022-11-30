@@ -116,6 +116,7 @@ $$;
 
 create or replace function audit.to_record_id (entity_oid oid , pkey_cols text[] , rec jsonb)
   returns uuid stable
+  set search_path = 'extensions'
   language sql
   as $$
   select

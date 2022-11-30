@@ -305,57 +305,6 @@ begin
     , true
     , false
     , '#abaaba');
-  -- task types
-  insert into task_types (
-    team_id
-    , "name"
-    , description
-    , color)
-  values (
-    1
-    , 'Concept'
-    , 'description for task type'
-    , 'caabbb');
-  insert into task_types (
-    team_id
-    , "name"
-    , description
-    , color)
-  values (
-    1
-    , 'Design'
-    , 'description for task type'
-    , 'caabbb');
-  insert into task_types (
-    team_id
-    , "name"
-    , description
-    , color)
-  values (
-    1
-    , 'Analysis'
-    , 'description for task type'
-    , 'caabbb');
-  insert into task_types (
-    team_id
-    , "name"
-    , description
-    , color)
-  values (
-    1
-    , 'Optimization'
-    , 'description for task type'
-    , 'caabbb');
-  insert into task_types (
-    team_id
-    , "name"
-    , description
-    , color)
-  values (
-    1
-    , 'Documentation'
-    , 'description for task type'
-    , 'caabbb');
   insert into work_item_types (
     project_id
     , "name"
@@ -365,7 +314,7 @@ begin
     2
     , 'work_item 1'
     , 'description for work_item type'
-    , 'caabbb');
+    , '#caabbb');
   insert into work_item_types (
     project_id
     , "name"
@@ -375,7 +324,7 @@ begin
     2
     , 'work_item 2'
     , 'description for work_item type'
-    , 'caabbb');
+    , '#caabbb');
   insert into work_item_types (
     project_id
     , "name"
@@ -385,222 +334,224 @@ begin
     2
     , 'work_item 3'
     , 'description for work_item type'
-    , 'caabbb');
+    , '#caabbb');
   -- work items
   -- work item 1
-  insert into work_items (
-    title
-    , work_item_type_id
-    , metadata
-    , team_id
-    , kanban_step_id
-    , deleted_at)
-  values (
-    'Work item 1'
-    , 1
-    , '{}'
-    , 1
-    , 1
-    , null);
-  -- work item tags
-  insert into work_item_work_item_tag (
-    work_item_tag_id
-    , work_item_id)
-  values (
-    1
-    , 1);
-  insert into work_item_work_item_tag (
-    work_item_tag_id
-    , work_item_id)
-  values (
-    2
-    , 1);
-  -- work item comments
-  insert into work_item_comments (
-    work_item_id
-    , user_id
-    , message)
-  values (
-    1
-    , user_ids[1]
-    , 'Message for work item 1');
-  insert into work_item_comments (
-    work_item_id
-    , user_id
-    , message)
-  values (
-    1
-    , user_ids[2]
-    , 'Yet another message for work item 1');
-  --tasks
-  insert into tasks (
-    task_type_id
-    , work_item_id
-    , title
-    , metadata
-    , deleted_at)
-  values (
-    1
-    , 1
-    , 'Task for work item 1'
-    , '{}'
-    , null);
-  insert into tasks (
-    task_type_id
-    , work_item_id
-    , title
-    , metadata
-    , deleted_at)
-  values (
-    1
-    , 1
-    , 'Another task with same type for work item 1'
-    , '{}'
-    , null);
-  insert into tasks (
-    task_type_id
-    , work_item_id
-    , title
-    , metadata
-    , deleted_at)
-  values (
-    2
-    , 1
-    , 'Task for work item 1'
-    , '{}'
-    , null);
-  insert into tasks (
-    task_type_id
-    , work_item_id
-    , title
-    , metadata
-    , deleted_at)
-  values (
-    2
-    , 1
-    , '(deleted) Task with restore possibility'
-    , '{}'
-    , NOW());
-  insert into work_item_member (
-    work_item_id
-    , "member")
-  values (
-    1
-    , user_ids[1]);
-  insert into work_item_member (
-    work_item_id
-    , "member")
-  values (
-    1
-    , user_ids[2]);
-  -- work item 2
-  insert into work_items (
-    title
-    , work_item_type_id
-    , metadata
-    , team_id
-    , kanban_step_id
-    , deleted_at)
-  values (
-    'Work item 2'
-    , 2
-    , '{}'
-    , 1
-    , 1
-    , null);
-  -- work item tags
-  insert into work_item_work_item_tag (
-    work_item_tag_id
-    , work_item_id)
-  values (
-    1
-    , 2);
-  insert into work_item_work_item_tag (
-    work_item_tag_id
-    , work_item_id)
-  values (
-    2
-    , 2);
-  insert into work_item_member (
-    work_item_id
-    , "member")
-  values (
-    2
-    , user_ids[1]);
-  insert into work_item_member (
-    work_item_id
-    , "member")
-  values (
-    2
-    , user_ids[3]);
-  -- work item 2, 3... 20
-  -- use loops and randomize. edge cases done explicitly later on
-  -- time entries
-  insert into time_entries (
-    work_item_id
-    , activity_id
-    , team_id
-    , user_id
-    , comment
-    , "start"
-    , duration_minutes)
-  values (
-    null
-    , 1
-    , 1
-    , user_ids[1]
-    , 'Sleeping time'
-    , NOW()
-    , random_between (
-      10 , 20));
-  insert into time_entries (
-    work_item_id
-    , activity_id
-    , team_id
-    , user_id
-    , comment
-    , "start"
-    , duration_minutes)
-  values (
-    1
-    , 2
-    , null
-    , user_ids[1]
-    , 'Working on important work_item 1'
-    , NOW()
-    , 10);
-  insert into time_entries (
-    work_item_id
-    , activity_id
-    , team_id
-    , user_id
-    , comment
-    , "start"
-    , duration_minutes)
-  values (
-    1
-    , 2
-    , null
-    , user_ids[2]
-    , ''
-    , NOW()
-    , 20);
-  insert into time_entries (
-    work_item_id
-    , activity_id
-    , team_id
-    , user_id
-    , comment
-    , "start"
-    , duration_minutes)
-  values (
-    1
-    , 2
-    , null
-    , user_ids[3]
-    , ''
-    , NOW()
-    , 20);
+  /*
+   insert into work_items (
+   title
+   , work_item_type_id
+   , metadata
+   , team_id
+   , kanban_step_id
+   , deleted_at)
+   values (
+   'Work item 1'
+   , 1
+   , '{}'
+   , 1
+   , 1
+   , null);
+   -- work item tags
+   insert into work_item_work_item_tag (
+   work_item_tag_id
+   , work_item_id)
+   values (
+   1
+   , 1);
+   insert into work_item_work_item_tag (
+   work_item_tag_id
+   , work_item_id)
+   values (
+   2
+   , 1);
+   -- work item comments
+   insert into work_item_comments (
+   work_item_id
+   , user_id
+   , message)
+   values (
+   1
+   , user_ids[1]
+   , 'Message for work item 1');
+   insert into work_item_comments (
+   work_item_id
+   , user_id
+   , message)
+   values (
+   1
+   , user_ids[2]
+   , 'Yet another message for work item 1');
+   --tasks
+   insert into tasks (
+   task_type_id
+   , work_item_id
+   , title
+   , metadata
+   , deleted_at)
+   values (
+   1
+   , 1
+   , 'Task for work item 1'
+   , '{}'
+   , null);
+   insert into tasks (
+   task_type_id
+   , work_item_id
+   , title
+   , metadata
+   , deleted_at)
+   values (
+   1
+   , 1
+   , 'Another task with same type for work item 1'
+   , '{}'
+   , null);
+   insert into tasks (
+   task_type_id
+   , work_item_id
+   , title
+   , metadata
+   , deleted_at)
+   values (
+   2
+   , 1
+   , 'Task for work item 1'
+   , '{}'
+   , null);
+   insert into tasks (
+   task_type_id
+   , work_item_id
+   , title
+   , metadata
+   , deleted_at)
+   values (
+   2
+   , 1
+   , '(deleted) Task with restore possibility'
+   , '{}'
+   , NOW());
+   insert into work_item_member (
+   work_item_id
+   , "member")
+   values (
+   1
+   , user_ids[1]);
+   insert into work_item_member (
+   work_item_id
+   , "member")
+   values (
+   1
+   , user_ids[2]);
+   -- work item 2
+   insert into work_items (
+   title
+   , work_item_type_id
+   , metadata
+   , team_id
+   , kanban_step_id
+   , deleted_at)
+   values (
+   'Work item 2'
+   , 2
+   , '{}'
+   , 1
+   , 1
+   , null);
+   -- work item tags
+   insert into work_item_work_item_tag (
+   work_item_tag_id
+   , work_item_id)
+   values (
+   1
+   , 2);
+   insert into work_item_work_item_tag (
+   work_item_tag_id
+   , work_item_id)
+   values (
+   2
+   , 2);
+   insert into work_item_member (
+   work_item_id
+   , "member")
+   values (
+   2
+   , user_ids[1]);
+   insert into work_item_member (
+   work_item_id
+   , "member")
+   values (
+   2
+   , user_ids[3]);
+   -- work item 2, 3... 20
+   -- use loops and randomize. edge cases done explicitly later on
+   -- time entries
+   insert into time_entries (
+   work_item_id
+   , activity_id
+   , team_id
+   , user_id
+   , comment
+   , "start"
+   , duration_minutes)
+   values (
+   null
+   , 1
+   , 1
+   , user_ids[1]
+   , 'Sleeping time'
+   , NOW()
+   , random_between (
+   10 , 20));
+   insert into time_entries (
+   work_item_id
+   , activity_id
+   , team_id
+   , user_id
+   , comment
+   , "start"
+   , duration_minutes)
+   values (
+   1
+   , 2
+   , null
+   , user_ids[1]
+   , 'Working on important work_item 1'
+   , NOW()
+   , 10);
+   insert into time_entries (
+   work_item_id
+   , activity_id
+   , team_id
+   , user_id
+   , comment
+   , "start"
+   , duration_minutes)
+   values (
+   1
+   , 2
+   , null
+   , user_ids[2]
+   , ''
+   , NOW()
+   , 20);
+   insert into time_entries (
+   work_item_id
+   , activity_id
+   , team_id
+   , user_id
+   , comment
+   , "start"
+   , duration_minutes)
+   values (
+   1
+   , 2
+   , null
+   , user_ids[3]
+   , ''
+   , NOW()
+   , 20);
+   */
   -- api keys
   insert into user_api_keys (
     api_key
@@ -650,6 +601,23 @@ returning
     api_key_id = u_api_key
   where
     user_id = user_ids[2];
+
+
+    -- notifications
+    INSERT INTO notifications
+(receiver_rank, title, body, "label", link, created_at, sender, receiver, notification_type)
+VALUES(1, 'global notif title', 'body', 'label', 'https://hello.com', CURRENT_TIMESTAMP, admin_id, null, 'global');
+    INSERT INTO notifications
+(receiver_rank, title, body, "label", link, created_at, sender, receiver, notification_type)
+VALUES(null, 'global notif title', 'body', 'label', 'https://hello.com', CURRENT_TIMESTAMP, admin_id, user_ids[1], 'personal');
+ -- send them to users
+ INSERT INTO user_notifications
+(notification_id, "read", created_at, user_id)
+VALUES(1, false, CURRENT_TIMESTAMP, user_ids[1]);
+ INSERT INTO user_notifications
+(notification_id, "read", created_at, user_id)
+VALUES(1, false, CURRENT_TIMESTAMP, user_ids[2]);
+
 end;
 $BODY$
 language plpgsql;

@@ -13,9 +13,9 @@ import (
 )
 
 type UserNotifications struct {
-	UserNotificationID int32      `sql:"primary_key" db:"user_notification_id"`
-	ReadAt             *time.Time `db:"read_at"`
-	DeletedAt          *time.Time `db:"deleted_at"`
-	CreatedAt          time.Time  `db:"created_at"`
-	UserID             uuid.UUID  `db:"user_id"`
+	UserNotificationID int64     `sql:"primary_key" db:"user_notification_id"`
+	NotificationID     int32     `db:"notification_id"`
+	Read               bool      `db:"read"`
+	CreatedAt          time.Time `db:"created_at"`
+	UserID             uuid.UUID `db:"user_id"`
 }

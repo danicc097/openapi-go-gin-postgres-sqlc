@@ -18,8 +18,8 @@ type userNotificationsTable struct {
 
 	//Columns
 	UserNotificationID postgres.ColumnInteger
-	ReadAt             postgres.ColumnTimestampz
-	DeletedAt          postgres.ColumnTimestampz
+	NotificationID     postgres.ColumnInteger
+	Read               postgres.ColumnBool
 	CreatedAt          postgres.ColumnTimestampz
 	UserID             postgres.ColumnString
 
@@ -63,12 +63,12 @@ func newUserNotificationsTable(schemaName, tableName, alias string) *UserNotific
 func newUserNotificationsTableImpl(schemaName, tableName, alias string) userNotificationsTable {
 	var (
 		UserNotificationIDColumn = postgres.IntegerColumn("user_notification_id")
-		ReadAtColumn             = postgres.TimestampzColumn("read_at")
-		DeletedAtColumn          = postgres.TimestampzColumn("deleted_at")
+		NotificationIDColumn     = postgres.IntegerColumn("notification_id")
+		ReadColumn               = postgres.BoolColumn("read")
 		CreatedAtColumn          = postgres.TimestampzColumn("created_at")
 		UserIDColumn             = postgres.StringColumn("user_id")
-		allColumns               = postgres.ColumnList{UserNotificationIDColumn, ReadAtColumn, DeletedAtColumn, CreatedAtColumn, UserIDColumn}
-		mutableColumns           = postgres.ColumnList{ReadAtColumn, DeletedAtColumn, CreatedAtColumn, UserIDColumn}
+		allColumns               = postgres.ColumnList{UserNotificationIDColumn, NotificationIDColumn, ReadColumn, CreatedAtColumn, UserIDColumn}
+		mutableColumns           = postgres.ColumnList{NotificationIDColumn, ReadColumn, CreatedAtColumn, UserIDColumn}
 	)
 
 	return userNotificationsTable{
@@ -76,8 +76,8 @@ func newUserNotificationsTableImpl(schemaName, tableName, alias string) userNoti
 
 		//Columns
 		UserNotificationID: UserNotificationIDColumn,
-		ReadAt:             ReadAtColumn,
-		DeletedAt:          DeletedAtColumn,
+		NotificationID:     NotificationIDColumn,
+		Read:               ReadColumn,
 		CreatedAt:          CreatedAtColumn,
 		UserID:             UserIDColumn,
 

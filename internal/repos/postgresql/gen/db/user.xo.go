@@ -23,26 +23,30 @@ type UserPublic struct {
 	LastName  *string   `json:"lastName" required:"true"`  // last_name
 	FullName  *string   `json:"fullName" required:"true"`  // full_name
 
-	CreatedAt time.Time `json:"createdAt" required:"true"` // created_at
+	HasPersonalNotifications bool      `json:"hasPersonalNotifications" required:"true"` // has_personal_notifications
+	HasGlobalNotifications   bool      `json:"hasGlobalNotifications" required:"true"`   // has_global_notifications
+	CreatedAt                time.Time `json:"createdAt" required:"true"`                // created_at
 
 	DeletedAt *time.Time `json:"deletedAt" required:"true"` // deleted_at
 }
 
 // User represents a row from 'public.users'.
 type User struct {
-	UserID     uuid.UUID  `json:"user_id" db:"user_id"`         // user_id
-	Username   string     `json:"username" db:"username"`       // username
-	Email      string     `json:"email" db:"email"`             // email
-	FirstName  *string    `json:"first_name" db:"first_name"`   // first_name
-	LastName   *string    `json:"last_name" db:"last_name"`     // last_name
-	FullName   *string    `json:"full_name" db:"full_name"`     // full_name
-	ExternalID string     `json:"external_id" db:"external_id"` // external_id
-	APIKeyID   *int       `json:"api_key_id" db:"api_key_id"`   // api_key_id
-	Scopes     []string   `json:"scopes" db:"scopes"`           // scopes
-	RoleRank   int16      `json:"role_rank" db:"role_rank"`     // role_rank
-	CreatedAt  time.Time  `json:"created_at" db:"created_at"`   // created_at
-	UpdatedAt  time.Time  `json:"updated_at" db:"updated_at"`   // updated_at
-	DeletedAt  *time.Time `json:"deleted_at" db:"deleted_at"`   // deleted_at
+	UserID                   uuid.UUID  `json:"user_id" db:"user_id"`                                       // user_id
+	Username                 string     `json:"username" db:"username"`                                     // username
+	Email                    string     `json:"email" db:"email"`                                           // email
+	FirstName                *string    `json:"first_name" db:"first_name"`                                 // first_name
+	LastName                 *string    `json:"last_name" db:"last_name"`                                   // last_name
+	FullName                 *string    `json:"full_name" db:"full_name"`                                   // full_name
+	ExternalID               string     `json:"external_id" db:"external_id"`                               // external_id
+	APIKeyID                 *int       `json:"api_key_id" db:"api_key_id"`                                 // api_key_id
+	Scopes                   []string   `json:"scopes" db:"scopes"`                                         // scopes
+	RoleRank                 int16      `json:"role_rank" db:"role_rank"`                                   // role_rank
+	HasPersonalNotifications bool       `json:"has_personal_notifications" db:"has_personal_notifications"` // has_personal_notifications
+	HasGlobalNotifications   bool       `json:"has_global_notifications" db:"has_global_notifications"`     // has_global_notifications
+	CreatedAt                time.Time  `json:"created_at" db:"created_at"`                                 // created_at
+	UpdatedAt                time.Time  `json:"updated_at" db:"updated_at"`                                 // updated_at
+	DeletedAt                *time.Time `json:"deleted_at" db:"deleted_at"`                                 // deleted_at
 
 	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
 	Teams       *[]Team      `json:"teams" db:"teams"`               // M2M
@@ -53,7 +57,7 @@ type User struct {
 
 func (x *User) ToPublic() UserPublic {
 	return UserPublic{
-		UserID: x.UserID, Username: x.Username, Email: x.Email, FirstName: x.FirstName, LastName: x.LastName, FullName: x.FullName, CreatedAt: x.CreatedAt, DeletedAt: x.DeletedAt,
+		UserID: x.UserID, Username: x.Username, Email: x.Email, FirstName: x.FirstName, LastName: x.LastName, FullName: x.FullName, HasPersonalNotifications: x.HasPersonalNotifications, HasGlobalNotifications: x.HasGlobalNotifications, CreatedAt: x.CreatedAt, DeletedAt: x.DeletedAt,
 	}
 }
 
@@ -142,13 +146,13 @@ func (u *User) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.users (` +
-		`username, email, first_name, last_name, external_id, api_key_id, scopes, role_rank, deleted_at` +
+		`username, email, first_name, last_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11` +
 		`) RETURNING user_id, full_name, created_at, updated_at `
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt).Scan(&u.UserID, &u.FullName, &u.CreatedAt, &u.UpdatedAt); err != nil {
+	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
+	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt).Scan(&u.UserID, &u.FullName, &u.CreatedAt, &u.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -166,12 +170,12 @@ func (u *User) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.users SET ` +
-		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, deleted_at = $9 ` +
-		`WHERE user_id = $10 ` +
+		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, has_personal_notifications = $9, has_global_notifications = $10, deleted_at = $11 ` +
+		`WHERE user_id = $12 ` +
 		`RETURNING user_id, full_name, created_at, updated_at `
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
-	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt, u.UserID).Scan(&u.UserID, &u.FullName, &u.CreatedAt, &u.UpdatedAt); err != nil {
+	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
+	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt, u.UserID).Scan(&u.UserID, &u.FullName, &u.CreatedAt, &u.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -193,16 +197,16 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.users (` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, api_key_id, scopes, role_rank, deleted_at` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13` +
 		`)` +
 		` ON CONFLICT (user_id) DO ` +
 		`UPDATE SET ` +
-		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, deleted_at = EXCLUDED.deleted_at  `
+		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, deleted_at = EXCLUDED.deleted_at  `
 	// run
-	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.DeletedAt); err != nil {
+	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -253,6 +257,8 @@ users.external_id,
 users.api_key_id,
 users.scopes,
 users.role_rank,
+users.has_personal_notifications,
+users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
@@ -331,7 +337,7 @@ left join (
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &u)
@@ -364,6 +370,8 @@ users.external_id,
 users.api_key_id,
 users.scopes,
 users.role_rank,
+users.has_personal_notifications,
+users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
@@ -442,7 +450,7 @@ left join (
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &u)
@@ -475,6 +483,8 @@ users.external_id,
 users.api_key_id,
 users.scopes,
 users.role_rank,
+users.has_personal_notifications,
+users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
@@ -545,7 +555,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.WorkItems); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -573,6 +583,8 @@ users.external_id,
 users.api_key_id,
 users.scopes,
 users.role_rank,
+users.has_personal_notifications,
+users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
@@ -643,7 +655,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, externalID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.WorkItems); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, externalID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -671,6 +683,8 @@ users.external_id,
 users.api_key_id,
 users.scopes,
 users.role_rank,
+users.has_personal_notifications,
+users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
@@ -741,7 +755,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.WorkItems); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil
@@ -769,6 +783,8 @@ users.external_id,
 users.api_key_id,
 users.scopes,
 users.role_rank,
+users.has_personal_notifications,
+users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
@@ -847,7 +863,7 @@ left join (
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
+		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &u)
@@ -880,6 +896,8 @@ users.external_id,
 users.api_key_id,
 users.scopes,
 users.role_rank,
+users.has_personal_notifications,
+users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
@@ -950,7 +968,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.WorkItems); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Teams, c.joins.WorkItems, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.Teams, &u.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &u, nil

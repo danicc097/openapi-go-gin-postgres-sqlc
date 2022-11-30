@@ -17,19 +17,21 @@ type usersTable struct {
 	postgres.Table
 
 	//Columns
-	UserID     postgres.ColumnString
-	Username   postgres.ColumnString
-	Email      postgres.ColumnString
-	FirstName  postgres.ColumnString
-	LastName   postgres.ColumnString
-	FullName   postgres.ColumnString
-	ExternalID postgres.ColumnString
-	APIKeyID   postgres.ColumnInteger
-	Scopes     postgres.ColumnString
-	RoleRank   postgres.ColumnInteger
-	CreatedAt  postgres.ColumnTimestampz
-	UpdatedAt  postgres.ColumnTimestampz
-	DeletedAt  postgres.ColumnTimestampz
+	UserID                   postgres.ColumnString
+	Username                 postgres.ColumnString
+	Email                    postgres.ColumnString
+	FirstName                postgres.ColumnString
+	LastName                 postgres.ColumnString
+	FullName                 postgres.ColumnString
+	ExternalID               postgres.ColumnString
+	APIKeyID                 postgres.ColumnInteger
+	Scopes                   postgres.ColumnString
+	RoleRank                 postgres.ColumnInteger
+	HasPersonalNotifications postgres.ColumnBool
+	HasGlobalNotifications   postgres.ColumnBool
+	CreatedAt                postgres.ColumnTimestampz
+	UpdatedAt                postgres.ColumnTimestampz
+	DeletedAt                postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -70,40 +72,44 @@ func newUsersTable(schemaName, tableName, alias string) *UsersTable {
 
 func newUsersTableImpl(schemaName, tableName, alias string) usersTable {
 	var (
-		UserIDColumn     = postgres.StringColumn("user_id")
-		UsernameColumn   = postgres.StringColumn("username")
-		EmailColumn      = postgres.StringColumn("email")
-		FirstNameColumn  = postgres.StringColumn("first_name")
-		LastNameColumn   = postgres.StringColumn("last_name")
-		FullNameColumn   = postgres.StringColumn("full_name")
-		ExternalIDColumn = postgres.StringColumn("external_id")
-		APIKeyIDColumn   = postgres.IntegerColumn("api_key_id")
-		ScopesColumn     = postgres.StringColumn("scopes")
-		RoleRankColumn   = postgres.IntegerColumn("role_rank")
-		CreatedAtColumn  = postgres.TimestampzColumn("created_at")
-		UpdatedAtColumn  = postgres.TimestampzColumn("updated_at")
-		DeletedAtColumn  = postgres.TimestampzColumn("deleted_at")
-		allColumns       = postgres.ColumnList{UserIDColumn, UsernameColumn, EmailColumn, FirstNameColumn, LastNameColumn, FullNameColumn, ExternalIDColumn, APIKeyIDColumn, ScopesColumn, RoleRankColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
-		mutableColumns   = postgres.ColumnList{UsernameColumn, EmailColumn, FirstNameColumn, LastNameColumn, FullNameColumn, ExternalIDColumn, APIKeyIDColumn, ScopesColumn, RoleRankColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
+		UserIDColumn                   = postgres.StringColumn("user_id")
+		UsernameColumn                 = postgres.StringColumn("username")
+		EmailColumn                    = postgres.StringColumn("email")
+		FirstNameColumn                = postgres.StringColumn("first_name")
+		LastNameColumn                 = postgres.StringColumn("last_name")
+		FullNameColumn                 = postgres.StringColumn("full_name")
+		ExternalIDColumn               = postgres.StringColumn("external_id")
+		APIKeyIDColumn                 = postgres.IntegerColumn("api_key_id")
+		ScopesColumn                   = postgres.StringColumn("scopes")
+		RoleRankColumn                 = postgres.IntegerColumn("role_rank")
+		HasPersonalNotificationsColumn = postgres.BoolColumn("has_personal_notifications")
+		HasGlobalNotificationsColumn   = postgres.BoolColumn("has_global_notifications")
+		CreatedAtColumn                = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn                = postgres.TimestampzColumn("updated_at")
+		DeletedAtColumn                = postgres.TimestampzColumn("deleted_at")
+		allColumns                     = postgres.ColumnList{UserIDColumn, UsernameColumn, EmailColumn, FirstNameColumn, LastNameColumn, FullNameColumn, ExternalIDColumn, APIKeyIDColumn, ScopesColumn, RoleRankColumn, HasPersonalNotificationsColumn, HasGlobalNotificationsColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
+		mutableColumns                 = postgres.ColumnList{UsernameColumn, EmailColumn, FirstNameColumn, LastNameColumn, FullNameColumn, ExternalIDColumn, APIKeyIDColumn, ScopesColumn, RoleRankColumn, HasPersonalNotificationsColumn, HasGlobalNotificationsColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
 	)
 
 	return usersTable{
 		Table: postgres.NewTable(schemaName, tableName, alias, allColumns...),
 
 		//Columns
-		UserID:     UserIDColumn,
-		Username:   UsernameColumn,
-		Email:      EmailColumn,
-		FirstName:  FirstNameColumn,
-		LastName:   LastNameColumn,
-		FullName:   FullNameColumn,
-		ExternalID: ExternalIDColumn,
-		APIKeyID:   APIKeyIDColumn,
-		Scopes:     ScopesColumn,
-		RoleRank:   RoleRankColumn,
-		CreatedAt:  CreatedAtColumn,
-		UpdatedAt:  UpdatedAtColumn,
-		DeletedAt:  DeletedAtColumn,
+		UserID:                   UserIDColumn,
+		Username:                 UsernameColumn,
+		Email:                    EmailColumn,
+		FirstName:                FirstNameColumn,
+		LastName:                 LastNameColumn,
+		FullName:                 FullNameColumn,
+		ExternalID:               ExternalIDColumn,
+		APIKeyID:                 APIKeyIDColumn,
+		Scopes:                   ScopesColumn,
+		RoleRank:                 RoleRankColumn,
+		HasPersonalNotifications: HasPersonalNotificationsColumn,
+		HasGlobalNotifications:   HasGlobalNotificationsColumn,
+		CreatedAt:                CreatedAtColumn,
+		UpdatedAt:                UpdatedAtColumn,
+		DeletedAt:                DeletedAtColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

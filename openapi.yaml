@@ -505,6 +505,10 @@ components:
         fullName:
           nullable: true
           type: string
+        hasGlobalNotifications:
+          type: boolean
+        hasPersonalNotifications:
+          type: boolean
         lastName:
           nullable: true
           type: string
@@ -530,6 +534,8 @@ components:
         - firstName
         - lastName
         - fullName
+        - hasPersonalNotifications
+        - hasGlobalNotifications
         - createdAt
         - deletedAt
       type: object

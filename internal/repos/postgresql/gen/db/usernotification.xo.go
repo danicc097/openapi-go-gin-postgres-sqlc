@@ -16,20 +16,20 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type UserNotificationPublic struct {
-	UserNotificationID int        `json:"userNotificationID" required:"true"` // user_notification_id
-	ReadAt             *time.Time `json:"readAt" required:"true"`             // read_at
-	DeletedAt          *time.Time `json:"deletedAt" required:"true"`          // deleted_at
-	CreatedAt          time.Time  `json:"createdAt" required:"true"`          // created_at
-	UserID             uuid.UUID  `json:"userID" required:"true"`             // user_id
+	UserNotificationID int64     `json:"userNotificationID" required:"true"` // user_notification_id
+	NotificationID     int       `json:"notificationID" required:"true"`     // notification_id
+	Read               bool      `json:"read" required:"true"`               // read
+	CreatedAt          time.Time `json:"createdAt" required:"true"`          // created_at
+	UserID             uuid.UUID `json:"userID" required:"true"`             // user_id
 }
 
 // UserNotification represents a row from 'public.user_notifications'.
 type UserNotification struct {
-	UserNotificationID int        `json:"user_notification_id" db:"user_notification_id"` // user_notification_id
-	ReadAt             *time.Time `json:"read_at" db:"read_at"`                           // read_at
-	DeletedAt          *time.Time `json:"deleted_at" db:"deleted_at"`                     // deleted_at
-	CreatedAt          time.Time  `json:"created_at" db:"created_at"`                     // created_at
-	UserID             uuid.UUID  `json:"user_id" db:"user_id"`                           // user_id
+	UserNotificationID int64     `json:"user_notification_id" db:"user_notification_id"` // user_notification_id
+	NotificationID     int       `json:"notification_id" db:"notification_id"`           // notification_id
+	Read               bool      `json:"read" db:"read"`                                 // read
+	CreatedAt          time.Time `json:"created_at" db:"created_at"`                     // created_at
+	UserID             uuid.UUID `json:"user_id" db:"user_id"`                           // user_id
 
 	// xo fields
 	_exists, _deleted bool
@@ -37,15 +37,14 @@ type UserNotification struct {
 
 func (x *UserNotification) ToPublic() UserNotificationPublic {
 	return UserNotificationPublic{
-		UserNotificationID: x.UserNotificationID, ReadAt: x.ReadAt, DeletedAt: x.DeletedAt, CreatedAt: x.CreatedAt, UserID: x.UserID,
+		UserNotificationID: x.UserNotificationID, NotificationID: x.NotificationID, Read: x.Read, CreatedAt: x.CreatedAt, UserID: x.UserID,
 	}
 }
 
 type UserNotificationSelectConfig struct {
-	limit     string
-	orderBy   string
-	joins     UserNotificationJoins
-	deletedAt string
+	limit   string
+	orderBy string
+	joins   UserNotificationJoins
 }
 type UserNotificationSelectConfigOption func(*UserNotificationSelectConfig)
 
@@ -56,24 +55,9 @@ func WithUserNotificationLimit(limit int) UserNotificationSelectConfigOption {
 	}
 }
 
-// WithDeletedUserNotificationOnly limits result to records marked as deleted.
-func WithDeletedUserNotificationOnly() UserNotificationSelectConfigOption {
-	return func(s *UserNotificationSelectConfig) {
-		s.deletedAt = " not null "
-	}
-}
-
 type UserNotificationOrderBy = string
 
 const (
-	UserNotificationReadAtDescNullsFirst    UserNotificationOrderBy = " read_at DESC NULLS FIRST "
-	UserNotificationReadAtDescNullsLast     UserNotificationOrderBy = " read_at DESC NULLS LAST "
-	UserNotificationReadAtAscNullsFirst     UserNotificationOrderBy = " read_at ASC NULLS FIRST "
-	UserNotificationReadAtAscNullsLast      UserNotificationOrderBy = " read_at ASC NULLS LAST "
-	UserNotificationDeletedAtDescNullsFirst UserNotificationOrderBy = " deleted_at DESC NULLS FIRST "
-	UserNotificationDeletedAtDescNullsLast  UserNotificationOrderBy = " deleted_at DESC NULLS LAST "
-	UserNotificationDeletedAtAscNullsFirst  UserNotificationOrderBy = " deleted_at ASC NULLS FIRST "
-	UserNotificationDeletedAtAscNullsLast   UserNotificationOrderBy = " deleted_at ASC NULLS LAST "
 	UserNotificationCreatedAtDescNullsFirst UserNotificationOrderBy = " created_at DESC NULLS FIRST "
 	UserNotificationCreatedAtDescNullsLast  UserNotificationOrderBy = " created_at DESC NULLS LAST "
 	UserNotificationCreatedAtAscNullsFirst  UserNotificationOrderBy = " created_at ASC NULLS FIRST "
@@ -122,13 +106,13 @@ func (un *UserNotification) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.user_notifications (` +
-		`read_at, deleted_at, user_id` +
+		`user_notification_id, notification_id, read, user_id` +
 		`) VALUES (` +
-		`$1, $2, $3` +
-		`) RETURNING user_notification_id, created_at `
+		`$1, $2, $3, $4` +
+		`) RETURNING created_at `
 	// run
-	logf(sqlstr, un.ReadAt, un.DeletedAt, un.UserID)
-	if err := db.QueryRow(ctx, sqlstr, un.ReadAt, un.DeletedAt, un.UserID).Scan(&un.UserNotificationID, &un.CreatedAt); err != nil {
+	logf(sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID)
+	if err := db.QueryRow(ctx, sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID).Scan(&un.CreatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -146,12 +130,12 @@ func (un *UserNotification) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.user_notifications SET ` +
-		`read_at = $1, deleted_at = $2, user_id = $3 ` +
+		`notification_id = $1, read = $2, user_id = $3 ` +
 		`WHERE user_notification_id = $4 ` +
 		`RETURNING user_notification_id, created_at `
 	// run
-	logf(sqlstr, un.ReadAt, un.DeletedAt, un.CreatedAt, un.UserID, un.UserNotificationID)
-	if err := db.QueryRow(ctx, sqlstr, un.ReadAt, un.DeletedAt, un.UserID, un.UserNotificationID).Scan(&un.UserNotificationID, &un.CreatedAt); err != nil {
+	logf(sqlstr, un.NotificationID, un.Read, un.CreatedAt, un.UserID, un.UserNotificationID)
+	if err := db.QueryRow(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID).Scan(&un.CreatedAt); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -173,16 +157,16 @@ func (un *UserNotification) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.user_notifications (` +
-		`user_notification_id, read_at, deleted_at, user_id` +
+		`user_notification_id, notification_id, read, user_id` +
 		`) VALUES (` +
 		`$1, $2, $3, $4` +
 		`)` +
 		` ON CONFLICT (user_notification_id) DO ` +
 		`UPDATE SET ` +
-		`read_at = EXCLUDED.read_at, deleted_at = EXCLUDED.deleted_at, user_id = EXCLUDED.user_id  `
+		`notification_id = EXCLUDED.notification_id, read = EXCLUDED.read, user_id = EXCLUDED.user_id  `
 	// run
-	logf(sqlstr, un.UserNotificationID, un.ReadAt, un.DeletedAt, un.UserID)
-	if _, err := db.Exec(ctx, sqlstr, un.UserNotificationID, un.ReadAt, un.DeletedAt, un.UserID); err != nil {
+	logf(sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID)
+	if _, err := db.Exec(ctx, sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -214,23 +198,23 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 // UserNotificationByUserNotificationID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_pkey'.
-func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotificationID int, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
-	c := &UserNotificationSelectConfig{deletedAt: " null ", joins: UserNotificationJoins{}}
+func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotificationID int64, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := fmt.Sprintf(`SELECT `+
+	sqlstr := `SELECT ` +
 		`user_notifications.user_notification_id,
-user_notifications.read_at,
-user_notifications.deleted_at,
+user_notifications.notification_id,
+user_notifications.read,
 user_notifications.created_at,
-user_notifications.user_id `+
-		`FROM public.user_notifications `+
-		``+
-		` WHERE user_notifications.user_notification_id = $1  AND user_notifications.deleted_at is %s `, c.deletedAt)
+user_notifications.user_id ` +
+		`FROM public.user_notifications ` +
+		`` +
+		` WHERE user_notifications.user_notification_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -240,38 +224,38 @@ user_notifications.user_id `+
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, userNotificationID).Scan(&un.UserNotificationID, &un.ReadAt, &un.DeletedAt, &un.CreatedAt, &un.UserID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, userNotificationID).Scan(&un.UserNotificationID, &un.NotificationID, &un.Read, &un.CreatedAt, &un.UserID); err != nil {
 		return nil, logerror(err)
 	}
 	return &un, nil
 }
 
-// UserNotificationsByUserIDDeletedAt retrieves a row from 'public.user_notifications' as a UserNotification.
+// UserNotificationsByUserID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
-// Generated from index 'user_notifications_user_id_deleted_at_idx'.
-func UserNotificationsByUserIDDeletedAt(ctx context.Context, db DB, userID uuid.UUID, deletedAt *time.Time, opts ...UserNotificationSelectConfigOption) ([]*UserNotification, error) {
-	c := &UserNotificationSelectConfig{deletedAt: " null ", joins: UserNotificationJoins{}}
+// Generated from index 'user_notifications_user_id_idx'.
+func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserNotificationSelectConfigOption) ([]*UserNotification, error) {
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := fmt.Sprintf(`SELECT `+
+	sqlstr := `SELECT ` +
 		`user_notifications.user_notification_id,
-user_notifications.read_at,
-user_notifications.deleted_at,
+user_notifications.notification_id,
+user_notifications.read,
 user_notifications.created_at,
-user_notifications.user_id `+
-		`FROM public.user_notifications `+
-		``+
-		` WHERE user_notifications.user_id = $1 AND user_notifications.deleted_at = $2  AND user_notifications.deleted_at is %s `, c.deletedAt)
+user_notifications.user_id ` +
+		`FROM public.user_notifications ` +
+		`` +
+		` WHERE user_notifications.user_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userID, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, userID, deletedAt)
+	logf(sqlstr, userID)
+	rows, err := db.Query(ctx, sqlstr, userID)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -283,7 +267,7 @@ user_notifications.user_id `+
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&un.UserNotificationID, &un.ReadAt, &un.DeletedAt, &un.CreatedAt, &un.UserID); err != nil {
+		if err := rows.Scan(&un.UserNotificationID, &un.NotificationID, &un.Read, &un.CreatedAt, &un.UserID); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &un)
@@ -292,6 +276,13 @@ user_notifications.user_id `+
 		return nil, logerror(err)
 	}
 	return res, nil
+}
+
+// FKNotification_NotificationID returns the Notification associated with the UserNotification's (NotificationID).
+//
+// Generated from foreign key 'user_notifications_notification_id_fkey'.
+func (un *UserNotification) FKNotification_NotificationID(ctx context.Context, db DB) (*Notification, error) {
+	return NotificationByNotificationID(ctx, db, un.NotificationID)
 }
 
 // FKUser_UserID returns the User associated with the UserNotification's (UserID).

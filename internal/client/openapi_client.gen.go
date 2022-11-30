@@ -69,7 +69,7 @@ type ModelsRole = string
 // ModelsScope defines model for ModelsScope.
 type ModelsScope = string
 
-// NotificationType User notification.
+// NotificationType User notification type.
 type NotificationType string
 
 // PgtypeJSONB defines model for PgtypeJSONB.
@@ -170,18 +170,20 @@ type UserPublic struct {
 
 // UserResponse defines model for UserResponse.
 type UserResponse struct {
-	ApiKey    *UserAPIKeyPublic `json:"apiKey"`
-	CreatedAt time.Time         `json:"createdAt"`
-	DeletedAt *time.Time        `json:"deletedAt"`
-	Email     string            `json:"email"`
-	FirstName *string           `json:"firstName"`
-	FullName  *string           `json:"fullName"`
-	LastName  *string           `json:"lastName"`
-	Role      Role              `json:"role"`
-	Scopes    Scopes            `json:"scopes"`
-	Teams     *[]TeamPublic     `json:"teams"`
-	UserID    UuidUUID          `json:"userID"`
-	Username  string            `json:"username"`
+	ApiKey                   *UserAPIKeyPublic `json:"apiKey"`
+	CreatedAt                time.Time         `json:"createdAt"`
+	DeletedAt                *time.Time        `json:"deletedAt"`
+	Email                    string            `json:"email"`
+	FirstName                *string           `json:"firstName"`
+	FullName                 *string           `json:"fullName"`
+	HasGlobalNotifications   bool              `json:"hasGlobalNotifications"`
+	HasPersonalNotifications bool              `json:"hasPersonalNotifications"`
+	LastName                 *string           `json:"lastName"`
+	Role                     Role              `json:"role"`
+	Scopes                   Scopes            `json:"scopes"`
+	Teams                    *[]TeamPublic     `json:"teams"`
+	UserID                   UuidUUID          `json:"userID"`
+	Username                 string            `json:"username"`
 }
 
 // UuidUUID defines model for UuidUUID.
