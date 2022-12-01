@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
@@ -58,7 +59,18 @@ func TestAuthorizationMiddleware_Roles(t *testing.T) {
 		if err != nil {
 			t.Fatalf("services.NewAuthorization: %v", err)
 		}
-		usvc := services.NewUser(logger, repos.NewUserWrapped(postgresql.NewUser(), postgresql.OtelName, repos.UserWrappedConfig{}, nil), authzsvc)
+		retryCount := 1
+		retryInterval := 1 * time.Second
+		usvc := services.NewUser(
+			logger,
+			repos.NewUserWithTracing(
+				repos.NewUserWithRetry(
+					repos.NewUserWithTimeout(
+						postgresql.NewUser(), repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second}),
+					retryCount, retryInterval),
+				postgresql.OtelName, nil),
+			authzsvc,
+		)
 		authnsvc := services.NewAuthentication(logger, usvc, testpool)
 
 		authMw := newAuthMiddleware(logger, testpool, authnsvc, authzsvc, usvc)

@@ -30,7 +30,7 @@ type Method struct {
 
 var (
 	handlerRegex     = regexp.MustCompile("api_(.*).go")
-	operationIDRegex = regexp.MustCompile("^[a-zA-Z0-9]*$")
+	OperationIDRegex = regexp.MustCompile("^[a-zA-Z0-9]*$")
 )
 
 func contains[T comparable](elems []T, v T) bool {
@@ -109,9 +109,9 @@ func (o *openapiGenerator) analyzeSpec() error {
 				return fmt.Errorf("path %q: method %q: operationId is required for postgen", path, method)
 			}
 
-			if !operationIDRegex.MatchString(v.OperationID) {
+			if !OperationIDRegex.MatchString(v.OperationID) {
 				return fmt.Errorf("path %q: method %q: operationId %q does not match pattern %q",
-					path, method, v.OperationID, operationIDRegex.String())
+					path, method, v.OperationID, OperationIDRegex.String())
 			}
 
 			if len(v.Tags) > 1 {
@@ -178,13 +178,13 @@ func (o *openapiGenerator) generateOpIDs() ([]byte, error) {
 package rest
 
 {{ $first := true }}
-type operationID string
+type OperationID string
 
 const ({{range $tag, $opIDs := .Operations}}
 // Operation IDs for the '{{$tag}}' tag.
 
 {{range $opIDs -}}
-{{.}}                operationID = "{{.}}"
+{{.}}                OperationID = "{{.}}"
 {{end -}}
 {{end}}
 	)

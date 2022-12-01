@@ -10,15 +10,18 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/jackc/pgx/v4/pgxpool"
-	_ "github.com/jackc/pgx/v4/stdlib"
+	zapadapter "github.com/jackc/pgx-zap"
+	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5/tracelog"
+	"go.uber.org/zap"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 )
 
 // New instantiates the PostgreSQL database using configuration defined in environment variables.
-func New(conf *envvar.Configuration) (*pgxpool.Pool, error) {
+func New(conf *envvar.Configuration, logger *zap.Logger) (*pgxpool.Pool, error) {
 	get := func(v string) string {
 		res, err := conf.Get(v)
 		if err != nil {
@@ -56,9 +59,18 @@ func New(conf *envvar.Configuration) (*pgxpool.Pool, error) {
 
 	dsn.RawQuery = q.Encode()
 
-	pool, err := pgxpool.Connect(context.Background(), dsn.String())
+	poolConfig, err := pgxpool.ParseConfig(dsn.String())
 	if err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "pgxpool.Connect")
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "pgx.ParseConfig")
+	}
+	poolConfig.ConnConfig.Tracer = &tracelog.TraceLog{
+		Logger:   zapadapter.NewLogger(logger),
+		LogLevel: tracelog.LogLevelTrace,
+	}
+
+	pool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
+	if err != nil {
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "pgxpool.New")
 	}
 
 	if err := pool.Ping(context.Background()); err != nil {

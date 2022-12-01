@@ -7,6 +7,21 @@ import (
 	"fmt"
 )
 
+// KanbanStepPublic represents fields that may be exposed from 'public.kanban_steps'
+// and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
+type KanbanStepPublic struct {
+	KanbanStepID  int    `json:"kanbanStepID" required:"true"`  // kanban_step_id
+	TeamID        int    `json:"teamID" required:"true"`        // team_id
+	StepOrder     *int16 `json:"stepOrder" required:"true"`     // step_order
+	Name          string `json:"name" required:"true"`          // name
+	Description   string `json:"description" required:"true"`   // description
+	Color         string `json:"color" required:"true"`         // color
+	TimeTrackable bool   `json:"timeTrackable" required:"true"` // time_trackable
+	Disabled      bool   `json:"disabled" required:"true"`      // disabled
+}
+
 // KanbanStep represents a row from 'public.kanban_steps'.
 type KanbanStep struct {
 	KanbanStepID  int    `json:"kanban_step_id" db:"kanban_step_id"` // kanban_step_id
@@ -20,6 +35,12 @@ type KanbanStep struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *KanbanStep) ToPublic() KanbanStepPublic {
+	return KanbanStepPublic{
+		KanbanStepID: x.KanbanStepID, TeamID: x.TeamID, StepOrder: x.StepOrder, Name: x.Name, Description: x.Description, Color: x.Color, TimeTrackable: x.TimeTrackable, Disabled: x.Disabled,
+	}
 }
 
 type KanbanStepSelectConfig struct {
@@ -233,9 +254,9 @@ kanban_steps.disabled ` +
 	return &ks, nil
 }
 
-// FKTeam returns the Team associated with the KanbanStep's (TeamID).
+// FKTeam_TeamID returns the Team associated with the KanbanStep's (TeamID).
 //
 // Generated from foreign key 'kanban_steps_team_id_fkey'.
-func (ks *KanbanStep) FKTeam(ctx context.Context, db DB) (*Team, error) {
+func (ks *KanbanStep) FKTeam_TeamID(ctx context.Context, db DB) (*Team, error) {
 	return TeamByTeamID(ctx, db, ks.TeamID)
 }

@@ -18,38 +18,29 @@ export type Scope =
   | 'team-settings:write'
   | 'project-settings:write'
   | 'work-item:review'
+export type Scopes = Scope[]
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 /**
  * Role in work item for a member.
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
 export type UuidUUID = string
-export type TaskType = {
+export type TaskTypePublic = {
   color?: string
   description?: string
   name?: string
-  task_type_id?: number
-  team_id?: number
-} & TaskType1
-export type TaskType1 = {
+  taskTypeID?: number
+  teamID?: number
+} & TaskTypePublic1
+export type TaskTypePublic1 = {
   color?: string
   description?: string
   name?: string
-  task_type_id?: number
-  team_id?: number
+  taskTypeID?: number
+  teamID?: number
 } | null
-export type UserAPIKey = {
-  api_key?: string
-  expires_on?: string
-  user_api_key_id?: number
-  user_id?: UuidUUID
-} & UserAPIKey1
-export type UserAPIKey1 = {
-  api_key?: string
-  expires_on?: string
-  user_api_key_id?: number
-  user_id?: UuidUUID
-} | null
+export type ModelsRole = string
+export type ModelsScope = string
 
 export interface HTTPValidationError {
   detail?: Detail
@@ -62,7 +53,7 @@ export interface ValidationError {
 /**
  * represents User data to update
  */
-export interface AUser {
+export interface UpdateUserRequest {
   /**
    * originally from auth server but updatable
    */
@@ -75,83 +66,95 @@ export interface AUser {
 /**
  * represents User authorization data to update
  */
-export interface AUser1 {
+export interface UpdateUserAuthRequest {
   role?: Role
-  scopes?: Scope[]
+  scopes?: Scopes
 }
-export interface User {
-  api_key_id?: number | null
-  created_at?: string
-  deleted_at?: string | null
+export interface UserPublic {
+  apiKeyID?: number | null
+  createdAt?: string
+  deletedAt?: string | null
   email?: string
-  external_id?: string
-  first_name?: string | null
-  full_name?: string | null
-  last_name?: string | null
-  role_rank?: number
-  scopes?: string[] | null
-  teams?: Team[] | null
-  time_entries?: TimeEntry[] | null
-  updated_at?: string
-  user_id?: UuidUUID
+  firstName?: string | null
+  fullName?: string | null
+  lastName?: string | null
+  teams?: TeamPublic[] | null
+  timeEntries?: TimeEntryPublic[] | null
+  userID?: UuidUUID
   username?: string
-  work_items?: WorkItem[] | null
+  workItems?: WorkItemPublic[] | null
 }
-export interface Team {
-  created_at?: string
+export interface TeamPublic {
+  createdAt?: string
   description?: string
   metadata?: PgtypeJSONB
   name?: string
-  project_id?: number
-  team_id?: number
-  time_entries?: TimeEntry[] | null
-  updated_at?: string
-  users?: User[] | null
+  projectID?: number
+  teamID?: number
+  timeEntries?: TimeEntryPublic[] | null
+  updatedAt?: string
+  users?: UserPublic[] | null
 }
 export interface PgtypeJSONB {}
-export interface TimeEntry {
-  activity_id?: number
+export interface TimeEntryPublic {
+  activityID?: number
   comment?: string
-  duration_minutes?: number | null
+  durationMinutes?: number | null
   start?: string
-  team_id?: number | null
-  time_entry_id?: number
-  user_id?: UuidUUID
-  work_item_id?: number | null
+  teamID?: number | null
+  timeEntryID?: number
+  userID?: UuidUUID
+  workItemID?: number | null
 }
-export interface WorkItem {
+export interface WorkItemPublic {
   closed?: boolean
-  created_at?: string
-  deleted_at?: string | null
-  kanban_step_id?: number
+  createdAt?: string
+  deletedAt?: string | null
+  kanbanStepID?: number
   metadata?: PgtypeJSONB
-  tasks?: Task[] | null
-  team_id?: number
-  time_entries?: TimeEntry[] | null
+  tasks?: TaskPublic[] | null
+  teamID?: number
+  timeEntries?: TimeEntryPublic[] | null
   title?: string
-  updated_at?: string
-  users?: User[] | null
-  work_item_comments?: WorkItemComment[] | null
-  work_item_id?: number
-  work_item_type_id?: number
+  updatedAt?: string
+  users?: UserPublic[] | null
+  workItemComments?: WorkItemCommentPublic[] | null
+  workItemID?: number
+  workItemTypeID?: number
 }
-export interface Task {
-  created_at?: string
-  deleted_at?: string | null
+export interface TaskPublic {
+  createdAt?: string
+  deletedAt?: string | null
   finished?: boolean | null
   metadata?: PgtypeJSONB
-  task_id?: number
-  task_type?: TaskType
-  task_type_id?: number
+  taskID?: number
+  taskType?: TaskTypePublic
+  taskTypeID?: number
   title?: string
-  updated_at?: string
-  work_item_id?: number
+  updatedAt?: string
+  workItemID?: number
 }
-export interface WorkItemComment {
-  created_at?: string
+export interface WorkItemCommentPublic {
+  createdAt?: string
   message?: string
-  updated_at?: string
-  user_id?: UuidUUID
-  work_item_comment_id?: number
-  work_item_id?: number
+  updatedAt?: string
+  userID?: UuidUUID
+  workItemCommentID?: number
+  workItemID?: number
+}
+export interface UserResponse {
+  apiKeyID?: number | null
+  createdAt?: string
+  deletedAt?: string | null
+  email?: string
+  firstName?: string | null
+  fullName?: string | null
+  lastName?: string | null
+  role?: Role
+  scopes?: Scopes
+  teams?: TeamPublic[] | null
+  timeEntries?: TimeEntryPublic[] | null
+  userID?: UuidUUID
+  username?: string
+  workItems?: WorkItemPublic[] | null
 }

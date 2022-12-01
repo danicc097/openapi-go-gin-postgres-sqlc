@@ -30,7 +30,7 @@ type rateLimitMiddleware struct {
 	rlim rate.Limit
 	// rlim is the number of burst allowed.
 	blim     int
-	visitors map[string]*visitor
+	visitors map[string]*visitor // don't mind pointers, it's for internal struct use only
 
 	mu sync.Mutex
 }

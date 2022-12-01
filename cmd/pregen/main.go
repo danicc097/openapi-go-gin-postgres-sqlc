@@ -12,23 +12,24 @@ import (
 )
 
 func main() {
-	var env, cacheDir, spec string
+	var env, cacheDir, spec, opIDAuthPath string
 
+	flag.StringVar(&opIDAuthPath, "op-id-auth", "", "JSON file with authorization information per operation ID")
 	flag.StringVar(&env, "env", ".env", "Environment Variables filename")
 	flag.StringVar(&cacheDir, "cachedir", ".postgen.cache", "Cache dir")
 	flag.StringVar(&spec, "spec", "openapi.yaml", "OpenAPI specification")
 	flag.Parse()
 
+	if opIDAuthPath == "" {
+		log.Fatal("op-id-auth flag is required")
+	}
+
 	if err := envvar.Load(env); err != nil {
 		log.Fatalf("envvar.Load: %s\n", err)
 	}
 
-	// TODO read openapi spec, look for x-db-enum or x-db-tables vendor ext.
-	// and replace enum values with sql query output
-	// TODO	messy, could all be done with docker exec and yq...
-
 	var stderr bytes.Buffer
-	pg := pregen.New(&stderr, spec)
+	pg := pregen.New(&stderr, spec, opIDAuthPath)
 	if err := pg.Generate(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		fmt.Fprintln(os.Stderr, stderr.String())

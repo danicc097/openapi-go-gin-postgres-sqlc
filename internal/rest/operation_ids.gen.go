@@ -2,22 +2,22 @@
 
 package rest
 
-type operationID string
+type OperationID string
 
 const (
 	// Operation IDs for the 'admin' tag.
 
-	AdminPing operationID = "AdminPing"
+	AdminPing OperationID = "AdminPing"
 
 	// Operation IDs for the 'default' tag.
 
-	OpenapiYamlGet operationID = "OpenapiYamlGet"
-	Ping           operationID = "Ping"
+	OpenapiYamlGet OperationID = "OpenapiYamlGet"
+	Ping           OperationID = "Ping"
 
 	// Operation IDs for the 'user' tag.
 
-	DeleteUser              operationID = "DeleteUser"
-	GetCurrentUser          operationID = "GetCurrentUser"
-	UpdateUser              operationID = "UpdateUser"
-	UpdateUserAuthorization operationID = "UpdateUserAuthorization"
+	DeleteUser              OperationID = "DeleteUser"
+	GetCurrentUser          OperationID = "GetCurrentUser"
+	UpdateUser              OperationID = "UpdateUser"
+	UpdateUserAuthorization OperationID = "UpdateUserAuthorization"
 )

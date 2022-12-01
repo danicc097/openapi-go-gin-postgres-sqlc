@@ -4,7 +4,9 @@
 #
 # Component schemas:
 #   - `x-db-enum` generates and syncs a Postgres enum type.
-#   - `x-db-struct` generates and syncs a db package struct.
+#   - `x-postgen-struct` generates and creates/replaces a component schema from a struct,
+#      which can be tagged with OpenAPI fields.
+#      Possible structs to generate from are listed in the postgen package.
 # Path operations:
 #   - `x-required-scopes` is an array of required scope keys from scopes.json
 #   - `x-required-role` is a required role name from role.json
@@ -66,6 +68,13 @@ paths:
       summary: Ping pongs
       operationId: AdminPing
       responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: pong
         "422":
           description: Validation Error
           content:
@@ -89,7 +98,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserResponse'
           description: ok
       tags:
         - user
@@ -114,7 +123,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserResponse'
           description: ok
       tags:
         - user
@@ -157,7 +166,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserPublic'
           description: ok
       tags:
         - user
@@ -196,6 +205,10 @@ components:
         - team-settings:write
         - project-settings:write
         - work-item:review
+    Scopes: # workaround for openapi-go gen
+      type: array
+      items:
+        $ref: '#/components/schemas/Scope'
     Role: # Generated from roles.json keys. DO NOT EDIT.
       type: string
       enum:
@@ -205,6 +218,14 @@ components:
         - manager
         - admin
         - superAdmin
+    NotificationType:
+      title: Notification type
+      description: User notification type.
+      type: string
+      x-db-enum: notification_type
+      enum:
+        - personal
+        - global
     WorkItemRole:
       title: WorkItem role
       description: Role in work item for a member.
@@ -227,7 +248,6 @@ components:
           description: originally from auth server but updatable
           type: string
           pattern: ^[ a-zA-Z0-9_-]+$
-      title: a User
       type: object
     UpdateUserAuthRequest:
       description: represents User authorization data to update
@@ -239,67 +259,51 @@ components:
         role:
           $ref: '#/components/schemas/Role'
         scopes:
-          items:
-            $ref: '#/components/schemas/Scope'
-          type: array
-      title: a User
+          $ref: '#/components/schemas/Scopes'
       type: object
-    User: # Generated from db package structs. DO NOT EDIT.
+    UserPublic: # Generated from db package structs. DO NOT EDIT.
       properties:
-        api_key_id:
+        apiKeyID:
           nullable: true
           type: integer
-        created_at:
+        createdAt:
           format: date-time
           type: string
-        deleted_at:
+        deletedAt:
           format: date-time
           nullable: true
           type: string
         email:
           type: string
-        external_id:
-          type: string
-        first_name:
+        firstName:
           nullable: true
           type: string
-        full_name:
+        fullName:
           nullable: true
           type: string
-        last_name:
+        lastName:
           nullable: true
           type: string
-        role_rank:
-          type: integer
-        scopes:
-          items:
-            type: string
-          nullable: true
-          type: array
         teams:
           items:
-            $ref: '#/components/schemas/Team'
+            $ref: '#/components/schemas/TeamPublic'
           nullable: true
           type: array
-        time_entries:
+        timeEntries:
           items:
-            $ref: '#/components/schemas/TimeEntry'
+            $ref: '#/components/schemas/TimeEntryPublic'
           nullable: true
           type: array
-        updated_at:
-          format: date-time
-          type: string
-        user_id:
+        userID:
           $ref: '#/components/schemas/UuidUUID'
         username:
           type: string
-        work_items:
+        workItems:
           items:
-            $ref: '#/components/schemas/WorkItem'
+            $ref: '#/components/schemas/WorkItemPublic'
           nullable: true
           type: array
       type: object
-      x-db-struct: User
     # à la FastAPI
     ValidationError:
       title: ValidationError
@@ -322,12 +326,14 @@ components:
           type: string
     PgtypeJSONB: # Generated from db package structs. DO NOT EDIT.
       type: object
-    Task: # Generated from db package structs. DO NOT EDIT.
+    UuidUUID: # Generated from db package structs. DO NOT EDIT.
+      type: string
+    TaskPublic:
       properties:
-        created_at:
+        createdAt:
           format: date-time
           type: string
-        deleted_at:
+        deletedAt:
           format: date-time
           nullable: true
           type: string
@@ -336,21 +342,21 @@ components:
           type: boolean
         metadata:
           $ref: '#/components/schemas/PgtypeJSONB'
-        task_id:
+        taskID:
           type: integer
-        task_type:
-          $ref: '#/components/schemas/TaskType'
-        task_type_id:
+        taskType:
+          $ref: '#/components/schemas/TaskTypePublic'
+        taskTypeID:
           type: integer
         title:
           type: string
-        updated_at:
+        updatedAt:
           format: date-time
           type: string
-        work_item_id:
+        workItemID:
           type: integer
       type: object
-    TaskType: # Generated from db package structs. DO NOT EDIT.
+    TaskTypePublic:
       nullable: true
       properties:
         color:
@@ -359,14 +365,14 @@ components:
           type: string
         name:
           type: string
-        task_type_id:
+        taskTypeID:
           type: integer
-        team_id:
+        teamID:
           type: integer
       type: object
-    Team: # Generated from db package structs. DO NOT EDIT.
+    TeamPublic:
       properties:
-        created_at:
+        createdAt:
           format: date-time
           type: string
         description:
@@ -375,125 +381,181 @@ components:
           $ref: '#/components/schemas/PgtypeJSONB'
         name:
           type: string
-        project_id:
+        projectID:
           type: integer
-        team_id:
+        teamID:
           type: integer
-        time_entries:
-          items:
-            $ref: '#/components/schemas/TimeEntry'
-          nullable: true
-          type: array
-        updated_at:
+        updatedAt:
           format: date-time
           type: string
-        users:
-          items:
-            $ref: '#/components/schemas/User'
-          nullable: true
-          type: array
+      required:
+        - teamID
+        - projectID
+        - name
+        - description
+        - metadata
+        - createdAt
+        - updatedAt
       type: object
-    TimeEntry: # Generated from db package structs. DO NOT EDIT.
+    TimeEntryPublic:
       properties:
-        activity_id:
+        activityID:
           type: integer
         comment:
           type: string
-        duration_minutes:
+        durationMinutes:
           nullable: true
           type: integer
         start:
           format: date-time
           type: string
-        team_id:
+        teamID:
           nullable: true
           type: integer
-        time_entry_id:
+        timeEntryID:
           type: integer
-        user_id:
+        userID:
           $ref: '#/components/schemas/UuidUUID'
-        work_item_id:
+        workItemID:
           nullable: true
           type: integer
       type: object
-    UserAPIKey: # Generated from db package structs. DO NOT EDIT.
-      nullable: true
+    WorkItemCommentPublic:
       properties:
-        api_key:
-          type: string
-        expires_on:
+        createdAt:
           format: date-time
           type: string
-        user_api_key_id:
-          type: integer
-        user_id:
+        message:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        userID:
           $ref: '#/components/schemas/UuidUUID'
+        workItemCommentID:
+          type: integer
+        workItemID:
+          type: integer
       type: object
-    UuidUUID: # Generated from db package structs. DO NOT EDIT.
-      type: string
-    WorkItem: # Generated from db package structs. DO NOT EDIT.
+    WorkItemPublic:
       properties:
         closed:
           type: boolean
-        created_at:
+        createdAt:
           format: date-time
           type: string
-        deleted_at:
+        deletedAt:
           format: date-time
           nullable: true
           type: string
-        kanban_step_id:
+        kanbanStepID:
           type: integer
         metadata:
           $ref: '#/components/schemas/PgtypeJSONB'
         tasks:
           items:
-            $ref: '#/components/schemas/Task'
+            $ref: '#/components/schemas/TaskPublic'
           nullable: true
           type: array
-        team_id:
+        teamID:
           type: integer
-        time_entries:
+        timeEntries:
           items:
-            $ref: '#/components/schemas/TimeEntry'
+            $ref: '#/components/schemas/TimeEntryPublic'
           nullable: true
           type: array
         title:
           type: string
-        updated_at:
+        updatedAt:
           format: date-time
           type: string
         users:
           items:
-            $ref: '#/components/schemas/User'
+            $ref: '#/components/schemas/UserPublic'
           nullable: true
           type: array
-        work_item_comments:
+        workItemComments:
           items:
-            $ref: '#/components/schemas/WorkItemComment'
+            $ref: '#/components/schemas/WorkItemCommentPublic'
           nullable: true
           type: array
-        work_item_id:
+        workItemID:
           type: integer
-        work_item_type_id:
+        workItemTypeID:
           type: integer
       type: object
-    WorkItemComment: # Generated from db package structs. DO NOT EDIT.
+    ModelsRole:
+      type: string
+    UserResponse:
       properties:
-        created_at:
+        apiKey:
+          $ref: '#/components/schemas/UserAPIKeyPublic'
+        createdAt:
           format: date-time
           type: string
-        message:
-          type: string
-        updated_at:
+        deletedAt:
           format: date-time
+          nullable: true
           type: string
-        user_id:
+        email:
+          type: string
+        firstName:
+          nullable: true
+          type: string
+        fullName:
+          nullable: true
+          type: string
+        hasGlobalNotifications:
+          type: boolean
+        hasPersonalNotifications:
+          type: boolean
+        lastName:
+          nullable: true
+          type: string
+        role:
+          $ref: '#/components/schemas/Role'
+        scopes:
+          $ref: '#/components/schemas/Scopes'
+        teams:
+          items:
+            $ref: '#/components/schemas/TeamPublic'
+          nullable: true
+          type: array
+        userID:
           $ref: '#/components/schemas/UuidUUID'
-        work_item_comment_id:
-          type: integer
-        work_item_id:
-          type: integer
+        username:
+          type: string
+      required:
+        - role
+        - scopes
+        - userID
+        - username
+        - email
+        - firstName
+        - lastName
+        - fullName
+        - hasPersonalNotifications
+        - hasGlobalNotifications
+        - createdAt
+        - deletedAt
+      type: object
+      x-postgen-struct: UserResponse
+    ModelsScope:
+      type: string
+    UserAPIKeyPublic:
+      nullable: true
+      properties:
+        apiKey:
+          type: string
+        expiresOn:
+          format: date-time
+          type: string
+        userID:
+          $ref: '#/components/schemas/UuidUUID'
+      required:
+        - apiKey
+        - expiresOn
+        - userID
       type: object
   examples:
     User:

@@ -7,16 +7,35 @@ import (
 	"fmt"
 )
 
+// ActivityPublic represents fields that may be exposed from 'public.activities'
+// and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
+type ActivityPublic struct {
+	ActivityID   int    `json:"activityID" required:"true"`   // activity_id
+	ProjectID    *int   `json:"projectID" required:"true"`    // project_id
+	Name         string `json:"name" required:"true"`         // name
+	Description  string `json:"description" required:"true"`  // description
+	IsProductive bool   `json:"isProductive" required:"true"` // is_productive
+}
+
 // Activity represents a row from 'public.activities'.
 type Activity struct {
 	ActivityID   int    `json:"activity_id" db:"activity_id"`     // activity_id
+	ProjectID    *int   `json:"project_id" db:"project_id"`       // project_id
 	Name         string `json:"name" db:"name"`                   // name
 	Description  string `json:"description" db:"description"`     // description
 	IsProductive bool   `json:"is_productive" db:"is_productive"` // is_productive
 
-	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
+	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *Activity) ToPublic() ActivityPublic {
+	return ActivityPublic{
+		ActivityID: x.ActivityID, ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, IsProductive: x.IsProductive,
+	}
 }
 
 type ActivitySelectConfig struct {
@@ -67,13 +86,13 @@ func (a *Activity) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.activities (` +
-		`name, description, is_productive` +
+		`project_id, name, description, is_productive` +
 		`) VALUES (` +
-		`$1, $2, $3` +
+		`$1, $2, $3, $4` +
 		`) RETURNING activity_id `
 	// run
-	logf(sqlstr, a.Name, a.Description, a.IsProductive)
-	if err := db.QueryRow(ctx, sqlstr, a.Name, a.Description, a.IsProductive).Scan(&a.ActivityID); err != nil {
+	logf(sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive)
+	if err := db.QueryRow(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive).Scan(&a.ActivityID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -91,12 +110,12 @@ func (a *Activity) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.activities SET ` +
-		`name = $1, description = $2, is_productive = $3 ` +
-		`WHERE activity_id = $4 ` +
+		`project_id = $1, name = $2, description = $3, is_productive = $4 ` +
+		`WHERE activity_id = $5 ` +
 		`RETURNING activity_id `
 	// run
-	logf(sqlstr, a.Name, a.Description, a.IsProductive, a.ActivityID)
-	if err := db.QueryRow(ctx, sqlstr, a.Name, a.Description, a.IsProductive, a.ActivityID).Scan(&a.ActivityID); err != nil {
+	logf(sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
+	if err := db.QueryRow(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID).Scan(&a.ActivityID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -118,16 +137,16 @@ func (a *Activity) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.activities (` +
-		`activity_id, name, description, is_productive` +
+		`activity_id, project_id, name, description, is_productive` +
 		`) VALUES (` +
-		`$1, $2, $3, $4` +
+		`$1, $2, $3, $4, $5` +
 		`)` +
 		` ON CONFLICT (activity_id) DO ` +
 		`UPDATE SET ` +
-		`name = EXCLUDED.name, description = EXCLUDED.description, is_productive = EXCLUDED.is_productive  `
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, is_productive = EXCLUDED.is_productive  `
 	// run
-	logf(sqlstr, a.ActivityID, a.Name, a.Description, a.IsProductive)
-	if _, err := db.Exec(ctx, sqlstr, a.ActivityID, a.Name, a.Description, a.IsProductive); err != nil {
+	logf(sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive)
+	if _, err := db.Exec(ctx, sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -169,6 +188,7 @@ func ActivityByName(ctx context.Context, db DB, name string, opts ...ActivitySel
 	// query
 	sqlstr := `SELECT ` +
 		`activities.activity_id,
+activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
@@ -193,7 +213,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, name).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive, &a.TimeEntries); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, name).Scan(&a.ActivityID, &a.ProjectID, &a.Name, &a.Description, &a.IsProductive, &a.TimeEntries); err != nil {
 		return nil, logerror(err)
 	}
 	return &a, nil
@@ -212,6 +232,7 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID int, opts ...Ac
 	// query
 	sqlstr := `SELECT ` +
 		`activities.activity_id,
+activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
@@ -236,8 +257,72 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, activityID).Scan(&a.ActivityID, &a.Name, &a.Description, &a.IsProductive, &a.TimeEntries); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, activityID).Scan(&a.ActivityID, &a.ProjectID, &a.Name, &a.Description, &a.IsProductive, &a.TimeEntries); err != nil {
 		return nil, logerror(err)
 	}
 	return &a, nil
+}
+
+// ActivitiesByProjectID retrieves a row from 'public.activities' as a Activity.
+//
+// Generated from index 'activities_project_id_idx'.
+func ActivitiesByProjectID(ctx context.Context, db DB, projectID *int, opts ...ActivitySelectConfigOption) ([]*Activity, error) {
+	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`activities.activity_id,
+activities.project_id,
+activities.name,
+activities.description,
+activities.is_productive,
+(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
+		`FROM public.activities ` +
+		`-- O2M join generated from "time_entries_activity_id_fkey"
+left join (
+  select
+  activity_id as time_entries_activity_id
+    , json_agg(time_entries.*) as time_entries
+  from
+    time_entries
+   group by
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
+		` WHERE activities.project_id = $2 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, projectID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+	var res []*Activity
+	for rows.Next() {
+		a := Activity{
+			_exists: true,
+		}
+		// scan
+		if err := rows.Scan(&a.ActivityID, &a.ProjectID, &a.Name, &a.Description, &a.IsProductive); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &a)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}
+
+// FKProject_ProjectID returns the Project associated with the Activity's (ProjectID).
+//
+// Generated from foreign key 'activities_project_id_fkey'.
+func (a *Activity) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
+	return ProjectByProjectID(ctx, db, *a.ProjectID)
 }

@@ -45,9 +45,13 @@ with `--x-help`:
 
 ## Code generation
 
-Docs WIP
+Docs WIP:
 
-<!-- xo custom templates with cardinality comments for join generation, schema from structs, spec sync -->
+- Backend generation pipeline
+- Frontend generation pipeline
+- External tooling summary and upgrades
+
+<!-- xo custom templates with cardinality, property comments for join and public model generation for embedding, schema from structs, spec sync -->
 
 ## Architecture
 
@@ -102,6 +106,7 @@ Simplified:
     generator](https://github.com/reduxjs/redux-toolkit/tree/master/packages/rtk-query-codegen-openapi)
     and can generate hooks. Uses rtk-query, in essenceequivalent to react-query.
     Creators don't use openapi so that's a red flag for the generator itself.
+  - orval react-query looks promising: https://github.com/anymaniax/orval/tree/master/samples/react-query
 
   2. state management:
     - zustand + react-query should by far cover all needs. Data will be heavily

@@ -11,6 +11,16 @@ import (
 	"github.com/google/uuid"
 )
 
+// UserAPIKeyPublic represents fields that may be exposed from 'public.user_api_keys'
+// and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
+type UserAPIKeyPublic struct {
+	APIKey    string    `json:"apiKey" required:"true"`    // api_key
+	ExpiresOn time.Time `json:"expiresOn" required:"true"` // expires_on
+	UserID    uuid.UUID `json:"userID" required:"true"`    // user_id
+}
+
 // UserAPIKey represents a row from 'public.user_api_keys'.
 type UserAPIKey struct {
 	UserAPIKeyID int       `json:"user_api_key_id" db:"user_api_key_id"` // user_api_key_id
@@ -18,9 +28,15 @@ type UserAPIKey struct {
 	ExpiresOn    time.Time `json:"expires_on" db:"expires_on"`           // expires_on
 	UserID       uuid.UUID `json:"user_id" db:"user_id"`                 // user_id
 
-	User *User `json:"user"` // O2O
+	User *User `json:"user" db:"user"` // O2O
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *UserAPIKey) ToPublic() UserAPIKeyPublic {
+	return UserAPIKeyPublic{
+		APIKey: x.APIKey, ExpiresOn: x.ExpiresOn, UserID: x.UserID,
+	}
 }
 
 type UserAPIKeySelectConfig struct {
@@ -287,9 +303,9 @@ left join users on users.user_id = user_api_keys.user_id` +
 	return &uak, nil
 }
 
-// FKUser returns the User associated with the UserAPIKey's (UserID).
+// FKUser_UserID returns the User associated with the UserAPIKey's (UserID).
 //
 // Generated from foreign key 'user_api_keys_user_id_fkey'.
-func (uak *UserAPIKey) FKUser(ctx context.Context, db DB) (*User, error) {
+func (uak *UserAPIKey) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, uak.UserID)
 }

@@ -30,19 +30,6 @@
         "name": "jaeger UI"
       }
     ],
-    "plpgsqlLanguageServer.database": "gen_db",
-    "plpgsqlLanguageServer.user": "postgres",
-    "plpgsqlLanguageServer.password": "postgres",
-    "plpgsqlLanguageServer.host": "localhost",
-    "plpgsqlLanguageServer.port": 5656,
-    "plpgsqlLanguageServer.defaultSchema": "public",
-    "plpgsqlLanguageServer.definitionFiles": [
-      "**/*.psql",
-      "**/*.pgsql"
-    ],
-    "plpgsqlLanguageServer.enableExecuteFileQueryCommand": false,
-    // "plpgsqlLanguageServer.queryParameterPattern": "@[A-Za-z_][A-Za-z0-9_]*",
-    "plpgsqlLanguageServer.keywordQueryParameterPattern": "@{keyword}",
     "files.associations": {
       "*.sql": "postgres"
     },

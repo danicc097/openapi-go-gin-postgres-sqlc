@@ -13,13 +13,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-contrib/cors"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	rv8 "github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/zitadel/oidc/pkg/client/rp"
 	httphelper "github.com/zitadel/oidc/pkg/http"
 	"github.com/zitadel/oidc/pkg/oidc"
@@ -32,7 +33,6 @@ import (
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
@@ -42,7 +42,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	_ "github.com/jackc/pgx/v4/stdlib"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type Config struct {
@@ -159,7 +159,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	issuer := os.Getenv("OIDC_ISSUER")
 	scopes := strings.Split(os.Getenv("OIDC_SCOPES"), " ")
 
-	redirectURI := internaldomain.BuildApiURL(conf.MyProviderCallbackPath)
+	redirectURI := internaldomain.BuildAPIURL(conf.MyProviderCallbackPath)
 	cookieHandler := httphelper.NewCookieHandler(key, key, httphelper.WithUnsecure())
 
 	options := []rp.Option{
@@ -228,14 +228,19 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	// TODO /auth/logout
 
 	// -- openapi
+	oafilterOpts := openapi3filter.Options{
+		ExcludeRequestBody:    false,
+		ExcludeResponseBody:   false,
+		IncludeResponseStatus: false,
+		MultiError:            true,
+		AuthenticationFunc:    verifyAuthentication,
+	}
+	oafilterOpts.WithCustomSchemaErrorFunc(func(err *openapi3.SchemaError) string {
+		return fmt.Sprintf("%s: %s", err.SchemaField, err.Reason)
+	})
 	oaOptions := OAValidatorOptions{
-		Options: openapi3filter.Options{
-			ExcludeRequestBody:    false,
-			ExcludeResponseBody:   false,
-			IncludeResponseStatus: true,
-			MultiError:            true,
-			AuthenticationFunc:    verifyAuthentication,
-		},
+		ValidateResponse: true,
+		Options:          oafilterOpts,
 		// MultiErrorHandler: func(me openapi3.MultiError) error {
 		// 	return fmt.Errorf("multiple errors:  %s", me.Error())
 		// },
@@ -284,8 +289,18 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)
 	}
-
-	usvc := services.NewUser(conf.Logger, repos.NewUserWrapped(postgresql.NewUser(), postgresql.OtelName, repos.UserWrappedConfig{}, nil), authzsvc)
+	retryCount := 2
+	retryInterval := 1 * time.Second
+	usvc := services.NewUser(
+		conf.Logger,
+		repos.NewUserWithTracing(
+			repos.NewUserWithRetry(
+				repos.NewUserWithTimeout(
+					postgresql.NewUser(), repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second}),
+				retryCount, retryInterval),
+			postgresql.OtelName, nil),
+		authzsvc,
+	)
 
 	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
 
@@ -293,18 +308,9 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 
-	handlers := NewHandlers(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authmw)
+	handlers := NewHandlers(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authzsvc, authnsvc, authmw)
 
 	RegisterHandlersWithOptions(vg, handlers, GinServerOptions{BaseURL: ""})
-
-	// TODO use pgx logger instead (v5) https://github.com/jackc/pgx/issues/1381
-	switch os.Getenv("APP_ENV") {
-	case "prod":
-		db.SetErrorLogger(conf.Logger.Sugar().Errorf)
-	default:
-		db.SetLogger(conf.Logger.Sugar().Infof)
-		db.SetErrorLogger(conf.Logger.Sugar().Errorf)
-	}
 
 	conf.Logger.Info("Server started")
 
@@ -320,25 +326,19 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 }
 
 // Run configures a server and underlying services with the given configuration.
+// TODO should take in AppConfig.
+// RunTestServer also takes AppConfig
+// NewServer takes its own config as is now
 func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, error) {
-	if err := envvar.Load(env); err != nil {
+	var err error
+
+	if err = envvar.Load(env); err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
 	}
 
 	conf := envvar.New()
 
-	pool, err := postgresql.New(conf)
-	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "postgresql.New")
-	}
-
-	rdb, err := redis.New(conf)
-	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "redis.New")
-	}
-
 	var logger *zap.Logger
-
 	// XXX there's work being done in https://github.com/uptrace/opentelemetry-go-extra/tree/main/otelzap
 	switch os.Getenv("APP_ENV") {
 	case "prod":
@@ -349,6 +349,16 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 
 	if err != nil {
 		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "zap.New")
+	}
+
+	pool, err := postgresql.New(conf, logger)
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "postgresql.New")
+	}
+
+	rdb, err := redis.New(conf)
+	if err != nil {
+		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "redis.New")
 	}
 
 	tp := tracing.InitTracer()

@@ -20,6 +20,7 @@ func TestAdminPingRoute(t *testing.T) {
 
 	ufixture, err := ff.CreateUser(context.Background(), resttestutil.CreateUserParams{
 		Role:       models.RoleAdmin,
+		Scopes:     []models.Scope{models.ScopeTestScope},
 		WithAPIKey: true,
 	})
 	if err != nil {

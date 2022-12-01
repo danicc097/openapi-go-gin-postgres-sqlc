@@ -68,6 +68,7 @@ func GetenvBool(key string) (bool, error) {
 	return v, nil
 }
 
+// GetEnv returns an environment variable's value or a default if empty.
 func GetEnv(key, dft string) string {
 	v := os.Getenv(key)
 	if len(v) == 0 {

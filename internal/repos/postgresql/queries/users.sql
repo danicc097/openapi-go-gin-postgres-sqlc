@@ -21,16 +21,28 @@ and (user_id = sqlc.narg('user_id')::uuid
 limit 1;
 
 -- name: RegisterNewUser :one
-insert into users (username , email , role_rank)
-  values (@username , @email , @role_rank)
+-- plpgsql-language-server:disable
+insert into users (
+  username
+  , email
+  , role_rank)
+values (
+  @username
+  , @email
+  , @role_rank)
 returning
-  user_id , username , email , role_rank , created_at , updated_at;
+  user_id
+  , username
+  , email
+  , role_rank
+  , created_at
+  , updated_at;
 
--- -- name: Test :exec
+-- name: Test :exec
 -- update
 --   users
 -- set
---   username = '@test'
+--   username = null
 --   , email = COALESCE(LOWER(sqlc.narg('email')) , email)
 -- where
 --   user_id = @user_id;

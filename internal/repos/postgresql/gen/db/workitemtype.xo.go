@@ -7,6 +7,18 @@ import (
 	"fmt"
 )
 
+// WorkItemTypePublic represents fields that may be exposed from 'public.work_item_types'
+// and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
+type WorkItemTypePublic struct {
+	WorkItemTypeID int    `json:"workItemTypeID" required:"true"` // work_item_type_id
+	ProjectID      int64  `json:"projectID" required:"true"`      // project_id
+	Name           string `json:"name" required:"true"`           // name
+	Description    string `json:"description" required:"true"`    // description
+	Color          string `json:"color" required:"true"`          // color
+}
+
 // WorkItemType represents a row from 'public.work_item_types'.
 type WorkItemType struct {
 	WorkItemTypeID int    `json:"work_item_type_id" db:"work_item_type_id"` // work_item_type_id
@@ -17,6 +29,12 @@ type WorkItemType struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *WorkItemType) ToPublic() WorkItemTypePublic {
+	return WorkItemTypePublic{
+		WorkItemTypeID: x.WorkItemTypeID, ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Color: x.Color,
+	}
 }
 
 type WorkItemTypeSelectConfig struct {
@@ -224,9 +242,9 @@ work_item_types.color ` +
 	return &wit, nil
 }
 
-// FKProject returns the Project associated with the WorkItemType's (ProjectID).
+// FKProject_ProjectID returns the Project associated with the WorkItemType's (ProjectID).
 //
 // Generated from foreign key 'work_item_types_project_id_fkey'.
-func (wit *WorkItemType) FKProject(ctx context.Context, db DB) (*Project, error) {
+func (wit *WorkItemType) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
 	return ProjectByProjectID(ctx, db, int(wit.ProjectID))
 }

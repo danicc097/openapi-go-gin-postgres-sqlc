@@ -25,8 +25,22 @@ func NewUser() *User {
 
 var _ repos.User = (*User)(nil)
 
-func (u *User) Create(ctx context.Context, d db.DBTX, user *db.User) error {
-	return user.Save(ctx, d)
+func (u *User) Create(ctx context.Context, d db.DBTX, params repos.UserCreateParams) (*db.User, error) {
+	user := &db.User{
+		Username:   params.Username,
+		Email:      params.Email,
+		FirstName:  params.FirstName,
+		LastName:   params.LastName,
+		ExternalID: params.ExternalID,
+		RoleRank:   params.RoleRank,
+		Scopes:     params.Scopes,
+	}
+
+	if err := user.Save(ctx, d); err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func (u *User) Update(ctx context.Context, d db.DBTX, params repos.UserUpdateParams) (*db.User, error) {
@@ -57,8 +71,31 @@ func (u *User) Update(ctx context.Context, d db.DBTX, params repos.UserUpdatePar
 	return user, err
 }
 
+func (u *User) UserByExternalID(ctx context.Context, d db.DBTX, extID string) (*db.User, error) {
+	user, err := db.UserByExternalID(ctx, d, extID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
+	}
+
+	return user, nil
+}
+
 func (u *User) UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error) {
-	return db.UserByEmail(ctx, d, email)
+	user, err := db.UserByEmail(ctx, d, email)
+	if err != nil {
+		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
+	}
+
+	return user, nil
+}
+
+func (u *User) UserByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error) {
+	user, err := db.UserByUsername(ctx, d, username)
+	if err != nil {
+		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
+	}
+
+	return user, nil
 }
 
 func (u *User) UserByID(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
@@ -66,7 +103,13 @@ func (u *User) UserByID(ctx context.Context, d db.DBTX, id string) (*db.User, er
 	if err != nil {
 		return nil, fmt.Errorf("could not parse id as UUID: %w", parseErrorDetail(err))
 	}
-	return db.UserByUserID(ctx, d, uid)
+
+	user, err := db.UserByUserID(ctx, d, uid)
+	if err != nil {
+		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
+	}
+
+	return user, nil
 }
 
 func (u *User) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error) {
@@ -92,7 +135,7 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 		return nil, fmt.Errorf("could not save api key: %w", parseErrorDetail(err))
 	}
 
-	user.APIKeyID = pointers.Int(uak.UserAPIKeyID)
+	user.APIKeyID = pointers.New(uak.UserAPIKeyID)
 	if err := user.Update(ctx, d); err != nil {
 		return nil, fmt.Errorf("could not update user: %w", parseErrorDetail(err))
 	}

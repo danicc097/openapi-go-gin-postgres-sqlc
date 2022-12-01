@@ -11,6 +11,19 @@ import (
 	"github.com/google/uuid"
 )
 
+// WorkItemCommentPublic represents fields that may be exposed from 'public.work_item_comments'
+// and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
+type WorkItemCommentPublic struct {
+	WorkItemCommentID int64     `json:"workItemCommentID" required:"true"` // work_item_comment_id
+	WorkItemID        int64     `json:"workItemID" required:"true"`        // work_item_id
+	UserID            uuid.UUID `json:"userID" required:"true"`            // user_id
+	Message           string    `json:"message" required:"true"`           // message
+	CreatedAt         time.Time `json:"createdAt" required:"true"`         // created_at
+	UpdatedAt         time.Time `json:"updatedAt" required:"true"`         // updated_at
+}
+
 // WorkItemComment represents a row from 'public.work_item_comments'.
 type WorkItemComment struct {
 	WorkItemCommentID int64     `json:"work_item_comment_id" db:"work_item_comment_id"` // work_item_comment_id
@@ -22,6 +35,12 @@ type WorkItemComment struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *WorkItemComment) ToPublic() WorkItemCommentPublic {
+	return WorkItemCommentPublic{
+		WorkItemCommentID: x.WorkItemCommentID, WorkItemID: x.WorkItemID, UserID: x.UserID, Message: x.Message, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
+	}
 }
 
 type WorkItemCommentSelectConfig struct {
@@ -267,16 +286,16 @@ work_item_comments.updated_at ` +
 	return res, nil
 }
 
-// FKUser returns the User associated with the WorkItemComment's (UserID).
+// FKUser_UserID returns the User associated with the WorkItemComment's (UserID).
 //
 // Generated from foreign key 'work_item_comments_user_id_fkey'.
-func (wic *WorkItemComment) FKUser(ctx context.Context, db DB) (*User, error) {
+func (wic *WorkItemComment) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, wic.UserID)
 }
 
-// FKWorkItem returns the WorkItem associated with the WorkItemComment's (WorkItemID).
+// FKWorkItem_WorkItemID returns the WorkItem associated with the WorkItemComment's (WorkItemID).
 //
 // Generated from foreign key 'work_item_comments_work_item_id_fkey'.
-func (wic *WorkItemComment) FKWorkItem(ctx context.Context, db DB) (*WorkItem, error) {
+func (wic *WorkItemComment) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
 	return WorkItemByWorkItemID(ctx, db, wic.WorkItemID)
 }

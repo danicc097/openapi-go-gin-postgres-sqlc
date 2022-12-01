@@ -11,12 +11,23 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// NOTE: openapi Role enum is merely a string enum array for views. Ranks are for internal use.
+
 // Role represents a predefined role that may be required
 // for specific actions regardless of scopes assigned to a user.
 // It is also associated with a collection of scopes that get assigned/revoked upon role change.
 type Role struct {
-	Description string `json:"description"`
-	Rank        int16  `json:"rank"` // to avoid casting. postgres smallint with check > 0
+	Description string      `json:"description"`
+	Rank        int16       `json:"rank"` // to avoid casting. postgres smallint with check > 0
+	Role        models.Role `json:"name"`
+}
+
+func (r *Role) Validate() error {
+	if r.Rank <= 0 {
+		return internal.NewErrorf(internal.ErrorCodeInvalidRole, "rank must be higher than 0")
+	}
+
+	return nil
 }
 
 type Scope struct {
@@ -92,12 +103,15 @@ func (a *Authorization) ScopeByName(scope string) (Scope, error) {
 }
 
 func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) error {
+	if err := role.Validate(); err != nil {
+		return internal.WrapErrorf(err, internal.ErrorCodeUnauthorized, "role is not valid")
+	}
 	rl, ok := a.roles[requiredRole]
 	if !ok {
 		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown role %s", requiredRole)
 	}
 	if role.Rank < rl.Rank {
-		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted")
+		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted: unauthorized role")
 	}
 
 	return nil
@@ -106,7 +120,7 @@ func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) err
 func (a *Authorization) HasRequiredScopes(scopes []string, requiredScopes []models.Scope) error {
 	for _, rs := range requiredScopes {
 		if !slices.Contains(scopes, string(rs)) {
-			return internal.NewErrorf(internal.ErrorCodeUnauthorized, "access restricted")
+			return internal.NewErrorf(internal.ErrorCodeUnauthorized, fmt.Sprintf("access restricted: missing scope %s", rs))
 		}
 	}
 

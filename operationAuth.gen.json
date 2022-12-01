@@ -1,0 +1,42 @@
+{
+  "Ping": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": false
+  },
+  "OpenapiYamlGet": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": false
+  },
+  "AdminPing": {
+    "scopes": [
+      "test-scope"
+    ],
+    "role": "admin",
+    "requiresAuthentication": true
+  },
+  "GetCurrentUser": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "UpdateUserAuthorization": {
+    "scopes": null,
+    "role": "user",
+    "requiresAuthentication": true
+  },
+  "DeleteUser": {
+    "scopes": [
+      "test-scope",
+      "users:write"
+    ],
+    "role": "admin",
+    "requiresAuthentication": true
+  },
+  "UpdateUser": {
+    "scopes": null,
+    "role": "user",
+    "requiresAuthentication": true
+  }
+}

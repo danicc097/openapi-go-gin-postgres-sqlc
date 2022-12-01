@@ -6,7 +6,7 @@ sql:
     engine: "postgresql"
     gen:
       go:
-        sql_package: "pgx/v4"
+        sql_package: "pgx/v5"
         package: "db"
         out: "gen/db"
         emit_json_tags: true

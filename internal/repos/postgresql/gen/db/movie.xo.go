@@ -7,6 +7,17 @@ import (
 	"fmt"
 )
 
+// MoviePublic represents fields that may be exposed from 'public.movies'
+// and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
+type MoviePublic struct {
+	MovieID  int    `json:"movieID" required:"true"`  // movie_id
+	Title    string `json:"title" required:"true"`    // title
+	Year     int    `json:"year" required:"true"`     // year
+	Synopsis string `json:"synopsis" required:"true"` // synopsis
+}
+
 // Movie represents a row from 'public.movies'.
 type Movie struct {
 	MovieID  int    `json:"movie_id" db:"movie_id"` // movie_id
@@ -16,6 +27,12 @@ type Movie struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *Movie) ToPublic() MoviePublic {
+	return MoviePublic{
+		MovieID: x.MovieID, Title: x.Title, Year: x.Year, Synopsis: x.Synopsis,
+	}
 }
 
 type MovieSelectConfig struct {

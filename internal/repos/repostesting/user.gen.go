@@ -10,18 +10,20 @@ import (
 )
 
 type FakeUser struct {
-	CreateStub        func(context.Context, db.DBTX, *db.User) error
+	CreateStub        func(context.Context, db.DBTX, repos.UserCreateParams) (*db.User, error)
 	createMutex       sync.RWMutex
 	createArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 *db.User
+		arg3 repos.UserCreateParams
 	}
 	createReturns struct {
-		result1 error
+		result1 *db.User
+		result2 error
 	}
 	createReturnsOnCall map[int]struct {
-		result1 error
+		result1 *db.User
+		result2 error
 	}
 	CreateAPIKeyStub        func(context.Context, db.DBTX, *db.User) (*db.UserAPIKey, error)
 	createAPIKeyMutex       sync.RWMutex
@@ -83,6 +85,21 @@ type FakeUser struct {
 		result1 *db.User
 		result2 error
 	}
+	UserByExternalIDStub        func(context.Context, db.DBTX, string) (*db.User, error)
+	userByExternalIDMutex       sync.RWMutex
+	userByExternalIDArgsForCall []struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 string
+	}
+	userByExternalIDReturns struct {
+		result1 *db.User
+		result2 error
+	}
+	userByExternalIDReturnsOnCall map[int]struct {
+		result1 *db.User
+		result2 error
+	}
 	UserByIDStub        func(context.Context, db.DBTX, string) (*db.User, error)
 	userByIDMutex       sync.RWMutex
 	userByIDArgsForCall []struct {
@@ -98,17 +115,32 @@ type FakeUser struct {
 		result1 *db.User
 		result2 error
 	}
+	UserByUsernameStub        func(context.Context, db.DBTX, string) (*db.User, error)
+	userByUsernameMutex       sync.RWMutex
+	userByUsernameArgsForCall []struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 string
+	}
+	userByUsernameReturns struct {
+		result1 *db.User
+		result2 error
+	}
+	userByUsernameReturnsOnCall map[int]struct {
+		result1 *db.User
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeUser) Create(arg1 context.Context, arg2 db.DBTX, arg3 *db.User) error {
+func (fake *FakeUser) Create(arg1 context.Context, arg2 db.DBTX, arg3 repos.UserCreateParams) (*db.User, error) {
 	fake.createMutex.Lock()
 	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
 	fake.createArgsForCall = append(fake.createArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 *db.User
+		arg3 repos.UserCreateParams
 	}{arg1, arg2, arg3})
 	stub := fake.CreateStub
 	fakeReturns := fake.createReturns
@@ -118,9 +150,9 @@ func (fake *FakeUser) Create(arg1 context.Context, arg2 db.DBTX, arg3 *db.User) 
 		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
-		return ret.result1
+		return ret.result1, ret.result2
 	}
-	return fakeReturns.result1
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeUser) CreateCallCount() int {
@@ -129,40 +161,43 @@ func (fake *FakeUser) CreateCallCount() int {
 	return len(fake.createArgsForCall)
 }
 
-func (fake *FakeUser) CreateCalls(stub func(context.Context, db.DBTX, *db.User) error) {
+func (fake *FakeUser) CreateCalls(stub func(context.Context, db.DBTX, repos.UserCreateParams) (*db.User, error)) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = stub
 }
 
-func (fake *FakeUser) CreateArgsForCall(i int) (context.Context, db.DBTX, *db.User) {
+func (fake *FakeUser) CreateArgsForCall(i int) (context.Context, db.DBTX, repos.UserCreateParams) {
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
 	argsForCall := fake.createArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeUser) CreateReturns(result1 error) {
+func (fake *FakeUser) CreateReturns(result1 *db.User, result2 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	fake.createReturns = struct {
-		result1 error
-	}{result1}
+		result1 *db.User
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeUser) CreateReturnsOnCall(i int, result1 error) {
+func (fake *FakeUser) CreateReturnsOnCall(i int, result1 *db.User, result2 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	if fake.createReturnsOnCall == nil {
 		fake.createReturnsOnCall = make(map[int]struct {
-			result1 error
+			result1 *db.User
+			result2 error
 		})
 	}
 	fake.createReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
+		result1 *db.User
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeUser) CreateAPIKey(arg1 context.Context, arg2 db.DBTX, arg3 *db.User) (*db.UserAPIKey, error) {
@@ -429,6 +464,72 @@ func (fake *FakeUser) UserByEmailReturnsOnCall(i int, result1 *db.User, result2 
 	}{result1, result2}
 }
 
+func (fake *FakeUser) UserByExternalID(arg1 context.Context, arg2 db.DBTX, arg3 string) (*db.User, error) {
+	fake.userByExternalIDMutex.Lock()
+	ret, specificReturn := fake.userByExternalIDReturnsOnCall[len(fake.userByExternalIDArgsForCall)]
+	fake.userByExternalIDArgsForCall = append(fake.userByExternalIDArgsForCall, struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 string
+	}{arg1, arg2, arg3})
+	stub := fake.UserByExternalIDStub
+	fakeReturns := fake.userByExternalIDReturns
+	fake.recordInvocation("UserByExternalID", []interface{}{arg1, arg2, arg3})
+	fake.userByExternalIDMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUser) UserByExternalIDCallCount() int {
+	fake.userByExternalIDMutex.RLock()
+	defer fake.userByExternalIDMutex.RUnlock()
+	return len(fake.userByExternalIDArgsForCall)
+}
+
+func (fake *FakeUser) UserByExternalIDCalls(stub func(context.Context, db.DBTX, string) (*db.User, error)) {
+	fake.userByExternalIDMutex.Lock()
+	defer fake.userByExternalIDMutex.Unlock()
+	fake.UserByExternalIDStub = stub
+}
+
+func (fake *FakeUser) UserByExternalIDArgsForCall(i int) (context.Context, db.DBTX, string) {
+	fake.userByExternalIDMutex.RLock()
+	defer fake.userByExternalIDMutex.RUnlock()
+	argsForCall := fake.userByExternalIDArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeUser) UserByExternalIDReturns(result1 *db.User, result2 error) {
+	fake.userByExternalIDMutex.Lock()
+	defer fake.userByExternalIDMutex.Unlock()
+	fake.UserByExternalIDStub = nil
+	fake.userByExternalIDReturns = struct {
+		result1 *db.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUser) UserByExternalIDReturnsOnCall(i int, result1 *db.User, result2 error) {
+	fake.userByExternalIDMutex.Lock()
+	defer fake.userByExternalIDMutex.Unlock()
+	fake.UserByExternalIDStub = nil
+	if fake.userByExternalIDReturnsOnCall == nil {
+		fake.userByExternalIDReturnsOnCall = make(map[int]struct {
+			result1 *db.User
+			result2 error
+		})
+	}
+	fake.userByExternalIDReturnsOnCall[i] = struct {
+		result1 *db.User
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeUser) UserByID(arg1 context.Context, arg2 db.DBTX, arg3 string) (*db.User, error) {
 	fake.userByIDMutex.Lock()
 	ret, specificReturn := fake.userByIDReturnsOnCall[len(fake.userByIDArgsForCall)]
@@ -495,6 +596,72 @@ func (fake *FakeUser) UserByIDReturnsOnCall(i int, result1 *db.User, result2 err
 	}{result1, result2}
 }
 
+func (fake *FakeUser) UserByUsername(arg1 context.Context, arg2 db.DBTX, arg3 string) (*db.User, error) {
+	fake.userByUsernameMutex.Lock()
+	ret, specificReturn := fake.userByUsernameReturnsOnCall[len(fake.userByUsernameArgsForCall)]
+	fake.userByUsernameArgsForCall = append(fake.userByUsernameArgsForCall, struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 string
+	}{arg1, arg2, arg3})
+	stub := fake.UserByUsernameStub
+	fakeReturns := fake.userByUsernameReturns
+	fake.recordInvocation("UserByUsername", []interface{}{arg1, arg2, arg3})
+	fake.userByUsernameMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUser) UserByUsernameCallCount() int {
+	fake.userByUsernameMutex.RLock()
+	defer fake.userByUsernameMutex.RUnlock()
+	return len(fake.userByUsernameArgsForCall)
+}
+
+func (fake *FakeUser) UserByUsernameCalls(stub func(context.Context, db.DBTX, string) (*db.User, error)) {
+	fake.userByUsernameMutex.Lock()
+	defer fake.userByUsernameMutex.Unlock()
+	fake.UserByUsernameStub = stub
+}
+
+func (fake *FakeUser) UserByUsernameArgsForCall(i int) (context.Context, db.DBTX, string) {
+	fake.userByUsernameMutex.RLock()
+	defer fake.userByUsernameMutex.RUnlock()
+	argsForCall := fake.userByUsernameArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeUser) UserByUsernameReturns(result1 *db.User, result2 error) {
+	fake.userByUsernameMutex.Lock()
+	defer fake.userByUsernameMutex.Unlock()
+	fake.UserByUsernameStub = nil
+	fake.userByUsernameReturns = struct {
+		result1 *db.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUser) UserByUsernameReturnsOnCall(i int, result1 *db.User, result2 error) {
+	fake.userByUsernameMutex.Lock()
+	defer fake.userByUsernameMutex.Unlock()
+	fake.UserByUsernameStub = nil
+	if fake.userByUsernameReturnsOnCall == nil {
+		fake.userByUsernameReturnsOnCall = make(map[int]struct {
+			result1 *db.User
+			result2 error
+		})
+	}
+	fake.userByUsernameReturnsOnCall[i] = struct {
+		result1 *db.User
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeUser) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -508,8 +675,12 @@ func (fake *FakeUser) Invocations() map[string][][]interface{} {
 	defer fake.userByAPIKeyMutex.RUnlock()
 	fake.userByEmailMutex.RLock()
 	defer fake.userByEmailMutex.RUnlock()
+	fake.userByExternalIDMutex.RLock()
+	defer fake.userByExternalIDMutex.RUnlock()
 	fake.userByIDMutex.RLock()
 	defer fake.userByIDMutex.RUnlock()
+	fake.userByUsernameMutex.RLock()
+	defer fake.userByUsernameMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

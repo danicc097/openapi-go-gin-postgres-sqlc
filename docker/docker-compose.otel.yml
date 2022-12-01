@@ -51,6 +51,7 @@ services:
       - jaeger
     restart: unless-stopped
     # network_mode: host
+    logging: *default-logging
 
   db:
     image: timescale/timescaledb-ha:pg14-latest
@@ -66,6 +67,7 @@ services:
     restart: unless-stopped
     volumes:
       - timescale_otel_data:/home/postgres/pgdata/data
+    logging: *default-logging
 
   # TODO alertmanager with teams: https://github.com/prometheus-msteams/prometheus-msteams
   # alertmanager:
@@ -94,6 +96,7 @@ services:
       # PROMSCALE_TELEMETRY_TRACE_OTEL_ENDPOINT: "jaeger:4317"
       # PROMSCALE_TELEMETRY_TRACE_SAMPLING_RATIO: "0.1"
       PROMSCALE_METRICS_RULES_CONFIG_FILE: /prometheus.yml
+    logging: *default-logging
 
   # TODO exporter for linux server status
   # node_exporter:

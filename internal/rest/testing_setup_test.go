@@ -23,8 +23,8 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/jackc/pgx/v4/pgxpool"
-	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
@@ -107,7 +107,18 @@ func newTestFixtureFactory(t *testing.T) *resttestutil.FixtureFactory {
 	if err != nil {
 		t.Fatalf("services.NewAuthorization: %v", err)
 	}
-	usvc := services.NewUser(logger, repos.NewUserWrapped(postgresql.NewUser(), postgresql.OtelName, repos.UserWrappedConfig{}, nil), authzsvc)
+	retryCount := 1
+	retryInterval := 1 * time.Second
+	usvc := services.NewUser(
+		logger,
+		repos.NewUserWithTracing(
+			repos.NewUserWithRetry(
+				repos.NewUserWithTimeout(
+					postgresql.NewUser(), repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second}),
+				retryCount, retryInterval),
+			postgresql.OtelName, nil),
+		authzsvc,
+	)
 	authnsvc := services.NewAuthentication(logger, usvc, testpool)
 
 	ff := resttestutil.NewFixtureFactory(usvc, testpool, authnsvc, authzsvc)

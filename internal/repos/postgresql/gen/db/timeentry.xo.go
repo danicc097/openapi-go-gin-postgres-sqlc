@@ -11,6 +11,21 @@ import (
 	"github.com/google/uuid"
 )
 
+// TimeEntryPublic represents fields that may be exposed from 'public.time_entries'
+// and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
+type TimeEntryPublic struct {
+	TimeEntryID     int64     `json:"timeEntryID" required:"true"`     // time_entry_id
+	WorkItemID      *int64    `json:"workItemID" required:"true"`      // work_item_id
+	ActivityID      int       `json:"activityID" required:"true"`      // activity_id
+	TeamID          *int      `json:"teamID" required:"true"`          // team_id
+	UserID          uuid.UUID `json:"userID" required:"true"`          // user_id
+	Comment         string    `json:"comment" required:"true"`         // comment
+	Start           time.Time `json:"start" required:"true"`           // start
+	DurationMinutes *int      `json:"durationMinutes" required:"true"` // duration_minutes
+}
+
 // TimeEntry represents a row from 'public.time_entries'.
 type TimeEntry struct {
 	TimeEntryID     int64     `json:"time_entry_id" db:"time_entry_id"`       // time_entry_id
@@ -24,6 +39,12 @@ type TimeEntry struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *TimeEntry) ToPublic() TimeEntryPublic {
+	return TimeEntryPublic{
+		TimeEntryID: x.TimeEntryID, WorkItemID: x.WorkItemID, ActivityID: x.ActivityID, TeamID: x.TeamID, UserID: x.UserID, Comment: x.Comment, Start: x.Start, DurationMinutes: x.DurationMinutes,
+	}
 }
 
 type TimeEntrySelectConfig struct {
@@ -320,30 +341,30 @@ time_entries.duration_minutes ` +
 	return res, nil
 }
 
-// FKActivity returns the Activity associated with the TimeEntry's (ActivityID).
+// FKActivity_ActivityID returns the Activity associated with the TimeEntry's (ActivityID).
 //
 // Generated from foreign key 'time_entries_activity_id_fkey'.
-func (te *TimeEntry) FKActivity(ctx context.Context, db DB) (*Activity, error) {
+func (te *TimeEntry) FKActivity_ActivityID(ctx context.Context, db DB) (*Activity, error) {
 	return ActivityByActivityID(ctx, db, te.ActivityID)
 }
 
-// FKTeam returns the Team associated with the TimeEntry's (TeamID).
+// FKTeam_TeamID returns the Team associated with the TimeEntry's (TeamID).
 //
 // Generated from foreign key 'time_entries_team_id_fkey'.
-func (te *TimeEntry) FKTeam(ctx context.Context, db DB) (*Team, error) {
+func (te *TimeEntry) FKTeam_TeamID(ctx context.Context, db DB) (*Team, error) {
 	return TeamByTeamID(ctx, db, *te.TeamID)
 }
 
-// FKUser returns the User associated with the TimeEntry's (UserID).
+// FKUser_UserID returns the User associated with the TimeEntry's (UserID).
 //
 // Generated from foreign key 'time_entries_user_id_fkey'.
-func (te *TimeEntry) FKUser(ctx context.Context, db DB) (*User, error) {
+func (te *TimeEntry) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, te.UserID)
 }
 
-// FKWorkItem returns the WorkItem associated with the TimeEntry's (WorkItemID).
+// FKWorkItem_WorkItemID returns the WorkItem associated with the TimeEntry's (WorkItemID).
 //
 // Generated from foreign key 'time_entries_work_item_id_fkey'.
-func (te *TimeEntry) FKWorkItem(ctx context.Context, db DB) (*WorkItem, error) {
+func (te *TimeEntry) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
 	return WorkItemByWorkItemID(ctx, db, *te.WorkItemID)
 }

@@ -87,14 +87,32 @@
     "**/*.pgsql"
   ],
   "plpgsqlLanguageServer.enableExecuteFileQueryCommand": false,
-  "plpgsqlLanguageServer.migrationsFolder": "./db/migrations/",
+  "plpgsqlLanguageServer.migrations": {
+    "upFiles": [
+      "db/migrations/*.up.sql"
+    ],
+    "downFiles": [
+      "db/migrations/*.down.sql"
+    ],
+    "postMigrationFiles": [
+      "db/post-migration/*.sql"
+    ],
+    "target": "all",
+  },
+  "plpgsqlLanguageServer.validateOn": "save",
+  "plpgsqlLanguageServer.plpgsqlCheckSchema": "extensions",
   // "plpgsqlLanguageServer.queryParameterPattern": ":[A-Za-z_][A-Za-z0-9_]*",
   "plpgsqlLanguageServer.keywordQueryParameterPattern": [
     "@{keyword}",
     "sqlc\\.arg\\('{keyword}'\\)",
     "sqlc\\.narg\\('{keyword}'\\)"
   ],
-  "plpgsqlLanguageServer.statementSeparatorPattern": "-- name:[\\s]+.*",
+  "plpgsqlLanguageServer.statements": {
+    "separatorPattern": "-- name:[\\s]+.*",
+    "diagnosticsLevels": {
+      "disableFlag": "warning"
+    },
+  },
   "files.associations": {
     "*.sql": "postgres"
   }

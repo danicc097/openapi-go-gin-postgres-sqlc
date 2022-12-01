@@ -11,7 +11,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
@@ -82,14 +82,7 @@ func (a *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	}
 }
 
-// TODO EnsureAuthorizedRole and EnsureAuthorizedScopes(scopes ...Scopes)
-// 1. x-required-scopes read by yq in spec
-// 2. generate a JSON file for frontend and backend to use: {<operationID>: [<...scopes>], ...}.
-// 3.  new method authMiddleware.EnsureAuthorizedScopes(opID operationID, user *db.User), which
-// 4. uses the loaded JSON to check if operationIDScopes[opID] exists, in which case
-// checks if user.scopes contains the required scopes as per spec
-// it belongs here, not in a service since this is specific to rest.
-type operationIDScopes = map[operationID][]string
+type operationIDScopes = map[OperationID][]string
 
 type AuthRestriction struct {
 	MinimumRole    models.Role
@@ -107,25 +100,30 @@ func (a *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 			return
 		}
 
-		userRole, ok := a.authzsvc.RoleByRank(user.RoleRank)
-		if !ok {
-			renderErrorResponse(c, fmt.Sprintf("Unknown rank value: %d", user.RoleRank), errors.New("unknown rank"))
-			c.Abort()
+		if config.MinimumRole != "" {
+			userRole, ok := a.authzsvc.RoleByRank(user.RoleRank)
+			if !ok {
+				renderErrorResponse(c, fmt.Sprintf("Unknown rank value: %d", user.RoleRank), errors.New("unknown rank"))
+				c.Abort()
 
-			return
+				return
+			}
+
+			if err := a.authzsvc.HasRequiredRole(userRole, config.MinimumRole); err != nil {
+				renderErrorResponse(c, "Unauthorized", err)
+				c.Abort()
+
+				return
+			}
 		}
-		if err := a.authzsvc.HasRequiredRole(userRole, config.MinimumRole); err != nil {
-			renderErrorResponse(c, "Unauthorized", err)
-			c.Abort()
 
-			return
-		}
+		if len(config.RequiredScopes) > 0 {
+			if err := a.authzsvc.HasRequiredScopes(user.Scopes, config.RequiredScopes); err != nil {
+				renderErrorResponse(c, "Unauthorized", err)
+				c.Abort()
 
-		if err := a.authzsvc.HasRequiredScopes(user.Scopes, config.RequiredScopes); err != nil {
-			renderErrorResponse(c, "Unauthorized", err)
-			c.Abort()
-
-			return
+				return
+			}
 		}
 
 		c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.

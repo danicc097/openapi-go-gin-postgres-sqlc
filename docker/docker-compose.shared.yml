@@ -9,7 +9,10 @@ x-logging: &default-logging
 services:
   db:
     #  sqlc depends on https://github.com/pganalyze/libpg_query (pg 13 support only)
-    image: postgres:13-alpine
+    image: ${PROJECT_PREFIX:?not set}-postgres:latest
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
     container_name: postgres_db_${PROJECT_PREFIX:?not set}
     user: postgres
     shm_size: 2g
@@ -33,7 +36,9 @@ services:
     image: redis:6-alpine
     container_name: redis_${PROJECT_PREFIX:?not set}
     volumes:
-      - ./redis.conf:/usr/local/etc/redis
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      - openapi_redis_data:/data/
+    command: redis-server /usr/local/etc/redis/redis.conf
     ports:
       - 6379:6379
     networks:
@@ -50,3 +55,4 @@ volumes:
   openapi_pg_data:
   # in order not to have project prefix we would use
   # name: openapi_pg_data
+  openapi_redis_data:

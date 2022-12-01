@@ -10,7 +10,7 @@ RUN go mod download
 COPY . .
 ENV CGO_ENABLED=0
 RUN --mount=type=cache,target=/root/.cache/go-build \
-  go build -o rest-server ./cmd/rest-server
+  go build -mod vendor -o rest-server ./cmd/rest-server
 
 # RUN groupadd -g $DOCKER_GID rootless
 # RUN useradd -m rootless -u $DOCKER_UID -g $DOCKER_GID

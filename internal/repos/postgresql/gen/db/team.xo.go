@@ -11,6 +11,20 @@ import (
 	"github.com/jackc/pgtype"
 )
 
+// TeamPublic represents fields that may be exposed from 'public.teams'
+// and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
+type TeamPublic struct {
+	TeamID      int          `json:"teamID" required:"true"`      // team_id
+	ProjectID   int          `json:"projectID" required:"true"`   // project_id
+	Name        string       `json:"name" required:"true"`        // name
+	Description string       `json:"description" required:"true"` // description
+	Metadata    pgtype.JSONB `json:"metadata" required:"true"`    // metadata
+	CreatedAt   time.Time    `json:"createdAt" required:"true"`   // created_at
+	UpdatedAt   time.Time    `json:"updatedAt" required:"true"`   // updated_at
+}
+
 // Team represents a row from 'public.teams'.
 type Team struct {
 	TeamID      int          `json:"team_id" db:"team_id"`         // team_id
@@ -21,10 +35,16 @@ type Team struct {
 	CreatedAt   time.Time    `json:"created_at" db:"created_at"`   // created_at
 	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at"`   // updated_at
 
-	TimeEntries *[]TimeEntry `json:"time_entries"` // O2M
-	Users       *[]User      `json:"users"`        // M2M
+	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
+	Users       *[]User      `json:"users" db:"users"`               // M2M
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *Team) ToPublic() TeamPublic {
+	return TeamPublic{
+		TeamID: x.TeamID, ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Metadata: x.Metadata, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
+	}
 }
 
 type TeamSelectConfig struct {
@@ -326,9 +346,9 @@ left join (
 	return &t, nil
 }
 
-// FKProject returns the Project associated with the Team's (ProjectID).
+// FKProject_ProjectID returns the Project associated with the Team's (ProjectID).
 //
 // Generated from foreign key 'teams_project_id_fkey'.
-func (t *Team) FKProject(ctx context.Context, db DB) (*Project, error) {
+func (t *Team) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
 	return ProjectByProjectID(ctx, db, t.ProjectID)
 }

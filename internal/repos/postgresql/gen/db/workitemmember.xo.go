@@ -9,6 +9,15 @@ import (
 	"github.com/google/uuid"
 )
 
+// WorkItemMemberPublic represents fields that may be exposed from 'public.work_item_member'
+// and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
+type WorkItemMemberPublic struct {
+	WorkItemID int64     `json:"workItemID" required:"true"` // work_item_id
+	Member     uuid.UUID `json:"member" required:"true"`     // member
+}
+
 // WorkItemMember represents a row from 'public.work_item_member'.
 type WorkItemMember struct {
 	WorkItemID int64     `json:"work_item_id" db:"work_item_id"` // work_item_id
@@ -16,6 +25,12 @@ type WorkItemMember struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *WorkItemMember) ToPublic() WorkItemMemberPublic {
+	return WorkItemMemberPublic{
+		WorkItemID: x.WorkItemID, Member: x.Member,
+	}
 }
 
 type WorkItemMemberSelectConfig struct {
@@ -178,16 +193,16 @@ work_item_member.member ` +
 	return &wim, nil
 }
 
-// FKUser returns the User associated with the WorkItemMember's (Member).
+// FKUser_Member returns the User associated with the WorkItemMember's (Member).
 //
 // Generated from foreign key 'work_item_member_member_fkey'.
-func (wim *WorkItemMember) FKUser(ctx context.Context, db DB) (*User, error) {
+func (wim *WorkItemMember) FKUser_Member(ctx context.Context, db DB) (*User, error) {
 	return UserByUserID(ctx, db, wim.Member)
 }
 
-// FKWorkItem returns the WorkItem associated with the WorkItemMember's (WorkItemID).
+// FKWorkItem_WorkItemID returns the WorkItem associated with the WorkItemMember's (WorkItemID).
 //
 // Generated from foreign key 'work_item_member_work_item_id_fkey'.
-func (wim *WorkItemMember) FKWorkItem(ctx context.Context, db DB) (*WorkItem, error) {
+func (wim *WorkItemMember) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
 	return WorkItemByWorkItemID(ctx, db, wim.WorkItemID)
 }

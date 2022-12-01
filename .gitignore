@@ -10,6 +10,8 @@ openapi-generator-cli.jar
 /gen-schema
 /cli
 /oapi-codegen
+/jet
+/.jet-gen
 .openapi-generator
 **/*.old
 /.openapi.*.yaml

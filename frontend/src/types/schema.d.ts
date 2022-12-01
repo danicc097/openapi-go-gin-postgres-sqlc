@@ -52,6 +52,7 @@ export interface components {
     };
     /** @enum {string} */
     Scope: "test-scope" | "users:read" | "users:write" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item:review";
+    Scopes: (components["schemas"]["Scope"])[];
     /** @enum {string} */
     Role: "guest" | "user" | "advancedUser" | "manager" | "admin" | "superAdmin";
     /**
@@ -61,7 +62,6 @@ export interface components {
      */
     WorkItemRole: "preparer" | "reviewer";
     /**
-     * a User 
      * @description represents User data to update 
      * @example {
      *   "first_name": "Jane",
@@ -75,7 +75,6 @@ export interface components {
       last_name?: string;
     };
     /**
-     * a User 
      * @description represents User authorization data to update 
      * @example {
      *   "role": "manager",
@@ -86,28 +85,23 @@ export interface components {
      */
     UpdateUserAuthRequest: {
       role?: components["schemas"]["Role"];
-      scopes?: (components["schemas"]["Scope"])[];
+      scopes?: components["schemas"]["Scopes"];
     };
-    User: {
-      api_key_id?: number | null;
+    UserPublic: {
+      apiKeyID?: number | null;
       /** Format: date-time */
-      created_at?: string;
+      createdAt?: string;
       /** Format: date-time */
-      deleted_at?: string | null;
+      deletedAt?: string | null;
       email?: string;
-      external_id?: string;
-      first_name?: string | null;
-      full_name?: string | null;
-      last_name?: string | null;
-      role_rank?: number;
-      scopes?: (string)[] | null;
-      teams?: (components["schemas"]["Team"])[] | null;
-      time_entries?: (components["schemas"]["TimeEntry"])[] | null;
-      /** Format: date-time */
-      updated_at?: string;
-      user_id?: components["schemas"]["UuidUUID"];
+      firstName?: string | null;
+      fullName?: string | null;
+      lastName?: string | null;
+      teams?: (components["schemas"]["TeamPublic"])[] | null;
+      timeEntries?: (components["schemas"]["TimeEntryPublic"])[] | null;
+      userID?: components["schemas"]["UuidUUID"];
       username?: string;
-      work_items?: (components["schemas"]["WorkItem"])[] | null;
+      workItems?: (components["schemas"]["WorkItemPublic"])[] | null;
     };
     /** ValidationError */
     ValidationError: {
@@ -119,89 +113,102 @@ export interface components {
       type: string;
     };
     PgtypeJSONB: Record<string, never>;
-    Task: {
+    UuidUUID: string;
+    TaskPublic: {
       /** Format: date-time */
-      created_at?: string;
+      createdAt?: string;
       /** Format: date-time */
-      deleted_at?: string | null;
+      deletedAt?: string | null;
       finished?: boolean | null;
       metadata?: components["schemas"]["PgtypeJSONB"];
-      task_id?: number;
-      task_type?: components["schemas"]["TaskType"];
-      task_type_id?: number;
+      taskID?: number;
+      taskType?: components["schemas"]["TaskTypePublic"];
+      taskTypeID?: number;
       title?: string;
       /** Format: date-time */
-      updated_at?: string;
-      work_item_id?: number;
+      updatedAt?: string;
+      workItemID?: number;
     };
-    TaskType: {
+    TaskTypePublic: {
       color?: string;
       description?: string;
       name?: string;
-      task_type_id?: number;
-      team_id?: number;
+      taskTypeID?: number;
+      teamID?: number;
     } | null;
-    Team: {
+    TeamPublic: {
       /** Format: date-time */
-      created_at?: string;
+      createdAt?: string;
       description?: string;
       metadata?: components["schemas"]["PgtypeJSONB"];
       name?: string;
-      project_id?: number;
-      team_id?: number;
-      time_entries?: (components["schemas"]["TimeEntry"])[] | null;
+      projectID?: number;
+      teamID?: number;
+      timeEntries?: (components["schemas"]["TimeEntryPublic"])[] | null;
       /** Format: date-time */
-      updated_at?: string;
-      users?: (components["schemas"]["User"])[] | null;
+      updatedAt?: string;
+      users?: (components["schemas"]["UserPublic"])[] | null;
     };
-    TimeEntry: {
-      activity_id?: number;
+    TimeEntryPublic: {
+      activityID?: number;
       comment?: string;
-      duration_minutes?: number | null;
+      durationMinutes?: number | null;
       /** Format: date-time */
       start?: string;
-      team_id?: number | null;
-      time_entry_id?: number;
-      user_id?: components["schemas"]["UuidUUID"];
-      work_item_id?: number | null;
+      teamID?: number | null;
+      timeEntryID?: number;
+      userID?: components["schemas"]["UuidUUID"];
+      workItemID?: number | null;
     };
-    UserAPIKey: {
-      api_key?: string;
+    WorkItemCommentPublic: {
       /** Format: date-time */
-      expires_on?: string;
-      user_api_key_id?: number;
-      user_id?: components["schemas"]["UuidUUID"];
-    } | null;
-    UuidUUID: string;
-    WorkItem: {
-      closed?: boolean;
-      /** Format: date-time */
-      created_at?: string;
-      /** Format: date-time */
-      deleted_at?: string | null;
-      kanban_step_id?: number;
-      metadata?: components["schemas"]["PgtypeJSONB"];
-      tasks?: (components["schemas"]["Task"])[] | null;
-      team_id?: number;
-      time_entries?: (components["schemas"]["TimeEntry"])[] | null;
-      title?: string;
-      /** Format: date-time */
-      updated_at?: string;
-      users?: (components["schemas"]["User"])[] | null;
-      work_item_comments?: (components["schemas"]["WorkItemComment"])[] | null;
-      work_item_id?: number;
-      work_item_type_id?: number;
-    };
-    WorkItemComment: {
-      /** Format: date-time */
-      created_at?: string;
+      createdAt?: string;
       message?: string;
       /** Format: date-time */
-      updated_at?: string;
-      user_id?: components["schemas"]["UuidUUID"];
-      work_item_comment_id?: number;
-      work_item_id?: number;
+      updatedAt?: string;
+      userID?: components["schemas"]["UuidUUID"];
+      workItemCommentID?: number;
+      workItemID?: number;
     };
+    WorkItemPublic: {
+      closed?: boolean;
+      /** Format: date-time */
+      createdAt?: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      kanbanStepID?: number;
+      metadata?: components["schemas"]["PgtypeJSONB"];
+      tasks?: (components["schemas"]["TaskPublic"])[] | null;
+      teamID?: number;
+      timeEntries?: (components["schemas"]["TimeEntryPublic"])[] | null;
+      title?: string;
+      /** Format: date-time */
+      updatedAt?: string;
+      users?: (components["schemas"]["UserPublic"])[] | null;
+      workItemComments?: (components["schemas"]["WorkItemCommentPublic"])[] | null;
+      workItemID?: number;
+      workItemTypeID?: number;
+    };
+    ModelsRole: string;
+    UserResponse: {
+      apiKeyID?: number | null;
+      /** Format: date-time */
+      createdAt?: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      email?: string;
+      firstName?: string | null;
+      fullName?: string | null;
+      lastName?: string | null;
+      role?: components["schemas"]["Role"];
+      scopes?: components["schemas"]["Scopes"];
+      teams?: (components["schemas"]["TeamPublic"])[] | null;
+      timeEntries?: (components["schemas"]["TimeEntryPublic"])[] | null;
+      userID?: components["schemas"]["UuidUUID"];
+      username?: string;
+      workItems?: (components["schemas"]["WorkItemPublic"])[] | null;
+    };
+    ModelsScope: string;
   };
   responses: never;
   parameters: {
@@ -265,7 +272,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["User"];
+          "application/json": components["schemas"]["UserPublic"];
         };
       };
     };
@@ -282,7 +289,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["User"];
+          "application/json": components["schemas"]["UserPublic"];
         };
       };
     };
@@ -306,7 +313,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["User"];
+          "application/json": components["schemas"]["UserPublic"];
         };
       };
     };

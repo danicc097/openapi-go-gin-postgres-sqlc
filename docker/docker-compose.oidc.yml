@@ -1,4 +1,9 @@
 version: "3.8"
+x-logging: &default-logging
+  options:
+    max-size: "10m"
+    max-file: "2"
+  driver: json-file
 
 services:
   oidcserver:
@@ -10,7 +15,7 @@ services:
     networks:
       - traefik-net
     ports:
-      - 10001:10001
+      - ${OIDC_SERVER_PORT:?not set}:10001
     command: ./server
     env_file:
       - ../.env.${APP_ENV:?not set}
@@ -22,8 +27,9 @@ services:
       - traefik.docker.network=traefik-net
       - traefik.http.routers.simple-oidc-server.entrypoints=websecure
       - traefik.http.routers.simple-oidc-server.tls=true
-      - traefik.http.services.simple-oidc-server.loadbalancer.server.port=10001
+      - traefik.http.services.simple-oidc-server.loadbalancer.server.port=${OIDC_SERVER_PORT:?not set}
     restart: unless-stopped
+    logging: *default-logging
 
 networks:
   traefik-net:

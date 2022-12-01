@@ -46,17 +46,17 @@ func NewUser(logger *zap.Logger, urepo repos.User, authzsvc *Authorization) *Use
 // returns a *db.User. must not pass a db.User here
 // IMPORTANT: no endpoint for user creation. Only when coming from auth server.
 // we will not support password auth.
-func (u *User) Register(ctx context.Context, d db.DBTX, user *db.User) error {
+func (u *User) Register(ctx context.Context, d db.DBTX, params repos.UserCreateParams) (*db.User, error) {
 	defer newOTELSpan(ctx, "User.Register").End()
 
 	// TODO construct db.User and fill missing fields with default roles, etc.
 	// instead of passing it directly
-
-	if err := u.urepo.Create(ctx, d, user); err != nil {
-		return errors.Wrap(err, "urepo.Create")
+	user, err := u.urepo.Create(ctx, d, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "urepo.Create")
 	}
 
-	return nil
+	return user, nil
 }
 
 // Update updates a user.
@@ -192,6 +192,18 @@ func (u *User) UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.Us
 	user, err := u.urepo.UserByEmail(ctx, d, email)
 	if err != nil {
 		return nil, errors.Wrap(err, "urepo.UserByEmail")
+	}
+
+	return user, nil
+}
+
+// UserByUsername gets a user by username.
+func (u *User) UserByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error) {
+	defer newOTELSpan(ctx, "User.UserByUsername").End()
+
+	user, err := u.urepo.UserByUsername(ctx, d, username)
+	if err != nil {
+		return nil, errors.Wrap(err, "urepo.UserByUsername")
 	}
 
 	return user, nil

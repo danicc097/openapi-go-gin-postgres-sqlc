@@ -11,6 +11,19 @@ import (
 	"github.com/jackc/pgtype"
 )
 
+// ProjectPublic represents fields that may be exposed from 'public.projects'
+// and embedded in other response models.
+// Include "property:private" in a SQL column comment to exclude a field.
+// Joins may be explicitly added in the Response struct.
+type ProjectPublic struct {
+	ProjectID   int          `json:"projectID" required:"true"`   // project_id
+	Name        string       `json:"name" required:"true"`        // name
+	Description string       `json:"description" required:"true"` // description
+	Metadata    pgtype.JSONB `json:"metadata" required:"true"`    // metadata
+	CreatedAt   time.Time    `json:"createdAt" required:"true"`   // created_at
+	UpdatedAt   time.Time    `json:"updatedAt" required:"true"`   // updated_at
+}
+
 // Project represents a row from 'public.projects'.
 type Project struct {
 	ProjectID   int          `json:"project_id" db:"project_id"`   // project_id
@@ -22,6 +35,12 @@ type Project struct {
 
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (x *Project) ToPublic() ProjectPublic {
+	return ProjectPublic{
+		ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Metadata: x.Metadata, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
+	}
 }
 
 type ProjectSelectConfig struct {

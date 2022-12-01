@@ -28,6 +28,8 @@ func TestAuthorization_Roles(t *testing.T) {
 	assert.ErrorContains(t, svc.HasRequiredRole(userRole, models.RoleAdmin), "access restricted")
 	assert.ErrorContains(t, svc.HasRequiredRole(managerRole, models.RoleAdmin), "access restricted")
 
+	assert.ErrorContains(t, svc.HasRequiredRole(services.Role{Rank: -1}, models.RoleAdmin), "role is not valid: rank must be higher than 0")
+
 	assert.NoError(t, svc.HasRequiredRole(services.Role{Rank: managerRole.Rank}, models.RoleManager))
 }
 

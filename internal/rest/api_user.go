@@ -2,12 +2,13 @@ package rest
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -61,7 +62,17 @@ func (h *Handlers) GetCurrentUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	role, ok := h.authzsvc.RoleByRank(user.RoleRank)
+	if !ok {
+		msg := fmt.Sprintf("role with rank %d not found", user.RoleRank)
+		renderErrorResponse(c, msg, errors.New(msg))
+
+		return
+	}
+
+	res := UserResponse{UserPublic: user.ToPublic(), Role: role.Role, Scopes: user.Scopes}
+
+	c.JSON(http.StatusOK, res)
 }
 
 // UpdateUser updates the user by id.
