@@ -8,23 +8,28 @@ import (
 
 // Index is a index.
 type Index struct {
-	IndexName string `json:"index_name"` // index_name
-	IsUnique  bool   `json:"is_unique"`  // is_unique
-	IsPrimary bool   `json:"is_primary"` // is_primary
+	IndexDefinition string `json:"index_definition"` // index_definition
+	IndexName       string `json:"index_name"`       // index_name
+	IsUnique        bool   `json:"is_unique"`        // is_unique
+	IsPrimary       bool   `json:"is_primary"`       // is_primary
 }
 
 // PostgresTableIndexes runs a custom query, returning results as Index.
 func PostgresTableIndexes(ctx context.Context, db DB, schema, table string) ([]*Index, error) {
 	// query
-	const sqlstr = `SELECT ` +
-		`DISTINCT ic.relname, ` + // ::varchar AS index_name
-		`i.indisunique, ` + // ::boolean AS is_unique
-		`i.indisprimary ` + // ::boolean AS is_primary
-		`FROM pg_index i ` +
-		`JOIN ONLY pg_class c ON c.oid = i.indrelid ` +
-		`JOIN ONLY pg_namespace n ON n.oid = c.relnamespace ` +
-		`JOIN ONLY pg_class ic ON ic.oid = i.indexrelid ` +
-		`WHERE i.indkey <> '0' ` +
+	const sqlstr = `select distinct ` +
+		`pg_indexes.indexdef as index_definition ` +
+		`, ic.relname ` + // ::varchar as index_name
+		`, i.indisunique ` + // ::boolean as is_unique
+		`, i.indisprimary ` + // ::boolean as is_primary
+		`from ` +
+		`pg_index i ` +
+		`join only pg_class c on c.oid = i.indrelid ` +
+		`join only pg_namespace n on n.oid = c.relnamespace ` +
+		`join only pg_class ic on ic.oid = i.indexrelid ` +
+		`join pg_indexes on ic.relname = pg_indexes.indexname ` +
+		`where ` +
+		`i.indkey <> '0' ` +
 		`AND n.nspname = $1 ` +
 		`AND c.relname = $2`
 	// run
@@ -39,39 +44,7 @@ func PostgresTableIndexes(ctx context.Context, db DB, schema, table string) ([]*
 	for rows.Next() {
 		var i Index
 		// scan
-		if err := rows.Scan(&i.IndexName, &i.IsUnique, &i.IsPrimary); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-}
-
-// Sqlite3TableIndexes runs a custom query, returning results as Index.
-func Sqlite3TableIndexes(ctx context.Context, db DB, schema, table string) ([]*Index, error) {
-	// query
-	sqlstr := `/* ` + schema + ` */ ` +
-		`SELECT ` +
-		`name AS index_name, ` +
-		`"unique" AS is_unique, ` +
-		`CAST(origin = 'pk' AS boolean) AS is_primary ` +
-		`FROM pragma_index_list($1)`
-	// run
-	logf(sqlstr, table)
-	rows, err := db.QueryContext(ctx, sqlstr, table)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-	// load results
-	var res []*Index
-	for rows.Next() {
-		var i Index
-		// scan
-		if err := rows.Scan(&i.IndexName, &i.IsUnique, &i.IsPrimary); err != nil {
+		if err := rows.Scan(&i.IndexDefinition, &i.IndexName, &i.IsUnique, &i.IsPrimary); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &i)

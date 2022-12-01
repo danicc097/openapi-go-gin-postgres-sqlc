@@ -12,17 +12,17 @@ type Generated struct {
 }
 
 // PostgresTableGenerations runs a custom query, returning results as Generated.
-func PostgresTableGenerations(ctx context.Context, db DB, table, schema string) ([]*Generated, error) {
+func PostgresTableGenerations(ctx context.Context, db DB, schema, table string) ([]*Generated, error) {
 	// query
 	const sqlstr = `SELECT ` +
 		`column_name ` +
 		`FROM information_schema.columns ` +
-		`WHERE table_name = $1 ` +
-		`and table_schema = $2 ` +
+		`WHERE table_schema = $1 ` +
+		`and table_name = $2 ` +
 		`and is_generated = 'ALWAYS'`
 	// run
-	logf(sqlstr, table, schema)
-	rows, err := db.QueryContext(ctx, sqlstr, table, schema)
+	logf(sqlstr, schema, table)
+	rows, err := db.QueryContext(ctx, sqlstr, schema, table)
 	if err != nil {
 		return nil, logerror(err)
 	}

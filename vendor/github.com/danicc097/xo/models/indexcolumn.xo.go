@@ -52,35 +52,3 @@ func PostgresIndexColumns(ctx context.Context, db DB, schema, index string) ([]*
 	}
 	return res, nil
 }
-
-// Sqlite3IndexColumns runs a custom query, returning results as IndexColumn.
-func Sqlite3IndexColumns(ctx context.Context, db DB, schema, table, index string) ([]*IndexColumn, error) {
-	// query
-	sqlstr := `/* ` + schema + ` ` + table + ` */ ` +
-		`SELECT ` +
-		`seqno AS seq_no, ` +
-		`cid, ` +
-		`name AS column_name ` +
-		`FROM pragma_index_info($1)`
-	// run
-	logf(sqlstr, index)
-	rows, err := db.QueryContext(ctx, sqlstr, index)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-	// load results
-	var res []*IndexColumn
-	for rows.Next() {
-		var ic IndexColumn
-		// scan
-		if err := rows.Scan(&ic.SeqNo, &ic.Cid, &ic.ColumnName); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &ic)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-}

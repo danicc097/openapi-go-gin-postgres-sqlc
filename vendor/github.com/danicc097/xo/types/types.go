@@ -46,12 +46,14 @@ func (q Query) MarshalYAML() (interface{}, error) {
 
 // Schema is a SQL schema.
 type Schema struct {
-	Driver string  `json:"type,omitempty"`
-	Name   string  `json:"name,omitempty"`
-	Enums  []Enum  `json:"enums,omitempty"`
-	Procs  []Proc  `json:"procs,omitempty"`
-	Tables []Table `json:"tables,omitempty"`
-	Views  []Table `json:"views,omitempty"`
+	Driver      string       `json:"type,omitempty"`
+	Name        string       `json:"name,omitempty"`
+	Enums       []Enum       `json:"enums,omitempty"`
+	Constraints []Constraint `json:"constraints,omitempty"`
+	Procs       []Proc       `json:"procs,omitempty"`
+	Tables      []Table      `json:"tables,omitempty"`
+	Views       []Table      `json:"views,omitempty"`
+	MatViews    []Table      `json:"mat_views,omitempty"`
 }
 
 // EnumByName returns a enum by its name.
@@ -66,8 +68,10 @@ func (s Schema) EnumByName(name string) *Enum {
 
 // Enum is a enum type.
 type Enum struct {
-	Name   string  `json:"name,omitempty"`
-	Values []Field `json:"values,omitempty"`
+	Name    string  `json:"name,omitempty"`
+	Values  []Field `json:"values,omitempty"`
+	Schema  string  `json:"schema,omitempty"`
+	EnumPkg string  `json:"enum_pkg,omitempty"`
 }
 
 // Proc is a stored procedure.
@@ -88,9 +92,23 @@ func (p Proc) MarshalYAML() (interface{}, error) {
 	return reflectStruct(v)
 }
 
+// Constraint is a table constraint.
+type Constraint struct {
+	// "unique" "check" "primary_key" "foreign_key"
+	Type string `json:"key_type"`
+	// "M2M" "O2M" "M2O" "O2O"
+	Cardinality string `json:"cardinality"`
+	// Key name
+	Name          string `json:"name,omitempty"`
+	TableName     string `json:"table_name"`
+	ColumnName    string `json:"column_name"`
+	RefTableName  string `json:"ref_table_name"`
+	RefColumnName string `json:"ref_column_name"`
+}
+
 // Table is a table or view.
 type Table struct {
-	Type        string       `json:"type,omitempty"` // 'table' or 'view'
+	Type        string       `json:"type,omitempty"` // 'table' or 'view' or 'mat_view'
 	Name        string       `json:"name,omitempty"`
 	Columns     []Field      `json:"columns,omitempty"`
 	PrimaryKeys []Field      `json:"primary_keys,omitempty"`
@@ -109,11 +127,12 @@ func (t Table) MarshalYAML() (interface{}, error) {
 
 // Index is a index.
 type Index struct {
-	Name      string  `json:"name,omitempty"`
-	Fields    []Field `json:"fields,omitempty"`
-	IsUnique  bool    `json:"is_unique,omitempty"`
-	IsPrimary bool    `json:"is_primary,omitempty"`
-	Func      string  `json:"-"`
+	Name            string  `json:"name,omitempty"`
+	Fields          []Field `json:"fields,omitempty"`
+	IsUnique        bool    `json:"is_unique,omitempty"`
+	IsPrimary       bool    `json:"is_primary,omitempty"`
+	IndexDefinition string  `json:"index_definition,omitempty"`
+	Func            string  `json:"-"`
 }
 
 // ForeignKey is a foreign key.
@@ -128,15 +147,18 @@ type ForeignKey struct {
 
 // Field is a column, index, enum value, or stored procedure parameter.
 type Field struct {
-	Name        string `json:"name,omitempty"`
-	Type        Type   `json:"datatype,omitempty"`
-	Default     string `json:"default,omitempty"`
-	IsPrimary   bool   `json:"is_primary,omitempty"`
-	IsSequence  bool   `json:"is_sequence,omitempty"`
-	IsIgnored   bool   `json:"is_ignored,omitempty"`
-	ConstValue  *int   `json:"const_value,omitempty"`
-	Interpolate bool   `json:"interpolate,omitempty"`
-	Join        bool   `json:"join,omitempty"`
+	Name         string `json:"name,omitempty"`
+	Type         Type   `json:"datatype,omitempty"`
+	Default      string `json:"default,omitempty"`
+	IsPrimary    bool   `json:"is_primary,omitempty"`
+	IsSequence   bool   `json:"is_sequence,omitempty"`
+	IsGenerated  bool   `json:"is_generated,omitempty"`
+	IsIgnored    bool   `json:"is_ignored,omitempty"`
+	ConstValue   *int   `json:"const_value,omitempty"`
+	Interpolate  bool   `json:"interpolate,omitempty"`
+	Join         bool   `json:"join,omitempty"`
+	IsDateOrTime bool   `json:"is_date_or_time,omitempty"`
+	Properties   string `json:"properties,omitempty"`
 }
 
 // Type holds information for a database type.
@@ -163,17 +185,6 @@ type Type struct {
 //
 // The returned type is stripped of precision and scale.
 func ParseType(typ, driver string) (Type, error) {
-	// special case for oracle timestamp(n) with [local] time zone
-	if m := oracleTimestampRE.FindStringSubmatch(typ); driver == "oracle" && m != nil {
-		prec, err := strconv.Atoi(m[1])
-		if err != nil {
-			return Type{}, fmt.Errorf("could not parse precision: %w", err)
-		}
-		return Type{
-			Type: "timestamp " + m[2],
-			Prec: prec,
-		}, nil
-	}
 	// extract is array
 	isArray := false
 	if strings.HasSuffix(typ, "[]") {
@@ -208,6 +219,7 @@ func ParseType(typ, driver string) (Type, error) {
 		Scale:    scale,
 		IsArray:  isArray,
 		Unsigned: unsigned,
+		// Enum: ,
 	}, nil
 }
 

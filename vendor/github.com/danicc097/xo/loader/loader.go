@@ -59,6 +59,7 @@ type Loader struct {
 	Enums            func(context.Context, models.DB, string) ([]*models.Enum, error)
 	EnumValues       func(context.Context, models.DB, string, string) ([]*models.EnumValue, error)
 	Procs            func(context.Context, models.DB, string) ([]*models.Proc, error)
+	Constraints      func(context.Context, models.DB, string) ([]*models.Constraint, error)
 	ProcParams       func(context.Context, models.DB, string, string) ([]*models.ProcParam, error)
 	Tables           func(context.Context, models.DB, string, string) ([]*models.Table, error)
 	TableColumns     func(context.Context, models.DB, string, string) ([]*models.Column, error)
@@ -123,10 +124,29 @@ func Enums(ctx context.Context) ([]*models.Enum, error) {
 	if err != nil {
 		return nil, err
 	}
-	if l.Enums != nil {
-		return l.Enums(ctx, db, schema)
+	enums := []*models.Enum{}
+	if schema != "public" {
+		ee, err := l.Enums(ctx, db, "public")
+		if err != nil {
+			return nil, err
+		}
+		for _, e := range ee {
+			e.Schema = "public"
+		}
+		enums = append(enums, ee...)
 	}
-	return nil, nil
+	if l.Enums != nil {
+		ee, err := l.Enums(ctx, db, schema)
+		if err != nil {
+			return nil, err
+		}
+		for _, e := range ee {
+			e.Schema = schema
+		}
+		enums = append(enums, ee...)
+	}
+
+	return enums, nil
 }
 
 // EnumValues returns the database enum values.
@@ -146,6 +166,18 @@ func Procs(ctx context.Context) ([]*models.Proc, error) {
 	}
 	if l.Procs != nil {
 		return l.Procs(ctx, db, schema)
+	}
+	return nil, nil
+}
+
+// Constraints returns the database procs.
+func Constraints(ctx context.Context) ([]*models.Constraint, error) {
+	db, l, schema, err := get(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if l.Constraints != nil {
+		return l.Constraints(ctx, db, schema)
 	}
 	return nil, nil
 }
@@ -187,6 +219,15 @@ func TableSequences(ctx context.Context, table string) ([]*models.Sequence, erro
 		return nil, err
 	}
 	return l.TableSequences(ctx, db, schema, table)
+}
+
+// TableGenerations returns the database table generations.
+func TableGenerations(ctx context.Context, table string) ([]*models.Generated, error) {
+	db, l, schema, err := get(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return l.TableGenerations(ctx, db, schema, table)
 }
 
 // TableForeignKeys returns the database table foreign keys.

@@ -9,6 +9,7 @@ import (
 // ForeignKey is a foreign key.
 type ForeignKey struct {
 	ForeignKeyName string `json:"foreign_key_name"` // foreign_key_name
+	TableName      string `json:"table_name"`       // table_name
 	ColumnName     string `json:"column_name"`      // column_name
 	RefTableName   string `json:"ref_table_name"`   // ref_table_name
 	RefColumnName  string `json:"ref_column_name"`  // ref_column_name
@@ -20,6 +21,7 @@ func PostgresTableForeignKeys(ctx context.Context, db DB, schema, table string) 
 	// query
 	const sqlstr = `SELECT ` +
 		`tc.constraint_name, ` + // ::varchar AS foreign_key_name
+		`tc.table_name as table_name, ` +
 		`kcu.column_name, ` + // ::varchar AS column_name
 		`ccu.table_name, ` + // ::varchar AS ref_table_name
 		`ccu.column_name, ` + // ::varchar AS ref_column_name
@@ -67,40 +69,7 @@ func PostgresTableForeignKeys(ctx context.Context, db DB, schema, table string) 
 	for rows.Next() {
 		var fk ForeignKey
 		// scan
-		if err := rows.Scan(&fk.ForeignKeyName, &fk.ColumnName, &fk.RefTableName, &fk.RefColumnName, &fk.KeyID); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &fk)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-}
-
-// Sqlite3TableForeignKeys runs a custom query, returning results as ForeignKey.
-func Sqlite3TableForeignKeys(ctx context.Context, db DB, schema, table string) ([]*ForeignKey, error) {
-	// query
-	sqlstr := `/* ` + schema + ` */ ` +
-		`SELECT ` +
-		`id AS key_id, ` +
-		`"table" AS ref_table_name, ` +
-		`"from" AS column_name, ` +
-		`"to" AS ref_column_name ` +
-		`FROM pragma_foreign_key_list($1)`
-	// run
-	logf(sqlstr, table)
-	rows, err := db.QueryContext(ctx, sqlstr, table)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-	// load results
-	var res []*ForeignKey
-	for rows.Next() {
-		var fk ForeignKey
-		// scan
-		if err := rows.Scan(&fk.KeyID, &fk.RefTableName, &fk.ColumnName, &fk.RefColumnName); err != nil {
+		if err := rows.Scan(&fk.ForeignKeyName, &fk.TableName, &fk.ColumnName, &fk.RefTableName, &fk.RefColumnName, &fk.KeyID); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &fk)

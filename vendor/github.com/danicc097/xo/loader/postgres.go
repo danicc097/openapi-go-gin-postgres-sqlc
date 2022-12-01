@@ -19,6 +19,7 @@ func init() {
 		Enums:            models.PostgresEnums,
 		EnumValues:       models.PostgresEnumValues,
 		Procs:            models.PostgresProcs,
+		Constraints:      models.PostgresConstraints,
 		ProcParams:       models.PostgresProcParams,
 		Tables:           models.PostgresTables,
 		TableColumns:     PostgresTableColumns,
@@ -73,8 +74,8 @@ func PQPostgresGoType(d xo.Type, schema, itype, _ string) (string, string, error
 		return "", "", err
 	}
 	if d.IsArray {
-		arrType, ok := pqArrMapping[goType]
-		goType, zero = "pq.GenericArray", "pg.GenericArray{}" // is of type struct { A any }; can't be nil
+		arrType, ok := pgxArrMapping[goType]
+		goType, zero = "[]any", "[]any{}" // is of type struct { A any }; can't be nil
 		if ok {
 			goType, zero = arrType, "nil"
 		}
@@ -116,58 +117,62 @@ func PostgresGoType(d xo.Type, schema, itype string) (string, string, error) {
 	case "boolean":
 		goType, zero = "bool", "false"
 		if typNullable {
-			goType, zero = "sql.NullBool", "sql.NullBool{}"
+			goType, zero = "*bool", "nil"
 		}
 	case "bpchar", "character varying", "character", "inet", "money", "text", "name":
 		goType, zero = "string", `""`
 		if typNullable {
-			goType, zero = "sql.NullString", "sql.NullString{}"
+			goType, zero = "*string", "nil"
 		}
 	case "smallint":
 		goType, zero = "int16", "0"
 		if typNullable {
-			goType, zero = "sql.NullInt64", "sql.NullInt64{}"
+			goType, zero = "*int16", "nil"
 		}
 	case "integer":
 		goType, zero = itype, "0"
 		if typNullable {
-			goType, zero = "sql.NullInt64", "sql.NullInt64{}"
+			goType, zero = "*int", "nil"
 		}
 	case "bigint":
 		goType, zero = "int64", "0"
 		if typNullable {
-			goType, zero = "sql.NullInt64", "sql.NullInt64{}"
+			goType, zero = "*int64", "nil"
 		}
 	case "real":
 		goType, zero = "float32", "0.0"
 		if typNullable {
-			goType, zero = "sql.NullFloat64", "sql.NullFloat64{}"
+			goType, zero = "*float32", "nil"
 		}
 	case "double precision", "numeric":
 		goType, zero = "float64", "0.0"
 		if typNullable {
-			goType, zero = "sql.NullFloat64", "sql.NullFloat64{}"
+			goType, zero = "*float64", "nil"
 		}
+		// TODO pgtypes for EACH different ttyype in this case
 	case "date", "timestamp with time zone", "time with time zone", "time without time zone", "timestamp without time zone":
-		goType, zero = "time.Time", "time.Time{}"
+		goType, zero = "time.Time", "nil"
 		if typNullable {
-			goType, zero = "sql.NullTime", "sql.NullTime{}"
+			goType, zero = "*time.Time", "nil"
 		}
 	case "bit":
 		goType, zero = "uint8", "0"
 		if typNullable {
 			goType, zero = "*uint8", "nil"
 		}
-	case "any", "bit varying", "bytea", "interval", "json", "jsonb", "xml":
+	case "any", "bit varying", "bytea", "interval", "xml":
 		// TODO: write custom type for interval marshaling
-		// TODO: marshalling for json types
 		goType, zero = "[]byte", "nil"
+	case "json":
+		goType, zero = "pgtype.JSON", "nil"
+	case "jsonb":
+		goType, zero = "pgtype.JSONB", "nil"
 	case "hstore":
 		goType, zero = "hstore.Hstore", "nil"
 	case "uuid":
 		goType, zero = "uuid.UUID", "uuid.UUID{}"
 		if typNullable {
-			goType, zero = "uuid.NullUUID", "uuid.NullUUID{}"
+			goType, zero = "*uuid.UUID", "nil"
 		}
 	default:
 		goType, zero = schemaType(d.Type, typNullable, schema)
@@ -251,14 +256,14 @@ var pgStdArrMapping = map[string]string{
 	// default: "[]byte"
 }
 
-var pqArrMapping = map[string]string{
-	"bool":    "pq.BoolArray",
-	"[]byte":  "pq.ByteArray",
-	"float64": "pq.Float64Array",
-	"float32": "pq.Float32Array",
-	"int64":   "pq.Int64Array",
-	"int32":   "pq.Int32Array",
-	"string":  "pq.StringArray",
+var pgxArrMapping = map[string]string{
+	"bool":    "[]bool",
+	"[]byte":  "[][]byte",
+	"float64": "[]float64",
+	"float32": "[]float32",
+	"int64":   "[]int64",
+	"int32":   "[]int32",
+	"string":  "[]string",
 	// default: "pq.GenericArray"
 }
 

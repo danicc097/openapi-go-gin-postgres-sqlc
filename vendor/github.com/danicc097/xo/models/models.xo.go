@@ -193,38 +193,3 @@ func PostgresSchema(ctx context.Context, db DB) (string, error) {
 	}
 	return schemaName, nil
 }
-
-// Sqlite3ViewCreate creates a view for introspection.
-func Sqlite3ViewCreate(ctx context.Context, db DB, schema, id string, query []string) (sql.Result, error) {
-	// query
-	sqlstr := `/* ` + schema + ` */ ` +
-		`CREATE TEMPORARY VIEW ` + id + ` AS ` + strings.Join(query, "\n")
-	// run
-	logf(sqlstr)
-	return db.ExecContext(ctx, sqlstr)
-}
-
-// Sqlite3ViewDrop drops a view created for introspection.
-func Sqlite3ViewDrop(ctx context.Context, db DB, schema, id string) (sql.Result, error) {
-	// query
-	sqlstr := `/* ` + schema + ` */ ` +
-		`DROP VIEW ` + id
-	// run
-	logf(sqlstr)
-	return db.ExecContext(ctx, sqlstr)
-}
-
-// Sqlite3Schema retrieves the schema.
-func Sqlite3Schema(ctx context.Context, db DB) (string, error) {
-	// query
-	const sqlstr = `SELECT ` +
-		`REPLACE(file, RTRIM(file, REPLACE(file, '/', '')), '') AS schema_name ` +
-		`FROM pragma_database_list()`
-	// run
-	logf(sqlstr)
-	var schemaName string
-	if err := db.QueryRowContext(ctx, sqlstr).Scan(&schemaName); err != nil {
-		return "", logerror(err)
-	}
-	return schemaName, nil
-}

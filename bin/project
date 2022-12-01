@@ -298,6 +298,12 @@ x.gen.xo() {
       err "Failed xo cache schema generation" &
 
     wait
+
+    files=$(find . \
+      -path "$PG_REPO_GEN/db" \
+      -name "*.go")
+    goimports -w $files
+
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

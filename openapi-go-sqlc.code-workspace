@@ -1,0 +1,71 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+    // {
+    //   "path": "external/oidc-server"
+    // }
+  ],
+  "settings": {
+    "typescript.tsdk": "frontend/node_modules/typescript/lib",
+    "yaml.schemas": {
+      "https://raw.githubusercontent.com/docker/cli/master/cli/compose/schema/data/config_schema_v3.8.json": "*compose*.yml",
+      "https://json.schemastore.org/yamllint.json": "file:///home/daniel/Repos/github.com/danicc097/openapi-go-gin-postgres-sqlc/openapi.yaml"
+    },
+    "yaml.customTags": [
+      "!merge",
+      "!!merge"
+    ],
+    "remote.SSH.defaultForwardedPorts": [
+      // use zipkin instead: https://github.com/jaegertracing/jaeger/issues/3479#issuecomment-1012199971
+      // {
+      //   "localPort": 4318,
+      //   "remotePort": 4318,
+      //   "name": "jaeger otlp collector"
+      // },
+      {
+        "localPort": 9411,
+        "remotePort": 9411,
+        "name": "jaeger zipkin collector"
+      },
+      {
+        "localPort": 16686,
+        "remotePort": 16686,
+        "name": "jaeger UI"
+      }
+    ],
+    "files.associations": {
+      "*.sql": "postgres"
+    },
+    "sqltools.connections": [
+      {
+        "previewLimit": 100,
+        "server": "localhost",
+        "port": 5656,
+        "driver": "PostgreSQL",
+        "name": "gen_db_openapi",
+        "database": "gen_db",
+        "username": "postgres",
+        "password": "postgres"
+      }
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "bashdb",
+        "request": "launch",
+        "name": "Bash-Debug (hardcoded script name)",
+        "cwd": "${workspaceFolder}",
+        "program": "${workspaceFolder}/bin/project",
+        "args": [
+          "pregen"
+        ],
+        "terminalKind": "integrated"
+      }
+    ],
+    "compounds": []
+  }
+}
