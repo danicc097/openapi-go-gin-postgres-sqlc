@@ -268,10 +268,22 @@ create table work_items (
 
    TODO instead of column key, it should be the openapi json key, so that frontend can
    override for every key in received workitem info
+
+
+  -- IMPORTANT: implement this:
+  alternative to sharing all keys for different projects in the same table:
+  https://stackoverflow.com/questions/10068033/postgresql-foreign-key-referencing-primary-keys-of-two-different-tables
+  for every custom project we reference the common columns with its own PK being a FK
+  We would then query this custom table explicitly and join with the common columns.
+  we would need to join every single record but models are much much cleaner.
+  every default workitem still keeps a team_id reference.
+  tables with extra fields are for a given project. so we could have another team_id column
+  in this new table with check (team_id in select team_id ... join teams where project_id ... )
+  the same concept is also seen in https://dba.stackexchange.com/questions/232262/solving-supertype-subtype-relationship-without-sacrificing-data-consistency-in-a
+
    */
   , some_custom_date_for_project_1 timestamp with time zone
   , some_custom_date_for_project_2 timestamp with time zone
-  --
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
@@ -349,8 +361,9 @@ create table activities (
 );
 
 -- will restrict available activities on a per-project basis
--- where project_id is null (shared) and project_id = @project_id
-create index on activities (project_id);
+-- where project_id is null (shared) or project_id = @project_id
+-- table will be tiny, don't even index
+-- create index on activities (project_id);
 
 create table time_entries (
   time_entry_id bigserial not null primary key
