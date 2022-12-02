@@ -263,63 +263,6 @@ left join (
 	return &a, nil
 }
 
-// ActivitiesByProjectID retrieves a row from 'public.activities' as a Activity.
-//
-// Generated from index 'activities_project_id_idx'.
-func ActivitiesByProjectID(ctx context.Context, db DB, projectID *int, opts ...ActivitySelectConfigOption) ([]*Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	// query
-	sqlstr := `SELECT ` +
-		`activities.activity_id,
-activities.project_id,
-activities.name,
-activities.description,
-activities.is_productive,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
-		`FROM public.activities ` +
-		`-- O2M join generated from "time_entries_activity_id_fkey"
-left join (
-  select
-  activity_id as time_entries_activity_id
-    , json_agg(time_entries.*) as time_entries
-  from
-    time_entries
-   group by
-        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id = $2 `
-	sqlstr += c.orderBy
-	sqlstr += c.limit
-
-	// run
-	logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, projectID)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-	// process
-	var res []*Activity
-	for rows.Next() {
-		a := Activity{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&a.ActivityID, &a.ProjectID, &a.Name, &a.Description, &a.IsProductive); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &a)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-}
-
 // FKProject_ProjectID returns the Project associated with the Activity's (ProjectID).
 //
 // Generated from foreign key 'activities_project_id_fkey'.

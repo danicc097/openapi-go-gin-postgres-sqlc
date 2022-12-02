@@ -529,6 +529,7 @@ x.lint.sql() {
         --inplace \
         --keep-newline \
         --comma-start \
+        --nogrouping \
         --comma-break \
         $(find "$slq_dir" -maxdepth 3 -name '*.*sql')
     done

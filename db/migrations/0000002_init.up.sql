@@ -10,7 +10,7 @@ create extension if not exists pg_trgm schema extensions;
 create extension if not exists btree_gin schema extensions;
 
 create table projects (
-  project_id serial not null primary key
+  project_id serial primary key
   , name text not null unique
   , description text not null
   , metadata jsonb not null
@@ -19,7 +19,7 @@ create table projects (
 );
 
 create table teams (
-  team_id serial not null primary key
+  team_id serial primary key
   , project_id int not null --limited to a project only
   , name text not null
   , description text not null
@@ -31,7 +31,7 @@ create table teams (
 );
 
 create table user_api_keys (
-  user_api_key_id serial not null primary key
+  user_api_key_id serial primary key
   , api_key text not null unique
   , expires_on timestamp with time zone not null
   -- don't use,  see https://github.com/jackc/pgx/issues/924
@@ -39,7 +39,7 @@ create table user_api_keys (
 );
 
 create table users (
-  user_id uuid default gen_random_uuid () not null primary key
+  user_id uuid default gen_random_uuid () primary key
   , username text not null unique
   , email text not null unique
   , first_name text
@@ -118,7 +118,7 @@ create type notification_type as ENUM (
 );
 
 create table notifications (
-  notification_id serial not null primary key
+  notification_id serial primary key
   , receiver_rank smallint check (receiver_rank > 0) --check will not prevent null values
   , title text not null
   , body text not null
@@ -126,7 +126,7 @@ create table notifications (
   , link text null
   , created_at timestamp with time zone default current_timestamp not null
   , sender uuid not null
-  , receiver uuid -- null -> mass notification
+  , receiver uuid -- can be null for 'global' type
   , notification_type notification_type not null
   , foreign key (sender) references users (user_id)
   , foreign key (receiver) references users (user_id)
@@ -136,9 +136,9 @@ create table notifications (
 create index on notifications (receiver_rank , notification_type , created_at);
 
 create table user_notifications (
-  user_notification_id bigserial not null primary key
+  user_notification_id bigserial primary key
   , notification_id int not null
-  , read boolean default false not null
+  , read boolean default false not null -- frontend simply sends a list of user_notification_id to mark as read
   , created_at timestamp with time zone default current_timestamp not null
   , user_id uuid not null
   , foreign key (user_id) references users (user_id)
@@ -211,7 +211,7 @@ comment on column user_team.user_id is 'cardinality:M2M';
 comment on column user_team.team_id is 'cardinality:M2M';
 
 create table kanban_steps (
-  kanban_step_id serial not null primary key
+  kanban_step_id serial primary key
   , team_id int not null
   , step_order smallint
   , name text not null
@@ -225,6 +225,7 @@ create table kanban_steps (
   , check (step_order > 0)
 );
 
+-- types restricted per project
 create table work_item_types (
   work_item_type_id serial primary key
   , project_id bigint not null
@@ -243,7 +244,7 @@ Can be directly used in backend (codegen alternative struct) and frontend
 internally the storage is the same and doesn't affect in any way.
  */
 create table work_items (
-  work_item_id bigserial not null primary key
+  work_item_id bigserial primary key
   /* generic must-have fields. store naming overrides in business logic, if any
    (json with project name (unique) as key should suffice to be used by both back and frontend)
    as requested by clients to prevent useless joins.
@@ -270,17 +271,16 @@ create table work_items (
    override for every key in received workitem info
 
 
-  -- IMPORTANT: implement this:
-  alternative to sharing all keys for different projects in the same table:
-  https://stackoverflow.com/questions/10068033/postgresql-foreign-key-referencing-primary-keys-of-two-different-tables
-  for every custom project we reference the common columns with its own PK being a FK
-  We would then query this custom table explicitly and join with the common columns.
-  we would need to join every single record but models are much much cleaner.
-  every default workitem still keeps a team_id reference.
-  tables with extra fields are for a given project. so we could have another team_id column
-  in this new table with check (team_id in select team_id ... join teams where project_id ... )
-  the same concept is also seen in https://dba.stackexchange.com/questions/232262/solving-supertype-subtype-relationship-without-sacrificing-data-consistency-in-a
-
+   -- IMPORTANT: implement this:
+   alternative to sharing all keys for different projects in the same table:
+   https://stackoverflow.com/questions/10068033/postgresql-foreign-key-referencing-primary-keys-of-two-different-tables
+   for every custom project we reference the common columns with its own PK being a FK
+   We would then query this custom table explicitly and join with the common columns via PI which is really fast
+   we would need to join every single record but models are much much cleaner.
+   every default workitem still keeps a team_id reference.
+   tables with extra fields are for a given project. so we could have another team_id column
+   in this new table with check (team_id in select team_id ... join teams where project_id ... )
+   the same concept is also seen in https://dba.stackexchange.com/questions/232262/solving-supertype-subtype-relationship-without-sacrificing-data-consistency-in-a
    */
   , some_custom_date_for_project_1 timestamp with time zone
   , some_custom_date_for_project_2 timestamp with time zone
@@ -292,12 +292,58 @@ create table work_items (
   , foreign key (kanban_step_id) references kanban_steps (kanban_step_id) on delete cascade
 );
 
+
+/*
+
+alternative with metadata jsonb, though requires maintaining a json file externally
+for back/front:
+https://www.cloudbees.com/blog/unleash-the-power-of-storing-json-in-postgres
+ see also: https://stackoverflow.com/questions/40158584/index-on-json-field-with-dynamic-keys
+ */
+create table work_items_project_1 (
+  work_item_id bigint primary key references work_items (work_item_id)
+  , custom_date_for_project_1 timestamp with time zone
+);
+
+create table work_items_project_2 (
+  work_item_id bigint primary key
+  , custom_date_for_project_2 timestamp with time zone
+  , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
+);
+
+
+/*
+what happens when a project had no custom fields and now needs a dedicated table?
+(this project's teams were simply querying work_items directly  with team_id):
+ - create table work_items_new_project as
+ select (work_item_id from work_items where team_id in
+ (select ... where project_id = <the project that wants custom columns>)
+ )
+ - alter table work_items_new_project add column ...
+ and set default values if required
+ - internally, models change to become a superset of work_items + new tables fields
+ but the route is the same (get work items based on team id)
+IMPORTANT: or maybe we should prevent project creation by end users, only allow team creation
+(teams share project's work_item fields, types, activities... )
+
+when a new project is required -> manual table creation with empty new fields, just
+ work_item_id bigint primary key.
+ When a new field is added, possibilities are:
+ - not nullable -> must set default value for the existing rows
+ - nullable and custom business logic when it's required or not. previous rows remain null or with default as required
+ */
+comment on column work_items.work_item_id is 'cardinality:O2O';
+
+comment on column work_items_project_1.work_item_id is 'cardinality:O2O';
+
+comment on column work_items_project_2.work_item_id is 'cardinality:O2O';
+
+-- for finding all deleted work items exclusively
 create index on work_items (deleted_at)
 where (deleted_at is not null);
 
--- for finding all deleted work items exclusively
 create table work_item_comments (
-  work_item_comment_id bigserial not null primary key
+  work_item_comment_id bigserial primary key
   , work_item_id bigint not null
   , user_id uuid not null
   , message text not null
@@ -312,7 +358,7 @@ comment on column work_item_comments.work_item_id is 'cardinality:O2M';
 create index on work_item_comments (work_item_id);
 
 create table work_item_tags (
-  work_item_tag_id serial not null primary key
+  work_item_tag_id serial primary key
   , name text not null unique
   , description text not null
   , color text not null
@@ -351,7 +397,7 @@ comment on column work_item_member.member is 'cardinality:M2M';
 
 -- must be completely dynamic on a team basis
 create table activities (
-  activity_id serial not null primary key
+  activity_id serial primary key
   , project_id int
   , name text not null unique
   , description text not null
@@ -364,9 +410,8 @@ create table activities (
 -- where project_id is null (shared) or project_id = @project_id
 -- table will be tiny, don't even index
 -- create index on activities (project_id);
-
 create table time_entries (
-  time_entry_id bigserial not null primary key
+  time_entry_id bigserial primary key
   , work_item_id bigint
   , activity_id int not null
   , team_id int
@@ -400,7 +445,7 @@ create index on user_team (user_id);
 
 -- grpc demo
 create table movies (
-  movie_id serial not null primary key
+  movie_id serial primary key
   , title text not null
   , year integer not null
   , synopsis text not null
