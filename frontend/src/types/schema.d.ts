@@ -15,6 +15,9 @@ type XOR<T, U> = (T | U) extends object ? (Without<T, U> & U) | (Without<U, T> &
 type OneOf<T extends any[]> = T extends [infer Only] ? Only : T extends [infer A, infer B, ...infer Rest] ? OneOf<[XOR<A, B>, ...Rest]> : never;
 
 export interface paths {
+  "/events": {
+    get: operations["Events"];
+  };
   "/ping": {
     /** Ping pongs */
     get: operations["Ping"];
@@ -55,6 +58,12 @@ export interface components {
     Scopes: (components["schemas"]["Scope"])[];
     /** @enum {string} */
     Role: "guest" | "user" | "advancedUser" | "manager" | "admin" | "superAdmin";
+    /**
+     * Notification type 
+     * @description User notification type. 
+     * @enum {string}
+     */
+    NotificationType: "personal" | "global";
     /**
      * WorkItem role 
      * @description Role in work item for a member. 
@@ -138,16 +147,14 @@ export interface components {
     } | null;
     TeamPublic: {
       /** Format: date-time */
-      createdAt?: string;
-      description?: string;
-      metadata?: components["schemas"]["PgtypeJSONB"];
-      name?: string;
-      projectID?: number;
-      teamID?: number;
-      timeEntries?: (components["schemas"]["TimeEntryPublic"])[] | null;
+      createdAt: string;
+      description: string;
+      metadata: components["schemas"]["PgtypeJSONB"];
+      name: string;
+      projectID: number;
+      teamID: number;
       /** Format: date-time */
-      updatedAt?: string;
-      users?: (components["schemas"]["UserPublic"])[] | null;
+      updatedAt: string;
     };
     TimeEntryPublic: {
       activityID?: number;
@@ -191,24 +198,30 @@ export interface components {
     };
     ModelsRole: string;
     UserResponse: {
-      apiKeyID?: number | null;
+      apiKey?: components["schemas"]["UserAPIKeyPublic"];
       /** Format: date-time */
-      createdAt?: string;
+      createdAt: string;
       /** Format: date-time */
-      deletedAt?: string | null;
-      email?: string;
-      firstName?: string | null;
-      fullName?: string | null;
-      lastName?: string | null;
-      role?: components["schemas"]["Role"];
-      scopes?: components["schemas"]["Scopes"];
+      deletedAt: string | null;
+      email: string;
+      firstName: string | null;
+      fullName: string | null;
+      hasGlobalNotifications: boolean;
+      hasPersonalNotifications: boolean;
+      lastName: string | null;
+      role: components["schemas"]["Role"];
+      scopes: components["schemas"]["Scopes"];
       teams?: (components["schemas"]["TeamPublic"])[] | null;
-      timeEntries?: (components["schemas"]["TimeEntryPublic"])[] | null;
-      userID?: components["schemas"]["UuidUUID"];
-      username?: string;
-      workItems?: (components["schemas"]["WorkItemPublic"])[] | null;
+      userID: components["schemas"]["UuidUUID"];
+      username: string;
     };
     ModelsScope: string;
+    UserAPIKeyPublic: {
+      apiKey: string;
+      /** Format: date-time */
+      expiresOn: string;
+      userID: components["schemas"]["UuidUUID"];
+    } | null;
   };
   responses: never;
   parameters: {
@@ -227,6 +240,19 @@ export type external = Record<string, never>;
 
 export interface operations {
 
+  Events: {
+    responses: {
+      /** @description events */
+      200: {
+        content: {
+          "text/event-stream": ({
+              id?: string;
+              data?: Record<string, never>;
+            })[];
+        };
+      };
+    };
+  };
   Ping: {
     /** Ping pongs */
     responses: {
@@ -258,6 +284,12 @@ export interface operations {
   AdminPing: {
     /** Ping pongs */
     responses: {
+      /** @description OK */
+      200: {
+        content: {
+          "text/plain": string;
+        };
+      };
       /** @description Validation Error */
       422: {
         content: {
@@ -272,7 +304,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["UserPublic"];
+          "application/json": components["schemas"]["UserResponse"];
         };
       };
     };
@@ -289,7 +321,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["UserPublic"];
+          "application/json": components["schemas"]["UserResponse"];
         };
       };
     };

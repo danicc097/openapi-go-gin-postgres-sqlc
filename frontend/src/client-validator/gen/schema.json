@@ -48,6 +48,17 @@
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
+    "NotificationType": {
+      "title": "Notification type",
+      "description": "User notification type.",
+      "type": "string",
+      "x-db-enum": "notification_type",
+      "enum": [
+        "personal",
+        "global"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "WorkItemRole": {
       "title": "WorkItem role",
       "description": "Role in work item for a member.",
@@ -291,29 +302,20 @@
         "teamID": {
           "type": "integer"
         },
-        "timeEntries": {
-          "items": {
-            "$ref": "#/definitions/TimeEntryPublic"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
         "updatedAt": {
           "format": "date-time",
           "type": "string"
-        },
-        "users": {
-          "items": {
-            "$ref": "#/definitions/UserPublic"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         }
       },
+      "required": [
+        "teamID",
+        "projectID",
+        "name",
+        "description",
+        "metadata",
+        "createdAt",
+        "updatedAt"
+      ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -467,11 +469,8 @@
     },
     "UserResponse": {
       "properties": {
-        "apiKeyID": {
-          "type": [
-            "integer",
-            "null"
-          ]
+        "apiKey": {
+          "$ref": "#/definitions/UserAPIKeyPublic"
         },
         "createdAt": {
           "format": "date-time",
@@ -499,6 +498,12 @@
             "null"
           ]
         },
+        "hasGlobalNotifications": {
+          "type": "boolean"
+        },
+        "hasPersonalNotifications": {
+          "type": "boolean"
+        },
         "lastName": {
           "type": [
             "string",
@@ -520,37 +525,57 @@
             "null"
           ]
         },
-        "timeEntries": {
-          "items": {
-            "$ref": "#/definitions/TimeEntryPublic"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
         "userID": {
           "$ref": "#/definitions/UuidUUID"
         },
         "username": {
           "type": "string"
-        },
-        "workItems": {
-          "items": {
-            "$ref": "#/definitions/WorkItemPublic"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         }
       },
+      "required": [
+        "role",
+        "scopes",
+        "userID",
+        "username",
+        "email",
+        "firstName",
+        "lastName",
+        "fullName",
+        "hasPersonalNotifications",
+        "hasGlobalNotifications",
+        "createdAt",
+        "deletedAt"
+      ],
       "type": "object",
       "x-postgen-struct": "UserResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "ModelsScope": {
       "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UserAPIKeyPublic": {
+      "properties": {
+        "apiKey": {
+          "type": "string"
+        },
+        "expiresOn": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        }
+      },
+      "required": [
+        "apiKey",
+        "expiresOn",
+        "userID"
+      ],
+      "type": [
+        "object",
+        "null"
+      ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
@@ -566,6 +591,9 @@
     },
     "Role": {
       "$ref": "#/definitions/Role"
+    },
+    "NotificationType": {
+      "$ref": "#/definitions/NotificationType"
     },
     "WorkItemRole": {
       "$ref": "#/definitions/WorkItemRole"
@@ -614,6 +642,9 @@
     },
     "ModelsScope": {
       "$ref": "#/definitions/ModelsScope"
+    },
+    "UserAPIKeyPublic": {
+      "$ref": "#/definitions/UserAPIKeyPublic"
     }
   }
 }

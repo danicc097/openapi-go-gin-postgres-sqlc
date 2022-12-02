@@ -12,6 +12,7 @@ import {
   Scope,
   Scopes,
   Role,
+  NotificationType,
   WorkItemRole,
   UpdateUserRequest,
   UpdateUserAuthRequest,
@@ -28,6 +29,7 @@ import {
   ModelsRole,
   UserResponse,
   ModelsScope,
+  UserAPIKeyPublic,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -82,6 +84,18 @@ export const RoleDecoder: Decoder<Role> = {
       throw new Error(`Schema ${RoleDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, RoleDecoder.definitionName)
+  },
+}
+export const NotificationTypeDecoder: Decoder<NotificationType> = {
+  definitionName: 'NotificationType',
+  schemaRef: '#/definitions/NotificationType',
+
+  decode(json: unknown): NotificationType {
+    const schema = ajv.getSchema(NotificationTypeDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${NotificationTypeDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, NotificationTypeDecoder.definitionName)
   },
 }
 export const WorkItemRoleDecoder: Decoder<WorkItemRole> = {
@@ -274,5 +288,17 @@ export const ModelsScopeDecoder: Decoder<ModelsScope> = {
       throw new Error(`Schema ${ModelsScopeDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ModelsScopeDecoder.definitionName)
+  },
+}
+export const UserAPIKeyPublicDecoder: Decoder<UserAPIKeyPublic> = {
+  definitionName: 'UserAPIKeyPublic',
+  schemaRef: '#/definitions/UserAPIKeyPublic',
+
+  decode(json: unknown): UserAPIKeyPublic {
+    const schema = ajv.getSchema(UserAPIKeyPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${UserAPIKeyPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, UserAPIKeyPublicDecoder.definitionName)
   },
 }

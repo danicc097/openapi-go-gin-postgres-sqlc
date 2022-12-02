@@ -6,6 +6,9 @@ const injectedRtkApi = api
   })
   .injectEndpoints({
     endpoints: (build) => ({
+      events: build.query<EventsRes, EventsArgs>({
+        query: () => ({ url: `/events` }),
+      }),
       ping: build.query<PingRes, PingArgs>({
         query: () => ({ url: `/ping` }),
       }),
@@ -40,15 +43,17 @@ const injectedRtkApi = api
     overrideExisting: false,
   })
 export { injectedRtkApi as internalApi }
+export type EventsRes = unknown
+export type EventsArgs = void
 export type PingRes = /** status 200 OK */ string
 export type PingArgs = void
 export type OpenapiYamlGetRes = unknown
 export type OpenapiYamlGetArgs = void
-export type AdminPingRes = unknown
+export type AdminPingRes = /** status 200 OK */ string
 export type AdminPingArgs = void
-export type GetCurrentUserRes = /** status 200 ok */ UserPublic
+export type GetCurrentUserRes = /** status 200 ok */ UserResponse
 export type GetCurrentUserArgs = void
-export type UpdateUserAuthorizationRes = /** status 200 ok */ UserPublic
+export type UpdateUserAuthorizationRes = /** status 200 ok */ UserResponse
 export type UpdateUserAuthorizationArgs = {
   /** user_id that needs to be updated */
   id: string
@@ -72,8 +77,52 @@ export type ValidationError = {
 export type HttpValidationError = {
   detail?: ValidationError[]
 }
-export type PgtypeJsonb = object
 export type UuidUuid = string
+export type UserApiKeyPublic = {
+  apiKey: string
+  expiresOn: string
+  userID: UuidUuid
+} | null
+export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
+export type Scope =
+  | 'test-scope'
+  | 'users:read'
+  | 'users:write'
+  | 'scopes:write'
+  | 'team-settings:write'
+  | 'project-settings:write'
+  | 'work-item:review'
+export type Scopes = Scope[]
+export type PgtypeJsonb = object
+export type TeamPublic = {
+  createdAt: string
+  description: string
+  metadata: PgtypeJsonb
+  name: string
+  projectID: number
+  teamID: number
+  updatedAt: string
+}
+export type UserResponse = {
+  apiKey?: UserApiKeyPublic
+  createdAt: string
+  deletedAt: string | null
+  email: string
+  firstName: string | null
+  fullName: string | null
+  hasGlobalNotifications: boolean
+  hasPersonalNotifications: boolean
+  lastName: string | null
+  role: Role
+  scopes: Scopes
+  teams?: TeamPublic[] | null
+  userID: UuidUuid
+  username: string
+}
+export type UpdateUserAuthRequest = {
+  role?: Role
+  scopes?: Scopes
+}
 export type TimeEntryPublic = {
   activityID?: number
   comment?: string
@@ -83,17 +132,6 @@ export type TimeEntryPublic = {
   timeEntryID?: number
   userID?: UuidUuid
   workItemID?: number | null
-}
-export type TeamPublic = {
-  createdAt?: string
-  description?: string
-  metadata?: PgtypeJsonb
-  name?: string
-  projectID?: number
-  teamID?: number
-  timeEntries?: TimeEntryPublic[] | null
-  updatedAt?: string
-  users?: UserPublic[] | null
 }
 export type TaskTypePublic = {
   color?: string
@@ -152,25 +190,12 @@ export type UserPublic = {
   username?: string
   workItems?: WorkItemPublic[] | null
 }
-export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
-export type Scope =
-  | 'test-scope'
-  | 'users:read'
-  | 'users:write'
-  | 'scopes:write'
-  | 'team-settings:write'
-  | 'project-settings:write'
-  | 'work-item:review'
-export type Scopes = Scope[]
-export type UpdateUserAuthRequest = {
-  role?: Role
-  scopes?: Scopes
-}
 export type UpdateUserRequest = {
   first_name?: string
   last_name?: string
 }
 export const {
+  useEventsQuery,
   usePingQuery,
   useOpenapiYamlGetQuery,
   useAdminPingQuery,

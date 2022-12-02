@@ -8,6 +8,7 @@ import {
   Scope,
   Scopes,
   Role,
+  NotificationType,
   WorkItemRole,
   UpdateUserRequest,
   UpdateUserAuthRequest,
@@ -24,6 +25,7 @@ import {
   ModelsRole,
   UserResponse,
   ModelsScope,
+  UserAPIKeyPublic,
 } from './models'
 
 export const schemaDefinitions = {
@@ -31,6 +33,7 @@ export const schemaDefinitions = {
   Scope: info<Scope>('Scope', '#/definitions/Scope'),
   Scopes: info<Scopes>('Scopes', '#/definitions/Scopes'),
   Role: info<Role>('Role', '#/definitions/Role'),
+  NotificationType: info<NotificationType>('NotificationType', '#/definitions/NotificationType'),
   WorkItemRole: info<WorkItemRole>('WorkItemRole', '#/definitions/WorkItemRole'),
   UpdateUserRequest: info<UpdateUserRequest>('UpdateUserRequest', '#/definitions/UpdateUserRequest'),
   UpdateUserAuthRequest: info<UpdateUserAuthRequest>('UpdateUserAuthRequest', '#/definitions/UpdateUserAuthRequest'),
@@ -47,6 +50,7 @@ export const schemaDefinitions = {
   ModelsRole: info<ModelsRole>('ModelsRole', '#/definitions/ModelsRole'),
   UserResponse: info<UserResponse>('UserResponse', '#/definitions/UserResponse'),
   ModelsScope: info<ModelsScope>('ModelsScope', '#/definitions/ModelsScope'),
+  UserAPIKeyPublic: info<UserAPIKeyPublic>('UserAPIKeyPublic', '#/definitions/UserAPIKeyPublic'),
 }
 
 export interface SchemaInfo<T> {

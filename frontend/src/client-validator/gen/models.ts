@@ -21,6 +21,10 @@ export type Scope =
 export type Scopes = Scope[]
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 /**
+ * User notification type.
+ */
+export type NotificationType = 'personal' | 'global'
+/**
  * Role in work item for a member.
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
@@ -40,6 +44,16 @@ export type TaskTypePublic1 = {
   teamID?: number
 } | null
 export type ModelsRole = string
+export type UserAPIKeyPublic = {
+  apiKey: string
+  expiresOn: string
+  userID: UuidUUID
+} & UserAPIKeyPublic1
+export type UserAPIKeyPublic1 = {
+  apiKey: string
+  expiresOn: string
+  userID: UuidUUID
+} | null
 export type ModelsScope = string
 
 export interface HTTPValidationError {
@@ -85,15 +99,13 @@ export interface UserPublic {
   workItems?: WorkItemPublic[] | null
 }
 export interface TeamPublic {
-  createdAt?: string
-  description?: string
-  metadata?: PgtypeJSONB
-  name?: string
-  projectID?: number
-  teamID?: number
-  timeEntries?: TimeEntryPublic[] | null
-  updatedAt?: string
-  users?: UserPublic[] | null
+  createdAt: string
+  description: string
+  metadata: PgtypeJSONB
+  name: string
+  projectID: number
+  teamID: number
+  updatedAt: string
 }
 export interface PgtypeJSONB {}
 export interface TimeEntryPublic {
@@ -143,18 +155,18 @@ export interface WorkItemCommentPublic {
   workItemID?: number
 }
 export interface UserResponse {
-  apiKeyID?: number | null
-  createdAt?: string
-  deletedAt?: string | null
-  email?: string
-  firstName?: string | null
-  fullName?: string | null
-  lastName?: string | null
-  role?: Role
-  scopes?: Scopes
+  apiKey?: UserAPIKeyPublic
+  createdAt: string
+  deletedAt: string | null
+  email: string
+  firstName: string | null
+  fullName: string | null
+  hasGlobalNotifications: boolean
+  hasPersonalNotifications: boolean
+  lastName: string | null
+  role: Role
+  scopes: Scopes
   teams?: TeamPublic[] | null
-  timeEntries?: TimeEntryPublic[] | null
-  userID?: UuidUUID
-  username?: string
-  workItems?: WorkItemPublic[] | null
+  userID: UuidUUID
+  username: string
 }

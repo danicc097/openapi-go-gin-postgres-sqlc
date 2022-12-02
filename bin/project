@@ -607,7 +607,7 @@ x.run.backend-hr() {
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$PROTO_DIR,"$PG_REPO_GEN",**/testdata,frontend,*.cache" \
+    --build.exclude_dir ".git,tmp,$PROTO_DIR,"$PG_REPO_GEN",**/testdata,vendor,frontend,*.cache" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
@@ -1275,8 +1275,10 @@ set -e
 for arg in ${args[@]}; do
   set -- "$@" "$arg"
 done
+
 # applicable to any command
 ensure_envvars_set ".env.template" ".env.${env}"
+ensure_envvars_set "docker/.env.template" "docker/.env"
 source ".env.$env"
 
 # handle executing x functions
