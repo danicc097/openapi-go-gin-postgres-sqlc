@@ -312,6 +312,9 @@ type ClientInterface interface {
 	// AdminPing request
 	AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// Events request
+	Events(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// OpenapiYamlGet request
 	OpenapiYamlGet(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -337,6 +340,18 @@ type ClientInterface interface {
 
 func (c *Client) AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminPingRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) Events(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewEventsRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -453,6 +468,33 @@ func NewAdminPingRequest(server string) (*http.Request, error) {
 	}
 
 	operationPath := fmt.Sprintf("/admin/ping")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewEventsRequest generates requests for Events
+func NewEventsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/events")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -725,6 +767,9 @@ type ClientWithResponsesInterface interface {
 	// AdminPing request
 	AdminPingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*AdminPingResponse, error)
 
+	// Events request
+	EventsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*EventsResponse, error)
+
 	// OpenapiYamlGet request
 	OpenapiYamlGetWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*OpenapiYamlGetResponse, error)
 
@@ -764,6 +809,27 @@ func (r AdminPingResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminPingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type EventsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r EventsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r EventsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -910,6 +976,15 @@ func (c *ClientWithResponses) AdminPingWithResponse(ctx context.Context, reqEdit
 	return ParseAdminPingResponse(rsp)
 }
 
+// EventsWithResponse request returning *EventsResponse
+func (c *ClientWithResponses) EventsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*EventsResponse, error) {
+	rsp, err := c.Events(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEventsResponse(rsp)
+}
+
 // OpenapiYamlGetWithResponse request returning *OpenapiYamlGetResponse
 func (c *ClientWithResponses) OpenapiYamlGetWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*OpenapiYamlGetResponse, error) {
 	rsp, err := c.OpenapiYamlGet(ctx, reqEditors...)
@@ -1001,6 +1076,22 @@ func ParseAdminPingResponse(rsp *http.Response) (*AdminPingResponse, error) {
 		}
 		response.JSON422 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseEventsResponse parses an HTTP response from a EventsWithResponse call
+func ParseEventsResponse(rsp *http.Response) (*EventsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &EventsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil

@@ -1,4 +1,9 @@
 {
+  "Events": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": false
+  },
   "Ping": {
     "scopes": null,
     "role": null,

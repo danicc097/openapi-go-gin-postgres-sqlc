@@ -11,6 +11,7 @@ const (
 
 	// Operation IDs for the 'default' tag.
 
+	Events         OperationID = "Events"
 	OpenapiYamlGet OperationID = "OpenapiYamlGet"
 	Ping           OperationID = "Ping"
 

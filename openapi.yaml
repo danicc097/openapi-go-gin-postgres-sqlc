@@ -29,6 +29,24 @@ tags:
   - description: Operations about user
     name: user
 paths:
+  /events:
+    get:
+      operationId: Events
+      responses:
+        "200":
+          description: events
+          content:
+            text/event-stream:
+              schema:
+                type: array
+                format: event-stream
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    data:
+                      type: object
   /ping:
     get:
       description: ""

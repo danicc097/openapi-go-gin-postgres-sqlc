@@ -17,6 +17,9 @@ type ServerInterface interface {
 	// Ping pongs
 	// (GET /admin/ping)
 	AdminPing(c *gin.Context)
+
+	// (GET /events)
+	Events(c *gin.Context)
 	// Returns this very OpenAPI spec.
 	// (GET /openapi.yaml)
 	OpenapiYamlGet(c *gin.Context)
@@ -75,6 +78,32 @@ func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 	}
 
 	siw.Handler.AdminPing(c)
+}
+
+// Events operation with its own middleware.
+func (siw *ServerInterfaceWrapper) Events(c *gin.Context) {
+
+	// apply auth middlewares for operation "Events".
+	for _, mw := range siw.Handler.authMiddlewares(Events) {
+		mw(c)
+
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	// apply middlewares for operation "Events".
+	for _, mw := range siw.Handler.middlewares(Events) {
+		mw(c)
+
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.Events(c)
 }
 
 // OpenapiYamlGet operation with its own middleware.
@@ -299,6 +328,8 @@ func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, op
 	}
 
 	router.GET(options.BaseURL+"/admin/ping", wrapper.AdminPing)
+
+	router.GET(options.BaseURL+"/events", wrapper.Events)
 
 	router.GET(options.BaseURL+"/openapi.yaml", wrapper.OpenapiYamlGet)
 

@@ -30,6 +30,8 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 						models.Scope("users:write")},
 				}),
 		}
+	case Events:
+		return []gin.HandlerFunc{}
 	case GetCurrentUser:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
