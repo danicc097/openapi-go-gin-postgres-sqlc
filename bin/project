@@ -147,6 +147,11 @@ x.pregen() {
     missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
+    # don't want this to block if getting bad gen later on
+    go build -o pregen cmd/pregen/main.go || echo "Could not rebuild pregen" >&2
+
+    ./pregen -env=".env.$env" --validate-spec-only
+
     x.db.drop
     x.migrate up
 
@@ -227,10 +232,8 @@ x.pregen() {
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
     sed -i 's/!!merge //' $SPEC
 
-    # don't want this to block when getting bad gen
-    go build -o pregen cmd/pregen/main.go 2>/dev/null || echo "Could not rebuild pregen" >&2
-
     ./pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
+
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -259,7 +262,7 @@ x.postgen() {
 
     update_spec_with_structs
 
-    go build -o postgen cmd/postgen/main.go
+    go build -o postgen cmd/postgen/main.go || echo "Could not rebuild postgen" >&2
     ./postgen -env=".env.$env"
   } \
     2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -999,7 +1002,7 @@ update_spec_with_structs() {
   struct_names=$(join_by "," ${struct_names[*]})
   ((${#struct_names} == 0)) && return
 
-  go build -o gen-schema cmd/gen-schema/main.go
+  go build -o gen-schema cmd/gen-schema/main.go || echo "Could not rebuild gen-schema" >&2
   ./gen-schema --struct-names $struct_names | yq '
     with_entries(select(.key == "components")) |
     (.components.schemas[] | key) line_comment="Generated from db package structs. DO NOT EDIT."' \

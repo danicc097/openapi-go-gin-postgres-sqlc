@@ -81,6 +81,18 @@ func (o *PreGen) validateSpec() error {
 	return nil
 }
 
+func (o *PreGen) ValidateProjectSpec() error {
+	if err := o.validateSpec(); err != nil {
+		return fmt.Errorf("validate spec: %w", err)
+	}
+
+	if err := o.analyzeSpec(); err != nil {
+		return fmt.Errorf("analyze spec: %w", err)
+	}
+
+	return nil
+}
+
 func (o *PreGen) Generate() error {
 	if err := o.validateSpec(); err != nil {
 		return fmt.Errorf("validate spec: %w", err)
