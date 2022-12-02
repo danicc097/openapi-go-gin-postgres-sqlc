@@ -150,12 +150,6 @@ x.pregen() {
     x.db.drop
     x.migrate up
 
-    # TODO spec validation and operationId .gen.go generation needs to happen at this point.
-    # move all that to pregen.
-    # finally in postgen a generic spec validation is done in case all this yq messed something up
-    go build -o postgen cmd/postgen/main.go || true
-    ./postgen -env=".env.$env"
-
     ######## Sync enums from db with spec
     # example: `x-db-enum: user_role` will use the db's "user_role" enum
     local vext="x-db-enum"

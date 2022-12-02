@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
@@ -26,21 +25,8 @@ func main() {
 	}
 
 	const baseDir = "internal"
-	conf := &postgen.Conf{
-		CurrentHandlersDir: postgen.Dir(path.Join(baseDir, "rest")),
-		GenHandlersDir:     postgen.Dir(path.Join(baseDir, "gen")),
-		OutHandlersDir:     postgen.Dir(path.Join(baseDir, "rest")),
-		OutServicesDir:     postgen.Dir(path.Join(baseDir, "services")),
-	}
 
 	var stderr bytes.Buffer
-	og := postgen.NewOpenapiGenerator(conf, &stderr, spec)
-
-	if err := og.Generate(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		fmt.Fprintln(os.Stderr, stderr.String())
-		os.Exit(1)
-	}
 
 	url := internal.BuildAPIURL("openapi.yaml")
 

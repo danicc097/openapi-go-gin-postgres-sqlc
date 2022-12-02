@@ -25,9 +25,6 @@ github.com/cespare/xxhash/v2
 github.com/danicc097/xo/loader
 github.com/danicc097/xo/models
 github.com/danicc097/xo/types
-# github.com/dave/dst v0.27.0
-## explicit; go 1.18
-github.com/dave/dst
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew

@@ -1,4 +1,4 @@
-package postgen
+package pregen
 
 import (
 	"bytes"
@@ -31,12 +31,12 @@ func TestAnalyzeSpec(t *testing.T) {
 		{
 			"missing_operationid",
 			"missing_operationid.yaml",
-			`path "/pet/ConflictEndpointPet": method "GET": operationId is required for postgen`,
+			`path "/pet/ConflictEndpointPet": method "GET": operationId is required for codegen`,
 		},
 		{
 			"more_than_one_tag",
 			"more_than_one_tag.yaml",
-			`path "/pet/ConflictEndpointPet": method "GET": at most one tag is permitted for postgen`,
+			`path "/pet/ConflictEndpointPet": method "GET": at most one tag is permitted for codegen`,
 		},
 	}
 
@@ -47,7 +47,7 @@ func TestAnalyzeSpec(t *testing.T) {
 
 			var stderr bytes.Buffer
 
-			og := NewOpenapiGenerator(&Conf{}, &stderr, path.Join(baseDir, tc.File))
+			og := New(&stderr, path.Join(baseDir, tc.File), "")
 
 			err := og.analyzeSpec()
 			if err != nil && tc.ErrContains != "" {
