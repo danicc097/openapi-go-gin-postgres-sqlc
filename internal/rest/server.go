@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/http"
 	"os"
@@ -290,7 +291,41 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 
 	handlers := NewHandlers(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authzsvc, authnsvc, authmw)
 
-	RegisterHandlersWithOptions(vg, handlers, GinServerOptions{BaseURL: ""})
+	vg = RegisterHandlersWithOptions(vg, handlers, GinServerOptions{BaseURL: ""})
+
+	stream := newSSEServer()
+
+	// We are streaming current time to clients in the interval 10 seconds
+	go func() {
+		for {
+			time.Sleep(time.Second * 1)
+			now := time.Now().Format("2006-01-02 15:04:05")
+			currentTime := fmt.Sprintf("The Current Time Is %v", now)
+			fmt.Printf("currentTime: %v\n", currentTime)
+			// Send current time to clients message channel
+			stream.Message <- currentTime
+		}
+	}()
+
+	router.GET("/stream", SSEHeadersMiddleware(), stream.serveHTTP(), func(c *gin.Context) {
+		v, ok := c.Get("clientChan")
+		if !ok {
+			return
+		}
+		clientChan, ok := v.(ClientChan)
+		if !ok {
+			return
+		}
+		c.Stream(func(w io.Writer) bool {
+			// Stream message to client from message channel
+			if msg, ok := <-clientChan; ok {
+				c.SSEvent("message", msg)
+				return true
+			}
+			c.SSEvent("message", "STOPPED")
+			return false
+		})
+	})
 
 	conf.Logger.Info("Server started")
 

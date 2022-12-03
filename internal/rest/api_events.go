@@ -31,6 +31,8 @@ type ClientChan chan string
 func (h *Handlers) Events(c *gin.Context) {
 	c.Set(skipResponseValidation, true)
 
+	fmt.Printf("c.Copy().Keys (Events): %v\n", c.Copy().Keys)
+
 	v, ok := c.Get("clientChan")
 	if !ok {
 		return

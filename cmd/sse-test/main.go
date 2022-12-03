@@ -40,7 +40,7 @@ func main() {
 	router := gin.Default()
 
 	// Initialize new streaming server
-	stream := NewServer()
+	stream := newSSEServer()
 
 	// We are streaming current time to clients in the interval 10 seconds
 	go func() {
@@ -144,7 +144,7 @@ func Run(router *gin.Engine) (<-chan error, error) {
 }
 
 // Initialize event and Start procnteessing requests
-func NewServer() (event *Event) {
+func newSSEServer() (event *Event) {
 	event = &Event{
 		Message:       make(chan string),
 		NewClients:    make(chan chan string),
