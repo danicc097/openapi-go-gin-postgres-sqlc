@@ -51,9 +51,9 @@ export type OpenapiYamlGetRes = unknown
 export type OpenapiYamlGetArgs = void
 export type AdminPingRes = /** status 200 OK */ string
 export type AdminPingArgs = void
-export type GetCurrentUserRes = /** status 200 ok */ UserResponse
+export type GetCurrentUserRes = /** status 200 ok */ RestUserResponse
 export type GetCurrentUserArgs = void
-export type UpdateUserAuthorizationRes = /** status 200 ok */ UserResponse
+export type UpdateUserAuthorizationRes = /** status 200 ok */ RestUserResponse
 export type UpdateUserAuthorizationArgs = {
   /** user_id that needs to be updated */
   id: string
@@ -78,7 +78,7 @@ export type HttpValidationError = {
   detail?: ValidationError[]
 }
 export type UuidUuid = string
-export type UserApiKeyPublic = {
+export type DbUserApiKeyPublic = {
   apiKey: string
   expiresOn: string
   userID: UuidUuid
@@ -94,7 +94,7 @@ export type Scope =
   | 'work-item:review'
 export type Scopes = Scope[]
 export type PgtypeJsonb = object
-export type TeamPublic = {
+export type DbTeamPublic = {
   createdAt: string
   description: string
   metadata: PgtypeJsonb
@@ -103,8 +103,8 @@ export type TeamPublic = {
   teamID: number
   updatedAt: string
 }
-export type UserResponse = {
-  apiKey?: UserApiKeyPublic
+export type RestUserResponse = {
+  apiKey?: DbUserApiKeyPublic
   createdAt: string
   deletedAt: string | null
   email: string
@@ -115,13 +115,22 @@ export type UserResponse = {
   lastName: string | null
   role: Role
   scopes: Scopes
-  teams?: TeamPublic[] | null
+  teams?: DbTeamPublic[] | null
   userID: UuidUuid
   username: string
 }
 export type UpdateUserAuthRequest = {
   role?: Role
   scopes?: Scopes
+}
+export type TeamPublic = {
+  createdAt: string
+  description: string
+  metadata: PgtypeJsonb
+  name: string
+  projectID: number
+  teamID: number
+  updatedAt: string
 }
 export type TimeEntryPublic = {
   activityID?: number

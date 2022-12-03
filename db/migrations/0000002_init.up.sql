@@ -105,10 +105,10 @@ comment on column user_api_keys.user_api_key_id is 'property:private';
 create index on users (created_at);
 
 -- create index on users (deleted_at);  - not worth the extra overhead.
+-- for finding all deleted users exclusively
 create index on users (deleted_at)
 where (deleted_at is not null);
 
--- for finding all deleted users exclusively
 create index on users (updated_at);
 
 -- notification_types are append-only

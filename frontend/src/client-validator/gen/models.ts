@@ -44,6 +44,17 @@ export type TaskTypePublic1 = {
   teamID?: number
 } | null
 export type ModelsRole = string
+export type DbUserAPIKeyPublic = {
+  apiKey: string
+  expiresOn: string
+  userID: UuidUUID
+} & DbUserAPIKeyPublic1
+export type DbUserAPIKeyPublic1 = {
+  apiKey: string
+  expiresOn: string
+  userID: UuidUUID
+} | null
+export type ModelsScope = string
 export type UserAPIKeyPublic = {
   apiKey: string
   expiresOn: string
@@ -54,7 +65,6 @@ export type UserAPIKeyPublic1 = {
   expiresOn: string
   userID: UuidUUID
 } | null
-export type ModelsScope = string
 
 export interface HTTPValidationError {
   detail?: Detail
@@ -154,8 +164,8 @@ export interface WorkItemCommentPublic {
   workItemCommentID?: number
   workItemID?: number
 }
-export interface UserResponse {
-  apiKey?: UserAPIKeyPublic
+export interface RestUserResponse {
+  apiKey?: DbUserAPIKeyPublic
   createdAt: string
   deletedAt: string | null
   email: string
@@ -166,7 +176,16 @@ export interface UserResponse {
   lastName: string | null
   role: Role
   scopes: Scopes
-  teams?: TeamPublic[] | null
+  teams?: DbTeamPublic[] | null
   userID: UuidUUID
   username: string
+}
+export interface DbTeamPublic {
+  createdAt: string
+  description: string
+  metadata: PgtypeJSONB
+  name: string
+  projectID: number
+  teamID: number
+  updatedAt: string
 }

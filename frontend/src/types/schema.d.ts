@@ -197,8 +197,8 @@ export interface components {
       workItemTypeID?: number;
     };
     ModelsRole: string;
-    UserResponse: {
-      apiKey?: components["schemas"]["UserAPIKeyPublic"];
+    RestUserResponse: {
+      apiKey?: components["schemas"]["DbUserAPIKeyPublic"];
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
@@ -211,12 +211,29 @@ export interface components {
       lastName: string | null;
       role: components["schemas"]["Role"];
       scopes: components["schemas"]["Scopes"];
-      teams?: (components["schemas"]["TeamPublic"])[] | null;
+      teams?: (components["schemas"]["DbTeamPublic"])[] | null;
       userID: components["schemas"]["UuidUUID"];
       username: string;
     };
     ModelsScope: string;
     UserAPIKeyPublic: {
+      apiKey: string;
+      /** Format: date-time */
+      expiresOn: string;
+      userID: components["schemas"]["UuidUUID"];
+    } | null;
+    DbTeamPublic: {
+      /** Format: date-time */
+      createdAt: string;
+      description: string;
+      metadata: components["schemas"]["PgtypeJSONB"];
+      name: string;
+      projectID: number;
+      teamID: number;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    DbUserAPIKeyPublic: {
       apiKey: string;
       /** Format: date-time */
       expiresOn: string;
@@ -276,7 +293,7 @@ export interface operations {
       /** @description OpenAPI YAML file. */
       200: {
         content: {
-          "text/yaml": string;
+          "application/x-yaml": string;
         };
       };
     };
@@ -304,7 +321,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["UserResponse"];
+          "application/json": components["schemas"]["RestUserResponse"];
         };
       };
     };
@@ -321,7 +338,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["UserResponse"];
+          "application/json": components["schemas"]["RestUserResponse"];
         };
       };
     };

@@ -467,10 +467,10 @@
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "UserResponse": {
+    "RestUserResponse": {
       "properties": {
         "apiKey": {
-          "$ref": "#/definitions/UserAPIKeyPublic"
+          "$ref": "#/definitions/DbUserAPIKeyPublic"
         },
         "createdAt": {
           "format": "date-time",
@@ -518,7 +518,7 @@
         },
         "teams": {
           "items": {
-            "$ref": "#/definitions/TeamPublic"
+            "$ref": "#/definitions/DbTeamPublic"
           },
           "type": [
             "array",
@@ -547,7 +547,7 @@
         "deletedAt"
       ],
       "type": "object",
-      "x-postgen-struct": "UserResponse",
+      "x-postgen-struct": "RestUserResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "ModelsScope": {
@@ -555,6 +555,68 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "UserAPIKeyPublic": {
+      "properties": {
+        "apiKey": {
+          "type": "string"
+        },
+        "expiresOn": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        }
+      },
+      "required": [
+        "apiKey",
+        "expiresOn",
+        "userID"
+      ],
+      "type": [
+        "object",
+        "null"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbTeamPublic": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/definitions/PgtypeJSONB"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "teamID",
+        "projectID",
+        "name",
+        "description",
+        "metadata",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserAPIKeyPublic": {
       "properties": {
         "apiKey": {
           "type": "string"
@@ -637,14 +699,20 @@
     "ModelsRole": {
       "$ref": "#/definitions/ModelsRole"
     },
-    "UserResponse": {
-      "$ref": "#/definitions/UserResponse"
+    "RestUserResponse": {
+      "$ref": "#/definitions/RestUserResponse"
     },
     "ModelsScope": {
       "$ref": "#/definitions/ModelsScope"
     },
     "UserAPIKeyPublic": {
       "$ref": "#/definitions/UserAPIKeyPublic"
+    },
+    "DbTeamPublic": {
+      "$ref": "#/definitions/DbTeamPublic"
+    },
+    "DbUserAPIKeyPublic": {
+      "$ref": "#/definitions/DbUserAPIKeyPublic"
     }
   }
 }

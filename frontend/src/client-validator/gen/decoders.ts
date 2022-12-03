@@ -27,9 +27,11 @@ import {
   WorkItemCommentPublic,
   WorkItemPublic,
   ModelsRole,
-  UserResponse,
+  RestUserResponse,
   ModelsScope,
   UserAPIKeyPublic,
+  DbTeamPublic,
+  DbUserAPIKeyPublic,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -266,16 +268,16 @@ export const ModelsRoleDecoder: Decoder<ModelsRole> = {
     return validateJson(json, schema, ModelsRoleDecoder.definitionName)
   },
 }
-export const UserResponseDecoder: Decoder<UserResponse> = {
-  definitionName: 'UserResponse',
-  schemaRef: '#/definitions/UserResponse',
+export const RestUserResponseDecoder: Decoder<RestUserResponse> = {
+  definitionName: 'RestUserResponse',
+  schemaRef: '#/definitions/RestUserResponse',
 
-  decode(json: unknown): UserResponse {
-    const schema = ajv.getSchema(UserResponseDecoder.schemaRef)
+  decode(json: unknown): RestUserResponse {
+    const schema = ajv.getSchema(RestUserResponseDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${UserResponseDecoder.definitionName} not found`)
+      throw new Error(`Schema ${RestUserResponseDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, UserResponseDecoder.definitionName)
+    return validateJson(json, schema, RestUserResponseDecoder.definitionName)
   },
 }
 export const ModelsScopeDecoder: Decoder<ModelsScope> = {
@@ -300,5 +302,29 @@ export const UserAPIKeyPublicDecoder: Decoder<UserAPIKeyPublic> = {
       throw new Error(`Schema ${UserAPIKeyPublicDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, UserAPIKeyPublicDecoder.definitionName)
+  },
+}
+export const DbTeamPublicDecoder: Decoder<DbTeamPublic> = {
+  definitionName: 'DbTeamPublic',
+  schemaRef: '#/definitions/DbTeamPublic',
+
+  decode(json: unknown): DbTeamPublic {
+    const schema = ajv.getSchema(DbTeamPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbTeamPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbTeamPublicDecoder.definitionName)
+  },
+}
+export const DbUserAPIKeyPublicDecoder: Decoder<DbUserAPIKeyPublic> = {
+  definitionName: 'DbUserAPIKeyPublic',
+  schemaRef: '#/definitions/DbUserAPIKeyPublic',
+
+  decode(json: unknown): DbUserAPIKeyPublic {
+    const schema = ajv.getSchema(DbUserAPIKeyPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbUserAPIKeyPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbUserAPIKeyPublicDecoder.definitionName)
   },
 }

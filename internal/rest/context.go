@@ -9,10 +9,20 @@ import (
 
 // how could we use custom types with gin context?
 const (
-	userCtxKey    = "user"
-	ginContextKey = "middleware.openapi/gin-context"
-	userDataKey   = "middleware.openapi/user-data"
+	userCtxKey             = "user"
+	ginContextKey          = "middleware.openapi/gin-context"
+	userDataKey            = "middleware.openapi/user-data"
+	skipResponseValidation = "skip-response-validation"
 )
+
+func getSkipResponseValidationFromCtx(c *gin.Context) bool {
+	skip, ok := c.Value(skipResponseValidation).(bool)
+	if !ok {
+		return false
+	}
+
+	return skip
+}
 
 func getUserFromCtx(c *gin.Context) *db.User {
 	user, ok := c.Value(userCtxKey).(*db.User)

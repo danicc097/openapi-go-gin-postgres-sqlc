@@ -74,7 +74,7 @@ paths:
         "200":
           description: OpenAPI YAML file.
           content:
-            text/yaml:
+            application/x-yaml:
               schema:
                 type: string
                 format: binary

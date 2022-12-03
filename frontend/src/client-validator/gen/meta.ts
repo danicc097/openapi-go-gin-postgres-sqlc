@@ -23,9 +23,11 @@ import {
   WorkItemCommentPublic,
   WorkItemPublic,
   ModelsRole,
-  UserResponse,
+  RestUserResponse,
   ModelsScope,
   UserAPIKeyPublic,
+  DbTeamPublic,
+  DbUserAPIKeyPublic,
 } from './models'
 
 export const schemaDefinitions = {
@@ -48,9 +50,11 @@ export const schemaDefinitions = {
   WorkItemCommentPublic: info<WorkItemCommentPublic>('WorkItemCommentPublic', '#/definitions/WorkItemCommentPublic'),
   WorkItemPublic: info<WorkItemPublic>('WorkItemPublic', '#/definitions/WorkItemPublic'),
   ModelsRole: info<ModelsRole>('ModelsRole', '#/definitions/ModelsRole'),
-  UserResponse: info<UserResponse>('UserResponse', '#/definitions/UserResponse'),
+  RestUserResponse: info<RestUserResponse>('RestUserResponse', '#/definitions/RestUserResponse'),
   ModelsScope: info<ModelsScope>('ModelsScope', '#/definitions/ModelsScope'),
   UserAPIKeyPublic: info<UserAPIKeyPublic>('UserAPIKeyPublic', '#/definitions/UserAPIKeyPublic'),
+  DbTeamPublic: info<DbTeamPublic>('DbTeamPublic', '#/definitions/DbTeamPublic'),
+  DbUserAPIKeyPublic: info<DbUserAPIKeyPublic>('DbUserAPIKeyPublic', '#/definitions/DbUserAPIKeyPublic'),
 }
 
 export interface SchemaInfo<T> {

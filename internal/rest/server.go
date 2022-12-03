@@ -28,7 +28,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	internal "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
@@ -59,6 +59,7 @@ type Config struct {
 	MyProviderCallbackPath string
 }
 
+// TODO BuildServerConfig with implicit validation instead
 func (c *Config) validate() error {
 	if c.Address == "" {
 		return fmt.Errorf("no server address provided")
@@ -93,10 +94,10 @@ type server struct {
 	middlewares []gin.HandlerFunc
 }
 
-type serverOption func(*server)
+type ServerOption func(*server)
 
 // WithMiddlewares adds the given middlewares before registering the main routers.
-func WithMiddlewares(mws ...gin.HandlerFunc) serverOption {
+func WithMiddlewares(mws ...gin.HandlerFunc) ServerOption {
 	return func(s *server) {
 		s.middlewares = mws
 	}
@@ -105,9 +106,8 @@ func WithMiddlewares(mws ...gin.HandlerFunc) serverOption {
 var key = []byte("test1234test1234")
 
 // NewServer returns a new http server.
-func NewServer(conf Config, opts ...serverOption) (*server, error) {
-	err := conf.validate()
-	if err != nil {
+func NewServer(conf Config, opts ...ServerOption) (*server, error) {
+	if err := conf.validate(); err != nil {
 		return nil, fmt.Errorf("server config validation: %w", err)
 	}
 
@@ -159,7 +159,7 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	issuer := os.Getenv("OIDC_ISSUER")
 	scopes := strings.Split(os.Getenv("OIDC_SCOPES"), " ")
 
-	redirectURI := internaldomain.BuildAPIURL(conf.MyProviderCallbackPath)
+	redirectURI := internal.BuildAPIURL(conf.MyProviderCallbackPath)
 	cookieHandler := httphelper.NewCookieHandler(key, key, httphelper.WithUnsecure())
 
 	options := []rp.Option{
@@ -253,32 +253,6 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 
 	oasMw := newOpenapiMiddleware(conf.Logger, openapi)
 
-	// TODO need to instantiate the repo with the conn/transaction already.
-	// hence we need to create a new service for every new request
-	// with a pool conn (already do this in py impl), else we
-	// would need to have helpers to change db dBTX in the repo itself, and the repo
-	// should not be concerned with this.
-	// TLDR refactor: all services need to be instantiated in the handler itself,
-	// beginning a transaction every time and sharing it for most use cases.
-	// handler structs receive everything necessary to construct all services.
-	// then all services share the same conn, _ := conf.Pool.Acquire() initialized in the handler
-	// (dont want to handle transactions or any committing in services, its up to caller - i.e. handlers, cli...)
-	// unless we have a reason not to (e.g. conn is not concurrency safe)
-	// finally we must call conn.Close and Rollback. we commit along the way
-
-	// use a direct pool connection if a query cannot be run in a transaction.
-	// IMPORTANT: read https://groups.google.com/g/golang-nuts/c/y8uLMofW2-E and then this comment tree
-	// https://medium.com/@florian_445/thanks-for-your-answer-6d03846860fa, then the article
-	// itself.
-	// takeaways:
-	// - we start any transactions in each handler method. Each service method calls the necessary
-	// repos OR services. Services are built in each handler, else imagine
-	//   the need for usvc := users.New(nsvc) and nsvc := notifications.New(usvc) at the same time
-	//   if we create the service inside NewXX() the problem is gone as long as services
-	//   remain in the same package, which they should.
-	// - repos must not be concerned with transaction details
-	// - also note services dont necessarily need an equivalently named repository or viceversa.
-
 	rlMw := newRateLimitMiddleware(conf.Logger, 25, 10)
 	switch os.Getenv("APP_ENV") {
 	case "prod":
@@ -296,9 +270,15 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 		repos.NewUserWithTracing(
 			repos.NewUserWithRetry(
 				repos.NewUserWithTimeout(
-					postgresql.NewUser(), repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second}),
-				retryCount, retryInterval),
-			postgresql.OtelName, nil),
+					postgresql.NewUser(),
+					repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second},
+				),
+				retryCount,
+				retryInterval,
+			),
+			postgresql.OtelName,
+			nil,
+		),
 		authzsvc,
 	)
 
@@ -315,12 +295,12 @@ func NewServer(conf Config, opts ...serverOption) (*server, error) {
 	conf.Logger.Info("Server started")
 
 	srv.httpsrv = &http.Server{
-		Handler:           router,
-		Addr:              conf.Address,
-		ReadTimeout:       1 * time.Second,
+		Handler: router,
+		Addr:    conf.Address,
+		// ReadTimeout:       10 * time.Second,
 		ReadHeaderTimeout: 1 * time.Second,
-		WriteTimeout:      1 * time.Second,
-		IdleTimeout:       1 * time.Second,
+		// WriteTimeout:      10 * time.Second,
+		// IdleTimeout:       10 * time.Second,
 	}
 	return srv, nil
 }
@@ -333,7 +313,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 	var err error
 
 	if err = envvar.Load(env); err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "envvar.Load")
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "envvar.Load")
 	}
 
 	conf := envvar.New()
@@ -348,17 +328,17 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 	}
 
 	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "zap.New")
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "zap.New")
 	}
 
 	pool, err := postgresql.New(conf, logger)
 	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "postgresql.New")
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "postgresql.New")
 	}
 
 	rdb, err := redis.New(conf)
 	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "redis.New")
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "redis.New")
 	}
 
 	tp := tracing.InitTracer()
@@ -375,7 +355,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
 	)
 	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "movieSvcConn")
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "movieSvcConn")
 	}
 
 	srv, err := NewServer(Config{
@@ -390,7 +370,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		MyProviderCallbackPath: "/auth/myprovider/callback",
 	})
 	if err != nil {
-		return nil, internaldomain.WrapErrorf(err, internaldomain.ErrorCodeUnknown, "NewServer")
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "NewServer")
 	}
 
 	errC := make(chan error, 1)
