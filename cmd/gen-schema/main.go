@@ -1,3 +1,6 @@
+/*
+gen-schema generates OpenAPI v3 schema portions from code.
+*/
 package main
 
 import (
@@ -36,12 +39,13 @@ func main() {
 
 	// update when adding new packages to gen structs map
 	reflector.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
-		if strings.HasPrefix(defaultDefName, "Db") {
-			return strings.TrimPrefix(defaultDefName, "Db")
-		}
-		if strings.HasPrefix(defaultDefName, "Rest") {
-			return strings.TrimPrefix(defaultDefName, "Rest")
-		}
+		// enough magic already
+		// if strings.HasPrefix(defaultDefName, "Db") {
+		// 	return strings.TrimPrefix(defaultDefName, "Db")
+		// }
+		// if strings.HasPrefix(defaultDefName, "Rest") {
+		// 	return strings.TrimPrefix(defaultDefName, "Rest")
+		// }
 
 		return defaultDefName
 	})

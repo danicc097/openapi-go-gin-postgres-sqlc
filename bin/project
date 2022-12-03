@@ -968,14 +968,14 @@ run_shared_services() {
 generate_structs_map() {
   readarray -t structs < <(find "$PG_REPO_GEN/db/" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
   for struct in ${structs[@]}; do
-    map_fields+=("\"$struct\": db.$struct{},")
+    map_fields+=("\"Db$struct\": db.$struct{},")
   done
   map_fields+=("
   //
   ")
   readarray -t structs < <(find "internal/rest" -name "models.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
   for struct in ${structs[@]}; do
-    map_fields+=("\"$struct\": rest.$struct{},")
+    map_fields+=("\"Rest$struct\": rest.$struct{},")
   done
 
   out="internal/postgen/structs.gen.go"

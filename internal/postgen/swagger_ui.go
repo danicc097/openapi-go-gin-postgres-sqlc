@@ -9,7 +9,7 @@ import (
 )
 
 // SetupSwaggerUI sets url as the base path.
-func SetupSwaggerUI(url string) error {
+func SetupSwaggerUI(url string, specPath string) error {
 	buf := &bytes.Buffer{}
 	staticDir := "internal/static"
 
@@ -52,7 +52,7 @@ window.onload = function () {
 
 	bundleSpec := path.Join(staticDir, "swagger-ui/openapi.yaml")
 	os.Remove(bundleSpec)
-	if err := os.Link("openapi.yaml", bundleSpec); err != nil {
+	if err := os.Link(specPath, bundleSpec); err != nil {
 		return err
 	}
 

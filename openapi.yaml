@@ -116,7 +116,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/RestUserResponse'
           description: ok
       tags:
         - user
@@ -141,7 +141,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/RestUserResponse'
           description: ok
       tags:
         - user
@@ -504,10 +504,10 @@ components:
       type: object
     ModelsRole:
       type: string
-    UserResponse:
+    RestUserResponse:
       properties:
         apiKey:
-          $ref: '#/components/schemas/UserAPIKeyPublic'
+          $ref: '#/components/schemas/DbUserAPIKeyPublic'
         createdAt:
           format: date-time
           type: string
@@ -536,7 +536,7 @@ components:
           $ref: '#/components/schemas/Scopes'
         teams:
           items:
-            $ref: '#/components/schemas/TeamPublic'
+            $ref: '#/components/schemas/DbTeamPublic'
           nullable: true
           type: array
         userID:
@@ -557,10 +557,52 @@ components:
         - createdAt
         - deletedAt
       type: object
-      x-postgen-struct: UserResponse
+      x-postgen-struct: RestUserResponse
     ModelsScope:
       type: string
     UserAPIKeyPublic:
+      nullable: true
+      properties:
+        apiKey:
+          type: string
+        expiresOn:
+          format: date-time
+          type: string
+        userID:
+          $ref: '#/components/schemas/UuidUUID'
+      required:
+        - apiKey
+        - expiresOn
+        - userID
+      type: object
+    DbTeamPublic:
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        description:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/PgtypeJSONB'
+        name:
+          type: string
+        projectID:
+          type: integer
+        teamID:
+          type: integer
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - teamID
+        - projectID
+        - name
+        - description
+        - metadata
+        - createdAt
+        - updatedAt
+      type: object
+    DbUserAPIKeyPublic:
       nullable: true
       properties:
         apiKey:

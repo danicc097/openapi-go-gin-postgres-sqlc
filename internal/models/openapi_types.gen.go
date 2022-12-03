@@ -45,6 +45,24 @@ const (
 	WorkItemRoleReviewer WorkItemRole = "reviewer"
 )
 
+// DbTeamPublic defines model for DbTeamPublic.
+type DbTeamPublic struct {
+	CreatedAt   time.Time   `json:"createdAt"`
+	Description string      `json:"description"`
+	Metadata    PgtypeJSONB `json:"metadata"`
+	Name        string      `json:"name"`
+	ProjectID   int         `json:"projectID"`
+	TeamID      int         `json:"teamID"`
+	UpdatedAt   time.Time   `json:"updatedAt"`
+}
+
+// DbUserAPIKeyPublic defines model for DbUserAPIKeyPublic.
+type DbUserAPIKeyPublic struct {
+	ApiKey    string    `json:"apiKey"`
+	ExpiresOn time.Time `json:"expiresOn"`
+	UserID    UuidUUID  `json:"userID"`
+}
+
 // HTTPValidationError defines model for HTTPValidationError.
 type HTTPValidationError struct {
 	Detail *[]ValidationError `json:"detail,omitempty"`
@@ -61,6 +79,24 @@ type NotificationType string
 
 // PgtypeJSONB defines model for PgtypeJSONB.
 type PgtypeJSONB = map[string]interface{}
+
+// RestUserResponse defines model for RestUserResponse.
+type RestUserResponse struct {
+	ApiKey                   *DbUserAPIKeyPublic `json:"apiKey"`
+	CreatedAt                time.Time           `json:"createdAt"`
+	DeletedAt                *time.Time          `json:"deletedAt"`
+	Email                    string              `json:"email"`
+	FirstName                *string             `json:"firstName"`
+	FullName                 *string             `json:"fullName"`
+	HasGlobalNotifications   bool                `json:"hasGlobalNotifications"`
+	HasPersonalNotifications bool                `json:"hasPersonalNotifications"`
+	LastName                 *string             `json:"lastName"`
+	Role                     Role                `json:"role"`
+	Scopes                   Scopes              `json:"scopes"`
+	Teams                    *[]DbTeamPublic     `json:"teams"`
+	UserID                   UuidUUID            `json:"userID"`
+	Username                 string              `json:"username"`
+}
 
 // Role defines model for Role.
 type Role string
@@ -153,24 +189,6 @@ type UserPublic struct {
 	UserID      *UuidUUID          `json:"userID,omitempty"`
 	Username    *string            `json:"username,omitempty"`
 	WorkItems   *[]WorkItemPublic  `json:"workItems"`
-}
-
-// UserResponse defines model for UserResponse.
-type UserResponse struct {
-	ApiKey                   *UserAPIKeyPublic `json:"apiKey"`
-	CreatedAt                time.Time         `json:"createdAt"`
-	DeletedAt                *time.Time        `json:"deletedAt"`
-	Email                    string            `json:"email"`
-	FirstName                *string           `json:"firstName"`
-	FullName                 *string           `json:"fullName"`
-	HasGlobalNotifications   bool              `json:"hasGlobalNotifications"`
-	HasPersonalNotifications bool              `json:"hasPersonalNotifications"`
-	LastName                 *string           `json:"lastName"`
-	Role                     Role              `json:"role"`
-	Scopes                   Scopes            `json:"scopes"`
-	Teams                    *[]TeamPublic     `json:"teams"`
-	UserID                   UuidUUID          `json:"userID"`
-	Username                 string            `json:"username"`
 }
 
 // UuidUUID defines model for UuidUUID.
