@@ -29,6 +29,7 @@ type ClientChan chan string
 
 // Events represents server events.
 func (h *Handlers) Events(c *gin.Context) {
+	c.Set(skipRequestValidation, true)
 	c.Set(skipResponseValidation, true)
 
 	fmt.Printf("c.Copy().Keys (Events): %v\n", c.Copy().Keys)
@@ -98,8 +99,10 @@ func (stream *Event) listen() {
 // TODO see if can reproduce https://github.com/gin-gonic/gin/issues/3142
 // some bugs where fixed in sse example committed 4 months later, so...
 func (stream *Event) serveHTTP() gin.HandlerFunc {
+	fmt.Println("serveHTTP - initializing stream event")
 	return func(c *gin.Context) {
 		// Initialize client channel
+		fmt.Println("serveHTTP - Initialize client channel")
 		clientChan := make(ClientChan)
 
 		// Send new connection to event server

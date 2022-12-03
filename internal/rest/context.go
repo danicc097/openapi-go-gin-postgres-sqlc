@@ -13,7 +13,17 @@ const (
 	ginContextKey          = "middleware.openapi/gin-context"
 	userDataKey            = "middleware.openapi/user-data"
 	skipResponseValidation = "skip-response-validation"
+	skipRequestValidation  = "skip-request-validation"
 )
+
+func getSkipRequestValidationFromCtx(c *gin.Context) bool {
+	skip, ok := c.Value(skipRequestValidation).(bool)
+	if !ok {
+		return false
+	}
+
+	return skip
+}
 
 func getSkipResponseValidationFromCtx(c *gin.Context) bool {
 	skip, ok := c.Value(skipResponseValidation).(bool)
