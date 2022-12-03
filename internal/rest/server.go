@@ -15,10 +15,12 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	rv8 "github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/zitadel/oidc/pkg/client/rp"
 	httphelper "github.com/zitadel/oidc/pkg/http"
 	"github.com/zitadel/oidc/pkg/oidc"
@@ -35,6 +37,8 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
+	ginzap "github.com/gin-contrib/zap"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -114,35 +118,35 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 
 	router := gin.Default()
 	// Add a ginzap middleware, which:
-	//   - Logs all requests, like a combined access and error log.
-	//   - Logs to stdout.
-	//   - RFC3339 with UTC time format.
-	// router.Use(ginzap.GinzapWithConfig(conf.Logger, &ginzap.Config{
-	// 	TimeFormat: time.RFC3339,
-	// 	UTC:        true,
-	// 	// SkipPaths:  []string{"/no_log"},
-	// }))
-	// router.Use(ginzap.RecoveryWithZap(conf.Logger, true))
-	// router.Use(cors.New(cors.Config{
-	// 	AllowOrigins:     []string{"*"},
-	// 	AllowMethods:     []string{"*"},
-	// 	AllowHeaders:     []string{"*"},
-	// 	ExposeHeaders:    []string{"*"},
-	// 	AllowCredentials: true,
-	// 	// AllowOriginFunc: func(origin string) bool {
-	// 	// 	return origin == "https://github.com"
-	// 	// },
-	// 	MaxAge: 12 * time.Hour,
-	// }))
+	// - Logs all requests, like a combined access and error log.
+	// - Logs to stdout.
+	// - RFC3339 with UTC time format.
+	router.Use(ginzap.GinzapWithConfig(conf.Logger, &ginzap.Config{
+		TimeFormat: time.RFC3339,
+		UTC:        true,
+		// SkipPaths:  []string{"/no_log"},
+	}))
+	router.Use(ginzap.RecoveryWithZap(conf.Logger, true))
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"*"},
+		AllowHeaders:     []string{"*"},
+		ExposeHeaders:    []string{"*"},
+		AllowCredentials: true,
+		// AllowOriginFunc: func(origin string) bool {
+		// 	return origin == "https://github.com"
+		// },
+		MaxAge: 12 * time.Hour,
+	}))
 
-	// // no need to set provider and propagator again, will use server global's
-	// router.Use(otelgin.Middleware(""))
-	// // pprof.Register(router, "dev/pprof")
-	// router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	// no need to set provider and propagator again, will use server global's
+	router.Use(otelgin.Middleware(""))
+	// pprof.Register(router, "dev/pprof")
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	// for _, mw := range srv.middlewares {
-	// 	router.Use(mw)
-	// }
+	for _, mw := range srv.middlewares {
+		router.Use(mw)
+	}
 
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
 	vg := router.Group(os.Getenv("API_VERSION"))
@@ -234,27 +238,27 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	oafilterOpts.WithCustomSchemaErrorFunc(func(err *openapi3.SchemaError) string {
 		return fmt.Sprintf("%s: %s", err.SchemaField, err.Reason)
 	})
-	// oaOptions := OAValidatorOptions{
-	// 	ValidateResponse: true,
-	// 	Options:          oafilterOpts,
-	// 	// MultiErrorHandler: func(me openapi3.MultiError) error {
-	// 	// 	return fmt.Errorf("multiple errors:  %s", me.Error())
-	// 	// },
-	// }
+	oaOptions := OAValidatorOptions{
+		ValidateResponse: true,
+		Options:          oafilterOpts,
+		// MultiErrorHandler: func(me openapi3.MultiError) error {
+		// 	return fmt.Errorf("multiple errors:  %s", me.Error())
+		// },
+	}
 
-	// openapi, err := ReadOpenAPI(conf.SpecPath)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	openapi, err := ReadOpenAPI(conf.SpecPath)
+	if err != nil {
+		return nil, err
+	}
 
-	// oasMw := newOpenapiMiddleware(conf.Logger, openapi)
+	oasMw := newOpenapiMiddleware(conf.Logger, openapi)
 
-	// rlMw := newRateLimitMiddleware(conf.Logger, 25, 10)
-	// switch os.Getenv("APP_ENV") {
-	// case "prod":
-	// 	vg.Use(rlMw.Limit())
-	// }
-	// vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))
+	rlMw := newRateLimitMiddleware(conf.Logger, 25, 10)
+	switch os.Getenv("APP_ENV") {
+	case "prod":
+		vg.Use(rlMw.Limit())
+	}
+	vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))
 
 	authzsvc, err := services.NewAuthorization(conf.Logger, conf.ScopePolicyPath, conf.RolePolicyPath)
 	if err != nil {
@@ -283,21 +287,21 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 	handlers := NewHandlers(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authzsvc, authnsvc, authmw)
 
-	stream := newSSEServer()
+	// stream := newSSEServer()
 
-	// We are streaming current time to clients in the interval 10 seconds
-	go func() {
-		for {
-			time.Sleep(time.Second * 1)
-			now := time.Now().Format("2006-01-02 15:04:05")
-			currentTime := fmt.Sprintf("The Current Time Is %v", now)
-			fmt.Printf("currentTime: %v\n", currentTime)
-			// Send current time to clients message channel
-			stream.Message <- currentTime
-		}
-	}()
+	// // We are streaming current time to clients in the interval 10 seconds
+	// go func() {
+	// 	for {
+	// 		time.Sleep(time.Second * 1)
+	// 		now := time.Now().Format("2006-01-02 15:04:05")
+	// 		currentTime := fmt.Sprintf("The Current Time Is %v", now)
+	// 		fmt.Printf("currentTime: %v\n", currentTime)
+	// 		// Send current time to clients message channel
+	// 		stream.Message <- currentTime
+	// 	}
+	// }()
 
-	vg = RegisterHandlers(vg, handlers, stream)
+	vg = RegisterHandlers(vg, handlers)
 
 	// router.GET("/stream", SSEHeadersMiddleware(), stream.serveHTTP(), func(c *gin.Context) {
 	// 	v, ok := c.Get("clientChan")

@@ -447,9 +447,6 @@ x.gen() {
     (
       POSTGRES_DB=$GEN_POSTGRES_DB
 
-      go mod vendor
-      go mod tidy
-
       local cache=".generate.cache"
 
       mkdir -p "$cache"
@@ -658,6 +655,11 @@ x.run-dev() {
         fi
       done
   done
+}
+
+x.sync-deps() {
+  go mod tidy
+  go mod vendor
 }
 
 # Run project in production mode.

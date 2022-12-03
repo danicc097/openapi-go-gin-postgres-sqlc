@@ -84,14 +84,14 @@ func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 func (siw *ServerInterfaceWrapper) Events(c *gin.Context) {
 
 	// apply auth middlewares for operation "Events".
-	// for _, mw := range siw.Handler.authMiddlewares(Events) {
-	// 	mw(c)
+	for _, mw := range siw.Handler.authMiddlewares(Events) {
+		mw(c)
 
-	// 	// should actually call router.<Method> with a slice of mw, last item the actual handler
-	// 	if c.IsAborted() {
-	// 		return
-	// 	}
-	// }
+		// should actually call router.<Method> with a slice of mw, last item the actual handler
+		if c.IsAborted() {
+			return
+		}
+	}
 
 	// apply middlewares for operation "Events".
 	for _, mw := range siw.Handler.middlewares(Events) {
@@ -317,19 +317,19 @@ type GinServerOptions struct {
 }
 
 // RegisterHandlers creates http.Handler with routing matching OpenAPI spec.
-func RegisterHandlers(router *gin.RouterGroup, si ServerInterface, e *Event) *gin.RouterGroup {
-	return RegisterHandlersWithOptions(router, si, GinServerOptions{} ,e)
+func RegisterHandlers(router *gin.RouterGroup, si ServerInterface) *gin.RouterGroup {
+	return RegisterHandlersWithOptions(router, si, GinServerOptions{})
 }
 
 // RegisterHandlersWithOptions creates http.Handler with additional options
-func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, options GinServerOptions, e *Event) *gin.RouterGroup {
+func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, options GinServerOptions) *gin.RouterGroup {
 	wrapper := ServerInterfaceWrapper{
 		Handler: si,
 	}
 
 	router.GET(options.BaseURL+"/admin/ping", wrapper.AdminPing)
 
-	router.GET(options.BaseURL+"/events", e.serveHTTP(), wrapper.Events)
+	router.GET(options.BaseURL+"/events", wrapper.Events)
 
 	router.GET(options.BaseURL+"/openapi.yaml", wrapper.OpenapiYamlGet)
 

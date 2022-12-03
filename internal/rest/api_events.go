@@ -45,6 +45,7 @@ func (h *Handlers) Events(c *gin.Context) {
 	// test with curl -X 'GET' -N 'https://localhost:8090/v2/events' 'https://localhost:8090/v2/'
 	c.Stream(func(w io.Writer) bool {
 		// Stream message to client from message channel
+		fmt.Printf("clientChan ADD: %v\n", &clientChan)
 		if msg, ok := <-clientChan; ok {
 			c.SSEvent("message", msg)
 
@@ -57,17 +58,13 @@ func (h *Handlers) Events(c *gin.Context) {
 }
 
 // newSSEServer initializes events and starts processing requests.
-func newSSEServer() (event *Event) {
-	event = &Event{
+func newSSEServer() *Event {
+	return &Event{
 		Message:       make(chan string),
 		NewClients:    make(chan chan string),
 		ClosedClients: make(chan chan string),
 		TotalClients:  make(map[chan string]bool),
 	}
-
-	go event.listen()
-
-	return
 }
 
 // It Listens all incoming requests from clients.
