@@ -1,9 +1,6 @@
 package rest
 
 import (
-	"fmt"
-	"time"
-
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
@@ -33,23 +30,8 @@ func NewHandlers(
 	authzsvc *services.Authorization,
 	authnsvc *services.Authentication,
 	authmw *authMiddleware,
+	stream *Event,
 ) *Handlers {
-	stream := newSSEServer()
-
-	go stream.listen()
-
-	// must be called just once
-	go func(stream *Event) {
-		for {
-			// We are streaming current time to clients in the interval 10 seconds
-			time.Sleep(time.Second * 2)
-			now := time.Now().Format("2006-01-02 15:04:05")
-			currentTime := fmt.Sprintf("The Current Time Is %v", now)
-			fmt.Printf("stream.Message ADD: %v\n", &stream.Message)
-			stream.Message <- currentTime
-		}
-	}(stream)
-
 	return &Handlers{
 		logger:         logger,
 		pool:           pool,

@@ -39,22 +39,26 @@ type ClientChan chan string
 func main() {
 	router := gin.Default()
 
-	// Initialize new streaming server
-	stream := newSSEServer()
+	handlers := NewHandlers()
 
 	// We are streaming current time to clients in the interval 10 seconds
-	go func() {
+
+	go func(event *Event) {
 		for {
-			time.Sleep(time.Second * 1)
+			// We are streaming current time to clients in the interval 10 seconds
+			time.Sleep(time.Second * 2)
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
-			fmt.Printf("currentTime: %v\n", currentTime)
-			// Send current time to clients message channel
-			stream.Message <- currentTime
+			fmt.Printf("handlers.event.Message address: %v\n", &event.Message)
+			event.Message <- currentTime
 		}
-	}()
+	}(handlers.event)
 
-	router.GET("/stream", HeadersMiddleware(), stream.serveHTTP(), func(c *gin.Context) {
+	router.GET("/stream", HeadersMiddleware(), handlers.event.serveHTTP(), func(c *gin.Context) {
+		// FIXME does not work when called like this. change to explicit call in .GET and all is good
+		// for _, mw := range handlers.middlewares() {
+		// 	mw(c)
+		// }
 		v, ok := c.Get("clientChan")
 		if !ok {
 			return
@@ -82,6 +86,26 @@ func main() {
 	if err := <-errC; err != nil {
 		log.Fatalf("Error while running: %s", err)
 	}
+}
+
+type Handlers struct {
+	event *Event
+}
+
+func NewHandlers() *Handlers {
+	event := newSSEServer()
+
+	go event.listen()
+
+	fmt.Printf("event.Message address: %v\n", &event.Message)
+
+	return &Handlers{
+		event: event,
+	}
+}
+
+func (h *Handlers) middlewares() []gin.HandlerFunc {
+	return []gin.HandlerFunc{HeadersMiddleware(), h.event.serveHTTP()}
 }
 
 func Run(router *gin.Engine) (<-chan error, error) {

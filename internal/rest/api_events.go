@@ -51,7 +51,7 @@ func (h *Handlers) Events(c *gin.Context) {
 
 			return true
 		}
-		c.SSEvent("message", "STOPPED")
+		c.SSEvent("message", "channel closed")
 
 		return false
 	})
@@ -59,12 +59,16 @@ func (h *Handlers) Events(c *gin.Context) {
 
 // newSSEServer initializes events and starts processing requests.
 func newSSEServer() *Event {
-	return &Event{
+	event := &Event{
 		Message:       make(chan string),
 		NewClients:    make(chan chan string),
 		ClosedClients: make(chan chan string),
 		TotalClients:  make(map[chan string]bool),
 	}
+
+	go event.listen()
+
+	return event
 }
 
 // It Listens all incoming requests from clients.

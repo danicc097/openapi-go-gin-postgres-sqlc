@@ -285,7 +285,22 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 
 	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
-	handlers := NewHandlers(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authzsvc, authnsvc, authmw)
+
+	stream := newSSEServer()
+
+	// must be called just once
+	go func(stream *Event) {
+		for {
+			// We are streaming current time to clients in the interval 10 seconds
+			time.Sleep(time.Second * 2)
+			now := time.Now().Format("2006-01-02 15:04:05")
+			currentTime := fmt.Sprintf("The Current Time Is %v", now)
+			fmt.Printf("stream.Message ADD: %v\n", &stream.Message)
+			stream.Message <- currentTime
+		}
+	}(stream)
+
+	handlers := NewHandlers(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authzsvc, authnsvc, authmw, stream)
 
 	// stream := newSSEServer()
 
