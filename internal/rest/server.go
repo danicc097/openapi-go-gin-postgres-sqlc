@@ -2,7 +2,6 @@ package rest
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -18,12 +17,10 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	rv8 "github.com/go-redis/redis/v8"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/zitadel/oidc/pkg/client/rp"
 	httphelper "github.com/zitadel/oidc/pkg/http"
-	"github.com/zitadel/oidc/pkg/oidc"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -152,7 +149,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	vg := router.Group(os.Getenv("API_VERSION"))
 	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
 
-	// -- oidc
+	// oidc
 	clientID := os.Getenv("OIDC_CLIENT_ID")
 	clientSecret := os.Getenv("OIDC_CLIENT_SECRET")
 	keyPath := os.Getenv("OIDC_KEY_PATH") // not used
@@ -173,59 +170,10 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 		options = append(options, rp.WithJWTProfile(rp.SignerFromKeyPath(keyPath)))
 	}
 	provider, err := rp.NewRelyingPartyOIDC(issuer, clientID, clientSecret, redirectURI, scopes, options...)
-	conf.Logger.Sugar().Infof("issuer %s", issuer)
-	conf.Logger.Sugar().Infof("redirectURI %s", redirectURI)
 	if err != nil {
 		return nil, fmt.Errorf("error creating provider %s", err)
 	}
-
-	// generate some state (representing the state of the user in your application,
-	// e.g. the page where he was before sending him to login
-	state := func() string {
-		return uuid.New().String()
-	}
-
-	// register the AuthURLHandler at your preferred path
-	// the AuthURLHandler creates the auth request and redirects the user to the auth server
-	// including state handling with secure cookie and the possibility to use PKCE
-	vg.Any("/auth/myprovider/login", gin.WrapH(rp.AuthURLHandler(state, provider)))
-
-	// for demonstration purposes the returned userinfo response is written as JSON object onto response
-	marshalUserinfo := func(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens, state string, rp rp.RelyingParty, info oidc.UserInfo) {
-		data, err := json.Marshal(info)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Write(data)
-	}
-
-	// you could also just take the access_token and id_token without calling the userinfo endpoint:
 	//
-	// marshalToken := func(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens, state string, rp rp.RelyingParty) {
-	//	data, err := json.Marshal(tokens)
-	//	if err != nil {
-	//		http.Error(w, err.Error(), http.StatusInternalServerError)
-	//		return
-	//	}
-	//	w.Write(data)
-	//}
-
-	// register the CodeExchangeHandler at the conf.MyProviderCallbackPath
-	// the CodeExchangeHandler handles the auth response, creates the token request and calls the callback function
-	// with the returned tokens from the token endpoint
-	// in this example the callback function itself is wrapped by the UserinfoCallback which
-	// will call the Userinfo endpoint, check the sub and pass the info into the callback function
-	// TODO in reality we would redirect back to our app frontend instead
-	// this callback must also be extended to create an access token (or any other login method) for our own
-	// app (and create user if not found) once the external auth request is authorized
-	vg.Any(conf.MyProviderCallbackPath, gin.WrapH(rp.CodeExchangeHandler(rp.UserinfoCallback(marshalUserinfo), provider)))
-
-	// if you would use the callback without calling the userinfo endpoint, simply switch the callback handler for:
-	//
-	// http.Handle(conf.MyProviderCallbackPath, rp.CodeExchangeHandler(marshalToken, provider))
-
-	// TODO /auth/logout
 
 	// -- openapi
 	oafilterOpts := openapi3filter.Options{
@@ -264,7 +212,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)
 	}
-	retryCount := 2
+	retryCount := 1
 	retryInterval := 1 * time.Second
 	usvc := services.NewUser(
 		conf.Logger,
@@ -286,7 +234,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 
-	handlers := NewHandlers(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authzsvc, authnsvc, authmw)
+	handlers := NewHandlers(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authzsvc, authnsvc, authmw, provider)
 
 	vg = RegisterHandlers(vg, handlers)
 

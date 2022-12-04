@@ -18,6 +18,12 @@ type ServerInterface interface {
 	// (GET /admin/ping)
 	AdminPing(c *gin.Context)
 
+	// (GET /auth/myprovider/callback)
+	MyProviderCallback(c *gin.Context)
+
+	// (GET /auth/myprovider/login)
+	MyProviderLogin(c *gin.Context)
+
 	// (GET /events)
 	Events(c *gin.Context)
 	// Returns this very OpenAPI spec.
@@ -58,6 +64,18 @@ func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 	c.Set(externalRef0.Api_keyScopes, []string{""})
 
 	siw.Handler.AdminPing(c)
+}
+
+// MyProviderCallback operation with its own middleware.
+func (siw *ServerInterfaceWrapper) MyProviderCallback(c *gin.Context) {
+
+	siw.Handler.MyProviderCallback(c)
+}
+
+// MyProviderLogin operation with its own middleware.
+func (siw *ServerInterfaceWrapper) MyProviderLogin(c *gin.Context) {
+
+	siw.Handler.MyProviderLogin(c)
 }
 
 // Events operation with its own middleware.
@@ -171,6 +189,16 @@ func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, op
 	router.GET(options.BaseURL+"/admin/ping", append(
 		wrapper.Handler.authMiddlewares(AdminPing),
 		append(wrapper.Handler.middlewares(AdminPing), wrapper.AdminPing)...,
+	)...)
+
+	router.GET(options.BaseURL+"/auth/myprovider/callback", append(
+		wrapper.Handler.authMiddlewares(MyProviderCallback),
+		append(wrapper.Handler.middlewares(MyProviderCallback), wrapper.MyProviderCallback)...,
+	)...)
+
+	router.GET(options.BaseURL+"/auth/myprovider/login", append(
+		wrapper.Handler.authMiddlewares(MyProviderLogin),
+		append(wrapper.Handler.middlewares(MyProviderLogin), wrapper.MyProviderLogin)...,
 	)...)
 
 	router.GET(options.BaseURL+"/events", append(

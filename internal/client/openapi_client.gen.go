@@ -330,6 +330,12 @@ type ClientInterface interface {
 	// AdminPing request
 	AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// MyProviderCallback request
+	MyProviderCallback(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MyProviderLogin request
+	MyProviderLogin(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// Events request
 	Events(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -358,6 +364,30 @@ type ClientInterface interface {
 
 func (c *Client) AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminPingRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MyProviderCallback(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMyProviderCallbackRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MyProviderLogin(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMyProviderLoginRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -486,6 +516,60 @@ func NewAdminPingRequest(server string) (*http.Request, error) {
 	}
 
 	operationPath := fmt.Sprintf("/admin/ping")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewMyProviderCallbackRequest generates requests for MyProviderCallback
+func NewMyProviderCallbackRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/auth/myprovider/callback")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewMyProviderLoginRequest generates requests for MyProviderLogin
+func NewMyProviderLoginRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/auth/myprovider/login")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -785,6 +869,12 @@ type ClientWithResponsesInterface interface {
 	// AdminPing request
 	AdminPingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*AdminPingResponse, error)
 
+	// MyProviderCallback request
+	MyProviderCallbackWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MyProviderCallbackResponse, error)
+
+	// MyProviderLogin request
+	MyProviderLoginWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MyProviderLoginResponse, error)
+
 	// Events request
 	EventsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*EventsResponse, error)
 
@@ -827,6 +917,48 @@ func (r AdminPingResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminPingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type MyProviderCallbackResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r MyProviderCallbackResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MyProviderCallbackResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type MyProviderLoginResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r MyProviderLoginResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MyProviderLoginResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -994,6 +1126,24 @@ func (c *ClientWithResponses) AdminPingWithResponse(ctx context.Context, reqEdit
 	return ParseAdminPingResponse(rsp)
 }
 
+// MyProviderCallbackWithResponse request returning *MyProviderCallbackResponse
+func (c *ClientWithResponses) MyProviderCallbackWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MyProviderCallbackResponse, error) {
+	rsp, err := c.MyProviderCallback(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMyProviderCallbackResponse(rsp)
+}
+
+// MyProviderLoginWithResponse request returning *MyProviderLoginResponse
+func (c *ClientWithResponses) MyProviderLoginWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MyProviderLoginResponse, error) {
+	rsp, err := c.MyProviderLogin(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMyProviderLoginResponse(rsp)
+}
+
 // EventsWithResponse request returning *EventsResponse
 func (c *ClientWithResponses) EventsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*EventsResponse, error) {
 	rsp, err := c.Events(ctx, reqEditors...)
@@ -1094,6 +1244,38 @@ func ParseAdminPingResponse(rsp *http.Response) (*AdminPingResponse, error) {
 		}
 		response.JSON422 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseMyProviderCallbackResponse parses an HTTP response from a MyProviderCallbackWithResponse call
+func ParseMyProviderCallbackResponse(rsp *http.Response) (*MyProviderCallbackResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MyProviderCallbackResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseMyProviderLoginResponse parses an HTTP response from a MyProviderLoginWithResponse call
+func ParseMyProviderLoginResponse(rsp *http.Response) (*MyProviderLoginResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MyProviderLoginResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil

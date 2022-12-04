@@ -1,4 +1,14 @@
 {
+  "MyProviderCallback": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": false
+  },
+  "MyProviderLogin": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": false
+  },
   "Events": {
     "scopes": null,
     "role": null,

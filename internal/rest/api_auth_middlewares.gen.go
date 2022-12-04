@@ -36,6 +36,10 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
+	case MyProviderCallback:
+		return []gin.HandlerFunc{}
+	case MyProviderLogin:
+		return []gin.HandlerFunc{}
 	case OpenapiYamlGet:
 		return []gin.HandlerFunc{}
 	case Ping:

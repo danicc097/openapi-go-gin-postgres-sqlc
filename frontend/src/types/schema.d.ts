@@ -15,6 +15,12 @@ type XOR<T, U> = (T | U) extends object ? (Without<T, U> & U) | (Without<U, T> &
 type OneOf<T extends any[]> = T extends [infer Only] ? Only : T extends [infer A, infer B, ...infer Rest] ? OneOf<[XOR<A, B>, ...Rest]> : never;
 
 export interface paths {
+  "/auth/myprovider/callback": {
+    get: operations["MyProviderCallback"];
+  };
+  "/auth/myprovider/login": {
+    get: operations["MyProviderLogin"];
+  };
   "/events": {
     get: operations["Events"];
   };
@@ -257,6 +263,18 @@ export type external = Record<string, never>;
 
 export interface operations {
 
+  MyProviderCallback: {
+    responses: {
+      /** @description callback for MyProvider auth server */
+      200: never;
+    };
+  };
+  MyProviderLogin: {
+    responses: {
+      /** @description redirect to MyProvider auth server login */
+      302: never;
+    };
+  };
   Events: {
     responses: {
       /** @description events */

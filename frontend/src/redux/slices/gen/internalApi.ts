@@ -6,6 +6,12 @@ const injectedRtkApi = api
   })
   .injectEndpoints({
     endpoints: (build) => ({
+      myProviderCallback: build.query<MyProviderCallbackRes, MyProviderCallbackArgs>({
+        query: () => ({ url: `/auth/myprovider/callback` }),
+      }),
+      myProviderLogin: build.query<MyProviderLoginRes, MyProviderLoginArgs>({
+        query: () => ({ url: `/auth/myprovider/login` }),
+      }),
       events: build.query<EventsRes, EventsArgs>({
         query: () => ({ url: `/events` }),
       }),
@@ -43,6 +49,10 @@ const injectedRtkApi = api
     overrideExisting: false,
   })
 export { injectedRtkApi as internalApi }
+export type MyProviderCallbackRes = unknown
+export type MyProviderCallbackArgs = void
+export type MyProviderLoginRes = unknown
+export type MyProviderLoginArgs = void
 export type EventsRes = unknown
 export type EventsArgs = void
 export type PingRes = /** status 200 OK */ string
@@ -204,6 +214,8 @@ export type UpdateUserRequest = {
   last_name?: string
 }
 export const {
+  useMyProviderCallbackQuery,
+  useMyProviderLoginQuery,
   useEventsQuery,
   usePingQuery,
   useOpenapiYamlGetQuery,

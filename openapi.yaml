@@ -29,6 +29,18 @@ tags:
   - description: Operations about user
     name: user
 paths:
+  /auth/myprovider/callback:
+    get:
+      operationId: MyProviderCallback
+      responses:
+        "200":
+          description: callback for MyProvider auth server
+  /auth/myprovider/login:
+    get:
+      operationId: MyProviderLogin
+      responses:
+        "302":
+          description: redirect to MyProvider auth server login
   /events:
     get:
       operationId: Events
