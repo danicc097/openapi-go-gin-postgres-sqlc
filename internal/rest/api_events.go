@@ -42,10 +42,11 @@ func (h *Handlers) Events(c *gin.Context) {
 	if !ok {
 		return
 	}
+	// TODO map of channels for each Role ('global' notif.) ?
+	// TODO map of channels for every connected user for 'personal' notif. ?
+	// will use to alert cards moving, selected as card member, etc.
 	// test with curl -X 'GET' -N 'https://localhost:8090/v2/events' 'https://localhost:8090/v2/'
 	c.Stream(func(w io.Writer) bool {
-		// Stream message to client from message channel
-		fmt.Printf("clientChan ADD: %v\n", &clientChan)
 		if msg, ok := <-clientChan; ok {
 			c.SSEvent("message", msg)
 

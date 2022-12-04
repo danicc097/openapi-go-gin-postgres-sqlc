@@ -1,6 +1,9 @@
 package rest
 
 import (
+	"fmt"
+	"time"
+
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
@@ -17,8 +20,7 @@ type Handlers struct {
 	authmw         *authMiddleware
 	authzsvc       *services.Authorization
 	authnsvc       *services.Authentication
-
-	stream *Event
+	event          *Event
 }
 
 // NewHandlers returns an server implementation of an openapi specification.
@@ -30,8 +32,21 @@ func NewHandlers(
 	authzsvc *services.Authorization,
 	authnsvc *services.Authentication,
 	authmw *authMiddleware,
-	stream *Event,
 ) *Handlers {
+	event := newSSEServer()
+
+	// we can have as many of these but need to delay call
+	go func() {
+		for {
+			// We are streaming current time to clients in the interval 10 seconds
+			time.Sleep(time.Second * 10)
+			now := time.Now().Format("2006-01-02 15:04:05")
+			currentTime := fmt.Sprintf("The Current Time Is %v", now)
+
+			event.Message <- currentTime
+		}
+	}()
+
 	return &Handlers{
 		logger:         logger,
 		pool:           pool,
@@ -40,7 +55,7 @@ func NewHandlers(
 		authzsvc:       authzsvc,
 		authnsvc:       authnsvc,
 		authmw:         authmw,
-		stream:         stream,
+		event:          event,
 	}
 }
 
@@ -48,7 +63,7 @@ func NewHandlers(
 func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	switch opID {
 	case Events:
-		return []gin.HandlerFunc{SSEHeadersMiddleware(), h.stream.serveHTTP()}
+		return []gin.HandlerFunc{SSEHeadersMiddleware(), h.event.serveHTTP()}
 	default:
 		return []gin.HandlerFunc{}
 	}

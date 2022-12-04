@@ -15,6 +15,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+/**
+ *
+ *
+ * From gin examples:
+ *
+ */
+
 // It keeps a list of clients those are currently attached
 // and broadcasting events to those clients.
 type Event struct {
@@ -43,16 +50,15 @@ func main() {
 
 	// We are streaming current time to clients in the interval 10 seconds
 
-	go func(event *Event) {
+	go func() {
 		for {
 			// We are streaming current time to clients in the interval 10 seconds
 			time.Sleep(time.Second * 2)
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
-			fmt.Printf("handlers.event.Message address: %v\n", &event.Message)
-			event.Message <- currentTime
+			handlers.event.Message <- currentTime
 		}
-	}(handlers.event)
+	}()
 
 	router.GET("/stream", HeadersMiddleware(), handlers.event.serveHTTP(), func(c *gin.Context) {
 		// FIXME does not work when called like this. change to explicit call in .GET and all is good
