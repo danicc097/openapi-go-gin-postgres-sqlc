@@ -17,13 +17,14 @@ killgroup() {
   printf "\nkilling spawned processes...\n"
 
   # kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
+  kill_descendants 2>/dev/null || true
   pgrep -P $PROC | xargs kill
   exit 1
 }
 
 errtrap() {
   printf "\nExiting due to propagated error...\n"
-  exit 1
+  killgroup
 }
 
 ensure_pwd_is_top_level
@@ -72,6 +73,15 @@ xerr() {
 
   local fn=$(printf "%*s |\n" $((MAX_FNAME_LOG_LEN + 1)) "$fname")
   sed -ue "s/^/${RED}$fname >${OFF} /" >&2
+}
+
+kill_descendants() {
+  for pid in "${pids[@]}"; do
+    # air and vite spawn processes as well, need to kill those (whose parent is pid), kill $pid will not kill children. pkill -P would also work
+    list_descendants $pid
+    kill "$(list_descendants $pid)"
+  done
+  pids=()
 }
 
 # Check build dependencies are met.
@@ -644,12 +654,7 @@ x.run-dev() {
         if [[ $event_time -ge $next_allowed_run ]]; then
           next_allowed_run=$(date --date="${latency}sec" +%s)
 
-          for pid in "${pids[@]}"; do
-            # air and vite spawn processes as well, need to kill those (whose parent is pid), kill $pid will not kill children. pkill -P would also work
-            list_descendants $pid
-            kill "$(list_descendants $pid)"
-          done
-          pids=()
+          kill_descendants || true
 
           run_hot_reload
         fi

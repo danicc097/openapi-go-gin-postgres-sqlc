@@ -208,29 +208,26 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	}
 	vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))
 
+	retryCount := 1
+	retryInterval := 1 * time.Second
+	urepo := repos.NewUserWithTracing(
+		repos.NewUserWithRetry(
+			repos.NewUserWithTimeout(
+				postgresql.NewUser(),
+				repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second},
+			),
+			retryCount,
+			retryInterval,
+		),
+		postgresql.OtelName,
+		nil,
+	)
+
 	authzsvc, err := services.NewAuthorization(conf.Logger, conf.ScopePolicyPath, conf.RolePolicyPath)
 	if err != nil {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)
 	}
-	retryCount := 1
-	retryInterval := 1 * time.Second
-	usvc := services.NewUser(
-		conf.Logger,
-		repos.NewUserWithTracing(
-			repos.NewUserWithRetry(
-				repos.NewUserWithTimeout(
-					postgresql.NewUser(),
-					repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second},
-				),
-				retryCount,
-				retryInterval,
-			),
-			postgresql.OtelName,
-			nil,
-		),
-		authzsvc,
-	)
-
+	usvc := services.NewUser(conf.Logger, urepo, authzsvc)
 	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 
@@ -345,6 +342,8 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 			stop()
 			cancel()
 			close(errC)
+
+			// TODO close SSE channels
 		}()
 
 		srv.httpsrv.SetKeepAlivesEnabled(false)
