@@ -116,6 +116,19 @@ check.pg_format() {
     }
 }
 
+check.parallel() {
+  local vers
+  vers=$(parallel --version)
+  {
+    [[ "$vers" =~ (GNU parallel )([0-9]+) ]] &&
+      printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[2]}"
+  } ||
+    {
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check. Check install-parallel.sh"
+      return 1
+    }
+}
+
 check.direnv() {
   local vers
   vers=$(direnv --version)

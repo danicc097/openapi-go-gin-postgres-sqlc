@@ -37,6 +37,7 @@ readonly MIGRATIONS_DIR="db/migrations"
 readonly PG_REPO="internal/repos/postgresql"
 readonly PG_REPO_GEN="internal/repos/postgresql/gen"
 readonly GEN_SCHEMA_CMD="cmd/gen-schema"
+readonly POSTGRES_TEST_DB="postgres_test"
 readonly MAX_COMMENT_LEN=88
 readonly MAX_FNAME_LOG_LEN=13
 readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
@@ -78,8 +79,7 @@ xerr() {
 kill_descendants() {
   for pid in "${pids[@]}"; do
     # air and vite spawn processes as well, need to kill those (whose parent is pid), kill $pid will not kill children. pkill -P would also work
-    list_descendants $pid
-    kill "$(list_descendants $pid)"
+    kill "$(list_descendants $pid)" || true
   done
   pids=()
 }
@@ -98,6 +98,7 @@ x.check-build-deps() {
     check.direnv || { ((fails++)) && true; }
     check.yq || { ((fails++)) && true; }
     check.pg_format || { ((fails++)) && true; }
+    check.parallel || { ((fails++)) && true; }
     ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met.${OFF}"
     { ((fails != 0)) && err "${RED}❌ Missing dependencies.${OFF}"; } || true
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -558,7 +559,7 @@ x.test.backend-setup() {
     run_shared_services up -d --build --remove-orphans
     [[ -z $NO_GEN ]] && x.gen
     # no need to migrate, done on every test run internally
-    drop_and_recreate_db "postgres_test"
+    drop_and_recreate_db $POSTGRES_TEST_DB
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -566,8 +567,8 @@ x.test.backend-setup() {
 # Args: [...]
 x.test() {
   { { {
-    yes y | POSTGRES_DB=postgres_test x.migrate down || true
-    POSTGRES_DB=postgres_test x.migrate up # for post-migration scripts
+    yes y | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
+    POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
     APP_ENV="$env" go test "$@" ./...
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }

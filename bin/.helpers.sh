@@ -182,9 +182,9 @@ ensure_envvars_set() {
 
 ######################## db ###########################
 
-# Drop and recreate database `db`.
+# Drop and recreate database `db`. Defaults to POSTGRES_DB.
 drop_and_recreate_db() {
-  local db="$1"
+  local db="${1:POSTGRES_DB}"
 
   _pg_isready
 
