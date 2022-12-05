@@ -48,7 +48,10 @@ func (h *Handlers) Events(c *gin.Context) {
 	// test with curl -X 'GET' -N 'https://localhost:8090/v2/events' 'https://localhost:8090/v2/'
 	c.Stream(func(w io.Writer) bool {
 		if msg, ok := <-clientChan; ok {
-			c.SSEvent("message", msg)
+			c.SSEvent("message", gin.H{
+				"foo": "bar",
+				"msg": msg,
+			})
 
 			return true
 		}

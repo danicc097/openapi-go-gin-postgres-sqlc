@@ -57,7 +57,6 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 	}
 
 	if err != nil {
-
 		span := newOTELSpan(c.Request.Context(), "renderErrorResponse")
 		defer span.End()
 
