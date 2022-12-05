@@ -50,6 +50,18 @@ func NewHandlers(
 		}
 	}()
 
+	// we can have as many of these but need to delay call
+	go func() {
+		for {
+			// We are streaming current time to clients in the interval 10 seconds
+			time.Sleep(time.Second * 2)
+			now := time.Now().Format("2006-01-02 15:04:05")
+			currentTime := fmt.Sprintf("user notifications - The Current Time Is %v", now)
+
+			event.Message2 <- currentTime
+		}
+	}()
+
 	return &Handlers{
 		logger:         logger,
 		pool:           pool,

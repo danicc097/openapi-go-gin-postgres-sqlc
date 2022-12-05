@@ -13,16 +13,19 @@ import (
 // and broadcasting events to those clients.
 type Event struct {
 	// Events are pushed to this channel by the main events-gathering routine
-	Message chan string
+	Message  chan string
+	Message2 chan string
 
 	// New client connections
-	NewClients chan chan string
+	NewClients  chan chan string
+	NewClients2 chan chan string
 
 	// Closed client connections
 	ClosedClients chan chan string
 
 	// Total client connections
-	TotalClients map[chan string]bool
+	ClientsForMessage1 map[chan string]bool
+	ClientsForMessage2 map[chan string]bool
 }
 
 // New event messages are broadcasted to all registered client connection channels.
@@ -55,7 +58,11 @@ func (h *Handlers) Events(c *gin.Context) {
 	// will use to alert cards moving, selected as card member, etc.
 	// test with curl -X 'GET' -N 'https://localhost:8090/v2/events' 'https://localhost:8090/v2/'
 	c.Stream(func(w io.Writer) bool {
-		if msg, ok := <-clientChan; ok {
+		select {
+		case msg, ok := <-clientChan:
+			if !ok {
+				return true
+			}
 			// this part should actually be done before sending to channel.
 			// should it fail marshalling earlier, msg is an error message (literal or {"error":"..."})
 			te := &timeEvent{
@@ -72,26 +79,35 @@ func (h *Handlers) Events(c *gin.Context) {
 			c.Writer.Flush()
 
 			return true
-		}
-		if msg, ok := <-userNotificationsChan; ok {
-			c.SSEvent("message", msg)
+		case msg, ok := <-userNotificationsChan:
+			if !ok {
+				return true
+			}
+			c.SSEvent("userNotificationsChan", msg)
 			c.Writer.Flush()
 
 			return true
-		}
-		c.SSEvent("message", "channel closed")
+		case <-c.Request.Context().Done():
+			fmt.Println("CLIENT GONE")
 
-		return false
+			c.SSEvent("message", "channel closed")
+			c.Writer.Flush()
+
+			return false
+		}
 	})
 }
 
 // newSSEServer initializes events and starts processing requests.
 func newSSEServer() *Event {
 	event := &Event{
-		Message:       make(chan string),
-		NewClients:    make(chan chan string),
-		ClosedClients: make(chan chan string),
-		TotalClients:  make(map[chan string]bool),
+		Message:            make(chan string),
+		Message2:           make(chan string),
+		NewClients:         make(chan chan string),
+		NewClients2:        make(chan chan string),
+		ClosedClients:      make(chan chan string),
+		ClientsForMessage1: make(map[chan string]bool),
+		ClientsForMessage2: make(map[chan string]bool),
 	}
 
 	go event.listen()
@@ -106,19 +122,30 @@ func (stream *Event) listen() {
 		select {
 		// Add new available client
 		case client := <-stream.NewClients:
-			stream.TotalClients[client] = true
-			log.Printf("Client added. %d registered clients", len(stream.TotalClients))
+			stream.ClientsForMessage1[client] = true
+			log.Printf("Client for message type 1 added. %d registered clients", len(stream.ClientsForMessage1))
+		case client := <-stream.NewClients2:
+			stream.ClientsForMessage2[client] = true
+			log.Printf("Client for message type 2 added. %d registered clients", len(stream.ClientsForMessage2))
 
 		// Remove closed client
 		case client := <-stream.ClosedClients:
-			delete(stream.TotalClients, client)
+			delete(stream.ClientsForMessage1, client)
+			delete(stream.ClientsForMessage2, client)
 			close(client)
-			log.Printf("Removed client. %d registered clients", len(stream.TotalClients))
+			log.Printf("Removed client. %d registered clients", len(stream.ClientsForMessage1))
 
 		// Broadcast message to client
 		case eventMsg := <-stream.Message:
 			fmt.Printf("eventMsg: %v\n", eventMsg)
-			for clientMessageChan := range stream.TotalClients {
+			for clientMessageChan := range stream.ClientsForMessage1 {
+				clientMessageChan <- eventMsg
+			}
+
+		// Broadcast message 2to client
+		case eventMsg := <-stream.Message2:
+			fmt.Printf("eventMsg (2): %v\n", eventMsg)
+			for clientMessageChan := range stream.ClientsForMessage2 {
 				clientMessageChan <- eventMsg
 			}
 		}
@@ -135,10 +162,12 @@ func (stream *Event) serveHTTP() gin.HandlerFunc {
 
 		// Send new connection to event server
 		stream.NewClients <- clientChan
+		stream.NewClients2 <- userNotificationsChan
 
 		defer func() {
 			// Send closed connection to event server
 			stream.ClosedClients <- clientChan
+			stream.ClosedClients <- userNotificationsChan
 		}()
 
 		c.Set("clientChan", clientChan)
