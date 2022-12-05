@@ -42,7 +42,7 @@ func NewHandlers(
 	go func() {
 		for {
 			// We are streaming current time to clients in the interval 10 seconds
-			time.Sleep(time.Second * 10)
+			time.Sleep(time.Second * 2)
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
 

@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -27,6 +28,13 @@ type Event struct {
 // New event messages are broadcasted to all registered client connection channels.
 type ClientChan chan string
 
+type UserNotificationsChan chan string
+
+type timeEvent struct {
+	Foo string `json:"foo"`
+	Msg string `json:"msg"`
+}
+
 // Events represents server events.
 func (h *Handlers) Events(c *gin.Context) {
 	c.Set(skipRequestValidation, true)
@@ -34,11 +42,11 @@ func (h *Handlers) Events(c *gin.Context) {
 
 	fmt.Printf("c.Copy().Keys (Events): %v\n", c.Copy().Keys)
 
-	v, ok := c.Get("clientChan")
+	clientChan, ok := c.Value("clientChan").(ClientChan)
 	if !ok {
 		return
 	}
-	clientChan, ok := v.(ClientChan)
+	userNotificationsChan, ok := c.Value("userNotificationsChan").(UserNotificationsChan)
 	if !ok {
 		return
 	}
@@ -48,10 +56,26 @@ func (h *Handlers) Events(c *gin.Context) {
 	// test with curl -X 'GET' -N 'https://localhost:8090/v2/events' 'https://localhost:8090/v2/'
 	c.Stream(func(w io.Writer) bool {
 		if msg, ok := <-clientChan; ok {
-			c.SSEvent("message", gin.H{
-				"foo": "bar",
-				"msg": msg,
-			})
+			// this part should actually be done before sending to channel.
+			// should it fail marshalling earlier, msg is an error message (literal or {"error":"..."})
+			te := &timeEvent{
+				Foo: "bar",
+				Msg: msg,
+			}
+			sseMsg, err := json.Marshal(te)
+			if err != nil {
+				c.SSEvent("message", "could not marshal message")
+
+				return true // should probably continue regardless. client should handle the error and stop/continue if desired
+			}
+			c.SSEvent("message", string(sseMsg))
+			c.Writer.Flush()
+
+			return true
+		}
+		if msg, ok := <-userNotificationsChan; ok {
+			c.SSEvent("message", msg)
+			c.Writer.Flush()
 
 			return true
 		}
@@ -104,11 +128,10 @@ func (stream *Event) listen() {
 // TODO see if can reproduce https://github.com/gin-gonic/gin/issues/3142
 // some bugs where fixed in sse example committed 4 months later, so...
 func (stream *Event) serveHTTP() gin.HandlerFunc {
-	fmt.Println("serveHTTP - initializing stream event")
 	return func(c *gin.Context) {
-		// Initialize client channel
-		fmt.Println("serveHTTP - Initialize client channel")
+		fmt.Println("stream events - Initialize client channel")
 		clientChan := make(ClientChan)
+		userNotificationsChan := make(UserNotificationsChan)
 
 		// Send new connection to event server
 		stream.NewClients <- clientChan
@@ -119,6 +142,7 @@ func (stream *Event) serveHTTP() gin.HandlerFunc {
 		}()
 
 		c.Set("clientChan", clientChan)
+		c.Set("userNotificationsChan", userNotificationsChan)
 
 		c.Next()
 	}

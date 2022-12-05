@@ -46,6 +46,7 @@ func NewStreamRecorder() *StreamRecorder {
 
 // TODO closenotifier deprecated. Use ctx: https://stackoverflow.com/questions/32123546/eventsource-golang-how-to-detect-client-disconnection
 // TODO revisit when multiple events (personal notif., global notif., etc.) are implemented.
+// / see https://github.com/search?q=%22req.Context%28%29.Done%28%29%22+sse&type=code
 // would need a way to stop streaming after N messages, etc.
 // func TestSSEStream(t *testing.T) {
 // 	res := NewStreamRecorder()
