@@ -9,6 +9,7 @@ import { Decoder } from './helpers'
 import { validateJson } from '../validate'
 import {
   HTTPValidationError,
+  ServerSentEvents,
   Scope,
   Scopes,
   Role,
@@ -50,6 +51,18 @@ export const HTTPValidationErrorDecoder: Decoder<HTTPValidationError> = {
       throw new Error(`Schema ${HTTPValidationErrorDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, HTTPValidationErrorDecoder.definitionName)
+  },
+}
+export const ServerSentEventsDecoder: Decoder<ServerSentEvents> = {
+  definitionName: 'ServerSentEvents',
+  schemaRef: '#/definitions/ServerSentEvents',
+
+  decode(json: unknown): ServerSentEvents {
+    const schema = ajv.getSchema(ServerSentEventsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ServerSentEventsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ServerSentEventsDecoder.definitionName)
   },
 }
 export const ScopeDecoder: Decoder<Scope> = {

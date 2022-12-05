@@ -224,6 +224,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationError'
+    ServerSentEvents:
+      description: string identifiers for SSE event listeners.
+      type: string
+      enum:
+        - UserNotifications
+        - ManagerNotifications
+        - AdminNotifications
+        - WorkItemMoved
+        - WorkItemClosed
     # TODO bookstack style ABAC
     Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string

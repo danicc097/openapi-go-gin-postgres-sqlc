@@ -10,6 +10,15 @@ export type Location = string[]
 export type Message = string
 export type ErrorType = string
 export type Detail = ValidationError[]
+/**
+ * string identifiers for SSE event listeners.
+ */
+export type ServerSentEvents =
+  | 'UserNotifications'
+  | 'ManagerNotifications'
+  | 'AdminNotifications'
+  | 'WorkItemMoved'
+  | 'WorkItemClosed'
 export type Scope =
   | 'test-scope'
   | 'users:read'

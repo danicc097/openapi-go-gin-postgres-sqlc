@@ -39,6 +39,15 @@ const (
 	ScopeWorkItemReview       Scope = "work-item:review"
 )
 
+// Defines values for ServerSentEvents.
+const (
+	ServerSentEventsAdminNotifications   ServerSentEvents = "AdminNotifications"
+	ServerSentEventsManagerNotifications ServerSentEvents = "ManagerNotifications"
+	ServerSentEventsUserNotifications    ServerSentEvents = "UserNotifications"
+	ServerSentEventsWorkItemClosed       ServerSentEvents = "WorkItemClosed"
+	ServerSentEventsWorkItemMoved        ServerSentEvents = "WorkItemMoved"
+)
+
 // Defines values for WorkItemRole.
 const (
 	WorkItemRolePreparer WorkItemRole = "preparer"
@@ -106,6 +115,9 @@ type Scope string
 
 // Scopes defines model for Scopes.
 type Scopes = []Scope
+
+// ServerSentEvents string identifiers for SSE event listeners.
+type ServerSentEvents string
 
 // TaskPublic defines model for TaskPublic.
 type TaskPublic struct {

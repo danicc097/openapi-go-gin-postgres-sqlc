@@ -6,7 +6,9 @@ import (
 	"io"
 	"log"
 
+	"github.com/gin-contrib/sse"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // It keeps a list of clients those are currently attached
@@ -37,6 +39,19 @@ type timeEvent struct {
 	Foo string `json:"foo"`
 	Msg string `json:"msg"`
 }
+
+/**
+ *
+ *
+let evtSource = new EventSource('/v2/events');
+
+evtSource.onmessage = (e) => {
+  console.log(e)
+}
+evtSource.addEventListener(<Event name>, (e) => {
+  console.log(e)
+});
+*/
 
 // Events represents server events.
 func (h *Handlers) Events(c *gin.Context) {
@@ -83,7 +98,12 @@ func (h *Handlers) Events(c *gin.Context) {
 			if !ok {
 				return true
 			}
-			c.SSEvent("userNotificationsChan", msg)
+			// c.SSEvent("userNotificationsChan", msg)
+			c.Render(-1, sse.Event{
+				Event: "userNotificationsChan",
+				Data:  msg,
+				Id:    uuid.New().String(),
+			})
 			c.Writer.Flush()
 
 			return true

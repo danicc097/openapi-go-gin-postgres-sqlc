@@ -59,6 +59,11 @@ export interface components {
       /** Detail */
       detail?: (components["schemas"]["ValidationError"])[];
     };
+    /**
+     * @description string identifiers for SSE event listeners. 
+     * @enum {string}
+     */
+    ServerSentEvents: "UserNotifications" | "ManagerNotifications" | "AdminNotifications" | "WorkItemMoved" | "WorkItemClosed";
     /** @enum {string} */
     Scope: "test-scope" | "users:read" | "users:write" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item:review";
     Scopes: (components["schemas"]["Scope"])[];

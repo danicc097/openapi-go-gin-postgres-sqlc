@@ -642,25 +642,26 @@ x.run-dev() {
 
   run_hot_reload
 
-  next_allowed_run=$(date +%s)
-  latency=3
+  # TODO fix won't kill children
+  # next_allowed_run=$(date +%s)
+  # latency=3
   # close_write event, else duplicated, tripl. events -> race condition
-  while true; do
-    inotifywait \
-      --monitor $SPEC \
-      --event=close_write \
-      --format='%T %f' \
-      --timefmt='%s' |
-      while read -r event_time event_file 2>/dev/null || sleep $latency; do
-        if [[ $event_time -ge $next_allowed_run ]]; then
-          next_allowed_run=$(date --date="${latency}sec" +%s)
+  # while true; do
+  #   inotifywait \
+  #     --monitor $SPEC \
+  #     --event=close_write \
+  #     --format='%T %f' \
+  #     --timefmt='%s' |
+  #     while read -r event_time event_file 2>/dev/null || sleep $latency; do
+  #       if [[ $event_time -ge $next_allowed_run ]]; then
+  #         next_allowed_run=$(date --date="${latency}sec" +%s)
 
-          kill_descendants || true
+  #         kill_descendants || true
 
-          run_hot_reload
-        fi
-      done
-  done
+  #         run_hot_reload
+  #       fi
+  #     done
+  # done
 }
 
 x.sync-deps() {

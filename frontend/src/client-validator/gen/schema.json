@@ -16,6 +16,18 @@
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
+    "ServerSentEvents": {
+      "description": "string identifiers for SSE event listeners.",
+      "type": "string",
+      "enum": [
+        "UserNotifications",
+        "ManagerNotifications",
+        "AdminNotifications",
+        "WorkItemMoved",
+        "WorkItemClosed"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "Scope": {
       "type": "string",
       "enum": [
@@ -644,6 +656,9 @@
   "properties": {
     "HTTPValidationError": {
       "$ref": "#/definitions/HTTPValidationError"
+    },
+    "ServerSentEvents": {
+      "$ref": "#/definitions/ServerSentEvents"
     },
     "Scope": {
       "$ref": "#/definitions/Scope"

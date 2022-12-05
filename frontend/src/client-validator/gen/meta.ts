@@ -5,6 +5,7 @@
 
 import {
   HTTPValidationError,
+  ServerSentEvents,
   Scope,
   Scopes,
   Role,
@@ -32,6 +33,7 @@ import {
 
 export const schemaDefinitions = {
   HTTPValidationError: info<HTTPValidationError>('HTTPValidationError', '#/definitions/HTTPValidationError'),
+  ServerSentEvents: info<ServerSentEvents>('ServerSentEvents', '#/definitions/ServerSentEvents'),
   Scope: info<Scope>('Scope', '#/definitions/Scope'),
   Scopes: info<Scopes>('Scopes', '#/definitions/Scopes'),
   Role: info<Role>('Role', '#/definitions/Role'),
