@@ -104,6 +104,8 @@ var PublicStructs = map[string]any{
 
 	//
 
-	"RestUserResponse":     rest.UserResponse{},
-	"RestWorkItemResponse": rest.WorkItemResponse{},
+	"RestUserResponse":      rest.UserResponse{},
+	"RestWorkItemResponse":  rest.WorkItemResponse{},
+	"RestTeamCreateRequest": rest.TeamCreateRequest{},
+	"RestTeamUpdateRequest": rest.TeamUpdateRequest{},
 }

@@ -73,6 +73,59 @@ func TestUser_Update(t *testing.T) {
 	}
 }
 
+func TestUser_MarkAsDeleted(t *testing.T) {
+	t.Parallel()
+
+	userRepo := postgresql.NewUser()
+
+	ucp := randomUserCreateParams(t)
+
+	user, err := userRepo.Create(context.Background(), testpool, ucp)
+	if err != nil {
+		t.Fatalf("unexpected error = %v", err)
+	}
+
+	type args struct {
+		id string
+	}
+	type params struct {
+		name          string
+		args          args
+		errorContains string
+	}
+	tests := []params{
+		{
+			name: "deleted",
+			args: args{
+				id: user.UserID.String(),
+			},
+			errorContains: errNoRows,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			u := postgresql.NewUser()
+			_, err := u.Delete(context.Background(), testpool, tt.args.id)
+			if err != nil {
+				t.Errorf("User.Delete() unexpected error = %v", err)
+
+				return
+			}
+
+			_, err = u.UserByID(context.Background(), testpool, tt.args.id)
+			if err == nil {
+				t.Error("wanted error but got nothing", err)
+
+				return
+			}
+			assert.ErrorContains(t, err, tt.errorContains)
+		})
+	}
+}
+
 func TestUser_UserByIndexedQueries(t *testing.T) {
 	t.Parallel()
 

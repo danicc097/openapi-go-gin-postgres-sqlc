@@ -51,6 +51,13 @@ evtSource.onmessage = (e) => {
 evtSource.addEventListener(<Event name>, (e) => {
   console.log(e)
 });
+
+
+TODO for actual implementation see: https://eli.thegreenplace.net/2020/pubsub-using-channels-in-go/
+
+channel use cases,etc:
+ - https://go101.org/article/channel-use-cases.html
+ - https://go101.org/article/channel.html
 */
 
 // Events represents server events.
@@ -78,8 +85,9 @@ func (h *Handlers) Events(c *gin.Context) {
 			if !ok {
 				return true
 			}
-			// this part should actually be done before sending to channel.
+			// TODO this part should actually be done before sending to channel.
 			// should it fail marshalling earlier, msg is an error message (literal or {"error":"..."})
+			// but all sse channels receive strings
 			te := &timeEvent{
 				Foo: "bar",
 				Msg: msg,

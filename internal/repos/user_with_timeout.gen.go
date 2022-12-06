@@ -22,6 +22,8 @@ type UserWithTimeoutConfig struct {
 
 	CreateAPIKeyTimeout time.Duration
 
+	DeleteTimeout time.Duration
+
 	UpdateTimeout time.Duration
 
 	UserByAPIKeyTimeout time.Duration
@@ -61,6 +63,16 @@ func (_d UserWithTimeout) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.
 		defer cancelFunc()
 	}
 	return _d.User.CreateAPIKey(ctx, d, user)
+}
+
+// Delete implements User
+func (_d UserWithTimeout) Delete(ctx context.Context, d db.DBTX, id string) (up1 *db.User, err error) {
+	var cancelFunc func()
+	if _d.config.DeleteTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
+		defer cancelFunc()
+	}
+	return _d.User.Delete(ctx, d, id)
 }
 
 // Update implements User

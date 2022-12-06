@@ -12,6 +12,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+/**
+ *
+ * TODO define board entity, see ProjectBoard interface and model
+ *
+ *
+ */
+
 func TestBoard_Update(t *testing.T) {
 	t.Parallel()
 

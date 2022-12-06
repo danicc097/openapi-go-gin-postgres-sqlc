@@ -71,6 +71,22 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, params repos.Us
 	return user, err
 }
 
+func (u *User) Delete(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
+	user, err := u.UserByID(ctx, d, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not get user by id %w", parseErrorDetail(err))
+	}
+
+	user.DeletedAt = pointers.New(time.Now())
+
+	err = user.Update(ctx, d)
+	if err != nil {
+		return nil, fmt.Errorf("could not mark user as deleted: %w", parseErrorDetail(err))
+	}
+
+	return user, err
+}
+
 func (u *User) UserByExternalID(ctx context.Context, d db.DBTX, extID string) (*db.User, error) {
 	user, err := db.UserByExternalID(ctx, d, extID)
 	if err != nil {

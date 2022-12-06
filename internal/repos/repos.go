@@ -44,6 +44,7 @@ type User interface {
 	UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error)
 	Create(ctx context.Context, d db.DBTX, params UserCreateParams) (*db.User, error)
 	Update(ctx context.Context, d db.DBTX, id string, params UserUpdateParams) (*db.User, error)
+	Delete(ctx context.Context, d db.DBTX, id string) (*db.User, error)
 	// CreateAPIKey requires an existing user.
 	CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error)
 }
