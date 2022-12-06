@@ -232,7 +232,16 @@ create table kanban_steps (
   , foreign key (project_id) references projects (project_id) on delete cascade
   , check (color ~* '^#[a-f0-9]{6}$')
   , check (step_order > 0)
+  , check (step_order is null and disabled = true)
 );
+
+create unique index on kanban_steps (project_id , name , step_order)
+where
+  step_order is not null;
+
+create unique index on kanban_steps (project_id , name)
+where
+  step_order is null;
 
 comment on column kanban_steps.project_id is 'cardinality:O2M';
 

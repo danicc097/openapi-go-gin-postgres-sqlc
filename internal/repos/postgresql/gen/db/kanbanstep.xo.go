@@ -216,6 +216,82 @@ kanban_steps.disabled ` +
 	return &ks, nil
 }
 
+// KanbanStepByProjectIDName_kanban_steps_project_id_name_idx retrieves a row from 'public.kanban_steps' as a KanbanStep.
+//
+// Generated from index 'kanban_steps_project_id_name_idx'.
+func KanbanStepByProjectIDName_kanban_steps_project_id_name_idx(ctx context.Context, db DB, projectID int, name string, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`kanban_steps.kanban_step_id,
+kanban_steps.project_id,
+kanban_steps.step_order,
+kanban_steps.name,
+kanban_steps.description,
+kanban_steps.color,
+kanban_steps.time_trackable,
+kanban_steps.disabled ` +
+		`FROM public.kanban_steps ` +
+		`` +
+		` WHERE kanban_steps.project_id = $1 AND kanban_steps.name = $2 AND (step_order IS NULL) `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, projectID, name)
+	ks := KanbanStep{
+		_exists: true,
+	}
+
+	if err := db.QueryRow(ctx, sqlstr, projectID, name).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
+		return nil, logerror(err)
+	}
+	return &ks, nil
+}
+
+// KanbanStepByProjectIDNameStepOrder_kanban_steps_project_id_name_step_order_idx retrieves a row from 'public.kanban_steps' as a KanbanStep.
+//
+// Generated from index 'kanban_steps_project_id_name_step_order_idx'.
+func KanbanStepByProjectIDNameStepOrder_kanban_steps_project_id_name_step_order_idx(ctx context.Context, db DB, projectID int, name string, stepOrder *int16, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`kanban_steps.kanban_step_id,
+kanban_steps.project_id,
+kanban_steps.step_order,
+kanban_steps.name,
+kanban_steps.description,
+kanban_steps.color,
+kanban_steps.time_trackable,
+kanban_steps.disabled ` +
+		`FROM public.kanban_steps ` +
+		`` +
+		` WHERE kanban_steps.project_id = $1 AND kanban_steps.name = $2 AND kanban_steps.step_order = $3 AND (step_order IS NOT NULL) `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, projectID, name, stepOrder)
+	ks := KanbanStep{
+		_exists: true,
+	}
+
+	if err := db.QueryRow(ctx, sqlstr, projectID, name, stepOrder).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
+		return nil, logerror(err)
+	}
+	return &ks, nil
+}
+
 // KanbanStepByProjectIDStepOrder retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_step_order_key'.
