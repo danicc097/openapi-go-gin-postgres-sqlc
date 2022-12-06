@@ -2,7 +2,6 @@ package postgresql_test
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
@@ -28,16 +27,42 @@ const errNoRows = "no rows in result set"
 func TestUser_Update(t *testing.T) {
 	t.Parallel()
 
+	userRepo := postgresql.NewUser()
+
+	ucp := randomUserCreateParams(t)
+
+	user, err := userRepo.Create(context.Background(), testpool, ucp)
+	if err != nil {
+		t.Fatalf("unexpected error = %v", err)
+	}
+
 	type args struct {
 		params repos.UserUpdateParams
 	}
-	tests := []struct {
+	type params struct {
 		name    string
 		args    args
 		want    *db.User
 		wantErr bool
-	}{
-		// TODO: Add test cases.
+	}
+	tests := []params{
+		{
+			name: "updated",
+			args: args{
+				params: repos.UserUpdateParams{
+					ID:     user.UserID.String(),
+					Rank:   pointers.New[int16](10),
+					Scopes: &[]string{"test"},
+				},
+			},
+			want: func() *db.User {
+				u := *user
+				u.RoleRank = 10
+				u.Scopes = []string{"test"}
+
+				return &u
+			}(),
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -51,9 +76,9 @@ func TestUser_Update(t *testing.T) {
 
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("User.Update() = %v, want %v", got, tt.want)
-			}
+
+			got.UpdatedAt = user.UpdatedAt // ignore
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

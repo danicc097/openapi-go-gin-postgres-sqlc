@@ -9,11 +9,12 @@ create extension if not exists pg_trgm schema extensions;
 
 create extension if not exists btree_gin schema extensions;
 
+-- internal use. update whenever a project with its related workitems,
+--  etc. tables are created in migrations
 create table projects (
   project_id serial primary key
   , name text not null unique
   , description text not null
-  , metadata jsonb not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
 );
@@ -23,7 +24,6 @@ create table teams (
   , project_id int not null --limited to a project only
   , name text not null
   , description text not null
-  , metadata jsonb not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , foreign key (project_id) references projects (project_id) on delete cascade
