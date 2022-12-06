@@ -19,6 +19,8 @@ create table projects (
   , updated_at timestamp with time zone default current_timestamp not null
 );
 
+insert into projects (name, description) values ('dummy project', 'description for dummy project');
+
 create table teams (
   team_id serial primary key
   , project_id int not null --limited to a project only

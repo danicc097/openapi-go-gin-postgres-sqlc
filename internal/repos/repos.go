@@ -50,13 +50,14 @@ type User interface {
 // Projects are manually created on demand.
 type Project interface {
 	ProjectByName(ctx context.Context, d db.DBTX, name string) (*db.Project, error)
+	ProjectByID(ctx context.Context, d db.DBTX, id int) (*db.Project, error)
 }
 
 // Team defines the datastore/repository handling persisting Team records.
 type Team interface {
-	TeamByID(ctx context.Context, d db.DBTX, id string) (*db.Team, error)
+	TeamByID(ctx context.Context, d db.DBTX, id int) (*db.Team, error)
 	TeamByName(ctx context.Context, d db.DBTX, name string) (*db.Team, error)
 	Create(ctx context.Context, d db.DBTX, params TeamCreateParams) (*db.Team, error)
-	Update(ctx context.Context, d db.DBTX, id string, params TeamUpdateParams) (*db.Team, error)
-	Delete(ctx context.Context, d db.DBTX, id string) (*db.Team, error)
+	Update(ctx context.Context, d db.DBTX, id int, params TeamUpdateParams) (*db.Team, error)
+	Delete(ctx context.Context, d db.DBTX, id int) (*db.Team, error)
 }
