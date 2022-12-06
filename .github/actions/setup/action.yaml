@@ -27,6 +27,8 @@ runs:
       run: |
         source .envrc
 
+        mv docker/.env.ci docker/.env
+
         project e2e.sync-deps --x-env=ci
         project install-tools --x-env=ci
         project fetch.swagger-ui --x-env=ci

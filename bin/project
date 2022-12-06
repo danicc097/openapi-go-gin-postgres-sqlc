@@ -667,7 +667,7 @@ x.run-dev() {
   # done
 }
 
-x.sync-deps() {
+x.backend.sync-deps() {
   go mod tidy
   go mod vendor
 }
