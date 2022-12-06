@@ -16,7 +16,6 @@ type Teams struct {
 	ProjectID   int32     `db:"project_id"`
 	Name        string    `db:"name"`
 	Description string    `db:"description"`
-	Metadata    string    `db:"metadata"`
 	CreatedAt   time.Time `db:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at"`
 }

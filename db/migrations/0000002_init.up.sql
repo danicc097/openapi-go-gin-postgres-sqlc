@@ -22,7 +22,7 @@ create table projects (
 create table teams (
   team_id serial primary key
   , project_id int not null --limited to a project only
-  , name text not null
+  , name text not null unique
   , description text not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null

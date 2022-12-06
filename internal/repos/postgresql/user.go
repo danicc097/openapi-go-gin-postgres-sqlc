@@ -43,8 +43,8 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params repos.UserCreatePar
 	return user, nil
 }
 
-func (u *User) Update(ctx context.Context, d db.DBTX, params repos.UserUpdateParams) (*db.User, error) {
-	user, err := u.UserByID(ctx, d, params.ID)
+func (u *User) Update(ctx context.Context, d db.DBTX, id string, params repos.UserUpdateParams) (*db.User, error) {
+	user, err := u.UserByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user by id %w", parseErrorDetail(err))
 	}

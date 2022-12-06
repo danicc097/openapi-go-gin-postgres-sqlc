@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/jackc/pgtype"
 )
 
 // ProjectPublic represents fields that may be exposed from 'public.projects'
@@ -16,22 +14,20 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type ProjectPublic struct {
-	ProjectID   int          `json:"projectID" required:"true"`   // project_id
-	Name        string       `json:"name" required:"true"`        // name
-	Description string       `json:"description" required:"true"` // description
-	Metadata    pgtype.JSONB `json:"metadata" required:"true"`    // metadata
-	CreatedAt   time.Time    `json:"createdAt" required:"true"`   // created_at
-	UpdatedAt   time.Time    `json:"updatedAt" required:"true"`   // updated_at
+	ProjectID   int       `json:"projectID" required:"true"`   // project_id
+	Name        string    `json:"name" required:"true"`        // name
+	Description string    `json:"description" required:"true"` // description
+	CreatedAt   time.Time `json:"createdAt" required:"true"`   // created_at
+	UpdatedAt   time.Time `json:"updatedAt" required:"true"`   // updated_at
 }
 
 // Project represents a row from 'public.projects'.
 type Project struct {
-	ProjectID   int          `json:"project_id" db:"project_id"`   // project_id
-	Name        string       `json:"name" db:"name"`               // name
-	Description string       `json:"description" db:"description"` // description
-	Metadata    pgtype.JSONB `json:"metadata" db:"metadata"`       // metadata
-	CreatedAt   time.Time    `json:"created_at" db:"created_at"`   // created_at
-	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at"`   // updated_at
+	ProjectID   int       `json:"project_id" db:"project_id"`   // project_id
+	Name        string    `json:"name" db:"name"`               // name
+	Description string    `json:"description" db:"description"` // description
+	CreatedAt   time.Time `json:"created_at" db:"created_at"`   // created_at
+	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`   // updated_at
 
 	// xo fields
 	_exists, _deleted bool
@@ -39,7 +35,7 @@ type Project struct {
 
 func (x *Project) ToPublic() ProjectPublic {
 	return ProjectPublic{
-		ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Metadata: x.Metadata, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
+		ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
 	}
 }
 
@@ -112,13 +108,13 @@ func (p *Project) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.projects (` +
-		`name, description, metadata` +
+		`name, description` +
 		`) VALUES (` +
-		`$1, $2, $3` +
+		`$1, $2` +
 		`) RETURNING project_id, created_at, updated_at `
 	// run
-	logf(sqlstr, p.Name, p.Description, p.Metadata)
-	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.Metadata).Scan(&p.ProjectID, &p.CreatedAt, &p.UpdatedAt); err != nil {
+	logf(sqlstr, p.Name, p.Description)
+	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description).Scan(&p.ProjectID, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -136,12 +132,12 @@ func (p *Project) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.projects SET ` +
-		`name = $1, description = $2, metadata = $3 ` +
-		`WHERE project_id = $4 ` +
+		`name = $1, description = $2 ` +
+		`WHERE project_id = $3 ` +
 		`RETURNING project_id, created_at, updated_at `
 	// run
-	logf(sqlstr, p.Name, p.Description, p.Metadata, p.CreatedAt, p.UpdatedAt, p.ProjectID)
-	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.Metadata, p.ProjectID).Scan(&p.ProjectID, &p.CreatedAt, &p.UpdatedAt); err != nil {
+	logf(sqlstr, p.Name, p.Description, p.CreatedAt, p.UpdatedAt, p.ProjectID)
+	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.ProjectID).Scan(&p.ProjectID, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -163,16 +159,16 @@ func (p *Project) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.projects (` +
-		`project_id, name, description, metadata` +
+		`project_id, name, description` +
 		`) VALUES (` +
-		`$1, $2, $3, $4` +
+		`$1, $2, $3` +
 		`)` +
 		` ON CONFLICT (project_id) DO ` +
 		`UPDATE SET ` +
-		`name = EXCLUDED.name, description = EXCLUDED.description, metadata = EXCLUDED.metadata  `
+		`name = EXCLUDED.name, description = EXCLUDED.description  `
 	// run
-	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.Metadata)
-	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.Metadata); err != nil {
+	logf(sqlstr, p.ProjectID, p.Name, p.Description)
+	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -216,7 +212,6 @@ func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelec
 		`projects.project_id,
 projects.name,
 projects.description,
-projects.metadata,
 projects.created_at,
 projects.updated_at ` +
 		`FROM public.projects ` +
@@ -231,7 +226,7 @@ projects.updated_at ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, name).Scan(&p.ProjectID, &p.Name, &p.Description, &p.Metadata, &p.CreatedAt, &p.UpdatedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, name).Scan(&p.ProjectID, &p.Name, &p.Description, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &p, nil
@@ -252,7 +247,6 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...Proje
 		`projects.project_id,
 projects.name,
 projects.description,
-projects.metadata,
 projects.created_at,
 projects.updated_at ` +
 		`FROM public.projects ` +
@@ -267,7 +261,7 @@ projects.updated_at ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, projectID).Scan(&p.ProjectID, &p.Name, &p.Description, &p.Metadata, &p.CreatedAt, &p.UpdatedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, projectID).Scan(&p.ProjectID, &p.Name, &p.Description, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return nil, logerror(err)
 	}
 	return &p, nil

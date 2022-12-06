@@ -56,8 +56,8 @@ func NewFakeUser(users ...*db.User) *FakeUser {
 		return &user, nil
 	}
 
-	fakeUserRepo.UpdateStub = func(ctx context.Context, d db.DBTX, params repos.UserUpdateParams) (*db.User, error) {
-		user, err := fakeUserRepo.UserByID(ctx, d, params.ID)
+	fakeUserRepo.UpdateStub = func(ctx context.Context, d db.DBTX, id string, params repos.UserUpdateParams) (*db.User, error) {
+		user, err := fakeUserRepo.UserByID(ctx, d, id)
 		if err != nil {
 			return &db.User{}, fmt.Errorf("UserByIDStub: %w", err)
 		}
@@ -75,7 +75,7 @@ func NewFakeUser(users ...*db.User) *FakeUser {
 			user.RoleRank = *params.Rank
 		}
 
-		fks.set(params.ID, user)
+		fks.set(id, user)
 
 		return user, nil
 	}

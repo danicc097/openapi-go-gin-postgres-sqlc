@@ -21,7 +21,6 @@ type teamsTable struct {
 	ProjectID   postgres.ColumnInteger
 	Name        postgres.ColumnString
 	Description postgres.ColumnString
-	Metadata    postgres.ColumnString
 	CreatedAt   postgres.ColumnTimestampz
 	UpdatedAt   postgres.ColumnTimestampz
 
@@ -68,11 +67,10 @@ func newTeamsTableImpl(schemaName, tableName, alias string) teamsTable {
 		ProjectIDColumn   = postgres.IntegerColumn("project_id")
 		NameColumn        = postgres.StringColumn("name")
 		DescriptionColumn = postgres.StringColumn("description")
-		MetadataColumn    = postgres.StringColumn("metadata")
 		CreatedAtColumn   = postgres.TimestampzColumn("created_at")
 		UpdatedAtColumn   = postgres.TimestampzColumn("updated_at")
-		allColumns        = postgres.ColumnList{TeamIDColumn, ProjectIDColumn, NameColumn, DescriptionColumn, MetadataColumn, CreatedAtColumn, UpdatedAtColumn}
-		mutableColumns    = postgres.ColumnList{ProjectIDColumn, NameColumn, DescriptionColumn, MetadataColumn, CreatedAtColumn, UpdatedAtColumn}
+		allColumns        = postgres.ColumnList{TeamIDColumn, ProjectIDColumn, NameColumn, DescriptionColumn, CreatedAtColumn, UpdatedAtColumn}
+		mutableColumns    = postgres.ColumnList{ProjectIDColumn, NameColumn, DescriptionColumn, CreatedAtColumn, UpdatedAtColumn}
 	)
 
 	return teamsTable{
@@ -83,7 +81,6 @@ func newTeamsTableImpl(schemaName, tableName, alias string) teamsTable {
 		ProjectID:   ProjectIDColumn,
 		Name:        NameColumn,
 		Description: DescriptionColumn,
-		Metadata:    MetadataColumn,
 		CreatedAt:   CreatedAtColumn,
 		UpdatedAt:   UpdatedAtColumn,
 

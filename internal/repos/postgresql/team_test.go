@@ -8,12 +8,11 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUser_Update(t *testing.T) {
+func TestTeam_Update(t *testing.T) {
 	t.Parallel()
 
 	userRepo := postgresql.NewUser()
@@ -73,7 +72,7 @@ func TestUser_Update(t *testing.T) {
 	}
 }
 
-func TestUser_UserByIndexedQueries(t *testing.T) {
+func TestTeam_UserByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
 	userRepo := postgresql.NewUser()
@@ -152,7 +151,7 @@ func TestUser_UserByIndexedQueries(t *testing.T) {
 	}
 }
 
-func TestUser_UserAPIKeys(t *testing.T) {
+func TestTeam_UserAPIKeys(t *testing.T) {
 	t.Parallel()
 
 	userRepo := postgresql.NewUser()
@@ -229,7 +228,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	})
 }
 
-func TestUser_Create(t *testing.T) {
+func TestTeam_Create(t *testing.T) {
 	t.Parallel()
 
 	userRepo := postgresql.NewUser()
@@ -292,16 +291,12 @@ func TestUser_Create(t *testing.T) {
 	})
 }
 
-func randomUserCreateParams(t *testing.T) repos.UserCreateParams {
-	t.Helper()
+// func randomTeamCreateParams(t *testing.T) repos.TeamCreateParams {
+// 	t.Helper()
 
-	return repos.UserCreateParams{
-		Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
-		Email:      testutil.RandomEmail(),
-		FirstName:  pointers.New(testutil.RandomFirstName()),
-		LastName:   pointers.New(testutil.RandomLastName()),
-		ExternalID: testutil.RandomString(10),
-		Scopes:     []string{"scope1", "scope2"},
-		RoleRank:   int16(2),
-	}
-}
+// 	return repos.TeamCreateParams{
+// 		Name:        testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
+// 		Description: pointers.New(testutil.RandomString(10)),
+// 		ProjectID: , // TODO we still need project repo
+// 	}
+// }

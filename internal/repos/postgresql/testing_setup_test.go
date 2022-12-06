@@ -9,6 +9,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+const errNoRows = "no rows in result set"
+
 var testpool *pgxpool.Pool
 
 func TestMain(m *testing.M) {

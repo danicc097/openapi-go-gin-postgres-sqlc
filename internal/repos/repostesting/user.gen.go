@@ -40,12 +40,13 @@ type FakeUser struct {
 		result1 *db.UserAPIKey
 		result2 error
 	}
-	UpdateStub        func(context.Context, db.DBTX, repos.UserUpdateParams) (*db.User, error)
+	UpdateStub        func(context.Context, db.DBTX, string, repos.UserUpdateParams) (*db.User, error)
 	updateMutex       sync.RWMutex
 	updateArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 repos.UserUpdateParams
+		arg3 string
+		arg4 repos.UserUpdateParams
 	}
 	updateReturns struct {
 		result1 *db.User
@@ -266,20 +267,21 @@ func (fake *FakeUser) CreateAPIKeyReturnsOnCall(i int, result1 *db.UserAPIKey, r
 	}{result1, result2}
 }
 
-func (fake *FakeUser) Update(arg1 context.Context, arg2 db.DBTX, arg3 repos.UserUpdateParams) (*db.User, error) {
+func (fake *FakeUser) Update(arg1 context.Context, arg2 db.DBTX, arg3 string, arg4 repos.UserUpdateParams) (*db.User, error) {
 	fake.updateMutex.Lock()
 	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
 	fake.updateArgsForCall = append(fake.updateArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 repos.UserUpdateParams
-	}{arg1, arg2, arg3})
+		arg3 string
+		arg4 repos.UserUpdateParams
+	}{arg1, arg2, arg3, arg4})
 	stub := fake.UpdateStub
 	fakeReturns := fake.updateReturns
-	fake.recordInvocation("Update", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("Update", []interface{}{arg1, arg2, arg3, arg4})
 	fake.updateMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -293,17 +295,17 @@ func (fake *FakeUser) UpdateCallCount() int {
 	return len(fake.updateArgsForCall)
 }
 
-func (fake *FakeUser) UpdateCalls(stub func(context.Context, db.DBTX, repos.UserUpdateParams) (*db.User, error)) {
+func (fake *FakeUser) UpdateCalls(stub func(context.Context, db.DBTX, string, repos.UserUpdateParams) (*db.User, error)) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = stub
 }
 
-func (fake *FakeUser) UpdateArgsForCall(i int) (context.Context, db.DBTX, repos.UserUpdateParams) {
+func (fake *FakeUser) UpdateArgsForCall(i int) (context.Context, db.DBTX, string, repos.UserUpdateParams) {
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
 	argsForCall := fake.updateArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeUser) UpdateReturns(result1 *db.User, result2 error) {
