@@ -222,17 +222,16 @@ comment on column user_team.team_id is 'cardinality:M2M';
 create table kanban_steps (
   kanban_step_id serial primary key
   , project_id int not null
-  , step_order smallint
+  , step_order smallint -- null -> disabled
   , name text not null
   , description text not null
   , color text not null
   , time_trackable bool not null default false
-  , disabled bool not null default false
+  -- , disabled bool not null default false
   , unique (project_id , step_order)
   , foreign key (project_id) references projects (project_id) on delete cascade
   , check (color ~* '^#[a-f0-9]{6}$')
   , check (step_order > 0)
-  , check (step_order is null and disabled = true)
 );
 
 create unique index on kanban_steps (project_id , name , step_order)

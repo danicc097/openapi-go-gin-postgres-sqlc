@@ -19,7 +19,6 @@ type KanbanStepPublic struct {
 	Description   string `json:"description" required:"true"`   // description
 	Color         string `json:"color" required:"true"`         // color
 	TimeTrackable bool   `json:"timeTrackable" required:"true"` // time_trackable
-	Disabled      bool   `json:"disabled" required:"true"`      // disabled
 }
 
 // KanbanStep represents a row from 'public.kanban_steps'.
@@ -31,7 +30,6 @@ type KanbanStep struct {
 	Description   string `json:"description" db:"description"`       // description
 	Color         string `json:"color" db:"color"`                   // color
 	TimeTrackable bool   `json:"time_trackable" db:"time_trackable"` // time_trackable
-	Disabled      bool   `json:"disabled" db:"disabled"`             // disabled
 
 	// xo fields
 	_exists, _deleted bool
@@ -39,7 +37,7 @@ type KanbanStep struct {
 
 func (x *KanbanStep) ToPublic() KanbanStepPublic {
 	return KanbanStepPublic{
-		KanbanStepID: x.KanbanStepID, ProjectID: x.ProjectID, StepOrder: x.StepOrder, Name: x.Name, Description: x.Description, Color: x.Color, TimeTrackable: x.TimeTrackable, Disabled: x.Disabled,
+		KanbanStepID: x.KanbanStepID, ProjectID: x.ProjectID, StepOrder: x.StepOrder, Name: x.Name, Description: x.Description, Color: x.Color, TimeTrackable: x.TimeTrackable,
 	}
 }
 
@@ -89,13 +87,13 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.kanban_steps (` +
-		`project_id, step_order, name, description, color, time_trackable, disabled` +
+		`project_id, step_order, name, description, color, time_trackable` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7` +
+		`$1, $2, $3, $4, $5, $6` +
 		`) RETURNING kanban_step_id `
 	// run
-	logf(sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled)
-	if err := db.QueryRow(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled).Scan(&ks.KanbanStepID); err != nil {
+	logf(sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
+	if err := db.QueryRow(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable).Scan(&ks.KanbanStepID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -113,12 +111,12 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.kanban_steps SET ` +
-		`project_id = $1, step_order = $2, name = $3, description = $4, color = $5, time_trackable = $6, disabled = $7 ` +
-		`WHERE kanban_step_id = $8 ` +
+		`project_id = $1, step_order = $2, name = $3, description = $4, color = $5, time_trackable = $6 ` +
+		`WHERE kanban_step_id = $7 ` +
 		`RETURNING kanban_step_id `
 	// run
-	logf(sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID)
-	if err := db.QueryRow(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID).Scan(&ks.KanbanStepID); err != nil {
+	logf(sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
+	if err := db.QueryRow(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID).Scan(&ks.KanbanStepID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -140,16 +138,16 @@ func (ks *KanbanStep) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.kanban_steps (` +
-		`kanban_step_id, project_id, step_order, name, description, color, time_trackable, disabled` +
+		`kanban_step_id, project_id, step_order, name, description, color, time_trackable` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8` +
+		`$1, $2, $3, $4, $5, $6, $7` +
 		`)` +
 		` ON CONFLICT (kanban_step_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, step_order = EXCLUDED.step_order, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color, time_trackable = EXCLUDED.time_trackable, disabled = EXCLUDED.disabled  `
+		`project_id = EXCLUDED.project_id, step_order = EXCLUDED.step_order, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color, time_trackable = EXCLUDED.time_trackable  `
 	// run
-	logf(sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled)
-	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled); err != nil {
+	logf(sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
+	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -196,8 +194,7 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable,
-kanban_steps.disabled ` +
+kanban_steps.time_trackable ` +
 		`FROM public.kanban_steps ` +
 		`` +
 		` WHERE kanban_steps.kanban_step_id = $1 `
@@ -210,7 +207,7 @@ kanban_steps.disabled ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, kanbanStepID).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, kanbanStepID).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable); err != nil {
 		return nil, logerror(err)
 	}
 	return &ks, nil
@@ -234,8 +231,7 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable,
-kanban_steps.disabled ` +
+kanban_steps.time_trackable ` +
 		`FROM public.kanban_steps ` +
 		`` +
 		` WHERE kanban_steps.project_id = $1 AND kanban_steps.name = $2 AND (step_order IS NULL) `
@@ -248,7 +244,7 @@ kanban_steps.disabled ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, projectID, name).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, projectID, name).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable); err != nil {
 		return nil, logerror(err)
 	}
 	return &ks, nil
@@ -272,8 +268,7 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable,
-kanban_steps.disabled ` +
+kanban_steps.time_trackable ` +
 		`FROM public.kanban_steps ` +
 		`` +
 		` WHERE kanban_steps.project_id = $1 AND kanban_steps.name = $2 AND kanban_steps.step_order = $3 AND (step_order IS NOT NULL) `
@@ -286,7 +281,7 @@ kanban_steps.disabled ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, projectID, name, stepOrder).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, projectID, name, stepOrder).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable); err != nil {
 		return nil, logerror(err)
 	}
 	return &ks, nil
@@ -310,8 +305,7 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable,
-kanban_steps.disabled ` +
+kanban_steps.time_trackable ` +
 		`FROM public.kanban_steps ` +
 		`` +
 		` WHERE kanban_steps.project_id = $1 AND kanban_steps.step_order = $2 `
@@ -324,7 +318,7 @@ kanban_steps.disabled ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, projectID, stepOrder).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, projectID, stepOrder).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable); err != nil {
 		return nil, logerror(err)
 	}
 	return &ks, nil

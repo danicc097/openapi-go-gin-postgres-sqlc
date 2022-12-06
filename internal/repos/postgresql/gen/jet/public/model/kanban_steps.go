@@ -15,5 +15,4 @@ type KanbanSteps struct {
 	Description   string `db:"description"`
 	Color         string `db:"color"`
 	TimeTrackable bool   `db:"time_trackable"`
-	Disabled      bool   `db:"disabled"`
 }

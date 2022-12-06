@@ -24,7 +24,6 @@ type kanbanStepsTable struct {
 	Description   postgres.ColumnString
 	Color         postgres.ColumnString
 	TimeTrackable postgres.ColumnBool
-	Disabled      postgres.ColumnBool
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -72,9 +71,8 @@ func newKanbanStepsTableImpl(schemaName, tableName, alias string) kanbanStepsTab
 		DescriptionColumn   = postgres.StringColumn("description")
 		ColorColumn         = postgres.StringColumn("color")
 		TimeTrackableColumn = postgres.BoolColumn("time_trackable")
-		DisabledColumn      = postgres.BoolColumn("disabled")
-		allColumns          = postgres.ColumnList{KanbanStepIDColumn, ProjectIDColumn, StepOrderColumn, NameColumn, DescriptionColumn, ColorColumn, TimeTrackableColumn, DisabledColumn}
-		mutableColumns      = postgres.ColumnList{ProjectIDColumn, StepOrderColumn, NameColumn, DescriptionColumn, ColorColumn, TimeTrackableColumn, DisabledColumn}
+		allColumns          = postgres.ColumnList{KanbanStepIDColumn, ProjectIDColumn, StepOrderColumn, NameColumn, DescriptionColumn, ColorColumn, TimeTrackableColumn}
+		mutableColumns      = postgres.ColumnList{ProjectIDColumn, StepOrderColumn, NameColumn, DescriptionColumn, ColorColumn, TimeTrackableColumn}
 	)
 
 	return kanbanStepsTable{
@@ -88,7 +86,6 @@ func newKanbanStepsTableImpl(schemaName, tableName, alias string) kanbanStepsTab
 		Description:   DescriptionColumn,
 		Color:         ColorColumn,
 		TimeTrackable: TimeTrackableColumn,
-		Disabled:      DisabledColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

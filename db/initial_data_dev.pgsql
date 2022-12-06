@@ -75,51 +75,41 @@ begin
   -- projects
   insert into projects (
     "name"
-    , description
-    , metadata)
+    , description)
   values (
     'project 1'
-    , 'This is project 1'
-    , '{}');
+    , 'This is project 1');
   insert into projects (
     "name"
-    , description
-    , metadata)
+    , description)
   values (
     'project 2'
-    , 'This is project 2'
-    , '{}');
+    , 'This is project 2');
   -- teams
   insert into teams (
     "name"
     , project_id
-    , description
-    , metadata)
+    , description)
   values (
     'team 1'
     , 1
-    , 'This is team 1 from project 1'
-    , '{}');
+    , 'This is team 1 from project 1');
   insert into teams (
     "name"
     , project_id
-    , description
-    , metadata)
+    , description)
   values (
     'team 2'
     , 1
-    , 'This is team 2 from project 1'
-    , '{}');
+    , 'This is team 2 from project 1');
   insert into teams (
     "name"
     , project_id
-    , description
-    , metadata)
+    , description)
   values (
     'team 1'
     , 2
-    , 'This is team 1 from project 2'
-    , '{}');
+    , 'This is team 1 from project 2');
   insert into user_team (
     team_id
     , user_id)
