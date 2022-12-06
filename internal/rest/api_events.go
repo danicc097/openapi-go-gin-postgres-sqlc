@@ -26,8 +26,8 @@ type Event struct {
 	ClosedClients chan chan string
 
 	// Total client connections
-	ClientsForMessage1 map[chan string]bool
-	ClientsForMessage2 map[chan string]bool
+	ClientsForMessage1 map[chan string]struct{}
+	ClientsForMessage2 map[chan string]struct{}
 }
 
 // New event messages are broadcasted to all registered client connection channels.
@@ -102,6 +102,7 @@ func (h *Handlers) Events(c *gin.Context) {
 				Event: "test-event",
 				Data:  string(sseMsg),
 			})
+
 			c.Writer.Flush()
 
 			return true
@@ -110,7 +111,7 @@ func (h *Handlers) Events(c *gin.Context) {
 				return true
 			}
 			c.Render(-1, sse.Event{
-				Event: string(models.ServerSentEventsUserNotifications),
+				Event: string(models.TopicsUserNotifications),
 				Data:  msg,
 			})
 			c.Writer.Flush()
@@ -134,8 +135,8 @@ func newSSEServer() *Event {
 		NewClients:         make(chan chan string),
 		NewClients2:        make(chan chan string),
 		ClosedClients:      make(chan chan string),
-		ClientsForMessage1: make(map[chan string]bool),
-		ClientsForMessage2: make(map[chan string]bool),
+		ClientsForMessage1: make(map[chan string]struct{}),
+		ClientsForMessage2: make(map[chan string]struct{}),
 	}
 
 	go event.listen()
@@ -150,10 +151,10 @@ func (stream *Event) listen() {
 		select {
 		// Add new available client
 		case client := <-stream.NewClients:
-			stream.ClientsForMessage1[client] = true
+			stream.ClientsForMessage1[client] = struct{}{}
 			log.Printf("Client for message type 1 added. %d registered clients", len(stream.ClientsForMessage1))
 		case client := <-stream.NewClients2:
-			stream.ClientsForMessage2[client] = true
+			stream.ClientsForMessage2[client] = struct{}{}
 			log.Printf("Client for message type 2 added. %d registered clients", len(stream.ClientsForMessage2))
 
 		// Remove closed client

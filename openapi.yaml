@@ -224,7 +224,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ValidationError'
-    ServerSentEvents:
+    Topics:
       description: string identifiers for SSE event listeners.
       type: string
       enum:

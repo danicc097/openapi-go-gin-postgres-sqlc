@@ -96,6 +96,6 @@ func TestSSEStream(t *testing.T) {
 	cancel()
 
 	assert.NotEmpty(t, body)
-	assert.Contains(t, strings.ReplaceAll(body, " ", ""), "event:"+models.ServerSentEventsUserNotifications)
+	assert.Contains(t, strings.ReplaceAll(body, " ", ""), "event:"+models.TopicsUserNotifications)
 	assert.Contains(t, strings.ReplaceAll(body, " ", ""), "event:test-event")
 }

@@ -39,13 +39,13 @@ const (
 	ScopeWorkItemReview       Scope = "work-item:review"
 )
 
-// Defines values for ServerSentEvents.
+// Defines values for Topics.
 const (
-	ServerSentEventsAdminNotifications   ServerSentEvents = "AdminNotifications"
-	ServerSentEventsManagerNotifications ServerSentEvents = "ManagerNotifications"
-	ServerSentEventsUserNotifications    ServerSentEvents = "UserNotifications"
-	ServerSentEventsWorkItemClosed       ServerSentEvents = "WorkItemClosed"
-	ServerSentEventsWorkItemMoved        ServerSentEvents = "WorkItemMoved"
+	TopicsAdminNotifications   Topics = "AdminNotifications"
+	TopicsManagerNotifications Topics = "ManagerNotifications"
+	TopicsUserNotifications    Topics = "UserNotifications"
+	TopicsWorkItemClosed       Topics = "WorkItemClosed"
+	TopicsWorkItemMoved        Topics = "WorkItemMoved"
 )
 
 // Defines values for WorkItemRole.
@@ -115,9 +115,6 @@ type Scope string
 // Scopes defines model for Scopes.
 type Scopes = []Scope
 
-// ServerSentEvents string identifiers for SSE event listeners.
-type ServerSentEvents string
-
 // TaskPublic defines model for TaskPublic.
 type TaskPublic struct {
 	CreatedAt  *time.Time      `json:"createdAt,omitempty"`
@@ -163,6 +160,9 @@ type TimeEntryPublic struct {
 	UserID          *UuidUUID  `json:"userID,omitempty"`
 	WorkItemID      *int       `json:"workItemID"`
 }
+
+// Topics string identifiers for SSE event listeners.
+type Topics string
 
 // UpdateUserAuthRequest represents User authorization data to update
 type UpdateUserAuthRequest struct {
