@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"sync"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-contrib/sse"
@@ -28,6 +29,92 @@ type Event struct {
 	// Total client connections
 	ClientsForMessage1 map[chan string]struct{}
 	ClientsForMessage2 map[chan string]struct{}
+}
+
+type subs map[chan string]struct{}
+
+type PubSub struct {
+	mu sync.RWMutex // preferable if mostly read
+
+	subs map[models.Topics]subs
+	// e.g. event card moved notifies all card members' userID - attempt to send if clients are connected (i.e. key exists in personalSub)
+	// TODO close and delete entries when client is gone:
+	// edit defer func in serveHTTP to get user from context
+	personalSub map[string]chan string
+	closed      bool
+}
+
+func NewPubSub() *PubSub {
+	ps := &PubSub{}
+	ps.subs = make(map[models.Topics]subs)
+	ps.personalSub = make(map[string]chan string)
+
+	for _, t := range models.AllTopicsValues() {
+		ps.subs[t] = make(subs)
+	}
+
+	return ps
+}
+
+func (ps *PubSub) Subscribe(topic models.Topics, userID string) <-chan string {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+
+	sub := make(chan string, 1)
+	ps.subs[topic][sub] = struct{}{}
+
+	if _, ok := ps.personalSub[userID]; !ok {
+		ps.personalSub[userID] = sub
+	}
+
+	return sub
+}
+
+func (ps *PubSub) Publish(topic models.Topics, msg string) {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	if ps.closed {
+		return
+	}
+
+	for sub := range ps.subs[topic] {
+		sub <- msg
+	}
+}
+
+func (ps *PubSub) PublishTo(userIDs []string, msg string) {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	if ps.closed {
+		return
+	}
+
+	for _, id := range userIDs {
+		if ch, ok := ps.personalSub[id]; ok {
+			ch <- msg
+		}
+	}
+}
+
+func (ps *PubSub) Close() {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+
+	if !ps.closed {
+		ps.closed = true
+		for _, subs := range ps.subs {
+			for sub := range subs {
+				close(sub)
+				delete(subs, sub)
+			}
+		}
+		for uid, sub := range ps.personalSub {
+			close(sub)
+			delete(ps.personalSub, uid)
+		}
+	}
 }
 
 // New event messages are broadcasted to all registered client connection channels.

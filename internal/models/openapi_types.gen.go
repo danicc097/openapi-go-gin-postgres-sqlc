@@ -18,6 +18,14 @@ const (
 	NotificationTypePersonal NotificationType = "personal"
 )
 
+// AllNotificationTypeValues returns all possible values for NotificationType.
+func AllNotificationTypeValues() []NotificationType {
+	return []NotificationType{
+		NotificationTypeGlobal,
+		NotificationTypePersonal,
+	}
+}
+
 // Defines values for Role.
 const (
 	RoleAdmin        Role = "admin"
@@ -27,6 +35,18 @@ const (
 	RoleSuperAdmin   Role = "superAdmin"
 	RoleUser         Role = "user"
 )
+
+// AllRoleValues returns all possible values for Role.
+func AllRoleValues() []Role {
+	return []Role{
+		RoleAdmin,
+		RoleAdvancedUser,
+		RoleGuest,
+		RoleManager,
+		RoleSuperAdmin,
+		RoleUser,
+	}
+}
 
 // Defines values for Scope.
 const (
@@ -39,6 +59,19 @@ const (
 	ScopeWorkItemReview       Scope = "work-item:review"
 )
 
+// AllScopeValues returns all possible values for Scope.
+func AllScopeValues() []Scope {
+	return []Scope{
+		ScopeProjectSettingsWrite,
+		ScopeScopesWrite,
+		ScopeTeamSettingsWrite,
+		ScopeTestScope,
+		ScopeUsersRead,
+		ScopeUsersWrite,
+		ScopeWorkItemReview,
+	}
+}
+
 // Defines values for Topics.
 const (
 	TopicsAdminNotifications   Topics = "AdminNotifications"
@@ -48,11 +81,30 @@ const (
 	TopicsWorkItemMoved        Topics = "WorkItemMoved"
 )
 
+// AllTopicsValues returns all possible values for Topics.
+func AllTopicsValues() []Topics {
+	return []Topics{
+		TopicsAdminNotifications,
+		TopicsManagerNotifications,
+		TopicsUserNotifications,
+		TopicsWorkItemClosed,
+		TopicsWorkItemMoved,
+	}
+}
+
 // Defines values for WorkItemRole.
 const (
 	WorkItemRolePreparer WorkItemRole = "preparer"
 	WorkItemRoleReviewer WorkItemRole = "reviewer"
 )
+
+// AllWorkItemRoleValues returns all possible values for WorkItemRole.
+func AllWorkItemRoleValues() []WorkItemRole {
+	return []WorkItemRole{
+		WorkItemRolePreparer,
+		WorkItemRoleReviewer,
+	}
+}
 
 // DbTeamPublic defines model for DbTeamPublic.
 type DbTeamPublic struct {
