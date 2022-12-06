@@ -43,6 +43,12 @@ linters-settings:
     simplify: true
   lll:
     line-length: 130
+  tagliatelle:
+    case:
+      use-field-name: true
+      rules:
+        json: goCamel
+        yaml: goCamel
   staticcheck:
     go: "1.19"
     checks:

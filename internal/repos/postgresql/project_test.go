@@ -95,8 +95,7 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 
 			errContains := errNoRows
 
-			// valid as of now for any text and uuid index unless there are specific table checks
-			filter := 254364
+			filter := 254364 // does not exist
 
 			_, err := tc.args.fn(context.Background(), testpool, filter)
 			if err == nil {

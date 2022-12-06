@@ -8,12 +8,13 @@ import (
 )
 
 type TeamCreateParams struct {
-	Name        string
-	Description *string
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	ProjectID   int     `json:"projectID"`
 }
 
 type TeamUpdateParams struct {
-	Name        string
+	Name        *string
 	Description *string
 }
 

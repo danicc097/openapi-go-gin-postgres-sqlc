@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
@@ -17,4 +18,12 @@ type UserResponse struct {
 // WorkItemResponse represents an OpenAPI schema response for a WorkItem.
 type WorkItemResponse struct {
 	db.WorkItemPublic
+}
+
+type TeamCreateRequest struct {
+	repos.TeamCreateParams
+}
+
+type TeamUpdateRequest struct {
+	repos.TeamUpdateParams
 }
