@@ -109,8 +109,7 @@ func (h *Handlers) Events(c *gin.Context) {
 
 			return true
 		case <-c.Request.Context().Done():
-			fmt.Println("CLIENT GONE")
-
+			fmt.Printf("Client gone. Context cancelled: %v\n", c.Request.Context().Err())
 			c.SSEvent("message", "channel closed")
 			c.Writer.Flush()
 

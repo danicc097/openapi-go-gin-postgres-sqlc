@@ -1,8 +1,17 @@
 package rest
 
 import (
+	"context"
+	"net/http"
 	"net/http/httptest"
+	"os"
+	"strings"
 	"testing"
+	"time"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 // TODO see e.g. https://dev.lucaskatayama.com/posts/go/2020/08/sse-with-gin/
@@ -34,9 +43,10 @@ func (s *StreamRecorder) CloseNotify() <-chan bool {
 	return s.closeNotify
 }
 
-func (s *StreamRecorder) closeClient() {
-	s.closeNotify <- true
-}
+// deprecated in favor of context
+// func (s *StreamRecorder) closeClient() {
+// 	s.closeNotify <- true
+// }
 
 func NewStreamRecorder() *StreamRecorder {
 	return &StreamRecorder{
@@ -45,37 +55,47 @@ func NewStreamRecorder() *StreamRecorder {
 	}
 }
 
-// TODO closenotifier deprecated. Use ctx: https://stackoverflow.com/questions/32123546/eventsource-golang-how-to-detect-client-disconnection
 // TODO revisit when multiple events (personal notif., global notif., etc.) are implemented.
 // / see https://github.com/search?q=%22req.Context%28%29.Done%28%29%22+sse&type=code
 // would need a way to stop streaming after N messages, etc.
-// func TestSSEStream(t *testing.T) {
-// 	res := NewStreamRecorder()
-// 	req := httptest.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/events", nil)
+func TestSSEStream(t *testing.T) {
+	t.Parallel()
 
-// 	srv, err := runTestServer(t, testpool, []gin.HandlerFunc{func(c *gin.Context) {
-// 		c.Next()
-// 	}})
-// 	if err != nil {
-// 		t.Fatalf("Couldn't run test server: %s\n", err)
-// 	}
-// 	defer srv.Close()
+	res := NewStreamRecorder()
+	req := httptest.NewRequest(http.MethodGet, os.Getenv("API_VERSION")+"/events", nil)
 
-// 	go srv.Handler.ServeHTTP(res, req)
+	ctx, cancel := context.WithCancel(context.Background())
+	req = req.WithContext(ctx)
 
-// 	// do notifications here
+	srv, err := runTestServer(t, testpool, []gin.HandlerFunc{func(c *gin.Context) {
+		c.Next()
+	}})
+	if err != nil {
+		t.Fatalf("Couldn't run test server: %s\n", err)
+	}
+	defer srv.Close()
 
-// 	time.Sleep(3000 * time.Millisecond)
-// 	// 	for !res.Flushed {
-// 	// }
-// 	// body, _ := io.ReadAll(res.Body) // will just read one event
-// 	// fmt.Printf("body: %v\n", body)
+	go srv.Handler.ServeHTTP(res, req)
 
-// 	body := res.Body.String()
-// 	assert.NotEmpty(t, body)
-// 	fmt.Printf("body: %v\n", body)
+	// trigger events
+	// TODO in reality call whatever triggers the events, then wait a bit for them to
+	//  be sent if its more than one since everyone will call flush
+	// TODO test 2 clients concurrently receive, one leaves, the other still receives.
+	// TODO while not (contains (...) && contains (...)) sleep until timeout
+	// Or use assert.eventually
+	time.Sleep(200 * time.Millisecond)
 
-// 	res.closeClient()
-// 	assert.Contains(t, strings.ReplaceAll("event:message\ndata:", " ", ""), strings.ReplaceAll(body, " ", ""))
-// 	assert.Contains(t, "The Current Time Is", strings.ReplaceAll(body, " ", ""))
-// }
+	for start := time.Now(); time.Since(start) < 2*time.Second; {
+		for !res.Flushed {
+			time.Sleep(100 * time.Millisecond)
+		}
+	}
+
+	body := res.Body.String()
+
+	cancel()
+
+	assert.NotEmpty(t, body)
+	assert.Contains(t, strings.ReplaceAll(body, " ", ""), "event:"+models.ServerSentEventsUserNotifications)
+	assert.Contains(t, strings.ReplaceAll(body, " ", ""), "event:test-event")
+}
