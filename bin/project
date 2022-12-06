@@ -46,7 +46,7 @@ pkg="$(head -1 go.mod)"
 readonly GOMOD_PKG="${pkg#module *}"
 readonly OPID_AUTH="operationAuth.gen.json"
 
-pids=()
+pids=""
 env="dev"
 dump_prefix="dump_${env}_"
 
@@ -77,11 +77,10 @@ xerr() {
 }
 
 kill_descendants() {
-  for pid in "${pids[@]}"; do
-    # air and vite spawn processes as well, need to kill those (whose parent is pid), kill $pid will not kill children. pkill -P would also work
-    kill "$(list_descendants $pid)" || true
-  done
-  pids=()
+  # air and vite spawn processes as well, need to kill those (whose parent is pid), kill $pid will not kill children. pkill -P would also work
+  kill $pids || true
+  kill "$(list_descendants $pids)" || true
+  pids=""
 }
 
 # Check build dependencies are met.
@@ -615,7 +614,7 @@ x.run.backend-hr() {
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$PROTO_DIR,"$PG_REPO_GEN",**/testdata,vendor,frontend,*.cache" \
+    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,*.cache" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
@@ -641,6 +640,10 @@ x.run-dev() {
   env="dev"
 
   run_hot_reload
+
+  while true; do
+    sleep 1000
+  done
 
   # TODO fix won't kill children
   # next_allowed_run=$(date +%s)
@@ -956,9 +959,9 @@ x.diff-oas() {
 # extracting function here instead...
 run_hot_reload() {
   x.run.backend-hr &
-  pids+=("$!")
+  pids="$pids $!"
   x.run.frontend &
-  pids+=("$!")
+  pids="$pids $!"
 }
 
 run_shared_services() {

@@ -6,9 +6,9 @@ import (
 	"io"
 	"log"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-contrib/sse"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 // It keeps a list of clients those are currently attached
@@ -90,7 +90,10 @@ func (h *Handlers) Events(c *gin.Context) {
 
 				return true // should probably continue regardless. client should handle the error and stop/continue if desired
 			}
-			c.SSEvent("message", string(sseMsg))
+			c.Render(-1, sse.Event{
+				Event: "test-event",
+				Data:  string(sseMsg),
+			})
 			c.Writer.Flush()
 
 			return true
@@ -98,11 +101,9 @@ func (h *Handlers) Events(c *gin.Context) {
 			if !ok {
 				return true
 			}
-			// c.SSEvent("userNotificationsChan", msg)
 			c.Render(-1, sse.Event{
-				Event: "userNotificationsChan",
+				Event: string(models.ServerSentEventsUserNotifications),
 				Data:  msg,
-				Id:    uuid.New().String(),
 			})
 			c.Writer.Flush()
 
@@ -177,8 +178,8 @@ func (stream *Event) listen() {
 func (stream *Event) serveHTTP() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		fmt.Println("stream events - Initialize client channel")
-		clientChan := make(ClientChan)
-		userNotificationsChan := make(UserNotificationsChan)
+		clientChan := make(ClientChan, 1)
+		userNotificationsChan := make(UserNotificationsChan, 1)
 
 		// Send new connection to event server
 		stream.NewClients <- clientChan
