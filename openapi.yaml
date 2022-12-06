@@ -603,8 +603,6 @@ components:
           type: string
         description:
           type: string
-        metadata:
-          $ref: '#/components/schemas/PgtypeJSONB'
         name:
           type: string
         projectID:
@@ -619,7 +617,6 @@ components:
         - projectID
         - name
         - description
-        - metadata
         - createdAt
         - updatedAt
       type: object

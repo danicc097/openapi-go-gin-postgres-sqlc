@@ -13,7 +13,7 @@ import (
 // Joins may be explicitly added in the Response struct.
 type KanbanStepPublic struct {
 	KanbanStepID  int    `json:"kanbanStepID" required:"true"`  // kanban_step_id
-	TeamID        int    `json:"teamID" required:"true"`        // team_id
+	ProjectID     int    `json:"projectID" required:"true"`     // project_id
 	StepOrder     *int16 `json:"stepOrder" required:"true"`     // step_order
 	Name          string `json:"name" required:"true"`          // name
 	Description   string `json:"description" required:"true"`   // description
@@ -25,7 +25,7 @@ type KanbanStepPublic struct {
 // KanbanStep represents a row from 'public.kanban_steps'.
 type KanbanStep struct {
 	KanbanStepID  int    `json:"kanban_step_id" db:"kanban_step_id"` // kanban_step_id
-	TeamID        int    `json:"team_id" db:"team_id"`               // team_id
+	ProjectID     int    `json:"project_id" db:"project_id"`         // project_id
 	StepOrder     *int16 `json:"step_order" db:"step_order"`         // step_order
 	Name          string `json:"name" db:"name"`                     // name
 	Description   string `json:"description" db:"description"`       // description
@@ -39,7 +39,7 @@ type KanbanStep struct {
 
 func (x *KanbanStep) ToPublic() KanbanStepPublic {
 	return KanbanStepPublic{
-		KanbanStepID: x.KanbanStepID, TeamID: x.TeamID, StepOrder: x.StepOrder, Name: x.Name, Description: x.Description, Color: x.Color, TimeTrackable: x.TimeTrackable, Disabled: x.Disabled,
+		KanbanStepID: x.KanbanStepID, ProjectID: x.ProjectID, StepOrder: x.StepOrder, Name: x.Name, Description: x.Description, Color: x.Color, TimeTrackable: x.TimeTrackable, Disabled: x.Disabled,
 	}
 }
 
@@ -89,13 +89,13 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.kanban_steps (` +
-		`team_id, step_order, name, description, color, time_trackable, disabled` +
+		`project_id, step_order, name, description, color, time_trackable, disabled` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7` +
 		`) RETURNING kanban_step_id `
 	// run
-	logf(sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled)
-	if err := db.QueryRow(ctx, sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled).Scan(&ks.KanbanStepID); err != nil {
+	logf(sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled)
+	if err := db.QueryRow(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled).Scan(&ks.KanbanStepID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -113,12 +113,12 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.kanban_steps SET ` +
-		`team_id = $1, step_order = $2, name = $3, description = $4, color = $5, time_trackable = $6, disabled = $7 ` +
+		`project_id = $1, step_order = $2, name = $3, description = $4, color = $5, time_trackable = $6, disabled = $7 ` +
 		`WHERE kanban_step_id = $8 ` +
 		`RETURNING kanban_step_id `
 	// run
-	logf(sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID)
-	if err := db.QueryRow(ctx, sqlstr, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID).Scan(&ks.KanbanStepID); err != nil {
+	logf(sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID)
+	if err := db.QueryRow(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled, ks.KanbanStepID).Scan(&ks.KanbanStepID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -140,16 +140,16 @@ func (ks *KanbanStep) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.kanban_steps (` +
-		`kanban_step_id, team_id, step_order, name, description, color, time_trackable, disabled` +
+		`kanban_step_id, project_id, step_order, name, description, color, time_trackable, disabled` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7, $8` +
 		`)` +
 		` ON CONFLICT (kanban_step_id) DO ` +
 		`UPDATE SET ` +
-		`team_id = EXCLUDED.team_id, step_order = EXCLUDED.step_order, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color, time_trackable = EXCLUDED.time_trackable, disabled = EXCLUDED.disabled  `
+		`project_id = EXCLUDED.project_id, step_order = EXCLUDED.step_order, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color, time_trackable = EXCLUDED.time_trackable, disabled = EXCLUDED.disabled  `
 	// run
-	logf(sqlstr, ks.KanbanStepID, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled)
-	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID, ks.TeamID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled); err != nil {
+	logf(sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled)
+	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.Disabled); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -191,7 +191,7 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts
 	// query
 	sqlstr := `SELECT ` +
 		`kanban_steps.kanban_step_id,
-kanban_steps.team_id,
+kanban_steps.project_id,
 kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
@@ -210,16 +210,16 @@ kanban_steps.disabled ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, kanbanStepID).Scan(&ks.KanbanStepID, &ks.TeamID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, kanbanStepID).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
 		return nil, logerror(err)
 	}
 	return &ks, nil
 }
 
-// KanbanStepByTeamIDStepOrder retrieves a row from 'public.kanban_steps' as a KanbanStep.
+// KanbanStepByProjectIDStepOrder retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
-// Generated from index 'kanban_steps_team_id_step_order_key'.
-func KanbanStepByTeamIDStepOrder(ctx context.Context, db DB, teamID int, stepOrder *int16, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
+// Generated from index 'kanban_steps_project_id_step_order_key'.
+func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID int, stepOrder *int16, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
 
 	for _, o := range opts {
@@ -229,7 +229,7 @@ func KanbanStepByTeamIDStepOrder(ctx context.Context, db DB, teamID int, stepOrd
 	// query
 	sqlstr := `SELECT ` +
 		`kanban_steps.kanban_step_id,
-kanban_steps.team_id,
+kanban_steps.project_id,
 kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
@@ -238,25 +238,25 @@ kanban_steps.time_trackable,
 kanban_steps.disabled ` +
 		`FROM public.kanban_steps ` +
 		`` +
-		` WHERE kanban_steps.team_id = $1 AND kanban_steps.step_order = $2 `
+		` WHERE kanban_steps.project_id = $1 AND kanban_steps.step_order = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, teamID, stepOrder)
+	logf(sqlstr, projectID, stepOrder)
 	ks := KanbanStep{
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, teamID, stepOrder).Scan(&ks.KanbanStepID, &ks.TeamID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, projectID, stepOrder).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable, &ks.Disabled); err != nil {
 		return nil, logerror(err)
 	}
 	return &ks, nil
 }
 
-// FKTeam_TeamID returns the Team associated with the KanbanStep's (TeamID).
+// FKProject_ProjectID returns the Project associated with the KanbanStep's (ProjectID).
 //
-// Generated from foreign key 'kanban_steps_team_id_fkey'.
-func (ks *KanbanStep) FKTeam_TeamID(ctx context.Context, db DB) (*Team, error) {
-	return TeamByTeamID(ctx, db, ks.TeamID)
+// Generated from foreign key 'kanban_steps_project_id_fkey'.
+func (ks *KanbanStep) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
+	return ProjectByProjectID(ctx, db, ks.ProjectID)
 }

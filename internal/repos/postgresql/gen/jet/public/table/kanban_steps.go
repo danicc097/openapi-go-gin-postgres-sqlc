@@ -18,7 +18,7 @@ type kanbanStepsTable struct {
 
 	//Columns
 	KanbanStepID  postgres.ColumnInteger
-	TeamID        postgres.ColumnInteger
+	ProjectID     postgres.ColumnInteger
 	StepOrder     postgres.ColumnInteger
 	Name          postgres.ColumnString
 	Description   postgres.ColumnString
@@ -66,15 +66,15 @@ func newKanbanStepsTable(schemaName, tableName, alias string) *KanbanStepsTable 
 func newKanbanStepsTableImpl(schemaName, tableName, alias string) kanbanStepsTable {
 	var (
 		KanbanStepIDColumn  = postgres.IntegerColumn("kanban_step_id")
-		TeamIDColumn        = postgres.IntegerColumn("team_id")
+		ProjectIDColumn     = postgres.IntegerColumn("project_id")
 		StepOrderColumn     = postgres.IntegerColumn("step_order")
 		NameColumn          = postgres.StringColumn("name")
 		DescriptionColumn   = postgres.StringColumn("description")
 		ColorColumn         = postgres.StringColumn("color")
 		TimeTrackableColumn = postgres.BoolColumn("time_trackable")
 		DisabledColumn      = postgres.BoolColumn("disabled")
-		allColumns          = postgres.ColumnList{KanbanStepIDColumn, TeamIDColumn, StepOrderColumn, NameColumn, DescriptionColumn, ColorColumn, TimeTrackableColumn, DisabledColumn}
-		mutableColumns      = postgres.ColumnList{TeamIDColumn, StepOrderColumn, NameColumn, DescriptionColumn, ColorColumn, TimeTrackableColumn, DisabledColumn}
+		allColumns          = postgres.ColumnList{KanbanStepIDColumn, ProjectIDColumn, StepOrderColumn, NameColumn, DescriptionColumn, ColorColumn, TimeTrackableColumn, DisabledColumn}
+		mutableColumns      = postgres.ColumnList{ProjectIDColumn, StepOrderColumn, NameColumn, DescriptionColumn, ColorColumn, TimeTrackableColumn, DisabledColumn}
 	)
 
 	return kanbanStepsTable{
@@ -82,7 +82,7 @@ func newKanbanStepsTableImpl(schemaName, tableName, alias string) kanbanStepsTab
 
 		//Columns
 		KanbanStepID:  KanbanStepIDColumn,
-		TeamID:        TeamIDColumn,
+		ProjectID:     ProjectIDColumn,
 		StepOrder:     StepOrderColumn,
 		Name:          NameColumn,
 		Description:   DescriptionColumn,

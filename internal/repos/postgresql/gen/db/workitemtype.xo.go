@@ -13,7 +13,7 @@ import (
 // Joins may be explicitly added in the Response struct.
 type WorkItemTypePublic struct {
 	WorkItemTypeID int    `json:"workItemTypeID" required:"true"` // work_item_type_id
-	ProjectID      int64  `json:"projectID" required:"true"`      // project_id
+	ProjectID      int    `json:"projectID" required:"true"`      // project_id
 	Name           string `json:"name" required:"true"`           // name
 	Description    string `json:"description" required:"true"`    // description
 	Color          string `json:"color" required:"true"`          // color
@@ -22,7 +22,7 @@ type WorkItemTypePublic struct {
 // WorkItemType represents a row from 'public.work_item_types'.
 type WorkItemType struct {
 	WorkItemTypeID int    `json:"work_item_type_id" db:"work_item_type_id"` // work_item_type_id
-	ProjectID      int64  `json:"project_id" db:"project_id"`               // project_id
+	ProjectID      int    `json:"project_id" db:"project_id"`               // project_id
 	Name           string `json:"name" db:"name"`                           // name
 	Description    string `json:"description" db:"description"`             // description
 	Color          string `json:"color" db:"color"`                         // color
@@ -210,7 +210,7 @@ work_item_types.color ` +
 // WorkItemTypeByProjectIDName retrieves a row from 'public.work_item_types' as a WorkItemType.
 //
 // Generated from index 'work_item_types_project_id_name_key'.
-func WorkItemTypeByProjectIDName(ctx context.Context, db DB, projectID int64, name string, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
+func WorkItemTypeByProjectIDName(ctx context.Context, db DB, projectID int, name string, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
 
 	for _, o := range opts {
@@ -246,5 +246,5 @@ work_item_types.color ` +
 //
 // Generated from foreign key 'work_item_types_project_id_fkey'.
 func (wit *WorkItemType) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
-	return ProjectByProjectID(ctx, db, int(wit.ProjectID))
+	return ProjectByProjectID(ctx, db, wit.ProjectID)
 }

@@ -3,6 +3,7 @@ package repos
 import (
 	"context"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
@@ -60,4 +61,17 @@ type Team interface {
 	Create(ctx context.Context, d db.DBTX, params TeamCreateParams) (*db.Team, error)
 	Update(ctx context.Context, d db.DBTX, id int, params TeamUpdateParams) (*db.Team, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.Team, error)
+}
+
+// ProjectBoard defines the datastore/repository handling persisting ProjectBoard records.
+type ProjectBoard interface {
+	// Create corresponds to initial info to be filled in once a project table has been manually
+	// created, before it can be used:
+	// - kanban columns and their info (order, name, can log time, etc.)
+	// - types of workitems (shared by all teams)
+	// - initial teams creation (at least 1 initially)
+	Create(ctx context.Context, d db.DBTX, projectID int)
+
+	ProjectBoardByName(ctx context.Context, d db.DBTX, name string) (*models.ProjectBoard, error)
+	ProjectBoardByID(ctx context.Context, d db.DBTX, id int) (*models.ProjectBoard, error)
 }

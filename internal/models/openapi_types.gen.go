@@ -56,13 +56,12 @@ const (
 
 // DbTeamPublic defines model for DbTeamPublic.
 type DbTeamPublic struct {
-	CreatedAt   time.Time   `json:"createdAt"`
-	Description string      `json:"description"`
-	Metadata    PgtypeJSONB `json:"metadata"`
-	Name        string      `json:"name"`
-	ProjectID   int         `json:"projectID"`
-	TeamID      int         `json:"teamID"`
-	UpdatedAt   time.Time   `json:"updatedAt"`
+	CreatedAt   time.Time `json:"createdAt"`
+	Description string    `json:"description"`
+	Name        string    `json:"name"`
+	ProjectID   int       `json:"projectID"`
+	TeamID      int       `json:"teamID"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 // DbUserAPIKeyPublic defines model for DbUserAPIKeyPublic.

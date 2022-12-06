@@ -29,6 +29,10 @@ type Project struct {
 	CreatedAt   time.Time `json:"created_at" db:"created_at"`   // created_at
 	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`   // updated_at
 
+	Activities    *[]Activity     `json:"activities" db:"activities"`           // O2M
+	KanbanSteps   *[]KanbanStep   `json:"kanban_steps" db:"kanban_steps"`       // O2M
+	Teams         *[]Team         `json:"teams" db:"teams"`                     // O2M
+	WorkItemTypes *[]WorkItemType `json:"work_item_types" db:"work_item_types"` // O2M
 	// xo fields
 	_exists, _deleted bool
 }
@@ -78,7 +82,12 @@ func WithProjectOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 	}
 }
 
-type ProjectJoins struct{}
+type ProjectJoins struct {
+	Activities    bool
+	KanbanSteps   bool
+	Teams         bool
+	WorkItemTypes bool
+}
 
 // WithProjectJoin orders results by the given columns.
 func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
@@ -213,10 +222,49 @@ func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelec
 projects.name,
 projects.description,
 projects.created_at,
-projects.updated_at ` +
+projects.updated_at,
+(case when $1::boolean = true then joined_activities.activities end)::jsonb as activities,
+(case when $2::boolean = true then joined_kanban_steps.kanban_steps end)::jsonb as kanban_steps,
+(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
+(case when $4::boolean = true then joined_work_item_types.work_item_types end)::jsonb as work_item_types ` +
 		`FROM public.projects ` +
-		`` +
-		` WHERE projects.name = $1 `
+		`-- O2M join generated from "activities_project_id_fkey"
+left join (
+  select
+  project_id as activities_project_id
+    , json_agg(activities.*) as activities
+  from
+    activities
+   group by
+        project_id) joined_activities on joined_activities.activities_project_id = projects.project_id
+-- O2M join generated from "kanban_steps_project_id_fkey"
+left join (
+  select
+  project_id as kanban_steps_project_id
+    , json_agg(kanban_steps.*) as kanban_steps
+  from
+    kanban_steps
+   group by
+        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
+-- O2M join generated from "teams_project_id_fkey"
+left join (
+  select
+  project_id as teams_project_id
+    , json_agg(teams.*) as teams
+  from
+    teams
+   group by
+        project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
+-- O2M join generated from "work_item_types_project_id_fkey"
+left join (
+  select
+  project_id as work_item_types_project_id
+    , json_agg(work_item_types.*) as work_item_types
+  from
+    work_item_types
+   group by
+        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
+		` WHERE projects.name = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -226,7 +274,7 @@ projects.updated_at ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, name).Scan(&p.ProjectID, &p.Name, &p.Description, &p.CreatedAt, &p.UpdatedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTypes, name).Scan(&p.ProjectID, &p.Name, &p.Description, &p.CreatedAt, &p.UpdatedAt, &p.Activities, &p.KanbanSteps, &p.Teams, &p.WorkItemTypes); err != nil {
 		return nil, logerror(err)
 	}
 	return &p, nil
@@ -248,10 +296,49 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...Proje
 projects.name,
 projects.description,
 projects.created_at,
-projects.updated_at ` +
+projects.updated_at,
+(case when $1::boolean = true then joined_activities.activities end)::jsonb as activities,
+(case when $2::boolean = true then joined_kanban_steps.kanban_steps end)::jsonb as kanban_steps,
+(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
+(case when $4::boolean = true then joined_work_item_types.work_item_types end)::jsonb as work_item_types ` +
 		`FROM public.projects ` +
-		`` +
-		` WHERE projects.project_id = $1 `
+		`-- O2M join generated from "activities_project_id_fkey"
+left join (
+  select
+  project_id as activities_project_id
+    , json_agg(activities.*) as activities
+  from
+    activities
+   group by
+        project_id) joined_activities on joined_activities.activities_project_id = projects.project_id
+-- O2M join generated from "kanban_steps_project_id_fkey"
+left join (
+  select
+  project_id as kanban_steps_project_id
+    , json_agg(kanban_steps.*) as kanban_steps
+  from
+    kanban_steps
+   group by
+        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
+-- O2M join generated from "teams_project_id_fkey"
+left join (
+  select
+  project_id as teams_project_id
+    , json_agg(teams.*) as teams
+  from
+    teams
+   group by
+        project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
+-- O2M join generated from "work_item_types_project_id_fkey"
+left join (
+  select
+  project_id as work_item_types_project_id
+    , json_agg(work_item_types.*) as work_item_types
+  from
+    work_item_types
+   group by
+        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
+		` WHERE projects.project_id = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -261,7 +348,7 @@ projects.updated_at ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, projectID).Scan(&p.ProjectID, &p.Name, &p.Description, &p.CreatedAt, &p.UpdatedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTypes, projectID).Scan(&p.ProjectID, &p.Name, &p.Description, &p.CreatedAt, &p.UpdatedAt, &p.Activities, &p.KanbanSteps, &p.Teams, &p.WorkItemTypes); err != nil {
 		return nil, logerror(err)
 	}
 	return &p, nil

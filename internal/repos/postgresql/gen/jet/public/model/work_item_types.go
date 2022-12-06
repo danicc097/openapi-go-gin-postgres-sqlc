@@ -9,7 +9,7 @@ package model
 
 type WorkItemTypes struct {
 	WorkItemTypeID int32  `sql:"primary_key" db:"work_item_type_id"`
-	ProjectID      int64  `db:"project_id"`
+	ProjectID      int32  `db:"project_id"`
 	Name           string `db:"name"`
 	Description    string `db:"description"`
 	Color          string `db:"color"`

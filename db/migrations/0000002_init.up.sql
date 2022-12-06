@@ -19,7 +19,12 @@ create table projects (
   , updated_at timestamp with time zone default current_timestamp not null
 );
 
-insert into projects (name, description) values ('dummy project', 'description for dummy project');
+insert into projects (
+  name
+  , description)
+values (
+  'dummy project'
+  , 'description for dummy project');
 
 create table teams (
   team_id serial primary key
@@ -31,6 +36,8 @@ create table teams (
   , foreign key (project_id) references projects (project_id) on delete cascade
   , unique (name , project_id)
 );
+
+comment on column teams.project_id is 'cardinality:O2M';
 
 create table user_api_keys (
   user_api_key_id serial primary key
@@ -214,23 +221,25 @@ comment on column user_team.team_id is 'cardinality:M2M';
 
 create table kanban_steps (
   kanban_step_id serial primary key
-  , team_id int not null
+  , project_id int not null
   , step_order smallint
   , name text not null
   , description text not null
   , color text not null
   , time_trackable bool not null default false
   , disabled bool not null default false
-  , unique (team_id , step_order)
-  , foreign key (team_id) references teams (team_id) on delete cascade
+  , unique (project_id , step_order)
+  , foreign key (project_id) references projects (project_id) on delete cascade
   , check (color ~* '^#[a-f0-9]{6}$')
   , check (step_order > 0)
 );
 
+comment on column kanban_steps.project_id is 'cardinality:O2M';
+
 -- types restricted per project
 create table work_item_types (
   work_item_type_id serial primary key
-  , project_id bigint not null
+  , project_id int not null
   , name text not null
   , description text not null
   , color text not null
@@ -238,6 +247,8 @@ create table work_item_types (
   , foreign key (project_id) references projects (project_id) on delete cascade
   , check (color ~* '^#[a-f0-9]{6}$')
 );
+
+comment on column work_item_types.project_id is 'cardinality:O2M';
 
 
 /*
@@ -397,16 +408,18 @@ comment on column work_item_member.work_item_id is 'cardinality:M2M';
 
 comment on column work_item_member.member is 'cardinality:M2M';
 
--- must be completely dynamic on a team basis
+-- must be completely dynamic on a project basis
 create table activities (
   activity_id serial primary key
-  , project_id int
+  , project_id int not null
   , name text not null unique
   , description text not null
   , is_productive boolean default false not null
   -- can't have multiple unrelated projects see each other's activities
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
+
+comment on column activities.project_id is 'cardinality:O2M';
 
 -- will restrict available activities on a per-project basis
 -- where project_id is null (shared) or project_id = @project_id

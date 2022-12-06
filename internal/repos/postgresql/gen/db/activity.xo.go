@@ -13,7 +13,7 @@ import (
 // Joins may be explicitly added in the Response struct.
 type ActivityPublic struct {
 	ActivityID   int    `json:"activityID" required:"true"`   // activity_id
-	ProjectID    *int   `json:"projectID" required:"true"`    // project_id
+	ProjectID    int    `json:"projectID" required:"true"`    // project_id
 	Name         string `json:"name" required:"true"`         // name
 	Description  string `json:"description" required:"true"`  // description
 	IsProductive bool   `json:"isProductive" required:"true"` // is_productive
@@ -22,7 +22,7 @@ type ActivityPublic struct {
 // Activity represents a row from 'public.activities'.
 type Activity struct {
 	ActivityID   int    `json:"activity_id" db:"activity_id"`     // activity_id
-	ProjectID    *int   `json:"project_id" db:"project_id"`       // project_id
+	ProjectID    int    `json:"project_id" db:"project_id"`       // project_id
 	Name         string `json:"name" db:"name"`                   // name
 	Description  string `json:"description" db:"description"`     // description
 	IsProductive bool   `json:"is_productive" db:"is_productive"` // is_productive
@@ -267,5 +267,5 @@ left join (
 //
 // Generated from foreign key 'activities_project_id_fkey'.
 func (a *Activity) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
-	return ProjectByProjectID(ctx, db, *a.ProjectID)
+	return ProjectByProjectID(ctx, db, a.ProjectID)
 }
