@@ -32,6 +32,7 @@ type Project struct {
 	Activities    *[]Activity     `json:"activities" db:"activities"`           // O2M
 	KanbanSteps   *[]KanbanStep   `json:"kanban_steps" db:"kanban_steps"`       // O2M
 	Teams         *[]Team         `json:"teams" db:"teams"`                     // O2M
+	WorkItemTags  *[]WorkItemTag  `json:"work_item_tags" db:"work_item_tags"`   // O2M
 	WorkItemTypes *[]WorkItemType `json:"work_item_types" db:"work_item_types"` // O2M
 	// xo fields
 	_exists, _deleted bool
@@ -86,6 +87,7 @@ type ProjectJoins struct {
 	Activities    bool
 	KanbanSteps   bool
 	Teams         bool
+	WorkItemTags  bool
 	WorkItemTypes bool
 }
 
@@ -226,7 +228,8 @@ projects.updated_at,
 (case when $1::boolean = true then joined_activities.activities end)::jsonb as activities,
 (case when $2::boolean = true then joined_kanban_steps.kanban_steps end)::jsonb as kanban_steps,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_item_types.work_item_types end)::jsonb as work_item_types ` +
+(case when $4::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
+(case when $5::boolean = true then joined_work_item_types.work_item_types end)::jsonb as work_item_types ` +
 		`FROM public.projects ` +
 		`-- O2M join generated from "activities_project_id_fkey"
 left join (
@@ -255,6 +258,15 @@ left join (
     teams
    group by
         project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
+-- O2M join generated from "work_item_tags_project_id_fkey"
+left join (
+  select
+  project_id as work_item_tags_project_id
+    , json_agg(work_item_tags.*) as work_item_tags
+  from
+    work_item_tags
+   group by
+        project_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
 -- O2M join generated from "work_item_types_project_id_fkey"
 left join (
   select
@@ -264,7 +276,7 @@ left join (
     work_item_types
    group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.name = $5 `
+		` WHERE projects.name = $6 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -274,7 +286,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTypes, name).Scan(&p.ProjectID, &p.Name, &p.Description, &p.CreatedAt, &p.UpdatedAt, &p.Activities, &p.KanbanSteps, &p.Teams, &p.WorkItemTypes); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, name).Scan(&p.ProjectID, &p.Name, &p.Description, &p.CreatedAt, &p.UpdatedAt, &p.Activities, &p.KanbanSteps, &p.Teams, &p.WorkItemTags, &p.WorkItemTypes); err != nil {
 		return nil, logerror(err)
 	}
 	return &p, nil
@@ -300,7 +312,8 @@ projects.updated_at,
 (case when $1::boolean = true then joined_activities.activities end)::jsonb as activities,
 (case when $2::boolean = true then joined_kanban_steps.kanban_steps end)::jsonb as kanban_steps,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_item_types.work_item_types end)::jsonb as work_item_types ` +
+(case when $4::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
+(case when $5::boolean = true then joined_work_item_types.work_item_types end)::jsonb as work_item_types ` +
 		`FROM public.projects ` +
 		`-- O2M join generated from "activities_project_id_fkey"
 left join (
@@ -329,6 +342,15 @@ left join (
     teams
    group by
         project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
+-- O2M join generated from "work_item_tags_project_id_fkey"
+left join (
+  select
+  project_id as work_item_tags_project_id
+    , json_agg(work_item_tags.*) as work_item_tags
+  from
+    work_item_tags
+   group by
+        project_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
 -- O2M join generated from "work_item_types_project_id_fkey"
 left join (
   select
@@ -338,7 +360,7 @@ left join (
     work_item_types
    group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-		` WHERE projects.project_id = $5 `
+		` WHERE projects.project_id = $6 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -348,7 +370,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTypes, projectID).Scan(&p.ProjectID, &p.Name, &p.Description, &p.CreatedAt, &p.UpdatedAt, &p.Activities, &p.KanbanSteps, &p.Teams, &p.WorkItemTypes); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID).Scan(&p.ProjectID, &p.Name, &p.Description, &p.CreatedAt, &p.UpdatedAt, &p.Activities, &p.KanbanSteps, &p.Teams, &p.WorkItemTags, &p.WorkItemTypes); err != nil {
 		return nil, logerror(err)
 	}
 	return &p, nil

@@ -91,9 +91,10 @@ func TestSSEStream(t *testing.T) {
 		}
 	}
 
-	body := res.Body.String()
-
 	cancel()
+
+	// FIXME data race reading body
+	body := res.Body.String()
 
 	assert.NotEmpty(t, body)
 	assert.Contains(t, strings.ReplaceAll(body, " ", ""), "event:"+models.TopicsUserNotifications)

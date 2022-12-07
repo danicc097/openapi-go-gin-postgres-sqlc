@@ -32,8 +32,9 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 	}
 
 	type argsString struct {
-		filter string
-		fn     func(context.Context, db.DBTX, string) (*db.Team, error)
+		filter    string
+		projectID int
+		fn        func(context.Context, db.DBTX, string, int) (*db.Team, error)
 	}
 
 	testString := []struct {
@@ -43,8 +44,9 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 		{
 			name: "name",
 			args: argsString{
-				filter: team.Name,
-				fn:     (teamRepo.TeamByName),
+				filter:    team.Name,
+				projectID: team.ProjectID,
+				fn:        (teamRepo.TeamByName),
 			},
 		},
 	}
@@ -53,7 +55,7 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundTeam, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
+			foundTeam, err := tc.args.fn(context.Background(), testpool, tc.args.filter, tc.args.projectID)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -67,7 +69,7 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 
 			filter := "inexistent team"
 
-			_, err := tc.args.fn(context.Background(), testpool, filter)
+			_, err := tc.args.fn(context.Background(), testpool, filter, tc.args.projectID)
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}

@@ -62,8 +62,8 @@ func (u *Team) Update(ctx context.Context, d db.DBTX, id int, params repos.TeamU
 	return team, err
 }
 
-func (u *Team) TeamByName(ctx context.Context, d db.DBTX, name string) (*db.Team, error) {
-	team, err := db.TeamByName(ctx, d, name)
+func (u *Team) TeamByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Team, error) {
+	team, err := db.TeamByNameProjectID(ctx, d, name, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get team: %w", parseErrorDetail(err))
 	}

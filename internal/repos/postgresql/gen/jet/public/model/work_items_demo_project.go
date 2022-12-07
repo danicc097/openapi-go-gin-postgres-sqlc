@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-type WorkItemsProject1 struct {
-	WorkItemID            int64      `sql:"primary_key" db:"work_item_id"`
-	CustomDateForProject1 *time.Time `db:"custom_date_for_project_1"`
+type WorkItemsDemoProject struct {
+	WorkItemID               int64      `sql:"primary_key" db:"work_item_id"`
+	CustomDateForDemoProject *time.Time `db:"custom_date_for_demo_project"`
 }

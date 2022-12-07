@@ -175,10 +175,10 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// ActivityByName retrieves a row from 'public.activities' as a Activity.
+// ActivityByNameProjectID retrieves a row from 'public.activities' as a Activity.
 //
-// Generated from index 'activities_name_key'.
-func ActivityByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) (*Activity, error) {
+// Generated from index 'activities_name_project_id_key'.
+func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...ActivitySelectConfigOption) (*Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}}
 
 	for _, o := range opts {
@@ -203,17 +203,17 @@ left join (
     time_entries
    group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.name = $2 `
+		` WHERE activities.name = $2 AND activities.project_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	logf(sqlstr, name, projectID)
 	a := Activity{
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, name).Scan(&a.ActivityID, &a.ProjectID, &a.Name, &a.Description, &a.IsProductive, &a.TimeEntries); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, name, projectID).Scan(&a.ActivityID, &a.ProjectID, &a.Name, &a.Description, &a.IsProductive, &a.TimeEntries); err != nil {
 		return nil, logerror(err)
 	}
 	return &a, nil

@@ -29,7 +29,7 @@ values (
 create table teams (
   team_id serial primary key
   , project_id int not null --limited to a project only
-  , name text not null unique
+  , name text not null
   , description text not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
@@ -266,13 +266,6 @@ internally the storage is the same and doesn't affect in any way.
  */
 create table work_items (
   work_item_id bigserial primary key
-  /* generic must-have fields. store naming overrides in business logic, if any
-   (json with project name (unique) as key should suffice to be used by both back and frontend)
-   as requested by clients to prevent useless joins.
-   yq will ensure fields do exist as db column and project name exists (should make not editable once created)
-
-   projectOverrides.json is the same for all envs like roles and scopes. in the end its tied to the db schema
-   */
   , title text not null
   , work_item_type_id int not null
   , metadata jsonb not null
@@ -280,18 +273,7 @@ create table work_items (
   , kanban_step_id int not null
   , closed timestamp with time zone -- NULL: active
   , target_date timestamp with time zone not null
-  /* if a project requests a new field that needs to be indexed (either manual or automated)
-   add it as nullable.
-   in business logic that project_id will have any column that appears in overrides.json marked as required .
-   If indexability is not required, dump it to metadata and mark as isMetadata (to track what's going on externally)
-   it can use the same json as above.
-   since its not indexed (maybe just GIN) we dont care about schema changes over time
-   (no keys before existence)
-
-   TODO instead of column key, it should be the openapi json key, so that frontend can
-   override for every key in received workitem info
-
-
+  /*
    -- IMPORTANT: implement this:
    alternative to sharing all keys for different projects in the same table:
    https://stackoverflow.com/questions/10068033/postgresql-foreign-key-referencing-primary-keys-of-two-different-tables
@@ -303,8 +285,6 @@ create table work_items (
    in this new table with check (team_id in select team_id ... join teams where project_id ... )
    the same concept is also seen in https://dba.stackexchange.com/questions/232262/solving-supertype-subtype-relationship-without-sacrificing-data-consistency-in-a
    */
-  , some_custom_date_for_project_1 timestamp with time zone
-  , some_custom_date_for_project_2 timestamp with time zone
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
@@ -315,15 +295,16 @@ create table work_items (
 
 
 /*
-
-alternative with metadata jsonb, though requires maintaining a json file externally
-for back/front:
-https://www.cloudbees.com/blog/unleash-the-power-of-storing-json-in-postgres
- see also: https://stackoverflow.com/questions/40158584/index-on-json-field-with-dynamic-keys
+when a new project is required -> manual table creation with empty new fields, just
+ work_item_id bigint primary key.
+ When a new field is added, possibilities are:
+ - not nullable -> must set default value for the existing rows
+ - nullable and custom business logic when it's required or not. previous rows remain null or with default as required
  */
-create table work_items_project_1 (
+-- project for tour
+create table work_items_demo_project (
   work_item_id bigint primary key references work_items (work_item_id)
-  , custom_date_for_project_1 timestamp with time zone
+  , custom_date_for_demo_project timestamp with time zone
 );
 
 create table work_items_project_2 (
@@ -332,30 +313,9 @@ create table work_items_project_2 (
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
 );
 
-
-/*
-what happens when a project had no custom fields and now needs a dedicated table?
-(this project's teams were simply querying work_items directly  with team_id):
- - create table work_items_new_project as
- select (work_item_id from work_items where team_id in
- (select ... where project_id = <the project that wants custom columns>)
- )
- - alter table work_items_new_project add column ...
- and set default values if required
- - internally, models change to become a superset of work_items + new tables fields
- but the route is the same (get work items based on team id)
-IMPORTANT: or maybe we should prevent project creation by end users, only allow team creation
-(teams share project's work_item fields, types, activities... )
-
-when a new project is required -> manual table creation with empty new fields, just
- work_item_id bigint primary key.
- When a new field is added, possibilities are:
- - not nullable -> must set default value for the existing rows
- - nullable and custom business logic when it's required or not. previous rows remain null or with default as required
- */
 comment on column work_items.work_item_id is 'cardinality:O2O';
 
-comment on column work_items_project_1.work_item_id is 'cardinality:O2O';
+comment on column work_items_demo_project.work_item_id is 'cardinality:O2O';
 
 comment on column work_items_project_2.work_item_id is 'cardinality:O2O';
 
@@ -380,11 +340,16 @@ create index on work_item_comments (work_item_id);
 
 create table work_item_tags (
   work_item_tag_id serial primary key
-  , name text not null unique
+  , project_id int not null
+  , name text not null
   , description text not null
   , color text not null
+  , unique (name , project_id)
   , check (color ~* '^#[a-f0-9]{6}$')
+  , foreign key (project_id) references projects (project_id) on delete cascade
 );
+
+comment on column work_item_tags.project_id is 'cardinality:O2M';
 
 create table work_item_work_item_tag (
   work_item_tag_id int not null
@@ -420,9 +385,10 @@ comment on column work_item_member.member is 'cardinality:M2M';
 create table activities (
   activity_id serial primary key
   , project_id int not null
-  , name text not null unique
+  , name text not null
   , description text not null
   , is_productive boolean default false not null
+  , unique (name , project_id)
   -- can't have multiple unrelated projects see each other's activities
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
