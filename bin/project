@@ -1011,15 +1011,14 @@ EOF
 
 update_spec_with_structs() {
   vext="x-postgen-struct"
-  # TODO get schema names as well, to be used below
   struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC)
   schema_names=$(yq e ".components.schemas[] | select(has(\"$vext\")) | key" $SPEC)
+  readarray -t struct_names <<<$struct_names
+  readarray -t schema_names <<<$schema_names
   declare -A schemas
-  for i in ${#struct_names[@]}; do
-    schemas["${struct_names[i]}"]="${schema_names[i]}"
+  for i in ${!struct_names[@]}; do
+    schemas["${struct_names[$i]}"]="${schema_names[$i]}" # keep track of custom structs per schema name
   done
-  myArray=([red]=1 [orange]=2 [green]=3)
-  echo ${myArray['orange']}
   struct_names_list=$(join_by "," ${struct_names[*]})
   ((${#struct_names_list} == 0)) && return
 
@@ -1031,9 +1030,7 @@ update_spec_with_structs() {
 
   # replace every schema generated directly or indirectly.
   for schema in $(yq '.components.schemas[] | key' /tmp/openapi.yaml); do
-    # TODO if $schema in $struct_names set new_schema_key to the key where x-postgen-struct=$schema
-    # e.g. UserResponse schema -> new_schema_key=UserResponse
-    new_schema_key="${schemas[$schema]:$schema}"
+    new_schema_key="${schemas[$schema]:-$schema}"
     yq eval-all "(
         select(fi==1).components.schemas.$schema
         ) as \$new_schema

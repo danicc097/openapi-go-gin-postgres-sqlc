@@ -7,9 +7,6 @@
 #   - `x-postgen-struct` generates and creates/replaces a component schema from a struct,
 #      which can be tagged with OpenAPI fields.
 #      Possible structs to generate from are listed in the postgen package.
-#      OpenAPI component schema keys must match the generated struct name.
-#      e.g. rest.UserResponse struct -> RestUserResponse schema with x-postgen-struct: RestUserResponse
-#      TODO allow any schema name else frontend is dependent on naming
 # Path operations:
 #   - `x-required-scopes` is an array of required scope keys from scopes.json
 #   - `x-required-role` is a required role name from role.json
@@ -205,7 +202,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProjectBoardCreateRequest'
+              $ref: '#/components/schemas/InitializeProjectRequest'
         required: true
       responses:
         "204":
@@ -255,14 +252,121 @@ components:
       example: 41131
       style: simple
   schemas:
-  # TODO should be possible to have different key
-    ProjectBoardCreateRequest:
+    InitializeProjectRequest:
+      properties:
+        activities:
+          items:
+            $ref: '#/components/schemas/ReposActivityCreateParams'
+          nullable: true
+          type: array
+        kanbanSteps:
+          items:
+            $ref: '#/components/schemas/ReposKanbanStepCreateParams'
+          nullable: true
+          type: array
+        projectID:
+          type: integer
+        teams:
+          items:
+            $ref: '#/components/schemas/ReposTeamCreateParams'
+          nullable: true
+          type: array
+        workItemTags:
+          items:
+            $ref: '#/components/schemas/ReposWorkItemTagCreateParams'
+          nullable: true
+          type: array
+        workItemTypes:
+          items:
+            $ref: '#/components/schemas/ReposWorkItemTypeCreateParams'
+          nullable: true
+          type: array
+      type: object
       x-postgen-struct: RestProjectBoardCreateRequest
-  # TODO should be possible to have different key
     ProjectBoardResponse:
+      properties:
+        activities:
+          items:
+            $ref: '#/components/schemas/DbActivityPublic'
+          nullable: true
+          type: array
+        kanbanSteps:
+          items:
+            $ref: '#/components/schemas/DbKanbanStepPublic'
+          nullable: true
+          type: array
+        project:
+          $ref: '#/components/schemas/DbProjectPublic'
+        teams:
+          items:
+            $ref: '#/components/schemas/DbTeamPublic'
+          nullable: true
+          type: array
+        workItemTags:
+          items:
+            $ref: '#/components/schemas/DbWorkItemTagPublic'
+          nullable: true
+          type: array
+        workItemTypes:
+          items:
+            $ref: '#/components/schemas/DbWorkItemTypePublic'
+          nullable: true
+          type: array
+      type: object
       x-postgen-struct: RestProjectBoardResponse
-  # TODO should be possible to have different key
     UserResponse:
+      properties:
+        apiKey:
+          $ref: '#/components/schemas/DbUserAPIKeyPublic'
+        createdAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        email:
+          type: string
+        firstName:
+          nullable: true
+          type: string
+        fullName:
+          nullable: true
+          type: string
+        hasGlobalNotifications:
+          type: boolean
+        hasPersonalNotifications:
+          type: boolean
+        lastName:
+          nullable: true
+          type: string
+        role:
+          $ref: '#/components/schemas/Role'
+        scopes:
+          $ref: '#/components/schemas/Scopes'
+        teams:
+          items:
+            $ref: '#/components/schemas/DbTeamPublic'
+          nullable: true
+          type: array
+        userID:
+          $ref: '#/components/schemas/UuidUUID'
+        username:
+          type: string
+      required:
+        - role
+        - scopes
+        - userID
+        - username
+        - email
+        - firstName
+        - lastName
+        - fullName
+        - hasPersonalNotifications
+        - hasGlobalNotifications
+        - createdAt
+        - deletedAt
+      type: object
       x-postgen-struct: RestUserResponse
     HTTPValidationError:
       title: HTTPValidationError
