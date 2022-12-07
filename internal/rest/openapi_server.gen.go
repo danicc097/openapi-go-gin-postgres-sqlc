@@ -32,18 +32,24 @@ type ServerInterface interface {
 	// Ping pongs
 	// (GET /ping)
 	Ping(c *gin.Context)
+	// returns board data for a project
+	// (GET /project/{id}/board)
+	GetProjectBoard(c *gin.Context, id externalRef0.Serial)
+	// creates initial data (teams, work item types, tags...) for a new project
+	// (POST /project/{id}/initialize)
+	InitializeProject(c *gin.Context, id externalRef0.Serial)
 	// returns the logged in user
 	// (GET /user/me)
 	GetCurrentUser(c *gin.Context)
 	// deletes the user by id
 	// (DELETE /user/{id})
-	DeleteUser(c *gin.Context, id externalRef0.UserID)
+	DeleteUser(c *gin.Context, id externalRef0.Uuid)
 	// updates the user by id
 	// (PATCH /user/{id})
-	UpdateUser(c *gin.Context, id externalRef0.UserID)
+	UpdateUser(c *gin.Context, id externalRef0.Uuid)
 	// updates user role and scopes by id
 	// (PATCH /user/{id}/authorization)
-	UpdateUserAuthorization(c *gin.Context, id externalRef0.UserID)
+	UpdateUserAuthorization(c *gin.Context, id externalRef0.Uuid)
 
 	middlewares(opID OperationID) []gin.HandlerFunc
 	authMiddlewares(opID OperationID) []gin.HandlerFunc
@@ -96,6 +102,48 @@ func (siw *ServerInterfaceWrapper) Ping(c *gin.Context) {
 	siw.Handler.Ping(c)
 }
 
+// GetProjectBoard operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetProjectBoard(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.Serial
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
+
+	c.Set(externalRef0.Api_keyScopes, []string{""})
+
+	siw.Handler.GetProjectBoard(c, id)
+}
+
+// InitializeProject operation with its own middleware.
+func (siw *ServerInterfaceWrapper) InitializeProject(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.Serial
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
+
+	c.Set(externalRef0.Api_keyScopes, []string{""})
+
+	siw.Handler.InitializeProject(c, id)
+}
+
 // GetCurrentUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
 
@@ -112,7 +160,7 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.UserID
+	var id externalRef0.Uuid
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -133,7 +181,7 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.UserID
+	var id externalRef0.Uuid
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -154,7 +202,7 @@ func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.UserID
+	var id externalRef0.Uuid
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -214,6 +262,16 @@ func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, op
 	router.GET(options.BaseURL+"/ping", append(
 		wrapper.Handler.authMiddlewares(Ping),
 		append(wrapper.Handler.middlewares(Ping), wrapper.Ping)...,
+	)...)
+
+	router.GET(options.BaseURL+"/project/:id/board", append(
+		wrapper.Handler.authMiddlewares(GetProjectBoard),
+		append(wrapper.Handler.middlewares(GetProjectBoard), wrapper.GetProjectBoard)...,
+	)...)
+
+	router.POST(options.BaseURL+"/project/:id/initialize", append(
+		wrapper.Handler.authMiddlewares(InitializeProject),
+		append(wrapper.Handler.middlewares(InitializeProject), wrapper.InitializeProject)...,
 	)...)
 
 	router.GET(options.BaseURL+"/user/me", append(

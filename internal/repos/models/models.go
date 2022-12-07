@@ -11,11 +11,11 @@ type ProjectBoard struct {
 // ProjectBoardPublic represents fields that may be exposed
 // and embedded in other response models.
 type ProjectBoardPublic struct {
-	Project *db.ProjectPublic
+	Project *db.ProjectPublic `json:"project"`
 
-	Activities    *[]db.ActivityPublic
-	KanbanSteps   *[]db.KanbanStepPublic
-	Teams         *[]db.TeamPublic
-	WorkItemTags  *[]db.WorkItemTagPublic
-	WorkItemTypes *[]db.WorkItemTypePublic
+	Activities    *[]db.ActivityPublic     `json:"activities"`
+	KanbanSteps   *[]db.KanbanStepPublic   `json:"kanbanSteps"`
+	Teams         *[]db.TeamPublic         `json:"teams"`
+	WorkItemTags  *[]db.WorkItemTagPublic  `json:"workItemTags"`
+	WorkItemTypes *[]db.WorkItemTypePublic `json:"workItemTypes"`
 }

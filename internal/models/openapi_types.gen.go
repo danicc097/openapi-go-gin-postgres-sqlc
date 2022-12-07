@@ -106,6 +106,36 @@ func AllWorkItemRoleValues() []WorkItemRole {
 	}
 }
 
+// DbActivityPublic defines model for DbActivityPublic.
+type DbActivityPublic struct {
+	ActivityID   int    `json:"activityID"`
+	Description  string `json:"description"`
+	IsProductive bool   `json:"isProductive"`
+	Name         string `json:"name"`
+	ProjectID    int    `json:"projectID"`
+}
+
+// DbKanbanStepPublic defines model for DbKanbanStepPublic.
+type DbKanbanStepPublic struct {
+	Color         string `json:"color"`
+	Description   string `json:"description"`
+	KanbanStepID  int    `json:"kanbanStepID"`
+	Name          string `json:"name"`
+	ProjectID     int    `json:"projectID"`
+	StepOrder     *int   `json:"stepOrder"`
+	TimeTrackable bool   `json:"timeTrackable"`
+}
+
+// DbProjectPublic defines model for DbProjectPublic.
+type DbProjectPublic struct {
+	CreatedAt   time.Time `json:"createdAt"`
+	Description string    `json:"description"`
+	Initialized bool      `json:"initialized"`
+	Name        string    `json:"name"`
+	ProjectID   int       `json:"projectID"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
 // DbTeamPublic defines model for DbTeamPublic.
 type DbTeamPublic struct {
 	CreatedAt   time.Time `json:"createdAt"`
@@ -121,6 +151,24 @@ type DbUserAPIKeyPublic struct {
 	ApiKey    string    `json:"apiKey"`
 	ExpiresOn time.Time `json:"expiresOn"`
 	UserID    UuidUUID  `json:"userID"`
+}
+
+// DbWorkItemTagPublic defines model for DbWorkItemTagPublic.
+type DbWorkItemTagPublic struct {
+	Color         string `json:"color"`
+	Description   string `json:"description"`
+	Name          string `json:"name"`
+	ProjectID     int    `json:"projectID"`
+	WorkItemTagID int    `json:"workItemTagID"`
+}
+
+// DbWorkItemTypePublic defines model for DbWorkItemTypePublic.
+type DbWorkItemTypePublic struct {
+	Color          string `json:"color"`
+	Description    string `json:"description"`
+	Name           string `json:"name"`
+	ProjectID      int    `json:"projectID"`
+	WorkItemTypeID int    `json:"workItemTypeID"`
 }
 
 // HTTPValidationError defines model for HTTPValidationError.
@@ -139,6 +187,73 @@ type NotificationType string
 
 // PgtypeJSONB defines model for PgtypeJSONB.
 type PgtypeJSONB = map[string]interface{}
+
+// ProjectBoardCreateRequest defines model for ProjectBoardCreateRequest.
+type ProjectBoardCreateRequest = interface{}
+
+// ProjectBoardResponse defines model for ProjectBoardResponse.
+type ProjectBoardResponse = interface{}
+
+// ReposActivityCreateParams defines model for ReposActivityCreateParams.
+type ReposActivityCreateParams struct {
+	Description  *string `json:"description,omitempty"`
+	IsProductive *bool   `json:"isProductive,omitempty"`
+	Name         *string `json:"name,omitempty"`
+	ProjectID    *int    `json:"projectID,omitempty"`
+}
+
+// ReposKanbanStepCreateParams defines model for ReposKanbanStepCreateParams.
+type ReposKanbanStepCreateParams struct {
+	Color         *string `json:"color,omitempty"`
+	Description   *string `json:"description,omitempty"`
+	Name          *string `json:"name,omitempty"`
+	ProjectID     *int    `json:"projectID,omitempty"`
+	StepOrder     *int    `json:"stepOrder,omitempty"`
+	TimeTrackable *bool   `json:"timeTrackable,omitempty"`
+}
+
+// ReposTeamCreateParams defines model for ReposTeamCreateParams.
+type ReposTeamCreateParams struct {
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	ProjectID   *int    `json:"projectID,omitempty"`
+}
+
+// ReposWorkItemTagCreateParams defines model for ReposWorkItemTagCreateParams.
+type ReposWorkItemTagCreateParams struct {
+	Color       *string `json:"color,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	ProjectID   *int    `json:"projectID,omitempty"`
+}
+
+// ReposWorkItemTypeCreateParams defines model for ReposWorkItemTypeCreateParams.
+type ReposWorkItemTypeCreateParams struct {
+	Color       *string `json:"color,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	ProjectID   *int    `json:"projectID,omitempty"`
+}
+
+// RestProjectBoardCreateRequest defines model for RestProjectBoardCreateRequest.
+type RestProjectBoardCreateRequest struct {
+	Activities    *[]ReposActivityCreateParams     `json:"activities"`
+	KanbanSteps   *[]ReposKanbanStepCreateParams   `json:"kanbanSteps"`
+	ProjectID     *int                             `json:"projectID,omitempty"`
+	Teams         *[]ReposTeamCreateParams         `json:"teams"`
+	WorkItemTags  *[]ReposWorkItemTagCreateParams  `json:"workItemTags"`
+	WorkItemTypes *[]ReposWorkItemTypeCreateParams `json:"workItemTypes"`
+}
+
+// RestProjectBoardResponse defines model for RestProjectBoardResponse.
+type RestProjectBoardResponse struct {
+	Activities    *[]DbActivityPublic     `json:"activities"`
+	KanbanSteps   *[]DbKanbanStepPublic   `json:"kanbanSteps"`
+	Project       *DbProjectPublic        `json:"project"`
+	Teams         *[]DbTeamPublic         `json:"teams"`
+	WorkItemTags  *[]DbWorkItemTagPublic  `json:"workItemTags"`
+	WorkItemTypes *[]DbWorkItemTypePublic `json:"workItemTypes"`
+}
 
 // RestUserResponse defines model for RestUserResponse.
 type RestUserResponse struct {
@@ -238,8 +353,14 @@ type WorkItemCommentPublic struct {
 // WorkItemRole Role in work item for a member.
 type WorkItemRole string
 
-// UserID defines model for UserID.
-type UserID = string
+// Serial defines model for serial.
+type Serial = int
+
+// Uuid defines model for uuid.
+type Uuid = string
+
+// InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
+type InitializeProjectJSONRequestBody = ProjectBoardCreateRequest
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 type UpdateUserJSONRequestBody = UpdateUserRequest

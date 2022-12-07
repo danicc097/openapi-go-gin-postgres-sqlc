@@ -16,21 +16,24 @@ create table projects (
   , name text not null unique
   , description text not null
   , work_items_table_name text not null
+  , initialized boolean not null default false
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
 );
 
+comment on column projects.work_items_table_name is 'property:private';
+
 insert into projects (
   name
   , description
-  , work_items_table_name)
+  , work_items_table_name
+  , initialized)
 values (
   'demo project'
   , 'description for demo project'
   , 'work_items_demo_project'
+  , true -- just for demo since it will be programmatically initialized
 );
-
-comment on column projects.work_items_table_name is 'property:private';
 
 create table teams (
   team_id serial primary key

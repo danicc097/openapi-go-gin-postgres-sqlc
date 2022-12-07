@@ -58,6 +58,7 @@ func main() {
 		}
 
 		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
+		// ensure json tags are set for all top level fields in the struct. Either skip "-" or set fields.
 		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-postgen-struct": sn}
 		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
 		// reflector.Spec.Paths.MapOfPathItemValues["mypath"].MapOfOperationValues["method"].

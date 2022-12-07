@@ -34,8 +34,9 @@ source ".envrc"
 readonly SPEC="openapi.yaml"
 readonly PROTO_DIR="internal/pb"
 readonly MIGRATIONS_DIR="db/migrations"
-readonly PG_REPO="internal/repos/postgresql"
-readonly PG_REPO_GEN="internal/repos/postgresql/gen"
+readonly REPOS="internal/repos"
+readonly PG_REPO="$REPOS/postgresql"
+readonly PG_REPO_GEN="$PG_REPO/gen"
 readonly GEN_SCHEMA_CMD="cmd/gen-schema"
 readonly POSTGRES_TEST_DB="postgres_test"
 readonly MAX_COMMENT_LEN=88
@@ -1010,6 +1011,7 @@ EOF
 
 update_spec_with_structs() {
   vext="x-postgen-struct"
+  # TODO get schema names as well, to be used below
   struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC)
   struct_names=$(join_by "," ${struct_names[*]})
   ((${#struct_names} == 0)) && return
@@ -1020,12 +1022,16 @@ update_spec_with_structs() {
     (.components.schemas[] | key) line_comment="Generated from db package structs. DO NOT EDIT."' \
     >/tmp/openapi.yaml
 
+  # replace every schema generated directly or indirectly.
   for schema in $(yq '.components.schemas[] | key' /tmp/openapi.yaml); do
+    # TODO if $schema in $struct_names set new_schema_key to the key where x-postgen-struct=$schema
+    # e.g. UserResponse schema -> new_schema_key=UserResponse
+    new_schema_key=$schema
     yq eval-all "(
         select(fi==1).components.schemas.$schema
-        ) as \$newSchema
+        ) as \$new_schema
         | select(fi == 0)
-        | .components.schemas.$schema = \$newSchema
+        | .components.schemas.$new_schema_key = \$new_schema
       " "$SPEC" /tmp/openapi.yaml >/tmp/final-spec
 
     mv /tmp/final-spec "$SPEC"

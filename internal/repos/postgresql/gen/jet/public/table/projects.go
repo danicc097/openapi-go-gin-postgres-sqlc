@@ -21,6 +21,7 @@ type projectsTable struct {
 	Name               postgres.ColumnString
 	Description        postgres.ColumnString
 	WorkItemsTableName postgres.ColumnString
+	Initialized        postgres.ColumnBool
 	CreatedAt          postgres.ColumnTimestampz
 	UpdatedAt          postgres.ColumnTimestampz
 
@@ -67,10 +68,11 @@ func newProjectsTableImpl(schemaName, tableName, alias string) projectsTable {
 		NameColumn               = postgres.StringColumn("name")
 		DescriptionColumn        = postgres.StringColumn("description")
 		WorkItemsTableNameColumn = postgres.StringColumn("work_items_table_name")
+		InitializedColumn        = postgres.BoolColumn("initialized")
 		CreatedAtColumn          = postgres.TimestampzColumn("created_at")
 		UpdatedAtColumn          = postgres.TimestampzColumn("updated_at")
-		allColumns               = postgres.ColumnList{ProjectIDColumn, NameColumn, DescriptionColumn, WorkItemsTableNameColumn, CreatedAtColumn, UpdatedAtColumn}
-		mutableColumns           = postgres.ColumnList{NameColumn, DescriptionColumn, WorkItemsTableNameColumn, CreatedAtColumn, UpdatedAtColumn}
+		allColumns               = postgres.ColumnList{ProjectIDColumn, NameColumn, DescriptionColumn, WorkItemsTableNameColumn, InitializedColumn, CreatedAtColumn, UpdatedAtColumn}
+		mutableColumns           = postgres.ColumnList{NameColumn, DescriptionColumn, WorkItemsTableNameColumn, InitializedColumn, CreatedAtColumn, UpdatedAtColumn}
 	)
 
 	return projectsTable{
@@ -81,6 +83,7 @@ func newProjectsTableImpl(schemaName, tableName, alias string) projectsTable {
 		Name:               NameColumn,
 		Description:        DescriptionColumn,
 		WorkItemsTableName: WorkItemsTableNameColumn,
+		Initialized:        InitializedColumn,
 		CreatedAt:          CreatedAtColumn,
 		UpdatedAt:          UpdatedAtColumn,
 

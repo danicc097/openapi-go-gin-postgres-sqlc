@@ -7,6 +7,9 @@
 #   - `x-postgen-struct` generates and creates/replaces a component schema from a struct,
 #      which can be tagged with OpenAPI fields.
 #      Possible structs to generate from are listed in the postgen package.
+#      OpenAPI component schema keys must match the generated struct name.
+#      e.g. rest.UserResponse struct -> RestUserResponse schema with x-postgen-struct: RestUserResponse
+#      TODO allow any schema name else frontend is dependent on naming
 # Path operations:
 #   - `x-required-scopes` is an array of required scope keys from scopes.json
 #   - `x-required-role` is a required role name from role.json
@@ -132,7 +135,7 @@ paths:
       summary: updates user role and scopes by id
       operationId: UpdateUserAuthorization
       parameters:
-        - $ref: '#/components/parameters/UserID'
+        - $ref: '#/components/parameters/uuid'
       requestBody:
         content:
           application/json:
@@ -154,7 +157,7 @@ paths:
       summary: deletes the user by id
       operationId: DeleteUser
       parameters:
-        - $ref: '#/components/parameters/UserID'
+        - $ref: '#/components/parameters/uuid'
       responses:
         "404":
           description: User not found
@@ -171,7 +174,7 @@ paths:
       summary: updates the user by id
       operationId: UpdateUser
       parameters:
-        - $ref: '#/components/parameters/UserID'
+        - $ref: '#/components/parameters/uuid'
       requestBody:
         content:
           application/json:
@@ -189,10 +192,49 @@ paths:
       tags:
         - user
       x-required-role: user
+  /project/{id}/initialize:
+    post:
+      security:
+        - bearer_auth: []
+        - api_key: []
+      summary: creates initial data (teams, work item types, tags...) for a new project
+      operationId: InitializeProject
+      parameters:
+        - $ref: '#/components/parameters/serial'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectBoardCreateRequest'
+        required: true
+      responses:
+        "204":
+          description: Project successfully initialized.
+      tags:
+        - project
+      x-required-role: admin
+  /project/{id}/board:
+    get:
+      security:
+        - bearer_auth: []
+        - api_key: []
+      summary: returns board data for a project
+      operationId: GetProjectBoard
+      parameters:
+        - $ref: '#/components/parameters/serial'
+      responses:
+        "200":
+          description: Project successfully initialized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectBoardResponse'
+      tags:
+        - project
 components:
   parameters:
-    UserID:
-      description: user_id that needs to be updated
+    uuid:
+      description: UUID identifier of entity that needs to be updated
       explode: false
       in: path
       name: id
@@ -202,7 +244,23 @@ components:
         pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
       example: 123e4567-e89b-12d3-a456-426614174000
       style: simple
+    serial:
+      description: integer identifier that needs to be updated
+      explode: false
+      in: path
+      name: id
+      required: true
+      schema:
+        type: integer
+      example: 41131
+      style: simple
   schemas:
+  # TODO should be possible to have different key
+    ProjectBoardCreateRequest:
+      x-postgen-struct: RestProjectBoardCreateRequest
+  # TODO should be possible to have different key
+    ProjectBoardResponse:
+      x-postgen-struct: RestProjectBoardResponse
     HTTPValidationError:
       title: HTTPValidationError
       type: object
@@ -491,6 +549,233 @@ components:
         - expiresOn
         - userID
       type: object
+    DbActivityPublic:
+      properties:
+        activityID:
+          type: integer
+        description:
+          type: string
+        isProductive:
+          type: boolean
+        name:
+          type: string
+        projectID:
+          type: integer
+      required:
+        - activityID
+        - projectID
+        - name
+        - description
+        - isProductive
+      type: object
+    DbKanbanStepPublic:
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        kanbanStepID:
+          type: integer
+        name:
+          type: string
+        projectID:
+          type: integer
+        stepOrder:
+          nullable: true
+          type: integer
+        timeTrackable:
+          type: boolean
+      required:
+        - kanbanStepID
+        - projectID
+        - stepOrder
+        - name
+        - description
+        - color
+        - timeTrackable
+      type: object
+    DbProjectPublic:
+      nullable: true
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        description:
+          type: string
+        initialized:
+          type: boolean
+        name:
+          type: string
+        projectID:
+          type: integer
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - projectID
+        - name
+        - description
+        - initialized
+        - createdAt
+        - updatedAt
+      type: object
+    DbWorkItemTagPublic:
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+        workItemTagID:
+          type: integer
+      required:
+        - workItemTagID
+        - projectID
+        - name
+        - description
+        - color
+      type: object
+    DbWorkItemTypePublic:
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+        workItemTypeID:
+          type: integer
+      required:
+        - workItemTypeID
+        - projectID
+        - name
+        - description
+        - color
+      type: object
+    ReposActivityCreateParams:
+      properties:
+        description:
+          type: string
+        isProductive:
+          type: boolean
+        name:
+          type: string
+        projectID:
+          type: integer
+      type: object
+    ReposKanbanStepCreateParams:
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+        stepOrder:
+          type: integer
+        timeTrackable:
+          type: boolean
+      type: object
+    ReposTeamCreateParams:
+      properties:
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+      type: object
+    ReposWorkItemTagCreateParams:
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+      type: object
+    ReposWorkItemTypeCreateParams:
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+      type: object
+    RestProjectBoardCreateRequest:
+      properties:
+        activities:
+          items:
+            $ref: '#/components/schemas/ReposActivityCreateParams'
+          nullable: true
+          type: array
+        kanbanSteps:
+          items:
+            $ref: '#/components/schemas/ReposKanbanStepCreateParams'
+          nullable: true
+          type: array
+        projectID:
+          type: integer
+        teams:
+          items:
+            $ref: '#/components/schemas/ReposTeamCreateParams'
+          nullable: true
+          type: array
+        workItemTags:
+          items:
+            $ref: '#/components/schemas/ReposWorkItemTagCreateParams'
+          nullable: true
+          type: array
+        workItemTypes:
+          items:
+            $ref: '#/components/schemas/ReposWorkItemTypeCreateParams'
+          nullable: true
+          type: array
+      type: object
+      x-postgen-struct: RestProjectBoardCreateRequest
+    RestProjectBoardResponse:
+      properties:
+        activities:
+          items:
+            $ref: '#/components/schemas/DbActivityPublic'
+          nullable: true
+          type: array
+        kanbanSteps:
+          items:
+            $ref: '#/components/schemas/DbKanbanStepPublic'
+          nullable: true
+          type: array
+        project:
+          $ref: '#/components/schemas/DbProjectPublic'
+        teams:
+          items:
+            $ref: '#/components/schemas/DbTeamPublic'
+          nullable: true
+          type: array
+        workItemTags:
+          items:
+            $ref: '#/components/schemas/DbWorkItemTagPublic'
+          nullable: true
+          type: array
+        workItemTypes:
+          items:
+            $ref: '#/components/schemas/DbWorkItemTypePublic'
+          nullable: true
+          type: array
+      type: object
+      x-postgen-struct: RestProjectBoardResponse
   examples:
     User:
       value:

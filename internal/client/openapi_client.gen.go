@@ -119,6 +119,36 @@ func AllWorkItemRoleValues() []WorkItemRole {
 	}
 }
 
+// DbActivityPublic defines model for DbActivityPublic.
+type DbActivityPublic struct {
+	ActivityID   int    `json:"activityID"`
+	Description  string `json:"description"`
+	IsProductive bool   `json:"isProductive"`
+	Name         string `json:"name"`
+	ProjectID    int    `json:"projectID"`
+}
+
+// DbKanbanStepPublic defines model for DbKanbanStepPublic.
+type DbKanbanStepPublic struct {
+	Color         string `json:"color"`
+	Description   string `json:"description"`
+	KanbanStepID  int    `json:"kanbanStepID"`
+	Name          string `json:"name"`
+	ProjectID     int    `json:"projectID"`
+	StepOrder     *int   `json:"stepOrder"`
+	TimeTrackable bool   `json:"timeTrackable"`
+}
+
+// DbProjectPublic defines model for DbProjectPublic.
+type DbProjectPublic struct {
+	CreatedAt   time.Time `json:"createdAt"`
+	Description string    `json:"description"`
+	Initialized bool      `json:"initialized"`
+	Name        string    `json:"name"`
+	ProjectID   int       `json:"projectID"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
 // DbTeamPublic defines model for DbTeamPublic.
 type DbTeamPublic struct {
 	CreatedAt   time.Time `json:"createdAt"`
@@ -134,6 +164,24 @@ type DbUserAPIKeyPublic struct {
 	ApiKey    string    `json:"apiKey"`
 	ExpiresOn time.Time `json:"expiresOn"`
 	UserID    UuidUUID  `json:"userID"`
+}
+
+// DbWorkItemTagPublic defines model for DbWorkItemTagPublic.
+type DbWorkItemTagPublic struct {
+	Color         string `json:"color"`
+	Description   string `json:"description"`
+	Name          string `json:"name"`
+	ProjectID     int    `json:"projectID"`
+	WorkItemTagID int    `json:"workItemTagID"`
+}
+
+// DbWorkItemTypePublic defines model for DbWorkItemTypePublic.
+type DbWorkItemTypePublic struct {
+	Color          string `json:"color"`
+	Description    string `json:"description"`
+	Name           string `json:"name"`
+	ProjectID      int    `json:"projectID"`
+	WorkItemTypeID int    `json:"workItemTypeID"`
 }
 
 // HTTPValidationError defines model for HTTPValidationError.
@@ -152,6 +200,73 @@ type NotificationType string
 
 // PgtypeJSONB defines model for PgtypeJSONB.
 type PgtypeJSONB = map[string]interface{}
+
+// ProjectBoardCreateRequest defines model for ProjectBoardCreateRequest.
+type ProjectBoardCreateRequest = interface{}
+
+// ProjectBoardResponse defines model for ProjectBoardResponse.
+type ProjectBoardResponse = interface{}
+
+// ReposActivityCreateParams defines model for ReposActivityCreateParams.
+type ReposActivityCreateParams struct {
+	Description  *string `json:"description,omitempty"`
+	IsProductive *bool   `json:"isProductive,omitempty"`
+	Name         *string `json:"name,omitempty"`
+	ProjectID    *int    `json:"projectID,omitempty"`
+}
+
+// ReposKanbanStepCreateParams defines model for ReposKanbanStepCreateParams.
+type ReposKanbanStepCreateParams struct {
+	Color         *string `json:"color,omitempty"`
+	Description   *string `json:"description,omitempty"`
+	Name          *string `json:"name,omitempty"`
+	ProjectID     *int    `json:"projectID,omitempty"`
+	StepOrder     *int    `json:"stepOrder,omitempty"`
+	TimeTrackable *bool   `json:"timeTrackable,omitempty"`
+}
+
+// ReposTeamCreateParams defines model for ReposTeamCreateParams.
+type ReposTeamCreateParams struct {
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	ProjectID   *int    `json:"projectID,omitempty"`
+}
+
+// ReposWorkItemTagCreateParams defines model for ReposWorkItemTagCreateParams.
+type ReposWorkItemTagCreateParams struct {
+	Color       *string `json:"color,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	ProjectID   *int    `json:"projectID,omitempty"`
+}
+
+// ReposWorkItemTypeCreateParams defines model for ReposWorkItemTypeCreateParams.
+type ReposWorkItemTypeCreateParams struct {
+	Color       *string `json:"color,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	ProjectID   *int    `json:"projectID,omitempty"`
+}
+
+// RestProjectBoardCreateRequest defines model for RestProjectBoardCreateRequest.
+type RestProjectBoardCreateRequest struct {
+	Activities    *[]ReposActivityCreateParams     `json:"activities"`
+	KanbanSteps   *[]ReposKanbanStepCreateParams   `json:"kanbanSteps"`
+	ProjectID     *int                             `json:"projectID,omitempty"`
+	Teams         *[]ReposTeamCreateParams         `json:"teams"`
+	WorkItemTags  *[]ReposWorkItemTagCreateParams  `json:"workItemTags"`
+	WorkItemTypes *[]ReposWorkItemTypeCreateParams `json:"workItemTypes"`
+}
+
+// RestProjectBoardResponse defines model for RestProjectBoardResponse.
+type RestProjectBoardResponse struct {
+	Activities    *[]DbActivityPublic     `json:"activities"`
+	KanbanSteps   *[]DbKanbanStepPublic   `json:"kanbanSteps"`
+	Project       *DbProjectPublic        `json:"project"`
+	Teams         *[]DbTeamPublic         `json:"teams"`
+	WorkItemTags  *[]DbWorkItemTagPublic  `json:"workItemTags"`
+	WorkItemTypes *[]DbWorkItemTypePublic `json:"workItemTypes"`
+}
 
 // RestUserResponse defines model for RestUserResponse.
 type RestUserResponse struct {
@@ -251,8 +366,14 @@ type WorkItemCommentPublic struct {
 // WorkItemRole Role in work item for a member.
 type WorkItemRole string
 
-// UserID defines model for UserID.
-type UserID = string
+// Serial defines model for serial.
+type Serial = int
+
+// Uuid defines model for uuid.
+type Uuid = string
+
+// InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
+type InitializeProjectJSONRequestBody = ProjectBoardCreateRequest
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 type UpdateUserJSONRequestBody = UpdateUserRequest
@@ -351,21 +472,29 @@ type ClientInterface interface {
 	// Ping request
 	Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetProjectBoard request
+	GetProjectBoard(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// InitializeProject request with any body
+	InitializeProjectWithBody(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	InitializeProject(ctx context.Context, id Serial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetCurrentUser request
 	GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteUser request
-	DeleteUser(ctx context.Context, id UserID, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteUser(ctx context.Context, id Uuid, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateUser request with any body
-	UpdateUserWithBody(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserWithBody(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateUser(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUser(ctx context.Context, id Uuid, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateUserAuthorization request with any body
-	UpdateUserAuthorizationWithBody(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserAuthorizationWithBody(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateUserAuthorization(ctx context.Context, id UserID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUserAuthorization(ctx context.Context, id Uuid, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -440,6 +569,42 @@ func (c *Client) Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetProjectBoard(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectBoardRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) InitializeProjectWithBody(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewInitializeProjectRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) InitializeProject(ctx context.Context, id Serial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewInitializeProjectRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetCurrentUserRequest(c.Server)
 	if err != nil {
@@ -452,7 +617,7 @@ func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditor
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteUser(ctx context.Context, id UserID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteUser(ctx context.Context, id Uuid, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteUserRequest(c.Server, id)
 	if err != nil {
 		return nil, err
@@ -464,7 +629,7 @@ func (c *Client) DeleteUser(ctx context.Context, id UserID, reqEditors ...Reques
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateUserWithBody(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserWithBody(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -476,7 +641,7 @@ func (c *Client) UpdateUserWithBody(ctx context.Context, id UserID, contentType 
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateUser(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUser(ctx context.Context, id Uuid, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
@@ -488,7 +653,7 @@ func (c *Client) UpdateUser(ctx context.Context, id UserID, body UpdateUserJSONR
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserAuthorizationRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -500,7 +665,7 @@ func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id UserID,
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateUserAuthorization(ctx context.Context, id UserID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserAuthorization(ctx context.Context, id Uuid, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserAuthorizationRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
@@ -674,6 +839,87 @@ func NewPingRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewGetProjectBoardRequest generates requests for GetProjectBoard
+func NewGetProjectBoardRequest(server string, id Serial) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/project/%s/board", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewInitializeProjectRequest calls the generic InitializeProject builder with application/json body
+func NewInitializeProjectRequest(server string, id Serial, body InitializeProjectJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewInitializeProjectRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewInitializeProjectRequestWithBody generates requests for InitializeProject with any type of body
+func NewInitializeProjectRequestWithBody(server string, id Serial, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/project/%s/initialize", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetCurrentUserRequest generates requests for GetCurrentUser
 func NewGetCurrentUserRequest(server string) (*http.Request, error) {
 	var err error
@@ -702,7 +948,7 @@ func NewGetCurrentUserRequest(server string) (*http.Request, error) {
 }
 
 // NewDeleteUserRequest generates requests for DeleteUser
-func NewDeleteUserRequest(server string, id UserID) (*http.Request, error) {
+func NewDeleteUserRequest(server string, id Uuid) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -736,7 +982,7 @@ func NewDeleteUserRequest(server string, id UserID) (*http.Request, error) {
 }
 
 // NewUpdateUserRequest calls the generic UpdateUser builder with application/json body
-func NewUpdateUserRequest(server string, id UserID, body UpdateUserJSONRequestBody) (*http.Request, error) {
+func NewUpdateUserRequest(server string, id Uuid, body UpdateUserJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -747,7 +993,7 @@ func NewUpdateUserRequest(server string, id UserID, body UpdateUserJSONRequestBo
 }
 
 // NewUpdateUserRequestWithBody generates requests for UpdateUser with any type of body
-func NewUpdateUserRequestWithBody(server string, id UserID, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateUserRequestWithBody(server string, id Uuid, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -783,7 +1029,7 @@ func NewUpdateUserRequestWithBody(server string, id UserID, contentType string, 
 }
 
 // NewUpdateUserAuthorizationRequest calls the generic UpdateUserAuthorization builder with application/json body
-func NewUpdateUserAuthorizationRequest(server string, id UserID, body UpdateUserAuthorizationJSONRequestBody) (*http.Request, error) {
+func NewUpdateUserAuthorizationRequest(server string, id Uuid, body UpdateUserAuthorizationJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -794,7 +1040,7 @@ func NewUpdateUserAuthorizationRequest(server string, id UserID, body UpdateUser
 }
 
 // NewUpdateUserAuthorizationRequestWithBody generates requests for UpdateUserAuthorization with any type of body
-func NewUpdateUserAuthorizationRequestWithBody(server string, id UserID, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateUserAuthorizationRequestWithBody(server string, id Uuid, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -890,21 +1136,29 @@ type ClientWithResponsesInterface interface {
 	// Ping request
 	PingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PingResponse, error)
 
+	// GetProjectBoard request
+	GetProjectBoardWithResponse(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error)
+
+	// InitializeProject request with any body
+	InitializeProjectWithBodyWithResponse(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
+
+	InitializeProjectWithResponse(ctx context.Context, id Serial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
+
 	// GetCurrentUser request
 	GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error)
 
 	// DeleteUser request
-	DeleteUserWithResponse(ctx context.Context, id UserID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
+	DeleteUserWithResponse(ctx context.Context, id Uuid, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error)
 
 	// UpdateUser request with any body
-	UpdateUserWithBodyWithResponse(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithBodyWithResponse(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
-	UpdateUserWithResponse(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithResponse(ctx context.Context, id Uuid, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
 	// UpdateUserAuthorization request with any body
-	UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
+	UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
 
-	UpdateUserAuthorizationWithResponse(ctx context.Context, id UserID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
+	UpdateUserAuthorizationWithResponse(ctx context.Context, id Uuid, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
 }
 
 type AdminPingResponse struct {
@@ -1030,6 +1284,49 @@ func (r PingResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r PingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetProjectBoardResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectBoardResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectBoardResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectBoardResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type InitializeProjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r InitializeProjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r InitializeProjectResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1176,6 +1473,32 @@ func (c *ClientWithResponses) PingWithResponse(ctx context.Context, reqEditors .
 	return ParsePingResponse(rsp)
 }
 
+// GetProjectBoardWithResponse request returning *GetProjectBoardResponse
+func (c *ClientWithResponses) GetProjectBoardWithResponse(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error) {
+	rsp, err := c.GetProjectBoard(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectBoardResponse(rsp)
+}
+
+// InitializeProjectWithBodyWithResponse request with arbitrary body returning *InitializeProjectResponse
+func (c *ClientWithResponses) InitializeProjectWithBodyWithResponse(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error) {
+	rsp, err := c.InitializeProjectWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseInitializeProjectResponse(rsp)
+}
+
+func (c *ClientWithResponses) InitializeProjectWithResponse(ctx context.Context, id Serial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error) {
+	rsp, err := c.InitializeProject(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseInitializeProjectResponse(rsp)
+}
+
 // GetCurrentUserWithResponse request returning *GetCurrentUserResponse
 func (c *ClientWithResponses) GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error) {
 	rsp, err := c.GetCurrentUser(ctx, reqEditors...)
@@ -1186,7 +1509,7 @@ func (c *ClientWithResponses) GetCurrentUserWithResponse(ctx context.Context, re
 }
 
 // DeleteUserWithResponse request returning *DeleteUserResponse
-func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id UserID, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
+func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id Uuid, reqEditors ...RequestEditorFn) (*DeleteUserResponse, error) {
 	rsp, err := c.DeleteUser(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -1195,7 +1518,7 @@ func (c *ClientWithResponses) DeleteUserWithResponse(ctx context.Context, id Use
 }
 
 // UpdateUserWithBodyWithResponse request with arbitrary body returning *UpdateUserResponse
-func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
 	rsp, err := c.UpdateUserWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -1203,7 +1526,7 @@ func (c *ClientWithResponses) UpdateUserWithBodyWithResponse(ctx context.Context
 	return ParseUpdateUserResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id UserID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
+func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id Uuid, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error) {
 	rsp, err := c.UpdateUser(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -1212,7 +1535,7 @@ func (c *ClientWithResponses) UpdateUserWithResponse(ctx context.Context, id Use
 }
 
 // UpdateUserAuthorizationWithBodyWithResponse request with arbitrary body returning *UpdateUserAuthorizationResponse
-func (c *ClientWithResponses) UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id UserID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
+func (c *ClientWithResponses) UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id Uuid, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
 	rsp, err := c.UpdateUserAuthorizationWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -1220,7 +1543,7 @@ func (c *ClientWithResponses) UpdateUserAuthorizationWithBodyWithResponse(ctx co
 	return ParseUpdateUserAuthorizationResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateUserAuthorizationWithResponse(ctx context.Context, id UserID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
+func (c *ClientWithResponses) UpdateUserAuthorizationWithResponse(ctx context.Context, id Uuid, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error) {
 	rsp, err := c.UpdateUserAuthorization(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -1349,6 +1672,48 @@ func ParsePingResponse(rsp *http.Response) (*PingResponse, error) {
 		}
 		response.JSON422 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectBoardResponse parses an HTTP response from a GetProjectBoardWithResponse call
+func ParseGetProjectBoardResponse(rsp *http.Response) (*GetProjectBoardResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectBoardResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectBoardResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseInitializeProjectResponse parses an HTTP response from a InitializeProjectWithResponse call
+func ParseInitializeProjectResponse(rsp *http.Response) (*InitializeProjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &InitializeProjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil

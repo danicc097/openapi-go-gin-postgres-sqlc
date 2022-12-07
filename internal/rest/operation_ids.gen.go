@@ -15,6 +15,10 @@ const (
 	OpenapiYamlGet     OperationID = "OpenapiYamlGet"
 	Ping               OperationID = "Ping"
 
+	// Operation IDs for the 'project' tag.
+	GetProjectBoard   OperationID = "GetProjectBoard"
+	InitializeProject OperationID = "InitializeProject"
+
 	// Operation IDs for the 'user' tag.
 	DeleteUser              OperationID = "DeleteUser"
 	GetCurrentUser          OperationID = "GetCurrentUser"

@@ -53,5 +53,15 @@
     "scopes": null,
     "role": "user",
     "requiresAuthentication": true
+  },
+  "InitializeProject": {
+    "scopes": null,
+    "role": "admin",
+    "requiresAuthentication": true
+  },
+  "GetProjectBoard": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
   }
 }

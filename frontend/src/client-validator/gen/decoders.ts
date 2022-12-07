@@ -8,6 +8,8 @@ import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
 import { validateJson } from '../validate'
 import {
+  ProjectBoardCreateRequest,
+  ProjectBoardResponse,
   HTTPValidationError,
   Topics,
   Scope,
@@ -17,22 +19,30 @@ import {
   WorkItemRole,
   UpdateUserRequest,
   UpdateUserAuthRequest,
-  UserPublic,
   ValidationError,
   PgtypeJSONB,
   UuidUUID,
-  TaskPublic,
-  TaskTypePublic,
   TeamPublic,
   TimeEntryPublic,
   WorkItemCommentPublic,
-  WorkItemPublic,
   ModelsRole,
   RestUserResponse,
   ModelsScope,
   UserAPIKeyPublic,
   DbTeamPublic,
   DbUserAPIKeyPublic,
+  DbActivityPublic,
+  DbKanbanStepPublic,
+  DbProjectPublic,
+  DbWorkItemTagPublic,
+  DbWorkItemTypePublic,
+  ReposActivityCreateParams,
+  ReposKanbanStepCreateParams,
+  ReposTeamCreateParams,
+  ReposWorkItemTagCreateParams,
+  ReposWorkItemTypeCreateParams,
+  RestProjectBoardCreateRequest,
+  RestProjectBoardResponse,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -41,6 +51,30 @@ addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time'] })
 ajv.compile(jsonSchema)
 
 // Decoders
+export const ProjectBoardCreateRequestDecoder: Decoder<ProjectBoardCreateRequest> = {
+  definitionName: 'ProjectBoardCreateRequest',
+  schemaRef: '#/definitions/ProjectBoardCreateRequest',
+
+  decode(json: unknown): ProjectBoardCreateRequest {
+    const schema = ajv.getSchema(ProjectBoardCreateRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ProjectBoardCreateRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ProjectBoardCreateRequestDecoder.definitionName)
+  },
+}
+export const ProjectBoardResponseDecoder: Decoder<ProjectBoardResponse> = {
+  definitionName: 'ProjectBoardResponse',
+  schemaRef: '#/definitions/ProjectBoardResponse',
+
+  decode(json: unknown): ProjectBoardResponse {
+    const schema = ajv.getSchema(ProjectBoardResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ProjectBoardResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ProjectBoardResponseDecoder.definitionName)
+  },
+}
 export const HTTPValidationErrorDecoder: Decoder<HTTPValidationError> = {
   definitionName: 'HTTPValidationError',
   schemaRef: '#/definitions/HTTPValidationError',
@@ -149,18 +183,6 @@ export const UpdateUserAuthRequestDecoder: Decoder<UpdateUserAuthRequest> = {
     return validateJson(json, schema, UpdateUserAuthRequestDecoder.definitionName)
   },
 }
-export const UserPublicDecoder: Decoder<UserPublic> = {
-  definitionName: 'UserPublic',
-  schemaRef: '#/definitions/UserPublic',
-
-  decode(json: unknown): UserPublic {
-    const schema = ajv.getSchema(UserPublicDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${UserPublicDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, UserPublicDecoder.definitionName)
-  },
-}
 export const ValidationErrorDecoder: Decoder<ValidationError> = {
   definitionName: 'ValidationError',
   schemaRef: '#/definitions/ValidationError',
@@ -197,30 +219,6 @@ export const UuidUUIDDecoder: Decoder<UuidUUID> = {
     return validateJson(json, schema, UuidUUIDDecoder.definitionName)
   },
 }
-export const TaskPublicDecoder: Decoder<TaskPublic> = {
-  definitionName: 'TaskPublic',
-  schemaRef: '#/definitions/TaskPublic',
-
-  decode(json: unknown): TaskPublic {
-    const schema = ajv.getSchema(TaskPublicDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${TaskPublicDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, TaskPublicDecoder.definitionName)
-  },
-}
-export const TaskTypePublicDecoder: Decoder<TaskTypePublic> = {
-  definitionName: 'TaskTypePublic',
-  schemaRef: '#/definitions/TaskTypePublic',
-
-  decode(json: unknown): TaskTypePublic {
-    const schema = ajv.getSchema(TaskTypePublicDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${TaskTypePublicDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, TaskTypePublicDecoder.definitionName)
-  },
-}
 export const TeamPublicDecoder: Decoder<TeamPublic> = {
   definitionName: 'TeamPublic',
   schemaRef: '#/definitions/TeamPublic',
@@ -255,18 +253,6 @@ export const WorkItemCommentPublicDecoder: Decoder<WorkItemCommentPublic> = {
       throw new Error(`Schema ${WorkItemCommentPublicDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, WorkItemCommentPublicDecoder.definitionName)
-  },
-}
-export const WorkItemPublicDecoder: Decoder<WorkItemPublic> = {
-  definitionName: 'WorkItemPublic',
-  schemaRef: '#/definitions/WorkItemPublic',
-
-  decode(json: unknown): WorkItemPublic {
-    const schema = ajv.getSchema(WorkItemPublicDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${WorkItemPublicDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, WorkItemPublicDecoder.definitionName)
   },
 }
 export const ModelsRoleDecoder: Decoder<ModelsRole> = {
@@ -339,5 +325,149 @@ export const DbUserAPIKeyPublicDecoder: Decoder<DbUserAPIKeyPublic> = {
       throw new Error(`Schema ${DbUserAPIKeyPublicDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbUserAPIKeyPublicDecoder.definitionName)
+  },
+}
+export const DbActivityPublicDecoder: Decoder<DbActivityPublic> = {
+  definitionName: 'DbActivityPublic',
+  schemaRef: '#/definitions/DbActivityPublic',
+
+  decode(json: unknown): DbActivityPublic {
+    const schema = ajv.getSchema(DbActivityPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbActivityPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbActivityPublicDecoder.definitionName)
+  },
+}
+export const DbKanbanStepPublicDecoder: Decoder<DbKanbanStepPublic> = {
+  definitionName: 'DbKanbanStepPublic',
+  schemaRef: '#/definitions/DbKanbanStepPublic',
+
+  decode(json: unknown): DbKanbanStepPublic {
+    const schema = ajv.getSchema(DbKanbanStepPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbKanbanStepPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbKanbanStepPublicDecoder.definitionName)
+  },
+}
+export const DbProjectPublicDecoder: Decoder<DbProjectPublic> = {
+  definitionName: 'DbProjectPublic',
+  schemaRef: '#/definitions/DbProjectPublic',
+
+  decode(json: unknown): DbProjectPublic {
+    const schema = ajv.getSchema(DbProjectPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbProjectPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbProjectPublicDecoder.definitionName)
+  },
+}
+export const DbWorkItemTagPublicDecoder: Decoder<DbWorkItemTagPublic> = {
+  definitionName: 'DbWorkItemTagPublic',
+  schemaRef: '#/definitions/DbWorkItemTagPublic',
+
+  decode(json: unknown): DbWorkItemTagPublic {
+    const schema = ajv.getSchema(DbWorkItemTagPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbWorkItemTagPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbWorkItemTagPublicDecoder.definitionName)
+  },
+}
+export const DbWorkItemTypePublicDecoder: Decoder<DbWorkItemTypePublic> = {
+  definitionName: 'DbWorkItemTypePublic',
+  schemaRef: '#/definitions/DbWorkItemTypePublic',
+
+  decode(json: unknown): DbWorkItemTypePublic {
+    const schema = ajv.getSchema(DbWorkItemTypePublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbWorkItemTypePublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbWorkItemTypePublicDecoder.definitionName)
+  },
+}
+export const ReposActivityCreateParamsDecoder: Decoder<ReposActivityCreateParams> = {
+  definitionName: 'ReposActivityCreateParams',
+  schemaRef: '#/definitions/ReposActivityCreateParams',
+
+  decode(json: unknown): ReposActivityCreateParams {
+    const schema = ajv.getSchema(ReposActivityCreateParamsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ReposActivityCreateParamsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ReposActivityCreateParamsDecoder.definitionName)
+  },
+}
+export const ReposKanbanStepCreateParamsDecoder: Decoder<ReposKanbanStepCreateParams> = {
+  definitionName: 'ReposKanbanStepCreateParams',
+  schemaRef: '#/definitions/ReposKanbanStepCreateParams',
+
+  decode(json: unknown): ReposKanbanStepCreateParams {
+    const schema = ajv.getSchema(ReposKanbanStepCreateParamsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ReposKanbanStepCreateParamsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ReposKanbanStepCreateParamsDecoder.definitionName)
+  },
+}
+export const ReposTeamCreateParamsDecoder: Decoder<ReposTeamCreateParams> = {
+  definitionName: 'ReposTeamCreateParams',
+  schemaRef: '#/definitions/ReposTeamCreateParams',
+
+  decode(json: unknown): ReposTeamCreateParams {
+    const schema = ajv.getSchema(ReposTeamCreateParamsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ReposTeamCreateParamsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ReposTeamCreateParamsDecoder.definitionName)
+  },
+}
+export const ReposWorkItemTagCreateParamsDecoder: Decoder<ReposWorkItemTagCreateParams> = {
+  definitionName: 'ReposWorkItemTagCreateParams',
+  schemaRef: '#/definitions/ReposWorkItemTagCreateParams',
+
+  decode(json: unknown): ReposWorkItemTagCreateParams {
+    const schema = ajv.getSchema(ReposWorkItemTagCreateParamsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ReposWorkItemTagCreateParamsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ReposWorkItemTagCreateParamsDecoder.definitionName)
+  },
+}
+export const ReposWorkItemTypeCreateParamsDecoder: Decoder<ReposWorkItemTypeCreateParams> = {
+  definitionName: 'ReposWorkItemTypeCreateParams',
+  schemaRef: '#/definitions/ReposWorkItemTypeCreateParams',
+
+  decode(json: unknown): ReposWorkItemTypeCreateParams {
+    const schema = ajv.getSchema(ReposWorkItemTypeCreateParamsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ReposWorkItemTypeCreateParamsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ReposWorkItemTypeCreateParamsDecoder.definitionName)
+  },
+}
+export const RestProjectBoardCreateRequestDecoder: Decoder<RestProjectBoardCreateRequest> = {
+  definitionName: 'RestProjectBoardCreateRequest',
+  schemaRef: '#/definitions/RestProjectBoardCreateRequest',
+
+  decode(json: unknown): RestProjectBoardCreateRequest {
+    const schema = ajv.getSchema(RestProjectBoardCreateRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestProjectBoardCreateRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestProjectBoardCreateRequestDecoder.definitionName)
+  },
+}
+export const RestProjectBoardResponseDecoder: Decoder<RestProjectBoardResponse> = {
+  definitionName: 'RestProjectBoardResponse',
+  schemaRef: '#/definitions/RestProjectBoardResponse',
+
+  decode(json: unknown): RestProjectBoardResponse {
+    const schema = ajv.getSchema(RestProjectBoardResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestProjectBoardResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestProjectBoardResponseDecoder.definitionName)
   },
 }

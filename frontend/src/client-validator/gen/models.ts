@@ -38,20 +38,6 @@ export type NotificationType = 'personal' | 'global'
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
 export type UuidUUID = string
-export type TaskTypePublic = {
-  color?: string
-  description?: string
-  name?: string
-  taskTypeID?: number
-  teamID?: number
-} & TaskTypePublic1
-export type TaskTypePublic1 = {
-  color?: string
-  description?: string
-  name?: string
-  taskTypeID?: number
-  teamID?: number
-} | null
 export type ModelsRole = string
 export type DbUserAPIKeyPublic = {
   apiKey: string
@@ -74,7 +60,25 @@ export type UserAPIKeyPublic1 = {
   expiresOn: string
   userID: UuidUUID
 } | null
+export type DbProjectPublic = {
+  createdAt: string
+  description: string
+  initialized: boolean
+  name: string
+  projectID: number
+  updatedAt: string
+} & DbProjectPublic1
+export type DbProjectPublic1 = {
+  createdAt: string
+  description: string
+  initialized: boolean
+  name: string
+  projectID: number
+  updatedAt: string
+} | null
 
+export interface ProjectBoardCreateRequest {}
+export interface ProjectBoardResponse {}
 export interface HTTPValidationError {
   detail?: Detail
 }
@@ -103,20 +107,7 @@ export interface UpdateUserAuthRequest {
   role?: Role
   scopes?: Scopes
 }
-export interface UserPublic {
-  apiKeyID?: number | null
-  createdAt?: string
-  deletedAt?: string | null
-  email?: string
-  firstName?: string | null
-  fullName?: string | null
-  lastName?: string | null
-  teams?: TeamPublic[] | null
-  timeEntries?: TimeEntryPublic[] | null
-  userID?: UuidUUID
-  username?: string
-  workItems?: WorkItemPublic[] | null
-}
+export interface PgtypeJSONB {}
 export interface TeamPublic {
   createdAt: string
   description: string
@@ -126,7 +117,6 @@ export interface TeamPublic {
   teamID: number
   updatedAt: string
 }
-export interface PgtypeJSONB {}
 export interface TimeEntryPublic {
   activityID?: number
   comment?: string
@@ -136,34 +126,6 @@ export interface TimeEntryPublic {
   timeEntryID?: number
   userID?: UuidUUID
   workItemID?: number | null
-}
-export interface WorkItemPublic {
-  closed?: boolean
-  createdAt?: string
-  deletedAt?: string | null
-  kanbanStepID?: number
-  metadata?: PgtypeJSONB
-  tasks?: TaskPublic[] | null
-  teamID?: number
-  timeEntries?: TimeEntryPublic[] | null
-  title?: string
-  updatedAt?: string
-  users?: UserPublic[] | null
-  workItemComments?: WorkItemCommentPublic[] | null
-  workItemID?: number
-  workItemTypeID?: number
-}
-export interface TaskPublic {
-  createdAt?: string
-  deletedAt?: string | null
-  finished?: boolean | null
-  metadata?: PgtypeJSONB
-  taskID?: number
-  taskType?: TaskTypePublic
-  taskTypeID?: number
-  title?: string
-  updatedAt?: string
-  workItemID?: number
 }
 export interface WorkItemCommentPublic {
   createdAt?: string
@@ -196,4 +158,81 @@ export interface DbTeamPublic {
   projectID: number
   teamID: number
   updatedAt: string
+}
+export interface DbActivityPublic {
+  activityID: number
+  description: string
+  isProductive: boolean
+  name: string
+  projectID: number
+}
+export interface DbKanbanStepPublic {
+  color: string
+  description: string
+  kanbanStepID: number
+  name: string
+  projectID: number
+  stepOrder: number | null
+  timeTrackable: boolean
+}
+export interface DbWorkItemTagPublic {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTagID: number
+}
+export interface DbWorkItemTypePublic {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTypeID: number
+}
+export interface ReposActivityCreateParams {
+  description?: string
+  isProductive?: boolean
+  name?: string
+  projectID?: number
+}
+export interface ReposKanbanStepCreateParams {
+  color?: string
+  description?: string
+  name?: string
+  projectID?: number
+  stepOrder?: number
+  timeTrackable?: boolean
+}
+export interface ReposTeamCreateParams {
+  description?: string
+  name?: string
+  projectID?: number
+}
+export interface ReposWorkItemTagCreateParams {
+  color?: string
+  description?: string
+  name?: string
+  projectID?: number
+}
+export interface ReposWorkItemTypeCreateParams {
+  color?: string
+  description?: string
+  name?: string
+  projectID?: number
+}
+export interface RestProjectBoardCreateRequest {
+  activities?: ReposActivityCreateParams[] | null
+  kanbanSteps?: ReposKanbanStepCreateParams[] | null
+  projectID?: number
+  teams?: ReposTeamCreateParams[] | null
+  workItemTags?: ReposWorkItemTagCreateParams[] | null
+  workItemTypes?: ReposWorkItemTypeCreateParams[] | null
+}
+export interface RestProjectBoardResponse {
+  activities?: DbActivityPublic[] | null
+  kanbanSteps?: DbKanbanStepPublic[] | null
+  project?: DbProjectPublic1
+  teams?: DbTeamPublic[] | null
+  workItemTags?: DbWorkItemTagPublic[] | null
+  workItemTypes?: DbWorkItemTypePublic[] | null
 }
