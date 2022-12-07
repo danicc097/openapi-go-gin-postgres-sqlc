@@ -251,7 +251,7 @@ create table work_item_types (
   , name text not null
   , description text not null
   , color text not null
-  , unique (project_id , name)
+  , unique (name , project_id)
   , foreign key (project_id) references projects (project_id) on delete cascade
   , check (color ~* '^#[a-f0-9]{6}$')
 );
@@ -302,7 +302,8 @@ when a new project is required -> manual table creation with empty new fields, j
  - not nullable -> must set default value for the existing rows
  - nullable and custom business logic when it's required or not. previous rows remain null or with default as required
  */
--- project for tour
+-- project for tour. when starting it user joins the only demo project team. when exiting it user is removed.
+-- we can reset it every X hours
 create table work_items_demo_project (
   work_item_id bigint primary key references work_items (work_item_id) on delete cascade
   , ref text not null

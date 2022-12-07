@@ -82,9 +82,9 @@ type KanbanStepUpdateParams struct {
 }
 
 type TeamCreateParams struct {
-	ProjectID   int     `json:"projectID"`
-	Name        string  `json:"name"`
-	Description *string `json:"description"`
+	ProjectID   int    `json:"projectID"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type TeamUpdateParams struct {
@@ -161,4 +161,22 @@ type Team interface {
 	Create(ctx context.Context, d db.DBTX, params TeamCreateParams) (*db.Team, error)
 	Update(ctx context.Context, d db.DBTX, id int, params TeamUpdateParams) (*db.Team, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.Team, error)
+}
+
+// WorkItemType defines the datastore/repository handling persisting WorkItemType records.
+type WorkItemType interface {
+	WorkItemTypeByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error)
+	WorkItemTypeByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemType, error)
+	Create(ctx context.Context, d db.DBTX, params WorkItemTypeCreateParams) (*db.WorkItemType, error)
+	Update(ctx context.Context, d db.DBTX, id int, params WorkItemTypeUpdateParams) (*db.WorkItemType, error)
+	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error)
+}
+
+// WorkItemTag defines the datastore/repository handling persisting WorkItemTag records.
+type WorkItemTag interface {
+	WorkItemTagByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error)
+	WorkItemTagByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemTag, error)
+	Create(ctx context.Context, d db.DBTX, params WorkItemTagCreateParams) (*db.WorkItemTag, error)
+	Update(ctx context.Context, d db.DBTX, id int, params WorkItemTagUpdateParams) (*db.WorkItemTag, error)
+	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error)
 }

@@ -23,14 +23,9 @@ func NewTeam() *Team {
 var _ repos.Team = (*Team)(nil)
 
 func (u *Team) Create(ctx context.Context, d db.DBTX, params repos.TeamCreateParams) (*db.Team, error) {
-	description := ""
-	if params.Description != nil {
-		description = *params.Description
-	}
-
 	team := &db.Team{
 		Name:        params.Name,
-		Description: description,
+		Description: params.Description,
 		ProjectID:   params.ProjectID,
 	}
 

@@ -11,11 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTeam_TeamByIndexedQueries(t *testing.T) {
+func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
 	projectRepo := postgresql.NewProject()
-	teamRepo := postgresql.NewTeam()
+	workItemTypeRepo := postgresql.NewWorkItemType()
 
 	ctx := context.Background()
 
@@ -23,17 +23,17 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 	if err != nil {
 		t.Fatalf("projectRepo.ProjectByName unexpected error = %v", err)
 	}
-	tcp := randomTeamCreateParams(t, project.ProjectID)
+	tcp := randomWorkItemTypeCreateParams(t, project.ProjectID)
 
-	team, err := teamRepo.Create(ctx, testpool, tcp)
+	workItemType, err := workItemTypeRepo.Create(ctx, testpool, tcp)
 	if err != nil {
-		t.Fatalf("teamRepo.Create unexpected error = %v", err)
+		t.Fatalf("workItemTypeRepo.Create unexpected error = %v", err)
 	}
 
 	type argsString struct {
 		filter    string
 		projectID int
-		fn        func(context.Context, db.DBTX, string, int) (*db.Team, error)
+		fn        func(context.Context, db.DBTX, string, int) (*db.WorkItemType, error)
 	}
 
 	testString := []struct {
@@ -43,9 +43,9 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 		{
 			name: "name",
 			args: argsString{
-				filter:    team.Name,
-				projectID: team.ProjectID,
-				fn:        (teamRepo.TeamByName),
+				filter:    workItemType.Name,
+				projectID: workItemType.ProjectID,
+				fn:        (workItemTypeRepo.WorkItemTypeByName),
 			},
 		},
 	}
@@ -54,11 +54,11 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundTeam, err := tc.args.fn(context.Background(), testpool, tc.args.filter, tc.args.projectID)
+			foundWorkItemType, err := tc.args.fn(context.Background(), testpool, tc.args.filter, tc.args.projectID)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
-			assert.Equal(t, foundTeam.TeamID, team.TeamID)
+			assert.Equal(t, foundWorkItemType.WorkItemTypeID, workItemType.WorkItemTypeID)
 		})
 
 		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
@@ -66,7 +66,7 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 
 			errContains := errNoRows
 
-			filter := "inexistent team"
+			filter := "inexistent workItemType"
 
 			_, err := tc.args.fn(context.Background(), testpool, filter, tc.args.projectID)
 			if err == nil {
@@ -78,17 +78,17 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 
 	type argsInt struct {
 		filter int
-		fn     func(context.Context, db.DBTX, int) (*db.Team, error)
+		fn     func(context.Context, db.DBTX, int) (*db.WorkItemType, error)
 	}
 	testsInt := []struct {
 		name string
 		args argsInt
 	}{
 		{
-			name: "team_id",
+			name: "workItemType_id",
 			args: argsInt{
-				filter: team.TeamID,
-				fn:     (teamRepo.TeamByID),
+				filter: workItemType.WorkItemTypeID,
+				fn:     (workItemTypeRepo.WorkItemTypeByID),
 			},
 		},
 	}
@@ -97,11 +97,11 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundTeam, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
+			foundWorkItemType, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
-			assert.Equal(t, foundTeam.TeamID, team.TeamID)
+			assert.Equal(t, foundWorkItemType.WorkItemTypeID, workItemType.WorkItemTypeID)
 		})
 
 		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
@@ -120,12 +120,13 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 	}
 }
 
-func randomTeamCreateParams(t *testing.T, projectID int) repos.TeamCreateParams {
+func randomWorkItemTypeCreateParams(t *testing.T, projectID int) repos.WorkItemTypeCreateParams {
 	t.Helper()
 
-	return repos.TeamCreateParams{
-		Name:        "Team " + testutil.RandomNameIdentifier(3, "-"),
+	return repos.WorkItemTypeCreateParams{
+		Name:        "WorkItemType " + testutil.RandomNameIdentifier(3, "-"),
 		Description: testutil.RandomString(10),
 		ProjectID:   projectID,
+		Color:       "#aaaaaa",
 	}
 }

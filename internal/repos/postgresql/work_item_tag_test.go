@@ -11,11 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTeam_TeamByIndexedQueries(t *testing.T) {
+func TestWorkItemTag_WorkItemTagByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
 	projectRepo := postgresql.NewProject()
-	teamRepo := postgresql.NewTeam()
+	workItemTagRepo := postgresql.NewWorkItemTag()
 
 	ctx := context.Background()
 
@@ -23,17 +23,17 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 	if err != nil {
 		t.Fatalf("projectRepo.ProjectByName unexpected error = %v", err)
 	}
-	tcp := randomTeamCreateParams(t, project.ProjectID)
+	tcp := randomWorkItemTagCreateParams(t, project.ProjectID)
 
-	team, err := teamRepo.Create(ctx, testpool, tcp)
+	workItemTag, err := workItemTagRepo.Create(ctx, testpool, tcp)
 	if err != nil {
-		t.Fatalf("teamRepo.Create unexpected error = %v", err)
+		t.Fatalf("workItemTagRepo.Create unexpected error = %v", err)
 	}
 
 	type argsString struct {
 		filter    string
 		projectID int
-		fn        func(context.Context, db.DBTX, string, int) (*db.Team, error)
+		fn        func(context.Context, db.DBTX, string, int) (*db.WorkItemTag, error)
 	}
 
 	testString := []struct {
@@ -43,9 +43,9 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 		{
 			name: "name",
 			args: argsString{
-				filter:    team.Name,
-				projectID: team.ProjectID,
-				fn:        (teamRepo.TeamByName),
+				filter:    workItemTag.Name,
+				projectID: workItemTag.ProjectID,
+				fn:        (workItemTagRepo.WorkItemTagByName),
 			},
 		},
 	}
@@ -54,11 +54,11 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundTeam, err := tc.args.fn(context.Background(), testpool, tc.args.filter, tc.args.projectID)
+			foundWorkItemTag, err := tc.args.fn(context.Background(), testpool, tc.args.filter, tc.args.projectID)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
-			assert.Equal(t, foundTeam.TeamID, team.TeamID)
+			assert.Equal(t, foundWorkItemTag.WorkItemTagID, workItemTag.WorkItemTagID)
 		})
 
 		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
@@ -66,7 +66,7 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 
 			errContains := errNoRows
 
-			filter := "inexistent team"
+			filter := "inexistent workItemTag"
 
 			_, err := tc.args.fn(context.Background(), testpool, filter, tc.args.projectID)
 			if err == nil {
@@ -78,17 +78,17 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 
 	type argsInt struct {
 		filter int
-		fn     func(context.Context, db.DBTX, int) (*db.Team, error)
+		fn     func(context.Context, db.DBTX, int) (*db.WorkItemTag, error)
 	}
 	testsInt := []struct {
 		name string
 		args argsInt
 	}{
 		{
-			name: "team_id",
+			name: "workItemTag_id",
 			args: argsInt{
-				filter: team.TeamID,
-				fn:     (teamRepo.TeamByID),
+				filter: workItemTag.WorkItemTagID,
+				fn:     (workItemTagRepo.WorkItemTagByID),
 			},
 		},
 	}
@@ -97,11 +97,11 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundTeam, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
+			foundWorkItemTag, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
-			assert.Equal(t, foundTeam.TeamID, team.TeamID)
+			assert.Equal(t, foundWorkItemTag.WorkItemTagID, workItemTag.WorkItemTagID)
 		})
 
 		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
@@ -120,12 +120,13 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 	}
 }
 
-func randomTeamCreateParams(t *testing.T, projectID int) repos.TeamCreateParams {
+func randomWorkItemTagCreateParams(t *testing.T, projectID int) repos.WorkItemTagCreateParams {
 	t.Helper()
 
-	return repos.TeamCreateParams{
-		Name:        "Team " + testutil.RandomNameIdentifier(3, "-"),
+	return repos.WorkItemTagCreateParams{
+		Name:        "WorkItemTag " + testutil.RandomNameIdentifier(3, "-"),
 		Description: testutil.RandomString(10),
 		ProjectID:   projectID,
+		Color:       "#aaaaaa",
 	}
 }
