@@ -180,29 +180,6 @@ type Scope string
 // Scopes defines model for Scopes.
 type Scopes = []Scope
 
-// TaskPublic defines model for TaskPublic.
-type TaskPublic struct {
-	CreatedAt  *time.Time      `json:"createdAt,omitempty"`
-	DeletedAt  *time.Time      `json:"deletedAt"`
-	Finished   *bool           `json:"finished"`
-	Metadata   *PgtypeJSONB    `json:"metadata,omitempty"`
-	TaskID     *int            `json:"taskID,omitempty"`
-	TaskType   *TaskTypePublic `json:"taskType"`
-	TaskTypeID *int            `json:"taskTypeID,omitempty"`
-	Title      *string         `json:"title,omitempty"`
-	UpdatedAt  *time.Time      `json:"updatedAt,omitempty"`
-	WorkItemID *int            `json:"workItemID,omitempty"`
-}
-
-// TaskTypePublic defines model for TaskTypePublic.
-type TaskTypePublic struct {
-	Color       *string `json:"color,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-	TaskTypeID  *int    `json:"taskTypeID,omitempty"`
-	TeamID      *int    `json:"teamID,omitempty"`
-}
-
 // TeamPublic defines model for TeamPublic.
 type TeamPublic struct {
 	CreatedAt   time.Time   `json:"createdAt"`
@@ -251,22 +228,6 @@ type UserAPIKeyPublic struct {
 	UserID    UuidUUID  `json:"userID"`
 }
 
-// UserPublic defines model for UserPublic.
-type UserPublic struct {
-	ApiKeyID    *int               `json:"apiKeyID"`
-	CreatedAt   *time.Time         `json:"createdAt,omitempty"`
-	DeletedAt   *time.Time         `json:"deletedAt"`
-	Email       *string            `json:"email,omitempty"`
-	FirstName   *string            `json:"firstName"`
-	FullName    *string            `json:"fullName"`
-	LastName    *string            `json:"lastName"`
-	Teams       *[]TeamPublic      `json:"teams"`
-	TimeEntries *[]TimeEntryPublic `json:"timeEntries"`
-	UserID      *UuidUUID          `json:"userID,omitempty"`
-	Username    *string            `json:"username,omitempty"`
-	WorkItems   *[]WorkItemPublic  `json:"workItems"`
-}
-
 // UuidUUID defines model for UuidUUID.
 type UuidUUID = string
 
@@ -285,24 +246,6 @@ type WorkItemCommentPublic struct {
 	UserID            *UuidUUID  `json:"userID,omitempty"`
 	WorkItemCommentID *int       `json:"workItemCommentID,omitempty"`
 	WorkItemID        *int       `json:"workItemID,omitempty"`
-}
-
-// WorkItemPublic defines model for WorkItemPublic.
-type WorkItemPublic struct {
-	Closed           *bool                    `json:"closed,omitempty"`
-	CreatedAt        *time.Time               `json:"createdAt,omitempty"`
-	DeletedAt        *time.Time               `json:"deletedAt"`
-	KanbanStepID     *int                     `json:"kanbanStepID,omitempty"`
-	Metadata         *PgtypeJSONB             `json:"metadata,omitempty"`
-	Tasks            *[]TaskPublic            `json:"tasks"`
-	TeamID           *int                     `json:"teamID,omitempty"`
-	TimeEntries      *[]TimeEntryPublic       `json:"timeEntries"`
-	Title            *string                  `json:"title,omitempty"`
-	UpdatedAt        *time.Time               `json:"updatedAt,omitempty"`
-	Users            *[]UserPublic            `json:"users"`
-	WorkItemComments *[]WorkItemCommentPublic `json:"workItemComments"`
-	WorkItemID       *int                     `json:"workItemID,omitempty"`
-	WorkItemTypeID   *int                     `json:"workItemTypeID,omitempty"`
 }
 
 // WorkItemRole Role in work item for a member.
@@ -1139,7 +1082,7 @@ func (r DeleteUserResponse) StatusCode() int {
 type UpdateUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *UserPublic
+	JSON200      *RestUserResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1161,7 +1104,6 @@ func (r UpdateUserResponse) StatusCode() int {
 type UpdateUserAuthorizationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *RestUserResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -1469,7 +1411,7 @@ func ParseUpdateUserResponse(rsp *http.Response) (*UpdateUserResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest UserPublic
+		var dest RestUserResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1491,16 +1433,6 @@ func ParseUpdateUserAuthorizationResponse(rsp *http.Response) (*UpdateUserAuthor
 	response := &UpdateUserAuthorizationResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest RestUserResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
 	}
 
 	return response, nil

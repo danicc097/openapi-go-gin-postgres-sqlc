@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -63,6 +65,67 @@ func TestGetUserRoute(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 		assert.Equal(t, string(res), resp.Body.String())
+	})
+}
+
+func TestUpdateUserAuthRoute(t *testing.T) {
+	t.Parallel()
+
+	srv, err := runTestServer(t, testpool, []gin.HandlerFunc{})
+	if err != nil {
+		t.Fatalf("Couldn't run test server: %s\n", err)
+	}
+
+	t.Cleanup(func() {
+		srv.Close()
+	})
+
+	ff := newTestFixtureFactory(t)
+
+	t.Run("manager updates another user", func(t *testing.T) {
+		t.Parallel()
+
+		scopes := []models.Scope{models.ScopeProjectSettingsWrite}
+
+		manager, err := ff.CreateUser(context.Background(), resttestutil.CreateUserParams{
+			Role:       models.RoleManager,
+			WithAPIKey: true,
+			Scopes:     scopes,
+		})
+		if err != nil {
+			t.Fatalf("ff.CreateUser: %s", err)
+		}
+		normalUser, err := ff.CreateUser(context.Background(), resttestutil.CreateUserParams{
+			Role:       models.RoleUser,
+			WithAPIKey: true,
+			Scopes:     scopes,
+		})
+		if err != nil {
+			t.Fatalf("ff.CreateUser: %s", err)
+		}
+		var buf bytes.Buffer
+
+		updateAuthParams := models.UpdateUserAuthRequest{
+			Role: pointers.New(models.RoleManager),
+		}
+
+		if err := json.NewEncoder(&buf).Encode(updateAuthParams); err != nil {
+			t.Errorf("unexpected error %v", err)
+		}
+
+		path := os.Getenv("API_VERSION") + fmt.Sprintf("/user/%s/authorization", normalUser.User.UserID)
+		req, err := http.NewRequest(http.MethodPatch, path, &buf)
+		if err != nil {
+			t.Errorf("unexpected error %v", err)
+		}
+		req.Header.Add("Content-Type", "application/json")
+		req.Header.Add("x-api-key", manager.APIKey.APIKey)
+
+		resp := httptest.NewRecorder()
+
+		srv.Handler.ServeHTTP(resp, req)
+
+		assert.Equal(t, http.StatusNoContent, resp.Code)
 	})
 }
 

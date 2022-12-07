@@ -63,7 +63,7 @@ export interface components {
      * @description string identifiers for SSE event listeners. 
      * @enum {string}
      */
-    ServerSentEvents: "UserNotifications" | "ManagerNotifications" | "AdminNotifications" | "WorkItemMoved" | "WorkItemClosed";
+    Topics: "UserNotifications" | "ManagerNotifications" | "AdminNotifications" | "WorkItemMoved" | "WorkItemClosed";
     /** @enum {string} */
     Scope: "test-scope" | "users:read" | "users:write" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item:review";
     Scopes: (components["schemas"]["Scope"])[];
@@ -237,7 +237,6 @@ export interface components {
       /** Format: date-time */
       createdAt: string;
       description: string;
-      metadata: components["schemas"]["PgtypeJSONB"];
       name: string;
       projectID: number;
       teamID: number;
@@ -285,10 +284,7 @@ export interface operations {
       /** @description events */
       200: {
         content: {
-          "text/event-stream": ({
-              id?: string;
-              data?: Record<string, never>;
-            })[];
+          "text/event-stream": string;
         };
       };
     };

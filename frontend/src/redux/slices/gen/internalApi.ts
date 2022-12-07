@@ -103,11 +103,9 @@ export type Scope =
   | 'project-settings:write'
   | 'work-item:review'
 export type Scopes = Scope[]
-export type PgtypeJsonb = object
 export type DbTeamPublic = {
   createdAt: string
   description: string
-  metadata: PgtypeJsonb
   name: string
   projectID: number
   teamID: number
@@ -133,6 +131,7 @@ export type UpdateUserAuthRequest = {
   role?: Role
   scopes?: Scopes
 }
+export type PgtypeJsonb = object
 export type TeamPublic = {
   createdAt: string
   description: string

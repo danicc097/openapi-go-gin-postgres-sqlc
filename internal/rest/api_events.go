@@ -152,8 +152,6 @@ func (h *Handlers) Events(c *gin.Context) {
 	c.Set(skipRequestValidation, true)
 	c.Set(skipResponseValidation, true)
 
-	fmt.Printf("c.Copy().Keys (Events): %v\n", c.Copy().Keys)
-
 	clientChan, ok := c.Value("clientChan").(ClientChan)
 	if !ok {
 		return

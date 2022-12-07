@@ -16,7 +16,7 @@
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "ServerSentEvents": {
+    "Topics": {
       "description": "string identifiers for SSE event listeners.",
       "type": "string",
       "enum": [
@@ -599,9 +599,6 @@
         "description": {
           "type": "string"
         },
-        "metadata": {
-          "$ref": "#/definitions/PgtypeJSONB"
-        },
         "name": {
           "type": "string"
         },
@@ -621,7 +618,6 @@
         "projectID",
         "name",
         "description",
-        "metadata",
         "createdAt",
         "updatedAt"
       ],
@@ -657,8 +653,8 @@
     "HTTPValidationError": {
       "$ref": "#/definitions/HTTPValidationError"
     },
-    "ServerSentEvents": {
-      "$ref": "#/definitions/ServerSentEvents"
+    "Topics": {
+      "$ref": "#/definitions/Topics"
     },
     "Scope": {
       "$ref": "#/definitions/Scope"

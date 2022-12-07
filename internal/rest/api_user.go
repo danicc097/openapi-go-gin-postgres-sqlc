@@ -156,9 +156,8 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 		return
 	}
 
-	user, err := h.usvc.UpdateUserAuthorization(c, tx, id, caller, body)
-	if err != nil {
-		renderErrorResponse(c, "err: ", err)
+	if _, err := h.usvc.UpdateUserAuthorization(c, tx, id, caller, body); err != nil {
+		renderErrorResponse(c, "could not update user auth", err)
 
 		return
 	}
@@ -170,5 +169,5 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 		return
 	}
 
-	renderResponse(c, user, http.StatusOK)
+	c.Status(http.StatusNoContent)
 }

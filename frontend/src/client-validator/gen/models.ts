@@ -13,7 +13,7 @@ export type Detail = ValidationError[]
 /**
  * string identifiers for SSE event listeners.
  */
-export type ServerSentEvents =
+export type Topics =
   | 'UserNotifications'
   | 'ManagerNotifications'
   | 'AdminNotifications'
@@ -192,7 +192,6 @@ export interface RestUserResponse {
 export interface DbTeamPublic {
   createdAt: string
   description: string
-  metadata: PgtypeJSONB
   name: string
   projectID: number
   teamID: number

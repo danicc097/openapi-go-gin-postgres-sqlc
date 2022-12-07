@@ -117,7 +117,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 	}
 
 	if caller.RoleRank < adminRole.Rank {
-		if user.UserID == caller.UserID {
+		if user.UserID == caller.UserID { // exit early, though it's not possible to update to something not assigned to self already anyway
 			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot update your own authorization information")
 		}
 	}

@@ -50,15 +50,7 @@ paths:
           content:
             text/event-stream:
               schema:
-                type: array
-                format: event-stream
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                    data:
-                      type: object
+                type: string
   /ping:
     get:
       description: ""
@@ -149,12 +141,8 @@ paths:
         description: Updated user object
         required: true
       responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestUserResponse'
-          description: ok
+        "204":
+          description: User auth updated successfully.
       tags:
         - user
       x-required-role: user
@@ -196,7 +184,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserPublic'
+                $ref: '#/components/schemas/RestUserResponse'
           description: ok
       tags:
         - user
@@ -300,49 +288,6 @@ components:
         scopes:
           $ref: '#/components/schemas/Scopes'
       type: object
-    UserPublic: # Generated from db package structs. DO NOT EDIT.
-      properties:
-        apiKeyID:
-          nullable: true
-          type: integer
-        createdAt:
-          format: date-time
-          type: string
-        deletedAt:
-          format: date-time
-          nullable: true
-          type: string
-        email:
-          type: string
-        firstName:
-          nullable: true
-          type: string
-        fullName:
-          nullable: true
-          type: string
-        lastName:
-          nullable: true
-          type: string
-        teams:
-          items:
-            $ref: '#/components/schemas/TeamPublic'
-          nullable: true
-          type: array
-        timeEntries:
-          items:
-            $ref: '#/components/schemas/TimeEntryPublic'
-          nullable: true
-          type: array
-        userID:
-          $ref: '#/components/schemas/UuidUUID'
-        username:
-          type: string
-        workItems:
-          items:
-            $ref: '#/components/schemas/WorkItemPublic'
-          nullable: true
-          type: array
-      type: object
     # à la FastAPI
     ValidationError:
       title: ValidationError
@@ -367,48 +312,6 @@ components:
       type: object
     UuidUUID: # Generated from db package structs. DO NOT EDIT.
       type: string
-    TaskPublic:
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        deletedAt:
-          format: date-time
-          nullable: true
-          type: string
-        finished:
-          nullable: true
-          type: boolean
-        metadata:
-          $ref: '#/components/schemas/PgtypeJSONB'
-        taskID:
-          type: integer
-        taskType:
-          $ref: '#/components/schemas/TaskTypePublic'
-        taskTypeID:
-          type: integer
-        title:
-          type: string
-        updatedAt:
-          format: date-time
-          type: string
-        workItemID:
-          type: integer
-      type: object
-    TaskTypePublic:
-      nullable: true
-      properties:
-        color:
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        taskTypeID:
-          type: integer
-        teamID:
-          type: integer
-      type: object
     TeamPublic:
       properties:
         createdAt:
@@ -474,53 +377,6 @@ components:
         workItemCommentID:
           type: integer
         workItemID:
-          type: integer
-      type: object
-    WorkItemPublic:
-      properties:
-        closed:
-          type: boolean
-        createdAt:
-          format: date-time
-          type: string
-        deletedAt:
-          format: date-time
-          nullable: true
-          type: string
-        kanbanStepID:
-          type: integer
-        metadata:
-          $ref: '#/components/schemas/PgtypeJSONB'
-        tasks:
-          items:
-            $ref: '#/components/schemas/TaskPublic'
-          nullable: true
-          type: array
-        teamID:
-          type: integer
-        timeEntries:
-          items:
-            $ref: '#/components/schemas/TimeEntryPublic'
-          nullable: true
-          type: array
-        title:
-          type: string
-        updatedAt:
-          format: date-time
-          type: string
-        users:
-          items:
-            $ref: '#/components/schemas/UserPublic'
-          nullable: true
-          type: array
-        workItemComments:
-          items:
-            $ref: '#/components/schemas/WorkItemCommentPublic'
-          nullable: true
-          type: array
-        workItemID:
-          type: integer
-        workItemTypeID:
           type: integer
       type: object
     ModelsRole:
