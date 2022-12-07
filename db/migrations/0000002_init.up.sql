@@ -28,16 +28,6 @@ values (
   'demo project'
   , 'description for demo project'
   , 'work_items_demo_project'
-  -- TODO when inserting, we can't check the table exists.
-  --  post-mgiration script should loop through all projects and ensure it does
-  -- else raise sql exception
-  -- SELECT EXISTS (
-  --  SELECT FROM pg_catalog.pg_class c
-  --  JOIN   pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-  --  WHERE  n.nspname = 'schema_name'
-  --  AND    c.relname = 'table_name'
-  --  AND    c.relkind = 'r'    -- only tables
-  --  );
 );
 
 comment on column projects.work_items_table_name is 'property:private';
