@@ -1,3 +1,5 @@
+//go:build !race
+
 package rest
 
 import (
@@ -75,28 +77,36 @@ func TestSSEStream(t *testing.T) {
 	}
 	defer srv.Close()
 
-	go srv.Handler.ServeHTTP(res, req)
-
-	// trigger events
-	// TODO in reality call whatever triggers the events, then wait a bit for them to
-	//  be sent if its more than one since everyone will call flush
-	// TODO test 2 clients concurrently receive, one leaves, the other still receives.
-	// TODO while not (contains (...) && contains (...)) sleep until timeout
-	// Or use assert.eventually
-	time.Sleep(200 * time.Millisecond)
-
-	for start := time.Now(); time.Since(start) < 2*time.Second; {
-		for !res.Flushed {
-			time.Sleep(100 * time.Millisecond)
+	stopCh := make(chan bool)
+	go func() {
+		for {
+			select {
+			case <-stopCh:
+				return
+			default:
+				srv.Handler.ServeHTTP(res, req)
+			}
 		}
-	}
+	}()
+
+	// TODO trigger events
+
+	// TODO also test 2 clients concurrently receive, and when one leaves, the other still receives.
+
+	assert.Eventually(t, func() bool {
+		body := strings.ReplaceAll(res.Body.String(), " ", "")
+
+		return strings.Count(body, "event:"+string(models.TopicsUserNotifications)) == 1 &&
+			strings.Count(body, "event:test-event") == 1
+	}, 10*time.Second, 100*time.Millisecond)
 
 	cancel()
+	// handler should be stopped before reading body snapshot. to not have an arbitrary time sleep
+	// after events are sent before shutting handler down we're using Eventually and excluding -race flag.
+	stopCh <- true
 
-	// FIXME data race reading body
-	body := res.Body.String()
-
-	assert.NotEmpty(t, body)
-	assert.Contains(t, strings.ReplaceAll(body, " ", ""), "event:"+models.TopicsUserNotifications)
-	assert.Contains(t, strings.ReplaceAll(body, " ", ""), "event:test-event")
+	assert.Contains(t, res.Result().Header.Get("Content-Type"), "text/event-stream")
+	assert.Contains(t, res.Result().Header.Get("Cache-Control"), "no-cache")
+	assert.Contains(t, res.Result().Header.Get("Connection"), "keep-alive")
+	assert.Contains(t, res.Result().Header.Get("Transfer-Encoding"), "chunked")
 }
