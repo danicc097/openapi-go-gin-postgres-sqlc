@@ -19,6 +19,7 @@ type workItemsTable struct {
 	//Columns
 	WorkItemID     postgres.ColumnInteger
 	Title          postgres.ColumnString
+	Description    postgres.ColumnString
 	WorkItemTypeID postgres.ColumnInteger
 	Metadata       postgres.ColumnString
 	TeamID         postgres.ColumnInteger
@@ -70,6 +71,7 @@ func newWorkItemsTableImpl(schemaName, tableName, alias string) workItemsTable {
 	var (
 		WorkItemIDColumn     = postgres.IntegerColumn("work_item_id")
 		TitleColumn          = postgres.StringColumn("title")
+		DescriptionColumn    = postgres.StringColumn("description")
 		WorkItemTypeIDColumn = postgres.IntegerColumn("work_item_type_id")
 		MetadataColumn       = postgres.StringColumn("metadata")
 		TeamIDColumn         = postgres.IntegerColumn("team_id")
@@ -79,8 +81,8 @@ func newWorkItemsTableImpl(schemaName, tableName, alias string) workItemsTable {
 		CreatedAtColumn      = postgres.TimestampzColumn("created_at")
 		UpdatedAtColumn      = postgres.TimestampzColumn("updated_at")
 		DeletedAtColumn      = postgres.TimestampzColumn("deleted_at")
-		allColumns           = postgres.ColumnList{WorkItemIDColumn, TitleColumn, WorkItemTypeIDColumn, MetadataColumn, TeamIDColumn, KanbanStepIDColumn, ClosedColumn, TargetDateColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
-		mutableColumns       = postgres.ColumnList{TitleColumn, WorkItemTypeIDColumn, MetadataColumn, TeamIDColumn, KanbanStepIDColumn, ClosedColumn, TargetDateColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
+		allColumns           = postgres.ColumnList{WorkItemIDColumn, TitleColumn, DescriptionColumn, WorkItemTypeIDColumn, MetadataColumn, TeamIDColumn, KanbanStepIDColumn, ClosedColumn, TargetDateColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
+		mutableColumns       = postgres.ColumnList{TitleColumn, DescriptionColumn, WorkItemTypeIDColumn, MetadataColumn, TeamIDColumn, KanbanStepIDColumn, ClosedColumn, TargetDateColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
 	)
 
 	return workItemsTable{
@@ -89,6 +91,7 @@ func newWorkItemsTableImpl(schemaName, tableName, alias string) workItemsTable {
 		//Columns
 		WorkItemID:     WorkItemIDColumn,
 		Title:          TitleColumn,
+		Description:    DescriptionColumn,
 		WorkItemTypeID: WorkItemTypeIDColumn,
 		Metadata:       MetadataColumn,
 		TeamID:         TeamIDColumn,

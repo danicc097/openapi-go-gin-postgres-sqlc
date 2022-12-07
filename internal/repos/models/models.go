@@ -7,3 +7,15 @@ import "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgre
 type ProjectBoard struct {
 	Project *db.Project // contains list of teams, work item types, kanban steps and activities if joined
 }
+
+// ProjectBoardPublic represents fields that may be exposed
+// and embedded in other response models.
+type ProjectBoardPublic struct {
+	Project *db.ProjectPublic
+
+	Activities    *[]db.ActivityPublic
+	KanbanSteps   *[]db.KanbanStepPublic
+	Teams         *[]db.TeamPublic
+	WorkItemTags  *[]db.WorkItemTagPublic
+	WorkItemTypes *[]db.WorkItemTypePublic
+}

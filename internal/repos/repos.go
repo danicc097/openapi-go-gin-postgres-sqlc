@@ -13,7 +13,7 @@ import (
 // creation steps and create everything at once.
 // Later on everything can be updated in the project settings panel, and new elements created.
 // Once a board is created it cannot be deleted.
-type BoardCreateParams struct {
+type ProjectBoardCreateParams struct {
 	ProjectID int `json:"projectID"`
 	// TeamIDs   []int `json:"teamIDs"` // completely useless. the only check needed is to ensure at least one team
 	// exacts associated to projectID, else prompt the user to create at least 1 team before creating a board.
@@ -129,7 +129,7 @@ type ProjectBoard interface {
 
 
 	*/
-	Create(ctx context.Context, d db.DBTX, params BoardCreateParams) (*models.ProjectBoard, error)
+	Create(ctx context.Context, d db.DBTX, params ProjectBoardCreateParams) (*models.ProjectBoard, error)
 	ProjectBoardByID(ctx context.Context, d db.DBTX, projectID int) (*models.ProjectBoard, error)
 }
 

@@ -3,6 +3,7 @@ package rest
 import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	repomodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
@@ -13,6 +14,15 @@ type UserResponse struct {
 	APIKey *db.UserAPIKeyPublic `json:"apiKey"`
 	Teams  *[]db.TeamPublic     `json:"teams"`
 	db.UserPublic
+}
+
+// ProjectBoardResponse represents an OpenAPI schema response for a ProjectBoard.
+type ProjectBoardResponse struct {
+	repomodels.ProjectBoardPublic
+}
+
+type ProjectBoardCreateRequest struct {
+	repos.ProjectBoardCreateParams
 }
 
 // WorkItemResponse represents an OpenAPI schema response for a WorkItem.

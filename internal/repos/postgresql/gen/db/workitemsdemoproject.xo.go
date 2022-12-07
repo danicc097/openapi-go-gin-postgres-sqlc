@@ -14,14 +14,20 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type WorkItemsDemoProjectPublic struct {
-	WorkItemID               int64      `json:"workItemID" required:"true"`               // work_item_id
-	CustomDateForDemoProject *time.Time `json:"customDateForDemoProject" required:"true"` // custom_date_for_demo_project
+	WorkItemID    int64     `json:"workItemID" required:"true"`    // work_item_id
+	Ref           string    `json:"ref" required:"true"`           // ref
+	Line          string    `json:"line" required:"true"`          // line
+	LastMessageAt time.Time `json:"lastMessageAt" required:"true"` // last_message_at
+	Reopened      bool      `json:"reopened" required:"true"`      // reopened
 }
 
 // WorkItemsDemoProject represents a row from 'public.work_items_demo_project'.
 type WorkItemsDemoProject struct {
-	WorkItemID               int64      `json:"work_item_id" db:"work_item_id"`                                 // work_item_id
-	CustomDateForDemoProject *time.Time `json:"custom_date_for_demo_project" db:"custom_date_for_demo_project"` // custom_date_for_demo_project
+	WorkItemID    int64     `json:"work_item_id" db:"work_item_id"`       // work_item_id
+	Ref           string    `json:"ref" db:"ref"`                         // ref
+	Line          string    `json:"line" db:"line"`                       // line
+	LastMessageAt time.Time `json:"last_message_at" db:"last_message_at"` // last_message_at
+	Reopened      bool      `json:"reopened" db:"reopened"`               // reopened
 
 	WorkItem *WorkItem `json:"work_item" db:"work_item"` // O2O
 	// xo fields
@@ -30,7 +36,7 @@ type WorkItemsDemoProject struct {
 
 func (x *WorkItemsDemoProject) ToPublic() WorkItemsDemoProjectPublic {
 	return WorkItemsDemoProjectPublic{
-		WorkItemID: x.WorkItemID, CustomDateForDemoProject: x.CustomDateForDemoProject,
+		WorkItemID: x.WorkItemID, Ref: x.Ref, Line: x.Line, LastMessageAt: x.LastMessageAt, Reopened: x.Reopened,
 	}
 }
 
@@ -51,10 +57,10 @@ func WithWorkItemsDemoProjectLimit(limit int) WorkItemsDemoProjectSelectConfigOp
 type WorkItemsDemoProjectOrderBy = string
 
 const (
-	WorkItemsDemoProjectCustomDateForDemoProjectDescNullsFirst WorkItemsDemoProjectOrderBy = " custom_date_for_demo_project DESC NULLS FIRST "
-	WorkItemsDemoProjectCustomDateForDemoProjectDescNullsLast  WorkItemsDemoProjectOrderBy = " custom_date_for_demo_project DESC NULLS LAST "
-	WorkItemsDemoProjectCustomDateForDemoProjectAscNullsFirst  WorkItemsDemoProjectOrderBy = " custom_date_for_demo_project ASC NULLS FIRST "
-	WorkItemsDemoProjectCustomDateForDemoProjectAscNullsLast   WorkItemsDemoProjectOrderBy = " custom_date_for_demo_project ASC NULLS LAST "
+	WorkItemsDemoProjectLastMessageAtDescNullsFirst WorkItemsDemoProjectOrderBy = " last_message_at DESC NULLS FIRST "
+	WorkItemsDemoProjectLastMessageAtDescNullsLast  WorkItemsDemoProjectOrderBy = " last_message_at DESC NULLS LAST "
+	WorkItemsDemoProjectLastMessageAtAscNullsFirst  WorkItemsDemoProjectOrderBy = " last_message_at ASC NULLS FIRST "
+	WorkItemsDemoProjectLastMessageAtAscNullsLast   WorkItemsDemoProjectOrderBy = " last_message_at ASC NULLS LAST "
 )
 
 // WithWorkItemsDemoProjectOrderBy orders results by the given columns.
@@ -101,13 +107,13 @@ func (widp *WorkItemsDemoProject) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.work_items_demo_project (` +
-		`work_item_id, custom_date_for_demo_project` +
+		`work_item_id, ref, line, last_message_at, reopened` +
 		`) VALUES (` +
-		`$1, $2` +
+		`$1, $2, $3, $4, $5` +
 		`) `
 	// run
-	logf(sqlstr, widp.WorkItemID, widp.CustomDateForDemoProject)
-	if _, err := db.Exec(ctx, sqlstr, widp.WorkItemID, widp.CustomDateForDemoProject); err != nil {
+	logf(sqlstr, widp.WorkItemID, widp.Ref, widp.Line, widp.LastMessageAt, widp.Reopened)
+	if _, err := db.Exec(ctx, sqlstr, widp.WorkItemID, widp.Ref, widp.Line, widp.LastMessageAt, widp.Reopened); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -125,12 +131,12 @@ func (widp *WorkItemsDemoProject) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_items_demo_project SET ` +
-		`custom_date_for_demo_project = $1 ` +
-		`WHERE work_item_id = $2 ` +
+		`ref = $1, line = $2, last_message_at = $3, reopened = $4 ` +
+		`WHERE work_item_id = $5 ` +
 		`RETURNING work_item_id `
 	// run
-	logf(sqlstr, widp.CustomDateForDemoProject, widp.WorkItemID)
-	if err := db.QueryRow(ctx, sqlstr, widp.CustomDateForDemoProject, widp.WorkItemID).Scan(); err != nil {
+	logf(sqlstr, widp.Ref, widp.Line, widp.LastMessageAt, widp.Reopened, widp.WorkItemID)
+	if err := db.QueryRow(ctx, sqlstr, widp.Ref, widp.Line, widp.LastMessageAt, widp.Reopened, widp.WorkItemID).Scan(); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -152,16 +158,16 @@ func (widp *WorkItemsDemoProject) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_items_demo_project (` +
-		`work_item_id, custom_date_for_demo_project` +
+		`work_item_id, ref, line, last_message_at, reopened` +
 		`) VALUES (` +
-		`$1, $2` +
+		`$1, $2, $3, $4, $5` +
 		`)` +
 		` ON CONFLICT (work_item_id) DO ` +
 		`UPDATE SET ` +
-		`custom_date_for_demo_project = EXCLUDED.custom_date_for_demo_project  `
+		`ref = EXCLUDED.ref, line = EXCLUDED.line, last_message_at = EXCLUDED.last_message_at, reopened = EXCLUDED.reopened  `
 	// run
-	logf(sqlstr, widp.WorkItemID, widp.CustomDateForDemoProject)
-	if _, err := db.Exec(ctx, sqlstr, widp.WorkItemID, widp.CustomDateForDemoProject); err != nil {
+	logf(sqlstr, widp.WorkItemID, widp.Ref, widp.Line, widp.LastMessageAt, widp.Reopened)
+	if _, err := db.Exec(ctx, sqlstr, widp.WorkItemID, widp.Ref, widp.Line, widp.LastMessageAt, widp.Reopened); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -203,7 +209,10 @@ func WorkItemsDemoProjectByWorkItemID(ctx context.Context, db DB, workItemID int
 	// query
 	sqlstr := `SELECT ` +
 		`work_items_demo_project.work_item_id,
-work_items_demo_project.custom_date_for_demo_project,
+work_items_demo_project.ref,
+work_items_demo_project.line,
+work_items_demo_project.last_message_at,
+work_items_demo_project.reopened,
 (case when $1::boolean = true then row_to_json(work_items.*) end)::jsonb as work_item ` +
 		`FROM public.work_items_demo_project ` +
 		`-- O2O join generated from "work_items_demo_project_work_item_id_fkey"
@@ -218,10 +227,60 @@ left join work_items on work_items.work_item_id = work_items_demo_project.work_i
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItem, workItemID).Scan(&widp.WorkItemID, &widp.CustomDateForDemoProject, &widp.WorkItem); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItem, workItemID).Scan(&widp.WorkItemID, &widp.Ref, &widp.Line, &widp.LastMessageAt, &widp.Reopened, &widp.WorkItem); err != nil {
 		return nil, logerror(err)
 	}
 	return &widp, nil
+}
+
+// WorkItemsDemoProjectByRefLine retrieves a row from 'public.work_items_demo_project' as a WorkItemsDemoProject.
+//
+// Generated from index 'work_items_demo_project_ref_line_idx'.
+func WorkItemsDemoProjectByRefLine(ctx context.Context, db DB, ref, line string, opts ...WorkItemsDemoProjectSelectConfigOption) ([]*WorkItemsDemoProject, error) {
+	c := &WorkItemsDemoProjectSelectConfig{joins: WorkItemsDemoProjectJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`work_items_demo_project.work_item_id,
+work_items_demo_project.ref,
+work_items_demo_project.line,
+work_items_demo_project.last_message_at,
+work_items_demo_project.reopened,
+(case when $1::boolean = true then row_to_json(work_items.*) end)::jsonb as work_item ` +
+		`FROM public.work_items_demo_project ` +
+		`-- O2O join generated from "work_items_demo_project_work_item_id_fkey"
+left join work_items on work_items.work_item_id = work_items_demo_project.work_item_id` +
+		` WHERE work_items_demo_project.ref = $2 AND work_items_demo_project.line = $3 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, ref, line)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, ref, line)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+	var res []*WorkItemsDemoProject
+	for rows.Next() {
+		widp := WorkItemsDemoProject{
+			_exists: true,
+		}
+		// scan
+		if err := rows.Scan(&widp.WorkItemID, &widp.Ref, &widp.Line, &widp.LastMessageAt, &widp.Reopened); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &widp)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
 }
 
 // FKWorkItem_WorkItemID returns the WorkItem associated with the WorkItemsDemoProject's (WorkItemID).

@@ -267,6 +267,7 @@ internally the storage is the same and doesn't affect in any way.
 create table work_items (
   work_item_id bigserial primary key
   , title text not null
+  , description text not null
   , work_item_type_id int not null
   , metadata jsonb not null
   , team_id int not null
@@ -303,14 +304,18 @@ when a new project is required -> manual table creation with empty new fields, j
  */
 -- project for tour
 create table work_items_demo_project (
-  work_item_id bigint primary key references work_items (work_item_id)
-  , custom_date_for_demo_project timestamp with time zone
+  work_item_id bigint primary key references work_items (work_item_id) on delete cascade
+  , ref text not null
+  , line text not null
+  , last_message_at timestamp with time zone not null
+  , reopened boolean not null default false
 );
 
+create index on work_items_demo_project (ref , line);
+
 create table work_items_project_2 (
-  work_item_id bigint primary key
+  work_item_id bigint primary key references work_items (work_item_id) on delete cascade
   , custom_date_for_project_2 timestamp with time zone
-  , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
 );
 
 comment on column work_items.work_item_id is 'cardinality:O2O';

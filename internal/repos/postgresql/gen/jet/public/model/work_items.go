@@ -14,6 +14,7 @@ import (
 type WorkItems struct {
 	WorkItemID     int64      `sql:"primary_key" db:"work_item_id"`
 	Title          string     `db:"title"`
+	Description    string     `db:"description"`
 	WorkItemTypeID int32      `db:"work_item_type_id"`
 	Metadata       string     `db:"metadata"`
 	TeamID         int32      `db:"team_id"`

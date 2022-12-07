@@ -17,8 +17,11 @@ type workItemsDemoProjectTable struct {
 	postgres.Table
 
 	//Columns
-	WorkItemID               postgres.ColumnInteger
-	CustomDateForDemoProject postgres.ColumnTimestampz
+	WorkItemID    postgres.ColumnInteger
+	Ref           postgres.ColumnString
+	Line          postgres.ColumnString
+	LastMessageAt postgres.ColumnTimestampz
+	Reopened      postgres.ColumnBool
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -59,18 +62,24 @@ func newWorkItemsDemoProjectTable(schemaName, tableName, alias string) *WorkItem
 
 func newWorkItemsDemoProjectTableImpl(schemaName, tableName, alias string) workItemsDemoProjectTable {
 	var (
-		WorkItemIDColumn               = postgres.IntegerColumn("work_item_id")
-		CustomDateForDemoProjectColumn = postgres.TimestampzColumn("custom_date_for_demo_project")
-		allColumns                     = postgres.ColumnList{WorkItemIDColumn, CustomDateForDemoProjectColumn}
-		mutableColumns                 = postgres.ColumnList{CustomDateForDemoProjectColumn}
+		WorkItemIDColumn    = postgres.IntegerColumn("work_item_id")
+		RefColumn           = postgres.StringColumn("ref")
+		LineColumn          = postgres.StringColumn("line")
+		LastMessageAtColumn = postgres.TimestampzColumn("last_message_at")
+		ReopenedColumn      = postgres.BoolColumn("reopened")
+		allColumns          = postgres.ColumnList{WorkItemIDColumn, RefColumn, LineColumn, LastMessageAtColumn, ReopenedColumn}
+		mutableColumns      = postgres.ColumnList{RefColumn, LineColumn, LastMessageAtColumn, ReopenedColumn}
 	)
 
 	return workItemsDemoProjectTable{
 		Table: postgres.NewTable(schemaName, tableName, alias, allColumns...),
 
 		//Columns
-		WorkItemID:               WorkItemIDColumn,
-		CustomDateForDemoProject: CustomDateForDemoProjectColumn,
+		WorkItemID:    WorkItemIDColumn,
+		Ref:           RefColumn,
+		Line:          LineColumn,
+		LastMessageAt: LastMessageAtColumn,
+		Reopened:      ReopenedColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

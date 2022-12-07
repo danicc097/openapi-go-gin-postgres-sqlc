@@ -18,6 +18,7 @@ import (
 type WorkItemPublic struct {
 	WorkItemID     int64        `json:"workItemID" required:"true"`     // work_item_id
 	Title          string       `json:"title" required:"true"`          // title
+	Description    string       `json:"description" required:"true"`    // description
 	WorkItemTypeID int          `json:"workItemTypeID" required:"true"` // work_item_type_id
 	Metadata       pgtype.JSONB `json:"metadata" required:"true"`       // metadata
 	TeamID         int          `json:"teamID" required:"true"`         // team_id
@@ -33,6 +34,7 @@ type WorkItemPublic struct {
 type WorkItem struct {
 	WorkItemID     int64        `json:"work_item_id" db:"work_item_id"`           // work_item_id
 	Title          string       `json:"title" db:"title"`                         // title
+	Description    string       `json:"description" db:"description"`             // description
 	WorkItemTypeID int          `json:"work_item_type_id" db:"work_item_type_id"` // work_item_type_id
 	Metadata       pgtype.JSONB `json:"metadata" db:"metadata"`                   // metadata
 	TeamID         int          `json:"team_id" db:"team_id"`                     // team_id
@@ -52,7 +54,7 @@ type WorkItem struct {
 
 func (x *WorkItem) ToPublic() WorkItemPublic {
 	return WorkItemPublic{
-		WorkItemID: x.WorkItemID, Title: x.Title, WorkItemTypeID: x.WorkItemTypeID, Metadata: x.Metadata, TeamID: x.TeamID, KanbanStepID: x.KanbanStepID, Closed: x.Closed, TargetDate: x.TargetDate, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt, DeletedAt: x.DeletedAt,
+		WorkItemID: x.WorkItemID, Title: x.Title, Description: x.Description, WorkItemTypeID: x.WorkItemTypeID, Metadata: x.Metadata, TeamID: x.TeamID, KanbanStepID: x.KanbanStepID, Closed: x.Closed, TargetDate: x.TargetDate, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt, DeletedAt: x.DeletedAt,
 	}
 }
 
@@ -149,13 +151,13 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_items (` +
-		`title, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at` +
+		`title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
 		`) RETURNING work_item_id, created_at, updated_at `
 	// run
-	logf(sqlstr, wi.Title, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, wi.Title, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt).Scan(&wi.WorkItemID, &wi.CreatedAt, &wi.UpdatedAt); err != nil {
+	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
+	if err := db.QueryRow(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt).Scan(&wi.WorkItemID, &wi.CreatedAt, &wi.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -173,12 +175,12 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_items SET ` +
-		`title = $1, work_item_type_id = $2, metadata = $3, team_id = $4, kanban_step_id = $5, closed = $6, target_date = $7, deleted_at = $8 ` +
-		`WHERE work_item_id = $9 ` +
+		`title = $1, description = $2, work_item_type_id = $3, metadata = $4, team_id = $5, kanban_step_id = $6, closed = $7, target_date = $8, deleted_at = $9 ` +
+		`WHERE work_item_id = $10 ` +
 		`RETURNING work_item_id, created_at, updated_at `
 	// run
-	logf(sqlstr, wi.Title, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
-	if err := db.QueryRow(ctx, sqlstr, wi.Title, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt, wi.WorkItemID).Scan(&wi.WorkItemID, &wi.CreatedAt, &wi.UpdatedAt); err != nil {
+	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
+	if err := db.QueryRow(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt, wi.WorkItemID).Scan(&wi.WorkItemID, &wi.CreatedAt, &wi.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -200,16 +202,16 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_items (` +
-		`work_item_id, title, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at` +
+		`work_item_id, title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10` +
 		`)` +
 		` ON CONFLICT (work_item_id) DO ` +
 		`UPDATE SET ` +
-		`title = EXCLUDED.title, work_item_type_id = EXCLUDED.work_item_type_id, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, closed = EXCLUDED.closed, target_date = EXCLUDED.target_date, deleted_at = EXCLUDED.deleted_at  `
+		`title = EXCLUDED.title, description = EXCLUDED.description, work_item_type_id = EXCLUDED.work_item_type_id, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, closed = EXCLUDED.closed, target_date = EXCLUDED.target_date, deleted_at = EXCLUDED.deleted_at  `
 	// run
-	logf(sqlstr, wi.WorkItemID, wi.Title, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt); err != nil {
+	logf(sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -252,6 +254,7 @@ func WorkItemsByDeletedAt_work_items_deleted_at_idx(ctx context.Context, db DB, 
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
+work_items.description,
 work_items.work_item_type_id,
 work_items.metadata,
 work_items.team_id,
@@ -323,7 +326,7 @@ left join (
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&wi.WorkItemID, &wi.Title, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.TargetDate, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt); err != nil {
+		if err := rows.Scan(&wi.WorkItemID, &wi.Title, &wi.Description, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.TargetDate, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &wi)
@@ -348,6 +351,7 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...
 	sqlstr := fmt.Sprintf(`SELECT `+
 		`work_items.work_item_id,
 work_items.title,
+work_items.description,
 work_items.work_item_type_id,
 work_items.metadata,
 work_items.team_id,
@@ -411,7 +415,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Users, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.TargetDate, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.TimeEntries, &wi.WorkItemComments, &wi.Users); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Users, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Description, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.TargetDate, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.TimeEntries, &wi.WorkItemComments, &wi.Users); err != nil {
 		return nil, logerror(err)
 	}
 	return &wi, nil

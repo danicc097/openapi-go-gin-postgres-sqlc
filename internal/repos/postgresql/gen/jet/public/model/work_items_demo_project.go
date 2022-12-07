@@ -12,6 +12,9 @@ import (
 )
 
 type WorkItemsDemoProject struct {
-	WorkItemID               int64      `sql:"primary_key" db:"work_item_id"`
-	CustomDateForDemoProject *time.Time `db:"custom_date_for_demo_project"`
+	WorkItemID    int64     `sql:"primary_key" db:"work_item_id"`
+	Ref           string    `db:"ref"`
+	Line          string    `db:"line"`
+	LastMessageAt time.Time `db:"last_message_at"`
+	Reopened      bool      `db:"reopened"`
 }
