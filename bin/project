@@ -1013,11 +1013,18 @@ update_spec_with_structs() {
   vext="x-postgen-struct"
   # TODO get schema names as well, to be used below
   struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC)
-  struct_names=$(join_by "," ${struct_names[*]})
-  ((${#struct_names} == 0)) && return
+  schema_names=$(yq e ".components.schemas[] | select(has(\"$vext\")) | key" $SPEC)
+  declare -A schemas
+  for i in ${#struct_names[@]}; do
+    schemas["${struct_names[i]}"]="${schema_names[i]}"
+  done
+  myArray=([red]=1 [orange]=2 [green]=3)
+  echo ${myArray['orange']}
+  struct_names_list=$(join_by "," ${struct_names[*]})
+  ((${#struct_names_list} == 0)) && return
 
   go build -o gen-schema cmd/gen-schema/main.go || echo "Could not rebuild gen-schema" >&2
-  ./gen-schema --struct-names $struct_names | yq '
+  ./gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components")) |
     (.components.schemas[] | key) line_comment="Generated from db package structs. DO NOT EDIT."' \
     >/tmp/openapi.yaml
@@ -1026,7 +1033,7 @@ update_spec_with_structs() {
   for schema in $(yq '.components.schemas[] | key' /tmp/openapi.yaml); do
     # TODO if $schema in $struct_names set new_schema_key to the key where x-postgen-struct=$schema
     # e.g. UserResponse schema -> new_schema_key=UserResponse
-    new_schema_key=$schema
+    new_schema_key="${schemas[$schema]:$schema}"
     yq eval-all "(
         select(fi==1).components.schemas.$schema
         ) as \$new_schema
