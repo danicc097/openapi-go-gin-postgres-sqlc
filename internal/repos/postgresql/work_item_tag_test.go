@@ -19,7 +19,7 @@ func TestWorkItemTag_WorkItemTagByIndexedQueries(t *testing.T) {
 
 	ctx := context.Background()
 
-	project, err := projectRepo.ProjectByName(ctx, testpool, "dummy project")
+	project, err := projectRepo.ProjectByName(ctx, testpool, demoProjectName)
 	if err != nil {
 		t.Fatalf("projectRepo.ProjectByName unexpected error = %v", err)
 	}

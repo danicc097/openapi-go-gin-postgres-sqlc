@@ -15,16 +15,32 @@ create table projects (
   project_id serial primary key
   , name text not null unique
   , description text not null
+  , work_items_table_name text not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
 );
 
 insert into projects (
   name
-  , description)
+  , description
+  , work_items_table_name)
 values (
-  'dummy project'
-  , 'description for dummy project');
+  'demo project'
+  , 'description for demo project'
+  , 'work_items_demo_project'
+  -- TODO when inserting, we can't check the table exists.
+  --  post-mgiration script should loop through all projects and ensure it does
+  -- else raise sql exception
+  -- SELECT EXISTS (
+  --  SELECT FROM pg_catalog.pg_class c
+  --  JOIN   pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+  --  WHERE  n.nspname = 'schema_name'
+  --  AND    c.relname = 'table_name'
+  --  AND    c.relkind = 'r'    -- only tables
+  --  );
+);
+
+comment on column projects.work_items_table_name is 'property:private';
 
 create table teams (
   team_id serial primary key
@@ -369,7 +385,6 @@ create table work_item_work_item_tag (
 );
 
 create index on work_item_work_item_tag (work_item_tag_id , work_item_id);
-
 
 comment on column work_item_work_item_tag.work_item_tag_id is 'cardinality:M2M';
 

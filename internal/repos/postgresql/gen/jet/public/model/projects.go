@@ -12,9 +12,10 @@ import (
 )
 
 type Projects struct {
-	ProjectID   int32     `sql:"primary_key" db:"project_id"`
-	Name        string    `db:"name"`
-	Description string    `db:"description"`
-	CreatedAt   time.Time `db:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at"`
+	ProjectID          int32     `sql:"primary_key" db:"project_id"`
+	Name               string    `db:"name"`
+	Description        string    `db:"description"`
+	WorkItemsTableName string    `db:"work_items_table_name"`
+	CreatedAt          time.Time `db:"created_at"`
+	UpdatedAt          time.Time `db:"updated_at"`
 }

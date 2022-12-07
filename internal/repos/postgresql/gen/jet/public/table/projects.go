@@ -17,11 +17,12 @@ type projectsTable struct {
 	postgres.Table
 
 	//Columns
-	ProjectID   postgres.ColumnInteger
-	Name        postgres.ColumnString
-	Description postgres.ColumnString
-	CreatedAt   postgres.ColumnTimestampz
-	UpdatedAt   postgres.ColumnTimestampz
+	ProjectID          postgres.ColumnInteger
+	Name               postgres.ColumnString
+	Description        postgres.ColumnString
+	WorkItemsTableName postgres.ColumnString
+	CreatedAt          postgres.ColumnTimestampz
+	UpdatedAt          postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -62,24 +63,26 @@ func newProjectsTable(schemaName, tableName, alias string) *ProjectsTable {
 
 func newProjectsTableImpl(schemaName, tableName, alias string) projectsTable {
 	var (
-		ProjectIDColumn   = postgres.IntegerColumn("project_id")
-		NameColumn        = postgres.StringColumn("name")
-		DescriptionColumn = postgres.StringColumn("description")
-		CreatedAtColumn   = postgres.TimestampzColumn("created_at")
-		UpdatedAtColumn   = postgres.TimestampzColumn("updated_at")
-		allColumns        = postgres.ColumnList{ProjectIDColumn, NameColumn, DescriptionColumn, CreatedAtColumn, UpdatedAtColumn}
-		mutableColumns    = postgres.ColumnList{NameColumn, DescriptionColumn, CreatedAtColumn, UpdatedAtColumn}
+		ProjectIDColumn          = postgres.IntegerColumn("project_id")
+		NameColumn               = postgres.StringColumn("name")
+		DescriptionColumn        = postgres.StringColumn("description")
+		WorkItemsTableNameColumn = postgres.StringColumn("work_items_table_name")
+		CreatedAtColumn          = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn          = postgres.TimestampzColumn("updated_at")
+		allColumns               = postgres.ColumnList{ProjectIDColumn, NameColumn, DescriptionColumn, WorkItemsTableNameColumn, CreatedAtColumn, UpdatedAtColumn}
+		mutableColumns           = postgres.ColumnList{NameColumn, DescriptionColumn, WorkItemsTableNameColumn, CreatedAtColumn, UpdatedAtColumn}
 	)
 
 	return projectsTable{
 		Table: postgres.NewTable(schemaName, tableName, alias, allColumns...),
 
 		//Columns
-		ProjectID:   ProjectIDColumn,
-		Name:        NameColumn,
-		Description: DescriptionColumn,
-		CreatedAt:   CreatedAtColumn,
-		UpdatedAt:   UpdatedAtColumn,
+		ProjectID:          ProjectIDColumn,
+		Name:               NameColumn,
+		Description:        DescriptionColumn,
+		WorkItemsTableName: WorkItemsTableNameColumn,
+		CreatedAt:          CreatedAtColumn,
+		UpdatedAt:          UpdatedAtColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

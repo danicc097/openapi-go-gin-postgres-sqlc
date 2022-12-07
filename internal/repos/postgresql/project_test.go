@@ -15,7 +15,6 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 	projectRepo := postgresql.NewProject()
 
 	// exists already
-	projectName := "dummy project"
 	projectID := 1
 
 	type argsString struct {
@@ -30,7 +29,7 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 		{
 			name: "name",
 			args: argsString{
-				filter: projectName,
+				filter: demoProjectName,
 				fn:     (projectRepo.ProjectByName),
 			},
 		},

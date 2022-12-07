@@ -11,6 +11,8 @@ import (
 
 const errNoRows = "no rows in result set"
 
+const demoProjectName = "demo project"
+
 var testpool *pgxpool.Pool
 
 func TestMain(m *testing.M) {
