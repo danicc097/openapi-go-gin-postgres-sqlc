@@ -27,6 +27,7 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description"`           // description
 	Color         string `json:"color" db:"color"`                       // color
 
+	WorkItems *[]WorkItem `json:"work_items" db:"work_items"` // M2M
 	// xo fields
 	_exists, _deleted bool
 }
@@ -53,7 +54,9 @@ func WithWorkItemTagLimit(limit int) WorkItemTagSelectConfigOption {
 
 type WorkItemTagOrderBy = string
 
-type WorkItemTagJoins struct{}
+type WorkItemTagJoins struct {
+	WorkItems bool
+}
 
 // WithWorkItemTagJoin orders results by the given columns.
 func WithWorkItemTagJoin(joins WorkItemTagJoins) WorkItemTagSelectConfigOption {
@@ -188,10 +191,32 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
-work_item_tags.color ` +
+work_item_tags.color,
+(case when $1::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.work_item_tags ` +
-		`` +
-		` WHERE work_item_tags.name = $1 AND work_item_tags.project_id = $2 `
+		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+		work_item_tag_id as work_items_work_item_tag_id
+		, json_agg(work_items.*) as work_items
+	from
+		work_item_work_item_tag
+		join work_items using (work_item_id)
+	where
+		work_item_tag_id in (
+			select
+				work_item_tag_id
+			from
+				work_item_work_item_tag
+			where
+				work_item_id = any (
+					select
+						work_item_id
+					from
+						work_items))
+			group by
+				work_item_tag_id) joined_work_items on joined_work_items.work_items_work_item_tag_id = work_item_tags.work_item_tag_id` +
+		` WHERE work_item_tags.name = $2 AND work_item_tags.project_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -201,7 +226,7 @@ work_item_tags.color ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, name, projectID).Scan(&wit.WorkItemTagID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItems, name, projectID).Scan(&wit.WorkItemTagID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color, &wit.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &wit, nil
@@ -223,10 +248,32 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, o
 work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
-work_item_tags.color ` +
+work_item_tags.color,
+(case when $1::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.work_item_tags ` +
-		`` +
-		` WHERE work_item_tags.work_item_tag_id = $1 `
+		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+		work_item_tag_id as work_items_work_item_tag_id
+		, json_agg(work_items.*) as work_items
+	from
+		work_item_work_item_tag
+		join work_items using (work_item_id)
+	where
+		work_item_tag_id in (
+			select
+				work_item_tag_id
+			from
+				work_item_work_item_tag
+			where
+				work_item_id = any (
+					select
+						work_item_id
+					from
+						work_items))
+			group by
+				work_item_tag_id) joined_work_items on joined_work_items.work_items_work_item_tag_id = work_item_tags.work_item_tag_id` +
+		` WHERE work_item_tags.work_item_tag_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -236,7 +283,7 @@ work_item_tags.color ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, workItemTagID).Scan(&wit.WorkItemTagID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItems, workItemTagID).Scan(&wit.WorkItemTagID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color, &wit.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &wit, nil

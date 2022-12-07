@@ -48,6 +48,8 @@ type WorkItem struct {
 	TimeEntries      *[]TimeEntry       `json:"time_entries" db:"time_entries"`             // O2M
 	WorkItemComments *[]WorkItemComment `json:"work_item_comments" db:"work_item_comments"` // O2M
 	Users            *[]User            `json:"users" db:"users"`                           // M2M
+	WorkItemTags     *[]WorkItemTag     `json:"work_item_tags" db:"work_item_tags"`         // M2M
+	WorkItemType     *WorkItemType      `json:"work_item_type" db:"work_item_type"`         // O2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -121,6 +123,8 @@ type WorkItemJoins struct {
 	TimeEntries      bool
 	WorkItemComments bool
 	Users            bool
+	WorkItemTags     bool
+	WorkItemType     bool
 }
 
 // WithWorkItemJoin orders results by the given columns.
@@ -266,7 +270,9 @@ work_items.updated_at,
 work_items.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
-(case when $3::boolean = true then joined_users.users end)::jsonb as users `+
+(case when $3::boolean = true then joined_users.users end)::jsonb as users,
+(case when $4::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
+(case when $5::boolean = true then row_to_json(work_item_types.*) end)::jsonb as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2M join generated from "time_entries_work_item_id_fkey"
 left join (
@@ -307,14 +313,38 @@ left join (
 					from
 						users))
 			group by
-				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id`+
-		` WHERE work_items.deleted_at = $4 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s `, c.deletedAt)
+				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id
+-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+left join (
+	select
+		work_item_id as work_item_tags_work_item_id
+		, json_agg(work_item_tags.*) as work_item_tags
+	from
+		work_item_work_item_tag
+		join work_item_tags using (work_item_tag_id)
+	where
+		work_item_id in (
+			select
+				work_item_id
+			from
+				work_item_work_item_tag
+			where
+				work_item_tag_id = any (
+					select
+						work_item_tag_id
+					from
+						work_item_tags))
+			group by
+				work_item_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_work_item_id = work_items.work_item_id
+-- O2O join generated from "work_items_work_item_type_id_fkey"
+left join work_item_types on work_item_types.work_item_type_id = work_items.work_item_type_id`+
+		` WHERE work_items.deleted_at = $6 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Users, deletedAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Users, c.joins.WorkItemTags, c.joins.WorkItemType, deletedAt)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -363,7 +393,9 @@ work_items.updated_at,
 work_items.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $2::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
-(case when $3::boolean = true then joined_users.users end)::jsonb as users `+
+(case when $3::boolean = true then joined_users.users end)::jsonb as users,
+(case when $4::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
+(case when $5::boolean = true then row_to_json(work_item_types.*) end)::jsonb as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2M join generated from "time_entries_work_item_id_fkey"
 left join (
@@ -404,8 +436,32 @@ left join (
 					from
 						users))
 			group by
-				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id`+
-		` WHERE work_items.work_item_id = $4  AND work_items.deleted_at is %s `, c.deletedAt)
+				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id
+-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+left join (
+	select
+		work_item_id as work_item_tags_work_item_id
+		, json_agg(work_item_tags.*) as work_item_tags
+	from
+		work_item_work_item_tag
+		join work_item_tags using (work_item_tag_id)
+	where
+		work_item_id in (
+			select
+				work_item_id
+			from
+				work_item_work_item_tag
+			where
+				work_item_tag_id = any (
+					select
+						work_item_tag_id
+					from
+						work_item_tags))
+			group by
+				work_item_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_work_item_id = work_items.work_item_id
+-- O2O join generated from "work_items_work_item_type_id_fkey"
+left join work_item_types on work_item_types.work_item_type_id = work_items.work_item_type_id`+
+		` WHERE work_items.work_item_id = $6  AND work_items.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -415,7 +471,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Users, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Description, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.TargetDate, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.TimeEntries, &wi.WorkItemComments, &wi.Users); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Users, c.joins.WorkItemTags, c.joins.WorkItemType, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Description, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.TargetDate, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.TimeEntries, &wi.WorkItemComments, &wi.Users, &wi.WorkItemTags, &wi.WorkItemType); err != nil {
 		return nil, logerror(err)
 	}
 	return &wi, nil

@@ -294,6 +294,9 @@ create table work_items (
   , foreign key (kanban_step_id) references kanban_steps (kanban_step_id) on delete cascade
 );
 
+-- to get join directly instead of having to call xo's generated FK for every single one
+comment on column work_items.work_item_type_id is 'cardinality:O2O';
+
 
 /*
 when a new project is required -> manual table creation with empty new fields, just
@@ -366,6 +369,11 @@ create table work_item_work_item_tag (
 );
 
 create index on work_item_work_item_tag (work_item_tag_id , work_item_id);
+
+
+comment on column work_item_work_item_tag.work_item_tag_id is 'cardinality:M2M';
+
+comment on column work_item_work_item_tag.work_item_id is 'cardinality:M2M';
 
 -- roles are append-only
 create type work_item_role as ENUM (
