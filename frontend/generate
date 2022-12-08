@@ -13,7 +13,7 @@ envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
 mkdir -p src/redux/slices/gen
 mkdir -p src/types
 
-rtk-query-codegen-openapi ./openapi-config.cjs &
+orval --config ./orval.config.ts &
 node generate-client-validator.js &
 openapi-typescript ../openapi.yaml --output "$SCHEMA_OUT" --path-params-as-types --prettier-config .prettierrc &
 wait
