@@ -15,7 +15,13 @@ trap errtrap SIGUSR1
 
 killgroup() {
   printf "\nkilling spawned processes...\n"
-
+  [[ $restore_cache = 1 ]] &&
+    {
+      echo "Restoring $SPEC and $PG_REPO_GEN"
+      mv "$CACHE/$SPEC" "$SPEC"
+      rm -rf "$PG_REPO_GEN"
+      mv "$CACHE_PG_REPO_GEN" "$PG_REPO"
+    }
   # kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
   kill_descendants 2>/dev/null || true
   pgrep -P $PROC | xargs kill
@@ -46,7 +52,10 @@ readonly GEN_POSTGRES_DB="gen_db"
 pkg="$(head -1 go.mod)"
 readonly GOMOD_PKG="${pkg#module *}"
 readonly OPID_AUTH="operationAuth.gen.json"
+readonly CACHE=".generate.cache"
+readonly CACHE_PG_REPO_GEN="$CACHE/gen"
 
+restore_cache=0
 pids=""
 env="dev"
 dump_prefix="dump_${env}_"
@@ -402,22 +411,20 @@ x.gen.client-server() {
 x.gen.counterfeiter() {
   # This shouldn't pose any problems, the interface is the only input to counterfeiter.
   { { {
-    cache="$1"
-
     envvar="internal/envvar/envvar.go"
     repos="internal/repos/repos.go"
     tfidfpb="internal/pb/python-ml-app-protos/tfidf/v1/service_grpc.pb.go"
 
     echo "Running generation"
 
-    if ! md5sum -c "$cache/counterfeiter.md5" >/dev/null || [[ $FORCE_REGEN -eq 1 ]]; then
+    if ! md5sum -c "$CACHE/counterfeiter.md5" >/dev/null || [[ $FORCE_REGEN -eq 1 ]]; then
       echo "Recreating mocks"
       {
         counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
         counterfeiter -o internal/repos/repostesting/user.gen.go $repos User &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
-        md5sum $envvar $repos $tfidfpb >"$cache/counterfeiter.md5" &
+        md5sum $envvar $repos $tfidfpb >"$CACHE/counterfeiter.md5" &
         wait
       } 2>&1 # outputs to stderr for some reason
 
@@ -449,20 +456,18 @@ x.gen.proto() {
 
 # Run all codegen and postgen commands for the project.
 x.gen() {
+  cp "$SPEC" "$CACHE"
+  cp -r "$PG_REPO_GEN" "$CACHE_PG_REPO_GEN"
+  restore_cache=1
   { { {
     echo "Running code generation"
     # must always be consistent regardless of current env
     (
       POSTGRES_DB=$GEN_POSTGRES_DB
 
-      local cache=".generate.cache"
-
-      mkdir -p "$cache"
-
+      mkdir -p "$CACHE"
       x.db.recreate
-
       x.pregen
-
       rm -rf "$PG_REPO_GEN"
 
       # TODO try use gnu parallel and exit when anyone fails
@@ -481,7 +486,7 @@ x.gen() {
       wait
 
       x.postgen &
-      x.gen.counterfeiter "$cache" & # delay since it depends on generated output too
+      x.gen.counterfeiter & # delay since it depends on generated output too
 
       wait
 
@@ -495,6 +500,9 @@ x.gen() {
       x.lint
     )
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  rm "$CACHE/$SPEC"
+  rm -rf "$CACHE_PG_REPO_GEN"
+  restore_cache=0
 }
 
 # Lint the entire project.
@@ -612,7 +620,7 @@ x.run.backend-hr() {
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,*.cache" \
+    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,*.cache,$CACHE" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
