@@ -4,7 +4,7 @@ import { defineConfig } from 'orval'
 export default defineConfig({
   main: {
     output: {
-      mode: 'split',
+      mode: 'tags-split',
       target: './src/gen/main.ts',
       schemas: './src/gen/model',
       client: 'react-query',
