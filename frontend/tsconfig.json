@@ -28,10 +28,16 @@
         "assets/*"
       ],
       "@roles": [
-        "../roles.json"
+        "roles.json"
       ],
       "@scopes": [
-        "../scopes.json"
+        "scopes.json"
+      ],
+      "@operationAuth": [
+        "operationAuth.gen.json"
+      ],
+      "@config": [
+        "config.json"
       ],
     }
   },

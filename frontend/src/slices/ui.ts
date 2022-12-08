@@ -2,35 +2,34 @@ import type { Toast } from '@elastic/eui/src/components/toast/global_toast_list'
 import create from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
-type Theme = 'dark' | 'light'
+export type Theme = 'dark' | 'light'
 
 interface UIState {
   theme: Theme
-  styleSheet: string
   toastList: Toast[]
   addToast: (toast: Toast) => void
   removeToastByID: (toastID: string) => void
   dismissToast: (toast: Toast) => void
-  switchTheme: () => void
+  setTheme: (theme: Theme) => void
 }
-
-const theme = (localStorage.getItem('theme') ?? 'light') as Theme
 
 const useUISlice = create<UIState>()(
   devtools(
     // persist(
-    // TODO only for theme
-    (set) => ({
-      theme: theme,
-      styleSheet: `${import.meta.env.BASE_URL}eui_theme_${theme}.min.css`,
-      toastList: [],
-      addToast: (toast: Toast) => set(addToast(toast)),
-      removeToastByID: (toastID: string) => set(removeToastByID(toastID)),
-      dismissToast: (toast: Toast) => set(dismissToast(toast.id)),
-      switchTheme: () => set(switchTheme()),
-    }),
+    (set) => {
+      const theme = (localStorage.getItem('theme') ?? 'light') as Theme
+      return {
+        theme: theme,
+        toastList: [],
+        addToast: (toast: Toast) => set(addToast(toast), false, `addToast-${toast.id}`),
+        removeToastByID: (toastID: string) => set(removeToastByID(toastID), false, `removeToastByID-${toastID}`),
+        dismissToast: (toast: Toast) => set(dismissToast(toast.id), false, `dismissToast-${toast.id}`),
+        setTheme: (theme: Theme) => set(setTheme(theme), false, `setTheme-${theme}`),
+      }
+    },
     //   { version: 2, name: 'ui-slice' },
     // ),
+    { enabled: true },
   ),
 )
 
@@ -38,13 +37,11 @@ export { useUISlice }
 
 type UIAction = (...args: any[]) => Partial<UIState>
 
-function switchTheme(): UIAction {
+function setTheme(theme: Theme): UIAction {
   return (state: UIState) => {
-    const newTheme = state.theme === 'dark' ? 'light' : 'dark'
-    localStorage.setItem('theme', newTheme)
+    localStorage.setItem('theme', theme)
     return {
-      theme: newTheme,
-      styleSheet: `${import.meta.env.BASE_URL}eui_theme_${newTheme}.min.css`,
+      theme: theme,
     }
   }
 }

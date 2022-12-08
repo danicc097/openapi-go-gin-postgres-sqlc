@@ -5,17 +5,17 @@ import { Switch, StyledFontAwesomeIcon } from './ThemeSwitcher.styles'
 import { useUISlice } from 'src/slices/ui'
 
 export function ThemeSwitcher() {
-  const { switchTheme } = useUISlice()
+  const { setTheme, theme } = useUISlice()
   const [checked, setChecked] = useState(localStorage.getItem('theme') === 'dark')
 
   useEffect(() => {
-    switchTheme()
-  }, [checked, switchTheme])
+    setChecked(theme === 'dark')
+  }, [theme])
 
   return (
     <Switch className="theme-switcher">
       <StyledFontAwesomeIcon icon={faSun} size="lg" />
-      <EuiSwitch label="" checked={checked} onChange={() => setChecked(!checked)} />
+      <EuiSwitch label="" checked={checked} onChange={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
       <StyledFontAwesomeIcon icon={faMoon} size="lg" />
     </Switch>
   )

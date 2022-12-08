@@ -29,10 +29,11 @@ import { useNotificationAPI } from 'src/hooks/ui/useNotificationAPI'
 import logoDark from 'src/assets/logo/two-white-clouds.svg'
 import logoLight from 'src/assets/logo/two-black-clouds.svg'
 import { AvatarMenu, StyledEuiHeader, LogoSection } from './Navbar.styles'
-import type { User } from 'src/redux/slices/gen/internalApi'
 import { useUISlice } from 'src/slices/ui'
 import { useAuthenticatedUser } from 'src/hooks/auth/useAuthenticatedUser'
 import { ThemeSwitcher } from 'src/ThemeSwitcher/ThemeSwitcher'
+import _ from 'lodash'
+import config from '@config'
 
 export default function Navbar() {
   const [avatarMenuOpen, setAvatarMenuOpen] = useState<boolean>(false)
@@ -99,11 +100,11 @@ export default function Navbar() {
               <EuiFlexItem grow>
                 <UserAvatar size="l" user={user} color={avatarColor} initialsLength={2} />
               </EuiFlexItem>
-              <EuiFlexGroup direction="column" alignItems="flexStart" className="avatar-dropdown-user">
+              <EuiFlexGroup direction="column" className="avatar-dropdown-user">
                 <EuiFlexItem grow>
                   <strong>{user?.username}</strong>
                 </EuiFlexItem>
-                <EuiFlexItem grow>{user?.email}</EuiFlexItem>
+                <EuiFlexItem grow>{_.truncate(user?.email, { length: 25 })}</EuiFlexItem>
               </EuiFlexGroup>
             </EuiFlexGroup>
           </EuiFlexItem>
@@ -124,7 +125,7 @@ export default function Navbar() {
               <EuiIcon type="user" size="m" />
             </EuiFlexItem>
             <EuiFlexItem grow={8}>
-              <Link to="/profile">Profile</Link>
+              <EuiLink href={`${config.AUTH_SERVER_UI_PROFILE}`}>Profile</EuiLink>
             </EuiFlexItem>
           </EuiFlexGroup>
 

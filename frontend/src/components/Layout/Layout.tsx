@@ -7,7 +7,7 @@ import { StyledLayout } from './Layout.styles'
 import { css } from '@emotion/react'
 import { Fragment } from 'react'
 import * as S from './Layout.styles'
-import { useUISlice } from 'src/slices/ui'
+import { Theme, useUISlice } from 'src/slices/ui'
 import shallow from 'zustand/shallow'
 import Navbar from 'src/components/Navbar/Navbar'
 
@@ -15,9 +15,13 @@ type LayoutProps = {
   children: React.ReactElement
 }
 
+function stylesheetURL(theme: Theme): string {
+  return `${import.meta.env.BASE_URL}eui_theme_${theme}.min.css`
+}
+
 export default function Layout({ children }: LayoutProps) {
   const toasts = useUISlice((state) => state?.toastList, shallow)
-  const { addToast, dismissToast, theme, styleSheet } = useUISlice()
+  const { addToast, dismissToast, theme } = useUISlice()
 
   const { euiTheme } = useEuiTheme()
 
@@ -25,9 +29,9 @@ export default function Layout({ children }: LayoutProps) {
     const link = document.createElement('link')
     link.id = `theme-style-${theme}`
     link.rel = 'styleSheet'
-    link.href = styleSheet
+    link.href = stylesheetURL(theme)
     document.head.appendChild(link)
-  }, [styleSheet, theme])
+  }, [theme])
 
   const footerCSS = css`
     z-index: 999;
