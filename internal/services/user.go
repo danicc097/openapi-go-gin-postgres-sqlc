@@ -183,6 +183,18 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 	return uak, nil
 }
 
+// UserByExternalID gets a user by ExternalID.
+func (u *User) UserByExternalID(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
+	defer newOTELSpan(ctx, "User.UserByExternalID").End()
+
+	user, err := u.urepo.UserByExternalID(ctx, d, id)
+	if err != nil {
+		return nil, errors.Wrap(err, "urepo.UserByExternalID")
+	}
+
+	return user, nil
+}
+
 // UserByEmail gets a user by email.
 func (u *User) UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error) {
 	defer newOTELSpan(ctx, "User.UserByEmail").End()
