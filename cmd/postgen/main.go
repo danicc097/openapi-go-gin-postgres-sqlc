@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
@@ -14,37 +13,22 @@ import (
 )
 
 func main() {
-	var env, cacheDir, spec string
+	var env, cacheDir, specPath string
 
 	flag.StringVar(&env, "env", ".env", "Environment Variables filename")
 	flag.StringVar(&cacheDir, "cachedir", ".postgen.cache", "Cache dir")
-	flag.StringVar(&spec, "spec", "openapi.yaml", "OpenAPI specification")
+	flag.StringVar(&specPath, "spec", "openapi.yaml", "OpenAPI specification")
 	flag.Parse()
 
 	if err := envvar.Load(env); err != nil {
 		log.Fatalf("envvar.Load: %s\n", err)
 	}
 
-	const baseDir = "internal"
-	conf := &postgen.Conf{
-		CurrentHandlersDir: postgen.Dir(path.Join(baseDir, "rest")),
-		GenHandlersDir:     postgen.Dir(path.Join(baseDir, "gen")),
-		OutHandlersDir:     postgen.Dir(path.Join(baseDir, "rest")),
-		OutServicesDir:     postgen.Dir(path.Join(baseDir, "services")),
-	}
-
 	var stderr bytes.Buffer
-	og := postgen.NewOpenapiGenerator(conf, &stderr, spec)
 
-	if err := og.Generate(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		fmt.Fprintln(os.Stderr, stderr.String())
-		os.Exit(1)
-	}
+	url := internal.BuildAPIURL(specPath)
 
-	url := internal.BuildAPIURL("openapi.yaml")
-
-	if err := postgen.SetupSwaggerUI(url); err != nil {
+	if err := postgen.SetupSwaggerUI(url, specPath); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		fmt.Fprintln(os.Stderr, stderr.String())
 		os.Exit(1)

@@ -2,7 +2,6 @@ package postgresql_test
 
 import (
 	"context"
-	"reflect"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
@@ -14,30 +13,46 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const errNoRows = "no rows in result set"
-
-/**
- *
- * TODO integration tests only
- *
- * https://stackoverflow.com/questions/4452928/should-i-bother-unit-testing-my-repository-layer
- *
- *
- */
-
 func TestUser_Update(t *testing.T) {
 	t.Parallel()
 
+	userRepo := postgresql.NewUser()
+
+	ucp := randomUserCreateParams(t)
+
+	user, err := userRepo.Create(context.Background(), testpool, ucp)
+	if err != nil {
+		t.Fatalf("unexpected error = %v", err)
+	}
+
 	type args struct {
+		id     string
 		params repos.UserUpdateParams
 	}
-	tests := []struct {
+	type params struct {
 		name    string
 		args    args
 		want    *db.User
 		wantErr bool
-	}{
-		// TODO: Add test cases.
+	}
+	tests := []params{
+		{
+			name: "updated",
+			args: args{
+				id: user.UserID.String(),
+				params: repos.UserUpdateParams{
+					Rank:   pointers.New[int16](10),
+					Scopes: &[]string{"test"},
+				},
+			},
+			want: func() *db.User {
+				u := *user
+				u.RoleRank = 10
+				u.Scopes = []string{"test"}
+
+				return &u
+			}(),
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -45,15 +60,68 @@ func TestUser_Update(t *testing.T) {
 			t.Parallel()
 
 			u := postgresql.NewUser()
-			got, err := u.Update(context.Background(), testpool, tt.args.params)
+			got, err := u.Update(context.Background(), testpool, tt.args.id, tt.args.params)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("User.Update() error = %v, wantErr %v", err, tt.wantErr)
 
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("User.Update() = %v, want %v", got, tt.want)
+
+			got.UpdatedAt = user.UpdatedAt // ignore
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestUser_MarkAsDeleted(t *testing.T) {
+	t.Parallel()
+
+	userRepo := postgresql.NewUser()
+
+	ucp := randomUserCreateParams(t)
+
+	user, err := userRepo.Create(context.Background(), testpool, ucp)
+	if err != nil {
+		t.Fatalf("unexpected error = %v", err)
+	}
+
+	type args struct {
+		id string
+	}
+	type params struct {
+		name          string
+		args          args
+		errorContains string
+	}
+	tests := []params{
+		{
+			name: "deleted",
+			args: args{
+				id: user.UserID.String(),
+			},
+			errorContains: errNoRows,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			u := postgresql.NewUser()
+			_, err := u.Delete(context.Background(), testpool, tt.args.id)
+			if err != nil {
+				t.Errorf("User.Delete() unexpected error = %v", err)
+
+				return
 			}
+
+			_, err = u.UserByID(context.Background(), testpool, tt.args.id)
+			if err == nil {
+				t.Error("wanted error but got nothing", err)
+
+				return
+			}
+			assert.ErrorContains(t, err, tt.errorContains)
 		})
 	}
 }

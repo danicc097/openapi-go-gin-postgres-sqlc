@@ -25,4 +25,5 @@ jobs:
           go mod download
 
           project test.backend-setup --x-env=ci
+          project test --x-env=ci
           project test -race --x-env=ci

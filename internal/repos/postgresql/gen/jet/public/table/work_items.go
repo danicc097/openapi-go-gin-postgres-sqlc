@@ -17,19 +17,18 @@ type workItemsTable struct {
 	postgres.Table
 
 	//Columns
-	WorkItemID                postgres.ColumnInteger
-	Title                     postgres.ColumnString
-	WorkItemTypeID            postgres.ColumnInteger
-	Metadata                  postgres.ColumnString
-	TeamID                    postgres.ColumnInteger
-	KanbanStepID              postgres.ColumnInteger
-	Closed                    postgres.ColumnTimestampz
-	TargetDate                postgres.ColumnTimestampz
-	SomeCustomDateForProject1 postgres.ColumnTimestampz
-	SomeCustomDateForProject2 postgres.ColumnTimestampz
-	CreatedAt                 postgres.ColumnTimestampz
-	UpdatedAt                 postgres.ColumnTimestampz
-	DeletedAt                 postgres.ColumnTimestampz
+	WorkItemID     postgres.ColumnInteger
+	Title          postgres.ColumnString
+	Description    postgres.ColumnString
+	WorkItemTypeID postgres.ColumnInteger
+	Metadata       postgres.ColumnString
+	TeamID         postgres.ColumnInteger
+	KanbanStepID   postgres.ColumnInteger
+	Closed         postgres.ColumnTimestampz
+	TargetDate     postgres.ColumnTimestampz
+	CreatedAt      postgres.ColumnTimestampz
+	UpdatedAt      postgres.ColumnTimestampz
+	DeletedAt      postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -70,40 +69,38 @@ func newWorkItemsTable(schemaName, tableName, alias string) *WorkItemsTable {
 
 func newWorkItemsTableImpl(schemaName, tableName, alias string) workItemsTable {
 	var (
-		WorkItemIDColumn                = postgres.IntegerColumn("work_item_id")
-		TitleColumn                     = postgres.StringColumn("title")
-		WorkItemTypeIDColumn            = postgres.IntegerColumn("work_item_type_id")
-		MetadataColumn                  = postgres.StringColumn("metadata")
-		TeamIDColumn                    = postgres.IntegerColumn("team_id")
-		KanbanStepIDColumn              = postgres.IntegerColumn("kanban_step_id")
-		ClosedColumn                    = postgres.TimestampzColumn("closed")
-		TargetDateColumn                = postgres.TimestampzColumn("target_date")
-		SomeCustomDateForProject1Column = postgres.TimestampzColumn("some_custom_date_for_project_1")
-		SomeCustomDateForProject2Column = postgres.TimestampzColumn("some_custom_date_for_project_2")
-		CreatedAtColumn                 = postgres.TimestampzColumn("created_at")
-		UpdatedAtColumn                 = postgres.TimestampzColumn("updated_at")
-		DeletedAtColumn                 = postgres.TimestampzColumn("deleted_at")
-		allColumns                      = postgres.ColumnList{WorkItemIDColumn, TitleColumn, WorkItemTypeIDColumn, MetadataColumn, TeamIDColumn, KanbanStepIDColumn, ClosedColumn, TargetDateColumn, SomeCustomDateForProject1Column, SomeCustomDateForProject2Column, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
-		mutableColumns                  = postgres.ColumnList{TitleColumn, WorkItemTypeIDColumn, MetadataColumn, TeamIDColumn, KanbanStepIDColumn, ClosedColumn, TargetDateColumn, SomeCustomDateForProject1Column, SomeCustomDateForProject2Column, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
+		WorkItemIDColumn     = postgres.IntegerColumn("work_item_id")
+		TitleColumn          = postgres.StringColumn("title")
+		DescriptionColumn    = postgres.StringColumn("description")
+		WorkItemTypeIDColumn = postgres.IntegerColumn("work_item_type_id")
+		MetadataColumn       = postgres.StringColumn("metadata")
+		TeamIDColumn         = postgres.IntegerColumn("team_id")
+		KanbanStepIDColumn   = postgres.IntegerColumn("kanban_step_id")
+		ClosedColumn         = postgres.TimestampzColumn("closed")
+		TargetDateColumn     = postgres.TimestampzColumn("target_date")
+		CreatedAtColumn      = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn      = postgres.TimestampzColumn("updated_at")
+		DeletedAtColumn      = postgres.TimestampzColumn("deleted_at")
+		allColumns           = postgres.ColumnList{WorkItemIDColumn, TitleColumn, DescriptionColumn, WorkItemTypeIDColumn, MetadataColumn, TeamIDColumn, KanbanStepIDColumn, ClosedColumn, TargetDateColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
+		mutableColumns       = postgres.ColumnList{TitleColumn, DescriptionColumn, WorkItemTypeIDColumn, MetadataColumn, TeamIDColumn, KanbanStepIDColumn, ClosedColumn, TargetDateColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
 	)
 
 	return workItemsTable{
 		Table: postgres.NewTable(schemaName, tableName, alias, allColumns...),
 
 		//Columns
-		WorkItemID:                WorkItemIDColumn,
-		Title:                     TitleColumn,
-		WorkItemTypeID:            WorkItemTypeIDColumn,
-		Metadata:                  MetadataColumn,
-		TeamID:                    TeamIDColumn,
-		KanbanStepID:              KanbanStepIDColumn,
-		Closed:                    ClosedColumn,
-		TargetDate:                TargetDateColumn,
-		SomeCustomDateForProject1: SomeCustomDateForProject1Column,
-		SomeCustomDateForProject2: SomeCustomDateForProject2Column,
-		CreatedAt:                 CreatedAtColumn,
-		UpdatedAt:                 UpdatedAtColumn,
-		DeletedAt:                 DeletedAtColumn,
+		WorkItemID:     WorkItemIDColumn,
+		Title:          TitleColumn,
+		Description:    DescriptionColumn,
+		WorkItemTypeID: WorkItemTypeIDColumn,
+		Metadata:       MetadataColumn,
+		TeamID:         TeamIDColumn,
+		KanbanStepID:   KanbanStepIDColumn,
+		Closed:         ClosedColumn,
+		TargetDate:     TargetDateColumn,
+		CreatedAt:      CreatedAtColumn,
+		UpdatedAt:      UpdatedAtColumn,
+		DeletedAt:      DeletedAtColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

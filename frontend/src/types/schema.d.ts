@@ -15,6 +15,15 @@ type XOR<T, U> = (T | U) extends object ? (Without<T, U> & U) | (Without<U, T> &
 type OneOf<T extends any[]> = T extends [infer Only] ? Only : T extends [infer A, infer B, ...infer Rest] ? OneOf<[XOR<A, B>, ...Rest]> : never;
 
 export interface paths {
+  "/auth/myprovider/callback": {
+    get: operations["MyProviderCallback"];
+  };
+  "/auth/myprovider/login": {
+    get: operations["MyProviderLogin"];
+  };
+  "/events": {
+    get: operations["Events"];
+  };
   "/ping": {
     /** Ping pongs */
     get: operations["Ping"];
@@ -41,20 +50,41 @@ export interface paths {
     /** updates the user by id */
     patch: operations["UpdateUser"];
   };
+  "/project/{id}/initialize": {
+    /** creates initial data (teams, work item types, tags...) for a new project */
+    post: operations["InitializeProject"];
+  };
+  "/project/{id}/board": {
+    /** returns board data for a project */
+    get: operations["GetProjectBoard"];
+  };
 }
 
 export interface components {
   schemas: {
+    ProjectBoardCreateRequest: Record<string, never>;
+    ProjectBoardResponse: Record<string, never>;
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
       detail?: (components["schemas"]["ValidationError"])[];
     };
+    /**
+     * @description string identifiers for SSE event listeners. 
+     * @enum {string}
+     */
+    Topics: "UserNotifications" | "ManagerNotifications" | "AdminNotifications" | "WorkItemMoved" | "WorkItemClosed";
     /** @enum {string} */
     Scope: "test-scope" | "users:read" | "users:write" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item:review";
     Scopes: (components["schemas"]["Scope"])[];
     /** @enum {string} */
     Role: "guest" | "user" | "advancedUser" | "manager" | "admin" | "superAdmin";
+    /**
+     * Notification type 
+     * @description User notification type. 
+     * @enum {string}
+     */
+    NotificationType: "personal" | "global";
     /**
      * WorkItem role 
      * @description Role in work item for a member. 
@@ -87,22 +117,6 @@ export interface components {
       role?: components["schemas"]["Role"];
       scopes?: components["schemas"]["Scopes"];
     };
-    UserPublic: {
-      apiKeyID?: number | null;
-      /** Format: date-time */
-      createdAt?: string;
-      /** Format: date-time */
-      deletedAt?: string | null;
-      email?: string;
-      firstName?: string | null;
-      fullName?: string | null;
-      lastName?: string | null;
-      teams?: (components["schemas"]["TeamPublic"])[] | null;
-      timeEntries?: (components["schemas"]["TimeEntryPublic"])[] | null;
-      userID?: components["schemas"]["UuidUUID"];
-      username?: string;
-      workItems?: (components["schemas"]["WorkItemPublic"])[] | null;
-    };
     /** ValidationError */
     ValidationError: {
       /** Location */
@@ -114,40 +128,16 @@ export interface components {
     };
     PgtypeJSONB: Record<string, never>;
     UuidUUID: string;
-    TaskPublic: {
-      /** Format: date-time */
-      createdAt?: string;
-      /** Format: date-time */
-      deletedAt?: string | null;
-      finished?: boolean | null;
-      metadata?: components["schemas"]["PgtypeJSONB"];
-      taskID?: number;
-      taskType?: components["schemas"]["TaskTypePublic"];
-      taskTypeID?: number;
-      title?: string;
-      /** Format: date-time */
-      updatedAt?: string;
-      workItemID?: number;
-    };
-    TaskTypePublic: {
-      color?: string;
-      description?: string;
-      name?: string;
-      taskTypeID?: number;
-      teamID?: number;
-    } | null;
     TeamPublic: {
       /** Format: date-time */
-      createdAt?: string;
-      description?: string;
-      metadata?: components["schemas"]["PgtypeJSONB"];
-      name?: string;
-      projectID?: number;
-      teamID?: number;
-      timeEntries?: (components["schemas"]["TimeEntryPublic"])[] | null;
+      createdAt: string;
+      description: string;
+      metadata: components["schemas"]["PgtypeJSONB"];
+      name: string;
+      projectID: number;
+      teamID: number;
       /** Format: date-time */
-      updatedAt?: string;
-      users?: (components["schemas"]["UserPublic"])[] | null;
+      updatedAt: string;
     };
     TimeEntryPublic: {
       activityID?: number;
@@ -170,53 +160,148 @@ export interface components {
       workItemCommentID?: number;
       workItemID?: number;
     };
-    WorkItemPublic: {
-      closed?: boolean;
-      /** Format: date-time */
-      createdAt?: string;
-      /** Format: date-time */
-      deletedAt?: string | null;
-      kanbanStepID?: number;
-      metadata?: components["schemas"]["PgtypeJSONB"];
-      tasks?: (components["schemas"]["TaskPublic"])[] | null;
-      teamID?: number;
-      timeEntries?: (components["schemas"]["TimeEntryPublic"])[] | null;
-      title?: string;
-      /** Format: date-time */
-      updatedAt?: string;
-      users?: (components["schemas"]["UserPublic"])[] | null;
-      workItemComments?: (components["schemas"]["WorkItemCommentPublic"])[] | null;
-      workItemID?: number;
-      workItemTypeID?: number;
-    };
     ModelsRole: string;
-    UserResponse: {
-      apiKeyID?: number | null;
+    RestUserResponse: {
+      apiKey?: components["schemas"]["DbUserAPIKeyPublic"];
       /** Format: date-time */
-      createdAt?: string;
+      createdAt: string;
       /** Format: date-time */
-      deletedAt?: string | null;
-      email?: string;
-      firstName?: string | null;
-      fullName?: string | null;
-      lastName?: string | null;
-      role?: components["schemas"]["Role"];
-      scopes?: components["schemas"]["Scopes"];
-      teams?: (components["schemas"]["TeamPublic"])[] | null;
-      timeEntries?: (components["schemas"]["TimeEntryPublic"])[] | null;
-      userID?: components["schemas"]["UuidUUID"];
-      username?: string;
-      workItems?: (components["schemas"]["WorkItemPublic"])[] | null;
+      deletedAt: string | null;
+      email: string;
+      firstName: string | null;
+      fullName: string | null;
+      hasGlobalNotifications: boolean;
+      hasPersonalNotifications: boolean;
+      lastName: string | null;
+      role: components["schemas"]["Role"];
+      scopes: components["schemas"]["Scopes"];
+      teams?: (components["schemas"]["DbTeamPublic"])[] | null;
+      userID: components["schemas"]["UuidUUID"];
+      username: string;
     };
     ModelsScope: string;
+    UserAPIKeyPublic: {
+      apiKey: string;
+      /** Format: date-time */
+      expiresOn: string;
+      userID: components["schemas"]["UuidUUID"];
+    } | null;
+    DbTeamPublic: {
+      /** Format: date-time */
+      createdAt: string;
+      description: string;
+      name: string;
+      projectID: number;
+      teamID: number;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    DbUserAPIKeyPublic: {
+      apiKey: string;
+      /** Format: date-time */
+      expiresOn: string;
+      userID: components["schemas"]["UuidUUID"];
+    } | null;
+    DbActivityPublic: {
+      activityID: number;
+      description: string;
+      isProductive: boolean;
+      name: string;
+      projectID: number;
+    };
+    DbKanbanStepPublic: {
+      color: string;
+      description: string;
+      kanbanStepID: number;
+      name: string;
+      projectID: number;
+      stepOrder: number | null;
+      timeTrackable: boolean;
+    };
+    DbProjectPublic: {
+      /** Format: date-time */
+      createdAt: string;
+      description: string;
+      initialized: boolean;
+      name: string;
+      projectID: number;
+      /** Format: date-time */
+      updatedAt: string;
+    } | null;
+    DbWorkItemTagPublic: {
+      color: string;
+      description: string;
+      name: string;
+      projectID: number;
+      workItemTagID: number;
+    };
+    DbWorkItemTypePublic: {
+      color: string;
+      description: string;
+      name: string;
+      projectID: number;
+      workItemTypeID: number;
+    };
+    ReposActivityCreateParams: {
+      description?: string;
+      isProductive?: boolean;
+      name?: string;
+      projectID?: number;
+    };
+    ReposKanbanStepCreateParams: {
+      color?: string;
+      description?: string;
+      name?: string;
+      projectID?: number;
+      stepOrder?: number;
+      timeTrackable?: boolean;
+    };
+    ReposTeamCreateParams: {
+      description?: string;
+      name?: string;
+      projectID?: number;
+    };
+    ReposWorkItemTagCreateParams: {
+      color?: string;
+      description?: string;
+      name?: string;
+      projectID?: number;
+    };
+    ReposWorkItemTypeCreateParams: {
+      color?: string;
+      description?: string;
+      name?: string;
+      projectID?: number;
+    };
+    RestProjectBoardCreateRequest: {
+      activities?: (components["schemas"]["ReposActivityCreateParams"])[] | null;
+      kanbanSteps?: (components["schemas"]["ReposKanbanStepCreateParams"])[] | null;
+      projectID?: number;
+      teams?: (components["schemas"]["ReposTeamCreateParams"])[] | null;
+      workItemTags?: (components["schemas"]["ReposWorkItemTagCreateParams"])[] | null;
+      workItemTypes?: (components["schemas"]["ReposWorkItemTypeCreateParams"])[] | null;
+    };
+    RestProjectBoardResponse: {
+      activities?: (components["schemas"]["DbActivityPublic"])[] | null;
+      kanbanSteps?: (components["schemas"]["DbKanbanStepPublic"])[] | null;
+      project?: components["schemas"]["DbProjectPublic"];
+      teams?: (components["schemas"]["DbTeamPublic"])[] | null;
+      workItemTags?: (components["schemas"]["DbWorkItemTagPublic"])[] | null;
+      workItemTypes?: (components["schemas"]["DbWorkItemTypePublic"])[] | null;
+    };
   };
   responses: never;
   parameters: {
     /**
-     * @description user_id that needs to be updated 
+     * @description UUID identifier of entity that needs to be updated 
      * @example 123e4567-e89b-12d3-a456-426614174000
      */
-    UserID: string;
+    uuid: string;
+    /**
+     * @description integer identifier that needs to be updated 
+     * @example 41131
+     */
+    serial: number;
   };
   requestBodies: never;
   headers: never;
@@ -227,6 +312,28 @@ export type external = Record<string, never>;
 
 export interface operations {
 
+  MyProviderCallback: {
+    responses: {
+      /** @description callback for MyProvider auth server */
+      200: never;
+    };
+  };
+  MyProviderLogin: {
+    responses: {
+      /** @description redirect to MyProvider auth server login */
+      302: never;
+    };
+  };
+  Events: {
+    responses: {
+      /** @description events */
+      200: {
+        content: {
+          "text/event-stream": string;
+        };
+      };
+    };
+  };
   Ping: {
     /** Ping pongs */
     responses: {
@@ -250,7 +357,7 @@ export interface operations {
       /** @description OpenAPI YAML file. */
       200: {
         content: {
-          "text/yaml": string;
+          "application/x-yaml": string;
         };
       };
     };
@@ -258,6 +365,12 @@ export interface operations {
   AdminPing: {
     /** Ping pongs */
     responses: {
+      /** @description OK */
+      200: {
+        content: {
+          "text/plain": string;
+        };
+      };
       /** @description Validation Error */
       422: {
         content: {
@@ -272,7 +385,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["UserPublic"];
+          "application/json": components["schemas"]["RestUserResponse"];
         };
       };
     };
@@ -286,12 +399,8 @@ export interface operations {
       };
     };
     responses: {
-      /** @description ok */
-      200: {
-        content: {
-          "application/json": components["schemas"]["UserPublic"];
-        };
-      };
+      /** @description User auth updated successfully. */
+      204: never;
     };
   };
   DeleteUser: {
@@ -313,7 +422,31 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["UserPublic"];
+          "application/json": components["schemas"]["RestUserResponse"];
+        };
+      };
+    };
+  };
+  InitializeProject: {
+    /** creates initial data (teams, work item types, tags...) for a new project */
+    /** @description Updated user object */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ProjectBoardCreateRequest"];
+      };
+    };
+    responses: {
+      /** @description Project successfully initialized. */
+      204: never;
+    };
+  };
+  GetProjectBoard: {
+    /** returns board data for a project */
+    responses: {
+      /** @description Project successfully initialized. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ProjectBoardResponse"];
         };
       };
     };

@@ -40,12 +40,28 @@ type FakeUser struct {
 		result1 *db.UserAPIKey
 		result2 error
 	}
-	UpdateStub        func(context.Context, db.DBTX, repos.UserUpdateParams) (*db.User, error)
+	DeleteStub        func(context.Context, db.DBTX, string) (*db.User, error)
+	deleteMutex       sync.RWMutex
+	deleteArgsForCall []struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 string
+	}
+	deleteReturns struct {
+		result1 *db.User
+		result2 error
+	}
+	deleteReturnsOnCall map[int]struct {
+		result1 *db.User
+		result2 error
+	}
+	UpdateStub        func(context.Context, db.DBTX, string, repos.UserUpdateParams) (*db.User, error)
 	updateMutex       sync.RWMutex
 	updateArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 repos.UserUpdateParams
+		arg3 string
+		arg4 repos.UserUpdateParams
 	}
 	updateReturns struct {
 		result1 *db.User
@@ -266,20 +282,87 @@ func (fake *FakeUser) CreateAPIKeyReturnsOnCall(i int, result1 *db.UserAPIKey, r
 	}{result1, result2}
 }
 
-func (fake *FakeUser) Update(arg1 context.Context, arg2 db.DBTX, arg3 repos.UserUpdateParams) (*db.User, error) {
+func (fake *FakeUser) Delete(arg1 context.Context, arg2 db.DBTX, arg3 string) (*db.User, error) {
+	fake.deleteMutex.Lock()
+	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
+	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 string
+	}{arg1, arg2, arg3})
+	stub := fake.DeleteStub
+	fakeReturns := fake.deleteReturns
+	fake.recordInvocation("Delete", []interface{}{arg1, arg2, arg3})
+	fake.deleteMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUser) DeleteCallCount() int {
+	fake.deleteMutex.RLock()
+	defer fake.deleteMutex.RUnlock()
+	return len(fake.deleteArgsForCall)
+}
+
+func (fake *FakeUser) DeleteCalls(stub func(context.Context, db.DBTX, string) (*db.User, error)) {
+	fake.deleteMutex.Lock()
+	defer fake.deleteMutex.Unlock()
+	fake.DeleteStub = stub
+}
+
+func (fake *FakeUser) DeleteArgsForCall(i int) (context.Context, db.DBTX, string) {
+	fake.deleteMutex.RLock()
+	defer fake.deleteMutex.RUnlock()
+	argsForCall := fake.deleteArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeUser) DeleteReturns(result1 *db.User, result2 error) {
+	fake.deleteMutex.Lock()
+	defer fake.deleteMutex.Unlock()
+	fake.DeleteStub = nil
+	fake.deleteReturns = struct {
+		result1 *db.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUser) DeleteReturnsOnCall(i int, result1 *db.User, result2 error) {
+	fake.deleteMutex.Lock()
+	defer fake.deleteMutex.Unlock()
+	fake.DeleteStub = nil
+	if fake.deleteReturnsOnCall == nil {
+		fake.deleteReturnsOnCall = make(map[int]struct {
+			result1 *db.User
+			result2 error
+		})
+	}
+	fake.deleteReturnsOnCall[i] = struct {
+		result1 *db.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUser) Update(arg1 context.Context, arg2 db.DBTX, arg3 string, arg4 repos.UserUpdateParams) (*db.User, error) {
 	fake.updateMutex.Lock()
 	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
 	fake.updateArgsForCall = append(fake.updateArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 repos.UserUpdateParams
-	}{arg1, arg2, arg3})
+		arg3 string
+		arg4 repos.UserUpdateParams
+	}{arg1, arg2, arg3, arg4})
 	stub := fake.UpdateStub
 	fakeReturns := fake.updateReturns
-	fake.recordInvocation("Update", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("Update", []interface{}{arg1, arg2, arg3, arg4})
 	fake.updateMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -293,17 +376,17 @@ func (fake *FakeUser) UpdateCallCount() int {
 	return len(fake.updateArgsForCall)
 }
 
-func (fake *FakeUser) UpdateCalls(stub func(context.Context, db.DBTX, repos.UserUpdateParams) (*db.User, error)) {
+func (fake *FakeUser) UpdateCalls(stub func(context.Context, db.DBTX, string, repos.UserUpdateParams) (*db.User, error)) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = stub
 }
 
-func (fake *FakeUser) UpdateArgsForCall(i int) (context.Context, db.DBTX, repos.UserUpdateParams) {
+func (fake *FakeUser) UpdateArgsForCall(i int) (context.Context, db.DBTX, string, repos.UserUpdateParams) {
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
 	argsForCall := fake.updateArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeUser) UpdateReturns(result1 *db.User, result2 error) {
@@ -669,6 +752,8 @@ func (fake *FakeUser) Invocations() map[string][][]interface{} {
 	defer fake.createMutex.RUnlock()
 	fake.createAPIKeyMutex.RLock()
 	defer fake.createAPIKeyMutex.RUnlock()
+	fake.deleteMutex.RLock()
+	defer fake.deleteMutex.RUnlock()
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
 	fake.userByAPIKeyMutex.RLock()

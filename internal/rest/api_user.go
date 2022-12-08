@@ -21,7 +21,7 @@ import (
 
 // 	// span attribute not inheritable:
 // 	// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
-// 	s := newOTELSpan(ctx, "User.CreateUser", trace.WithAttributes(userIDAttribute(c)))
+// 	s := newOTELSpan(ctx, "CreateUser", trace.WithAttributes(userIDAttribute(c)))
 // 	s.AddEvent("create-user") // filterable with event="create-user"
 // 	defer s.End()
 
@@ -52,7 +52,7 @@ func (h *Handlers) DeleteUser(c *gin.Context, id string) {
 func (h *Handlers) GetCurrentUser(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	defer newOTELSpan(ctx, "User.UpdateUser", trace.WithAttributes(userIDAttribute(c))).End()
+	defer newOTELSpan(ctx, "GetCurrentUser", trace.WithAttributes(userIDAttribute(c))).End()
 
 	//  user from context isntead has the appropiate joins already (teams, etc.)
 	user := getUserFromCtx(c)
@@ -81,7 +81,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 	// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
 	ctx := c.Request.Context()
 
-	s := newOTELSpan(ctx, "User.UpdateUser", trace.WithAttributes(userIDAttribute(c)))
+	s := newOTELSpan(ctx, "UpdateUser", trace.WithAttributes(userIDAttribute(c)))
 	s.AddEvent("update-user") // filterable with event="update-user"
 	defer s.End()
 
@@ -129,7 +129,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 	ctx := c.Request.Context()
 
-	s := newOTELSpan(ctx, "User.UpdateUserAuthorization", trace.WithAttributes(userIDAttribute(c)))
+	s := newOTELSpan(ctx, "UpdateUserAuthorization", trace.WithAttributes(userIDAttribute(c)))
 	s.AddEvent("update-user") // filterable with event="update-user"
 	defer s.End()
 
@@ -156,9 +156,8 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 		return
 	}
 
-	user, err := h.usvc.UpdateUserAuthorization(c, tx, id, caller, body)
-	if err != nil {
-		renderErrorResponse(c, "err: ", err)
+	if _, err := h.usvc.UpdateUserAuthorization(c, tx, id, caller, body); err != nil {
+		renderErrorResponse(c, "could not update user auth", err)
 
 		return
 	}
@@ -170,5 +169,5 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id string) {
 		return
 	}
 
-	renderResponse(c, user, http.StatusOK)
+	c.Status(http.StatusNoContent)
 }

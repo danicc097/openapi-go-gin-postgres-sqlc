@@ -85,10 +85,9 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot change another user's information")
 	}
 
-	user, err = u.urepo.Update(ctx, d, repos.UserUpdateParams{
+	user, err = u.urepo.Update(ctx, d, id, repos.UserUpdateParams{
 		FirstName: params.FirstName,
 		LastName:  params.LastName,
-		ID:        id,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "urepo.Update")
@@ -118,7 +117,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 	}
 
 	if caller.RoleRank < adminRole.Rank {
-		if user.UserID == caller.UserID {
+		if user.UserID == caller.UserID { // exit early, though it's not possible to update to something not assigned to self already anyway
 			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot update your own authorization information")
 		}
 	}
@@ -162,10 +161,9 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		scopes = &ss
 	}
 
-	user, err = u.urepo.Update(ctx, d, repos.UserUpdateParams{
+	user, err = u.urepo.Update(ctx, d, id, repos.UserUpdateParams{
 		Scopes: scopes,
 		Rank:   rank,
-		ID:     id,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "urepo.Update")

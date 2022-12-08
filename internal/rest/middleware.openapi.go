@@ -64,6 +64,12 @@ func newOpenapiMiddleware(
 // for reference middelware see https://github.com/aereal/go-openapi3-validation-middleware/blob/main/middleware.go
 func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOptions) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if getSkipRequestValidationFromCtx(c) {
+			c.Next()
+
+			return
+		}
+
 		defer newOTELSpan(c.Request.Context(), "RequestValidatorWithOptions").End()
 
 		rbw := &responseBodyWriter{body: &bytes.Buffer{}, ResponseWriter: c.Writer}
@@ -86,7 +92,7 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 
 		c.Next()
 
-		if !options.ValidateResponse {
+		if !options.ValidateResponse || getSkipResponseValidationFromCtx(c) {
 			rbw.ResponseWriter.Write(rbw.body.Bytes())
 
 			return

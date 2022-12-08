@@ -4,7 +4,6 @@ openapi-go-gin-postgres-sqlc*
 /bin/tools/*
 openapi-generator-cli.jar
 /post-generate-api
-/openapi-db-components.gen.yaml
 /postgen
 /pregen
 /gen-schema

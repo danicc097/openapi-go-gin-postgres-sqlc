@@ -169,26 +169,6 @@ func (siw *ServerInterfaceWrapper) {{$opid}}(c *gin.Context) {
     {{end}}
   {{end}}
 
-  // apply auth middlewares for operation "{{$opid}}".
-	for _, mw := range siw.Handler.authMiddlewares({{$opid}}) {
-		mw(c)
-
-    // should actually call router.<Method> with a slice of mw, last item the actual handler
-    if c.IsAborted() {
-      return
-    }
-	}
-
-  // apply middlewares for operation "{{$opid}}".
-	for _, mw := range siw.Handler.middlewares({{$opid}}) {
-		mw(c)
-
-    // should actually call router.<Method> with a slice of mw, last item the actual handler
-    if c.IsAborted() {
-      return
-    }
-	}
-
   siw.Handler.{{.OperationId}}(c{{genParamNames .PathParams}}{{if .RequiresParamObject}}, params{{end}})
 }
 {{end}}

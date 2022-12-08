@@ -17,13 +17,14 @@ killgroup() {
   printf "\nkilling spawned processes...\n"
 
   # kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
+  kill_descendants 2>/dev/null || true
   pgrep -P $PROC | xargs kill
   exit 1
 }
 
 errtrap() {
   printf "\nExiting due to propagated error...\n"
-  exit 1
+  killgroup
 }
 
 ensure_pwd_is_top_level
@@ -33,9 +34,11 @@ source ".envrc"
 readonly SPEC="openapi.yaml"
 readonly PROTO_DIR="internal/pb"
 readonly MIGRATIONS_DIR="db/migrations"
-readonly PG_REPO="internal/repos/postgresql"
-readonly PG_REPO_GEN="internal/repos/postgresql/gen"
+readonly REPOS="internal/repos"
+readonly PG_REPO="$REPOS/postgresql"
+readonly PG_REPO_GEN="$PG_REPO/gen"
 readonly GEN_SCHEMA_CMD="cmd/gen-schema"
+readonly POSTGRES_TEST_DB="postgres_test"
 readonly MAX_COMMENT_LEN=88
 readonly MAX_FNAME_LOG_LEN=13
 readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
@@ -44,7 +47,7 @@ pkg="$(head -1 go.mod)"
 readonly GOMOD_PKG="${pkg#module *}"
 readonly OPID_AUTH="operationAuth.gen.json"
 
-pids=()
+pids=""
 env="dev"
 dump_prefix="dump_${env}_"
 
@@ -74,6 +77,13 @@ xerr() {
   sed -ue "s/^/${RED}$fname >${OFF} /" >&2
 }
 
+kill_descendants() {
+  # air and vite spawn processes as well, need to kill those (whose parent is pid), kill $pid will not kill children. pkill -P would also work
+  kill $pids || true
+  kill "$(list_descendants $pids)" || true
+  pids=""
+}
+
 # Check build dependencies are met.
 x.check-build-deps() {
   { { {
@@ -88,6 +98,7 @@ x.check-build-deps() {
     check.direnv || { ((fails++)) && true; }
     check.yq || { ((fails++)) && true; }
     check.pg_format || { ((fails++)) && true; }
+    check.parallel || { ((fails++)) && true; }
     ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met.${OFF}"
     { ((fails != 0)) && err "${RED}❌ Missing dependencies.${OFF}"; } || true
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -143,6 +154,14 @@ x.fetch.swagger-ui() {
 x.pregen() {
   { { {
     echo "Running generation"
+
+    missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
+    [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
+
+    # don't want this to block if getting bad gen later on
+    go build -o pregen cmd/pregen/main.go || echo "Could not rebuild pregen" >&2
+
+    ./pregen -env=".env.$env" --validate-spec-only
 
     x.db.drop
     x.migrate up
@@ -224,10 +243,8 @@ x.pregen() {
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
     sed -i 's/!!merge //' $SPEC
 
-    # don't want this to block when getting bad gen
-    go build -o pregen cmd/pregen/main.go 2>/dev/null || echo "Could not rebuild pregen" >&2
-
     ./pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
+
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -256,7 +273,7 @@ x.postgen() {
 
     update_spec_with_structs
 
-    go build -o postgen cmd/postgen/main.go
+    go build -o postgen cmd/postgen/main.go || echo "Could not rebuild postgen" >&2
     ./postgen -env=".env.$env"
   } \
     2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -441,9 +458,6 @@ x.gen() {
     (
       POSTGRES_DB=$GEN_POSTGRES_DB
 
-      go mod vendor
-      go mod tidy
-
       local cache=".generate.cache"
 
       mkdir -p "$cache"
@@ -529,6 +543,7 @@ x.lint.sql() {
         --inplace \
         --keep-newline \
         --comma-start \
+        --nogrouping \
         --comma-break \
         $(find "$slq_dir" -maxdepth 3 -name '*.*sql')
     done
@@ -544,7 +559,7 @@ x.test.backend-setup() {
     run_shared_services up -d --build --remove-orphans
     [[ -z $NO_GEN ]] && x.gen
     # no need to migrate, done on every test run internally
-    drop_and_recreate_db "postgres_test"
+    drop_and_recreate_db $POSTGRES_TEST_DB
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -552,8 +567,8 @@ x.test.backend-setup() {
 # Args: [...]
 x.test() {
   { { {
-    yes y | POSTGRES_DB=postgres_test x.migrate down || true
-    POSTGRES_DB=postgres_test x.migrate up # for post-migration scripts
+    yes y | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
+    POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
     APP_ENV="$env" go test "$@" ./...
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -600,7 +615,7 @@ x.run.backend-hr() {
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$PROTO_DIR,"$PG_REPO_GEN",**/testdata,frontend,*.cache" \
+    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,*.cache" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
@@ -627,30 +642,35 @@ x.run-dev() {
 
   run_hot_reload
 
-  next_allowed_run=$(date +%s)
-  latency=3
-  # close_write event, else duplicated, tripl. events -> race condition
   while true; do
-    inotifywait \
-      --monitor $SPEC \
-      --event=close_write \
-      --format='%T %f' \
-      --timefmt='%s' |
-      while read -r event_time event_file 2>/dev/null || sleep $latency; do
-        if [[ $event_time -ge $next_allowed_run ]]; then
-          next_allowed_run=$(date --date="${latency}sec" +%s)
-
-          for pid in "${pids[@]}"; do
-            # air and vite spawn processes as well, need to kill those (whose parent is pid), kill $pid will not kill children. pkill -P would also work
-            list_descendants $pid
-            kill "$(list_descendants $pid)"
-          done
-          pids=()
-
-          run_hot_reload
-        fi
-      done
+    sleep 1000
   done
+
+  # TODO fix won't kill children
+  # next_allowed_run=$(date +%s)
+  # latency=3
+  # close_write event, else duplicated, tripl. events -> race condition
+  # while true; do
+  #   inotifywait \
+  #     --monitor $SPEC \
+  #     --event=close_write \
+  #     --format='%T %f' \
+  #     --timefmt='%s' |
+  #     while read -r event_time event_file 2>/dev/null || sleep $latency; do
+  #       if [[ $event_time -ge $next_allowed_run ]]; then
+  #         next_allowed_run=$(date --date="${latency}sec" +%s)
+
+  #         kill_descendants || true
+
+  #         run_hot_reload
+  #       fi
+  #     done
+  # done
+}
+
+x.backend.sync-deps() {
+  go mod tidy
+  go mod vendor
 }
 
 # Run project in production mode.
@@ -940,9 +960,9 @@ x.diff-oas() {
 # extracting function here instead...
 run_hot_reload() {
   x.run.backend-hr &
-  pids+=("$!")
+  pids="$pids $!"
   x.run.frontend &
-  pids+=("$!")
+  pids="$pids $!"
 }
 
 run_shared_services() {
@@ -961,14 +981,14 @@ run_shared_services() {
 generate_structs_map() {
   readarray -t structs < <(find "$PG_REPO_GEN/db/" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
   for struct in ${structs[@]}; do
-    map_fields+=("\"$struct\": db.$struct{},")
+    map_fields+=("\"Db$struct\": db.$struct{},")
   done
   map_fields+=("
   //
   ")
   readarray -t structs < <(find "internal/rest" -name "models.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
   for struct in ${structs[@]}; do
-    map_fields+=("\"$struct\": rest.$struct{},")
+    map_fields+=("\"Rest$struct\": rest.$struct{},")
   done
 
   out="internal/postgen/structs.gen.go"
@@ -992,21 +1012,30 @@ EOF
 update_spec_with_structs() {
   vext="x-postgen-struct"
   struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC)
-  struct_names=$(join_by "," ${struct_names[*]})
-  ((${#struct_names} == 0)) && return
+  schema_names=$(yq e ".components.schemas[] | select(has(\"$vext\")) | key" $SPEC)
+  readarray -t struct_names <<<$struct_names
+  readarray -t schema_names <<<$schema_names
+  declare -A schemas
+  for i in ${!struct_names[@]}; do
+    schemas["${struct_names[$i]}"]="${schema_names[$i]}" # keep track of custom structs per schema name
+  done
+  struct_names_list=$(join_by "," ${struct_names[*]})
+  ((${#struct_names_list} == 0)) && return
 
-  go build -o gen-schema cmd/gen-schema/main.go
-  ./gen-schema --struct-names $struct_names | yq '
+  go build -o gen-schema cmd/gen-schema/main.go || echo "Could not rebuild gen-schema" >&2
+  ./gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components")) |
     (.components.schemas[] | key) line_comment="Generated from db package structs. DO NOT EDIT."' \
     >/tmp/openapi.yaml
 
+  # replace every schema generated directly or indirectly.
   for schema in $(yq '.components.schemas[] | key' /tmp/openapi.yaml); do
+    new_schema_key="${schemas[$schema]:-$schema}"
     yq eval-all "(
         select(fi==1).components.schemas.$schema
-        ) as \$newSchema
+        ) as \$new_schema
         | select(fi == 0)
-        | .components.schemas.$schema = \$newSchema
+        | .components.schemas.$new_schema_key = \$new_schema
       " "$SPEC" /tmp/openapi.yaml >/tmp/final-spec
 
     mv /tmp/final-spec "$SPEC"
@@ -1268,8 +1297,10 @@ set -e
 for arg in ${args[@]}; do
   set -- "$@" "$arg"
 done
+
 # applicable to any command
 ensure_envvars_set ".env.template" ".env.${env}"
+ensure_envvars_set "docker/.env.template" "docker/.env"
 source ".env.$env"
 
 # handle executing x functions

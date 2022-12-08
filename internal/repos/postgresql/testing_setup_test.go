@@ -9,6 +9,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+const errNoRows = "no rows in result set"
+
+const demoProjectName = "demo project"
+
 var testpool *pgxpool.Pool
 
 func TestMain(m *testing.M) {

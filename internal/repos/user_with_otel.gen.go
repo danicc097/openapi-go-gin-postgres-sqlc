@@ -82,14 +82,39 @@ func (_d UserWithTracing) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.
 	return _d.User.CreateAPIKey(ctx, d, user)
 }
 
+// Delete implements User
+func (_d UserWithTracing) Delete(ctx context.Context, d db.DBTX, id string) (up1 *db.User, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "User.Delete")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx": ctx,
+				"d":   d,
+				"id":  id}, map[string]interface{}{
+				"up1": up1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.User.Delete(ctx, d, id)
+}
+
 // Update implements User
-func (_d UserWithTracing) Update(ctx context.Context, d db.DBTX, params UserUpdateParams) (up1 *db.User, err error) {
+func (_d UserWithTracing) Update(ctx context.Context, d db.DBTX, id string, params UserUpdateParams) (up1 *db.User, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "User.Update")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
 				"ctx":    ctx,
 				"d":      d,
+				"id":     id,
 				"params": params}, map[string]interface{}{
 				"up1": up1,
 				"err": err})
@@ -103,7 +128,7 @@ func (_d UserWithTracing) Update(ctx context.Context, d db.DBTX, params UserUpda
 
 		_span.End()
 	}()
-	return _d.User.Update(ctx, d, params)
+	return _d.User.Update(ctx, d, id, params)
 }
 
 // UserByAPIKey implements User

@@ -17,24 +17,39 @@ type ServerInterface interface {
 	// Ping pongs
 	// (GET /admin/ping)
 	AdminPing(c *gin.Context)
+
+	// (GET /auth/myprovider/callback)
+	MyProviderCallback(c *gin.Context)
+
+	// (GET /auth/myprovider/login)
+	MyProviderLogin(c *gin.Context)
+
+	// (GET /events)
+	Events(c *gin.Context)
 	// Returns this very OpenAPI spec.
 	// (GET /openapi.yaml)
 	OpenapiYamlGet(c *gin.Context)
 	// Ping pongs
 	// (GET /ping)
 	Ping(c *gin.Context)
+	// returns board data for a project
+	// (GET /project/{id}/board)
+	GetProjectBoard(c *gin.Context, id externalRef0.Serial)
+	// creates initial data (teams, work item types, tags...) for a new project
+	// (POST /project/{id}/initialize)
+	InitializeProject(c *gin.Context, id externalRef0.Serial)
 	// returns the logged in user
 	// (GET /user/me)
 	GetCurrentUser(c *gin.Context)
 	// deletes the user by id
 	// (DELETE /user/{id})
-	DeleteUser(c *gin.Context, id externalRef0.UserID)
+	DeleteUser(c *gin.Context, id externalRef0.Uuid)
 	// updates the user by id
 	// (PATCH /user/{id})
-	UpdateUser(c *gin.Context, id externalRef0.UserID)
+	UpdateUser(c *gin.Context, id externalRef0.Uuid)
 	// updates user role and scopes by id
 	// (PATCH /user/{id}/authorization)
-	UpdateUserAuthorization(c *gin.Context, id externalRef0.UserID)
+	UpdateUserAuthorization(c *gin.Context, id externalRef0.Uuid)
 
 	middlewares(opID OperationID) []gin.HandlerFunc
 	authMiddlewares(opID OperationID) []gin.HandlerFunc
@@ -54,51 +69,29 @@ func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{""})
 
-	// apply auth middlewares for operation "AdminPing".
-	for _, mw := range siw.Handler.authMiddlewares(AdminPing) {
-		mw(c)
-
-		// should actually call router.<Method> with a slice of mw, last item the actual handler
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	// apply middlewares for operation "AdminPing".
-	for _, mw := range siw.Handler.middlewares(AdminPing) {
-		mw(c)
-
-		// should actually call router.<Method> with a slice of mw, last item the actual handler
-		if c.IsAborted() {
-			return
-		}
-	}
-
 	siw.Handler.AdminPing(c)
+}
+
+// MyProviderCallback operation with its own middleware.
+func (siw *ServerInterfaceWrapper) MyProviderCallback(c *gin.Context) {
+
+	siw.Handler.MyProviderCallback(c)
+}
+
+// MyProviderLogin operation with its own middleware.
+func (siw *ServerInterfaceWrapper) MyProviderLogin(c *gin.Context) {
+
+	siw.Handler.MyProviderLogin(c)
+}
+
+// Events operation with its own middleware.
+func (siw *ServerInterfaceWrapper) Events(c *gin.Context) {
+
+	siw.Handler.Events(c)
 }
 
 // OpenapiYamlGet operation with its own middleware.
 func (siw *ServerInterfaceWrapper) OpenapiYamlGet(c *gin.Context) {
-
-	// apply auth middlewares for operation "OpenapiYamlGet".
-	for _, mw := range siw.Handler.authMiddlewares(OpenapiYamlGet) {
-		mw(c)
-
-		// should actually call router.<Method> with a slice of mw, last item the actual handler
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	// apply middlewares for operation "OpenapiYamlGet".
-	for _, mw := range siw.Handler.middlewares(OpenapiYamlGet) {
-		mw(c)
-
-		// should actually call router.<Method> with a slice of mw, last item the actual handler
-		if c.IsAborted() {
-			return
-		}
-	}
 
 	siw.Handler.OpenapiYamlGet(c)
 }
@@ -106,27 +99,49 @@ func (siw *ServerInterfaceWrapper) OpenapiYamlGet(c *gin.Context) {
 // Ping operation with its own middleware.
 func (siw *ServerInterfaceWrapper) Ping(c *gin.Context) {
 
-	// apply auth middlewares for operation "Ping".
-	for _, mw := range siw.Handler.authMiddlewares(Ping) {
-		mw(c)
-
-		// should actually call router.<Method> with a slice of mw, last item the actual handler
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	// apply middlewares for operation "Ping".
-	for _, mw := range siw.Handler.middlewares(Ping) {
-		mw(c)
-
-		// should actually call router.<Method> with a slice of mw, last item the actual handler
-		if c.IsAborted() {
-			return
-		}
-	}
-
 	siw.Handler.Ping(c)
+}
+
+// GetProjectBoard operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetProjectBoard(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.Serial
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
+
+	c.Set(externalRef0.Api_keyScopes, []string{""})
+
+	siw.Handler.GetProjectBoard(c, id)
+}
+
+// InitializeProject operation with its own middleware.
+func (siw *ServerInterfaceWrapper) InitializeProject(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.Serial
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
+
+	c.Set(externalRef0.Api_keyScopes, []string{""})
+
+	siw.Handler.InitializeProject(c, id)
 }
 
 // GetCurrentUser operation with its own middleware.
@@ -135,26 +150,6 @@ func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
 	c.Set(externalRef0.Bearer_authScopes, []string{""})
 
 	c.Set(externalRef0.Api_keyScopes, []string{""})
-
-	// apply auth middlewares for operation "GetCurrentUser".
-	for _, mw := range siw.Handler.authMiddlewares(GetCurrentUser) {
-		mw(c)
-
-		// should actually call router.<Method> with a slice of mw, last item the actual handler
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	// apply middlewares for operation "GetCurrentUser".
-	for _, mw := range siw.Handler.middlewares(GetCurrentUser) {
-		mw(c)
-
-		// should actually call router.<Method> with a slice of mw, last item the actual handler
-		if c.IsAborted() {
-			return
-		}
-	}
 
 	siw.Handler.GetCurrentUser(c)
 }
@@ -165,7 +160,7 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.UserID
+	var id externalRef0.Uuid
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -176,26 +171,6 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 	c.Set(externalRef0.Bearer_authScopes, []string{""})
 
 	c.Set(externalRef0.Api_keyScopes, []string{""})
-
-	// apply auth middlewares for operation "DeleteUser".
-	for _, mw := range siw.Handler.authMiddlewares(DeleteUser) {
-		mw(c)
-
-		// should actually call router.<Method> with a slice of mw, last item the actual handler
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	// apply middlewares for operation "DeleteUser".
-	for _, mw := range siw.Handler.middlewares(DeleteUser) {
-		mw(c)
-
-		// should actually call router.<Method> with a slice of mw, last item the actual handler
-		if c.IsAborted() {
-			return
-		}
-	}
 
 	siw.Handler.DeleteUser(c, id)
 }
@@ -206,7 +181,7 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.UserID
+	var id externalRef0.Uuid
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -217,26 +192,6 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 	c.Set(externalRef0.Bearer_authScopes, []string{""})
 
 	c.Set(externalRef0.Api_keyScopes, []string{""})
-
-	// apply auth middlewares for operation "UpdateUser".
-	for _, mw := range siw.Handler.authMiddlewares(UpdateUser) {
-		mw(c)
-
-		// should actually call router.<Method> with a slice of mw, last item the actual handler
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	// apply middlewares for operation "UpdateUser".
-	for _, mw := range siw.Handler.middlewares(UpdateUser) {
-		mw(c)
-
-		// should actually call router.<Method> with a slice of mw, last item the actual handler
-		if c.IsAborted() {
-			return
-		}
-	}
 
 	siw.Handler.UpdateUser(c, id)
 }
@@ -247,7 +202,7 @@ func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.UserID
+	var id externalRef0.Uuid
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -258,26 +213,6 @@ func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
 	c.Set(externalRef0.Bearer_authScopes, []string{""})
 
 	c.Set(externalRef0.Api_keyScopes, []string{""})
-
-	// apply auth middlewares for operation "UpdateUserAuthorization".
-	for _, mw := range siw.Handler.authMiddlewares(UpdateUserAuthorization) {
-		mw(c)
-
-		// should actually call router.<Method> with a slice of mw, last item the actual handler
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	// apply middlewares for operation "UpdateUserAuthorization".
-	for _, mw := range siw.Handler.middlewares(UpdateUserAuthorization) {
-		mw(c)
-
-		// should actually call router.<Method> with a slice of mw, last item the actual handler
-		if c.IsAborted() {
-			return
-		}
-	}
 
 	siw.Handler.UpdateUserAuthorization(c, id)
 }
@@ -298,19 +233,66 @@ func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, op
 		Handler: si,
 	}
 
-	router.GET(options.BaseURL+"/admin/ping", wrapper.AdminPing)
+	// calling mw(c) directly has unexpected consequences: closed channels, etc.
+	router.GET(options.BaseURL+"/admin/ping", append(
+		wrapper.Handler.authMiddlewares(AdminPing),
+		append(wrapper.Handler.middlewares(AdminPing), wrapper.AdminPing)...,
+	)...)
 
-	router.GET(options.BaseURL+"/openapi.yaml", wrapper.OpenapiYamlGet)
+	router.GET(options.BaseURL+"/auth/myprovider/callback", append(
+		wrapper.Handler.authMiddlewares(MyProviderCallback),
+		append(wrapper.Handler.middlewares(MyProviderCallback), wrapper.MyProviderCallback)...,
+	)...)
 
-	router.GET(options.BaseURL+"/ping", wrapper.Ping)
+	router.GET(options.BaseURL+"/auth/myprovider/login", append(
+		wrapper.Handler.authMiddlewares(MyProviderLogin),
+		append(wrapper.Handler.middlewares(MyProviderLogin), wrapper.MyProviderLogin)...,
+	)...)
 
-	router.GET(options.BaseURL+"/user/me", wrapper.GetCurrentUser)
+	router.GET(options.BaseURL+"/events", append(
+		wrapper.Handler.authMiddlewares(Events),
+		append(wrapper.Handler.middlewares(Events), wrapper.Events)...,
+	)...)
 
-	router.DELETE(options.BaseURL+"/user/:id", wrapper.DeleteUser)
+	router.GET(options.BaseURL+"/openapi.yaml", append(
+		wrapper.Handler.authMiddlewares(OpenapiYamlGet),
+		append(wrapper.Handler.middlewares(OpenapiYamlGet), wrapper.OpenapiYamlGet)...,
+	)...)
 
-	router.PATCH(options.BaseURL+"/user/:id", wrapper.UpdateUser)
+	router.GET(options.BaseURL+"/ping", append(
+		wrapper.Handler.authMiddlewares(Ping),
+		append(wrapper.Handler.middlewares(Ping), wrapper.Ping)...,
+	)...)
 
-	router.PATCH(options.BaseURL+"/user/:id/authorization", wrapper.UpdateUserAuthorization)
+	router.GET(options.BaseURL+"/project/:id/board", append(
+		wrapper.Handler.authMiddlewares(GetProjectBoard),
+		append(wrapper.Handler.middlewares(GetProjectBoard), wrapper.GetProjectBoard)...,
+	)...)
+
+	router.POST(options.BaseURL+"/project/:id/initialize", append(
+		wrapper.Handler.authMiddlewares(InitializeProject),
+		append(wrapper.Handler.middlewares(InitializeProject), wrapper.InitializeProject)...,
+	)...)
+
+	router.GET(options.BaseURL+"/user/me", append(
+		wrapper.Handler.authMiddlewares(GetCurrentUser),
+		append(wrapper.Handler.middlewares(GetCurrentUser), wrapper.GetCurrentUser)...,
+	)...)
+
+	router.DELETE(options.BaseURL+"/user/:id", append(
+		wrapper.Handler.authMiddlewares(DeleteUser),
+		append(wrapper.Handler.middlewares(DeleteUser), wrapper.DeleteUser)...,
+	)...)
+
+	router.PATCH(options.BaseURL+"/user/:id", append(
+		wrapper.Handler.authMiddlewares(UpdateUser),
+		append(wrapper.Handler.middlewares(UpdateUser), wrapper.UpdateUser)...,
+	)...)
+
+	router.PATCH(options.BaseURL+"/user/:id/authorization", append(
+		wrapper.Handler.authMiddlewares(UpdateUserAuthorization),
+		append(wrapper.Handler.middlewares(UpdateUserAuthorization), wrapper.UpdateUserAuthorization)...,
+	)...)
 
 	return router
 }

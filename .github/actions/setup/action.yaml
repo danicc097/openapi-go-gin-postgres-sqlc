@@ -27,12 +27,14 @@ runs:
       run: |
         source .envrc
 
+        mv docker/.env.ci docker/.env
+
         project e2e.sync-deps --x-env=ci
         project install-tools --x-env=ci
         project fetch.swagger-ui --x-env=ci
-        bin/scripts/install-pg_format.sh
-        bin/scripts/install-mkcert.sh
-        bin/scripts/install-proto.sh
+        bash bin/scripts/install-pg_format.sh
+        bash bin/scripts/install-mkcert.sh
+        bash bin/scripts/install-proto.sh
 
         git clone https://github.com/danicc097/traefik-boostrap.git
         docker network create traefik-net || true

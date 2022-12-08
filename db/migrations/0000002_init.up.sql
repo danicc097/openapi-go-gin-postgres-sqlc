@@ -9,29 +9,47 @@ create extension if not exists pg_trgm schema extensions;
 
 create extension if not exists btree_gin schema extensions;
 
+-- internal use. update whenever a project with its related workitems,
+--  etc. tables are created in migrations
 create table projects (
-  project_id serial not null primary key
+  project_id serial primary key
   , name text not null unique
   , description text not null
-  , metadata jsonb not null
+  , work_items_table_name text not null
+  , initialized boolean not null default false
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
 );
 
+comment on column projects.work_items_table_name is 'property:private';
+
+insert into projects (
+  name
+  , description
+  , work_items_table_name
+  , initialized)
+values (
+  'demo project'
+  , 'description for demo project'
+  , 'work_items_demo_project'
+  , true -- just for demo since it will be programmatically initialized
+);
+
 create table teams (
-  team_id serial not null primary key
+  team_id serial primary key
   , project_id int not null --limited to a project only
   , name text not null
   , description text not null
-  , metadata jsonb not null
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , foreign key (project_id) references projects (project_id) on delete cascade
   , unique (name , project_id)
 );
 
+comment on column teams.project_id is 'cardinality:O2M';
+
 create table user_api_keys (
-  user_api_key_id serial not null primary key
+  user_api_key_id serial primary key
   , api_key text not null unique
   , expires_on timestamp with time zone not null
   -- don't use,  see https://github.com/jackc/pgx/issues/924
@@ -39,7 +57,7 @@ create table user_api_keys (
 );
 
 create table users (
-  user_id uuid default gen_random_uuid () not null primary key
+  user_id uuid default gen_random_uuid () primary key
   , username text not null unique
   , email text not null unique
   , first_name text
@@ -105,10 +123,10 @@ comment on column user_api_keys.user_api_key_id is 'property:private';
 create index on users (created_at);
 
 -- create index on users (deleted_at);  - not worth the extra overhead.
+-- for finding all deleted users exclusively
 create index on users (deleted_at)
 where (deleted_at is not null);
 
--- for finding all deleted users exclusively
 create index on users (updated_at);
 
 -- notification_types are append-only
@@ -118,7 +136,7 @@ create type notification_type as ENUM (
 );
 
 create table notifications (
-  notification_id serial not null primary key
+  notification_id serial primary key
   , receiver_rank smallint check (receiver_rank > 0) --check will not prevent null values
   , title text not null
   , body text not null
@@ -126,7 +144,7 @@ create table notifications (
   , link text null
   , created_at timestamp with time zone default current_timestamp not null
   , sender uuid not null
-  , receiver uuid -- null -> mass notification
+  , receiver uuid -- can be null for 'global' type
   , notification_type notification_type not null
   , foreign key (sender) references users (user_id)
   , foreign key (receiver) references users (user_id)
@@ -136,9 +154,9 @@ create table notifications (
 create index on notifications (receiver_rank , notification_type , created_at);
 
 create table user_notifications (
-  user_notification_id bigserial not null primary key
+  user_notification_id bigserial primary key
   , notification_id int not null
-  , read boolean default false not null
+  , read boolean default false not null -- frontend simply sends a list of user_notification_id to mark as read
   , created_at timestamp with time zone default current_timestamp not null
   , user_id uuid not null
   , foreign key (user_id) references users (user_id)
@@ -211,30 +229,43 @@ comment on column user_team.user_id is 'cardinality:M2M';
 comment on column user_team.team_id is 'cardinality:M2M';
 
 create table kanban_steps (
-  kanban_step_id serial not null primary key
-  , team_id int not null
-  , step_order smallint
+  kanban_step_id serial primary key
+  , project_id int not null
+  , step_order smallint -- null -> disabled
   , name text not null
   , description text not null
   , color text not null
   , time_trackable bool not null default false
-  , disabled bool not null default false
-  , unique (team_id , step_order)
-  , foreign key (team_id) references teams (team_id) on delete cascade
+  -- , disabled bool not null default false
+  , unique (project_id , step_order)
+  , foreign key (project_id) references projects (project_id) on delete cascade
   , check (color ~* '^#[a-f0-9]{6}$')
   , check (step_order > 0)
 );
 
+create unique index on kanban_steps (project_id , name , step_order)
+where
+  step_order is not null;
+
+create unique index on kanban_steps (project_id , name)
+where
+  step_order is null;
+
+comment on column kanban_steps.project_id is 'cardinality:O2M';
+
+-- types restricted per project
 create table work_item_types (
   work_item_type_id serial primary key
-  , project_id bigint not null
+  , project_id int not null
   , name text not null
   , description text not null
   , color text not null
-  , unique (project_id , name)
+  , unique (name , project_id)
   , foreign key (project_id) references projects (project_id) on delete cascade
   , check (color ~* '^#[a-f0-9]{6}$')
 );
+
+comment on column work_item_types.project_id is 'cardinality:O2M';
 
 
 /*
@@ -243,35 +274,27 @@ Can be directly used in backend (codegen alternative struct) and frontend
 internally the storage is the same and doesn't affect in any way.
  */
 create table work_items (
-  work_item_id bigserial not null primary key
-  /* generic must-have fields. store naming overrides in business logic, if any
-   (json with project name (unique) as key should suffice to be used by both back and frontend)
-   as requested by clients to prevent useless joins.
-   yq will ensure fields do exist as db column and project name exists (should make not editable once created)
-
-   projectOverrides.json is the same for all envs like roles and scopes. in the end its tied to the db schema
-   */
+  work_item_id bigserial primary key
   , title text not null
+  , description text not null
   , work_item_type_id int not null
   , metadata jsonb not null
   , team_id int not null
   , kanban_step_id int not null
   , closed timestamp with time zone -- NULL: active
   , target_date timestamp with time zone not null
-  /* if a project requests a new field that needs to be indexed (either manual or automated)
-   add it as nullable.
-   in business logic that project_id will have any column that appears in overrides.json marked as required .
-   If indexability is not required, dump it to metadata and mark as isMetadata (to track what's going on externally)
-   it can use the same json as above.
-   since its not indexed (maybe just GIN) we dont care about schema changes over time
-   (no keys before existence)
-
-   TODO instead of column key, it should be the openapi json key, so that frontend can
-   override for every key in received workitem info
+  /*
+   -- IMPORTANT: implement this:
+   alternative to sharing all keys for different projects in the same table:
+   https://stackoverflow.com/questions/10068033/postgresql-foreign-key-referencing-primary-keys-of-two-different-tables
+   for every custom project we reference the common columns with its own PK being a FK
+   We would then query this custom table explicitly and join with the common columns via PI which is really fast
+   we would need to join every single record but models are much much cleaner.
+   every default workitem still keeps a team_id reference.
+   tables with extra fields are for a given project. so we could have another team_id column
+   in this new table with check (team_id in select team_id ... join teams where project_id ... )
+   the same concept is also seen in https://dba.stackexchange.com/questions/232262/solving-supertype-subtype-relationship-without-sacrificing-data-consistency-in-a
    */
-  , some_custom_date_for_project_1 timestamp with time zone
-  , some_custom_date_for_project_2 timestamp with time zone
-  --
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
@@ -280,12 +303,46 @@ create table work_items (
   , foreign key (kanban_step_id) references kanban_steps (kanban_step_id) on delete cascade
 );
 
+-- to get join directly instead of having to call xo's generated FK for every single one
+comment on column work_items.work_item_type_id is 'cardinality:O2O';
+
+
+/*
+when a new project is required -> manual table creation with empty new fields, just
+ work_item_id bigint primary key.
+ When a new field is added, possibilities are:
+ - not nullable -> must set default value for the existing rows
+ - nullable and custom business logic when it's required or not. previous rows remain null or with default as required
+ */
+-- project for tour. when starting it user joins the only demo project team. when exiting it user is removed.
+-- we can reset it every X hours
+create table work_items_demo_project (
+  work_item_id bigint primary key references work_items (work_item_id) on delete cascade
+  , ref text not null
+  , line text not null
+  , last_message_at timestamp with time zone not null
+  , reopened boolean not null default false
+);
+
+create index on work_items_demo_project (ref , line);
+
+create table work_items_project_2 (
+  work_item_id bigint primary key references work_items (work_item_id) on delete cascade
+  , custom_date_for_project_2 timestamp with time zone
+);
+
+comment on column work_items.work_item_id is 'cardinality:O2O';
+
+comment on column work_items_demo_project.work_item_id is 'cardinality:O2O';
+
+comment on column work_items_project_2.work_item_id is 'cardinality:O2O';
+
+-- for finding all deleted work items exclusively
 create index on work_items (deleted_at)
 where (deleted_at is not null);
 
--- for finding all deleted work items exclusively
 create table work_item_comments (
-  work_item_comment_id bigserial not null primary key
+  work_item_comment_id bigserial primary key
   , work_item_id bigint not null
   , user_id uuid not null
   , message text not null
@@ -300,12 +357,17 @@ comment on column work_item_comments.work_item_id is 'cardinality:O2M';
 create index on work_item_comments (work_item_id);
 
 create table work_item_tags (
-  work_item_tag_id serial not null primary key
-  , name text not null unique
+  work_item_tag_id serial primary key
+  , project_id int not null
+  , name text not null
   , description text not null
   , color text not null
+  , unique (name , project_id)
   , check (color ~* '^#[a-f0-9]{6}$')
+  , foreign key (project_id) references projects (project_id) on delete cascade
 );
+
+comment on column work_item_tags.project_id is 'cardinality:O2M';
 
 create table work_item_work_item_tag (
   work_item_tag_id int not null
@@ -316,6 +378,10 @@ create table work_item_work_item_tag (
 );
 
 create index on work_item_work_item_tag (work_item_tag_id , work_item_id);
+
+comment on column work_item_work_item_tag.work_item_tag_id is 'cardinality:M2M';
+
+comment on column work_item_work_item_tag.work_item_id is 'cardinality:M2M';
 
 -- roles are append-only
 create type work_item_role as ENUM (
@@ -337,23 +403,26 @@ comment on column work_item_member.work_item_id is 'cardinality:M2M';
 
 comment on column work_item_member.member is 'cardinality:M2M';
 
--- must be completely dynamic on a team basis
+-- must be completely dynamic on a project basis
 create table activities (
-  activity_id serial not null primary key
-  , project_id int
-  , name text not null unique
+  activity_id serial primary key
+  , project_id int not null
+  , name text not null
   , description text not null
   , is_productive boolean default false not null
+  , unique (name , project_id)
   -- can't have multiple unrelated projects see each other's activities
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
 
--- will restrict available activities on a per-project basis
--- where project_id is null (shared) and project_id = @project_id
-create index on activities (project_id);
+comment on column activities.project_id is 'cardinality:O2M';
 
+-- will restrict available activities on a per-project basis
+-- where project_id is null (shared) or project_id = @project_id
+-- table will be tiny, don't even index
+-- create index on activities (project_id);
 create table time_entries (
-  time_entry_id bigserial not null primary key
+  time_entry_id bigserial primary key
   , work_item_id bigint
   , activity_id int not null
   , team_id int
@@ -387,7 +456,7 @@ create index on user_team (user_id);
 
 -- grpc demo
 create table movies (
-  movie_id serial not null primary key
+  movie_id serial primary key
   , title text not null
   , year integer not null
   , synopsis text not null

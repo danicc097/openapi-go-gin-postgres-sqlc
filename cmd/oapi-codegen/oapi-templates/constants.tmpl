@@ -12,4 +12,14 @@ const (
   {{$name}} {{$Enum.TypeName}} = {{$Enum.ValueWrapper}}{{$value}}{{$Enum.ValueWrapper -}}
 {{end}}
 )
+
+// All{{$Enum.TypeName}}Values returns all possible values for {{$Enum.TypeName}}.
+func All{{$Enum.TypeName}}Values() []{{$Enum.TypeName}} {
+	return []{{$Enum.TypeName}}{
+  {{- range $name, $value := $Enum.GetValues}}
+  {{$name}},
+  {{- end}}
+	}
+}
+
 {{end}}

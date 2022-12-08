@@ -2087,7 +2087,6 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			}
 		}
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
-			fmt.Printf("after : %s\n", after)
 			// TODO this also needs to have table name prepended.
 			// after : (external_id IS NOT NULL)after : (external_id IS NULL)
 			// hacky solution is to loop through current table columns and if found .Cut() and construct a new string
@@ -2124,24 +2123,30 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 // loadConstraints saves possible joins for a table based on constraints to tableConstraints
 func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 	if _, ok := f.tableConstraints[table]; ok {
-		// fmt.Printf("Constraints:\n%v\n", formatJSON(f.tableConstraints[table]))
+		// fmt.Printf("Constraints for %s:\n%v\n", table, formatJSON(f.tableConstraints[table]))
 		return // don't duplicate
 	}
 	for _, c := range cc {
-		if c.Cardinality != "" && c.Type == "foreign_key" {
-			if c.Cardinality == "M2M" && c.RefTableName == table {
-				for _, c1 := range cc {
-					if c1.TableName == c.TableName && c1.ColumnName != c.ColumnName && c1.Type == "foreign_key" {
-						c1.LookupColumn = c.ColumnName
-						c1.LookupRefColumn = c.RefColumnName
-						f.tableConstraints[table] = append(f.tableConstraints[table], c1)
-					}
+		// TODO save constraint when it's primary key and foreign key at the same time
+		// in that case will generate joins on referenced table to all other tables that
+		// have PK = FK = referenced table's PK
+		// new field PKisFKTables []string should suffice. List of tables where their PK is a FK
+		// to the current table's PK -> generate join using (<pk>) for all
+		if c.Cardinality == "" || c.Type != "foreign_key" {
+			continue
+		}
+		if c.Cardinality == "M2M" && c.RefTableName == table {
+			for _, c1 := range cc {
+				if c1.TableName == c.TableName && c1.ColumnName != c.ColumnName && c1.Type == "foreign_key" {
+					c1.LookupColumn = c.ColumnName
+					c1.LookupRefColumn = c.RefColumnName
+					f.tableConstraints[table] = append(f.tableConstraints[table], c1)
 				}
-			} else if c.Cardinality == "O2O" && c.TableName == table {
-				f.tableConstraints[table] = append(f.tableConstraints[table], c)
-			} else if c.RefTableName == table {
-				f.tableConstraints[table] = append(f.tableConstraints[table], c)
 			}
+		} else if c.Cardinality == "O2O" && c.TableName == table {
+			f.tableConstraints[table] = append(f.tableConstraints[table], c)
+		} else if c.RefTableName == table {
+			f.tableConstraints[table] = append(f.tableConstraints[table], c)
 		}
 	}
 }

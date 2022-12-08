@@ -2,6 +2,14 @@
   "type": "object",
   "title": "Schema",
   "definitions": {
+    "ProjectBoardCreateRequest": {
+      "x-postgen-struct": "RestProjectBoardCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ProjectBoardResponse": {
+      "x-postgen-struct": "RestProjectBoardResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "HTTPValidationError": {
       "title": "HTTPValidationError",
       "type": "object",
@@ -14,6 +22,18 @@
           }
         }
       },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Topics": {
+      "description": "string identifiers for SSE event listeners.",
+      "type": "string",
+      "enum": [
+        "UserNotifications",
+        "ManagerNotifications",
+        "AdminNotifications",
+        "WorkItemMoved",
+        "WorkItemClosed"
+      ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Scope": {
@@ -45,6 +65,17 @@
         "manager",
         "admin",
         "superAdmin"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "NotificationType": {
+      "title": "Notification type",
+      "description": "User notification type.",
+      "type": "string",
+      "x-db-enum": "notification_type",
+      "enum": [
+        "personal",
+        "global"
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -89,83 +120,6 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "UserPublic": {
-      "properties": {
-        "apiKeyID": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        },
-        "createdAt": {
-          "format": "date-time",
-          "type": "string"
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "email": {
-          "type": "string"
-        },
-        "firstName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "fullName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "lastName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "teams": {
-          "items": {
-            "$ref": "#/definitions/TeamPublic"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "timeEntries": {
-          "items": {
-            "$ref": "#/definitions/TimeEntryPublic"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "userID": {
-          "$ref": "#/definitions/UuidUUID"
-        },
-        "username": {
-          "type": "string"
-        },
-        "workItems": {
-          "items": {
-            "$ref": "#/definitions/WorkItemPublic"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        }
-      },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "ValidationError": {
       "title": "ValidationError",
       "required": [
@@ -201,75 +155,6 @@
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "TaskPublic": {
-      "properties": {
-        "createdAt": {
-          "format": "date-time",
-          "type": "string"
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "finished": {
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
-        "metadata": {
-          "$ref": "#/definitions/PgtypeJSONB"
-        },
-        "taskID": {
-          "type": "integer"
-        },
-        "taskType": {
-          "$ref": "#/definitions/TaskTypePublic"
-        },
-        "taskTypeID": {
-          "type": "integer"
-        },
-        "title": {
-          "type": "string"
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": "string"
-        },
-        "workItemID": {
-          "type": "integer"
-        }
-      },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "TaskTypePublic": {
-      "properties": {
-        "color": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "taskTypeID": {
-          "type": "integer"
-        },
-        "teamID": {
-          "type": "integer"
-        }
-      },
-      "type": [
-        "object",
-        "null"
-      ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "TeamPublic": {
       "properties": {
         "createdAt": {
@@ -291,29 +176,20 @@
         "teamID": {
           "type": "integer"
         },
-        "timeEntries": {
-          "items": {
-            "$ref": "#/definitions/TimeEntryPublic"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
         "updatedAt": {
           "format": "date-time",
           "type": "string"
-        },
-        "users": {
-          "items": {
-            "$ref": "#/definitions/UserPublic"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         }
       },
+      "required": [
+        "teamID",
+        "projectID",
+        "name",
+        "description",
+        "metadata",
+        "createdAt",
+        "updatedAt"
+      ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -383,95 +259,14 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "WorkItemPublic": {
-      "properties": {
-        "closed": {
-          "type": "boolean"
-        },
-        "createdAt": {
-          "format": "date-time",
-          "type": "string"
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "kanbanStepID": {
-          "type": "integer"
-        },
-        "metadata": {
-          "$ref": "#/definitions/PgtypeJSONB"
-        },
-        "tasks": {
-          "items": {
-            "$ref": "#/definitions/TaskPublic"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "teamID": {
-          "type": "integer"
-        },
-        "timeEntries": {
-          "items": {
-            "$ref": "#/definitions/TimeEntryPublic"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "title": {
-          "type": "string"
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": "string"
-        },
-        "users": {
-          "items": {
-            "$ref": "#/definitions/UserPublic"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemComments": {
-          "items": {
-            "$ref": "#/definitions/WorkItemCommentPublic"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemID": {
-          "type": "integer"
-        },
-        "workItemTypeID": {
-          "type": "integer"
-        }
-      },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "ModelsRole": {
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "UserResponse": {
+    "RestUserResponse": {
       "properties": {
-        "apiKeyID": {
-          "type": [
-            "integer",
-            "null"
-          ]
+        "apiKey": {
+          "$ref": "#/definitions/DbUserAPIKeyPublic"
         },
         "createdAt": {
           "format": "date-time",
@@ -499,6 +294,12 @@
             "null"
           ]
         },
+        "hasGlobalNotifications": {
+          "type": "boolean"
+        },
+        "hasPersonalNotifications": {
+          "type": "boolean"
+        },
         "lastName": {
           "type": [
             "string",
@@ -513,16 +314,7 @@
         },
         "teams": {
           "items": {
-            "$ref": "#/definitions/TeamPublic"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "timeEntries": {
-          "items": {
-            "$ref": "#/definitions/TimeEntryPublic"
+            "$ref": "#/definitions/DbTeamPublic"
           },
           "type": [
             "array",
@@ -534,10 +326,409 @@
         },
         "username": {
           "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "scopes",
+        "userID",
+        "username",
+        "email",
+        "firstName",
+        "lastName",
+        "fullName",
+        "hasPersonalNotifications",
+        "hasGlobalNotifications",
+        "createdAt",
+        "deletedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestUserResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsScope": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "UserAPIKeyPublic": {
+      "properties": {
+        "apiKey": {
+          "type": "string"
         },
-        "workItems": {
+        "expiresOn": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        }
+      },
+      "required": [
+        "apiKey",
+        "expiresOn",
+        "userID"
+      ],
+      "type": [
+        "object",
+        "null"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbTeamPublic": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "teamID",
+        "projectID",
+        "name",
+        "description",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserAPIKeyPublic": {
+      "properties": {
+        "apiKey": {
+          "type": "string"
+        },
+        "expiresOn": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        }
+      },
+      "required": [
+        "apiKey",
+        "expiresOn",
+        "userID"
+      ],
+      "type": [
+        "object",
+        "null"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbActivityPublic": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string"
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "activityID",
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbKanbanStepPublic": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "stepOrder": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeTrackable": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kanbanStepID",
+        "projectID",
+        "stepOrder",
+        "name",
+        "description",
+        "color",
+        "timeTrackable"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbProjectPublic": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "initialized": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "initialized",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": [
+        "object",
+        "null"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemTagPublic": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTagID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTagID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemTypePublic": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTypeID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ReposActivityCreateParams": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ReposKanbanStepCreateParams": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "stepOrder": {
+          "type": "integer"
+        },
+        "timeTrackable": {
+          "type": "boolean"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ReposTeamCreateParams": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ReposWorkItemTagCreateParams": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ReposWorkItemTypeCreateParams": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestProjectBoardCreateRequest": {
+      "properties": {
+        "activities": {
           "items": {
-            "$ref": "#/definitions/WorkItemPublic"
+            "$ref": "#/definitions/ReposActivityCreateParams"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "kanbanSteps": {
+          "items": {
+            "$ref": "#/definitions/ReposKanbanStepCreateParams"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teams": {
+          "items": {
+            "$ref": "#/definitions/ReposTeamCreateParams"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemTags": {
+          "items": {
+            "$ref": "#/definitions/ReposWorkItemTagCreateParams"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemTypes": {
+          "items": {
+            "$ref": "#/definitions/ReposWorkItemTypeCreateParams"
           },
           "type": [
             "array",
@@ -546,17 +737,77 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "UserResponse",
+      "x-postgen-struct": "RestProjectBoardCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "ModelsScope": {
-      "type": "string",
+    "RestProjectBoardResponse": {
+      "properties": {
+        "activities": {
+          "items": {
+            "$ref": "#/definitions/DbActivityPublic"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "kanbanSteps": {
+          "items": {
+            "$ref": "#/definitions/DbKanbanStepPublic"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "project": {
+          "$ref": "#/definitions/DbProjectPublic"
+        },
+        "teams": {
+          "items": {
+            "$ref": "#/definitions/DbTeamPublic"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemTags": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTagPublic"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemTypes": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTypePublic"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestProjectBoardResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
+    "ProjectBoardCreateRequest": {
+      "$ref": "#/definitions/ProjectBoardCreateRequest"
+    },
+    "ProjectBoardResponse": {
+      "$ref": "#/definitions/ProjectBoardResponse"
+    },
     "HTTPValidationError": {
       "$ref": "#/definitions/HTTPValidationError"
+    },
+    "Topics": {
+      "$ref": "#/definitions/Topics"
     },
     "Scope": {
       "$ref": "#/definitions/Scope"
@@ -567,6 +818,9 @@
     "Role": {
       "$ref": "#/definitions/Role"
     },
+    "NotificationType": {
+      "$ref": "#/definitions/NotificationType"
+    },
     "WorkItemRole": {
       "$ref": "#/definitions/WorkItemRole"
     },
@@ -575,9 +829,6 @@
     },
     "UpdateUserAuthRequest": {
       "$ref": "#/definitions/UpdateUserAuthRequest"
-    },
-    "UserPublic": {
-      "$ref": "#/definitions/UserPublic"
     },
     "ValidationError": {
       "$ref": "#/definitions/ValidationError"
@@ -588,12 +839,6 @@
     "UuidUUID": {
       "$ref": "#/definitions/UuidUUID"
     },
-    "TaskPublic": {
-      "$ref": "#/definitions/TaskPublic"
-    },
-    "TaskTypePublic": {
-      "$ref": "#/definitions/TaskTypePublic"
-    },
     "TeamPublic": {
       "$ref": "#/definitions/TeamPublic"
     },
@@ -603,17 +848,59 @@
     "WorkItemCommentPublic": {
       "$ref": "#/definitions/WorkItemCommentPublic"
     },
-    "WorkItemPublic": {
-      "$ref": "#/definitions/WorkItemPublic"
-    },
     "ModelsRole": {
       "$ref": "#/definitions/ModelsRole"
     },
-    "UserResponse": {
-      "$ref": "#/definitions/UserResponse"
+    "RestUserResponse": {
+      "$ref": "#/definitions/RestUserResponse"
     },
     "ModelsScope": {
       "$ref": "#/definitions/ModelsScope"
+    },
+    "UserAPIKeyPublic": {
+      "$ref": "#/definitions/UserAPIKeyPublic"
+    },
+    "DbTeamPublic": {
+      "$ref": "#/definitions/DbTeamPublic"
+    },
+    "DbUserAPIKeyPublic": {
+      "$ref": "#/definitions/DbUserAPIKeyPublic"
+    },
+    "DbActivityPublic": {
+      "$ref": "#/definitions/DbActivityPublic"
+    },
+    "DbKanbanStepPublic": {
+      "$ref": "#/definitions/DbKanbanStepPublic"
+    },
+    "DbProjectPublic": {
+      "$ref": "#/definitions/DbProjectPublic"
+    },
+    "DbWorkItemTagPublic": {
+      "$ref": "#/definitions/DbWorkItemTagPublic"
+    },
+    "DbWorkItemTypePublic": {
+      "$ref": "#/definitions/DbWorkItemTypePublic"
+    },
+    "ReposActivityCreateParams": {
+      "$ref": "#/definitions/ReposActivityCreateParams"
+    },
+    "ReposKanbanStepCreateParams": {
+      "$ref": "#/definitions/ReposKanbanStepCreateParams"
+    },
+    "ReposTeamCreateParams": {
+      "$ref": "#/definitions/ReposTeamCreateParams"
+    },
+    "ReposWorkItemTagCreateParams": {
+      "$ref": "#/definitions/ReposWorkItemTagCreateParams"
+    },
+    "ReposWorkItemTypeCreateParams": {
+      "$ref": "#/definitions/ReposWorkItemTypeCreateParams"
+    },
+    "RestProjectBoardCreateRequest": {
+      "$ref": "#/definitions/RestProjectBoardCreateRequest"
+    },
+    "RestProjectBoardResponse": {
+      "$ref": "#/definitions/RestProjectBoardResponse"
     }
   }
 }

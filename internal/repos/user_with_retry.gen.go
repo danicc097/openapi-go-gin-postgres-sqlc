@@ -65,9 +65,9 @@ func (_d UserWithRetry) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.Us
 	return
 }
 
-// Update implements User
-func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, params UserUpdateParams) (up1 *db.User, err error) {
-	up1, err = _d.User.Update(ctx, d, params)
+// Delete implements User
+func (_d UserWithRetry) Delete(ctx context.Context, d db.DBTX, id string) (up1 *db.User, err error) {
+	up1, err = _d.User.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -79,7 +79,26 @@ func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, params UserUpdate
 			return
 		case <-_ticker.C:
 		}
-		up1, err = _d.User.Update(ctx, d, params)
+		up1, err = _d.User.Delete(ctx, d, id)
+	}
+	return
+}
+
+// Update implements User
+func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, id string, params UserUpdateParams) (up1 *db.User, err error) {
+	up1, err = _d.User.Update(ctx, d, id, params)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		up1, err = _d.User.Update(ctx, d, id, params)
 	}
 	return
 }

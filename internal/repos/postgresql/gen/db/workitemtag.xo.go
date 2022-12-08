@@ -13,6 +13,7 @@ import (
 // Joins may be explicitly added in the Response struct.
 type WorkItemTagPublic struct {
 	WorkItemTagID int    `json:"workItemTagID" required:"true"` // work_item_tag_id
+	ProjectID     int    `json:"projectID" required:"true"`     // project_id
 	Name          string `json:"name" required:"true"`          // name
 	Description   string `json:"description" required:"true"`   // description
 	Color         string `json:"color" required:"true"`         // color
@@ -21,17 +22,19 @@ type WorkItemTagPublic struct {
 // WorkItemTag represents a row from 'public.work_item_tags'.
 type WorkItemTag struct {
 	WorkItemTagID int    `json:"work_item_tag_id" db:"work_item_tag_id"` // work_item_tag_id
+	ProjectID     int    `json:"project_id" db:"project_id"`             // project_id
 	Name          string `json:"name" db:"name"`                         // name
 	Description   string `json:"description" db:"description"`           // description
 	Color         string `json:"color" db:"color"`                       // color
 
+	WorkItems *[]WorkItem `json:"work_items" db:"work_items"` // M2M
 	// xo fields
 	_exists, _deleted bool
 }
 
 func (x *WorkItemTag) ToPublic() WorkItemTagPublic {
 	return WorkItemTagPublic{
-		WorkItemTagID: x.WorkItemTagID, Name: x.Name, Description: x.Description, Color: x.Color,
+		WorkItemTagID: x.WorkItemTagID, ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Color: x.Color,
 	}
 }
 
@@ -51,7 +54,9 @@ func WithWorkItemTagLimit(limit int) WorkItemTagSelectConfigOption {
 
 type WorkItemTagOrderBy = string
 
-type WorkItemTagJoins struct{}
+type WorkItemTagJoins struct {
+	WorkItems bool
+}
 
 // WithWorkItemTagJoin orders results by the given columns.
 func WithWorkItemTagJoin(joins WorkItemTagJoins) WorkItemTagSelectConfigOption {
@@ -81,13 +86,13 @@ func (wit *WorkItemTag) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_tags (` +
-		`name, description, color` +
+		`project_id, name, description, color` +
 		`) VALUES (` +
-		`$1, $2, $3` +
+		`$1, $2, $3, $4` +
 		`) RETURNING work_item_tag_id `
 	// run
-	logf(sqlstr, wit.Name, wit.Description, wit.Color)
-	if err := db.QueryRow(ctx, sqlstr, wit.Name, wit.Description, wit.Color).Scan(&wit.WorkItemTagID); err != nil {
+	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color)
+	if err := db.QueryRow(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color).Scan(&wit.WorkItemTagID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -105,12 +110,12 @@ func (wit *WorkItemTag) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_tags SET ` +
-		`name = $1, description = $2, color = $3 ` +
-		`WHERE work_item_tag_id = $4 ` +
+		`project_id = $1, name = $2, description = $3, color = $4 ` +
+		`WHERE work_item_tag_id = $5 ` +
 		`RETURNING work_item_tag_id `
 	// run
-	logf(sqlstr, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID)
-	if err := db.QueryRow(ctx, sqlstr, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID).Scan(&wit.WorkItemTagID); err != nil {
+	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID)
+	if err := db.QueryRow(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID).Scan(&wit.WorkItemTagID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -132,16 +137,16 @@ func (wit *WorkItemTag) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_item_tags (` +
-		`work_item_tag_id, name, description, color` +
+		`work_item_tag_id, project_id, name, description, color` +
 		`) VALUES (` +
-		`$1, $2, $3, $4` +
+		`$1, $2, $3, $4, $5` +
 		`)` +
 		` ON CONFLICT (work_item_tag_id) DO ` +
 		`UPDATE SET ` +
-		`name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color  `
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color  `
 	// run
-	logf(sqlstr, wit.WorkItemTagID, wit.Name, wit.Description, wit.Color)
-	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTagID, wit.Name, wit.Description, wit.Color); err != nil {
+	logf(sqlstr, wit.WorkItemTagID, wit.ProjectID, wit.Name, wit.Description, wit.Color)
+	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTagID, wit.ProjectID, wit.Name, wit.Description, wit.Color); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -170,10 +175,10 @@ func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// WorkItemTagByName retrieves a row from 'public.work_item_tags' as a WorkItemTag.
+// WorkItemTagByNameProjectID retrieves a row from 'public.work_item_tags' as a WorkItemTag.
 //
-// Generated from index 'work_item_tags_name_key'.
-func WorkItemTagByName(ctx context.Context, db DB, name string, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
+// Generated from index 'work_item_tags_name_project_id_key'.
+func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
 
 	for _, o := range opts {
@@ -183,22 +188,45 @@ func WorkItemTagByName(ctx context.Context, db DB, name string, opts ...WorkItem
 	// query
 	sqlstr := `SELECT ` +
 		`work_item_tags.work_item_tag_id,
+work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
-work_item_tags.color ` +
+work_item_tags.color,
+(case when $1::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.work_item_tags ` +
-		`` +
-		` WHERE work_item_tags.name = $1 `
+		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+		work_item_tag_id as work_items_work_item_tag_id
+		, json_agg(work_items.*) as work_items
+	from
+		work_item_work_item_tag
+		join work_items using (work_item_id)
+	where
+		work_item_tag_id in (
+			select
+				work_item_tag_id
+			from
+				work_item_work_item_tag
+			where
+				work_item_id = any (
+					select
+						work_item_id
+					from
+						work_items))
+			group by
+				work_item_tag_id) joined_work_items on joined_work_items.work_items_work_item_tag_id = work_item_tags.work_item_tag_id` +
+		` WHERE work_item_tags.name = $2 AND work_item_tags.project_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	logf(sqlstr, name, projectID)
 	wit := WorkItemTag{
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, name).Scan(&wit.WorkItemTagID, &wit.Name, &wit.Description, &wit.Color); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItems, name, projectID).Scan(&wit.WorkItemTagID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color, &wit.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &wit, nil
@@ -217,12 +245,35 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, o
 	// query
 	sqlstr := `SELECT ` +
 		`work_item_tags.work_item_tag_id,
+work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
-work_item_tags.color ` +
+work_item_tags.color,
+(case when $1::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
 		`FROM public.work_item_tags ` +
-		`` +
-		` WHERE work_item_tags.work_item_tag_id = $1 `
+		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+		work_item_tag_id as work_items_work_item_tag_id
+		, json_agg(work_items.*) as work_items
+	from
+		work_item_work_item_tag
+		join work_items using (work_item_id)
+	where
+		work_item_tag_id in (
+			select
+				work_item_tag_id
+			from
+				work_item_work_item_tag
+			where
+				work_item_id = any (
+					select
+						work_item_id
+					from
+						work_items))
+			group by
+				work_item_tag_id) joined_work_items on joined_work_items.work_items_work_item_tag_id = work_item_tags.work_item_tag_id` +
+		` WHERE work_item_tags.work_item_tag_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -232,8 +283,15 @@ work_item_tags.color ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, workItemTagID).Scan(&wit.WorkItemTagID, &wit.Name, &wit.Description, &wit.Color); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItems, workItemTagID).Scan(&wit.WorkItemTagID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color, &wit.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &wit, nil
+}
+
+// FKProject_ProjectID returns the Project associated with the WorkItemTag's (ProjectID).
+//
+// Generated from foreign key 'work_item_tags_project_id_fkey'.
+func (wit *WorkItemTag) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
+	return ProjectByProjectID(ctx, db, wit.ProjectID)
 }

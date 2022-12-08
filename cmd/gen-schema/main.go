@@ -1,3 +1,6 @@
+/*
+gen-schema generates OpenAPI v3 schema portions from code.
+*/
 package main
 
 import (
@@ -36,12 +39,13 @@ func main() {
 
 	// update when adding new packages to gen structs map
 	reflector.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
-		if strings.HasPrefix(defaultDefName, "Db") {
-			return strings.TrimPrefix(defaultDefName, "Db")
-		}
-		if strings.HasPrefix(defaultDefName, "Rest") {
-			return strings.TrimPrefix(defaultDefName, "Rest")
-		}
+		// enough magic already
+		// if strings.HasPrefix(defaultDefName, "Db") {
+		// 	return strings.TrimPrefix(defaultDefName, "Db")
+		// }
+		// if strings.HasPrefix(defaultDefName, "Rest") {
+		// 	return strings.TrimPrefix(defaultDefName, "Rest")
+		// }
 
 		return defaultDefName
 	})
@@ -54,6 +58,7 @@ func main() {
 		}
 
 		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
+		// ensure json tags are set for all top level fields in the struct. Either skip "-" or set fields.
 		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-postgen-struct": sn}
 		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
 		// reflector.Spec.Paths.MapOfPathItemValues["mypath"].MapOfOperationValues["method"].

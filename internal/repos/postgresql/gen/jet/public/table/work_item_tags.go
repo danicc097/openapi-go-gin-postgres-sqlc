@@ -18,6 +18,7 @@ type workItemTagsTable struct {
 
 	//Columns
 	WorkItemTagID postgres.ColumnInteger
+	ProjectID     postgres.ColumnInteger
 	Name          postgres.ColumnString
 	Description   postgres.ColumnString
 	Color         postgres.ColumnString
@@ -62,11 +63,12 @@ func newWorkItemTagsTable(schemaName, tableName, alias string) *WorkItemTagsTabl
 func newWorkItemTagsTableImpl(schemaName, tableName, alias string) workItemTagsTable {
 	var (
 		WorkItemTagIDColumn = postgres.IntegerColumn("work_item_tag_id")
+		ProjectIDColumn     = postgres.IntegerColumn("project_id")
 		NameColumn          = postgres.StringColumn("name")
 		DescriptionColumn   = postgres.StringColumn("description")
 		ColorColumn         = postgres.StringColumn("color")
-		allColumns          = postgres.ColumnList{WorkItemTagIDColumn, NameColumn, DescriptionColumn, ColorColumn}
-		mutableColumns      = postgres.ColumnList{NameColumn, DescriptionColumn, ColorColumn}
+		allColumns          = postgres.ColumnList{WorkItemTagIDColumn, ProjectIDColumn, NameColumn, DescriptionColumn, ColorColumn}
+		mutableColumns      = postgres.ColumnList{ProjectIDColumn, NameColumn, DescriptionColumn, ColorColumn}
 	)
 
 	return workItemTagsTable{
@@ -74,6 +76,7 @@ func newWorkItemTagsTableImpl(schemaName, tableName, alias string) workItemTagsT
 
 		//Columns
 		WorkItemTagID: WorkItemTagIDColumn,
+		ProjectID:     ProjectIDColumn,
 		Name:          NameColumn,
 		Description:   DescriptionColumn,
 		Color:         ColorColumn,

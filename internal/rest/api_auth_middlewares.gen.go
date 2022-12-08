@@ -30,10 +30,28 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 						models.Scope("users:write")},
 				}),
 		}
+	case Events:
+		return []gin.HandlerFunc{}
 	case GetCurrentUser:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
+	case GetProjectBoard:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case InitializeProject:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					MinimumRole: models.Role("admin"),
+				}),
+		}
+	case MyProviderCallback:
+		return []gin.HandlerFunc{}
+	case MyProviderLogin:
+		return []gin.HandlerFunc{}
 	case OpenapiYamlGet:
 		return []gin.HandlerFunc{}
 	case Ping:

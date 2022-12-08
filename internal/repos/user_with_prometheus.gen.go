@@ -65,8 +65,22 @@ func (_d UserWithPrometheus) CreateAPIKey(ctx context.Context, d db.DBTX, user *
 	return _d.base.CreateAPIKey(ctx, d, user)
 }
 
+// Delete implements User
+func (_d UserWithPrometheus) Delete(ctx context.Context, d db.DBTX, id string) (up1 *db.User, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		userDurationSummaryVec.WithLabelValues(_d.instanceName, "Delete", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.Delete(ctx, d, id)
+}
+
 // Update implements User
-func (_d UserWithPrometheus) Update(ctx context.Context, d db.DBTX, params UserUpdateParams) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) Update(ctx context.Context, d db.DBTX, id string, params UserUpdateParams) (up1 *db.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -76,7 +90,7 @@ func (_d UserWithPrometheus) Update(ctx context.Context, d db.DBTX, params UserU
 
 		userDurationSummaryVec.WithLabelValues(_d.instanceName, "Update", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.Update(ctx, d, params)
+	return _d.base.Update(ctx, d, id, params)
 }
 
 // UserByAPIKey implements User

@@ -9,15 +9,45 @@ import (
 	"io"
 	"os"
 	"path"
+	"regexp"
+	"sort"
 	"strings"
 	"text/template"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/getkin/kin-openapi/openapi3"
+
 	// internalformat "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
-	"gopkg.in/yaml.v3"
 )
+
+var (
+	handlerRegex     = regexp.MustCompile("api_(.*).go")
+	OperationIDRegex = regexp.MustCompile("^[a-zA-Z0-9]*$")
+)
+
+func contains[T comparable](elems []T, v T) bool {
+	for _, s := range elems {
+		if v == s {
+			return true
+		}
+	}
+
+	return false
+}
+
+func ensureUnique[T comparable](s []T) error {
+	set := make(map[T]struct{})
+	for _, element := range s {
+		if _, ok := set[element]; ok {
+			return fmt.Errorf("element %T not unique", element)
+		}
+		set[element] = struct{}{}
+	}
+
+	return nil
+}
 
 //go:embed templates
 var templateFiles embed.FS
@@ -26,36 +56,19 @@ type PreGen struct {
 	stderr       io.Writer
 	specPath     string
 	opIDAuthPath string
+	operations   map[string][]string
 }
 
 // New returns a new pre-generator.
 func New(stderr io.Writer, specPath string, opIDAuthPath string) *PreGen {
+	operations := make(map[string][]string)
+
 	return &PreGen{
 		stderr:       stderr,
 		specPath:     specPath,
 		opIDAuthPath: opIDAuthPath,
+		operations:   operations,
 	}
-}
-
-// analyzeSpec ensures specific rules for codegen are met and extracts necessary data.
-func (o *PreGen) analyzeSpec() error {
-	var spec yaml.Node
-
-	schemaBlob, err := os.ReadFile(o.specPath)
-	if err != nil {
-		return fmt.Errorf("error opening schema file: %w", err)
-	}
-
-	if err = yaml.Unmarshal([]byte(schemaBlob), &spec); err != nil {
-		return fmt.Errorf("error unmarshalling schema: %w", err)
-	}
-
-	_, err = yaml.Marshal(&spec)
-	if err != nil {
-		return fmt.Errorf("error marshalling schema: %w", err)
-	}
-
-	return nil
 }
 
 // validateSpec validates an OpenAPI 3.0 specification.
@@ -63,6 +76,18 @@ func (o *PreGen) validateSpec() error {
 	_, err := rest.ReadOpenAPI(o.specPath)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (o *PreGen) ValidateProjectSpec() error {
+	if err := o.validateSpec(); err != nil {
+		return fmt.Errorf("validate spec: %w", err)
+	}
+
+	if err := o.analyzeSpec(); err != nil {
+		return fmt.Errorf("analyze spec: %w", err)
 	}
 
 	return nil
@@ -78,7 +103,11 @@ func (o *PreGen) Generate() error {
 	}
 
 	if err := internal.GenerateConfigTemplate(); err != nil {
-		return fmt.Errorf("GenerateConfigTemplate: %w", err)
+		return fmt.Errorf("internal.GenerateConfigTemplate: %w", err)
+	}
+
+	if err := o.generateOpIDs(); err != nil {
+		return fmt.Errorf("generateOpIDs: %w", err)
 	}
 
 	if err := o.generateOpIDAuthMiddlewares(); err != nil {
@@ -149,6 +178,104 @@ func (o *PreGen) generateOpIDAuthMiddlewares() error {
 
 	if _, err = f.Write(src); err != nil {
 		return fmt.Errorf("could not write opID auth middlewares: %w", err)
+	}
+
+	return nil
+}
+
+// analyzeSpec ensures specific rules for codegen are met and extracts necessary data.
+func (o *PreGen) analyzeSpec() error {
+	schemaBlob, err := os.ReadFile(o.specPath)
+	if err != nil {
+		return fmt.Errorf("error opening schema file: %w", err)
+	}
+
+	sl := openapi3.NewLoader()
+
+	openapi, err := sl.LoadFromData(schemaBlob)
+	if err != nil {
+		return fmt.Errorf("error loading openapi spec: %w", err)
+	}
+
+	if err = openapi.Validate(sl.Context); err != nil {
+		return fmt.Errorf("error validating openapi spec: %w", err)
+	}
+
+	for path, pi := range openapi.Paths {
+		ops := pi.Operations()
+		for method, v := range ops {
+			if v.OperationID == "" {
+				return fmt.Errorf("path %q: method %q: operationId is required for codegen", path, method)
+			}
+
+			if !OperationIDRegex.MatchString(v.OperationID) {
+				return fmt.Errorf("path %q: method %q: operationId %q does not match pattern %q",
+					path, method, v.OperationID, OperationIDRegex.String())
+			}
+
+			if len(v.Tags) > 1 {
+				return fmt.Errorf("path %q: method %q: at most one tag is permitted for codegen", path, method)
+			}
+
+			t := "default"
+			if len(v.Tags) > 0 {
+				t = strings.ToLower(v.Tags[0])
+			}
+
+			o.operations[t] = append(o.operations[t], v.OperationID)
+		}
+
+		for t, opIDs := range o.operations {
+			sort.Slice(opIDs, func(i, j int) bool {
+				return opIDs[i] < opIDs[j]
+			})
+			o.operations[t] = opIDs
+		}
+	}
+
+	return nil
+}
+
+// generateOpIDs fills in a template with all operation IDs to a dest.
+func (o *PreGen) generateOpIDs() error {
+	funcs := template.FuncMap{
+		// "stringsJoin": func(elems []string, prefix string, suffix string, sep string) string {
+		// 	for i, e := range elems {
+		// 		elems[i] = prefix + e + suffix
+		// 	}
+
+		// 	return strings.Join(elems, sep)
+		// },
+	}
+
+	tmpl := "templates/operation_ids.tmpl"
+	name := path.Base(tmpl)
+	t := template.Must(template.New(name).Funcs(funcs).ParseFS(templateFiles, tmpl))
+
+	buf := &bytes.Buffer{}
+
+	params := map[string]interface{}{
+		"Operations": o.operations,
+	}
+
+	if err := t.Execute(buf, params); err != nil {
+		return fmt.Errorf("could not execute template: %w", err)
+	}
+
+	src, err := format.Source(buf.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not format opId template: %w", err)
+	}
+
+	fname := path.Join("internal/rest/operation_ids.gen.go")
+
+	f, err := os.OpenFile(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o660)
+	if err != nil {
+		return fmt.Errorf("could not open %s: %w", fname, err)
+	}
+
+	if _, err = f.Write(src); err != nil {
+		return fmt.Errorf("could not write opId template: %w", err)
 	}
 
 	return nil

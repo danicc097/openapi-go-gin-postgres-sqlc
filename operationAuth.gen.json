@@ -1,4 +1,19 @@
 {
+  "MyProviderCallback": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": false
+  },
+  "MyProviderLogin": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": false
+  },
+  "Events": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": false
+  },
   "Ping": {
     "scopes": null,
     "role": null,
@@ -37,6 +52,16 @@
   "UpdateUser": {
     "scopes": null,
     "role": "user",
+    "requiresAuthentication": true
+  },
+  "InitializeProject": {
+    "scopes": null,
+    "role": "admin",
+    "requiresAuthentication": true
+  },
+  "GetProjectBoard": {
+    "scopes": null,
+    "role": null,
     "requiresAuthentication": true
   }
 }

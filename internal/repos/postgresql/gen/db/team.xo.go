@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/jackc/pgtype"
 )
 
 // TeamPublic represents fields that may be exposed from 'public.teams'
@@ -16,24 +14,22 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type TeamPublic struct {
-	TeamID      int          `json:"teamID" required:"true"`      // team_id
-	ProjectID   int          `json:"projectID" required:"true"`   // project_id
-	Name        string       `json:"name" required:"true"`        // name
-	Description string       `json:"description" required:"true"` // description
-	Metadata    pgtype.JSONB `json:"metadata" required:"true"`    // metadata
-	CreatedAt   time.Time    `json:"createdAt" required:"true"`   // created_at
-	UpdatedAt   time.Time    `json:"updatedAt" required:"true"`   // updated_at
+	TeamID      int       `json:"teamID" required:"true"`      // team_id
+	ProjectID   int       `json:"projectID" required:"true"`   // project_id
+	Name        string    `json:"name" required:"true"`        // name
+	Description string    `json:"description" required:"true"` // description
+	CreatedAt   time.Time `json:"createdAt" required:"true"`   // created_at
+	UpdatedAt   time.Time `json:"updatedAt" required:"true"`   // updated_at
 }
 
 // Team represents a row from 'public.teams'.
 type Team struct {
-	TeamID      int          `json:"team_id" db:"team_id"`         // team_id
-	ProjectID   int          `json:"project_id" db:"project_id"`   // project_id
-	Name        string       `json:"name" db:"name"`               // name
-	Description string       `json:"description" db:"description"` // description
-	Metadata    pgtype.JSONB `json:"metadata" db:"metadata"`       // metadata
-	CreatedAt   time.Time    `json:"created_at" db:"created_at"`   // created_at
-	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at"`   // updated_at
+	TeamID      int       `json:"team_id" db:"team_id"`         // team_id
+	ProjectID   int       `json:"project_id" db:"project_id"`   // project_id
+	Name        string    `json:"name" db:"name"`               // name
+	Description string    `json:"description" db:"description"` // description
+	CreatedAt   time.Time `json:"created_at" db:"created_at"`   // created_at
+	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`   // updated_at
 
 	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
 	Users       *[]User      `json:"users" db:"users"`               // M2M
@@ -43,7 +39,7 @@ type Team struct {
 
 func (x *Team) ToPublic() TeamPublic {
 	return TeamPublic{
-		TeamID: x.TeamID, ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Metadata: x.Metadata, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
+		TeamID: x.TeamID, ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
 	}
 }
 
@@ -119,13 +115,13 @@ func (t *Team) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.teams (` +
-		`project_id, name, description, metadata` +
+		`project_id, name, description` +
 		`) VALUES (` +
-		`$1, $2, $3, $4` +
+		`$1, $2, $3` +
 		`) RETURNING team_id, created_at, updated_at `
 	// run
-	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata)
-	if err := db.QueryRow(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata).Scan(&t.TeamID, &t.CreatedAt, &t.UpdatedAt); err != nil {
+	logf(sqlstr, t.ProjectID, t.Name, t.Description)
+	if err := db.QueryRow(ctx, sqlstr, t.ProjectID, t.Name, t.Description).Scan(&t.TeamID, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -143,12 +139,12 @@ func (t *Team) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.teams SET ` +
-		`project_id = $1, name = $2, description = $3, metadata = $4 ` +
-		`WHERE team_id = $5 ` +
+		`project_id = $1, name = $2, description = $3 ` +
+		`WHERE team_id = $4 ` +
 		`RETURNING team_id, created_at, updated_at `
 	// run
-	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata, t.CreatedAt, t.UpdatedAt, t.TeamID)
-	if err := db.QueryRow(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.Metadata, t.TeamID).Scan(&t.TeamID, &t.CreatedAt, &t.UpdatedAt); err != nil {
+	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt, t.TeamID)
+	if err := db.QueryRow(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.TeamID).Scan(&t.TeamID, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -170,16 +166,16 @@ func (t *Team) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.teams (` +
-		`team_id, project_id, name, description, metadata` +
+		`team_id, project_id, name, description` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
+		`$1, $2, $3, $4` +
 		`)` +
 		` ON CONFLICT (team_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, metadata = EXCLUDED.metadata  `
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description  `
 	// run
-	logf(sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.Metadata)
-	if _, err := db.Exec(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.Metadata); err != nil {
+	logf(sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description)
+	if _, err := db.Exec(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -224,7 +220,6 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int,
 teams.project_id,
 teams.name,
 teams.description,
-teams.metadata,
 teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
@@ -271,7 +266,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name, projectID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt, &t.TimeEntries, &t.Users); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name, projectID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.CreatedAt, &t.UpdatedAt, &t.TimeEntries, &t.Users); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil
@@ -293,7 +288,6 @@ func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConf
 teams.project_id,
 teams.name,
 teams.description,
-teams.metadata,
 teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
@@ -340,7 +334,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, teamID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.Metadata, &t.CreatedAt, &t.UpdatedAt, &t.TimeEntries, &t.Users); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, teamID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.CreatedAt, &t.UpdatedAt, &t.TimeEntries, &t.Users); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil
