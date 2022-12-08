@@ -175,7 +175,7 @@ export default function Navbar() {
       sections={[
         {
           items: [
-            user?.external_id !== '' ? <CollapsibleNav user={user} /> : null,
+            user?.userID !== '' ? <CollapsibleNav user={user} /> : null,
 
             <LogoSection href="/" key={0}>
               <EuiIcon type={logo} size="l" />
