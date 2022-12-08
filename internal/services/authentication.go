@@ -50,7 +50,6 @@ func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.
 		Email:    user.Email,
 		Username: user.Username,
 		RegisteredClaims: jwt.RegisteredClaims{
-			// A usual scenario is to set the expiration time relative to the current time
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)), // mandatory
 			Issuer:    issuer,                                             // mandatory
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -66,7 +65,7 @@ func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.
 	if err != nil {
 		return "", errors.Wrap(err, "could not sign token")
 	}
-	fmt.Printf("%v :error is %v\n", ss, err)
+	fmt.Printf("signed string %v : %v\n", ss, err)
 
 	return ss, nil
 }
