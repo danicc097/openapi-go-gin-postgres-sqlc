@@ -7,13 +7,15 @@
  */
 import axios from 'axios'
 import type { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useInfiniteQuery, useMutation } from '@tanstack/react-query'
 import type {
   UseQueryOptions,
+  UseInfiniteQueryOptions,
   UseMutationOptions,
   QueryFunction,
   MutationFunction,
   UseQueryResult,
+  UseInfiniteQueryResult,
   QueryKey,
 } from '@tanstack/react-query'
 import type {
@@ -30,6 +32,33 @@ export const myProviderCallback = (options?: AxiosRequestConfig): Promise<AxiosR
 }
 
 export const getMyProviderCallbackQueryKey = () => [`/auth/myprovider/callback`]
+
+export type MyProviderCallbackInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderCallback>>>
+export type MyProviderCallbackInfiniteQueryError = AxiosError<unknown>
+
+export const useMyProviderCallbackInfinite = <
+  TData = Awaited<ReturnType<typeof myProviderCallback>>,
+  TError = AxiosError<unknown>,
+>(options?: {
+  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof myProviderCallback>>, TError, TData>
+  axios?: AxiosRequestConfig
+}): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getMyProviderCallbackQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof myProviderCallback>>> = ({ signal }) =>
+    myProviderCallback({ signal, ...axiosOptions })
+
+  const query = useInfiniteQuery<Awaited<ReturnType<typeof myProviderCallback>>, TError, TData>(queryKey, queryFn, {
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryKey
+
+  return query
+}
 
 export type MyProviderCallbackQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderCallback>>>
 export type MyProviderCallbackQueryError = AxiosError<unknown>
@@ -48,11 +77,10 @@ export const useMyProviderCallback = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof myProviderCallback>>> = ({ signal }) =>
     myProviderCallback({ signal, ...axiosOptions })
 
-  const query = useQuery<Awaited<ReturnType<typeof myProviderCallback>>, TError, TData>(
-    queryKey,
-    queryFn,
-    queryOptions,
-  ) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
+  const query = useQuery<Awaited<ReturnType<typeof myProviderCallback>>, TError, TData>(queryKey, queryFn, {
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
 
   query.queryKey = queryKey
 
@@ -64,6 +92,33 @@ export const myProviderLogin = (options?: AxiosRequestConfig): Promise<AxiosResp
 }
 
 export const getMyProviderLoginQueryKey = () => [`/auth/myprovider/login`]
+
+export type MyProviderLoginInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderLogin>>>
+export type MyProviderLoginInfiniteQueryError = AxiosError<void>
+
+export const useMyProviderLoginInfinite = <
+  TData = Awaited<ReturnType<typeof myProviderLogin>>,
+  TError = AxiosError<void>,
+>(options?: {
+  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>
+  axios?: AxiosRequestConfig
+}): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getMyProviderLoginQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof myProviderLogin>>> = ({ signal }) =>
+    myProviderLogin({ signal, ...axiosOptions })
+
+  const query = useInfiniteQuery<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>(queryKey, queryFn, {
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryKey
+
+  return query
+}
 
 export type MyProviderLoginQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderLogin>>>
 export type MyProviderLoginQueryError = AxiosError<void>
@@ -82,11 +137,10 @@ export const useMyProviderLogin = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof myProviderLogin>>> = ({ signal }) =>
     myProviderLogin({ signal, ...axiosOptions })
 
-  const query = useQuery<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>(
-    queryKey,
-    queryFn,
-    queryOptions,
-  ) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
+  const query = useQuery<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>(queryKey, queryFn, {
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
 
   query.queryKey = queryKey
 
@@ -98,6 +152,29 @@ export const events = (options?: AxiosRequestConfig): Promise<AxiosResponse<stri
 }
 
 export const getEventsQueryKey = () => [`/events`]
+
+export type EventsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof events>>>
+export type EventsInfiniteQueryError = AxiosError<unknown>
+
+export const useEventsInfinite = <TData = Awaited<ReturnType<typeof events>>, TError = AxiosError<unknown>>(options?: {
+  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>
+  axios?: AxiosRequestConfig
+}): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getEventsQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof events>>> = ({ signal }) => events({ signal, ...axiosOptions })
+
+  const query = useInfiniteQuery<Awaited<ReturnType<typeof events>>, TError, TData>(queryKey, queryFn, {
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryKey
+
+  return query
+}
 
 export type EventsQueryResult = NonNullable<Awaited<ReturnType<typeof events>>>
 export type EventsQueryError = AxiosError<unknown>
@@ -112,11 +189,10 @@ export const useEvents = <TData = Awaited<ReturnType<typeof events>>, TError = A
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof events>>> = ({ signal }) => events({ signal, ...axiosOptions })
 
-  const query = useQuery<Awaited<ReturnType<typeof events>>, TError, TData>(
-    queryKey,
-    queryFn,
-    queryOptions,
-  ) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
+  const query = useQuery<Awaited<ReturnType<typeof events>>, TError, TData>(queryKey, queryFn, {
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
 
   query.queryKey = queryKey
 
@@ -132,6 +208,32 @@ export const ping = (options?: AxiosRequestConfig): Promise<AxiosResponse<string
 
 export const getPingQueryKey = () => [`/ping`]
 
+export type PingInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof ping>>>
+export type PingInfiniteQueryError = AxiosError<HTTPValidationError>
+
+export const usePingInfinite = <
+  TData = Awaited<ReturnType<typeof ping>>,
+  TError = AxiosError<HTTPValidationError>,
+>(options?: {
+  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>
+  axios?: AxiosRequestConfig
+}): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getPingQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof ping>>> = ({ signal }) => ping({ signal, ...axiosOptions })
+
+  const query = useInfiniteQuery<Awaited<ReturnType<typeof ping>>, TError, TData>(queryKey, queryFn, {
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryKey
+
+  return query
+}
+
 export type PingQueryResult = NonNullable<Awaited<ReturnType<typeof ping>>>
 export type PingQueryError = AxiosError<HTTPValidationError>
 
@@ -145,11 +247,10 @@ export const usePing = <TData = Awaited<ReturnType<typeof ping>>, TError = Axios
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof ping>>> = ({ signal }) => ping({ signal, ...axiosOptions })
 
-  const query = useQuery<Awaited<ReturnType<typeof ping>>, TError, TData>(
-    queryKey,
-    queryFn,
-    queryOptions,
-  ) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
+  const query = useQuery<Awaited<ReturnType<typeof ping>>, TError, TData>(queryKey, queryFn, {
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
 
   query.queryKey = queryKey
 
@@ -168,6 +269,33 @@ export const openapiYamlGet = (options?: AxiosRequestConfig): Promise<AxiosRespo
 
 export const getOpenapiYamlGetQueryKey = () => [`/openapi.yaml`]
 
+export type OpenapiYamlGetInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof openapiYamlGet>>>
+export type OpenapiYamlGetInfiniteQueryError = AxiosError<unknown>
+
+export const useOpenapiYamlGetInfinite = <
+  TData = Awaited<ReturnType<typeof openapiYamlGet>>,
+  TError = AxiosError<unknown>,
+>(options?: {
+  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof openapiYamlGet>>, TError, TData>
+  axios?: AxiosRequestConfig
+}): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getOpenapiYamlGetQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof openapiYamlGet>>> = ({ signal }) =>
+    openapiYamlGet({ signal, ...axiosOptions })
+
+  const query = useInfiniteQuery<Awaited<ReturnType<typeof openapiYamlGet>>, TError, TData>(queryKey, queryFn, {
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryKey
+
+  return query
+}
+
 export type OpenapiYamlGetQueryResult = NonNullable<Awaited<ReturnType<typeof openapiYamlGet>>>
 export type OpenapiYamlGetQueryError = AxiosError<unknown>
 
@@ -185,11 +313,10 @@ export const useOpenapiYamlGet = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof openapiYamlGet>>> = ({ signal }) =>
     openapiYamlGet({ signal, ...axiosOptions })
 
-  const query = useQuery<Awaited<ReturnType<typeof openapiYamlGet>>, TError, TData>(
-    queryKey,
-    queryFn,
-    queryOptions,
-  ) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
+  const query = useQuery<Awaited<ReturnType<typeof openapiYamlGet>>, TError, TData>(queryKey, queryFn, {
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
 
   query.queryKey = queryKey
 
@@ -204,6 +331,33 @@ export const adminPing = (options?: AxiosRequestConfig): Promise<AxiosResponse<s
 }
 
 export const getAdminPingQueryKey = () => [`/admin/ping`]
+
+export type AdminPingInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof adminPing>>>
+export type AdminPingInfiniteQueryError = AxiosError<HTTPValidationError>
+
+export const useAdminPingInfinite = <
+  TData = Awaited<ReturnType<typeof adminPing>>,
+  TError = AxiosError<HTTPValidationError>,
+>(options?: {
+  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData>
+  axios?: AxiosRequestConfig
+}): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getAdminPingQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminPing>>> = ({ signal }) =>
+    adminPing({ signal, ...axiosOptions })
+
+  const query = useInfiniteQuery<Awaited<ReturnType<typeof adminPing>>, TError, TData>(queryKey, queryFn, {
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryKey
+
+  return query
+}
 
 export type AdminPingQueryResult = NonNullable<Awaited<ReturnType<typeof adminPing>>>
 export type AdminPingQueryError = AxiosError<HTTPValidationError>
@@ -222,11 +376,10 @@ export const useAdminPing = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof adminPing>>> = ({ signal }) =>
     adminPing({ signal, ...axiosOptions })
 
-  const query = useQuery<Awaited<ReturnType<typeof adminPing>>, TError, TData>(
-    queryKey,
-    queryFn,
-    queryOptions,
-  ) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
+  const query = useQuery<Awaited<ReturnType<typeof adminPing>>, TError, TData>(queryKey, queryFn, {
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
 
   query.queryKey = queryKey
 
@@ -241,6 +394,33 @@ export const getCurrentUser = (options?: AxiosRequestConfig): Promise<AxiosRespo
 }
 
 export const getGetCurrentUserQueryKey = () => [`/user/me`]
+
+export type GetCurrentUserInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
+export type GetCurrentUserInfiniteQueryError = AxiosError<unknown>
+
+export const useGetCurrentUserInfinite = <
+  TData = Awaited<ReturnType<typeof getCurrentUser>>,
+  TError = AxiosError<unknown>,
+>(options?: {
+  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>
+  axios?: AxiosRequestConfig
+}): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetCurrentUserQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentUser>>> = ({ signal }) =>
+    getCurrentUser({ signal, ...axiosOptions })
+
+  const query = useInfiniteQuery<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>(queryKey, queryFn, {
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryKey
+
+  return query
+}
 
 export type GetCurrentUserQueryResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
 export type GetCurrentUserQueryError = AxiosError<unknown>
@@ -259,11 +439,10 @@ export const useGetCurrentUser = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentUser>>> = ({ signal }) =>
     getCurrentUser({ signal, ...axiosOptions })
 
-  const query = useQuery<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>(
-    queryKey,
-    queryFn,
-    queryOptions,
-  ) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
+  const query = useQuery<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>(queryKey, queryFn, {
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
 
   query.queryKey = queryKey
 
@@ -438,6 +617,37 @@ export const getProjectBoard = (
 
 export const getGetProjectBoardQueryKey = (id: number) => [`/project/${id}/board`]
 
+export type GetProjectBoardInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectBoard>>>
+export type GetProjectBoardInfiniteQueryError = AxiosError<unknown>
+
+export const useGetProjectBoardInfinite = <
+  TData = Awaited<ReturnType<typeof getProjectBoard>>,
+  TError = AxiosError<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData>
+    axios?: AxiosRequestConfig
+  },
+): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetProjectBoardQueryKey(id)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectBoard>>> = ({ signal }) =>
+    getProjectBoard(id, { signal, ...axiosOptions })
+
+  const query = useInfiniteQuery<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData>(queryKey, queryFn, {
+    enabled: !!id,
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryKey
+
+  return query
+}
+
 export type GetProjectBoardQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectBoard>>>
 export type GetProjectBoardQueryError = AxiosError<unknown>
 
@@ -457,6 +667,7 @@ export const useGetProjectBoard = <TData = Awaited<ReturnType<typeof getProjectB
 
   const query = useQuery<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData>(queryKey, queryFn, {
     enabled: !!id,
+    staleTime: 3600000,
     ...queryOptions,
   }) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
 
