@@ -327,7 +327,6 @@ x.gen.xo() {
       -path "$PG_REPO_GEN/db" \
       -name "*.go")
     goimports -w $files
-
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -457,14 +456,14 @@ x.gen.proto() {
 # Run all codegen and postgen commands for the project.
 x.gen() {
   cp "$SPEC" "$CACHE"
+  rm -rf "$CACHE_PG_REPO_GEN"
   cp -r "$PG_REPO_GEN" "$CACHE_PG_REPO_GEN"
   restore_cache=1
   { { {
-    echo "Running code generation"
-    # must always be consistent regardless of current env
     (
       POSTGRES_DB=$GEN_POSTGRES_DB
 
+      echo "Running code generation"
       mkdir -p "$CACHE"
       x.db.recreate
       x.pregen
@@ -473,17 +472,32 @@ x.gen() {
       # TODO try use gnu parallel and exit when anyone fails
       # (with current setup the whole x.gen is executed and only then
       # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
-
+      set -e
       go generate ./... &
       x.gen.gowrap &
       x.gen.sqlc &
       x.gen.proto &
+
       wait
 
       x.gen.xo &
       x.gen.jet &
 
-      wait
+      set -e
+      declare -i err=0 werr=0
+      while
+        wait -fn || werr=$?
+        ((werr != 127))
+      do
+        err=$werr
+        ((err == 0)) || break # handle error as soon as it happens
+      done
+      #trap 'wait || :' EXIT # wait for all jobs before exiting (regardless of handling above)
+      if ((err != 0)); then
+        echo "Job failed"
+        kill -s SIGUSR1 $PROC
+        return
+      fi
 
       x.postgen &
       x.gen.counterfeiter & # delay since it depends on generated output too
