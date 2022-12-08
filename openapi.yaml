@@ -252,7 +252,7 @@ components:
       example: 41131
       style: simple
   schemas:
-    InitializeProjectRequest:
+    InitializeProjectRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         activities:
           items:
@@ -283,7 +283,7 @@ components:
           type: array
       type: object
       x-postgen-struct: RestProjectBoardCreateRequest
-    ProjectBoardResponse:
+    ProjectBoardResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         activities:
           items:
@@ -314,7 +314,7 @@ components:
           type: array
       type: object
       x-postgen-struct: RestProjectBoardResponse
-    UserResponse:
+    UserResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         apiKey:
           $ref: '#/components/schemas/DbUserAPIKeyPublic'
@@ -418,7 +418,7 @@ components:
       enum:
         - personal
         - global
-    WorkItemRole:
+    WorkItemRole: # Generated from database enum. DO NOT EDIT.
       title: WorkItem role
       description: Role in work item for a member.
       type: string
@@ -426,7 +426,7 @@ components:
       enum:
         - preparer
         - reviewer
-    UpdateUserRequest:
+    UpdateUserRequest: # Generated from database enum. DO NOT EDIT.
       description: represents User data to update
       example:
         first_name: Jane
@@ -473,97 +473,7 @@ components:
         type:
           title: Error Type
           type: string
-    PgtypeJSONB: # Generated from db package structs. DO NOT EDIT.
-      type: object
-    UuidUUID: # Generated from db package structs. DO NOT EDIT.
-      type: string
-    TeamPublic:
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        description:
-          type: string
-        metadata:
-          $ref: '#/components/schemas/PgtypeJSONB'
-        name:
-          type: string
-        projectID:
-          type: integer
-        teamID:
-          type: integer
-        updatedAt:
-          format: date-time
-          type: string
-      required:
-        - teamID
-        - projectID
-        - name
-        - description
-        - metadata
-        - createdAt
-        - updatedAt
-      type: object
-    TimeEntryPublic:
-      properties:
-        activityID:
-          type: integer
-        comment:
-          type: string
-        durationMinutes:
-          nullable: true
-          type: integer
-        start:
-          format: date-time
-          type: string
-        teamID:
-          nullable: true
-          type: integer
-        timeEntryID:
-          type: integer
-        userID:
-          $ref: '#/components/schemas/UuidUUID'
-        workItemID:
-          nullable: true
-          type: integer
-      type: object
-    WorkItemCommentPublic:
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        message:
-          type: string
-        updatedAt:
-          format: date-time
-          type: string
-        userID:
-          $ref: '#/components/schemas/UuidUUID'
-        workItemCommentID:
-          type: integer
-        workItemID:
-          type: integer
-      type: object
-    ModelsRole:
-      type: string
-    ModelsScope:
-      type: string
-    UserAPIKeyPublic:
-      nullable: true
-      properties:
-        apiKey:
-          type: string
-        expiresOn:
-          format: date-time
-          type: string
-        userID:
-          $ref: '#/components/schemas/UuidUUID'
-      required:
-        - apiKey
-        - expiresOn
-        - userID
-      type: object
-    DbTeamPublic:
+    DbTeamPublic: # Generated from internal structs. DO NOT EDIT.
       properties:
         createdAt:
           format: date-time
@@ -587,7 +497,7 @@ components:
         - createdAt
         - updatedAt
       type: object
-    DbUserAPIKeyPublic:
+    DbUserAPIKeyPublic: # Generated from internal structs. DO NOT EDIT.
       nullable: true
       properties:
         apiKey:
@@ -602,7 +512,7 @@ components:
         - expiresOn
         - userID
       type: object
-    DbActivityPublic:
+    DbActivityPublic: # Generated from internal structs. DO NOT EDIT.
       properties:
         activityID:
           type: integer
@@ -621,7 +531,7 @@ components:
         - description
         - isProductive
       type: object
-    DbKanbanStepPublic:
+    DbKanbanStepPublic: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
           type: string
@@ -647,7 +557,7 @@ components:
         - color
         - timeTrackable
       type: object
-    DbProjectPublic:
+    DbProjectPublic: # Generated from internal structs. DO NOT EDIT.
       nullable: true
       properties:
         createdAt:
@@ -672,7 +582,7 @@ components:
         - createdAt
         - updatedAt
       type: object
-    DbWorkItemTagPublic:
+    DbWorkItemTagPublic: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
           type: string
@@ -691,7 +601,7 @@ components:
         - description
         - color
       type: object
-    DbWorkItemTypePublic:
+    DbWorkItemTypePublic: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
           type: string
@@ -710,7 +620,7 @@ components:
         - description
         - color
       type: object
-    ReposActivityCreateParams:
+    ReposActivityCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
         description:
           type: string
@@ -721,7 +631,7 @@ components:
         projectID:
           type: integer
       type: object
-    ReposKanbanStepCreateParams:
+    ReposKanbanStepCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
           type: string
@@ -736,7 +646,7 @@ components:
         timeTrackable:
           type: boolean
       type: object
-    ReposTeamCreateParams:
+    ReposTeamCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
         description:
           type: string
@@ -745,18 +655,7 @@ components:
         projectID:
           type: integer
       type: object
-    ReposWorkItemTagCreateParams:
-      properties:
-        color:
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-      type: object
-    ReposWorkItemTypeCreateParams:
+    ReposWorkItemTagCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
           type: string
@@ -767,6 +666,21 @@ components:
         projectID:
           type: integer
       type: object
+    ReposWorkItemTypeCreateParams: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+      type: object
+    ModelsRole: # Generated from internal structs. DO NOT EDIT.
+      type: string
+    UuidUUID: # Generated from internal structs. DO NOT EDIT.
+      type: string
   examples:
     User:
       value:

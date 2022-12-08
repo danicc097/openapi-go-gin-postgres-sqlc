@@ -178,7 +178,7 @@ x.pregen() {
       local enums=$(printf ",\"%s\"" "${db_enums[@]}")
       enums="[${enums:1}]"
       echo "Replacing enum '$enum' in $SPEC with: $enums"
-      enums=$enums yq e ".$path.enum = env(enums)" -i $SPEC
+      enums=$enums yq e ".$path.enum = env(enums) | (.$path.enum | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
     done
 
     ######## Ensure consistent style for future codegen
@@ -275,9 +275,7 @@ x.postgen() {
 
     go build -o postgen cmd/postgen/main.go || echo "Could not rebuild postgen" >&2
     ./postgen -env=".env.$env"
-  } \
-    2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 # Generate type-safe Go code from SQL.
@@ -396,8 +394,7 @@ x.gen.client-server() {
     ./oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
     ./oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
 
-  } \
-    2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 # Generate mocks for specified interfaces. Runs are cached to `cachedir`.
@@ -1024,8 +1021,7 @@ update_spec_with_structs() {
 
   go build -o gen-schema cmd/gen-schema/main.go || echo "Could not rebuild gen-schema" >&2
   ./gen-schema --struct-names $struct_names_list | yq '
-    with_entries(select(.key == "components")) |
-    (.components.schemas[] | key) line_comment="Generated from db package structs. DO NOT EDIT."' \
+    with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml
 
   # replace every schema generated directly or indirectly.
@@ -1036,6 +1032,7 @@ update_spec_with_structs() {
         ) as \$new_schema
         | select(fi == 0)
         | .components.schemas.$new_schema_key = \$new_schema
+        | (.components.schemas.$new_schema_key | key) line_comment=\"Generated from internal structs. DO NOT EDIT.\"
       " "$SPEC" /tmp/openapi.yaml >/tmp/final-spec
 
     mv /tmp/final-spec "$SPEC"

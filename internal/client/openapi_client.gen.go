@@ -202,14 +202,8 @@ type InitializeProjectRequest struct {
 // ModelsRole defines the model for ModelsRole.
 type ModelsRole = string
 
-// ModelsScope defines the model for ModelsScope.
-type ModelsScope = string
-
 // NotificationType User notification type.
 type NotificationType string
-
-// PgtypeJSONB defines the model for PgtypeJSONB.
-type PgtypeJSONB = map[string]interface{}
 
 // ProjectBoardResponse defines the model for ProjectBoardResponse.
 type ProjectBoardResponse struct {
@@ -271,29 +265,6 @@ type Scope string
 // Scopes defines the model for Scopes.
 type Scopes = []Scope
 
-// TeamPublic defines the model for TeamPublic.
-type TeamPublic struct {
-	CreatedAt   time.Time   `json:"createdAt"`
-	Description string      `json:"description"`
-	Metadata    PgtypeJSONB `json:"metadata"`
-	Name        string      `json:"name"`
-	ProjectID   int         `json:"projectID"`
-	TeamID      int         `json:"teamID"`
-	UpdatedAt   time.Time   `json:"updatedAt"`
-}
-
-// TimeEntryPublic defines the model for TimeEntryPublic.
-type TimeEntryPublic struct {
-	ActivityID      *int       `json:"activityID,omitempty"`
-	Comment         *string    `json:"comment,omitempty"`
-	DurationMinutes *int       `json:"durationMinutes"`
-	Start           *time.Time `json:"start,omitempty"`
-	TeamID          *int       `json:"teamID"`
-	TimeEntryID     *int       `json:"timeEntryID,omitempty"`
-	UserID          *UuidUUID  `json:"userID,omitempty"`
-	WorkItemID      *int       `json:"workItemID"`
-}
-
 // Topics string identifiers for SSE event listeners.
 type Topics string
 
@@ -310,13 +281,6 @@ type UpdateUserRequest struct {
 
 	// LastName originally from auth server but updatable
 	LastName *string `json:"last_name,omitempty"`
-}
-
-// UserAPIKeyPublic defines the model for UserAPIKeyPublic.
-type UserAPIKeyPublic struct {
-	ApiKey    string    `json:"apiKey"`
-	ExpiresOn time.Time `json:"expiresOn"`
-	UserID    UuidUUID  `json:"userID"`
 }
 
 // UserResponse defines the model for UserResponse.
@@ -345,16 +309,6 @@ type ValidationError struct {
 	Loc  []string `json:"loc"`
 	Msg  string   `json:"msg"`
 	Type string   `json:"type"`
-}
-
-// WorkItemCommentPublic defines the model for WorkItemCommentPublic.
-type WorkItemCommentPublic struct {
-	CreatedAt         *time.Time `json:"createdAt,omitempty"`
-	Message           *string    `json:"message,omitempty"`
-	UpdatedAt         *time.Time `json:"updatedAt,omitempty"`
-	UserID            *UuidUUID  `json:"userID,omitempty"`
-	WorkItemCommentID *int       `json:"workItemCommentID,omitempty"`
-	WorkItemID        *int       `json:"workItemID,omitempty"`
 }
 
 // WorkItemRole Role in work item for a member.
