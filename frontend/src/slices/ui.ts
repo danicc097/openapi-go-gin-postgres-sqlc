@@ -6,6 +6,7 @@ type Theme = 'dark' | 'light'
 
 interface UIState {
   theme: Theme
+  styleSheet: string
   toastList: Toast[]
   addToast: (toast: Toast) => void
   removeToastByID: (toastID: string) => void
@@ -13,12 +14,15 @@ interface UIState {
   switchTheme: () => void
 }
 
+const theme = (localStorage.getItem('theme') ?? 'light') as Theme
+
 const useUISlice = create<UIState>()(
   devtools(
     // persist(
     // TODO only for theme
     (set) => ({
-      theme: localStorage.getItem('theme') as Theme,
+      theme: theme,
+      styleSheet: `${import.meta.env.BASE_URL}eui_theme_${theme}.min.css`,
       toastList: [],
       addToast: (toast: Toast) => set(addToast(toast)),
       removeToastByID: (toastID: string) => set(removeToastByID(toastID)),
@@ -40,6 +44,7 @@ function switchTheme(): UIAction {
     localStorage.setItem('theme', newTheme)
     return {
       theme: newTheme,
+      styleSheet: `${import.meta.env.BASE_URL}eui_theme_${newTheme}.min.css`,
     }
   }
 }

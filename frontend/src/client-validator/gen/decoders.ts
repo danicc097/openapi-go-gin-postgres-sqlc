@@ -8,8 +8,9 @@ import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
 import { validateJson } from '../validate'
 import {
-  ProjectBoardCreateRequest,
+  InitializeProjectRequest,
   ProjectBoardResponse,
+  UserResponse,
   HTTPValidationError,
   Topics,
   Scope,
@@ -20,15 +21,6 @@ import {
   UpdateUserRequest,
   UpdateUserAuthRequest,
   ValidationError,
-  PgtypeJSONB,
-  UuidUUID,
-  TeamPublic,
-  TimeEntryPublic,
-  WorkItemCommentPublic,
-  ModelsRole,
-  RestUserResponse,
-  ModelsScope,
-  UserAPIKeyPublic,
   DbTeamPublic,
   DbUserAPIKeyPublic,
   DbActivityPublic,
@@ -41,8 +33,8 @@ import {
   ReposTeamCreateParams,
   ReposWorkItemTagCreateParams,
   ReposWorkItemTypeCreateParams,
-  RestProjectBoardCreateRequest,
-  RestProjectBoardResponse,
+  ModelsRole,
+  UuidUUID,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -51,16 +43,16 @@ addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time'] })
 ajv.compile(jsonSchema)
 
 // Decoders
-export const ProjectBoardCreateRequestDecoder: Decoder<ProjectBoardCreateRequest> = {
-  definitionName: 'ProjectBoardCreateRequest',
-  schemaRef: '#/definitions/ProjectBoardCreateRequest',
+export const InitializeProjectRequestDecoder: Decoder<InitializeProjectRequest> = {
+  definitionName: 'InitializeProjectRequest',
+  schemaRef: '#/definitions/InitializeProjectRequest',
 
-  decode(json: unknown): ProjectBoardCreateRequest {
-    const schema = ajv.getSchema(ProjectBoardCreateRequestDecoder.schemaRef)
+  decode(json: unknown): InitializeProjectRequest {
+    const schema = ajv.getSchema(InitializeProjectRequestDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${ProjectBoardCreateRequestDecoder.definitionName} not found`)
+      throw new Error(`Schema ${InitializeProjectRequestDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, ProjectBoardCreateRequestDecoder.definitionName)
+    return validateJson(json, schema, InitializeProjectRequestDecoder.definitionName)
   },
 }
 export const ProjectBoardResponseDecoder: Decoder<ProjectBoardResponse> = {
@@ -73,6 +65,18 @@ export const ProjectBoardResponseDecoder: Decoder<ProjectBoardResponse> = {
       throw new Error(`Schema ${ProjectBoardResponseDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ProjectBoardResponseDecoder.definitionName)
+  },
+}
+export const UserResponseDecoder: Decoder<UserResponse> = {
+  definitionName: 'UserResponse',
+  schemaRef: '#/definitions/UserResponse',
+
+  decode(json: unknown): UserResponse {
+    const schema = ajv.getSchema(UserResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${UserResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, UserResponseDecoder.definitionName)
   },
 }
 export const HTTPValidationErrorDecoder: Decoder<HTTPValidationError> = {
@@ -193,114 +197,6 @@ export const ValidationErrorDecoder: Decoder<ValidationError> = {
       throw new Error(`Schema ${ValidationErrorDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ValidationErrorDecoder.definitionName)
-  },
-}
-export const PgtypeJSONBDecoder: Decoder<PgtypeJSONB> = {
-  definitionName: 'PgtypeJSONB',
-  schemaRef: '#/definitions/PgtypeJSONB',
-
-  decode(json: unknown): PgtypeJSONB {
-    const schema = ajv.getSchema(PgtypeJSONBDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${PgtypeJSONBDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, PgtypeJSONBDecoder.definitionName)
-  },
-}
-export const UuidUUIDDecoder: Decoder<UuidUUID> = {
-  definitionName: 'UuidUUID',
-  schemaRef: '#/definitions/UuidUUID',
-
-  decode(json: unknown): UuidUUID {
-    const schema = ajv.getSchema(UuidUUIDDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${UuidUUIDDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, UuidUUIDDecoder.definitionName)
-  },
-}
-export const TeamPublicDecoder: Decoder<TeamPublic> = {
-  definitionName: 'TeamPublic',
-  schemaRef: '#/definitions/TeamPublic',
-
-  decode(json: unknown): TeamPublic {
-    const schema = ajv.getSchema(TeamPublicDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${TeamPublicDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, TeamPublicDecoder.definitionName)
-  },
-}
-export const TimeEntryPublicDecoder: Decoder<TimeEntryPublic> = {
-  definitionName: 'TimeEntryPublic',
-  schemaRef: '#/definitions/TimeEntryPublic',
-
-  decode(json: unknown): TimeEntryPublic {
-    const schema = ajv.getSchema(TimeEntryPublicDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${TimeEntryPublicDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, TimeEntryPublicDecoder.definitionName)
-  },
-}
-export const WorkItemCommentPublicDecoder: Decoder<WorkItemCommentPublic> = {
-  definitionName: 'WorkItemCommentPublic',
-  schemaRef: '#/definitions/WorkItemCommentPublic',
-
-  decode(json: unknown): WorkItemCommentPublic {
-    const schema = ajv.getSchema(WorkItemCommentPublicDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${WorkItemCommentPublicDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, WorkItemCommentPublicDecoder.definitionName)
-  },
-}
-export const ModelsRoleDecoder: Decoder<ModelsRole> = {
-  definitionName: 'ModelsRole',
-  schemaRef: '#/definitions/ModelsRole',
-
-  decode(json: unknown): ModelsRole {
-    const schema = ajv.getSchema(ModelsRoleDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsRoleDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsRoleDecoder.definitionName)
-  },
-}
-export const RestUserResponseDecoder: Decoder<RestUserResponse> = {
-  definitionName: 'RestUserResponse',
-  schemaRef: '#/definitions/RestUserResponse',
-
-  decode(json: unknown): RestUserResponse {
-    const schema = ajv.getSchema(RestUserResponseDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${RestUserResponseDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, RestUserResponseDecoder.definitionName)
-  },
-}
-export const ModelsScopeDecoder: Decoder<ModelsScope> = {
-  definitionName: 'ModelsScope',
-  schemaRef: '#/definitions/ModelsScope',
-
-  decode(json: unknown): ModelsScope {
-    const schema = ajv.getSchema(ModelsScopeDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsScopeDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsScopeDecoder.definitionName)
-  },
-}
-export const UserAPIKeyPublicDecoder: Decoder<UserAPIKeyPublic> = {
-  definitionName: 'UserAPIKeyPublic',
-  schemaRef: '#/definitions/UserAPIKeyPublic',
-
-  decode(json: unknown): UserAPIKeyPublic {
-    const schema = ajv.getSchema(UserAPIKeyPublicDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${UserAPIKeyPublicDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, UserAPIKeyPublicDecoder.definitionName)
   },
 }
 export const DbTeamPublicDecoder: Decoder<DbTeamPublic> = {
@@ -447,27 +343,27 @@ export const ReposWorkItemTypeCreateParamsDecoder: Decoder<ReposWorkItemTypeCrea
     return validateJson(json, schema, ReposWorkItemTypeCreateParamsDecoder.definitionName)
   },
 }
-export const RestProjectBoardCreateRequestDecoder: Decoder<RestProjectBoardCreateRequest> = {
-  definitionName: 'RestProjectBoardCreateRequest',
-  schemaRef: '#/definitions/RestProjectBoardCreateRequest',
+export const ModelsRoleDecoder: Decoder<ModelsRole> = {
+  definitionName: 'ModelsRole',
+  schemaRef: '#/definitions/ModelsRole',
 
-  decode(json: unknown): RestProjectBoardCreateRequest {
-    const schema = ajv.getSchema(RestProjectBoardCreateRequestDecoder.schemaRef)
+  decode(json: unknown): ModelsRole {
+    const schema = ajv.getSchema(ModelsRoleDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${RestProjectBoardCreateRequestDecoder.definitionName} not found`)
+      throw new Error(`Schema ${ModelsRoleDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, RestProjectBoardCreateRequestDecoder.definitionName)
+    return validateJson(json, schema, ModelsRoleDecoder.definitionName)
   },
 }
-export const RestProjectBoardResponseDecoder: Decoder<RestProjectBoardResponse> = {
-  definitionName: 'RestProjectBoardResponse',
-  schemaRef: '#/definitions/RestProjectBoardResponse',
+export const UuidUUIDDecoder: Decoder<UuidUUID> = {
+  definitionName: 'UuidUUID',
+  schemaRef: '#/definitions/UuidUUID',
 
-  decode(json: unknown): RestProjectBoardResponse {
-    const schema = ajv.getSchema(RestProjectBoardResponseDecoder.schemaRef)
+  decode(json: unknown): UuidUUID {
+    const schema = ajv.getSchema(UuidUUIDDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${RestProjectBoardResponseDecoder.definitionName} not found`)
+      throw new Error(`Schema ${UuidUUIDDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, RestProjectBoardResponseDecoder.definitionName)
+    return validateJson(json, schema, UuidUUIDDecoder.definitionName)
   },
 }

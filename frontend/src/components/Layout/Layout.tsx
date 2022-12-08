@@ -17,11 +17,17 @@ type LayoutProps = {
 
 export default function Layout({ children }: LayoutProps) {
   const toasts = useUISlice((state) => state?.toastList, shallow)
-  const { addToast, dismissToast } = useUISlice()
+  const { addToast, dismissToast, theme, styleSheet } = useUISlice()
 
   const { euiTheme } = useEuiTheme()
 
-  // const { setStyleSheetLoaded, providerTheme, styleSheet, theme } = useTheme()
+  useEffect(() => {
+    const link = document.createElement('link')
+    link.id = `theme-style-${theme}`
+    link.rel = 'styleSheet'
+    link.href = styleSheet
+    document.head.appendChild(link)
+  }, [styleSheet, theme])
 
   const footerCSS = css`
     z-index: 999;

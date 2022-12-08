@@ -49,7 +49,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/project/${queryArg.id}/initialize`,
           method: 'POST',
-          body: queryArg.projectBoardCreateRequest,
+          body: queryArg.initializeProjectRequest,
         }),
         invalidatesTags: ['project'],
       }),
@@ -73,7 +73,7 @@ export type OpenapiYamlGetRes = unknown
 export type OpenapiYamlGetArgs = void
 export type AdminPingRes = /** status 200 OK */ string
 export type AdminPingArgs = void
-export type GetCurrentUserRes = /** status 200 ok */ RestUserResponse
+export type GetCurrentUserRes = /** status 200 ok */ UserResponse
 export type GetCurrentUserArgs = void
 export type UpdateUserAuthorizationRes = unknown
 export type UpdateUserAuthorizationArgs = {
@@ -84,7 +84,7 @@ export type UpdateUserAuthorizationArgs = {
 }
 export type DeleteUserRes = unknown
 export type DeleteUserArgs = /** UUID identifier of entity that needs to be updated */ string
-export type UpdateUserRes = /** status 200 ok */ RestUserResponse
+export type UpdateUserRes = /** status 200 ok */ UserResponse
 export type UpdateUserArgs = {
   /** UUID identifier of entity that needs to be updated */
   id: string
@@ -95,8 +95,7 @@ export type InitializeProjectRes = unknown
 export type InitializeProjectArgs = {
   /** integer identifier that needs to be updated */
   id: number
-  /** Updated user object */
-  projectBoardCreateRequest: ProjectBoardCreateRequest
+  initializeProjectRequest: InitializeProjectRequest
 }
 export type GetProjectBoardRes = /** status 200 Project successfully initialized. */ ProjectBoardResponse
 export type GetProjectBoardArgs = /** integer identifier that needs to be updated */ number
@@ -132,7 +131,7 @@ export type DbTeamPublic = {
   teamID: number
   updatedAt: string
 }
-export type RestUserResponse = {
+export type UserResponse = {
   apiKey?: DbUserApiKeyPublic
   createdAt: string
   deletedAt: string | null
@@ -156,8 +155,91 @@ export type UpdateUserRequest = {
   first_name?: string
   last_name?: string
 }
-export type ProjectBoardCreateRequest = any
-export type ProjectBoardResponse = any
+export type ReposActivityCreateParams = {
+  description?: string
+  isProductive?: boolean
+  name?: string
+  projectID?: number
+}
+export type ReposKanbanStepCreateParams = {
+  color?: string
+  description?: string
+  name?: string
+  projectID?: number
+  stepOrder?: number
+  timeTrackable?: boolean
+}
+export type ReposTeamCreateParams = {
+  description?: string
+  name?: string
+  projectID?: number
+}
+export type ReposWorkItemTagCreateParams = {
+  color?: string
+  description?: string
+  name?: string
+  projectID?: number
+}
+export type ReposWorkItemTypeCreateParams = {
+  color?: string
+  description?: string
+  name?: string
+  projectID?: number
+}
+export type InitializeProjectRequest = {
+  activities?: ReposActivityCreateParams[] | null
+  kanbanSteps?: ReposKanbanStepCreateParams[] | null
+  projectID?: number
+  teams?: ReposTeamCreateParams[] | null
+  workItemTags?: ReposWorkItemTagCreateParams[] | null
+  workItemTypes?: ReposWorkItemTypeCreateParams[] | null
+}
+export type DbActivityPublic = {
+  activityID: number
+  description: string
+  isProductive: boolean
+  name: string
+  projectID: number
+}
+export type DbKanbanStepPublic = {
+  color: string
+  description: string
+  kanbanStepID: number
+  name: string
+  projectID: number
+  stepOrder: number | null
+  timeTrackable: boolean
+}
+export type DbProjectPublic = {
+  createdAt: string
+  description: string
+  initialized: boolean
+  name: string
+  projectID: number
+  updatedAt: string
+} | null
+export type DbWorkItemTagPublic = {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTagID: number
+}
+export type DbWorkItemTypePublic = {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTypeID: number
+}
+export type ProjectBoardResponse = {
+  activities?: DbActivityPublic[] | null
+  kanbanSteps?: DbKanbanStepPublic[] | null
+  project?: DbProjectPublic
+  teams?: DbTeamPublic[] | null
+  workItemTags?: DbWorkItemTagPublic[] | null
+  workItemTypes?: DbWorkItemTypePublic[] | null
+}
 export const {
   useMyProviderCallbackQuery,
   useMyProviderLoginQuery,

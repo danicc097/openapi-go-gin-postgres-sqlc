@@ -26,7 +26,6 @@ export default ({ mode }) => {
       tsconfigPaths(),
       dynamicImport({}),
     ],
-
     server: {
       port: Number(Config.FRONTEND_PORT) || 5143,
       strictPort: true,

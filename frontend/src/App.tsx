@@ -6,8 +6,6 @@ import FallbackLoading from 'src/components/Loading/FallbackLoading'
 // import 'regenerator-runtime/runtime'
 import { EuiProvider, useEuiTheme } from '@elastic/eui'
 import { useUISlice } from 'src/slices/ui'
-import * as lightTheme from '@elastic/eui/dist/eui_theme_light.min.css'
-import * as darkTheme from '@elastic/eui/dist/eui_theme_dark.min.css'
 import { useNotificationAPI } from 'src/hooks/ui/useNotificationAPI'
 
 const Layout = React.lazy(() => import('./components/Layout/Layout'))

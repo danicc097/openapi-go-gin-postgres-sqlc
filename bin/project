@@ -609,11 +609,8 @@ x.build() {
 # Run backend with hot-reloading.
 x.run.backend-hr() {
   run_shared_services up -d --build --remove-orphans
-  # TODO new include_files flag in fork, e.g. for openapi.yaml.
-  # else generated .yaml files trigger rebuild.
-  # --build.include_files "openapi.yaml" \
   # NOTE: building binary very unreliable, leads to bin not found.
-  [[ -z $NO_GEN ]] && pre_build_cmd="bin/project gen"
+  # [[ -z $NO_GEN ]] && pre_build_cmd="bin/project gen" # gen too slow at this point, always disable
   air \
     --build.pre_build_cmd "$pre_build_cmd" \
     --build.cmd "" \

@@ -62,8 +62,40 @@ export interface paths {
 
 export interface components {
   schemas: {
-    ProjectBoardCreateRequest: Record<string, never>;
-    ProjectBoardResponse: Record<string, never>;
+    InitializeProjectRequest: {
+      activities?: (components["schemas"]["ReposActivityCreateParams"])[] | null;
+      kanbanSteps?: (components["schemas"]["ReposKanbanStepCreateParams"])[] | null;
+      projectID?: number;
+      teams?: (components["schemas"]["ReposTeamCreateParams"])[] | null;
+      workItemTags?: (components["schemas"]["ReposWorkItemTagCreateParams"])[] | null;
+      workItemTypes?: (components["schemas"]["ReposWorkItemTypeCreateParams"])[] | null;
+    };
+    ProjectBoardResponse: {
+      activities?: (components["schemas"]["DbActivityPublic"])[] | null;
+      kanbanSteps?: (components["schemas"]["DbKanbanStepPublic"])[] | null;
+      project?: components["schemas"]["DbProjectPublic"];
+      teams?: (components["schemas"]["DbTeamPublic"])[] | null;
+      workItemTags?: (components["schemas"]["DbWorkItemTagPublic"])[] | null;
+      workItemTypes?: (components["schemas"]["DbWorkItemTypePublic"])[] | null;
+    };
+    UserResponse: {
+      apiKey?: components["schemas"]["DbUserAPIKeyPublic"];
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt: string | null;
+      email: string;
+      firstName: string | null;
+      fullName: string | null;
+      hasGlobalNotifications: boolean;
+      hasPersonalNotifications: boolean;
+      lastName: string | null;
+      role: components["schemas"]["Role"];
+      scopes: components["schemas"]["Scopes"];
+      teams?: (components["schemas"]["DbTeamPublic"])[] | null;
+      userID: components["schemas"]["UuidUUID"];
+      username: string;
+    };
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -126,66 +158,6 @@ export interface components {
       /** Error Type */
       type: string;
     };
-    PgtypeJSONB: Record<string, never>;
-    UuidUUID: string;
-    TeamPublic: {
-      /** Format: date-time */
-      createdAt: string;
-      description: string;
-      metadata: components["schemas"]["PgtypeJSONB"];
-      name: string;
-      projectID: number;
-      teamID: number;
-      /** Format: date-time */
-      updatedAt: string;
-    };
-    TimeEntryPublic: {
-      activityID?: number;
-      comment?: string;
-      durationMinutes?: number | null;
-      /** Format: date-time */
-      start?: string;
-      teamID?: number | null;
-      timeEntryID?: number;
-      userID?: components["schemas"]["UuidUUID"];
-      workItemID?: number | null;
-    };
-    WorkItemCommentPublic: {
-      /** Format: date-time */
-      createdAt?: string;
-      message?: string;
-      /** Format: date-time */
-      updatedAt?: string;
-      userID?: components["schemas"]["UuidUUID"];
-      workItemCommentID?: number;
-      workItemID?: number;
-    };
-    ModelsRole: string;
-    RestUserResponse: {
-      apiKey?: components["schemas"]["DbUserAPIKeyPublic"];
-      /** Format: date-time */
-      createdAt: string;
-      /** Format: date-time */
-      deletedAt: string | null;
-      email: string;
-      firstName: string | null;
-      fullName: string | null;
-      hasGlobalNotifications: boolean;
-      hasPersonalNotifications: boolean;
-      lastName: string | null;
-      role: components["schemas"]["Role"];
-      scopes: components["schemas"]["Scopes"];
-      teams?: (components["schemas"]["DbTeamPublic"])[] | null;
-      userID: components["schemas"]["UuidUUID"];
-      username: string;
-    };
-    ModelsScope: string;
-    UserAPIKeyPublic: {
-      apiKey: string;
-      /** Format: date-time */
-      expiresOn: string;
-      userID: components["schemas"]["UuidUUID"];
-    } | null;
     DbTeamPublic: {
       /** Format: date-time */
       createdAt: string;
@@ -273,22 +245,8 @@ export interface components {
       name?: string;
       projectID?: number;
     };
-    RestProjectBoardCreateRequest: {
-      activities?: (components["schemas"]["ReposActivityCreateParams"])[] | null;
-      kanbanSteps?: (components["schemas"]["ReposKanbanStepCreateParams"])[] | null;
-      projectID?: number;
-      teams?: (components["schemas"]["ReposTeamCreateParams"])[] | null;
-      workItemTags?: (components["schemas"]["ReposWorkItemTagCreateParams"])[] | null;
-      workItemTypes?: (components["schemas"]["ReposWorkItemTypeCreateParams"])[] | null;
-    };
-    RestProjectBoardResponse: {
-      activities?: (components["schemas"]["DbActivityPublic"])[] | null;
-      kanbanSteps?: (components["schemas"]["DbKanbanStepPublic"])[] | null;
-      project?: components["schemas"]["DbProjectPublic"];
-      teams?: (components["schemas"]["DbTeamPublic"])[] | null;
-      workItemTags?: (components["schemas"]["DbWorkItemTagPublic"])[] | null;
-      workItemTypes?: (components["schemas"]["DbWorkItemTypePublic"])[] | null;
-    };
+    ModelsRole: string;
+    UuidUUID: string;
   };
   responses: never;
   parameters: {
@@ -385,7 +343,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["RestUserResponse"];
+          "application/json": components["schemas"]["UserResponse"];
         };
       };
     };
@@ -422,17 +380,16 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["RestUserResponse"];
+          "application/json": components["schemas"]["UserResponse"];
         };
       };
     };
   };
   InitializeProject: {
     /** creates initial data (teams, work item types, tags...) for a new project */
-    /** @description Updated user object */
     requestBody: {
       content: {
-        "application/json": components["schemas"]["ProjectBoardCreateRequest"];
+        "application/json": components["schemas"]["InitializeProjectRequest"];
       };
     };
     responses: {
