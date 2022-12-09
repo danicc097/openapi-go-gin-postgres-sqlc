@@ -9,7 +9,6 @@
       "ESNext"
     ],
     "allowJs": false,
-    "": true,
     "strict": false,
     "forceConsistentCasingInFileNames": true,
     "importsNotUsedAsValues": "error",
