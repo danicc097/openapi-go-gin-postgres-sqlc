@@ -146,8 +146,8 @@ create table notifications (
   , sender uuid not null
   , receiver uuid -- can be null for 'global' type
   , notification_type notification_type not null
-  , foreign key (sender) references users (user_id)
-  , foreign key (receiver) references users (user_id)
+  , foreign key (sender) references users (user_id) on delete cascade
+  , foreign key (receiver) references users (user_id) on delete cascade
   , check (num_nonnulls (receiver_rank , receiver) = 1)
 );
 
@@ -159,8 +159,8 @@ create table user_notifications (
   , read boolean default false not null -- frontend simply sends a list of user_notification_id to mark as read
   , created_at timestamp with time zone default current_timestamp not null
   , user_id uuid not null
-  , foreign key (user_id) references users (user_id)
-  , foreign key (notification_id) references notifications (notification_id)
+  , foreign key (user_id) references users (user_id) on delete cascade
+  , foreign key (notification_id) references notifications (notification_id) on delete cascade
 );
 
 create index on user_notifications (user_id);
@@ -216,6 +216,7 @@ begin
 end
 $function$;
 
+-- deletes get cascaded
 create trigger notifications_fan_out
   after insert on notifications for each row
   execute function notification_fan_out ();
