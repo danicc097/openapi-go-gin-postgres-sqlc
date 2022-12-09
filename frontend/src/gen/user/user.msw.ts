@@ -11,15 +11,11 @@ import { Role, Scope } from '.././model'
 
 export const getGetCurrentUserMock = () => ({
   apiKey: faker.helpers.arrayElement([
-    {
-      apiKey: faker.random.word(),
-      expiresOn: `${faker.date.past().toISOString().split('.')[0]}Z`,
-      userID: faker.random.word(),
-    },
+    { apiKey: faker.random.word(), expiresOn: (() => faker.date.past())(), userID: faker.random.word() },
     undefined,
   ]),
-  createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
-  deletedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+  createdAt: (() => faker.date.past())(),
+  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
   email: faker.random.word(),
   firstName: faker.helpers.arrayElement([faker.random.word(), null]),
   fullName: faker.helpers.arrayElement([faker.random.word(), null]),
@@ -30,12 +26,12 @@ export const getGetCurrentUserMock = () => ({
   scopes: faker.helpers.arrayElements(Object.values(Scope)),
   teams: faker.helpers.arrayElement([
     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-      createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+      createdAt: (() => faker.date.past())(),
       description: faker.random.word(),
       name: faker.random.word(),
       projectID: faker.datatype.number({ min: undefined, max: undefined }),
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
-      updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+      updatedAt: (() => faker.date.past())(),
     })),
     undefined,
   ]),
@@ -45,15 +41,11 @@ export const getGetCurrentUserMock = () => ({
 
 export const getUpdateUserMock = () => ({
   apiKey: faker.helpers.arrayElement([
-    {
-      apiKey: faker.random.word(),
-      expiresOn: `${faker.date.past().toISOString().split('.')[0]}Z`,
-      userID: faker.random.word(),
-    },
+    { apiKey: faker.random.word(), expiresOn: (() => faker.date.past())(), userID: faker.random.word() },
     undefined,
   ]),
-  createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
-  deletedAt: faker.helpers.arrayElement([`${faker.date.past().toISOString().split('.')[0]}Z`, null]),
+  createdAt: (() => faker.date.past())(),
+  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
   email: faker.random.word(),
   firstName: faker.helpers.arrayElement([faker.random.word(), null]),
   fullName: faker.helpers.arrayElement([faker.random.word(), null]),
@@ -64,12 +56,12 @@ export const getUpdateUserMock = () => ({
   scopes: faker.helpers.arrayElements(Object.values(Scope)),
   teams: faker.helpers.arrayElement([
     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-      createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+      createdAt: (() => faker.date.past())(),
       description: faker.random.word(),
       name: faker.random.word(),
       projectID: faker.datatype.number({ min: undefined, max: undefined }),
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
-      updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+      updatedAt: (() => faker.date.past())(),
     })),
     undefined,
   ]),

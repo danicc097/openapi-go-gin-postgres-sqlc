@@ -1,4 +1,5 @@
 import { defineConfig } from 'orval'
+import { faker } from '@faker-js/faker'
 
 // for custom client see https://github.com/anymaniax/orval/blob/master/samples/react-query/custom-client/src/api/mutator/custom-client.ts#L1
 export default defineConfig({
@@ -12,6 +13,8 @@ export default defineConfig({
       tsconfig: './tsconfig.json',
       // for extreme cases can also override the core package itself https://github.com/anymaniax/orval/tree/master/packages/core
       override: {
+        // TODO Axios converter if using useDates
+        // https://orval.dev/reference/configuration/output#usedates
         useDates: true,
         query: {
           signal: true, // generation of abort signal
@@ -21,6 +24,12 @@ export default defineConfig({
           options: {
             // QueryObserverOptions passed directly to all generated queries
             staleTime: 1000 * 3600,
+          },
+        },
+        mock: {
+          format: {
+            date: () => faker.date.past(),
+            'date-time': () => faker.date.past(),
           },
         },
       },

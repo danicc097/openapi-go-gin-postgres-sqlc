@@ -24,9 +24,6 @@
     "baseUrl": ".",
     "sourceMap": true,
     "paths": {
-      "@assets/*": [
-        "assets/*"
-      ],
       "@roles": [
         "roles.json"
       ],
@@ -42,7 +39,8 @@
     }
   },
   "include": [
-    "src"
+    "src",
+    "alias.ts"
   ],
   "references": [
     {

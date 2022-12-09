@@ -1,20 +1,16 @@
-import * as React from 'react'
-import { screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import UserAvatar, { UserAvatarProps } from './UserAvatar'
-import '@testing-library/jest-dom'
 import { BrowserRouter } from 'react-router-dom'
-
-import { render as renderWithStore } from 'src/test/test-utils'
-import { testInitialState } from 'src/test/test-state'
+import React from 'react' // fix vitest
+import { test } from 'vitest'
+import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 
 test('Renders content', async () => {
   const props: UserAvatarProps = {
-    user: testInitialState['auth']['user'],
+    user: getGetCurrentUserMock(),
     size: 'l',
     initialsLength: 2,
     type: 'user',
     color: '#eee',
   }
-  renderWithStore(<UserAvatar {...props} />)
+  return <UserAvatar {...props} />
 })

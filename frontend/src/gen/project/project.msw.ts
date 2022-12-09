@@ -33,23 +33,23 @@ export const getGetProjectBoardMock = () => ({
   ]),
   project: faker.helpers.arrayElement([
     {
-      createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+      createdAt: (() => faker.date.past())(),
       description: faker.random.word(),
       initialized: faker.datatype.boolean(),
       name: faker.random.word(),
       projectID: faker.datatype.number({ min: undefined, max: undefined }),
-      updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+      updatedAt: (() => faker.date.past())(),
     },
     undefined,
   ]),
   teams: faker.helpers.arrayElement([
     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-      createdAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+      createdAt: (() => faker.date.past())(),
       description: faker.random.word(),
       name: faker.random.word(),
       projectID: faker.datatype.number({ min: undefined, max: undefined }),
       teamID: faker.datatype.number({ min: undefined, max: undefined }),
-      updatedAt: `${faker.date.past().toISOString().split('.')[0]}Z`,
+      updatedAt: (() => faker.date.past())(),
     })),
     undefined,
   ]),

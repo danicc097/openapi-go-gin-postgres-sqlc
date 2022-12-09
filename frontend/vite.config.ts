@@ -38,6 +38,7 @@ export default ({ mode }) => {
     define: {
       'process.env.NODE_ENV': `"${mode}"`,
     },
+
     // root: './src',
     build: {
       minify: 'terser',
