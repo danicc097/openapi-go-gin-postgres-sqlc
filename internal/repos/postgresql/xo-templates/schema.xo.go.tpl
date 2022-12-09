@@ -2,7 +2,7 @@
 {{ define "enum" }}
 {{- $e := .Data -}}
 // {{ $e.GoName }} is the '{{ $e.SQLName }}' enum type from schema '{{ schema }}'.
-type {{ $e.GoName }} uint16
+type {{ $e.GoName }} string
 
 // {{ $e.GoName }} values.
 const (
@@ -12,50 +12,22 @@ const (
 {{ end -}}
 )
 
-// String satisfies the fmt.Stringer interface.
-func ({{ short $e.GoName }} {{ $e.GoName }}) String() string {
-	switch {{ short $e.GoName }} {
-{{ range $e.Values -}}
-	case {{ $e.GoName }}{{ .GoName }}:
-		return "{{ .SQLName }}"
-{{ end -}}
-	}
-	return fmt.Sprintf("{{ $e.GoName }}(%d)", {{ short $e.GoName }})
-}
-
-// MarshalText marshals {{ $e.GoName }} into text.
-func ({{ short $e.GoName }} {{ $e.GoName }}) MarshalText() ([]byte, error) {
-	return []byte({{ short $e.GoName }}.String()), nil
-}
-
-// UnmarshalText unmarshals {{ $e.GoName }} from text.
-func ({{ short $e.GoName }} *{{ $e.GoName }}) UnmarshalText(buf []byte) error {
-	switch str := string(buf); str {
-{{ range $e.Values -}}
-	case "{{ .SQLName }}":
-		*{{ short $e.GoName }} = {{ $e.GoName }}{{ .GoName }}
-{{ end -}}
-	default:
-		return ErrInvalid{{ $e.GoName }}(str)
-	}
-	return nil
-}
-
 // Value satisfies the driver.Valuer interface.
 func ({{ short $e.GoName }} {{ $e.GoName }}) Value() (driver.Value, error) {
-	return {{ short $e.GoName }}.String(), nil
+	return string({{ short $e.GoName }}), nil
 }
 
 // Scan satisfies the sql.Scanner interface.
-func ({{ short $e.GoName }} *{{ $e.GoName }}) Scan(v interface{}) error {
-  switch buf := v.(type) {
+func ({{ short $e.GoName }} *{{ $e.GoName }}) Scan(src interface{}) error {
+	switch s := src.(type) {
 	case []byte:
-		return {{ short $e.GoName }}.UnmarshalText(buf)
+		*{{ short $e.GoName }} = {{ $e.GoName }}(s)
 	case string:
-		return {{ short $e.GoName }}.UnmarshalText([]byte(buf))
-  }
-
-	return ErrInvalid{{ $e.GoName }}(fmt.Sprintf("%T", v))
+		*{{ short $e.GoName }} = {{ $e.GoName }}(s)
+	default:
+		return fmt.Errorf("unsupported scan type for {{ $e.GoName }}: %T", src)
+	}
+	return nil
 }
 
 {{ $nullName := (printf "%s%s" "Null" $e.GoName) -}}
@@ -78,7 +50,7 @@ func ({{ $nullShort }} {{ $nullName }}) Value() (driver.Value, error) {
 // Scan satisfies the sql.Scanner interface.
 func ({{ $nullShort }} *{{ $nullName }}) Scan(v interface{}) error {
 	if v == nil {
-		{{ $nullShort }}.{{ $e.GoName }}, {{ $nullShort }}.Valid = 0, false
+		{{ $nullShort }}.{{ $e.GoName }}, {{ $nullShort }}.Valid = "", false
 		return nil
 	}
 	err := {{ $nullShort }}.{{ $e.GoName }}.Scan(v)

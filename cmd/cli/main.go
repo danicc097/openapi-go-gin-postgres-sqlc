@@ -64,7 +64,7 @@ func main() {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}
 
-	username := "user_2"
+	username := "user_1"
 	// username := "doesntexist" // User should be nil
 	// username := "superadmin"
 	user, err := db.UserByUsername(context.Background(), pool, username,
@@ -119,8 +119,15 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	fmt.Printf("dest: %#v\n", dest)
-	format.PrintJSON(dest)
+	// fmt.Printf("dest: %#v\n", dest)
+	// format.PrintJSON(dest)
+
+	q := db.New()
+	nn, err := q.GetUserPersonalNotificationsByUserID(context.Background(), pool, db.GetUserPersonalNotificationsByUserIDParams{UserID: user.UserID, Lim: 6})
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	format.PrintJSON(nn)
 }
 
 func errAndExit(out []byte, err error) {

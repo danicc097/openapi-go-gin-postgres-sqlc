@@ -1,7 +1,11 @@
 package postgresql
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 )
 
 // Notification represents the repository used for interacting with Notification records.
@@ -96,3 +100,17 @@ func NewNotification() *Notification {
 
 // 	return nn, nil
 // }
+
+func (u *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, userID string) ([]db.GetUserPersonalNotificationsByUserIDRow, error) {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse user id as UUID: %w", parseErrorDetail(err))
+	}
+
+	nn, err := u.q.GetUserPersonalNotificationsByUserID(ctx, d, db.GetUserPersonalNotificationsByUserIDParams{UserID: uid, Lim: 5})
+	if err != nil {
+		return nil, fmt.Errorf("could not get personal notifications for user: %w", parseErrorDetail(err))
+	}
+
+	return nn, nil
+}

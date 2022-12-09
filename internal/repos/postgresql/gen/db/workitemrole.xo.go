@@ -8,60 +8,32 @@ import (
 )
 
 // WorkItemRole is the 'work_item_role' enum type from schema 'public'.
-type WorkItemRole uint16
+type WorkItemRole string
 
 // WorkItemRole values.
 const (
 	// WorkItemRolePreparer is the 'preparer' work_item_role.
-	WorkItemRolePreparer WorkItemRole = 1
+	WorkItemRolePreparer WorkItemRole = "preparer"
 	// WorkItemRoleReviewer is the 'reviewer' work_item_role.
-	WorkItemRoleReviewer WorkItemRole = 2
+	WorkItemRoleReviewer WorkItemRole = "reviewer"
 )
-
-// String satisfies the fmt.Stringer interface.
-func (wir WorkItemRole) String() string {
-	switch wir {
-	case WorkItemRolePreparer:
-		return "preparer"
-	case WorkItemRoleReviewer:
-		return "reviewer"
-	}
-	return fmt.Sprintf("WorkItemRole(%d)", wir)
-}
-
-// MarshalText marshals WorkItemRole into text.
-func (wir WorkItemRole) MarshalText() ([]byte, error) {
-	return []byte(wir.String()), nil
-}
-
-// UnmarshalText unmarshals WorkItemRole from text.
-func (wir *WorkItemRole) UnmarshalText(buf []byte) error {
-	switch str := string(buf); str {
-	case "preparer":
-		*wir = WorkItemRolePreparer
-	case "reviewer":
-		*wir = WorkItemRoleReviewer
-	default:
-		return ErrInvalidWorkItemRole(str)
-	}
-	return nil
-}
 
 // Value satisfies the driver.Valuer interface.
 func (wir WorkItemRole) Value() (driver.Value, error) {
-	return wir.String(), nil
+	return string(wir), nil
 }
 
 // Scan satisfies the sql.Scanner interface.
-func (wir *WorkItemRole) Scan(v interface{}) error {
-	switch buf := v.(type) {
+func (wir *WorkItemRole) Scan(src interface{}) error {
+	switch s := src.(type) {
 	case []byte:
-		return wir.UnmarshalText(buf)
+		*wir = WorkItemRole(s)
 	case string:
-		return wir.UnmarshalText([]byte(buf))
+		*wir = WorkItemRole(s)
+	default:
+		return fmt.Errorf("unsupported scan type for WorkItemRole: %T", src)
 	}
-
-	return ErrInvalidWorkItemRole(fmt.Sprintf("%T", v))
+	return nil
 }
 
 // NullWorkItemRole represents a null 'work_item_role' enum for schema 'public'.
@@ -82,7 +54,7 @@ func (nwir NullWorkItemRole) Value() (driver.Value, error) {
 // Scan satisfies the sql.Scanner interface.
 func (nwir *NullWorkItemRole) Scan(v interface{}) error {
 	if v == nil {
-		nwir.WorkItemRole, nwir.Valid = 0, false
+		nwir.WorkItemRole, nwir.Valid = "", false
 		return nil
 	}
 	err := nwir.WorkItemRole.Scan(v)

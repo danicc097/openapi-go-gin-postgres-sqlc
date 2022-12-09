@@ -35,8 +35,8 @@ limit 1
 `
 
 type GetUserParams struct {
-	Email    pgtype.Text `db:"email" json:"email"`
-	Username pgtype.Text `db:"username" json:"username"`
+	Email    *string     `db:"email" json:"email"`
+	Username *string     `db:"username" json:"username"`
 	UserID   pgtype.UUID `db:"user_id" json:"user_id"`
 }
 
@@ -99,7 +99,7 @@ type GetUserPersonalNotificationsByUserIDRow struct {
 	Title              string             `db:"title" json:"title"`
 	Body               string             `db:"body" json:"body"`
 	Label              string             `db:"label" json:"label"`
-	Link               pgtype.Text        `db:"link" json:"link"`
+	Link               *string            `db:"link" json:"link"`
 }
 
 func (q *Queries) GetUserPersonalNotificationsByUserID(ctx context.Context, db DBTX, arg GetUserPersonalNotificationsByUserIDParams) ([]GetUserPersonalNotificationsByUserIDRow, error) {

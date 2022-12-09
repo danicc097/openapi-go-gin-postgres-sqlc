@@ -326,8 +326,7 @@ x.gen.xo() {
 
     wait
 
-    files=$(find . \
-      -path "$PG_REPO_GEN/db" \
+    files=$(find "$PG_REPO_GEN/db" \
       -name "*.go")
     goimports -w $files
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -535,6 +534,8 @@ x.lint.go() {
       -not -path "**/$PROTO_DIR/*" \
       -not -path "**/$PG_REPO_GEN/*" \
       -not -path "**/testdata/*" \
+      -not -path "**/node_modules/*" \
+      -not -path "**/.venv/*" \
       -not -path "**/*.cache/*" \
       -not -path "**/vendor/*" \
       -not -path "**/*.gen.*" \

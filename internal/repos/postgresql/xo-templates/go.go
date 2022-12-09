@@ -655,7 +655,7 @@ func convertEnum(e xo.Enum) Enum {
 		vals = append(vals, EnumValue{
 			GoName:     name,
 			SQLName:    v.Name,
-			ConstValue: *v.ConstValue,
+			ConstValue: fmt.Sprintf(`"%s"`, v.Name),
 		})
 	}
 
@@ -2842,7 +2842,7 @@ func singularize(s string) string {
 type EnumValue struct {
 	GoName     string
 	SQLName    string
-	ConstValue int
+	ConstValue string
 }
 
 // Enum is a enum type template.
