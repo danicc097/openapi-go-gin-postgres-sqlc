@@ -2,16 +2,20 @@ import {
   EuiBadge,
   EuiButton,
   EuiCallOut,
+  EuiCodeBlock,
   EuiConfirmModal,
   EuiFlexGroup,
   EuiFlexItem,
   EuiForm,
   EuiFormRow,
+  EuiHeader,
+  EuiHealth,
   EuiIcon,
   EuiSelectable,
   EuiSelectableOption,
   EuiSpacer,
   EuiSuperSelect,
+  EuiSuperSelectOption,
   EuiSuperSelectProps,
   EuiText,
   EuiTextColor,
@@ -28,12 +32,17 @@ import type { Role } from 'src/client-validator/gen/models'
 import PageTemplate from 'src/components/PageTemplate/PageTemplate'
 import type { ValidationErrors } from 'src/client-validator/validate'
 import { useUpdateUserAuthorization } from 'src/gen/user/user'
-import { useForm } from '@mantine/form'
+import { useForm, UseFormReturnType } from '@mantine/form'
 import { validateField } from 'src/utils/validation'
 import { UpdateUserAuthRequestDecoder } from 'src/client-validator/gen/decoders'
 import { newFrontendSpan } from 'src/TraceProvider'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
+import { createLabel, renderSuperSelect } from 'src/utils/forms'
+
+type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
+
+const REQUIRED_USER_AUTH_UPDATE_KEYS: Record<RequiredUserAuthUpdateKeys, boolean> = {}
 
 export default function UserPermissionsPage() {
   const [userSelection, setUserSelection] = useState<UserResponse>(null)
@@ -206,14 +215,20 @@ export default function UserPermissionsPage() {
     </div>
   )
 
-  const roleOptions: EuiSuperSelectProps<Role>['options'] = Object.keys(roles).map((key) => {
+  const roleOptions: EuiSuperSelectProps<Role>['options'] = Object.keys(roles).map((key: Role) => {
     const name = capitalize(key.replace(/([A-Z])/g, ' $1').trim())
     return {
-      value: key as Role,
-      inputDisplay: name,
+      value: key,
+      inputDisplay: (
+        <EuiHealth color={roleColor(key)} style={{ lineHeight: 'inherit' }}>
+          {name}
+        </EuiHealth>
+      ),
       dropdownDisplay: (
         <Fragment>
-          <strong>{name}</strong>
+          <EuiHealth color={roleColor(key)} style={{ lineHeight: 'inherit' }}>
+            {name}
+          </EuiHealth>
         </Fragment>
       ),
     }
@@ -229,6 +244,12 @@ export default function UserPermissionsPage() {
   const element = (
     <>
       {getErrors()}
+      <EuiSpacer></EuiSpacer>
+      <EuiTitle size="xs">
+        <EuiText>Form</EuiText>
+      </EuiTitle>
+      <EuiCodeBlock language="json">{JSON.stringify(form, null, 4)}</EuiCodeBlock>
+      <EuiSpacer></EuiSpacer>
       <EuiForm
         component="form"
         onSubmit={form.onSubmit(onRoleUpdateSubmit, handleError)}
@@ -258,25 +279,13 @@ export default function UserPermissionsPage() {
               )}
             </EuiSelectable>
           </EuiFormRow>
-          <EuiFormRow
-            label="Role"
-            helpText="Select the new role, if any."
-            isInvalid={Boolean(form.getInputProps('role').error)}
-            {...form.getInputProps('role')}
-            error={capitalize(form.getInputProps('role').error)}
-            fullWidth
-          >
-            <EuiSuperSelect
-              name="role"
-              options={roleOptions}
-              valueOfSelected={form.values.role}
-              onChange={onRoleSuperSelectChange}
-              itemLayoutAlign="top"
-              hasDividers
-              fullWidth
-              isInvalid={Boolean(form.getInputProps('role').error)}
-            />
-          </EuiFormRow>
+          {renderSuperSelect<UpdateUserAuthRequest, 'role'>({
+            formKey: 'role',
+            form,
+            options: roleOptions,
+            requiredFormKeys: REQUIRED_USER_AUTH_UPDATE_KEYS,
+            onSuperSelectChange: onRoleSuperSelectChange,
+          })}
         </EuiFlexGroup>
         <EuiSpacer />
         <EuiButton

@@ -34,6 +34,8 @@ export default function PageTemplate({
       bottomBorder={bottomBorder}
       grow={grow}
       offset={offset}
+      // paddingSize="none"
+      style={{ paddingBlockStart: 0 }}
     >
       {sidebar && <EuiPageTemplate.Sidebar sticky={sidebarSticky}>{sidebar}</EuiPageTemplate.Sidebar>}
       {header && <EuiPageTemplate.Header {...header} rightSideItems={[...buttons]} />}
