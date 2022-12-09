@@ -3,7 +3,7 @@ package rest
 // func TestOIDCRoutes(t *testing.T) {
 // 	t.Parallel()
 
-// 	srv, err := runTestServer(t, testpool, []gin.HandlerFunc{func(c *gin.Context) {
+// 	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{func(c *gin.Context) {
 // 		c.Next()
 // 	}})
 // 	if err != nil {

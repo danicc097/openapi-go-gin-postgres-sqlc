@@ -163,6 +163,8 @@ create table user_notifications (
   , foreign key (notification_id) references notifications (notification_id) on delete cascade
 );
 
+comment on column user_notifications.notification_id is 'cardinality:O2O';
+
 create index on user_notifications (user_id);
 
 -- read field simply used to show 'NEW' label but there is no filtering

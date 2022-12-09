@@ -71,13 +71,13 @@ func TestAuthorizationMiddleware_Roles(t *testing.T) {
 				postgresql.OtelName, nil),
 			authzsvc,
 		)
-		authnsvc := services.NewAuthentication(logger, usvc, testpool)
+		authnsvc := services.NewAuthentication(logger, usvc, testPool)
 
-		authMw := newAuthMiddleware(logger, testpool, authnsvc, authzsvc, usvc)
+		authMw := newAuthMiddleware(logger, testPool, authnsvc, authzsvc, usvc)
 
 		req, _ := http.NewRequest(http.MethodGet, "/", nil)
 
-		ff := resttestutil.NewFixtureFactory(usvc, testpool, authnsvc, authzsvc)
+		ff := resttestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
 		ufixture, err := ff.CreateUser(context.Background(), resttestutil.CreateUserParams{
 			Role:       tc.role,
 			WithAPIKey: true,

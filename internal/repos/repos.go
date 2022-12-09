@@ -135,7 +135,8 @@ type ProjectBoard interface {
 
 // Notification defines the datastore/repository handling persisting Notification records.
 type Notification interface {
-	LatestUserNotifications(ctx context.Context, d db.DBTX, userID string) ([]*db.UserNotification, error)
+	LatestPersonalNotifications(ctx context.Context, d db.DBTX, userID string) ([]*db.UserNotification, error)
+	LatestGlobalNotifications(ctx context.Context, d db.DBTX, userID string) ([]*db.UserNotification, error)
 	CreatePersonal(ctx context.Context, d db.DBTX) (*db.Notification, error)
 	CreateGlobal(ctx context.Context, d db.DBTX) (*db.Notification, error)
 	Delete(ctx context.Context, d db.DBTX, id string) (*db.Notification, error)

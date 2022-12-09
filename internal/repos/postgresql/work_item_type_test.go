@@ -18,13 +18,13 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 	workItemTypeRepo := postgresql.NewWorkItemType()
 
 	ctx := context.Background()
-	project, err := projectRepo.ProjectByName(ctx, testpool, demoProjectName)
+	project, err := projectRepo.ProjectByName(ctx, testPool, demoProjectName)
 	if err != nil {
 		t.Fatalf("projectRepo.ProjectByName unexpected error = %v", err)
 	}
 	tcp := randomWorkItemTypeCreateParams(t, project.ProjectID)
 
-	workItemType, err := workItemTypeRepo.Create(ctx, testpool, tcp)
+	workItemType, err := workItemTypeRepo.Create(ctx, testPool, tcp)
 	if err != nil {
 		t.Fatalf("workItemTypeRepo.Create unexpected error = %v", err)
 	}
@@ -53,7 +53,7 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundWorkItemType, err := tc.args.fn(context.Background(), testpool, tc.args.filter, tc.args.projectID)
+			foundWorkItemType, err := tc.args.fn(context.Background(), testPool, tc.args.filter, tc.args.projectID)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -67,7 +67,7 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 
 			filter := "inexistent workItemType"
 
-			_, err := tc.args.fn(context.Background(), testpool, filter, tc.args.projectID)
+			_, err := tc.args.fn(context.Background(), testPool, filter, tc.args.projectID)
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}
@@ -96,7 +96,7 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundWorkItemType, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
+			foundWorkItemType, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -110,7 +110,7 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 
 			filter := 254364 // does not exist
 
-			_, err := tc.args.fn(context.Background(), testpool, filter)
+			_, err := tc.args.fn(context.Background(), testPool, filter)
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}

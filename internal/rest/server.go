@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -46,6 +47,7 @@ type Config struct {
 	// Port to listen to. Use ":0" for a random port.
 	Address string
 	Pool    *pgxpool.Pool
+	SQLPool *sql.DB
 	Redis   *rv8.Client
 	Logger  *zap.Logger
 	// SpecPath is the OpenAPI spec filepath.
@@ -274,7 +276,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "zap.New")
 	}
 
-	pool, err := postgresql.New(conf, logger)
+	pool, sqlpool, err := postgresql.New(conf, logger)
 	if err != nil {
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "postgresql.New")
 	}
@@ -304,6 +306,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 	srv, err := NewServer(Config{
 		Address:                address,
 		Pool:                   pool,
+		SQLPool:                sqlpool,
 		Redis:                  rdb,
 		Logger:                 logger,
 		SpecPath:               specPath,

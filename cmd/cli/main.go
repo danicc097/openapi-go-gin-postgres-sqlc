@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"flag"
 	"fmt"
 	"log"
@@ -60,7 +59,7 @@ func main() {
 
 	logger, _ := zap.NewDevelopment()
 	conf := envvar.New()
-	pool, err := postgresql.New(conf, logger)
+	pool, sqlpool, err := postgresql.New(conf, logger)
 	if err != nil {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}
@@ -94,21 +93,16 @@ func main() {
 		UserNotifications.
 			INNER_JOIN(Notifications, Notifications.NotificationID.EQ(UserNotifications.NotificationID)),
 	).WHERE(
-		UserNotifications.UserID.EQ(UUID(user.UserID)),
+
+		UserNotifications.UserID.EQ(UUID(user.UserID)).
+			AND(UserNotifications.UserID.EQ(UUID(user.UserID))),
 	).ORDER_BY(
 		UserNotifications.CreatedAt.DESC(),
 	)
 	query, args := getUserNotificationsByUserID.Sql()
 
-	fmt.Println(query) // will print parameterized sql ($1, ...)
-	fmt.Println(args)
-
-	dbpool, err := sql.Open("pgx", pool.Config().ConnString())
-	if err != nil {
-		fmt.Println(err.Error())
-		panic("Failed to connect to test pool")
-	}
-	defer dbpool.Close()
+	fmt.Printf("query: %v\n", query)
+	fmt.Printf("args: %#v\n", args)
 
 	type Res []struct {
 		model.UserNotifications
@@ -121,7 +115,7 @@ func main() {
 	// won't be able to use same transaction and also need a sql.DB pool apart from pgxpool opened with postgresql.New
 	// https://github.com/go-jet/jet/issues/59
 	// this will break our repo and service (d db.DBTX) param
-	err = getUserNotificationsByUserID.QueryContext(context.Background(), dbpool, dest)
+	err = getUserNotificationsByUserID.QueryContext(context.Background(), sqlpool, dest)
 	if err != nil {
 		fmt.Println(err.Error())
 	}

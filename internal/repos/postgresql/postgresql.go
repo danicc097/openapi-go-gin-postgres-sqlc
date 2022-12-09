@@ -5,6 +5,7 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/url"
@@ -21,7 +22,7 @@ import (
 )
 
 // New instantiates the PostgreSQL database using configuration defined in environment variables.
-func New(conf *envvar.Configuration, logger *zap.Logger) (*pgxpool.Pool, error) {
+func New(conf *envvar.Configuration, logger *zap.Logger) (*pgxpool.Pool, *sql.DB, error) {
 	get := func(v string) string {
 		res, err := conf.Get(v)
 		if err != nil {
@@ -61,21 +62,26 @@ func New(conf *envvar.Configuration, logger *zap.Logger) (*pgxpool.Pool, error) 
 
 	poolConfig, err := pgxpool.ParseConfig(dsn.String())
 	if err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "pgx.ParseConfig")
+		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "pgx.ParseConfig")
 	}
 	poolConfig.ConnConfig.Tracer = &tracelog.TraceLog{
 		Logger:   zapadapter.NewLogger(logger),
 		LogLevel: tracelog.LogLevelTrace,
 	}
 
-	pool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
+	pgxPool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "pgxpool.New")
+		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "pgxpool.New")
 	}
 
-	if err := pool.Ping(context.Background()); err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "db.Ping")
+	if err := pgxPool.Ping(context.Background()); err != nil {
+		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "db.Ping")
 	}
 
-	return pool, nil
+	sqlPool, err := sql.Open("pgx", pgxPool.Config().ConnString())
+	if err != nil {
+		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "sql.Open")
+	}
+
+	return pgxPool, sqlPool, nil
 }

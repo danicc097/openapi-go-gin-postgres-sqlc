@@ -20,7 +20,7 @@ func TestUser_Update(t *testing.T) {
 
 	ucp := randomUserCreateParams(t)
 
-	user, err := userRepo.Create(context.Background(), testpool, ucp)
+	user, err := userRepo.Create(context.Background(), testPool, ucp)
 	if err != nil {
 		t.Fatalf("unexpected error = %v", err)
 	}
@@ -60,7 +60,7 @@ func TestUser_Update(t *testing.T) {
 			t.Parallel()
 
 			u := postgresql.NewUser()
-			got, err := u.Update(context.Background(), testpool, tt.args.id, tt.args.params)
+			got, err := u.Update(context.Background(), testPool, tt.args.id, tt.args.params)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("User.Update() error = %v, wantErr %v", err, tt.wantErr)
 
@@ -80,7 +80,7 @@ func TestUser_MarkAsDeleted(t *testing.T) {
 
 	ucp := randomUserCreateParams(t)
 
-	user, err := userRepo.Create(context.Background(), testpool, ucp)
+	user, err := userRepo.Create(context.Background(), testPool, ucp)
 	if err != nil {
 		t.Fatalf("unexpected error = %v", err)
 	}
@@ -108,14 +108,14 @@ func TestUser_MarkAsDeleted(t *testing.T) {
 			t.Parallel()
 
 			u := postgresql.NewUser()
-			_, err := u.Delete(context.Background(), testpool, tt.args.id)
+			_, err := u.Delete(context.Background(), testPool, tt.args.id)
 			if err != nil {
 				t.Errorf("User.Delete() unexpected error = %v", err)
 
 				return
 			}
 
-			_, err = u.UserByID(context.Background(), testpool, tt.args.id)
+			_, err = u.UserByID(context.Background(), testPool, tt.args.id)
 			if err == nil {
 				t.Error("wanted error but got nothing", err)
 
@@ -133,7 +133,7 @@ func TestUser_UserByIndexedQueries(t *testing.T) {
 
 	ucp := randomUserCreateParams(t)
 
-	user, err := userRepo.Create(context.Background(), testpool, ucp)
+	user, err := userRepo.Create(context.Background(), testPool, ucp)
 	if err != nil {
 		t.Fatalf("unexpected error = %v", err)
 	}
@@ -181,7 +181,7 @@ func TestUser_UserByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundUser, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
+			foundUser, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -196,7 +196,7 @@ func TestUser_UserByIndexedQueries(t *testing.T) {
 			// valid as of now for any text and uuid index unless there are specific table checks
 			filter := uuid.New().String()
 
-			_, err := tc.args.fn(context.Background(), testpool, filter)
+			_, err := tc.args.fn(context.Background(), testPool, filter)
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}
@@ -215,12 +215,12 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		ucp := randomUserCreateParams(t)
 
-		user, err := userRepo.Create(context.Background(), testpool, ucp)
+		user, err := userRepo.Create(context.Background(), testPool, ucp)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
 
-		uak, err := userRepo.CreateAPIKey(context.Background(), testpool, user)
+		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, user)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
@@ -234,7 +234,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		errContains := "could not save api key"
 
-		_, err := userRepo.CreateAPIKey(context.Background(), testpool, &db.User{UserID: uuid.New()})
+		_, err := userRepo.CreateAPIKey(context.Background(), testPool, &db.User{UserID: uuid.New()})
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
@@ -246,17 +246,17 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		ucp := randomUserCreateParams(t)
 
-		newUser, err := userRepo.Create(context.Background(), testpool, ucp)
+		newUser, err := userRepo.Create(context.Background(), testPool, ucp)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
 
-		uak, err := userRepo.CreateAPIKey(context.Background(), testpool, newUser)
+		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
 
-		user, err := userRepo.UserByAPIKey(context.Background(), testpool, uak.APIKey)
+		user, err := userRepo.UserByAPIKey(context.Background(), testPool, uak.APIKey)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
@@ -270,7 +270,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		errContains := errNoRows
 
-		_, err := userRepo.UserByAPIKey(context.Background(), testpool, "missing")
+		_, err := userRepo.UserByAPIKey(context.Background(), testPool, "missing")
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
@@ -310,7 +310,7 @@ func TestUser_Create(t *testing.T) {
 			params: ucp,
 		}
 
-		got, err := userRepo.Create(context.Background(), testpool, args.params)
+		got, err := userRepo.Create(context.Background(), testPool, args.params)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
@@ -337,7 +337,7 @@ func TestUser_Create(t *testing.T) {
 
 		errContains := "violates check constraint"
 
-		_, err := userRepo.Create(context.Background(), testpool, args.params)
+		_, err := userRepo.Create(context.Background(), testPool, args.params)
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
