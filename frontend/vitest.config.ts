@@ -25,13 +25,12 @@ const alias: Record<string, string> = {
 }
 
 export default defineConfig({
-  root: '.',
   // esbuild: {
   //   tsconfigRaw: {},
   // },
-  resolve: {
-    alias,
-  },
+  // resolve: {
+  //   alias,
+  // },
   test: {
     deps: {
       inline: ['framer-motion'],

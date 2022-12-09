@@ -13,7 +13,7 @@ export const useAuthenticatedUser = () => {
     hasPersonalNotifications: true,
     role: 'admin',
     userID: crypto.randomUUID(),
-    email: 'test@mail.com',
+    email: 'admin@mail.com',
     firstName: 'John',
     lastName: 'Doe',
     fullName: 'John Doe',

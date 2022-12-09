@@ -9,7 +9,7 @@
       "ESNext"
     ],
     "allowJs": false,
-    "skipLibCheck": true,
+    "": true,
     "strict": false,
     "forceConsistentCasingInFileNames": true,
     "importsNotUsedAsValues": "error",
@@ -36,15 +36,6 @@
       "@config": [
         "config.json"
       ],
-    }
+    },
   },
-  "include": [
-    "src",
-    "alias.ts"
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.vite.json"
-    }
-  ]
 }

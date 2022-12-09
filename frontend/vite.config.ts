@@ -24,7 +24,7 @@ export default ({ mode }) => {
           plugins: ['@emotion/babel-plugin'],
         },
       }),
-      tsconfigPaths(),
+      tsconfigPaths({ root: '.' }),
       dynamicImport({}),
     ],
     server: {
@@ -38,8 +38,6 @@ export default ({ mode }) => {
     define: {
       'process.env.NODE_ENV': `"${mode}"`,
     },
-
-    // root: './src',
     build: {
       minify: 'terser',
       terserOptions: {
