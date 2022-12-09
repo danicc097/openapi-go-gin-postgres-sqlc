@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"log"
@@ -14,6 +15,13 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
+
+	// dot import so go code would resemble as much as native SQL
+	// dot import is not mandatory
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/jet/public/model"
+	. "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/jet/public/table"
+	. "github.com/go-jet/jet/v2/postgres"
 )
 
 // clear && go run cmd/cli/main.go -env .env.dev
@@ -78,6 +86,44 @@ func main() {
 		log.Fatalf("UserAPIKeyByAPIKey: %v", err)
 	}
 	fmt.Printf("found user from its api key u: %v#\n", uak.User)
+
+	getUserNotificationsByUserID := SELECT(
+		UserNotifications.AllColumns,
+		Notifications.AllColumns,
+	).FROM(
+		UserNotifications.
+			INNER_JOIN(Notifications, Notifications.NotificationID.EQ(UserNotifications.NotificationID)),
+	).WHERE(
+		UserNotifications.UserID.EQ(UUID(user.UserID)),
+	).ORDER_BY(
+		UserNotifications.CreatedAt.DESC(),
+	)
+	query, args := getUserNotificationsByUserID.Sql()
+
+	fmt.Println(query) // will print parameterized sql ($1, ...)
+	fmt.Println(args)
+
+	dbpool, err := sql.Open("pgx", pool.Config().ConnString())
+	if err != nil {
+		fmt.Println(err.Error())
+		panic("Failed to connect to test pool")
+	}
+	defer dbpool.Close()
+
+	type Res []struct {
+		model.UserNotifications
+
+		Notification model.Notifications
+	}
+
+	dest := &Res{}
+
+	err = getUserNotificationsByUserID.QueryContext(context.Background(), dbpool, dest)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Printf("dest: %#v\n", dest)
+	format.PrintJSON(dest)
 }
 
 func errAndExit(out []byte, err error) {
