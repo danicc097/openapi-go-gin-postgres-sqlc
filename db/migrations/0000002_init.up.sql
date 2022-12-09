@@ -141,7 +141,7 @@ create table notifications (
   , title text not null
   , body text not null
   , label text not null
-  , link text null
+  , link text
   , created_at timestamp with time zone default current_timestamp not null
   , sender uuid not null
   , receiver uuid -- can be null for 'global' type

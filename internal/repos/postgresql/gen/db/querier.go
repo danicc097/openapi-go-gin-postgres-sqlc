@@ -10,7 +10,7 @@ import (
 
 type Querier interface {
 	GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetUserRow, error)
-	ListAllUsers2(ctx context.Context, db DBTX) ([]ListAllUsers2Row, error)
+	GetUserPersonalNotificationsByUserID(ctx context.Context, db DBTX, arg GetUserPersonalNotificationsByUserIDParams) ([]GetUserPersonalNotificationsByUserIDRow, error)
 	// plpgsql-language-server:disable
 	RegisterNewUser(ctx context.Context, db DBTX, arg RegisterNewUserParams) (RegisterNewUserRow, error)
 	// update

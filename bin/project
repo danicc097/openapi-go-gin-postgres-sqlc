@@ -162,98 +162,101 @@ x.fetch.swagger-ui() {
 # Run pre-generation scripts in the internal package.
 x.pregen() {
   { { {
-    echo "Running generation"
+    (
+      POSTGRES_DB="$GEN_POSTGRES_DB"
 
-    missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
-    [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
+      echo "Running generation"
 
-    # don't want this to block if getting bad gen later on
-    go build -o pregen cmd/pregen/main.go || echo "Could not rebuild pregen" >&2
+      missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
+      [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
-    ./pregen -env=".env.$env" --validate-spec-only
+      # don't want this to block if getting bad gen later on
+      go build -o pregen cmd/pregen/main.go || echo "Could not rebuild pregen" >&2
 
-    x.db.drop
-    x.migrate up
+      ./pregen -env=".env.$env" --validate-spec-only
 
-    ######## Sync enums from db with spec
-    # example: `x-db-enum: user_role` will use the db's "user_role" enum
-    local vext="x-db-enum"
-    for enum in $(yq e ".. | select(has(\"$vext\")).$vext" $SPEC); do
-      local db_enums=()
-      local path="$(enum_name=$enum yq e ".. | select(has(\"$vext\") and .$vext == env(enum_name)) | (path | join(\".\"))" $SPEC)"
-      mapfile -t db_enums < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
+      x.db.drop
+      x.migrate up
 
-      [[ ${#db_enums[@]} -gt 0 ]] || err "$vext: Enum '$enum' not found in database $POSTGRES_DB"
-      local enums=$(printf ",\"%s\"" "${db_enums[@]}")
-      enums="[${enums:1}]"
-      echo "Replacing enum '$enum' in $SPEC with: $enums"
-      enums=$enums yq e ".$path.enum = env(enums) | (.$path.enum | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
-    done
+      ######## Sync enums from db with spec
+      # example: `x-db-enum: user_role` will use the db's "user_role" enum
+      local vext="x-db-enum"
+      for enum in $(yq e ".. | select(has(\"$vext\")).$vext" $SPEC); do
+        local db_enums=()
+        local path="$(enum_name=$enum yq e ".. | select(has(\"$vext\") and .$vext == env(enum_name)) | (path | join(\".\"))" $SPEC)"
+        mapfile -t db_enums < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
 
-    ######## Ensure consistent style for future codegen
-    echo "Applying PascalCase to operation IDs in $SPEC"
-    for opid in $(yq e ".. | select(has(\"operationId\")).operationId" $SPEC); do
-      local new_opid="$(to_pascal $opid)"
-      local paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" $SPEC)
-      readarray -t paths <<<$paths
-      local escaped_path="$(join_yq_paths paths)"
-      new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" -i $SPEC
-    done
+        [[ ${#db_enums[@]} -gt 0 ]] || err "$vext: Enum '$enum' not found in database $POSTGRES_DB"
+        local enums=$(printf ",\"%s\"" "${db_enums[@]}")
+        enums="[${enums:1}]"
+        echo "Replacing enum '$enum' in $SPEC with: $enums"
+        enums=$enums yq e ".$path.enum = env(enums) | (.$path.enum | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
+      done
 
-    ######## Sync enums with external sources and validate
-    ######## external json files are the source of truth
-    # frontend scopes: 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right) and show aggregated
-    # arrays can't be nested
-    declare -A enum_src_files=(
-      [Scope]="scopes.json"
-      [Role]="roles.json"
-    )
-    declare -A enum_vext=(
-      [Scope]="x-required-scopes"
-      [Role]="x-required-role"
-    )
-    for enum in ${!enum_src_files[@]}; do
-      [[ $(yq e ".components.schemas | has(\"$enum\")" $SPEC) = "false" ]] &&
-        yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC
+      ######## Ensure consistent style for future codegen
+      echo "Applying PascalCase to operation IDs in $SPEC"
+      for opid in $(yq e ".. | select(has(\"operationId\")).operationId" $SPEC); do
+        local new_opid="$(to_pascal $opid)"
+        local paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" $SPEC)
+        readarray -t paths <<<$paths
+        local escaped_path="$(join_yq_paths paths)"
+        new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" -i $SPEC
+      done
 
-      local src_file="${enum_src_files[$enum]}"
-      vext="${enum_vext[$enum]}"
+      ######## Sync enums with external sources and validate
+      ######## external json files are the source of truth
+      # frontend scopes: 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right) and show aggregated
+      # arrays can't be nested
+      declare -A enum_src_files=(
+        [Scope]="scopes.json"
+        [Role]="roles.json"
+      )
+      declare -A enum_vext=(
+        [Scope]="x-required-scopes"
+        [Role]="x-required-role"
+      )
+      for enum in ${!enum_src_files[@]}; do
+        [[ $(yq e ".components.schemas | has(\"$enum\")" $SPEC) = "false" ]] &&
+          yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC
 
-      enums=$(yq -P '.[] | key' $src_file)
-      readarray -t enums <<<$enums
+        local src_file="${enum_src_files[$enum]}"
+        vext="${enum_vext[$enum]}"
 
-      echo "Replacing '$enum' enum in $SPEC with $src_file"
-      yq e "
+        enums=$(yq -P '.[] | key' $src_file)
+        readarray -t enums <<<$enums
+
+        echo "Replacing '$enum' enum in $SPEC with $src_file"
+        yq e "
         (.components.schemas.$enum | key) line_comment=\"Generated from $src_file keys. DO NOT EDIT.\"
       " -i $SPEC
-      local enums_arr=$(printf ",\"%s\"" "${enums[@]}")
-      enums_arr="[${enums_arr:1}]"
-      enums_arr=$enums_arr yq e ".components.schemas.$enum.enum = env(enums_arr)" -i $SPEC
+        local enums_arr=$(printf ",\"%s\"" "${enums[@]}")
+        enums_arr="[${enums_arr:1}]"
+        enums_arr=$enums_arr yq e ".components.schemas.$enum.enum = env(enums_arr)" -i $SPEC
 
-      readarray spec_enums < <(yq e ".paths[][].$vext | select(length > 0)" openapi.yaml)
-      spec_enums=("${spec_enums[*]//- /}")
-      mapfile -t spec_enums < <(printf "\"%s\"\n" ${spec_enums[*]})
-      mapfile -t clean_enums < <(printf "\"%s\"\n" ${enums[*]})
-      for spec_enum in "${spec_enums[@]}"; do
-        [[ ! " ${clean_enums[*]} " =~ " ${spec_enum} " ]] && err "$spec_enum is not a valid '$enum'"
+        readarray spec_enums < <(yq e ".paths[][].$vext | select(length > 0)" openapi.yaml)
+        spec_enums=("${spec_enums[*]//- /}")
+        mapfile -t spec_enums < <(printf "\"%s\"\n" ${spec_enums[*]})
+        mapfile -t clean_enums < <(printf "\"%s\"\n" ${enums[*]})
+        for spec_enum in "${spec_enums[@]}"; do
+          [[ ! " ${clean_enums[*]} " =~ " ${spec_enum} " ]] && err "$spec_enum is not a valid '$enum'"
+        done
       done
-    done
 
-    ######## Generate shared policies once the spec has been validated
-    echo "Writing shared auth policies"
-    yq -o=json e "
+      ######## Generate shared policies once the spec has been validated
+      echo "Writing shared auth policies"
+      yq -o=json e "
     .paths[][]
     | {.operationId: { \"scopes\": .x-required-scopes, \"role\": .x-required-role, \"requiresAuthentication\": has(\"security\")}}
     | select(.[]) as \$i ireduce ({}; . + \$i)
   " openapi.yaml >$OPID_AUTH
 
-    yq --prettyPrint '.. style="single"' -i $SPEC
-    # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
-    # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
-    sed -i 's/!!merge //' $SPEC
+      yq --prettyPrint '.. style="single"' -i $SPEC
+      # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
+      # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
+      sed -i 's/!!merge //' $SPEC
 
-    ./pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
-
+      ./pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
+    )
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -460,59 +463,56 @@ x.gen() {
   cp -r "$PG_REPO_GEN" "$CACHE_PG_REPO_GEN"
   restore_cache=1
   { { {
-    (
-      POSTGRES_DB=$GEN_POSTGRES_DB
+    echo "Running code generation"
+    mkdir -p "$CACHE"
 
-      echo "Running code generation"
-      mkdir -p "$CACHE"
-      x.db.recreate
-      x.pregen
-      rm -rf "$PG_REPO_GEN"
+    POSTGRES_DB="$GEN_POSTGRES_DB" x.db.recreate
+    x.pregen
+    rm -rf "$PG_REPO_GEN"
 
-      # TODO try use gnu parallel and exit when anyone fails
-      # (with current setup the whole x.gen is executed and only then
-      # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
-      set -e
-      go generate ./... &
-      x.gen.gowrap &
-      x.gen.sqlc &
-      x.gen.proto &
+    # TODO try use gnu parallel and exit when anyone fails
+    # (with current setup the whole x.gen is executed and only then
+    # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
+    set -e
+    go generate ./... &
+    x.gen.gowrap &
+    x.gen.sqlc &
+    x.gen.proto &
 
-      wait
+    wait
 
-      x.gen.xo &
-      x.gen.jet &
+    x.gen.xo &
+    x.gen.jet &
 
-      set -e
-      declare -i err=0 werr=0
-      while
-        wait -fn || werr=$?
-        ((werr != 127))
-      do
-        err=$werr
-        ((err == 0)) || break # handle error as soon as it happens
-      done
-      #trap 'wait || :' EXIT # wait for all jobs before exiting (regardless of handling above)
-      if ((err != 0)); then
-        echo "Job failed"
-        kill -s SIGUSR1 $PROC
-        return
-      fi
+    set -e
+    declare -i err=0 werr=0
+    while
+      wait -fn || werr=$?
+      ((werr != 127))
+    do
+      err=$werr
+      ((err == 0)) || break # handle error as soon as it happens
+    done
+    #trap 'wait || :' EXIT # wait for all jobs before exiting (regardless of handling above)
+    if ((err != 0)); then
+      echo "Job failed"
+      kill -s SIGUSR1 $PROC
+      return
+    fi
 
-      x.postgen &
-      x.gen.counterfeiter & # delay since it depends on generated output too
+    x.postgen &
+    x.gen.counterfeiter & # delay since it depends on generated output too
 
-      wait
+    wait
 
-      x.gen.client-server # depends on schemas generated in postgen
+    x.gen.client-server # depends on schemas generated in postgen
 
-      # vscode will randomly lose connection when restarting
-      # for pid in $(pidof gopls); do
-      #   restart_pid $pid &
-      # done
+    # vscode will randomly lose connection when restarting
+    # for pid in $(pidof gopls); do
+    #   restart_pid $pid &
+    # done
 
-      x.lint
-    )
+    x.lint
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   rm "$CACHE/$SPEC"
   rm -rf "$CACHE_PG_REPO_GEN"
