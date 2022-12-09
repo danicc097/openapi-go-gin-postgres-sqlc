@@ -11,7 +11,7 @@ export const useAuthenticatedUser = () => {
   const user: UserResponse = {
     hasGlobalNotifications: true,
     hasPersonalNotifications: true,
-    role: 'user',
+    role: 'admin',
     userID: crypto.randomUUID(),
     email: 'test@mail.com',
     firstName: 'John',

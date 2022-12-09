@@ -118,6 +118,9 @@ func main() {
 
 	dest := &Res{}
 
+	// won't be able to use same transaction and also need a sql.DB pool apart from pgxpool opened with postgresql.New
+	// https://github.com/go-jet/jet/issues/59
+	// this will break our repo and service (d db.DBTX) param
 	err = getUserNotificationsByUserID.QueryContext(context.Background(), dbpool, dest)
 	if err != nil {
 		fmt.Println(err.Error())

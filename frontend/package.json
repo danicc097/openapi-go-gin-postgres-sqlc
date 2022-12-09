@@ -21,6 +21,7 @@
     "@elastic/eui": "^70.3.0",
     "@emotion/css": "^11.10.5",
     "@emotion/react": "^11.10.4",
+    "@mantine/form": "^5.3.0",
     "@emotion/styled": "^11.10.5",
     "@fortawesome/fontawesome-svg-core": "^6.1.0",
     "@fortawesome/free-solid-svg-icons": "^6",
@@ -67,10 +68,15 @@
     "zone.js": "0.11.4",
     "zustand": "^4.1.4"
   },
+  "resolutions": {
+    "@types/react": "17.0.2",
+    "@types/react-dom": "17.0.2"
+  },
+  "homepage": "/",
   "devDependencies": {
     "@types/lodash": "^4.14.189",
-    "@types/react": "^17.0",
-    "@types/react-dom": "^17.0",
+    "@types/react": "17.0.2",
+    "@types/react-dom": "17.0.2",
     "@typescript-eslint/eslint-plugin": "^5.36.2",
     "@typescript-eslint/parser": "^5.36.2",
     "@vitejs/plugin-react": "^2.1.0",

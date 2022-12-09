@@ -21,10 +21,10 @@ import {
   EuiCollapsibleNav,
 } from '@elastic/eui'
 import { useNavigate } from 'react-router-dom'
-import type { User } from 'src/redux/slices/gen/internalApi'
+import type { UserResponse } from 'src/gen/model'
 
 type CollapsibleNavProps = {
-  user: User
+  user: UserResponse
 }
 
 const CollapsibleNav = ({ user }: CollapsibleNavProps) => {
@@ -87,24 +87,6 @@ const CollapsibleNav = ({ user }: CollapsibleNavProps) => {
   ]
 
   const AdminLinks: EuiPinnableListGroupItemProps[] = [
-    {
-      label: 'User verification',
-      onClick: () => {
-        navigate('/admin/unverified-users')
-      },
-    },
-    {
-      label: 'User password reset',
-      onClick: () => {
-        navigate('/admin/password-reset')
-      },
-    },
-    {
-      label: 'User password reset requests',
-      onClick: () => {
-        navigate('/admin/password-reset-requests')
-      },
-    },
     {
       label: 'User permissions management',
       onClick: () => {
@@ -310,7 +292,7 @@ const CollapsibleNav = ({ user }: CollapsibleNavProps) => {
           />
         </EuiCollapsibleNavGroup> */}
 
-        {user?.role_rank > roles.admin.rank ? (
+        {roles[user?.role].rank >= roles.admin.rank ? (
           <EuiCollapsibleNavGroup
             title={
               <a
