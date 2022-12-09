@@ -26,9 +26,9 @@ const alias: Record<string, string> = {
 
 export default defineConfig({
   root: '.',
-  esbuild: {
-    tsconfigRaw: {},
-  },
+  // esbuild: {
+  //   tsconfigRaw: {},
+  // },
   resolve: {
     alias,
   },
@@ -42,7 +42,7 @@ export default defineConfig({
         console: true,
       },
     },
-    environment: 'happy-dom',
+    environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
     coverage: {
       reporter: ['text', 'html'],

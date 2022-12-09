@@ -39,6 +39,7 @@ import { newFrontendSpan } from 'src/TraceProvider'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { createLabel, renderSuperSelect } from 'src/utils/forms'
+import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -51,20 +52,7 @@ export default function UserPermissionsPage() {
 
   const [allUsers] = useState<UserResponse[]>(
     [...Array(20)].map((x, i) => {
-      return {
-        hasGlobalNotifications: true,
-        hasPersonalNotifications: true,
-        role: _.sample(Object.keys(roles)) as Role,
-        userID: crypto.randomUUID(),
-        email: i + 'test@mail.com',
-        firstName: 'John',
-        lastName: 'Doe' + i,
-        fullName: 'John Doe' + i,
-        username: 'john.doe' + i,
-        scopes: _.sampleSize(Object.keys(scopes), _.random(1, 6)) as Scopes,
-        createdAt: new Date(),
-        deletedAt: null,
-      }
+      return getGetCurrentUserMock()
     }),
   )
 

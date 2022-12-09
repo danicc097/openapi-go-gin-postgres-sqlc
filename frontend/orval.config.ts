@@ -31,6 +31,9 @@ export default defineConfig({
             date: () => faker.date.past(),
             'date-time': () => faker.date.past(),
           },
+          properties: {
+            email: () => faker.internet.email(),
+          },
         },
       },
     },

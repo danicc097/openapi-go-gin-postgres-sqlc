@@ -90,21 +90,25 @@ export default function Navbar() {
         <EuiFlexGroup
           gutterSize="xs"
           direction="column"
-          alignItems="center"
-          justifyContent="center"
+          alignItems="flexEnd"
+          justifyContent="spaceAround"
           className="avatar-dropdown"
           style={{ alignItems: 'center' }}
         >
-          <EuiFlexItem grow style={{ alignItems: 'center', flexGrow: 1 }}>
+          <EuiFlexItem style={{ alignItems: 'center', flexGrow: 1 }}>
             <EuiFlexGroup direction="row" alignItems="center">
-              <EuiFlexItem grow>
+              <EuiFlexItem>
                 <UserAvatar size="l" user={user} color={avatarColor} initialsLength={2} />
               </EuiFlexItem>
-              <EuiFlexGroup direction="column" className="avatar-dropdown-user">
-                <EuiFlexItem grow>
+              <EuiFlexGroup
+                direction="column"
+                justifyContent="spaceAround"
+                // alignItems="center"
+              >
+                <EuiFlexItem>
                   <strong>{user?.username}</strong>
                 </EuiFlexItem>
-                <EuiFlexItem grow>{_.truncate(user?.email, { length: 25 })}</EuiFlexItem>
+                <EuiFlexItem>{_.truncate(user?.email, { length: 25 })}</EuiFlexItem>
               </EuiFlexGroup>
             </EuiFlexGroup>
           </EuiFlexItem>
