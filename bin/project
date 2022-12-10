@@ -423,6 +423,7 @@ x.gen.counterfeiter() {
       {
         counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
         counterfeiter -o internal/repos/repostesting/user.gen.go $repos User &
+        counterfeiter -o internal/repos/repostesting/notification.gen.go $repos Notification &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
         md5sum $envvar $repos $tfidfpb >"$CACHE/counterfeiter.md5" &
