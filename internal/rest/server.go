@@ -263,6 +263,10 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "envvar.Load")
 	}
 
+	if err := internal.NewAppConfig(); err != nil {
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "internal.NewAppConfig")
+	}
+
 	conf := envvar.New()
 
 	var logger *zap.Logger

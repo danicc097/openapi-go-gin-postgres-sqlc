@@ -8,6 +8,7 @@ import (
 	"path"
 	"strconv"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/go-jet/jet/v2/generator/metadata"
 	"github.com/go-jet/jet/v2/generator/postgres"
@@ -32,6 +33,10 @@ func main() {
 
 	if err := envvar.Load(env); err != nil {
 		log.Fatalf("envvar.Load: %s\n", err)
+	}
+
+	if err := internal.NewAppConfig(); err != nil {
+		log.Fatalf("internal.NewAppConfig: %s\n", err)
 	}
 
 	appEnv := envvar.GetEnv("APP_ENV", "dev")

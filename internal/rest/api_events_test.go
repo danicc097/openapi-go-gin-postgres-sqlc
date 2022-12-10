@@ -84,6 +84,7 @@ func TestSSEStream(t *testing.T) {
 			case <-stopCh:
 				return
 			default:
+				time.Sleep(1 * time.Second) // TODO remove when actually testing something
 				srv.Handler.ServeHTTP(res, req)
 			}
 		}

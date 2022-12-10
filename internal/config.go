@@ -39,7 +39,7 @@ type RedisConfig struct {
 	Host string `env:"REDIS_HOST"`
 }
 
-// AppConfig contains app settings which are read from a config file. Excluded fields from JSON are read from environment variables.
+// AppConfig contains app settings.
 type AppConfig struct {
 	Postgres PostgresConfig
 	Redis    RedisConfig
@@ -53,7 +53,8 @@ type AppConfig struct {
 	SigningKey string `env:"SIGNING_KEY"`
 }
 
-// NewAppConfig returns a new AppConfig singleton from current environment variables.
+// NewAppConfig initializes app config from current environment variables.
+// This can only be done once, and config can be accessed through Config().
 func NewAppConfig() error {
 	cfg := &AppConfig{}
 
@@ -72,7 +73,7 @@ func NewAppConfig() error {
 	return nil
 }
 
-// Config returns the current app config and panics if not initialized via NewAppConfig.
+// Config returns the current app config and panics if it was not initialized via NewAppConfig.
 func Config() *AppConfig {
 	if config == nil {
 		panic("app configuration has not yet been initialized")
