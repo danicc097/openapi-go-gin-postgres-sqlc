@@ -12,61 +12,48 @@ import (
 )
 
 type OIDCConfig struct {
-	ClientID     string `json:"clientId" validate:"required"`
-	ClientSecret string `json:"clientSecret" validate:"required"`
-	Issuer       string `json:"issuer" validate:"required"`
-	Scopes       string `json:"scopes" validate:"required"`
-
-	Domain     string  `json:"-" validate:"required"` // env var
-	ServerPort *string `json:"-"`                     // optional,env var
+	ClientID     string  `env:"OIDC_CLIENT_ID"`
+	ClientSecret string  `env:"OIDC_CLIENT_SECRET"`
+	Issuer       string  `env:"OIDC_ISSUER"`
+	Scopes       string  `env:"OIDC_SCOPES"`
+	Domain       string  `env:"OIDC_DOMAIN"`
+	ServerPort   *string `env:"OIDC_SERVER_PORT"`
 }
 
 type PostgresConfig struct {
-	Port     string `json:"-" validate:"required"` // env var
-	User     string `json:"-" validate:"required"` // env var
-	Password string `json:"-" validate:"required"` // env var
-	Server   string `json:"-" validate:"required"` // env var
-	DB       string `json:"-" validate:"required"` // env var
+	Port     string `env:"POSTGRES_PORT"`
+	User     string `env:"POSTGRES_USER"`
+	Password string `env:"POSTGRES_PASSWORD"`
+	Server   string `env:"POSTGRES_SERVER"`
+	DB       string `env:"POSTGRES_DB"`
 }
 
 type RedisConfig struct {
-	DB   string `json:"-" validate:"required"` // env var
-	Host string `json:"-" validate:"required"` // env var
+	DB   string `env:"REDIS_DB"`
+	Host string `env:"REDIS_HOST"`
 }
 
-// TODO frontend still needs .env.<env> for dynamic config.json
-// without rebuilding.
-// Postgres and backend also need .env shared.
-// We could have DBConfig struct with json:"-"
-// and on startup fill it in with whatever is in the current env,
-// then validate it as usual.
-// this way postgres can reuse the .env.* as usual
-// and get typed config
-// ^ do the same for .env values that are shared with frontend:
-// TDLR whatever appears in .env.template must have json:"-" and env is loaded to the struct after unmarshalling config/*.json
-
 // UPDATE:
-// IMPORTANT: bin/project sources .env.* and is vital to work with. docker-compose also uses it...
-// so in the end it the config struct will for the most part be filled with env vars
+// config is used from values in environment and is just a convenience struct instead of
+// an error prone os.getenv. this way everything is loaded at once on startup and is validated.
 
 // sharing config between packages:
-// os.getenv is very convenient.
-// the closest we can get: internal.Config() returns the already built and validated *config.
-// returning a copy every single time is too bad. its an internal package so
-// just need to ensure nothing silly is being done like overwriting it...
+// os.getenv is very convenient, but we can get close: internal.Config() returns the already built and validated *internal.AppConfig{}
+// Returning a copy every single time would be too bad. its an internal package so
+// just need to ensure nothing silly is being done like overwriting it... therefore a pointer is ok
 
 // AppConfig contains app settings which are read from a config file. Excluded fields from JSON are read from environment variables.
 type AppConfig struct {
-	Postgres PostgresConfig `json:"-" validate:"required"`
-	Redis    RedisConfig    `json:"-" validate:"required"`
-	OIDC     OIDCConfig     `json:"oidc" validate:"required"`
+	Postgres PostgresConfig
+	Redis    RedisConfig
+	OIDC     OIDCConfig
 
-	Domain     string `json:"-" validate:"required"`
-	APIPort    string `json:"-" validate:"required"`
-	APIVersion string `json:"-" validate:"required"`
-	APIPrefix  string `json:"-" validate:"required"`
-	AppEnv     string `json:"-" validate:"required"`
-	SigningKey string `json:"signingKey" validate:"required"`
+	Domain     string `env:"DOMAIN"`
+	APIPort    string `env:"API_PORT"`
+	APIVersion string `env:"API_VERSION"`
+	APIPrefix  string `env:"API_PREFIX"`
+	AppEnv     string `env:"APP_ENV"`
+	SigningKey string `env:"SIGNING_KEY"`
 }
 
 // don't. instead do it in NewConfig, so calling it without an error is enough to know its valid.
