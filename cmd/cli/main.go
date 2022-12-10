@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
@@ -39,6 +40,12 @@ func main() {
 	if err := envvar.Load(path.Join(".env." + appEnv)); err != nil {
 		log.Fatalf("envvar.Load: %s\n", err)
 	}
+
+	err := internal.NewAppConfig()
+	if err != nil {
+		log.Fatalf("internal.NewAppConfig: %s\n", err)
+	}
+	format.PrintJSON(internal.Config())
 
 	cmd := exec.Command(
 		"bash", "-c",
