@@ -1,8 +1,6 @@
 package internal_test
 
 import (
-	"os"
-	"strings"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -63,23 +61,9 @@ func TestNewAppConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			curEnviron := os.Environ()
-			for _, entry := range curEnviron {
-				parts := strings.SplitN(entry, "=", 2)
-				os.Unsetenv(parts[0])
-			}
 			for k, v := range tt.environ {
-				os.Setenv(k, v)
+				t.Setenv(k, v)
 			}
-			t.Cleanup(func() {
-				for k := range tt.environ {
-					os.Unsetenv(k)
-				}
-				for _, envvar := range curEnviron {
-					ss := strings.SplitN(envvar, "=", 2)
-					os.Setenv(ss[0], ss[1])
-				}
-			})
 
 			c := &cfg{}
 			err := internal.LoadEnvToConfig(c)
