@@ -82,42 +82,58 @@ func Config() *AppConfig {
 }
 
 // LoadEnvToConfig loads env vars to a given struct based on an `env` tag.
-func LoadEnvToConfig(cfg any) error {
-	st := reflect.ValueOf(cfg)
+func LoadEnvToConfig(config any) error {
+	cfg := reflect.ValueOf(config)
 
-	if st.Kind() == reflect.Ptr {
-		st = st.Elem()
+	if cfg.Kind() == reflect.Ptr {
+		cfg = cfg.Elem()
 	}
 
-	for idx := 0; idx < st.NumField(); idx++ {
-		fType := st.Type().Field(idx)
+	for idx := 0; idx < cfg.NumField(); idx++ {
+		fType := cfg.Type().Field(idx)
+		fld := cfg.Field(idx)
 
-		if f := st.Field(idx); f.Kind() == reflect.Struct {
-			if !f.CanInterface() { // unexported
+		if fld.Kind() == reflect.Struct {
+			if !fld.CanInterface() { // unexported
 				continue
 			}
-			if err := LoadEnvToConfig(f.Addr().Interface()); err != nil {
-				return fmt.Errorf("nested struct %s env loading: %w", f.Addr().String(), err)
+			if err := LoadEnvToConfig(fld.Addr().Interface()); err != nil {
+				return fmt.Errorf("nested struct %s env loading: %w", cfg.Type().Field(idx).Name, err)
 			}
 		}
 
-		if !st.Field(idx).CanSet() {
+		if !fld.CanSet() {
 			continue
 		}
 
 		if env, ok := fType.Tag.Lookup("env"); ok && len(env) > 0 {
-			switch st.Field(idx).Kind() {
-			// expand as needed
-			case reflect.String:
-				st.Field(idx).SetString(os.Getenv(env))
-			case reflect.Int:
-				v, err := strconv.Atoi(os.Getenv(env))
-				if err != nil {
-					return fmt.Errorf("could not convert %s to int: %w", env, err)
-				}
-				st.Field(idx).SetInt(int64(v))
+			err := setEnvToField(env, fld)
+			if err != nil {
+				return fmt.Errorf("could not set %q to %q: %w", env, cfg.Type().Field(idx).Name, err)
 			}
 		}
+	}
+
+	return nil
+}
+
+func setEnvToField(env string, field reflect.Value) error {
+	envvar, present := os.LookupEnv(env)
+
+	if !present && field.Kind() != reflect.Pointer {
+		return fmt.Errorf("%s is not set but required", env)
+	}
+
+	// expand as needed
+	switch field.Kind() {
+	case reflect.String:
+		field.SetString(envvar)
+	case reflect.Int:
+		v, err := strconv.Atoi(envvar)
+		if err != nil {
+			return fmt.Errorf("could not convert %s to int: %w", env, err)
+		}
+		field.SetInt(int64(v))
 	}
 
 	return nil

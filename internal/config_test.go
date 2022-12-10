@@ -32,10 +32,19 @@ func TestNewAppConfig(t *testing.T) {
 			env:  map[string]string{"TEST_CFG_NAME": "name", "TEST_CFG_LENGTH": "10"},
 		},
 		{
+			name:        "non pointer field corresponding envvar not set",
+			env:         map[string]string{"TEST_CFG_LENGTH": "10"},
+			errContains: `could not set "TEST_CFG_NAME" to "Name": TEST_CFG_NAME is not set but required`,
+		},
+		{
+			name: "empty but set env vars dont raise an error",
+			env:  map[string]string{"TEST_CFG_NAME": "", "TEST_CFG_LENGTH": "10"},
+			want: &cfg{NestedCfg: nestedCfg{Name: ""}, Length: 10},
+		},
+		{
 			name:        "bad env conversion",
-			want:        &cfg{Length: 10},
-			env:         map[string]string{"TEST_CFG_LENGTH": "aaa"},
-			errContains: "could not convert TEST_CFG_LENGTH to int",
+			env:         map[string]string{"TEST_CFG_NAME": "name", "TEST_CFG_LENGTH": "aaa"},
+			errContains: `could not set "TEST_CFG_LENGTH" to "Length": could not convert TEST_CFG_LENGTH to int`,
 		},
 	}
 	for _, tt := range tests {
@@ -66,6 +75,11 @@ func TestNewAppConfig(t *testing.T) {
 				return
 			}
 			if tt.errContains != "" {
+				if err == nil {
+					t.Errorf("expected error but got nothing")
+
+					return
+				}
 				assert.Contains(t, err.Error(), tt.errContains)
 
 				return
