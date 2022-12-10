@@ -154,29 +154,6 @@ export default function UserPermissionsPage() {
     closeModal()
   }
 
-  let modal
-  if (isModalVisible) {
-    modal = (
-      <EuiConfirmModal
-        title={`Update auth information`}
-        onCancel={closeModal}
-        onConfirm={submitRoleUpdate}
-        cancelButtonText="Cancel"
-        confirmButtonText="Update"
-        defaultFocusedButton="confirm"
-        buttonColor="warning"
-        data-test-subj="updateUserAuthForm__confirmModal"
-      >
-        <>
-          {_.unescape(`You're about to update auth information for `)}
-          <strong>{userSelection.email}</strong>.
-        </>
-
-        <p>Are you sure you want to do this?</p>
-      </EuiConfirmModal>
-    )
-  }
-
   const onRoleUpdateSubmit = async () => {
     showModal()
   }
@@ -228,6 +205,26 @@ export default function UserPermissionsPage() {
 
   const getErrors = () =>
     calloutErrors ? calloutErrors?.errors?.map((v, i) => `${v.invalidParams.name}: ${v.invalidParams.reason}`) : null
+
+  const renderModal = (): any => {
+    return isModalVisible ? (
+      <EuiConfirmModal
+        title={`Update auth information`}
+        onCancel={closeModal}
+        onConfirm={submitRoleUpdate}
+        cancelButtonText="Cancel"
+        confirmButtonText="Update"
+        defaultFocusedButton="confirm"
+        buttonColor="warning"
+        data-test-subj="updateUserAuthForm__confirmModal"
+      >
+        <>
+          {_.unescape(`You're about to update auth information for `)}
+          <strong>{userSelection.email}</strong>.<p>Are you sure you want to do this?</p>
+        </>
+      </EuiConfirmModal>
+    ) : null
+  }
 
   const element = (
     <>
@@ -284,7 +281,7 @@ export default function UserPermissionsPage() {
           data-test-subj="updateUserAuthForm__submit"
         >{`Update role for ${userSelection?.email ?? '...'}`}</EuiButton>
       </EuiForm>
-      {modal}
+      {renderModal()}
     </>
   )
 
