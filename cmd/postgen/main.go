@@ -24,10 +24,6 @@ func main() {
 		log.Fatalf("envvar.Load: %s\n", err)
 	}
 
-	if err := internal.NewAppConfig(); err != nil {
-		log.Fatalf("internal.NewAppConfig: %s\n", err)
-	}
-
 	var stderr bytes.Buffer
 
 	url := internal.BuildAPIURL(specPath)

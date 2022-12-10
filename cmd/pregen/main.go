@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pregen"
 )
@@ -26,10 +25,6 @@ func main() {
 
 	if err := envvar.Load(env); err != nil {
 		log.Fatalf("envvar.Load: %s\n", err)
-	}
-
-	if err := internal.NewAppConfig(); err != nil {
-		log.Fatalf("internal.NewAppConfig: %s\n", err)
 	}
 
 	if validateSpecOnly {

@@ -32,7 +32,7 @@ import (
 
 var (
 	testPool    *pgxpool.Pool
-	testSQLPool *sql.DB
+	testSQLPool *sql.DB // for jet, use .Sql() to use pgx directly
 )
 
 func TestMain(m *testing.M) {
@@ -56,6 +56,8 @@ func testMain(m *testing.M) int {
 }
 
 func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.HandlerFunc) (*http.Server, error) {
+	t.Helper()
+
 	ctx := context.Background()
 
 	if err := envvar.Load(fmt.Sprintf("../../.env.%s", os.Getenv("APP_ENV"))); err != nil {

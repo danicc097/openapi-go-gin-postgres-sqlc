@@ -8,6 +8,7 @@ import (
 	"path"
 	"runtime"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 )
 
@@ -20,13 +21,19 @@ func GetFileRuntimeDirectory() string {
 
 // Setup runs necessary pre-testing commands for a package: env vars loading, sourcing...
 func Setup() {
-	os.Setenv("POSTGRES_DB", "postgres_test")
-	os.Setenv("IS_TESTING", "1")
 	rootDir := path.Join(GetFileRuntimeDirectory(), "../..")
 
 	appEnv := envvar.GetEnv("APP_ENV", "dev")
 	if err := envvar.Load(path.Join(rootDir, ".env."+appEnv)); err != nil {
 		log.Fatalf("envvar.Load: %s\n", err)
+	}
+
+	os.Setenv("POSTGRES_DB", "postgres_test")
+	os.Setenv("IS_TESTING", "1") // for external scripts
+
+	// update config
+	if err := internal.NewAppConfig(); err != nil {
+		log.Fatalf("internal.NewAppConfig: %s\n", err)
 	}
 
 	cmd := exec.Command(

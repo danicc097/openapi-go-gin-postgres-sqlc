@@ -106,6 +106,8 @@ var key = []byte("test1234test1234")
 
 // NewServer returns a new http server.
 func NewServer(conf Config, opts ...ServerOption) (*server, error) {
+	appCfg := internal.Config()
+
 	if err := conf.validate(); err != nil {
 		return nil, fmt.Errorf("server config validation: %w", err)
 	}
@@ -148,15 +150,15 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	}
 
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
-	vg := router.Group(os.Getenv("API_VERSION"))
+	vg := router.Group(appCfg.APIVersion)
 	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
 
 	// oidc
-	clientID := os.Getenv("OIDC_CLIENT_ID")
-	clientSecret := os.Getenv("OIDC_CLIENT_SECRET")
-	keyPath := os.Getenv("OIDC_KEY_PATH") // not used
-	issuer := os.Getenv("OIDC_ISSUER")
-	scopes := strings.Split(os.Getenv("OIDC_SCOPES"), " ")
+	clientID := appCfg.OIDC.ClientID
+	clientSecret := appCfg.OIDC.ClientSecret
+	keyPath := "" // not used
+	issuer := appCfg.OIDC.Issuer
+	scopes := strings.Split(appCfg.OIDC.Scopes, " ")
 
 	redirectURI := internal.BuildAPIURL(conf.MyProviderCallbackPath)
 	cookieHandler := httphelper.NewCookieHandler(key, key, httphelper.WithUnsecure())
@@ -204,7 +206,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	oasMw := newOpenapiMiddleware(conf.Logger, openapi)
 
 	rlMw := newRateLimitMiddleware(conf.Logger, 25, 10)
-	switch os.Getenv("APP_ENV") {
+	switch appCfg.AppEnv {
 	case "prod":
 		vg.Use(rlMw.Limit())
 	}
@@ -263,15 +265,11 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "envvar.Load")
 	}
 
-	if err := internal.NewAppConfig(); err != nil {
-		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "internal.NewAppConfig")
-	}
-
 	conf := envvar.New()
 
 	var logger *zap.Logger
 	// XXX there's work being done in https://github.com/uptrace/opentelemetry-go-extra/tree/main/otelzap
-	switch os.Getenv("APP_ENV") {
+	switch internal.Config().AppEnv {
 	case "prod":
 		logger, err = zap.NewProduction()
 	default:
@@ -371,7 +369,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		// ErrServerClosed."
 		var err error
 
-		switch env := os.Getenv("APP_ENV"); env {
+		switch internal.Config().AppEnv {
 		case "dev", "ci":
 			// err = srv.httpsrv.ListenAndServe()
 			err = srv.httpsrv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")

@@ -19,7 +19,7 @@ const demoProjectName = "demo project"
 
 var (
 	testPool    *pgxpool.Pool
-	testSQLPool *sql.DB
+	testSQLPool *sql.DB // for jet, use .Sql() to use pgx directly
 )
 
 func TestMain(m *testing.M) {

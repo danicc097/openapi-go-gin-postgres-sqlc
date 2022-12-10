@@ -22,9 +22,14 @@ type Provider interface {
 type Configuration struct{}
 
 // Load reads the env filename and loads it into ENV for the current process.
+// It also initializes/replaces app configuration.
 func Load(filename string) error {
 	if err := godotenv.Load(filename); err != nil {
 		return internal.NewErrorf(internal.ErrorCodeUnknown, fmt.Sprintf("loading %s env var file: %s", filename, err))
+	}
+
+	if err := internal.NewAppConfig(); err != nil {
+		return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "internal.NewAppConfig")
 	}
 
 	return nil

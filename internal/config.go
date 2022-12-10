@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -54,13 +53,9 @@ type AppConfig struct {
 }
 
 // NewAppConfig initializes app config from current environment variables.
-// This can only be done once, and config can be accessed through Config().
+// Config can be replaced with consequent calls and accessed through Config().
 func NewAppConfig() error {
 	cfg := &AppConfig{}
-
-	if config != nil {
-		return errors.New("AppConfig has already been created")
-	}
 
 	lock.Lock()
 	defer lock.Unlock()
