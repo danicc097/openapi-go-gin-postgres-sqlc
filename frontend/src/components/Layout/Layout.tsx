@@ -10,13 +10,15 @@ import * as S from './Layout.styles'
 import { Theme, useUISlice } from 'src/slices/ui'
 import shallow from 'zustand/shallow'
 import Navbar from 'src/components/Navbar/Navbar'
+import lightTheme from '@elastic/eui/dist/eui_theme_light.min.css'
+import darkTheme from '@elastic/eui/dist/eui_theme_dark.min.css'
 
 type LayoutProps = {
   children: React.ReactElement
 }
 
-function stylesheetURL(theme: Theme): string {
-  return `${import.meta.env.BASE_URL}eui_theme_${theme}.min.css`
+function stylesheet(theme: Theme): string {
+  return theme === 'dark' ? darkTheme : lightTheme
 }
 
 export default function Layout({ children }: LayoutProps) {
@@ -26,11 +28,10 @@ export default function Layout({ children }: LayoutProps) {
   const { euiTheme } = useEuiTheme()
 
   useEffect(() => {
-    const link = document.createElement('link')
-    link.id = `theme-style-${theme}`
-    link.rel = 'styleSheet'
-    link.href = stylesheetURL(theme)
-    document.head.appendChild(link)
+    const style = document.createElement('style')
+    style.id = `theme-style-${theme}`
+    style.textContent = stylesheet(theme)
+    document.head.appendChild(style)
   }, [theme])
 
   const footerCSS = css`
