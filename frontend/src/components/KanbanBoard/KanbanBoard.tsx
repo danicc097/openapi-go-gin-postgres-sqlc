@@ -9,6 +9,8 @@ import {
   euiDragDropReorder,
   htmlIdGenerator,
   DragDropContextProps,
+  EuiTitle,
+  EuiText,
 } from '@elastic/eui'
 
 const makeId = htmlIdGenerator()
@@ -52,6 +54,17 @@ export default function KanbanBoard() {
     }
   }
 
+  /**
+   * TODO:
+   *
+   * - ignore card moved in own column
+   * - order by target date desc
+   * - render children dynamically:
+   *    - date/string/number: text
+   *    - bool: checkbox
+   *    - array: EuiBadge or comma delim
+   */
+
   return (
     <EuiDragDropContext onDragEnd={onDragEnd}>
       <EuiDroppable
@@ -70,24 +83,30 @@ export default function KanbanBoard() {
             spacing="l"
             style={{ flex: '1 0 50%' }}
             disableInteractiveElementBlocking // Allows button to be drag handle
-            hasInteractiveChildren={true}
+            hasInteractiveChildren
+            isDragDisabled
+            customDragHandle
           >
             {(provided) => (
-              <EuiPanel color="subdued" paddingSize="s">
-                <EuiButtonIcon iconType="grab" aria-label="Drag Handle" {...provided.dragHandleProps} />
-                <EuiDroppable
-                  droppableId={`COMPLEX_DROPPABLE_AREA_${did}`}
-                  type="MICRO"
-                  spacing="m"
-                  style={{ flex: '1 0 50%' }}
-                >
-                  {lists[`COMPLEX_DROPPABLE_AREA_${did}`].map(({ content, id }, idx) => (
-                    <EuiDraggable key={id} index={idx} draggableId={id} spacing="m">
-                      <EuiPanel>{content}</EuiPanel>
-                    </EuiDraggable>
-                  ))}
-                </EuiDroppable>
-              </EuiPanel>
+              <>
+                <EuiPanel color="subdued" paddingSize="s">
+                  <EuiTitle size="xs">
+                    <EuiText textAlign="center">Column {didx}</EuiText>
+                  </EuiTitle>
+                  <EuiDroppable
+                    droppableId={`COMPLEX_DROPPABLE_AREA_${did}`}
+                    type="MICRO"
+                    spacing="m"
+                    style={{ flex: '1 0 50%' }}
+                  >
+                    {lists[`COMPLEX_DROPPABLE_AREA_${did}`].map(({ content, id }, idx) => (
+                      <EuiDraggable key={id} index={idx} draggableId={id} spacing="m">
+                        <EuiPanel>{content}</EuiPanel>
+                      </EuiDraggable>
+                    ))}
+                  </EuiDroppable>
+                </EuiPanel>
+              </>
             )}
           </EuiDraggable>
         ))}
