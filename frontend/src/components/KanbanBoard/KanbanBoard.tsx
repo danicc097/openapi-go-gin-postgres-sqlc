@@ -11,19 +11,64 @@ import {
   DragDropContextProps,
   EuiTitle,
   EuiText,
+  EuiCard,
+  EuiCode,
+  EuiCodeBlock,
+  EuiButton,
+  EuiSpacer,
 } from '@elastic/eui'
+import { ToastId } from 'src/utils/toasts'
+import { useUISlice } from 'src/slices/ui'
+import { random, uniqueId } from 'lodash'
 
 const makeId = htmlIdGenerator()
 
-const makeList = (number, start = 1) =>
-  Array.from({ length: number }, (v, k) => k + start).map((el) => {
-    return {
-      content: `Item ${el}`,
-      id: makeId(),
-    }
-  })
-
 export default function KanbanBoard() {
+  const { addToast } = useUISlice()
+
+  const makeList = (number, start = 1) =>
+    Array.from({ length: number }, (v, k) => k + start).map((el) => {
+      return {
+        content: (
+          <EuiCard
+            textAlign="left"
+            title={`Card ${el}`}
+            description={
+              <span>
+                Just be sure not to add any <EuiCode>onClick</EuiCode> handler to the card if the children are also
+                interactable.
+              </span>
+            }
+            hasBorder={false}
+            paddingSize="none"
+            display="plain"
+          >
+            <EuiCodeBlock language="html" paddingSize="s">
+              {'<yoda>Hello, young Skywalker</yoda>'}
+            </EuiCodeBlock>
+            <EuiSpacer />
+            <EuiButton
+              key={1}
+              size="s"
+              onClick={() =>
+                addToast({
+                  id: ToastId.AuthzError + uniqueId(),
+                  title: 'clicked',
+                  color: 'success',
+                  iconType: 'alert',
+                  toastLifeTimeMs: 15000,
+                  text: 'clicked.',
+                })
+              }
+            >
+              New toast
+            </EuiButton>
+          </EuiCard>
+        ),
+        id: makeId(),
+      }
+    })
+
   const [list, setList] = useState([1, 2])
   const [list1, setList1] = useState(makeList(3))
   const [list2, setList2] = useState(makeList(3, 4))
