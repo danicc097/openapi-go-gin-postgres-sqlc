@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,38 +14,51 @@ func TestNewAppConfig(t *testing.T) {
 	type nestedCfg struct {
 		Name string `env:"TEST_CFG_NAME"`
 	}
+	// NOTE: zero need and counterproductive to allow pointer nested structs for config
 	type cfg struct {
-		NestedCfg nestedCfg
-		Length    int `env:"TEST_CFG_LENGTH"`
+		NestedCfg      nestedCfg
+		Length         int     `env:"TEST_CFG_LEN"`
+		OptionalLength *int    `env:"TEST_CFG_OPT_LEN"`
+		OptionalString *string `env:"TEST_CFG_STRING_PTR"`
 	}
 
 	type params struct {
 		name        string
 		want        *cfg
 		errContains string
-		env         map[string]string
+		environ     map[string]string
 	}
 
 	tests := []params{
 		{
-			name: "correct env",
-			want: &cfg{NestedCfg: nestedCfg{Name: "name"}, Length: 10},
-			env:  map[string]string{"TEST_CFG_NAME": "name", "TEST_CFG_LENGTH": "10"},
+			name:    "correct env",
+			want:    &cfg{NestedCfg: nestedCfg{Name: "name"}, Length: 10, OptionalLength: pointers.New(40)},
+			environ: map[string]string{"TEST_CFG_NAME": "name", "TEST_CFG_LEN": "10", "TEST_CFG_OPT_LEN": "40"},
+		},
+		{
+			name:    "correct env with missing pointer fields",
+			want:    &cfg{NestedCfg: nestedCfg{Name: "name"}, Length: 10},
+			environ: map[string]string{"TEST_CFG_NAME": "name", "TEST_CFG_LEN": "10"},
 		},
 		{
 			name:        "non pointer field corresponding envvar not set",
-			env:         map[string]string{"TEST_CFG_LENGTH": "10"},
+			environ:     map[string]string{"TEST_CFG_LEN": "10"},
 			errContains: `could not set "TEST_CFG_NAME" to "Name": TEST_CFG_NAME is not set but required`,
 		},
 		{
-			name: "empty but set env vars dont raise an error",
-			env:  map[string]string{"TEST_CFG_NAME": "", "TEST_CFG_LENGTH": "10"},
-			want: &cfg{NestedCfg: nestedCfg{Name: ""}, Length: 10},
+			name:    "empty but set envvar string pointer field is not nil",
+			want:    &cfg{NestedCfg: nestedCfg{Name: "name"}, Length: 10, OptionalString: pointers.New("")},
+			environ: map[string]string{"TEST_CFG_NAME": "name", "TEST_CFG_LEN": "10", "TEST_CFG_STRING_PTR": ""},
+		},
+		{
+			name:    "unset envvar string pointer field is nil",
+			want:    &cfg{NestedCfg: nestedCfg{Name: "name"}, Length: 10},
+			environ: map[string]string{"TEST_CFG_NAME": "name", "TEST_CFG_LEN": "10"},
 		},
 		{
 			name:        "bad env conversion",
-			env:         map[string]string{"TEST_CFG_NAME": "name", "TEST_CFG_LENGTH": "aaa"},
-			errContains: `could not set "TEST_CFG_LENGTH" to "Length": could not convert TEST_CFG_LENGTH to int`,
+			environ:     map[string]string{"TEST_CFG_NAME": "name", "TEST_CFG_LEN": "aaa"},
+			errContains: `could not set "TEST_CFG_LEN" to "Length": could not convert TEST_CFG_LEN to int`,
 		},
 	}
 	for _, tt := range tests {
@@ -54,16 +68,16 @@ func TestNewAppConfig(t *testing.T) {
 				parts := strings.SplitN(entry, "=", 2)
 				os.Unsetenv(parts[0])
 			}
-			for k, v := range tt.env {
+			for k, v := range tt.environ {
 				os.Setenv(k, v)
 			}
 			t.Cleanup(func() {
-				for k := range tt.env {
+				for k := range tt.environ {
 					os.Unsetenv(k)
 				}
-				for _, entry := range curEnviron {
-					parts := strings.SplitN(entry, "=", 2)
-					os.Setenv(parts[0], parts[1])
+				for _, envvar := range curEnviron {
+					ss := strings.SplitN(envvar, "=", 2)
+					os.Setenv(ss[0], ss[1])
 				}
 			})
 

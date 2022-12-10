@@ -85,7 +85,7 @@ func Config() *AppConfig {
 func LoadEnvToConfig(config any) error {
 	cfg := reflect.ValueOf(config)
 
-	if cfg.Kind() == reflect.Ptr {
+	if cfg.Kind() == reflect.Pointer {
 		cfg = cfg.Elem()
 	}
 
@@ -117,26 +117,56 @@ func LoadEnvToConfig(config any) error {
 	return nil
 }
 
-func setEnvToField(env string, field reflect.Value) error {
-	envvar, present := os.LookupEnv(env)
+func setEnvToField(envvar string, field reflect.Value) error {
+	val, present := os.LookupEnv(envvar)
 
 	if !present && field.Kind() != reflect.Pointer {
-		return fmt.Errorf("%s is not set but required", env)
+		return fmt.Errorf("%s is not set but required", envvar)
 	}
 
-	// expand as needed
-	switch field.Kind() {
+	var isPtr bool
+
+	kind := field.Kind()
+	if kind == reflect.Pointer {
+		kind = field.Type().Elem().Kind()
+		isPtr = true
+	}
+
+	if val == "" && isPtr && kind != reflect.String {
+		return nil
+	}
+
+	switch kind {
 	case reflect.String:
-		field.SetString(envvar)
-	case reflect.Int:
-		v, err := strconv.Atoi(envvar)
-		if err != nil {
-			return fmt.Errorf("could not convert %s to int: %w", env, err)
+		if !present && isPtr {
+			setVal[*string](false, field, nil) // since default val is always ""
+
+			return nil
 		}
-		field.SetInt(int64(v))
+		setVal(isPtr, field, val)
+	case reflect.Int:
+		v, err := strconv.Atoi(val)
+		if err != nil {
+			return fmt.Errorf("could not convert %s to int: %w", envvar, err)
+		}
+		setVal(isPtr, field, v)
+	case reflect.Bool:
+		v, err := strconv.ParseBool(val)
+		if err != nil {
+			return fmt.Errorf("could not convert %s to bool: %w", envvar, err)
+		}
+		setVal(isPtr, field, v)
 	}
 
 	return nil
+}
+
+func setVal[T any](isPtr bool, field reflect.Value, v T) {
+	if isPtr {
+		field.Set(reflect.ValueOf(&v))
+	} else {
+		field.Set(reflect.ValueOf(v))
+	}
 }
 
 // Returns the directory of the file this function lives in.
