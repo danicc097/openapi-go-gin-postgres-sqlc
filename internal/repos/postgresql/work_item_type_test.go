@@ -4,10 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,7 +21,7 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 	if err != nil {
 		t.Fatalf("projectRepo.ProjectByName unexpected error = %v", err)
 	}
-	tcp := randomWorkItemTypeCreateParams(t, project.ProjectID)
+	tcp := postgresqltestutil.RandomWorkItemTypeCreateParams(t, project.ProjectID)
 
 	workItemType, err := workItemTypeRepo.Create(ctx, testPool, tcp)
 	if err != nil {
@@ -116,16 +115,5 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 			}
 			assert.Contains(t, err.Error(), errContains)
 		})
-	}
-}
-
-func randomWorkItemTypeCreateParams(t *testing.T, projectID int) repos.WorkItemTypeCreateParams {
-	t.Helper()
-
-	return repos.WorkItemTypeCreateParams{
-		Name:        "WorkItemType " + testutil.RandomNameIdentifier(3, "-"),
-		Description: testutil.RandomString(10),
-		ProjectID:   projectID,
-		Color:       "#aaaaaa",
 	}
 }

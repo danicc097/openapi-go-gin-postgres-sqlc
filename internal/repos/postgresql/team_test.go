@@ -4,10 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,7 +22,7 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 	if err != nil {
 		t.Fatalf("projectRepo.ProjectByName unexpected error = %v", err)
 	}
-	tcp := randomTeamCreateParams(t, project.ProjectID)
+	tcp := postgresqltestutil.RandomTeamCreateParams(t, project.ProjectID)
 
 	team, err := teamRepo.Create(ctx, testPool, tcp)
 	if err != nil {
@@ -117,15 +116,5 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 			}
 			assert.Contains(t, err.Error(), errContains)
 		})
-	}
-}
-
-func randomTeamCreateParams(t *testing.T, projectID int) repos.TeamCreateParams {
-	t.Helper()
-
-	return repos.TeamCreateParams{
-		Name:        "Team " + testutil.RandomNameIdentifier(3, "-"),
-		Description: testutil.RandomString(10),
-		ProjectID:   projectID,
 	}
 }

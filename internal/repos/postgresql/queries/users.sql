@@ -56,34 +56,3 @@ select
   , updated_at
 from
   users;
-
--- name: GetUserPersonalNotificationsByUserID :many
-select
-  user_notifications.*
-  , notifications.notification_type
-  , notifications.sender
-  , notifications.title
-  , notifications.body
-  , notifications.label
-  , notifications.link
-from
-  user_notifications
-  inner join notifications using (notification_id)
-where
-  user_notifications.user_id = @user_id
-  and notifications.notification_type = 'personal'
-order by
-  user_notifications.created_at desc
-limit @lim;
-
--- return SELECT(
--- 	UserNotifications.AllColumns,
--- 	Notifications.AllColumns,
--- ).FROM(
--- 	UserNotifications.
--- 		INNER_JOIN(Notifications, Notifications.NotificationID.EQ(UserNotifications.NotificationID)),
--- ).WHERE(
--- 	UserNotifications.UserID.EQ(UUID(userID)),
--- ).ORDER_BY(
--- 	UserNotifications.CreatedAt.DESC(),
--- )

@@ -11,6 +11,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
@@ -48,14 +49,14 @@ func main() {
 		errAndExit(out, err)
 	}
 
-	// cmd = exec.Command(
-	// 	"bash", "-c",
-	// 	"project db.initial-data",
-	// )
-	// cmd.Dir = "."
-	// if out, err := cmd.CombinedOutput(); err != nil {
-	// 	errAndExit(out, err)
-	// }
+	cmd = exec.Command(
+		"bash", "-c",
+		"project db.initial-data",
+	)
+	cmd.Dir = "."
+	if out, err := cmd.CombinedOutput(); err != nil {
+		errAndExit(out, err)
+	}
 
 	logger, _ := zap.NewDevelopment()
 	conf := envvar.New()
@@ -97,7 +98,7 @@ func main() {
 		UserNotifications.UserID.EQ(UUID(user.UserID)).
 			AND(UserNotifications.UserID.EQ(UUID(user.UserID))),
 	).ORDER_BY(
-		UserNotifications.CreatedAt.DESC(),
+		Notifications.CreatedAt.DESC(),
 	)
 	query, args := getUserNotificationsByUserID.Sql()
 
@@ -123,7 +124,7 @@ func main() {
 	// format.PrintJSON(dest)
 
 	q := db.New()
-	nn, err := q.GetUserPersonalNotificationsByUserID(context.Background(), pool, db.GetUserPersonalNotificationsByUserIDParams{UserID: user.UserID, Lim: 6})
+	nn, err := q.GetUserNotifications(context.Background(), pool, db.GetUserNotificationsParams{UserID: user.UserID, Lim: pointers.New[int32](6), NotificationType: db.NotificationTypePersonal})
 	if err != nil {
 		log.Fatal(err.Error())
 	}

@@ -157,8 +157,8 @@ create table user_notifications (
   user_notification_id bigserial primary key
   , notification_id int not null
   , read boolean default false not null -- frontend simply sends a list of user_notification_id to mark as read
-  , created_at timestamp with time zone default current_timestamp not null
   , user_id uuid not null
+  , unique (notification_id , user_id)
   , foreign key (user_id) references users (user_id) on delete cascade
   , foreign key (notification_id) references notifications (notification_id) on delete cascade
 );

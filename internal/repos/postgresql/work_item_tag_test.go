@@ -4,10 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,7 +22,7 @@ func TestWorkItemTag_WorkItemTagByIndexedQueries(t *testing.T) {
 	if err != nil {
 		t.Fatalf("projectRepo.ProjectByName unexpected error = %v", err)
 	}
-	tcp := randomWorkItemTagCreateParams(t, project.ProjectID)
+	tcp := postgresqltestutil.RandomWorkItemTagCreateParams(t, project.ProjectID)
 
 	workItemTag, err := workItemTagRepo.Create(ctx, testPool, tcp)
 	if err != nil {
@@ -117,16 +116,5 @@ func TestWorkItemTag_WorkItemTagByIndexedQueries(t *testing.T) {
 			}
 			assert.Contains(t, err.Error(), errContains)
 		})
-	}
-}
-
-func randomWorkItemTagCreateParams(t *testing.T, projectID int) repos.WorkItemTagCreateParams {
-	t.Helper()
-
-	return repos.WorkItemTagCreateParams{
-		Name:        "WorkItemTag " + testutil.RandomNameIdentifier(3, "-"),
-		Description: testutil.RandomString(10),
-		ProjectID:   projectID,
-		Color:       "#aaaaaa",
 	}
 }

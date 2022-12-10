@@ -92,7 +92,7 @@ func TestSSEStream(t *testing.T) {
 	// TODO trigger events
 
 	// TODO also test 2 clients concurrently receive, and when one leaves, the other still receives.
-
+	// ff
 	assert.Eventually(t, func() bool {
 		body := strings.ReplaceAll(res.Body.String(), " ", "")
 

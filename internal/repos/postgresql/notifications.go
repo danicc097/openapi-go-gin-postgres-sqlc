@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/google/uuid"
 )
 
 // Notification represents the repository used for interacting with Notification records.
@@ -101,16 +100,29 @@ func NewNotification() *Notification {
 // 	return nn, nil
 // }
 
-func (u *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, userID string) ([]db.GetUserPersonalNotificationsByUserIDRow, error) {
-	uid, err := uuid.Parse(userID)
+func (u *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, params db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
+	nn, err := u.q.GetUserNotifications(ctx, d, params)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse user id as UUID: %w", parseErrorDetail(err))
-	}
-
-	nn, err := u.q.GetUserPersonalNotificationsByUserID(ctx, d, db.GetUserPersonalNotificationsByUserIDParams{UserID: uid, Lim: 5})
-	if err != nil {
-		return nil, fmt.Errorf("could not get personal notifications for user: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get notifications for user: %w", parseErrorDetail(err))
 	}
 
 	return nn, nil
+}
+
+func (u *Notification) Create(ctx context.Context, d db.DBTX, params db.CreateNotificationParams) error {
+	err := u.q.CreateNotification(ctx, d, params)
+	if err != nil {
+		return fmt.Errorf("could not get notifications for user: %w", parseErrorDetail(err))
+	}
+
+	return nil
+}
+
+func (u *Notification) Delete(ctx context.Context, d db.DBTX, notificationID int32) error {
+	err := u.q.DeleteNotification(ctx, d, notificationID)
+	if err != nil {
+		return fmt.Errorf("could not delete notification: %w", parseErrorDetail(err))
+	}
+
+	return nil
 }

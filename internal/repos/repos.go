@@ -92,6 +92,11 @@ type TeamUpdateParams struct {
 	Description *string
 }
 
+type (
+	GetUserNotificationsParams = db.GetUserNotificationsParams
+	NotificationCreateParams   = db.CreateNotificationParams
+)
+
 type UserCreateParams struct {
 	Username   string
 	Email      string
@@ -135,11 +140,9 @@ type ProjectBoard interface {
 
 // Notification defines the datastore/repository handling persisting Notification records.
 type Notification interface {
-	LatestPersonalNotifications(ctx context.Context, d db.DBTX, userID string) ([]*db.UserNotification, error)
-	LatestGlobalNotifications(ctx context.Context, d db.DBTX, userID string) ([]*db.UserNotification, error)
-	CreatePersonal(ctx context.Context, d db.DBTX) (*db.Notification, error)
-	CreateGlobal(ctx context.Context, d db.DBTX) (*db.Notification, error)
-	Delete(ctx context.Context, d db.DBTX, id string) (*db.Notification, error)
+	LatestUserNotifications(ctx context.Context, d db.DBTX, params GetUserNotificationsParams) ([]*db.GetUserNotificationsRow, error)
+	Create(ctx context.Context, d db.DBTX, params NotificationCreateParams) error
+	Delete(ctx context.Context, d db.DBTX, notificationID string) error
 }
 
 // User defines the datastore/repository handling persisting User records.

@@ -230,3 +230,15 @@ func (u *User) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.
 
 	return user, nil
 }
+
+// TODO
+func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, apiKey string) ([]db.GetUserNotificationsRow, error) {
+	// this will also set user.has_new_personal_notifications to false in the same tx
+	return []db.GetUserNotificationsRow{}, nil
+}
+
+// TODO
+func (u *User) LatestGlobalNotifications(ctx context.Context, d db.DBTX, apiKey string) ([]db.GetUserNotificationsRow, error) {
+	// this will also set user.has_new_global_notifications to false in the same tx
+	return []db.GetUserNotificationsRow{}, nil
+}

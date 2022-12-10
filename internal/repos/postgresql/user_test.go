@@ -8,7 +8,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,14 +16,7 @@ import (
 func TestUser_Update(t *testing.T) {
 	t.Parallel()
 
-	userRepo := postgresql.NewUser()
-
-	ucp := randomUserCreateParams(t)
-
-	user, err := userRepo.Create(context.Background(), testPool, ucp)
-	if err != nil {
-		t.Fatalf("unexpected error = %v", err)
-	}
+	user := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
 		id     string
@@ -76,14 +69,7 @@ func TestUser_Update(t *testing.T) {
 func TestUser_MarkAsDeleted(t *testing.T) {
 	t.Parallel()
 
-	userRepo := postgresql.NewUser()
-
-	ucp := randomUserCreateParams(t)
-
-	user, err := userRepo.Create(context.Background(), testPool, ucp)
-	if err != nil {
-		t.Fatalf("unexpected error = %v", err)
-	}
+	user := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
 		id string
@@ -131,12 +117,7 @@ func TestUser_UserByIndexedQueries(t *testing.T) {
 
 	userRepo := postgresql.NewUser()
 
-	ucp := randomUserCreateParams(t)
-
-	user, err := userRepo.Create(context.Background(), testPool, ucp)
-	if err != nil {
-		t.Fatalf("unexpected error = %v", err)
-	}
+	user := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
 		filter string
@@ -213,12 +194,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	t.Run("correct api key creation", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := randomUserCreateParams(t)
-
-		user, err := userRepo.Create(context.Background(), testPool, ucp)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
+		user := postgresqltestutil.NewRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, user)
 		if err != nil {
@@ -244,12 +220,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	t.Run("can get user by api key", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := randomUserCreateParams(t)
-
-		newUser, err := userRepo.Create(context.Background(), testPool, ucp)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
+		newUser := postgresqltestutil.NewRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
 		if err != nil {
@@ -299,7 +270,7 @@ func TestUser_Create(t *testing.T) {
 	t.Run("correct user", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := randomUserCreateParams(t)
+		ucp := postgresqltestutil.RandomUserCreateParams(t)
 
 		want := want{
 			FullName:         pointers.New(*ucp.FirstName + " " + *ucp.LastName),
@@ -328,7 +299,7 @@ func TestUser_Create(t *testing.T) {
 	t.Run("role rank less than zero", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := randomUserCreateParams(t)
+		ucp := postgresqltestutil.RandomUserCreateParams(t)
 		ucp.RoleRank = int16(-1)
 
 		args := args{
@@ -343,18 +314,4 @@ func TestUser_Create(t *testing.T) {
 		}
 		assert.Contains(t, err.Error(), errContains)
 	})
-}
-
-func randomUserCreateParams(t *testing.T) repos.UserCreateParams {
-	t.Helper()
-
-	return repos.UserCreateParams{
-		Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
-		Email:      testutil.RandomEmail(),
-		FirstName:  pointers.New(testutil.RandomFirstName()),
-		LastName:   pointers.New(testutil.RandomLastName()),
-		ExternalID: testutil.RandomString(10),
-		Scopes:     []string{"scope1", "scope2"},
-		RoleRank:   int16(2),
-	}
 }

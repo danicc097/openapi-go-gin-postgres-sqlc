@@ -17,6 +17,6 @@ func GetUserNotificationsByUserID(userID uuid.UUID) SelectStatement {
 	).WHERE(
 		UserNotifications.UserID.EQ(UUID(userID)),
 	).ORDER_BY(
-		UserNotifications.CreatedAt.DESC(),
+		Notifications.CreatedAt.DESC(),
 	)
 }
