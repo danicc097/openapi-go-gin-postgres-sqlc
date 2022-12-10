@@ -7,15 +7,17 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
 
 type User struct {
-	logger   *zap.Logger
-	urepo    repos.User
-	authzsvc *Authorization
+	logger           *zap.Logger
+	urepo            repos.User
+	notificationrepo repos.Notification
+	authzsvc         *Authorization
 }
 
 type UserUpdateParams struct {
@@ -33,11 +35,12 @@ type UserUpdateAuthorizationParams struct {
 }
 
 // NewUser returns a new User service.
-func NewUser(logger *zap.Logger, urepo repos.User, authzsvc *Authorization) *User {
+func NewUser(logger *zap.Logger, urepo repos.User, notificationrepo repos.Notification, authzsvc *Authorization) *User {
 	return &User{
-		logger:   logger,
-		urepo:    urepo,
-		authzsvc: authzsvc,
+		logger:           logger,
+		urepo:            urepo,
+		authzsvc:         authzsvc,
+		notificationrepo: notificationrepo,
 	}
 }
 
@@ -70,7 +73,12 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		return nil, errors.New("params cannot be nil")
 	}
 
-	user, err := u.urepo.UserByID(ctx, d, id)
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, internal.NewErrorf(internal.ErrorCodeInvalidUUID, "could not parse UUID")
+	}
+
+	user, err := u.urepo.UserByID(ctx, d, uid)
 	if err != nil {
 		return nil, errors.Wrap(err, "urepo.UserByID")
 	}
@@ -85,7 +93,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot change another user's information")
 	}
 
-	user, err = u.urepo.Update(ctx, d, id, repos.UserUpdateParams{
+	user, err = u.urepo.Update(ctx, d, uid, repos.UserUpdateParams{
 		FirstName: params.FirstName,
 		LastName:  params.LastName,
 	})
@@ -106,7 +114,12 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		return nil, errors.New("params cannot be nil")
 	}
 
-	user, err := u.urepo.UserByID(ctx, d, id)
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, internal.NewErrorf(internal.ErrorCodeInvalidUUID, "could not parse UUID")
+	}
+
+	user, err := u.urepo.UserByID(ctx, d, uid)
 	if err != nil {
 		return nil, errors.Wrap(err, "urepo.UserByID")
 	}
@@ -161,7 +174,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		scopes = &ss
 	}
 
-	user, err = u.urepo.Update(ctx, d, id, repos.UserUpdateParams{
+	user, err = u.urepo.Update(ctx, d, uid, repos.UserUpdateParams{
 		Scopes: scopes,
 		Rank:   rank,
 	})
@@ -232,13 +245,27 @@ func (u *User) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.
 }
 
 // TODO
-func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, apiKey string) ([]db.GetUserNotificationsRow, error) {
+func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userID string) ([]db.GetUserNotificationsRow, error) {
 	// this will also set user.has_new_personal_notifications to false in the same tx
 	return []db.GetUserNotificationsRow{}, nil
+
+	// defer newOTELSpan(ctx, "User.UserByAPIKey").End()
+
+	// uid, err := uuid.Parse(userID)
+	// if err != nil {
+	// 	return nil, internal.NewErrorf(internal.ErrorCodeInvalidUUID, "could not parse UUID")
+	// }
+
+	// user, err := u.notificationrepo.LatestUserNotifications(ctx, d, db.GetUserNotificationsParams{UserID: uid})
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "urepo.UserByAPIKey")
+	// }
+
+	// return user, nil
 }
 
 // TODO
-func (u *User) LatestGlobalNotifications(ctx context.Context, d db.DBTX, apiKey string) ([]db.GetUserNotificationsRow, error) {
+func (u *User) LatestGlobalNotifications(ctx context.Context, d db.DBTX, userID string) ([]db.GetUserNotificationsRow, error) {
 	// this will also set user.has_new_global_notifications to false in the same tx
 	return []db.GetUserNotificationsRow{}, nil
 }

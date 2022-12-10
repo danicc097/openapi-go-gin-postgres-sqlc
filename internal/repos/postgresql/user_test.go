@@ -19,7 +19,7 @@ func TestUser_Update(t *testing.T) {
 	user := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
-		id     string
+		id     uuid.UUID
 		params repos.UserUpdateParams
 	}
 	type params struct {
@@ -32,7 +32,7 @@ func TestUser_Update(t *testing.T) {
 		{
 			name: "updated",
 			args: args{
-				id: user.UserID.String(),
+				id: user.UserID,
 				params: repos.UserUpdateParams{
 					Rank:   pointers.New[int16](10),
 					Scopes: &[]string{"test"},
@@ -72,7 +72,7 @@ func TestUser_MarkAsDeleted(t *testing.T) {
 	user := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
-		id string
+		id uuid.UUID
 	}
 	type params struct {
 		name          string
@@ -83,7 +83,7 @@ func TestUser_MarkAsDeleted(t *testing.T) {
 		{
 			name: "deleted",
 			args: args{
-				id: user.UserID.String(),
+				id: user.UserID,
 			},
 			errorContains: errNoRows,
 		},
@@ -119,45 +119,38 @@ func TestUser_UserByIndexedQueries(t *testing.T) {
 
 	user := postgresqltestutil.NewRandomUser(t, testPool)
 
-	type args struct {
+	type argsString struct {
 		filter string
 		fn     func(context.Context, db.DBTX, string) (*db.User, error)
 	}
 
-	tests := []struct {
+	testsString := []struct {
 		name string
-		args args
+		args argsString
 	}{
 		{
 			name: "external_id",
-			args: args{
+			args: argsString{
 				filter: user.ExternalID,
 				fn:     (userRepo.UserByExternalID),
 			},
 		},
 		{
-			name: "user_id",
-			args: args{
-				filter: user.UserID.String(),
-				fn:     (userRepo.UserByID),
-			},
-		},
-		{
 			name: "email",
-			args: args{
+			args: argsString{
 				filter: user.Email,
 				fn:     (userRepo.UserByEmail),
 			},
 		},
 		{
 			name: "username",
-			args: args{
+			args: argsString{
 				filter: user.Username,
 				fn:     (userRepo.UserByUsername),
 			},
 		},
 	}
-	for _, tc := range tests {
+	for _, tc := range testsString {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
@@ -174,8 +167,51 @@ func TestUser_UserByIndexedQueries(t *testing.T) {
 
 			errContains := errNoRows
 
-			// valid as of now for any text and uuid index unless there are specific table checks
-			filter := uuid.New().String()
+			filter := "does not exist"
+
+			_, err := tc.args.fn(context.Background(), testPool, filter)
+			if err == nil {
+				t.Fatalf("expected error = '%v' but got nothing", errContains)
+			}
+			assert.Contains(t, err.Error(), errContains)
+		})
+	}
+
+	type argsUUID struct {
+		filter uuid.UUID
+		fn     func(context.Context, db.DBTX, uuid.UUID) (*db.User, error)
+	}
+
+	testsUUID := []struct {
+		name string
+		args argsUUID
+	}{
+		{
+			name: "user_id",
+			args: argsUUID{
+				filter: user.UserID,
+				fn:     (userRepo.UserByID),
+			},
+		},
+	}
+	for _, tc := range testsUUID {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			foundUser, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
+			if err != nil {
+				t.Fatalf("unexpected error = %v", err)
+			}
+			assert.Equal(t, foundUser.UserID, user.UserID)
+		})
+
+		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
+			t.Parallel()
+
+			errContains := errNoRows
+
+			filter := uuid.New() // does not exist
 
 			_, err := tc.args.fn(context.Background(), testPool, filter)
 			if err == nil {
@@ -306,7 +342,7 @@ func TestUser_Create(t *testing.T) {
 			params: ucp,
 		}
 
-		errContains := "violates check constraint"
+		errContains := errViolatesCheckConstraint
 
 		_, err := userRepo.Create(context.Background(), testPool, args.params)
 		if err == nil {

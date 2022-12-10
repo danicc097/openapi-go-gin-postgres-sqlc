@@ -225,11 +225,13 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 		nil,
 	)
 
+	notificationrepo := postgresql.NewNotification()
+
 	authzsvc, err := services.NewAuthorization(conf.Logger, conf.ScopePolicyPath, conf.RolePolicyPath)
 	if err != nil {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)
 	}
-	usvc := services.NewUser(conf.Logger, urepo, authzsvc)
+	usvc := services.NewUser(conf.Logger, urepo, notificationrepo, authzsvc)
 	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 

@@ -69,6 +69,7 @@ func TestAuthorizationMiddleware_Roles(t *testing.T) {
 						postgresql.NewUser(), repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second}),
 					retryCount, retryInterval),
 				postgresql.OtelName, nil),
+			postgresql.NewNotification(),
 			authzsvc,
 		)
 		authnsvc := services.NewAuthentication(logger, usvc, testPool)

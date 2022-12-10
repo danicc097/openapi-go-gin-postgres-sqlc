@@ -51,7 +51,9 @@ func TestNotification_Create(t *testing.T) {
 		receiverRank1.RoleRank = 1
 		receiverRank1.Update(context.Background(), testPool)
 
-		ncp := postgresqltestutil.RandomNotificationCreateParams(t, pointers.New[int16](3), sender.UserID, nil, db.NotificationTypeGlobal)
+		receiverRank := pointers.New[int16](3)
+
+		ncp := postgresqltestutil.RandomNotificationCreateParams(t, receiverRank, sender.UserID, nil, db.NotificationTypeGlobal)
 
 		err := notificationRepo.Create(context.Background(), testPool, ncp)
 		if err != nil {
@@ -79,7 +81,7 @@ func TestNotification_Create(t *testing.T) {
 
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, nil, sender.UserID, nil, db.NotificationTypePersonal)
 
-		errContains := "violates check constraint"
+		errContains := errViolatesCheckConstraint
 
 		err := notificationRepo.Create(context.Background(), testPool, ncp)
 		if err == nil {
@@ -93,7 +95,7 @@ func TestNotification_Create(t *testing.T) {
 
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, nil, sender.UserID, nil, db.NotificationTypeGlobal)
 
-		errContains := "violates check constraint"
+		errContains := errViolatesCheckConstraint
 
 		err := notificationRepo.Create(context.Background(), testPool, ncp)
 		if err == nil {

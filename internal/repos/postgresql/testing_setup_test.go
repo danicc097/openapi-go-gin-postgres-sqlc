@@ -10,7 +10,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const errNoRows = "no rows in result set"
+const (
+	errNoRows                  = "no rows in result set"
+	errViolatesCheckConstraint = "violates check constraint"
+)
 
 const demoProjectName = "demo project"
 

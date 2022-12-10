@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -66,7 +67,7 @@ func (_d UserWithPrometheus) CreateAPIKey(ctx context.Context, d db.DBTX, user *
 }
 
 // Delete implements User
-func (_d UserWithPrometheus) Delete(ctx context.Context, d db.DBTX, id string) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -80,7 +81,7 @@ func (_d UserWithPrometheus) Delete(ctx context.Context, d db.DBTX, id string) (
 }
 
 // Update implements User
-func (_d UserWithPrometheus) Update(ctx context.Context, d db.DBTX, id string, params UserUpdateParams) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params UserUpdateParams) (up1 *db.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -136,7 +137,7 @@ func (_d UserWithPrometheus) UserByExternalID(ctx context.Context, d db.DBTX, ex
 }
 
 // UserByID implements User
-func (_d UserWithPrometheus) UserByID(ctx context.Context, d db.DBTX, id string) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) UserByID(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 )
 
 // UserWithRetry implements User interface instrumented with retries
@@ -66,7 +67,7 @@ func (_d UserWithRetry) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.Us
 }
 
 // Delete implements User
-func (_d UserWithRetry) Delete(ctx context.Context, d db.DBTX, id string) (up1 *db.User, err error) {
+func (_d UserWithRetry) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
 	up1, err = _d.User.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -85,7 +86,7 @@ func (_d UserWithRetry) Delete(ctx context.Context, d db.DBTX, id string) (up1 *
 }
 
 // Update implements User
-func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, id string, params UserUpdateParams) (up1 *db.User, err error) {
+func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params UserUpdateParams) (up1 *db.User, err error) {
 	up1, err = _d.User.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -161,7 +162,7 @@ func (_d UserWithRetry) UserByExternalID(ctx context.Context, d db.DBTX, extID s
 }
 
 // UserByID implements User
-func (_d UserWithRetry) UserByID(ctx context.Context, d db.DBTX, id string) (up1 *db.User, err error) {
+func (_d UserWithRetry) UserByID(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
 	up1, err = _d.User.UserByID(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return

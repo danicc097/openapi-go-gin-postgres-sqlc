@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -83,7 +84,7 @@ func (_d UserWithTracing) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.
 }
 
 // Delete implements User
-func (_d UserWithTracing) Delete(ctx context.Context, d db.DBTX, id string) (up1 *db.User, err error) {
+func (_d UserWithTracing) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "User.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -107,7 +108,7 @@ func (_d UserWithTracing) Delete(ctx context.Context, d db.DBTX, id string) (up1
 }
 
 // Update implements User
-func (_d UserWithTracing) Update(ctx context.Context, d db.DBTX, id string, params UserUpdateParams) (up1 *db.User, err error) {
+func (_d UserWithTracing) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params UserUpdateParams) (up1 *db.User, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "User.Update")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -204,7 +205,7 @@ func (_d UserWithTracing) UserByExternalID(ctx context.Context, d db.DBTX, extID
 }
 
 // UserByID implements User
-func (_d UserWithTracing) UserByID(ctx context.Context, d db.DBTX, id string) (up1 *db.User, err error) {
+func (_d UserWithTracing) UserByID(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "User.UserByID")
 	defer func() {
 		if _d._spanDecorator != nil {

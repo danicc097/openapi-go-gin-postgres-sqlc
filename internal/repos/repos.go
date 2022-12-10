@@ -5,6 +5,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 )
 
 // Boards limited to one per project. All teams in a project share the same board.
@@ -108,10 +109,12 @@ type UserCreateParams struct {
 }
 
 type UserUpdateParams struct {
-	FirstName *string
-	LastName  *string
-	Rank      *int16
-	Scopes    *[]string
+	FirstName                *string
+	LastName                 *string
+	Rank                     *int16
+	Scopes                   *[]string
+	HasPersonalNotifications *bool
+	HasGlobalNotifications   *bool
 }
 
 // ProjectBoard defines the datastore/repository handling persisting ProjectBoard records.
@@ -140,21 +143,21 @@ type ProjectBoard interface {
 
 // Notification defines the datastore/repository handling persisting Notification records.
 type Notification interface {
-	LatestUserNotifications(ctx context.Context, d db.DBTX, params GetUserNotificationsParams) ([]*db.GetUserNotificationsRow, error)
+	LatestUserNotifications(ctx context.Context, d db.DBTX, params GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
 	Create(ctx context.Context, d db.DBTX, params NotificationCreateParams) error
-	Delete(ctx context.Context, d db.DBTX, notificationID string) error
+	Delete(ctx context.Context, d db.DBTX, notificationID int32) error
 }
 
 // User defines the datastore/repository handling persisting User records.
 type User interface {
-	UserByID(ctx context.Context, d db.DBTX, id string) (*db.User, error)
+	UserByID(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error)
 	UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error)
 	UserByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error)
 	UserByExternalID(ctx context.Context, d db.DBTX, extID string) (*db.User, error)
 	UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error)
 	Create(ctx context.Context, d db.DBTX, params UserCreateParams) (*db.User, error)
-	Update(ctx context.Context, d db.DBTX, id string, params UserUpdateParams) (*db.User, error)
-	Delete(ctx context.Context, d db.DBTX, id string) (*db.User, error)
+	Update(ctx context.Context, d db.DBTX, id uuid.UUID, params UserUpdateParams) (*db.User, error)
+	Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error)
 	// CreateAPIKey requires an existing user.
 	CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error)
 }

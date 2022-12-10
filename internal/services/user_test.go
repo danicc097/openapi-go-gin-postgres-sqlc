@@ -92,7 +92,7 @@ func TestUser_UpdateUser(t *testing.T) {
 			t.Parallel()
 
 			urepo := repostesting.NewFakeUser(normalUser, advancedUser, adminUser)
-
+			// TODO FakeNotification
 			u := services.NewUser(logger, urepo, authzsvc)
 			got, err := u.Update(context.Background(), &pgxpool.Pool{}, tc.args.id, tc.args.caller, tc.args.params)
 			if (err != nil) && tc.error == "" {
