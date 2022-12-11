@@ -113,15 +113,11 @@ func newTestFixtureFactory(t *testing.T) *resttestutil.FixtureFactory {
 	if err != nil {
 		t.Fatalf("services.NewAuthorization: %v", err)
 	}
-	retryCount := 1
-	retryInterval := 1 * time.Second
 	usvc := services.NewUser(
 		logger,
 		repos.NewUserWithTracing(
-			repos.NewUserWithRetry(
-				repos.NewUserWithTimeout(
-					postgresql.NewUser(), repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second}),
-				retryCount, retryInterval),
+			repos.NewUserWithTimeout(
+				postgresql.NewUser(), repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second}),
 			postgresql.OtelName, nil),
 		postgresql.NewNotification(),
 		authzsvc,

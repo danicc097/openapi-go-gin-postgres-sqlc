@@ -212,16 +212,10 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	}
 	vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))
 
-	retryCount := 1
-	retryInterval := 1 * time.Second
 	urepo := repos.NewUserWithTracing(
-		repos.NewUserWithRetry(
-			repos.NewUserWithTimeout(
-				postgresql.NewUser(),
-				repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second},
-			),
-			retryCount,
-			retryInterval,
+		repos.NewUserWithTimeout(
+			postgresql.NewUser(),
+			repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second},
 		),
 		postgresql.OtelName,
 		nil,
