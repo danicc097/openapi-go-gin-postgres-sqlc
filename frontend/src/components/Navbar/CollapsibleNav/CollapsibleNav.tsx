@@ -21,10 +21,11 @@ import {
   EuiCollapsibleNav,
 } from '@elastic/eui'
 import { useNavigate } from 'react-router-dom'
-import type { User } from 'src/redux/slices/gen/internalApi'
+import type { UserResponse } from 'src/gen/model'
+import { StyledEuiCollapsibleNav } from 'src/components/Navbar/CollapsibleNav/CollapsibleNav.styles'
 
 type CollapsibleNavProps = {
-  user: User
+  user: UserResponse
 }
 
 const CollapsibleNav = ({ user }: CollapsibleNavProps) => {
@@ -85,30 +86,20 @@ const CollapsibleNav = ({ user }: CollapsibleNavProps) => {
       },
     },
   ]
-
-  const AdminLinks: EuiPinnableListGroupItemProps[] = [
-    {
-      label: 'User verification',
-      onClick: () => {
-        navigate('/admin/unverified-users')
-      },
-    },
-    {
-      label: 'User password reset',
-      onClick: () => {
-        navigate('/admin/password-reset')
-      },
-    },
-    {
-      label: 'User password reset requests',
-      onClick: () => {
-        navigate('/admin/password-reset-requests')
-      },
-    },
+  const AuthLinks: EuiPinnableListGroupItemProps[] = [
     {
       label: 'User permissions management',
       onClick: () => {
         navigate('/admin/user-permissions-management')
+      },
+    },
+  ]
+
+  const AdminLinks: EuiPinnableListGroupItemProps[] = [
+    {
+      label: 'Project management',
+      onClick: () => {
+        navigate('/admin/project-management')
       },
     },
   ]
@@ -121,6 +112,7 @@ const CollapsibleNav = ({ user }: CollapsibleNavProps) => {
   )
 
   const adminGroup = 'Admin'
+  const authGroup = 'Auth'
   const learnGroup = 'Learn'
   const skillsGroup = 'Skills'
 
@@ -193,7 +185,7 @@ const CollapsibleNav = ({ user }: CollapsibleNavProps) => {
   const collapsibleNavId = useGeneratedHtmlId({ prefix: 'collapsibleNav' })
 
   return (
-    <EuiCollapsibleNav
+    <StyledEuiCollapsibleNav
       // className="eui-yScroll" // breaks right close button
       id={collapsibleNavId}
       aria-label="Main navigation"
@@ -310,7 +302,7 @@ const CollapsibleNav = ({ user }: CollapsibleNavProps) => {
           />
         </EuiCollapsibleNavGroup> */}
 
-        {user?.role_rank > roles.admin.rank ? (
+        {roles[user?.role]?.rank >= roles.admin.rank ? (
           <EuiCollapsibleNavGroup
             title={
               <a
@@ -338,6 +330,35 @@ const CollapsibleNav = ({ user }: CollapsibleNavProps) => {
             />
           </EuiCollapsibleNavGroup>
         ) : null}
+
+        {roles[user?.role]?.rank >= roles.advancedUser.rank ? (
+          <EuiCollapsibleNavGroup
+            title={
+              <a
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}
+              >
+                Auth panel
+              </a>
+            }
+            iconType="securityApp"
+            isCollapsible
+            initialIsOpen={openGroups.includes(authGroup)}
+            onToggle={(isOpen: boolean) => toggleAccordion(isOpen, authGroup)}
+          >
+            <EuiPinnableListGroup
+              aria-label={authGroup}
+              listItems={alterLinksWithCurrentState(AuthLinks)}
+              pinTitle={addLinkNameToPinTitle}
+              onPinClick={addPin}
+              maxWidth="none"
+              color="subdued"
+              gutterSize="none"
+              size="s"
+            />
+          </EuiCollapsibleNavGroup>
+        ) : null}
       </EuiFlexItem>
 
       <EuiFlexItem grow={false}>
@@ -354,7 +375,7 @@ const CollapsibleNav = ({ user }: CollapsibleNavProps) => {
           </EuiButton>
         </EuiCollapsibleNavGroup>
       </EuiFlexItem>
-    </EuiCollapsibleNav>
+    </StyledEuiCollapsibleNav>
   )
 }
 

@@ -92,8 +92,9 @@ func TestUser_UpdateUser(t *testing.T) {
 			t.Parallel()
 
 			urepo := repostesting.NewFakeUser(normalUser, advancedUser, adminUser)
+			notificationrepo := repostesting.NewFakeNotification()
 
-			u := services.NewUser(logger, urepo, authzsvc)
+			u := services.NewUser(logger, urepo, notificationrepo, authzsvc)
 			got, err := u.Update(context.Background(), &pgxpool.Pool{}, tc.args.id, tc.args.caller, tc.args.params)
 			if (err != nil) && tc.error == "" {
 				t.Fatalf("unexpected error = %v", err)
@@ -266,8 +267,9 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			t.Parallel()
 
 			urepo := repostesting.NewFakeUser(normalUser, advancedUser, managerUser, adminUser)
+			notificationrepo := repostesting.NewFakeNotification()
 
-			u := services.NewUser(logger, urepo, authzsvc)
+			u := services.NewUser(logger, urepo, notificationrepo, authzsvc)
 			got, err := u.UpdateUserAuthorization(context.Background(), &pgxpool.Pool{}, tc.args.id, tc.args.caller, tc.args.params)
 			if (err != nil) && tc.error == "" {
 				t.Fatalf("unexpected error = %v", err)

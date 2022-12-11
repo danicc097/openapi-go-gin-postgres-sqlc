@@ -39,7 +39,7 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundProject, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
+			foundProject, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -53,7 +53,7 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 
 			filter := "inexistent project"
 
-			_, err := tc.args.fn(context.Background(), testpool, filter)
+			_, err := tc.args.fn(context.Background(), testPool, filter)
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}
@@ -82,7 +82,7 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundProject, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
+			foundProject, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -96,7 +96,7 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 
 			filter := 254364 // does not exist
 
-			_, err := tc.args.fn(context.Background(), testpool, filter)
+			_, err := tc.args.fn(context.Background(), testPool, filter)
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}

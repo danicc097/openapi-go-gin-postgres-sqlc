@@ -6,12 +6,12 @@ import FallbackLoading from 'src/components/Loading/FallbackLoading'
 // import 'regenerator-runtime/runtime'
 import { EuiProvider, useEuiTheme } from '@elastic/eui'
 import { useUISlice } from 'src/slices/ui'
-import * as lightTheme from '@elastic/eui/dist/eui_theme_light.min.css'
-import * as darkTheme from '@elastic/eui/dist/eui_theme_dark.min.css'
 import { useNotificationAPI } from 'src/hooks/ui/useNotificationAPI'
+import ProtectedRoute from 'src/components/Permissions/ProtectedRoute'
 
 const Layout = React.lazy(() => import('./components/Layout/Layout'))
 const LandingPage = React.lazy(() => import('./views/LandingPage/LandingPage'))
+const UserPermissionsPage = React.lazy(() => import('src/views/Admin/UserPermissionsPage/UserPermissionsPage'))
 
 export default function App() {
   const theme = useUISlice((state) => state?.theme)
@@ -37,7 +37,15 @@ export default function App() {
                 path="/"
                 element={
                   <React.Suspense fallback={<FallbackLoading />}>
-                    <LandingPage />
+                    <ProtectedRoute component={LandingPage} />
+                  </React.Suspense>
+                }
+              />
+              <Route
+                path="/admin/user-permissions-management"
+                element={
+                  <React.Suspense fallback={<FallbackLoading />}>
+                    <ProtectedRoute component={UserPermissionsPage} />
                   </React.Suspense>
                 }
               />

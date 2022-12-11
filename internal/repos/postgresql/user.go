@@ -11,6 +11,19 @@ import (
 	"github.com/google/uuid"
 )
 
+func unique[T comparable](s []T) []T {
+	set := make(map[T]struct{})
+	res := []T{}
+	for _, element := range s {
+		if _, ok := set[element]; !ok {
+			set[element] = struct{}{}
+			res = append(res, element)
+		}
+	}
+
+	return res
+}
+
 // User represents the repository used for interacting with User records.
 type User struct {
 	q *db.Queries
@@ -33,7 +46,7 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params repos.UserCreatePar
 		LastName:   params.LastName,
 		ExternalID: params.ExternalID,
 		RoleRank:   params.RoleRank,
-		Scopes:     params.Scopes,
+		Scopes:     unique(params.Scopes),
 	}
 
 	if err := user.Save(ctx, d); err != nil {
@@ -43,7 +56,7 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params repos.UserCreatePar
 	return user, nil
 }
 
-func (u *User) Update(ctx context.Context, d db.DBTX, id string, params repos.UserUpdateParams) (*db.User, error) {
+func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params repos.UserUpdateParams) (*db.User, error) {
 	user, err := u.UserByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user by id %w", parseErrorDetail(err))
@@ -57,10 +70,16 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, params repos.Us
 		user.LastName = params.LastName
 	}
 	if params.Scopes != nil {
-		user.Scopes = *params.Scopes
+		user.Scopes = unique(*params.Scopes)
 	}
 	if params.Rank != nil {
 		user.RoleRank = *params.Rank
+	}
+	if params.HasGlobalNotifications != nil {
+		user.HasGlobalNotifications = *params.HasGlobalNotifications
+	}
+	if params.HasPersonalNotifications != nil {
+		user.HasPersonalNotifications = *params.HasPersonalNotifications
 	}
 
 	err = user.Update(ctx, d)
@@ -71,7 +90,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, params repos.Us
 	return user, err
 }
 
-func (u *User) Delete(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
+func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error) {
 	user, err := u.UserByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user by id %w", parseErrorDetail(err))
@@ -114,13 +133,8 @@ func (u *User) UserByUsername(ctx context.Context, d db.DBTX, username string) (
 	return user, nil
 }
 
-func (u *User) UserByID(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
-	uid, err := uuid.Parse(id)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse id as UUID: %w", parseErrorDetail(err))
-	}
-
-	user, err := db.UserByUserID(ctx, d, uid)
+func (u *User) UserByID(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error) {
+	user, err := db.UserByUserID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user: %w", parseErrorDetail(err))
 	}

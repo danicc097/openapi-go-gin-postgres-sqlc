@@ -1,7 +1,6 @@
 package testutil
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -19,28 +18,20 @@ import (
 )
 
 // NewDB returns a new testing Postgres pool.
-func NewDB() (*pgxpool.Pool, error) {
+func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	conf := envvar.New()
 	logger, _ := zap.NewDevelopment()
 
-	pool, err := postgresql.New(conf, logger)
+	pool, sqlpool, err := postgresql.New(conf, logger)
 	if err != nil {
 		fmt.Printf("Couldn't create pool: %s\n", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	db, err := sql.Open("pgx", pool.Config().ConnString())
-	if err != nil {
-		fmt.Printf("Couldn't open Pool: %s\n", err)
-		return nil, err
-	}
-
-	defer db.Close()
-
-	instance, err := migratepostgres.WithInstance(db, &migratepostgres.Config{})
+	instance, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{})
 	if err != nil {
 		fmt.Printf("Couldn't migrate (1): %s\n", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	_, src, _, ok := runtime.Caller(0)
@@ -51,21 +42,15 @@ func NewDB() (*pgxpool.Pool, error) {
 	m, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/migrations/"), "postgres", instance)
 	if err != nil {
 		fmt.Printf("Couldn't migrate (2): %s\n", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	// migrate down before tests externally if needed. This function will be called
 	// by any test package that needs a db and `up` will be a no-op.
 	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		fmt.Printf("Couldnt' migrate (3): %s\n", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	testpool, err := pgxpool.New(context.Background(), pool.Config().ConnString())
-	if err != nil {
-		fmt.Printf("Couldn't open Pool: %s\n", err)
-		return nil, err
-	}
-
-	return testpool, nil
+	return pool, sqlpool, nil
 }

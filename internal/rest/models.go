@@ -16,6 +16,12 @@ type UserResponse struct {
 	db.UserPublic
 }
 
+// DemoProjectWorkItemsResponse represents an OpenAPI schema response for a ProjectBoard.
+type DemoProjectWorkItemsResponse struct {
+	db.WorkItemsDemoProjectPublic
+	BaseWorkItem db.WorkItemPublic `json:"baseWorkItem" required:"true"`
+}
+
 // ProjectBoardResponse represents an OpenAPI schema response for a ProjectBoard.
 type ProjectBoardResponse struct {
 	repomodels.ProjectBoardPublic

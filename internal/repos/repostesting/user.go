@@ -8,15 +8,16 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 )
 
 type fakeUserStore struct {
-	users map[string]db.User
+	users map[uuid.UUID]db.User
 
 	mu sync.Mutex
 }
 
-func (f *fakeUserStore) get(id string) (db.User, bool) {
+func (f *fakeUserStore) get(id uuid.UUID) (db.User, bool) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -25,7 +26,7 @@ func (f *fakeUserStore) get(id string) (db.User, bool) {
 	return user, ok
 }
 
-func (f *fakeUserStore) set(id string, user *db.User) {
+func (f *fakeUserStore) set(id uuid.UUID, user *db.User) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -36,18 +37,18 @@ func (f *fakeUserStore) set(id string, user *db.User) {
 // the passed users.
 func NewFakeUser(users ...*db.User) *FakeUser {
 	fks := &fakeUserStore{
-		users: make(map[string]db.User),
+		users: make(map[uuid.UUID]db.User),
 		mu:    sync.Mutex{},
 	}
 
 	for _, u := range users {
 		uc := *u
-		fks.set(u.UserID.String(), &uc)
+		fks.set(u.UserID, &uc)
 	}
 
 	fakeUserRepo := &FakeUser{}
 
-	fakeUserRepo.UserByIDStub = func(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
+	fakeUserRepo.UserByIDStub = func(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error) {
 		user, ok := fks.get(id)
 		if !ok {
 			return &db.User{}, errors.New("could not get user by ID")
@@ -56,7 +57,7 @@ func NewFakeUser(users ...*db.User) *FakeUser {
 		return &user, nil
 	}
 
-	fakeUserRepo.UpdateStub = func(ctx context.Context, d db.DBTX, id string, params repos.UserUpdateParams) (*db.User, error) {
+	fakeUserRepo.UpdateStub = func(ctx context.Context, d db.DBTX, id uuid.UUID, params repos.UserUpdateParams) (*db.User, error) {
 		user, err := fakeUserRepo.UserByID(ctx, d, id)
 		if err != nil {
 			return &db.User{}, fmt.Errorf("UserByIDStub: %w", err)

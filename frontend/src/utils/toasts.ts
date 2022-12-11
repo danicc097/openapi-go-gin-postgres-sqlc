@@ -1,4 +1,5 @@
 export enum ToastId {
+  FormSubmit = 'toastFormSubmit',
   AuthRedirect = 'toastAuthRedirect',
   NotificationStreamError = 'toastNotificationStreamError',
   AuthnError = 'toastAuthnError',

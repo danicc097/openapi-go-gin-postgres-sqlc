@@ -20,7 +20,7 @@ import (
 func TestGetUserRoute(t *testing.T) {
 	t.Parallel()
 
-	srv, err := runTestServer(t, testpool, []gin.HandlerFunc{})
+	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{})
 	if err != nil {
 		t.Fatalf("Couldn't run test server: %s\n", err)
 	}
@@ -71,7 +71,7 @@ func TestGetUserRoute(t *testing.T) {
 func TestUpdateUserAuthRoute(t *testing.T) {
 	t.Parallel()
 
-	srv, err := runTestServer(t, testpool, []gin.HandlerFunc{})
+	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{})
 	if err != nil {
 		t.Fatalf("Couldn't run test server: %s\n", err)
 	}

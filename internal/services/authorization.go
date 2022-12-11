@@ -15,19 +15,11 @@ import (
 
 // Role represents a predefined role that may be required
 // for specific actions regardless of scopes assigned to a user.
-// It is also associated with a collection of scopes that get assigned/revoked upon role change.
+// TODO It is also associated with a collection of scopes that get assigned/revoked upon role change.
 type Role struct {
 	Description string      `json:"description"`
 	Rank        int16       `json:"rank"` // to avoid casting. postgres smallint with check > 0
-	Role        models.Role `json:"name"`
-}
-
-func (r *Role) Validate() error {
-	if r.Rank <= 0 {
-		return internal.NewErrorf(internal.ErrorCodeInvalidRole, "rank must be higher than 0")
-	}
-
-	return nil
+	Name        models.Role `json:"name"`
 }
 
 type Scope struct {
@@ -41,9 +33,11 @@ type (
 
 // Authorization represents a service for authorization.
 type Authorization struct {
-	logger *zap.Logger
-	roles  userRoles
-	scopes userScopes
+	logger         *zap.Logger
+	roles          userRoles
+	scopes         userScopes
+	existingRoles  []models.Role
+	existingScopes []models.Scope
 }
 
 // NewAuthorization returns a new Authorization service.
@@ -68,9 +62,11 @@ func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string)
 	}
 
 	return &Authorization{
-		logger: logger,
-		roles:  roles,
-		scopes: scopes,
+		logger:         logger,
+		roles:          roles,
+		scopes:         scopes,
+		existingRoles:  models.AllRoleValues(),
+		existingScopes: models.AllScopeValues(),
 	}, nil
 }
 
@@ -96,14 +92,34 @@ func (a *Authorization) RoleByRank(rank int16) (Role, bool) {
 func (a *Authorization) ScopeByName(scope string) (Scope, error) {
 	s, ok := a.scopes[models.Scope(scope)]
 	if !ok {
-		return Scope{}, internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown scope %s", scope)
+		return Scope{}, internal.NewErrorf(internal.ErrorCodeInvalidScope, "unknown scope %s", scope)
 	}
 
 	return s, nil
 }
 
+func (a *Authorization) ValidateScopes(scopes ...string) error {
+	for _, s := range scopes {
+		_, ok := a.scopes[models.Scope(s)]
+		if !ok {
+			return internal.NewErrorf(internal.ErrorCodeInvalidScope, "unknown scope %s", s)
+		}
+	}
+
+	return nil
+}
+
+func (a *Authorization) ValidateRole(role string) error {
+	_, ok := a.roles[models.Role(role)]
+	if !ok {
+		return internal.NewErrorf(internal.ErrorCodeInvalidRole, "unknown role %s", role)
+	}
+
+	return nil
+}
+
 func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) error {
-	if err := role.Validate(); err != nil {
+	if err := a.ValidateRole(string(role.Name)); err != nil {
 		return internal.WrapErrorf(err, internal.ErrorCodeUnauthorized, "role is not valid")
 	}
 	rl, ok := a.roles[requiredRole]
@@ -118,6 +134,9 @@ func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) err
 }
 
 func (a *Authorization) HasRequiredScopes(scopes []string, requiredScopes []models.Scope) error {
+	if err := a.ValidateScopes(scopes...); err != nil {
+		return internal.WrapErrorf(err, internal.ErrorCodeUnauthorized, "scopes are not valid")
+	}
 	for _, rs := range requiredScopes {
 		if !slices.Contains(scopes, string(rs)) {
 			return internal.NewErrorf(internal.ErrorCodeUnauthorized, fmt.Sprintf("access restricted: missing scope %s", rs))
@@ -125,6 +144,19 @@ func (a *Authorization) HasRequiredScopes(scopes []string, requiredScopes []mode
 	}
 
 	return nil
+}
+
+// DefaultScopes returns the default scopes for a role.
+func (a *Authorization) DefaultScopes(role Role) (scopes []models.Scope) {
+	if role.Rank > a.roles[models.RoleUser].Rank {
+		scopes = append(scopes, models.ScopeUsersRead)
+	}
+	if role.Rank > a.roles[models.RoleAdvancedUser].Rank {
+	}
+
+	// TODO fill in
+
+	return scopes
 }
 
 /*

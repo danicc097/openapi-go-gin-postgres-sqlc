@@ -6,7 +6,6 @@ package envvar
 import (
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
@@ -23,9 +22,14 @@ type Provider interface {
 type Configuration struct{}
 
 // Load reads the env filename and loads it into ENV for the current process.
+// It also initializes/replaces app configuration.
 func Load(filename string) error {
 	if err := godotenv.Load(filename); err != nil {
 		return internal.NewErrorf(internal.ErrorCodeUnknown, fmt.Sprintf("loading %s env var file: %s", filename, err))
+	}
+
+	if err := internal.NewAppConfig(); err != nil {
+		return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "internal.NewAppConfig")
 	}
 
 	return nil
@@ -45,28 +49,6 @@ func (c *Configuration) Get(key string) (string, error) {
 }
 
 var errEnvVarEmpty = errors.New("env var empty")
-
-func GetenvStr(key string) (string, error) {
-	v := os.Getenv(key)
-	if v == "" {
-		return v, errors.Wrap(errEnvVarEmpty, key)
-	}
-
-	return v, nil
-}
-
-func GetenvBool(key string) (bool, error) {
-	s, err := GetenvStr(key)
-	if err != nil {
-		return false, err
-	}
-	v, err := strconv.ParseBool(s)
-	if err != nil {
-		return false, err
-	}
-
-	return v, nil
-}
 
 // GetEnv returns an environment variable's value or a default if empty.
 func GetEnv(key, dft string) string {

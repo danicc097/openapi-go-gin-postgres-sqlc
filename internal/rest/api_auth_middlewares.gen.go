@@ -40,6 +40,10 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
+	case GetProjectWorkitems:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
 	case InitializeProject:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),

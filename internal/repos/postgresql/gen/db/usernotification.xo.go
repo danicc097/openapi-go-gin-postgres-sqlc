@@ -5,8 +5,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"strings"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -19,7 +17,6 @@ type UserNotificationPublic struct {
 	UserNotificationID int64     `json:"userNotificationID" required:"true"` // user_notification_id
 	NotificationID     int       `json:"notificationID" required:"true"`     // notification_id
 	Read               bool      `json:"read" required:"true"`               // read
-	CreatedAt          time.Time `json:"createdAt" required:"true"`          // created_at
 	UserID             uuid.UUID `json:"userID" required:"true"`             // user_id
 }
 
@@ -28,16 +25,16 @@ type UserNotification struct {
 	UserNotificationID int64     `json:"user_notification_id" db:"user_notification_id"` // user_notification_id
 	NotificationID     int       `json:"notification_id" db:"notification_id"`           // notification_id
 	Read               bool      `json:"read" db:"read"`                                 // read
-	CreatedAt          time.Time `json:"created_at" db:"created_at"`                     // created_at
 	UserID             uuid.UUID `json:"user_id" db:"user_id"`                           // user_id
 
+	Notification *Notification `json:"notification" db:"notification"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }
 
 func (x *UserNotification) ToPublic() UserNotificationPublic {
 	return UserNotificationPublic{
-		UserNotificationID: x.UserNotificationID, NotificationID: x.NotificationID, Read: x.Read, CreatedAt: x.CreatedAt, UserID: x.UserID,
+		UserNotificationID: x.UserNotificationID, NotificationID: x.NotificationID, Read: x.Read, UserID: x.UserID,
 	}
 }
 
@@ -57,26 +54,9 @@ func WithUserNotificationLimit(limit int) UserNotificationSelectConfigOption {
 
 type UserNotificationOrderBy = string
 
-const (
-	UserNotificationCreatedAtDescNullsFirst UserNotificationOrderBy = " created_at DESC NULLS FIRST "
-	UserNotificationCreatedAtDescNullsLast  UserNotificationOrderBy = " created_at DESC NULLS LAST "
-	UserNotificationCreatedAtAscNullsFirst  UserNotificationOrderBy = " created_at ASC NULLS FIRST "
-	UserNotificationCreatedAtAscNullsLast   UserNotificationOrderBy = " created_at ASC NULLS LAST "
-)
-
-// WithUserNotificationOrderBy orders results by the given columns.
-func WithUserNotificationOrderBy(rows ...UserNotificationOrderBy) UserNotificationSelectConfigOption {
-	return func(s *UserNotificationSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
-		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
-	}
+type UserNotificationJoins struct {
+	Notification bool
 }
-
-type UserNotificationJoins struct{}
 
 // WithUserNotificationJoin orders results by the given columns.
 func WithUserNotificationJoin(joins UserNotificationJoins) UserNotificationSelectConfigOption {
@@ -109,10 +89,10 @@ func (un *UserNotification) Insert(ctx context.Context, db DB) error {
 		`notification_id, read, user_id` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) RETURNING user_notification_id, created_at `
+		`) RETURNING user_notification_id `
 	// run
 	logf(sqlstr, un.NotificationID, un.Read, un.UserID)
-	if err := db.QueryRow(ctx, sqlstr, un.NotificationID, un.Read, un.UserID).Scan(&un.UserNotificationID, &un.CreatedAt); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, un.NotificationID, un.Read, un.UserID).Scan(&un.UserNotificationID); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -132,10 +112,10 @@ func (un *UserNotification) Update(ctx context.Context, db DB) error {
 	sqlstr := `UPDATE public.user_notifications SET ` +
 		`notification_id = $1, read = $2, user_id = $3 ` +
 		`WHERE user_notification_id = $4 ` +
-		`RETURNING user_notification_id, created_at `
+		`RETURNING user_notification_id `
 	// run
-	logf(sqlstr, un.NotificationID, un.Read, un.CreatedAt, un.UserID, un.UserNotificationID)
-	if err := db.QueryRow(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID).Scan(&un.UserNotificationID, &un.CreatedAt); err != nil {
+	logf(sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
+	if err := db.QueryRow(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID).Scan(&un.UserNotificationID); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -195,6 +175,42 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// UserNotificationByNotificationIDUserID retrieves a row from 'public.user_notifications' as a UserNotification.
+//
+// Generated from index 'user_notifications_notification_id_user_id_key'.
+func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notificationID int, userID uuid.UUID, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`user_notifications.user_notification_id,
+user_notifications.notification_id,
+user_notifications.read,
+user_notifications.user_id,
+(case when $1::boolean = true then row_to_json(notifications.*) end)::jsonb as notification ` +
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey"
+left join notifications on notifications.notification_id = user_notifications.notification_id` +
+		` WHERE user_notifications.notification_id = $2 AND user_notifications.user_id = $3 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, notificationID, userID)
+	un := UserNotification{
+		_exists: true,
+	}
+
+	if err := db.QueryRow(ctx, sqlstr, c.joins.Notification, notificationID, userID).Scan(&un.UserNotificationID, &un.NotificationID, &un.Read, &un.UserID, &un.Notification); err != nil {
+		return nil, logerror(err)
+	}
+	return &un, nil
+}
+
 // UserNotificationByUserNotificationID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_pkey'.
@@ -210,11 +226,12 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
-user_notifications.created_at,
-user_notifications.user_id ` +
+user_notifications.user_id,
+(case when $1::boolean = true then row_to_json(notifications.*) end)::jsonb as notification ` +
 		`FROM public.user_notifications ` +
-		`` +
-		` WHERE user_notifications.user_notification_id = $1 `
+		`-- O2O join generated from "user_notifications_notification_id_fkey"
+left join notifications on notifications.notification_id = user_notifications.notification_id` +
+		` WHERE user_notifications.user_notification_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -224,7 +241,7 @@ user_notifications.user_id ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, userNotificationID).Scan(&un.UserNotificationID, &un.NotificationID, &un.Read, &un.CreatedAt, &un.UserID); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.Notification, userNotificationID).Scan(&un.UserNotificationID, &un.NotificationID, &un.Read, &un.UserID, &un.Notification); err != nil {
 		return nil, logerror(err)
 	}
 	return &un, nil
@@ -245,17 +262,18 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opt
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
-user_notifications.created_at,
-user_notifications.user_id ` +
+user_notifications.user_id,
+(case when $1::boolean = true then row_to_json(notifications.*) end)::jsonb as notification ` +
 		`FROM public.user_notifications ` +
-		`` +
-		` WHERE user_notifications.user_id = $1 `
+		`-- O2O join generated from "user_notifications_notification_id_fkey"
+left join notifications on notifications.notification_id = user_notifications.notification_id` +
+		` WHERE user_notifications.user_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, userID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, userID)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -267,7 +285,7 @@ user_notifications.user_id ` +
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&un.UserNotificationID, &un.NotificationID, &un.Read, &un.CreatedAt, &un.UserID); err != nil {
+		if err := rows.Scan(&un.UserNotificationID, &un.NotificationID, &un.Read, &un.UserID); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &un)

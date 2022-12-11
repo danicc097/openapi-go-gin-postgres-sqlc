@@ -63,5 +63,10 @@
     "scopes": null,
     "role": null,
     "requiresAuthentication": true
+  },
+  "GetProjectWorkitems": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
   }
 }

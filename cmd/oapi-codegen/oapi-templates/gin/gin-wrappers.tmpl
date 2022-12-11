@@ -43,7 +43,7 @@ func (siw *ServerInterfaceWrapper) {{$opid}}(c *gin.Context) {
 
   {{if .RequiresParamObject}}
     // Parameter object where we will unmarshal all parameters from the context
-    var params {{.OperationId}}Params
+    var params externalRef0.{{.OperationId}}Params
 
     {{range $paramIdx, $param := .QueryParams}}
       {{- if (or (or .Required .IsPassThrough) (or .IsJson .IsStyled)) -}}

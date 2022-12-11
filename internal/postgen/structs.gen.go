@@ -66,9 +66,11 @@ var PublicStructs = map[string]any{
 	"DbActivity":                         db.Activity{},
 	"DbActivitySelectConfig":             db.ActivitySelectConfig{},
 	"DbActivityJoins":                    db.ActivityJoins{},
+	"DbCreateNotificationParams":         db.CreateNotificationParams{},
+	"DbGetUserNotificationsParams":       db.GetUserNotificationsParams{},
+	"DbGetUserNotificationsRow":          db.GetUserNotificationsRow{},
 	"DbGetUserParams":                    db.GetUserParams{},
 	"DbGetUserRow":                       db.GetUserRow{},
-	"DbListAllUsers2Row":                 db.ListAllUsers2Row{},
 	"DbRegisterNewUserParams":            db.RegisterNewUserParams{},
 	"DbRegisterNewUserRow":               db.RegisterNewUserRow{},
 	"DbTestRow":                          db.TestRow{},
@@ -104,10 +106,11 @@ var PublicStructs = map[string]any{
 
 	//
 
-	"RestUserResponse":              rest.UserResponse{},
-	"RestProjectBoardResponse":      rest.ProjectBoardResponse{},
-	"RestProjectBoardCreateRequest": rest.ProjectBoardCreateRequest{},
-	"RestWorkItemResponse":          rest.WorkItemResponse{},
-	"RestTeamCreateRequest":         rest.TeamCreateRequest{},
-	"RestTeamUpdateRequest":         rest.TeamUpdateRequest{},
+	"RestUserResponse":                 rest.UserResponse{},
+	"RestDemoProjectWorkItemsResponse": rest.DemoProjectWorkItemsResponse{},
+	"RestProjectBoardResponse":         rest.ProjectBoardResponse{},
+	"RestProjectBoardCreateRequest":    rest.ProjectBoardCreateRequest{},
+	"RestWorkItemResponse":             rest.WorkItemResponse{},
+	"RestTeamCreateRequest":            rest.TeamCreateRequest{},
+	"RestTeamUpdateRequest":            rest.TeamUpdateRequest{},
 }

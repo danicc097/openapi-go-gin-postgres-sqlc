@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -13,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type MyAppClaims struct {
+type AppClaims struct {
 	Email    string `json:"email"`
 	Username string `json:"username"`
 	jwt.RegisteredClaims
@@ -35,7 +36,17 @@ func NewAuthentication(logger *zap.Logger, usvc *User, pool *pgxpool.Pool) *Auth
 
 // GetUserFromAccessToken returns a user from a token.
 func (a *Authentication) GetUserFromAccessToken(ctx context.Context, token string) (*db.User, error) {
-	return &db.User{}, nil
+	claims, err := a.ParseToken(ctx, token)
+	if err != nil {
+		return nil, errors.Wrap(err, "invalid token")
+	}
+
+	user, err := a.usvc.UserByEmail(ctx, a.pool, claims.Email)
+	if err != nil {
+		return nil, internal.WrapErrorf(err, internal.ErrorCodeNotFound, "user from token not found")
+	}
+
+	return user, nil
 }
 
 // GetUserFromAPIKey returns a user from an api key.
@@ -43,14 +54,19 @@ func (a *Authentication) GetUserFromAPIKey(ctx context.Context, apiKey string) (
 	return a.usvc.UserByAPIKey(ctx, a.pool, apiKey)
 }
 
+// GetOrRegisterUserFromOAuth2Token returns a user from an OAuth2 token.
+func (a *Authentication) GetOrRegisterUserFromOAuth2Token(ctx context.Context, token string) (*db.User, error) {
+	// return a.usvc.UserByExternalID(ctx, a.pool, externalID)
+	return nil, nil
+}
+
 // CreateAccessTokenForUser creates a new token for a user.
 func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.User) (string, error) {
 	issuer := os.Getenv("DOMAIN")
-	claims := MyAppClaims{
+	claims := AppClaims{
 		Email:    user.Email,
 		Username: user.Username,
 		RegisteredClaims: jwt.RegisteredClaims{
-			// A usual scenario is to set the expiration time relative to the current time
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)), // mandatory
 			Issuer:    issuer,                                             // mandatory
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -66,7 +82,7 @@ func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.
 	if err != nil {
 		return "", errors.Wrap(err, "could not sign token")
 	}
-	fmt.Printf("%v :error is %v\n", ss, err)
+	fmt.Printf("signed string %v : %v\n", ss, err)
 
 	return ss, nil
 }
@@ -82,8 +98,8 @@ func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User)
 }
 
 // ParseToken returns a token string claims.
-func (a *Authentication) ParseToken(ctx context.Context, tokenString string, claim string) (*MyAppClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &MyAppClaims{}, func(token *jwt.Token) (interface{}, error) {
+func (a *Authentication) ParseToken(ctx context.Context, tokenString string) (*AppClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &AppClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return os.Getenv("SIGNING_KEY"), nil
 	})
 
@@ -91,7 +107,7 @@ func (a *Authentication) ParseToken(ctx context.Context, tokenString string, cla
 		return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 	}
 
-	claims, ok := token.Claims.(*MyAppClaims)
+	claims, ok := token.Claims.(*AppClaims)
 	if ok && token.Valid {
 		fmt.Printf("%v %v", claims.Email, claims.Username)
 	} else {

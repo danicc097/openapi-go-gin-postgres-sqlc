@@ -14,8 +14,9 @@ import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
 import { CompositePropagator, W3CBaggagePropagator, W3CTraceContextPropagator } from '@opentelemetry/core'
 import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web'
 import opentelemetry from '@opentelemetry/api'
+import { v4 as uuidv4 } from 'uuid'
 
-export const sessionID = crypto.randomUUID()
+export const sessionID = uuidv4()
 
 export enum AttributeKeys {
   SessionID = 'browser-session-id',

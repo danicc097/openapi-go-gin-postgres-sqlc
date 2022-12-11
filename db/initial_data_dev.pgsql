@@ -72,19 +72,6 @@ begin
     , 'Smith'
     , 4
     , 'provider_external_id' || manager_1_id);
-  -- projects
-  insert into projects (
-    "name"
-    , description)
-  values (
-    'project 1'
-    , 'This is project 1');
-  insert into projects (
-    "name"
-    , description)
-  values (
-    'project 2'
-    , 'This is project 2');
   -- teams
   insert into teams (
     "name"
@@ -102,14 +89,6 @@ begin
     'team 2'
     , 1
     , 'This is team 2 from project 1');
-  insert into teams (
-    "name"
-    , project_id
-    , description)
-  values (
-    'team 1'
-    , 2
-    , 'This is team 1 from project 2');
   insert into user_team (
     team_id
     , user_id)
@@ -167,61 +146,52 @@ begin
   -- work item tags
   insert into work_item_tags (
     "name"
+    , project_id
     , description
     , color)
   values (
     'CRITICAL'
+    , 1
     , 'A critical work item tag'
     , '#abaaba');
   insert into work_item_tags (
     "name"
+    , project_id
     , description
     , color)
   values (
     'WAITING FOR INFO'
+    , 1
     , 'Waiting for external input'
     , '#abaaba');
   -- time tracking activities
   insert into activities (
     "name"
+    , project_id
     , description
     , is_productive)
   values (
     'Nothing'
+    , 1
     , 'Doing nothing'
     , false);
   insert into activities (
     "name"
+    , project_id
     , description
     , is_productive)
   values (
     'Meeting'
+    , 1
     , 'In a meeting'
-    , true);
-  insert into activities (
-    "name"
-    , description
-    , is_productive)
-  values (
-    'Reviewing'
-    , 'Reviewing a task'
-    , true);
-  insert into activities (
-    "name"
-    , description
-    , is_productive)
-  values (
-    'Preparing'
-    , 'Preparing a task'
     , true);
   -- kanban steps
   insert into kanban_steps (
-    team_id
+    project_id
     , step_order
     , "name"
     , description
     , time_trackable
-    , disabled
     , color)
   values (
     1
@@ -229,15 +199,13 @@ begin
     , 'Disabled step'
     , ''
     , false
-    , true
     , '#abaaba');
   insert into kanban_steps (
-    team_id
+    project_id
     , step_order
     , "name"
     , description
     , time_trackable
-    , disabled
     , color)
   values (
     1
@@ -245,15 +213,13 @@ begin
     , 'Stand-by'
     , ''
     , false
-    , false
     , '#abaaba');
   insert into kanban_steps (
-    team_id
+    project_id
     , step_order
     , "name"
     , description
     , time_trackable
-    , disabled
     , color)
   values (
     1
@@ -261,15 +227,13 @@ begin
     , 'Preparing'
     , ''
     , true
-    , false
     , '#abaaba');
   insert into kanban_steps (
-    team_id
+    project_id
     , step_order
     , "name"
     , description
     , time_trackable
-    , disabled
     , color)
   values (
     1
@@ -277,15 +241,13 @@ begin
     , 'Reviewing'
     , ''
     , true
-    , false
     , '#abaaba');
   insert into kanban_steps (
-    team_id
+    project_id
     , step_order
     , "name"
     , description
     , time_trackable
-    , disabled
     , color)
   values (
     1
@@ -293,7 +255,6 @@ begin
     , 'Submitted'
     , ''
     , true
-    , false
     , '#abaaba');
   insert into work_item_types (
     project_id
@@ -301,7 +262,7 @@ begin
     , description
     , color)
   values (
-    2
+    1
     , 'work_item 1'
     , 'description for work_item type'
     , '#caabbb');
@@ -311,7 +272,7 @@ begin
     , description
     , color)
   values (
-    2
+    1
     , 'work_item 2'
     , 'description for work_item type'
     , '#caabbb');
@@ -321,7 +282,7 @@ begin
     , description
     , color)
   values (
-    2
+    1
     , 'work_item 3'
     , 'description for work_item type'
     , '#caabbb');
@@ -624,7 +585,7 @@ returning
     , notification_type)
   values (
     null
-    , 'global notif title'
+    , 'personal notif title'
     , 'body'
     , 'label'
     , 'https://hello.com'
@@ -632,40 +593,6 @@ returning
     , admin_id
     , user_ids[1]
     , 'personal');
-  -- send them to users
-  -- TODO this part must be replaced by a trigger based on notif type
-  insert into user_notifications (
-    notification_id
-    , "read"
-    , created_at
-    , user_id)
-  values (
-    1
-    , false
-    , current_timestamp
-    , user_ids[1]);
-  insert into user_notifications (
-    notification_id
-    , "read"
-    , created_at
-    , user_id)
-  values (
-    1
-    , false
-    , current_timestamp
-    , user_ids[2]);
-
-  insert into user_notifications (
-    notification_id
-    , "read"
-    , created_at
-    , user_id)
-  values (
-    2
-    , false
-    , current_timestamp
-    , user_ids[2]);
-  -- end TODO this part must be replaced by a trigger based on notif type
 end;
 $BODY$
 language plpgsql;

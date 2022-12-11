@@ -14,7 +14,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/getkin/kin-openapi/openapi3"
 
 	// internalformat "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
@@ -102,9 +101,9 @@ func (o *PreGen) Generate() error {
 		return fmt.Errorf("analyze spec: %w", err)
 	}
 
-	if err := internal.GenerateConfigTemplate(); err != nil {
-		return fmt.Errorf("internal.GenerateConfigTemplate: %w", err)
-	}
+	// if err := internal.GenerateConfigTemplate(); err != nil {
+	// 	return fmt.Errorf("internal.GenerateConfigTemplate: %w", err)
+	// }
 
 	if err := o.generateOpIDs(); err != nil {
 		return fmt.Errorf("generateOpIDs: %w", err)

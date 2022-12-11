@@ -2,13 +2,12 @@ package resttestutil
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/pkg/errors"
 )
@@ -29,28 +28,14 @@ type CreateUserResult struct {
 
 // CreateUser creates a new random user with the given configuration.
 func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParams) (*CreateUserResult, error) {
-	// TODO any value that has a unique constraint in db must be generated via randomXXX().
-	// the only parameters accepted are high level, at the `rest` layer only.
-	// IMPORTANT: functions in this package only make use of SERVICES.
-	// do not use any repository or db layer components
-	// services have absolutely all the logic we need for fixtures. dont want any magic or leaking.
-	scopes := make([]string, len(params.Scopes))
-	for i, s := range params.Scopes {
-		scopes[i] = string(s)
-	}
-	role, err := ff.authzsvc.RoleByName(string(params.Role))
-	if err != nil {
-		return nil, fmt.Errorf("authzsvc.RoleByName: %w", err)
-	}
-
-	ucp := repos.UserCreateParams{
+	ucp := services.UserRegisterParams{
 		Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
 		Email:      testutil.RandomEmail(),
 		FirstName:  pointers.New(testutil.RandomFirstName()),
 		LastName:   pointers.New(testutil.RandomLastName()),
 		ExternalID: testutil.RandomString(10),
-		Scopes:     scopes,
-		RoleRank:   role.Rank,
+		Scopes:     params.Scopes,
+		Role:       params.Role,
 	}
 	user, err := ff.usvc.Register(ctx, ff.pool, ucp)
 	if err != nil {

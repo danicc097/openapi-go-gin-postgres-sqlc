@@ -70,7 +70,7 @@ func (h *Handlers) GetCurrentUser(c *gin.Context) {
 		return
 	}
 
-	res := UserResponse{UserPublic: user.ToPublic(), Role: role.Role, Scopes: user.Scopes}
+	res := UserResponse{UserPublic: user.ToPublic(), Role: role.Name, Scopes: user.Scopes}
 
 	c.JSON(http.StatusOK, res)
 }

@@ -28,6 +28,9 @@ const (
 	ErrorCodeValidationError
 
 	ErrorCodeInvalidRole
+	ErrorCodeInvalidScope
+
+	ErrorCodeInvalidUUID
 )
 
 // WrapErrorf returns a wrapped error.

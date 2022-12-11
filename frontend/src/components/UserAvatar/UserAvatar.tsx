@@ -1,10 +1,10 @@
 import React from 'react'
 import { EuiAvatar, EuiAvatarProps } from '@elastic/eui'
 import { getAvatarName } from 'src/utils/format'
-import type { User } from 'src/redux/slices/gen/internalApi'
+import type { UserResponse } from 'src/gen/model'
 
 export type UserAvatarProps = {
-  user: User
+  user: UserResponse
   size?: typeof EuiAvatar.defaultProps.size
   initialsLength?: typeof EuiAvatar.defaultProps.initialsLength
   type?: typeof EuiAvatar.defaultProps.type

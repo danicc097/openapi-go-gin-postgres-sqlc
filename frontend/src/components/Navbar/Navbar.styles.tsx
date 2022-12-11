@@ -22,13 +22,6 @@ export const StyledEuiHeader = styled(EuiHeader)`
 export const AvatarMenu = styled.div`
   & .avatar-dropdown {
     align-items: center;
-    padding: 1rem;
-  }
-
-  &&& {
-    & .avatar-dropdown-user > * {
-      margin-bottom: 0.2rem;
-      margin-top: 0.2rem;
-    }
+    padding: 0.8rem;
   }
 `

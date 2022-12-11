@@ -153,6 +153,22 @@ type DbUserAPIKeyPublic struct {
 	UserID    UuidUUID  `json:"userID"`
 }
 
+// DbWorkItemPublic defines the model for DbWorkItemPublic.
+type DbWorkItemPublic struct {
+	Closed         *time.Time  `json:"closed"`
+	CreatedAt      time.Time   `json:"createdAt"`
+	DeletedAt      *time.Time  `json:"deletedAt"`
+	Description    string      `json:"description"`
+	KanbanStepID   int         `json:"kanbanStepID"`
+	Metadata       PgtypeJSONB `json:"metadata"`
+	TargetDate     time.Time   `json:"targetDate"`
+	TeamID         int         `json:"teamID"`
+	Title          string      `json:"title"`
+	UpdatedAt      time.Time   `json:"updatedAt"`
+	WorkItemID     int         `json:"workItemID"`
+	WorkItemTypeID int         `json:"workItemTypeID"`
+}
+
 // DbWorkItemTagPublic defines the model for DbWorkItemTagPublic.
 type DbWorkItemTagPublic struct {
 	Color         string `json:"color"`
@@ -169,6 +185,16 @@ type DbWorkItemTypePublic struct {
 	Name           string `json:"name"`
 	ProjectID      int    `json:"projectID"`
 	WorkItemTypeID int    `json:"workItemTypeID"`
+}
+
+// DemoProjectWorkItemsResponse defines the model for DemoProjectWorkItemsResponse.
+type DemoProjectWorkItemsResponse struct {
+	BaseWorkItem  DbWorkItemPublic `json:"baseWorkItem"`
+	LastMessageAt time.Time        `json:"lastMessageAt"`
+	Line          string           `json:"line"`
+	Ref           string           `json:"ref"`
+	Reopened      bool             `json:"reopened"`
+	WorkItemID    int              `json:"workItemID"`
 }
 
 // HTTPValidationError defines the model for HTTPValidationError.
@@ -188,9 +214,6 @@ type InitializeProjectRequest struct {
 
 // ModelsRole defines the model for ModelsRole.
 type ModelsRole = string
-
-// ModelsScope defines the model for ModelsScope.
-type ModelsScope = string
 
 // NotificationType User notification type.
 type NotificationType string
@@ -258,29 +281,6 @@ type Scope string
 // Scopes defines the model for Scopes.
 type Scopes = []Scope
 
-// TeamPublic defines the model for TeamPublic.
-type TeamPublic struct {
-	CreatedAt   time.Time   `json:"createdAt"`
-	Description string      `json:"description"`
-	Metadata    PgtypeJSONB `json:"metadata"`
-	Name        string      `json:"name"`
-	ProjectID   int         `json:"projectID"`
-	TeamID      int         `json:"teamID"`
-	UpdatedAt   time.Time   `json:"updatedAt"`
-}
-
-// TimeEntryPublic defines the model for TimeEntryPublic.
-type TimeEntryPublic struct {
-	ActivityID      *int       `json:"activityID,omitempty"`
-	Comment         *string    `json:"comment,omitempty"`
-	DurationMinutes *int       `json:"durationMinutes"`
-	Start           *time.Time `json:"start,omitempty"`
-	TeamID          *int       `json:"teamID"`
-	TimeEntryID     *int       `json:"timeEntryID,omitempty"`
-	UserID          *UuidUUID  `json:"userID,omitempty"`
-	WorkItemID      *int       `json:"workItemID"`
-}
-
 // Topics string identifiers for SSE event listeners.
 type Topics string
 
@@ -297,13 +297,6 @@ type UpdateUserRequest struct {
 
 	// LastName originally from auth server but updatable
 	LastName *string `json:"last_name,omitempty"`
-}
-
-// UserAPIKeyPublic defines the model for UserAPIKeyPublic.
-type UserAPIKeyPublic struct {
-	ApiKey    string    `json:"apiKey"`
-	ExpiresOn time.Time `json:"expiresOn"`
-	UserID    UuidUUID  `json:"userID"`
 }
 
 // UserResponse defines the model for UserResponse.
@@ -334,24 +327,19 @@ type ValidationError struct {
 	Type string   `json:"type"`
 }
 
-// WorkItemCommentPublic defines the model for WorkItemCommentPublic.
-type WorkItemCommentPublic struct {
-	CreatedAt         *time.Time `json:"createdAt,omitempty"`
-	Message           *string    `json:"message,omitempty"`
-	UpdatedAt         *time.Time `json:"updatedAt,omitempty"`
-	UserID            *UuidUUID  `json:"userID,omitempty"`
-	WorkItemCommentID *int       `json:"workItemCommentID,omitempty"`
-	WorkItemID        *int       `json:"workItemID,omitempty"`
-}
-
 // WorkItemRole Role in work item for a member.
 type WorkItemRole string
 
-// Serial defines the model for serial.
-type Serial = int
+// PathSerial defines the model for PathSerial.
+type PathSerial = int
 
 // Uuid defines the model for uuid.
 type Uuid = string
+
+// GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
+type GetProjectWorkitemsParams struct {
+	Open *bool `form:"open,omitempty" json:"open,omitempty"`
+}
 
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
 type InitializeProjectJSONRequestBody = InitializeProjectRequest

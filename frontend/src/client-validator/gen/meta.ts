@@ -4,8 +4,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
-  ProjectBoardCreateRequest,
+  DemoProjectWorkItemsResponse,
+  InitializeProjectRequest,
   ProjectBoardResponse,
+  UserResponse,
   HTTPValidationError,
   Topics,
   Scope,
@@ -16,15 +18,6 @@ import {
   UpdateUserRequest,
   UpdateUserAuthRequest,
   ValidationError,
-  PgtypeJSONB,
-  UuidUUID,
-  TeamPublic,
-  TimeEntryPublic,
-  WorkItemCommentPublic,
-  ModelsRole,
-  RestUserResponse,
-  ModelsScope,
-  UserAPIKeyPublic,
   DbTeamPublic,
   DbUserAPIKeyPublic,
   DbActivityPublic,
@@ -37,16 +30,23 @@ import {
   ReposTeamCreateParams,
   ReposWorkItemTagCreateParams,
   ReposWorkItemTypeCreateParams,
-  RestProjectBoardCreateRequest,
-  RestProjectBoardResponse,
+  ModelsRole,
+  UuidUUID,
+  DbWorkItemPublic,
+  PgtypeJSONB,
 } from './models'
 
 export const schemaDefinitions = {
-  ProjectBoardCreateRequest: info<ProjectBoardCreateRequest>(
-    'ProjectBoardCreateRequest',
-    '#/definitions/ProjectBoardCreateRequest',
+  DemoProjectWorkItemsResponse: info<DemoProjectWorkItemsResponse>(
+    'DemoProjectWorkItemsResponse',
+    '#/definitions/DemoProjectWorkItemsResponse',
+  ),
+  InitializeProjectRequest: info<InitializeProjectRequest>(
+    'InitializeProjectRequest',
+    '#/definitions/InitializeProjectRequest',
   ),
   ProjectBoardResponse: info<ProjectBoardResponse>('ProjectBoardResponse', '#/definitions/ProjectBoardResponse'),
+  UserResponse: info<UserResponse>('UserResponse', '#/definitions/UserResponse'),
   HTTPValidationError: info<HTTPValidationError>('HTTPValidationError', '#/definitions/HTTPValidationError'),
   Topics: info<Topics>('Topics', '#/definitions/Topics'),
   Scope: info<Scope>('Scope', '#/definitions/Scope'),
@@ -57,15 +57,6 @@ export const schemaDefinitions = {
   UpdateUserRequest: info<UpdateUserRequest>('UpdateUserRequest', '#/definitions/UpdateUserRequest'),
   UpdateUserAuthRequest: info<UpdateUserAuthRequest>('UpdateUserAuthRequest', '#/definitions/UpdateUserAuthRequest'),
   ValidationError: info<ValidationError>('ValidationError', '#/definitions/ValidationError'),
-  PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
-  UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
-  TeamPublic: info<TeamPublic>('TeamPublic', '#/definitions/TeamPublic'),
-  TimeEntryPublic: info<TimeEntryPublic>('TimeEntryPublic', '#/definitions/TimeEntryPublic'),
-  WorkItemCommentPublic: info<WorkItemCommentPublic>('WorkItemCommentPublic', '#/definitions/WorkItemCommentPublic'),
-  ModelsRole: info<ModelsRole>('ModelsRole', '#/definitions/ModelsRole'),
-  RestUserResponse: info<RestUserResponse>('RestUserResponse', '#/definitions/RestUserResponse'),
-  ModelsScope: info<ModelsScope>('ModelsScope', '#/definitions/ModelsScope'),
-  UserAPIKeyPublic: info<UserAPIKeyPublic>('UserAPIKeyPublic', '#/definitions/UserAPIKeyPublic'),
   DbTeamPublic: info<DbTeamPublic>('DbTeamPublic', '#/definitions/DbTeamPublic'),
   DbUserAPIKeyPublic: info<DbUserAPIKeyPublic>('DbUserAPIKeyPublic', '#/definitions/DbUserAPIKeyPublic'),
   DbActivityPublic: info<DbActivityPublic>('DbActivityPublic', '#/definitions/DbActivityPublic'),
@@ -90,14 +81,10 @@ export const schemaDefinitions = {
     'ReposWorkItemTypeCreateParams',
     '#/definitions/ReposWorkItemTypeCreateParams',
   ),
-  RestProjectBoardCreateRequest: info<RestProjectBoardCreateRequest>(
-    'RestProjectBoardCreateRequest',
-    '#/definitions/RestProjectBoardCreateRequest',
-  ),
-  RestProjectBoardResponse: info<RestProjectBoardResponse>(
-    'RestProjectBoardResponse',
-    '#/definitions/RestProjectBoardResponse',
-  ),
+  ModelsRole: info<ModelsRole>('ModelsRole', '#/definitions/ModelsRole'),
+  UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
+  DbWorkItemPublic: info<DbWorkItemPublic>('DbWorkItemPublic', '#/definitions/DbWorkItemPublic'),
+  PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
 }
 
 export interface SchemaInfo<T> {

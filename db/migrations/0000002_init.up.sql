@@ -141,13 +141,13 @@ create table notifications (
   , title text not null
   , body text not null
   , label text not null
-  , link text null
+  , link text
   , created_at timestamp with time zone default current_timestamp not null
   , sender uuid not null
   , receiver uuid -- can be null for 'global' type
   , notification_type notification_type not null
-  , foreign key (sender) references users (user_id)
-  , foreign key (receiver) references users (user_id)
+  , foreign key (sender) references users (user_id) on delete cascade
+  , foreign key (receiver) references users (user_id) on delete cascade
   , check (num_nonnulls (receiver_rank , receiver) = 1)
 );
 
@@ -157,62 +157,71 @@ create table user_notifications (
   user_notification_id bigserial primary key
   , notification_id int not null
   , read boolean default false not null -- frontend simply sends a list of user_notification_id to mark as read
-  , created_at timestamp with time zone default current_timestamp not null
   , user_id uuid not null
-  , foreign key (user_id) references users (user_id)
-  , foreign key (notification_id) references notifications (notification_id)
+  , unique (notification_id , user_id)
+  , foreign key (user_id) references users (user_id) on delete cascade
+  , foreign key (notification_id) references notifications (notification_id) on delete cascade
 );
+
+comment on column user_notifications.notification_id is 'cardinality:O2O';
 
 create index on user_notifications (user_id);
 
 -- read field simply used to show 'NEW' label but there is no filtering
-/*
-trigger on user_notifications. we simply want has_new_*** = true or false
-
-pubsub:
- - https://eli.thegreenplace.net/2020/pubsub-using-channels-in-go/
- - redis: https://stackoverflow.com/questions/59873784/redis-pub-sub-max-subscribers-and-publishers
- */
-create or replace function user_notifications_users_update ()
+create or replace function notification_fan_out ()
   returns trigger
   language plpgsql
   as $function$
 declare
-  n_type notification_type;
+  receiver_id uuid;
 begin
-  select
-    notification_type
-  from
-    notifications
-  where
-    notification_id = new.notification_id into n_type;
-  -- TODO trigger on notifications if notification is 'global' create user_notification for all affected
-  -- with rank >= receiver_rank
-  -- else if 'personal' create for the given receiver (user_id)
-  -- in both cases update users.has_*_notifications accordingly
-  update
-    users
-  set
-    has_personal_notifications = case when n_type = 'personal' then
-      true
-    else
-      has_personal_notifications
-    end
-    , has_global_notifications = case when n_type = 'global' then
-      true
-    else
-      has_global_notifications
-    end
-  where
-    user_id = new.user_id;
+  case when new.notification_type = 'personal' then
+    update
+      users
+    set
+      has_personal_notifications = true
+    where
+      user_id = new.receiver;
+      --
+      insert into user_notifications (
+        notification_id
+        , user_id)
+      values (
+        new.notification_id
+        , new.receiver);
+  when new.notification_type = 'global' then
+    update
+      users
+    set
+      has_global_notifications = true
+    where
+      role_rank >= new.receiver_rank;
+      --
+      for receiver_id in (
+        select
+          user_id
+        from
+          users
+        where
+          role_rank >= new.receiver_rank)
+        loop
+          insert into user_notifications (
+            notification_id
+            , user_id)
+          values (
+            new.notification_id
+            , receiver_id);
+          end loop;
+  end case;
   -- it's after trigger so wouldn't mattern anyway
   return null;
 end
 $function$;
 
-create trigger user_notifications_users_update
-  after insert on user_notifications for each row
-  execute function user_notifications_users_update ();
+-- deletes get cascaded
+create trigger notifications_fan_out
+  after insert on notifications for each row
+  execute function notification_fan_out ();
 
 create table user_team (
   team_id int not null

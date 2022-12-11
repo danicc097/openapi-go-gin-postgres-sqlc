@@ -1,9 +1,0 @@
-{
-  "oidc": {
-    "clientId": "",
-    "clientSecret": "",
-    "issuer": "",
-    "scopes": ""
-  },
-  "signingKey": ""
-}
