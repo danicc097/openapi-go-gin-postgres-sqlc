@@ -241,6 +241,10 @@ paths:
           schema:
             type: boolean
           name: open
+        - in: query
+          schema:
+            type: boolean
+          name: deleted
       responses:
         "200":
           description: Project successfully initialized.

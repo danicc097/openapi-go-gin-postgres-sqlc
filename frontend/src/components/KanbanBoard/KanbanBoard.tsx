@@ -101,18 +101,24 @@ export default function KanbanBoard() {
       }
     })
 
-  const [list, setList] = useState([1, 2])
+  const [list, setList] = useState([1, 2, 3, 4])
   const [list1, setList1] = useState(makeList(3))
   const [list2, setList2] = useState(makeList(3, 4))
+  const [list3, setList3] = useState(makeList(1, 7))
+  const [list4, setList4] = useState(makeList(1, 8))
   const lists = {
     COMPLEX_DROPPABLE_PARENT: list,
     COMPLEX_DROPPABLE_AREA_1: list1,
     COMPLEX_DROPPABLE_AREA_2: list2,
+    COMPLEX_DROPPABLE_AREA_3: list3,
+    COMPLEX_DROPPABLE_AREA_4: list4,
   }
   const actions = {
     COMPLEX_DROPPABLE_PARENT: setList,
     COMPLEX_DROPPABLE_AREA_1: setList1,
     COMPLEX_DROPPABLE_AREA_2: setList2,
+    COMPLEX_DROPPABLE_AREA_3: setList3,
+    COMPLEX_DROPPABLE_AREA_4: setList4,
   }
   const onDragEnd: DragDropContextProps['onDragEnd'] = ({ source, destination }) => {
     if (source && destination) {
@@ -150,7 +156,8 @@ export default function KanbanBoard() {
         direction="horizontal"
         withPanel
         spacing="l"
-        style={{ display: 'flex' }}
+        className="eui-scrollBar"
+        style={{ display: 'flex', maxWidth: '100vw', overflowX: 'auto' }}
       >
         {list.map((did, didx) => (
           <EuiDraggable
@@ -158,7 +165,7 @@ export default function KanbanBoard() {
             index={didx}
             draggableId={`COMPLEX_DRAGGABLE_${did}`}
             spacing="l"
-            style={{ flex: '1 0 50%' }}
+            style={{ minWidth: '30vw' }}
             disableInteractiveElementBlocking // Allows button to be drag handle
             hasInteractiveChildren
             isDragDisabled

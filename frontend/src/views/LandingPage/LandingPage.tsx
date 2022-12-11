@@ -15,6 +15,8 @@ export default function LandingPage() {
   return (
     <PageTemplate
       content={<KanbanBoard></KanbanBoard>}
+      restrictWidth={false}
+      grow={true}
       header={{ description: 'My header' }}
       buttons={[
         <EuiButton
