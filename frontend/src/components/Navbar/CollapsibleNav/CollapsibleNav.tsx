@@ -302,7 +302,7 @@ const CollapsibleNav = ({ user }: CollapsibleNavProps) => {
           />
         </EuiCollapsibleNavGroup> */}
 
-        {roles[user?.role].rank >= roles.admin.rank ? (
+        {roles[user?.role]?.rank >= roles.admin.rank ? (
           <EuiCollapsibleNavGroup
             title={
               <a
@@ -331,7 +331,7 @@ const CollapsibleNav = ({ user }: CollapsibleNavProps) => {
           </EuiCollapsibleNavGroup>
         ) : null}
 
-        {roles[user?.role].rank >= roles.advancedUser.rank ? (
+        {roles[user?.role]?.rank >= roles.advancedUser.rank ? (
           <EuiCollapsibleNavGroup
             title={
               <a

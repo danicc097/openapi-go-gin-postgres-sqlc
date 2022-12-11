@@ -37,7 +37,7 @@ export default function App() {
                 path="/"
                 element={
                   <React.Suspense fallback={<FallbackLoading />}>
-                    <LandingPage />
+                    <ProtectedRoute component={LandingPage} />
                   </React.Suspense>
                 }
               />
