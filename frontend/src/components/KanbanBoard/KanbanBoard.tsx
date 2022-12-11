@@ -19,12 +19,38 @@ import {
 } from '@elastic/eui'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
-import { random, uniqueId } from 'lodash'
+import { isArray, random, uniqueId } from 'lodash'
 
 const makeId = htmlIdGenerator()
 
+type SampleCardData = {
+  someDate: Date
+  someBoolean: boolean
+  someOtherBoolean: boolean
+  sometext: string
+  someOptText?: string
+  someList: string[]
+}
+
+const CardDataNames: Record<keyof SampleCardData, string> = {
+  someDate: 'Some date',
+  someBoolean: 'Some boolean',
+  someOtherBoolean: 'Some other boolean',
+  sometext: 'Some text',
+  someOptText: 'Some optional text',
+  someList: 'Some list',
+}
+
 export default function KanbanBoard() {
   const { addToast } = useUISlice()
+
+  const sampleCard: SampleCardData = {
+    someBoolean: true, // checkbox
+    someOtherBoolean: false, // checkbox
+    someDate: new Date(),
+    someList: ['item 1', 'item 2'], // EuiBadge
+    sometext: 'content for sometext.\n More content.',
+  }
 
   const makeList = (number, start = 1) =>
     Array.from({ length: number }, (v, k) => k + start).map((el) => {
