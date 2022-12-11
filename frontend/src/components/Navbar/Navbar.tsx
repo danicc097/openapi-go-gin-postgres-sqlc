@@ -31,7 +31,7 @@ import logoLight from 'src/assets/logo/two-black-clouds.svg'
 import { AvatarMenu, StyledEuiHeader, LogoSection } from './Navbar.styles'
 import { useUISlice } from 'src/slices/ui'
 import { useAuthenticatedUser } from 'src/hooks/auth/useAuthenticatedUser'
-import { ThemeSwitcher } from 'src/ThemeSwitcher/ThemeSwitcher'
+import { ThemeSwitcher } from 'src/components/ThemeSwitcher/ThemeSwitcher'
 import _ from 'lodash'
 import config from '@config'
 
