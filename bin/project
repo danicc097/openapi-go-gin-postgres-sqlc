@@ -458,13 +458,13 @@ x.gen.proto() {
 
 # Run all codegen and postgen commands for the project.
 x.gen() {
-  cp "$SPEC" "$CACHE"
   rm -rf "$CACHE_PG_REPO_GEN"
+  mkdir -p "$CACHE_PG_REPO_GEN"
+  cp "$SPEC" "$CACHE"
   cp -r "$PG_REPO_GEN" "$CACHE_PG_REPO_GEN"
   restore_cache=1
   { { {
     echo "Running code generation"
-    mkdir -p "$CACHE"
 
     POSTGRES_DB="$GEN_POSTGRES_DB" x.db.recreate
     x.pregen
