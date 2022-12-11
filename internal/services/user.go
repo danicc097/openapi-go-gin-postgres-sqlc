@@ -20,6 +20,18 @@ type User struct {
 	authzsvc         *Authorization
 }
 
+// TODO repo should be aware of models Role and Scope
+// NOTE: the most important distinction about repositories is that they represent collections of entities. They do not represent database storage or caching or any number of technical concerns. Repositories represent collections. How you hold those collections is simply an implementation detail.
+type UserRegisterParams struct {
+	Username   string
+	Email      string
+	FirstName  *string
+	LastName   *string
+	ExternalID string
+	Scopes     []models.Scope
+	Role       models.Role
+}
+
 type UserUpdateParams struct {
 	FirstName      *string
 	LastName       *string
@@ -45,16 +57,35 @@ func NewUser(logger *zap.Logger, urepo repos.User, notificationrepo repos.Notifi
 }
 
 // Register registers a user.
-// TODO accepts basic parameters instead of user *db.User and everything else is default,
-// returns a *db.User. must not pass a db.User here
-// IMPORTANT: no endpoint for user creation. Only when coming from auth server.
-// we will not support password auth.
-func (u *User) Register(ctx context.Context, d db.DBTX, params repos.UserCreateParams) (*db.User, error) {
+func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParams) (*db.User, error) {
 	defer newOTELSpan(ctx, "User.Register").End()
 
-	// TODO construct db.User and fill missing fields with default roles, etc.
-	// instead of passing it directly
-	user, err := u.urepo.Create(ctx, d, params)
+	var rank int16
+	role, err := u.authzsvc.RoleByName(string(params.Role))
+	if err != nil {
+		return nil, errors.Wrap(err, "authzsvc.RoleByName")
+	}
+	rank = role.Rank
+
+	// append default scopes per role regardless of current
+	params.Scopes = append(params.Scopes, u.authzsvc.DefaultScopes(role)...)
+
+	scopes := make([]string, 0, len(params.Scopes))
+	for _, s := range params.Scopes {
+		scopes = append(scopes, string(s))
+	}
+
+	repoParams := repos.UserCreateParams{
+		FirstName:  params.FirstName,
+		LastName:   params.LastName,
+		Username:   params.Username,
+		Email:      params.Email,
+		ExternalID: params.ExternalID,
+		RoleRank:   rank,
+		Scopes:     scopes,
+	}
+
+	user, err := u.urepo.Create(ctx, d, repoParams)
 	if err != nil {
 		return nil, errors.Wrap(err, "urepo.Create")
 	}

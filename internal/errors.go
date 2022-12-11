@@ -28,6 +28,7 @@ const (
 	ErrorCodeValidationError
 
 	ErrorCodeInvalidRole
+	ErrorCodeInvalidScope
 
 	ErrorCodeInvalidUUID
 )

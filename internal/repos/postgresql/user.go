@@ -11,6 +11,19 @@ import (
 	"github.com/google/uuid"
 )
 
+func unique[T comparable](s []T) []T {
+	set := make(map[T]struct{})
+	res := []T{}
+	for _, element := range s {
+		if _, ok := set[element]; !ok {
+			set[element] = struct{}{}
+			res = append(res, element)
+		}
+	}
+
+	return res
+}
+
 // User represents the repository used for interacting with User records.
 type User struct {
 	q *db.Queries
@@ -33,7 +46,7 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params repos.UserCreatePar
 		LastName:   params.LastName,
 		ExternalID: params.ExternalID,
 		RoleRank:   params.RoleRank,
-		Scopes:     params.Scopes,
+		Scopes:     unique(params.Scopes),
 	}
 
 	if err := user.Save(ctx, d); err != nil {
@@ -57,7 +70,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params repos
 		user.LastName = params.LastName
 	}
 	if params.Scopes != nil {
-		user.Scopes = *params.Scopes
+		user.Scopes = unique(*params.Scopes)
 	}
 	if params.Rank != nil {
 		user.RoleRank = *params.Rank
