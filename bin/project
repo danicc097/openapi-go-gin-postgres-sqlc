@@ -365,7 +365,7 @@ x.gen.gowrap() {
       "prometheus:with_prometheus"
     )
 
-    local repo_interfaces="User"
+    local repo_interfaces="User Notification Project Team WorkItemTag WorkItemType"
     for iface in ${repo_interfaces[@]}; do
       for suffix in ${suffixes[@]}; do
         {
@@ -377,7 +377,7 @@ x.gen.gowrap() {
             -p $GOMOD_PKG/internal/repos \
             -i $iface \
             -t "internal/gowrap-templates/$tmpl.tmpl" \
-            -o "internal/repos/${iface,,}_$suffix.gen.go"
+            -o "internal/repos/reposwrappers/${iface,,}_$suffix.gen.go"
         } &
       done
     done

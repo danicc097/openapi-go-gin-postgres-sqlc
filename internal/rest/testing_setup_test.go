@@ -13,8 +13,8 @@ import (
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
@@ -115,11 +115,14 @@ func newTestFixtureFactory(t *testing.T) *resttestutil.FixtureFactory {
 	}
 	usvc := services.NewUser(
 		logger,
-		repos.NewUserWithTracing(
-			repos.NewUserWithTimeout(
-				postgresql.NewUser(), repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second}),
+		reposwrappers.NewUserWithTracing(
+			reposwrappers.NewUserWithTimeout(
+				postgresql.NewUser(), reposwrappers.UserWithTimeoutConfig{}),
 			postgresql.OtelName, nil),
-		postgresql.NewNotification(),
+		reposwrappers.NewNotificationWithTracing(
+			reposwrappers.NewNotificationWithTimeout(
+				postgresql.NewNotification(), reposwrappers.NotificationWithTimeoutConfig{}),
+			postgresql.OtelName, nil),
 		authzsvc,
 	)
 	authnsvc := services.NewAuthentication(logger, usvc, testPool)

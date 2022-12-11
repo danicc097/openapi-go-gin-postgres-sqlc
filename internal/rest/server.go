@@ -29,9 +29,9 @@ import (
 	internal "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
@@ -212,22 +212,28 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	}
 	vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))
 
-	urepo := repos.NewUserWithTracing(
-		repos.NewUserWithTimeout(
+	urepo := reposwrappers.NewUserWithTracing(
+		reposwrappers.NewUserWithTimeout(
 			postgresql.NewUser(),
-			repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second},
+			reposwrappers.UserWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
+	notifrepo := reposwrappers.NewNotificationWithTracing(
+		reposwrappers.NewNotificationWithTimeout(
+			postgresql.NewNotification(),
+			reposwrappers.NotificationWithTimeoutConfig{},
 		),
 		postgresql.OtelName,
 		nil,
 	)
 
-	notificationrepo := postgresql.NewNotification()
-
 	authzsvc, err := services.NewAuthorization(conf.Logger, conf.ScopePolicyPath, conf.RolePolicyPath)
 	if err != nil {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)
 	}
-	usvc := services.NewUser(conf.Logger, urepo, notificationrepo, authzsvc)
+	usvc := services.NewUser(conf.Logger, urepo, notifrepo, authzsvc)
 	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 
