@@ -197,7 +197,7 @@ paths:
       summary: creates initial data (teams, work item types, tags...) for a new project
       operationId: InitializeProject
       parameters:
-        - $ref: '#/components/parameters/serial'
+        - $ref: '#/components/parameters/PathSerial'
       requestBody:
         content:
           application/json:
@@ -218,7 +218,7 @@ paths:
       summary: returns board data for a project
       operationId: GetProjectBoard
       parameters:
-        - $ref: '#/components/parameters/serial'
+        - $ref: '#/components/parameters/PathSerial'
       responses:
         "200":
           description: Project successfully initialized.
@@ -226,6 +226,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProjectBoardResponse'
+      tags:
+        - project
+  /project/{id}/workitems:
+    get:
+      security:
+        - bearer_auth: []
+        - api_key: []
+      summary: returns workitems for a project
+      operationId: GetProjectWorkitems
+      parameters:
+        - $ref: '#/components/parameters/PathSerial'
+        - in: query
+          schema:
+            type: boolean
+          name: open
+      responses:
+        "200":
+          description: Project successfully initialized.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DemoProjectWorkItemsResponse'
       tags:
         - project
 components:
@@ -241,7 +264,7 @@ components:
         pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
       example: 123e4567-e89b-12d3-a456-426614174000
       style: simple
-    serial:
+    PathSerial:
       description: integer identifier that needs to be updated
       explode: false
       in: path
@@ -252,6 +275,30 @@ components:
       example: 41131
       style: simple
   schemas:
+    DemoProjectWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        baseWorkItem:
+          $ref: '#/components/schemas/DbWorkItemPublic'
+        lastMessageAt:
+          format: date-time
+          type: string
+        line:
+          type: string
+        ref:
+          type: string
+        reopened:
+          type: boolean
+        workItemID:
+          type: integer
+      required:
+        - workItemID
+        - ref
+        - line
+        - lastMessageAt
+        - reopened
+        - baseWorkItem
+      type: object
+      x-postgen-struct: RestDemoProjectWorkItemsResponse
     InitializeProjectRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         activities:
@@ -681,6 +728,55 @@ components:
       type: string
     UuidUUID: # Generated from internal structs. DO NOT EDIT.
       type: string
+    DbWorkItemPublic: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        closed:
+          format: date-time
+          nullable: true
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        description:
+          type: string
+        kanbanStepID:
+          type: integer
+        metadata:
+          $ref: '#/components/schemas/PgtypeJSONB'
+        targetDate:
+          format: date-time
+          type: string
+        teamID:
+          type: integer
+        title:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        workItemID:
+          type: integer
+        workItemTypeID:
+          type: integer
+      required:
+        - workItemID
+        - title
+        - description
+        - workItemTypeID
+        - metadata
+        - teamID
+        - kanbanStepID
+        - closed
+        - targetDate
+        - createdAt
+        - updatedAt
+        - deletedAt
+      type: object
+    PgtypeJSONB: # Generated from internal structs. DO NOT EDIT.
+      type: object
   examples:
     User:
       value:

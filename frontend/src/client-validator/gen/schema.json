@@ -2,6 +2,40 @@
   "type": "object",
   "title": "Schema",
   "definitions": {
+    "DemoProjectWorkItemsResponse": {
+      "properties": {
+        "baseWorkItem": {
+          "$ref": "#/definitions/DbWorkItemPublic"
+        },
+        "lastMessageAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "line": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "reopened": {
+          "type": "boolean"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "ref",
+        "line",
+        "lastMessageAt",
+        "reopened",
+        "baseWorkItem"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestDemoProjectWorkItemsResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "InitializeProjectRequest": {
       "properties": {
         "activities": {
@@ -650,9 +684,83 @@
     "UuidUUID": {
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemPublic": {
+      "properties": {
+        "closed": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "metadata": {
+          "$ref": "#/definitions/PgtypeJSONB"
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "closed",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "deletedAt"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "PgtypeJSONB": {
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
+    "DemoProjectWorkItemsResponse": {
+      "$ref": "#/definitions/DemoProjectWorkItemsResponse"
+    },
     "InitializeProjectRequest": {
       "$ref": "#/definitions/InitializeProjectRequest"
     },
@@ -733,6 +841,12 @@
     },
     "UuidUUID": {
       "$ref": "#/definitions/UuidUUID"
+    },
+    "DbWorkItemPublic": {
+      "$ref": "#/definitions/DbWorkItemPublic"
+    },
+    "PgtypeJSONB": {
+      "$ref": "#/definitions/PgtypeJSONB"
     }
   }
 }

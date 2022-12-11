@@ -20,6 +20,9 @@ import {
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { isArray, random, uniqueId } from 'lodash'
+import type { DemoProjectWorkItemsResponse } from 'src/gen/model'
+import moment from 'moment'
+import { getGetProjectWorkitemsMock, getProjectMSW } from 'src/gen/project/project.msw'
 
 const makeId = htmlIdGenerator()
 
@@ -32,6 +35,7 @@ type SampleCardData = {
   someList: string[]
 }
 
+// UI title mapping for fields
 const CardDataNames: Record<keyof SampleCardData, string> = {
   someDate: 'Some date',
   someBoolean: 'Some boolean',
@@ -51,6 +55,8 @@ export default function KanbanBoard() {
     someList: ['item 1', 'item 2'], // EuiBadge
     sometext: 'content for sometext.\n More content.',
   }
+
+  const demoProjectWI = getGetProjectWorkitemsMock()
 
   const makeList = (number, start = 1) =>
     Array.from({ length: number }, (v, k) => k + start).map((el) => {

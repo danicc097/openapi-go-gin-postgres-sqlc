@@ -8,6 +8,7 @@ import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
 import { validateJson } from '../validate'
 import {
+  DemoProjectWorkItemsResponse,
   InitializeProjectRequest,
   ProjectBoardResponse,
   UserResponse,
@@ -35,6 +36,8 @@ import {
   ReposWorkItemTypeCreateParams,
   ModelsRole,
   UuidUUID,
+  DbWorkItemPublic,
+  PgtypeJSONB,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -43,6 +46,18 @@ addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time'] })
 ajv.compile(jsonSchema)
 
 // Decoders
+export const DemoProjectWorkItemsResponseDecoder: Decoder<DemoProjectWorkItemsResponse> = {
+  definitionName: 'DemoProjectWorkItemsResponse',
+  schemaRef: '#/definitions/DemoProjectWorkItemsResponse',
+
+  decode(json: unknown): DemoProjectWorkItemsResponse {
+    const schema = ajv.getSchema(DemoProjectWorkItemsResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DemoProjectWorkItemsResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DemoProjectWorkItemsResponseDecoder.definitionName)
+  },
+}
 export const InitializeProjectRequestDecoder: Decoder<InitializeProjectRequest> = {
   definitionName: 'InitializeProjectRequest',
   schemaRef: '#/definitions/InitializeProjectRequest',
@@ -365,5 +380,29 @@ export const UuidUUIDDecoder: Decoder<UuidUUID> = {
       throw new Error(`Schema ${UuidUUIDDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, UuidUUIDDecoder.definitionName)
+  },
+}
+export const DbWorkItemPublicDecoder: Decoder<DbWorkItemPublic> = {
+  definitionName: 'DbWorkItemPublic',
+  schemaRef: '#/definitions/DbWorkItemPublic',
+
+  decode(json: unknown): DbWorkItemPublic {
+    const schema = ajv.getSchema(DbWorkItemPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbWorkItemPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbWorkItemPublicDecoder.definitionName)
+  },
+}
+export const PgtypeJSONBDecoder: Decoder<PgtypeJSONB> = {
+  definitionName: 'PgtypeJSONB',
+  schemaRef: '#/definitions/PgtypeJSONB',
+
+  decode(json: unknown): PgtypeJSONB {
+    const schema = ajv.getSchema(PgtypeJSONBDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${PgtypeJSONBDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, PgtypeJSONBDecoder.definitionName)
   },
 }

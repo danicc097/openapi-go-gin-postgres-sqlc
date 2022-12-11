@@ -4,6 +4,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
+  DemoProjectWorkItemsResponse,
   InitializeProjectRequest,
   ProjectBoardResponse,
   UserResponse,
@@ -31,9 +32,15 @@ import {
   ReposWorkItemTypeCreateParams,
   ModelsRole,
   UuidUUID,
+  DbWorkItemPublic,
+  PgtypeJSONB,
 } from './models'
 
 export const schemaDefinitions = {
+  DemoProjectWorkItemsResponse: info<DemoProjectWorkItemsResponse>(
+    'DemoProjectWorkItemsResponse',
+    '#/definitions/DemoProjectWorkItemsResponse',
+  ),
   InitializeProjectRequest: info<InitializeProjectRequest>(
     'InitializeProjectRequest',
     '#/definitions/InitializeProjectRequest',
@@ -76,6 +83,8 @@ export const schemaDefinitions = {
   ),
   ModelsRole: info<ModelsRole>('ModelsRole', '#/definitions/ModelsRole'),
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
+  DbWorkItemPublic: info<DbWorkItemPublic>('DbWorkItemPublic', '#/definitions/DbWorkItemPublic'),
+  PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
 }
 
 export interface SchemaInfo<T> {

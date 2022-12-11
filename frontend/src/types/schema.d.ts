@@ -58,10 +58,23 @@ export interface paths {
     /** returns board data for a project */
     get: operations["GetProjectBoard"];
   };
+  "/project/{id}/workitems": {
+    /** returns workitems for a project */
+    get: operations["GetProjectWorkitems"];
+  };
 }
 
 export interface components {
   schemas: {
+    DemoProjectWorkItemsResponse: {
+      baseWorkItem: components["schemas"]["DbWorkItemPublic"];
+      /** Format: date-time */
+      lastMessageAt: string;
+      line: string;
+      ref: string;
+      reopened: boolean;
+      workItemID: number;
+    };
     InitializeProjectRequest: {
       activities?: (components["schemas"]["ReposActivityCreateParams"])[] | null;
       kanbanSteps?: (components["schemas"]["ReposKanbanStepCreateParams"])[] | null;
@@ -247,6 +260,26 @@ export interface components {
     };
     ModelsRole: string;
     UuidUUID: string;
+    DbWorkItemPublic: {
+      /** Format: date-time */
+      closed: string | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt: string | null;
+      description: string;
+      kanbanStepID: number;
+      metadata: components["schemas"]["PgtypeJSONB"];
+      /** Format: date-time */
+      targetDate: string;
+      teamID: number;
+      title: string;
+      /** Format: date-time */
+      updatedAt: string;
+      workItemID: number;
+      workItemTypeID: number;
+    };
+    PgtypeJSONB: Record<string, never>;
   };
   responses: never;
   parameters: {
@@ -259,7 +292,7 @@ export interface components {
      * @description integer identifier that needs to be updated 
      * @example 41131
      */
-    serial: number;
+    PathSerial: number;
   };
   requestBodies: never;
   headers: never;
@@ -404,6 +437,22 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["ProjectBoardResponse"];
+        };
+      };
+    };
+  };
+  GetProjectWorkitems: {
+    /** returns workitems for a project */
+    parameters?: {
+      query?: {
+        open?: boolean;
+      };
+    };
+    responses: {
+      /** @description Project successfully initialized. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["DemoProjectWorkItemsResponse"];
         };
       };
     };

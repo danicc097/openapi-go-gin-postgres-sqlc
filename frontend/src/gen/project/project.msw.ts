@@ -75,11 +75,39 @@ export const getGetProjectBoardMock = () => ({
   ]),
 })
 
+export const getGetProjectWorkitemsMock = () =>
+  faker.helpers.arrayElement([
+    {
+      baseWorkItem: {
+        closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+        createdAt: (() => faker.date.past())(),
+        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+        description: faker.random.word(),
+        kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
+        metadata: {},
+        targetDate: (() => faker.date.past())(),
+        teamID: faker.datatype.number({ min: undefined, max: undefined }),
+        title: faker.random.word(),
+        updatedAt: (() => faker.date.past())(),
+        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+        workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
+      },
+      lastMessageAt: (() => faker.date.past())(),
+      line: faker.random.word(),
+      ref: faker.random.word(),
+      reopened: faker.datatype.boolean(),
+      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+    },
+  ])
+
 export const getProjectMSW = () => [
   rest.post('*/project/:id/initialize', (_req, res, ctx) => {
     return res(ctx.delay(1000), ctx.status(200, 'Mocked status'))
   }),
   rest.get('*/project/:id/board', (_req, res, ctx) => {
     return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetProjectBoardMock()))
+  }),
+  rest.get('*/project/:id/workitems', (_req, res, ctx) => {
+    return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetProjectWorkitemsMock()))
   }),
 ]

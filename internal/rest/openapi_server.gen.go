@@ -34,10 +34,13 @@ type ServerInterface interface {
 	Ping(c *gin.Context)
 	// returns board data for a project
 	// (GET /project/{id}/board)
-	GetProjectBoard(c *gin.Context, id externalRef0.Serial)
+	GetProjectBoard(c *gin.Context, id externalRef0.PathSerial)
 	// creates initial data (teams, work item types, tags...) for a new project
 	// (POST /project/{id}/initialize)
-	InitializeProject(c *gin.Context, id externalRef0.Serial)
+	InitializeProject(c *gin.Context, id externalRef0.PathSerial)
+	// returns workitems for a project
+	// (GET /project/{id}/workitems)
+	GetProjectWorkitems(c *gin.Context, id externalRef0.PathSerial, params externalRef0.GetProjectWorkitemsParams)
 	// returns the logged in user
 	// (GET /user/me)
 	GetCurrentUser(c *gin.Context)
@@ -108,7 +111,7 @@ func (siw *ServerInterfaceWrapper) GetProjectBoard(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.Serial
+	var id externalRef0.PathSerial
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -129,7 +132,7 @@ func (siw *ServerInterfaceWrapper) InitializeProject(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.Serial
+	var id externalRef0.PathSerial
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -142,6 +145,38 @@ func (siw *ServerInterfaceWrapper) InitializeProject(c *gin.Context) {
 	c.Set(externalRef0.Api_keyScopes, []string{""})
 
 	siw.Handler.InitializeProject(c, id)
+}
+
+// GetProjectWorkitems operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetProjectWorkitems(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.PathSerial
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
+
+	c.Set(externalRef0.Api_keyScopes, []string{""})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params externalRef0.GetProjectWorkitemsParams
+
+	// ------------- Optional query parameter "open" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "open", c.Request.URL.Query(), &params.Open)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter open: %s", err)})
+		return
+	}
+
+	siw.Handler.GetProjectWorkitems(c, id, params)
 }
 
 // GetCurrentUser operation with its own middleware.
@@ -272,6 +307,11 @@ func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, op
 	router.POST(options.BaseURL+"/project/:id/initialize", append(
 		wrapper.Handler.authMiddlewares(InitializeProject),
 		append(wrapper.Handler.middlewares(InitializeProject), wrapper.InitializeProject)...,
+	)...)
+
+	router.GET(options.BaseURL+"/project/:id/workitems", append(
+		wrapper.Handler.authMiddlewares(GetProjectWorkitems),
+		append(wrapper.Handler.middlewares(GetProjectWorkitems), wrapper.GetProjectWorkitems)...,
 	)...)
 
 	router.GET(options.BaseURL+"/user/me", append(

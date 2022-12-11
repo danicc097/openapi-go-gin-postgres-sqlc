@@ -18,7 +18,12 @@ import type {
   UseInfiniteQueryResult,
   QueryKey,
 } from '@tanstack/react-query'
-import type { InitializeProjectRequest, ProjectBoardResponse } from '.././model'
+import type {
+  InitializeProjectRequest,
+  ProjectBoardResponse,
+  DemoProjectWorkItemsResponse,
+  GetProjectWorkitemsParams,
+} from '.././model'
 
 /**
  * @summary creates initial data (teams, work item types, tags...) for a new project
@@ -123,6 +128,89 @@ export const useGetProjectBoard = <TData = Awaited<ReturnType<typeof getProjectB
     getProjectBoard(id, { signal, ...axiosOptions })
 
   const query = useQuery<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData>(queryKey, queryFn, {
+    enabled: !!id,
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryKey
+
+  return query
+}
+
+/**
+ * @summary returns workitems for a project
+ */
+export const getProjectWorkitems = (
+  id: number,
+  params?: GetProjectWorkitemsParams,
+  options?: AxiosRequestConfig,
+): Promise<AxiosResponse<DemoProjectWorkItemsResponse>> => {
+  return axios.get(`/project/${id}/workitems`, {
+    ...options,
+    params: { ...params, ...options?.params },
+  })
+}
+
+export const getGetProjectWorkitemsQueryKey = (id: number, params?: GetProjectWorkitemsParams) => [
+  `/project/${id}/workitems`,
+  ...(params ? [params] : []),
+]
+
+export type GetProjectWorkitemsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectWorkitems>>>
+export type GetProjectWorkitemsInfiniteQueryError = AxiosError<unknown>
+
+export const useGetProjectWorkitemsInfinite = <
+  TData = Awaited<ReturnType<typeof getProjectWorkitems>>,
+  TError = AxiosError<unknown>,
+>(
+  id: number,
+  params?: GetProjectWorkitemsParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData>
+    axios?: AxiosRequestConfig
+  },
+): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetProjectWorkitemsQueryKey(id, params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectWorkitems>>> = ({ signal, pageParam }) =>
+    getProjectWorkitems(id, { nextId: pageParam, ...params }, { signal, ...axiosOptions })
+
+  const query = useInfiniteQuery<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData>(queryKey, queryFn, {
+    enabled: !!id,
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryKey
+
+  return query
+}
+
+export type GetProjectWorkitemsQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectWorkitems>>>
+export type GetProjectWorkitemsQueryError = AxiosError<unknown>
+
+export const useGetProjectWorkitems = <
+  TData = Awaited<ReturnType<typeof getProjectWorkitems>>,
+  TError = AxiosError<unknown>,
+>(
+  id: number,
+  params?: GetProjectWorkitemsParams,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData>
+    axios?: AxiosRequestConfig
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetProjectWorkitemsQueryKey(id, params)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectWorkitems>>> = ({ signal }) =>
+    getProjectWorkitems(id, params, { signal, ...axiosOptions })
+
+  const query = useQuery<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData>(queryKey, queryFn, {
     enabled: !!id,
     staleTime: 3600000,
     ...queryOptions,

@@ -12,9 +12,9 @@ set -Eeo pipefail
 trap killgroup SIGINT
 
 trap errtrap SIGUSR1
+trap cleanup 0
 
-killgroup() {
-  printf "\nkilling spawned processes...\n"
+cleanup() {
   [[ $restore_cache = 1 ]] &&
     {
       echo "Restoring $SPEC and $PG_REPO_GEN"
@@ -22,6 +22,10 @@ killgroup() {
       rm -rf "$PG_REPO_GEN"
       mv "$CACHE_PG_REPO_GEN" "$PG_REPO"
     }
+}
+
+killgroup() {
+  printf "\nkilling spawned processes...\n"
   # kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
   kill_descendants 2>/dev/null || true
   pgrep -P $PROC | xargs kill
@@ -459,7 +463,7 @@ x.gen.proto() {
 # Run all codegen and postgen commands for the project.
 x.gen() {
   rm -rf "$CACHE_PG_REPO_GEN"
-  mkdir -p "$CACHE_PG_REPO_GEN"
+  mkdir -p "$CACHE"
   cp "$SPEC" "$CACHE"
   cp -r "$PG_REPO_GEN" "$CACHE_PG_REPO_GEN"
   restore_cache=1

@@ -66,6 +66,29 @@ export type NotificationType = 'personal' | 'global'
 export type WorkItemRole = 'preparer' | 'reviewer'
 export type ModelsRole = string
 
+export interface DemoProjectWorkItemsResponse {
+  baseWorkItem: DbWorkItemPublic
+  lastMessageAt: string
+  line: string
+  ref: string
+  reopened: boolean
+  workItemID: number
+}
+export interface DbWorkItemPublic {
+  closed: string | null
+  createdAt: string
+  deletedAt: string | null
+  description: string
+  kanbanStepID: number
+  metadata: PgtypeJSONB
+  targetDate: string
+  teamID: number
+  title: string
+  updatedAt: string
+  workItemID: number
+  workItemTypeID: number
+}
+export interface PgtypeJSONB {}
 export interface InitializeProjectRequest {
   activities?: ReposActivityCreateParams[] | null
   kanbanSteps?: ReposKanbanStepCreateParams[] | null
