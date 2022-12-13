@@ -19,7 +19,7 @@ import {
 } from '@elastic/eui'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
-import { isArray, random, uniqueId } from 'lodash'
+import { isArray, isObject, random, uniqueId } from 'lodash'
 import type { DemoProjectWorkItemsResponse } from 'src/gen/model'
 import moment from 'moment'
 import { getGetProjectWorkitemsMock, getProjectMSW } from 'src/gen/project/project.msw'
@@ -45,6 +45,12 @@ const CardDataNames: Record<keyof SampleCardData, string> = {
   someList: 'Some list',
 }
 
+// config panel allows naming as per full path, showing e.g.
+// baseWorkItem.workItemTypeID : [ Name   ] [✓] Visible
+const ProjectWorkitemsNames: Record<string, string> = {
+  'baseWorkItem.workItemTypeID': 'Work item type ID',
+}
+
 export default function KanbanBoard() {
   const { addToast } = useUISlice()
 
@@ -57,6 +63,35 @@ export default function KanbanBoard() {
   }
 
   const demoProjectWI = getGetProjectWorkitemsMock()
+
+  // to ignore nested objects fields configuration panel needs
+  // to use fully qualified name based on path
+  // then _.get by `path` from field name mapping
+  const renderComponents = (parentPath: string[], [key, val]): void => {
+    const path = [...parentPath, String(key)]
+    console.log(path.join('.'))
+    if (val === null || val === undefined) {
+      return
+    }
+    // won't catch custom classes
+    if (val?.constructor === Object) {
+      console.log(`${key} is an object`)
+      Object.entries(val).forEach(([key, val]) => renderComponents(path, [key, val]))
+      console.log(`end of nested object ${key}`)
+    } else if (isArray(val)) {
+      console.log(`${key} is a list`)
+    } else if (val instanceof Date) {
+      console.log(`${key} is a date`)
+    } else if (typeof val === 'boolean') {
+      console.log(`${key} is a boolean`)
+    } else if (typeof val === 'string') {
+      console.log(`${key} is a string`)
+    }
+  }
+
+  console.log('%c demoProjectWI', 'color: #c92a2a')
+  console.log(demoProjectWI)
+  Object.entries(demoProjectWI).forEach(([key, val]) => renderComponents([], [key, val]))
 
   const makeList = (number, start = 1) =>
     Array.from({ length: number }, (v, k) => k + start).map((el) => {

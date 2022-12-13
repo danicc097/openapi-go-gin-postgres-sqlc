@@ -1,7 +1,7 @@
 import { capitalize } from 'lodash'
 import type { UserAvatarProps } from 'src/components/UserAvatar/UserAvatar'
 
-export const getAvatarName = ({ user }: UserAvatarProps) => capitalize(user?.full_name ?? user?.username ?? 'Anonymous')
+export const getAvatarName = ({ user }: UserAvatarProps) => capitalize(user?.fullName ?? user?.username ?? 'Anonymous')
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',

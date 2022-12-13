@@ -446,6 +446,7 @@ export interface operations {
     parameters?: {
       query?: {
         open?: boolean;
+        deleted?: boolean;
       };
     };
     responses: {

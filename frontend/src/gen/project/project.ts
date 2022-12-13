@@ -175,8 +175,8 @@ export const useGetProjectWorkitemsInfinite = <
 
   const queryKey = queryOptions?.queryKey ?? getGetProjectWorkitemsQueryKey(id, params)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectWorkitems>>> = ({ signal, pageParam }) =>
-    getProjectWorkitems(id, { nextId: pageParam, ...params }, { signal, ...axiosOptions })
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectWorkitems>>> = ({ signal }) =>
+    getProjectWorkitems(id, params, { signal, ...axiosOptions })
 
   const query = useInfiniteQuery<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData>(queryKey, queryFn, {
     enabled: !!id,

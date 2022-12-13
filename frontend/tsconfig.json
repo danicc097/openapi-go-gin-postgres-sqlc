@@ -8,6 +8,7 @@
       "DOM.Iterable",
       "ESNext"
     ],
+    "skipLibCheck": true,
     "allowJs": false,
     "strict": false,
     "forceConsistentCasingInFileNames": true,

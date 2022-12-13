@@ -20,7 +20,7 @@ export default defineConfig({
           signal: true, // generation of abort signal
           useQuery: true,
           useInfinite: true, // https://tanstack.com/query/v4/docs/guides/infinite-queries
-          useInfiniteQueryParam: 'nextId',
+          // useInfiniteQueryParam: 'nextId',
           options: {
             // QueryObserverOptions passed directly to all generated queries
             staleTime: 1000 * 3600,
