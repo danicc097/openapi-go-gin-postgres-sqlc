@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-type WorkItemsDemoProject struct {
+type DemoProjectWorkItems struct {
 	WorkItemID    int64     `sql:"primary_key" db:"work_item_id"`
 	Ref           string    `db:"ref"`
 	Line          string    `db:"line"`

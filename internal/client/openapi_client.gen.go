@@ -351,7 +351,8 @@ type Uuid = string
 
 // GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
 type GetProjectWorkitemsParams struct {
-	Open *bool `form:"open,omitempty" json:"open,omitempty"`
+	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
+	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
 }
 
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
@@ -948,6 +949,22 @@ func NewGetProjectWorkitemsRequest(server string, id PathSerial, params *GetProj
 	if params.Open != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "open", runtime.ParamLocationQuery, *params.Open); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Deleted != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "deleted", runtime.ParamLocationQuery, *params.Deleted); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err

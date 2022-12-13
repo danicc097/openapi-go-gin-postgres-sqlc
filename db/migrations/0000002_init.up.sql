@@ -31,7 +31,7 @@ insert into projects (
 values (
   'demo project'
   , 'description for demo project'
-  , 'work_items_demo_project'
+  , 'demo_project_work_items'
   , true -- just for demo since it will be programmatically initialized
 );
 
@@ -325,7 +325,7 @@ when a new project is required -> manual table creation with empty new fields, j
  */
 -- project for tour. when starting it user joins the only demo project team. when exiting it user is removed.
 -- we can reset it every X hours
-create table work_items_demo_project (
+create table demo_project_work_items (
   work_item_id bigint primary key references work_items (work_item_id) on delete cascade
   , ref text not null
   , line text not null
@@ -333,18 +333,18 @@ create table work_items_demo_project (
   , reopened boolean not null default false
 );
 
-create index on work_items_demo_project (ref , line);
+create index on demo_project_work_items (ref , line);
 
-create table work_items_project_2 (
+create table project_2_work_items (
   work_item_id bigint primary key references work_items (work_item_id) on delete cascade
   , custom_date_for_project_2 timestamp with time zone
 );
 
 comment on column work_items.work_item_id is 'cardinality:O2O';
 
-comment on column work_items_demo_project.work_item_id is 'cardinality:O2O';
+comment on column demo_project_work_items.work_item_id is 'cardinality:O2O';
 
-comment on column work_items_project_2.work_item_id is 'cardinality:O2O';
+comment on column project_2_work_items.work_item_id is 'cardinality:O2O';
 
 -- for finding all deleted work items exclusively
 create index on work_items (deleted_at)

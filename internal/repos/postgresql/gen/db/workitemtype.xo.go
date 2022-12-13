@@ -27,6 +27,7 @@ type WorkItemType struct {
 	Description    string `json:"description" db:"description"`             // description
 	Color          string `json:"color" db:"color"`                         // color
 
+	WorkItem *WorkItem `json:"work_item" db:"work_item"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -53,7 +54,9 @@ func WithWorkItemTypeLimit(limit int) WorkItemTypeSelectConfigOption {
 
 type WorkItemTypeOrderBy = string
 
-type WorkItemTypeJoins struct{}
+type WorkItemTypeJoins struct {
+	WorkItem bool
+}
 
 // WithWorkItemTypeJoin orders results by the given columns.
 func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOption {
@@ -188,10 +191,12 @@ func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projec
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
-work_item_types.color ` +
+work_item_types.color,
+(case when $1::boolean = true then row_to_json(work_items.*) end)::jsonb as work_item ` +
 		`FROM public.work_item_types ` +
-		`` +
-		` WHERE work_item_types.name = $1 AND work_item_types.project_id = $2 `
+		`-- O2O join generated from "work_items_work_item_type_id_fkey"
+left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
+		` WHERE work_item_types.name = $2 AND work_item_types.project_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -201,7 +206,7 @@ work_item_types.color ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, name, projectID).Scan(&wit.WorkItemTypeID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItem, name, projectID).Scan(&wit.WorkItemTypeID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color, &wit.WorkItem); err != nil {
 		return nil, logerror(err)
 	}
 	return &wit, nil
@@ -223,10 +228,12 @@ func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID int
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
-work_item_types.color ` +
+work_item_types.color,
+(case when $1::boolean = true then row_to_json(work_items.*) end)::jsonb as work_item ` +
 		`FROM public.work_item_types ` +
-		`` +
-		` WHERE work_item_types.work_item_type_id = $1 `
+		`-- O2O join generated from "work_items_work_item_type_id_fkey"
+left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
+		` WHERE work_item_types.work_item_type_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -236,7 +243,7 @@ work_item_types.color ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, workItemTypeID).Scan(&wit.WorkItemTypeID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItem, workItemTypeID).Scan(&wit.WorkItemTypeID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color, &wit.WorkItem); err != nil {
 		return nil, logerror(err)
 	}
 	return &wit, nil

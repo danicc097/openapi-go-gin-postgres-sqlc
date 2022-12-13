@@ -338,7 +338,8 @@ type Uuid = string
 
 // GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
 type GetProjectWorkitemsParams struct {
-	Open *bool `form:"open,omitempty" json:"open,omitempty"`
+	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
+	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
 }
 
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.

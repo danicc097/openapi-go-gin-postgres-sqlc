@@ -176,6 +176,14 @@ func (siw *ServerInterfaceWrapper) GetProjectWorkitems(c *gin.Context) {
 		return
 	}
 
+	// ------------- Optional query parameter "deleted" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "deleted", c.Request.URL.Query(), &params.Deleted)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter deleted: %s", err)})
+		return
+	}
+
 	siw.Handler.GetProjectWorkitems(c, id, params)
 }
 
