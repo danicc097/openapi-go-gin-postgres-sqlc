@@ -5,6 +5,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // InitializeProject
@@ -20,4 +21,24 @@ func (h *Handlers) GetProjectBoard(c *gin.Context, id int) {
 // GetProjectWorkitems
 func (h *Handlers) GetProjectWorkitems(c *gin.Context, id int, params models.GetProjectWorkitemsParams) {
 	c.String(http.StatusNotImplemented, "not implemented")
+}
+
+// GetProject
+func (h *Handlers) GetProject(c *gin.Context, id int) {
+	ctx := c.Request.Context()
+
+	defer newOTELSpan(ctx, "GetProject", trace.WithAttributes(userIDAttribute(c))).End()
+
+	// TODO project service (includes project, team, board...)
+	// role, ok := h.authzsvc.RoleByRank(user.RoleRank)
+	// if !ok {
+	// 	msg := fmt.Sprintf("role with rank %d not found", user.RoleRank)
+	// 	renderErrorResponse(c, msg, errors.New(msg))
+
+	// 	return
+	// }
+
+	// res := UserResponse{UserPublic: user.ToPublic(), Role: role.Name, Scopes: user.Scopes}
+
+	// c.JSON(http.StatusOK, res)
 }

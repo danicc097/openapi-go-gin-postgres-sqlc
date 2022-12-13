@@ -4,10 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"os"
 	"path"
-	"strconv"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/go-jet/jet/v2/generator/metadata"
 	"github.com/go-jet/jet/v2/generator/postgres"
@@ -39,22 +38,18 @@ func main() {
 		log.Fatalf("envvar.Load: %s\n", err)
 	}
 
-	port, err := strconv.Atoi(os.Getenv("DB_PORT"))
-	if err != nil {
-		log.Fatalf("DB_PORT not an integer: %s\n", err)
-	}
-
+	cfg := internal.Config()
 	dbConnection := postgres.DBConnection{
-		Host:       os.Getenv("POSTGRES_SERVER"),
-		Port:       port,
-		User:       os.Getenv("POSTGRES_USER"),
-		Password:   os.Getenv("POSTGRES_PASSWORD"),
+		Host:       cfg.Postgres.Server,
+		Port:       cfg.Postgres.Port,
+		User:       cfg.Postgres.User,
+		Password:   cfg.Postgres.Password,
 		DBName:     dbname,
 		SchemaName: schema,
 		SslMode:    "disable",
 	}
 
-	err = postgres.Generate(
+	err := postgres.Generate(
 		out,
 		dbConnection,
 		template.Default(postgres2.Dialect).

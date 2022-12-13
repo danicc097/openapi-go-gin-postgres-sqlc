@@ -59,6 +59,11 @@
     "role": "admin",
     "requiresAuthentication": true
   },
+  "GetProject": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
   "GetProjectBoard": {
     "scopes": null,
     "role": null,

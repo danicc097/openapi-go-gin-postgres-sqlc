@@ -210,6 +210,24 @@ paths:
       tags:
         - project
       x-required-role: admin
+  /project/{id}/:
+    get:
+      security:
+        - bearer_auth: []
+        - api_key: []
+      summary: returns board data for a project
+      operationId: GetProject
+      parameters:
+        - $ref: '#/components/parameters/PathSerial'
+      responses:
+        "200":
+          description: Project.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DbProjectPublic'
+      tags:
+        - project
   /project/{id}/board:
     get:
       security:
@@ -391,6 +409,11 @@ components:
         lastName:
           nullable: true
           type: string
+        projects:
+          items:
+            $ref: '#/components/schemas/DbProjectPublic'
+          nullable: true
+          type: array
         role:
           $ref: '#/components/schemas/Role'
         scopes:

@@ -323,6 +323,7 @@ type UserResponse struct {
 	HasGlobalNotifications   bool                `json:"hasGlobalNotifications"`
 	HasPersonalNotifications bool                `json:"hasPersonalNotifications"`
 	LastName                 *string             `json:"lastName"`
+	Projects                 *[]DbProjectPublic  `json:"projects"`
 	Role                     Role                `json:"role"`
 	Scopes                   Scopes              `json:"scopes"`
 	Teams                    *[]DbTeamPublic     `json:"teams"`
@@ -455,6 +456,9 @@ type ClientInterface interface {
 	// Ping request
 	Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetProject request
+	GetProject(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetProjectBoard request
 	GetProjectBoard(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -545,6 +549,18 @@ func (c *Client) OpenapiYamlGet(ctx context.Context, reqEditors ...RequestEditor
 
 func (c *Client) Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPingRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProject(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -820,6 +836,40 @@ func NewPingRequest(server string) (*http.Request, error) {
 	}
 
 	operationPath := fmt.Sprintf("/ping")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetProjectRequest generates requests for GetProject
+func NewGetProjectRequest(server string, id PathSerial) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/project/%s/", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1204,6 +1254,9 @@ type ClientWithResponsesInterface interface {
 	// Ping request
 	PingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PingResponse, error)
 
+	// GetProject request
+	GetProjectWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectResponse, error)
+
 	// GetProjectBoard request
 	GetProjectBoardWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error)
 
@@ -1355,6 +1408,28 @@ func (r PingResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r PingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetProjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DbProjectPublic
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1568,6 +1643,15 @@ func (c *ClientWithResponses) PingWithResponse(ctx context.Context, reqEditors .
 	return ParsePingResponse(rsp)
 }
 
+// GetProjectWithResponse request returning *GetProjectResponse
+func (c *ClientWithResponses) GetProjectWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectResponse, error) {
+	rsp, err := c.GetProject(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectResponse(rsp)
+}
+
 // GetProjectBoardWithResponse request returning *GetProjectBoardResponse
 func (c *ClientWithResponses) GetProjectBoardWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error) {
 	rsp, err := c.GetProjectBoard(ctx, id, reqEditors...)
@@ -1775,6 +1859,32 @@ func ParsePingResponse(rsp *http.Response) (*PingResponse, error) {
 			return nil, err
 		}
 		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectResponse parses an HTTP response from a GetProjectWithResponse call
+func ParseGetProjectResponse(rsp *http.Response) (*GetProjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DbProjectPublic
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 

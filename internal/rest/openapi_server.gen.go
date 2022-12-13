@@ -33,6 +33,9 @@ type ServerInterface interface {
 	// (GET /ping)
 	Ping(c *gin.Context)
 	// returns board data for a project
+	// (GET /project/{id}/)
+	GetProject(c *gin.Context, id externalRef0.PathSerial)
+	// returns board data for a project
 	// (GET /project/{id}/board)
 	GetProjectBoard(c *gin.Context, id externalRef0.PathSerial)
 	// creates initial data (teams, work item types, tags...) for a new project
@@ -103,6 +106,27 @@ func (siw *ServerInterfaceWrapper) OpenapiYamlGet(c *gin.Context) {
 func (siw *ServerInterfaceWrapper) Ping(c *gin.Context) {
 
 	siw.Handler.Ping(c)
+}
+
+// GetProject operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetProject(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.PathSerial
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
+
+	c.Set(externalRef0.Api_keyScopes, []string{""})
+
+	siw.Handler.GetProject(c, id)
 }
 
 // GetProjectBoard operation with its own middleware.
@@ -305,6 +329,11 @@ func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, op
 	router.GET(options.BaseURL+"/ping", append(
 		wrapper.Handler.authMiddlewares(Ping),
 		append(wrapper.Handler.middlewares(Ping), wrapper.Ping)...,
+	)...)
+
+	router.GET(options.BaseURL+"/project/:id/", append(
+		wrapper.Handler.authMiddlewares(GetProject),
+		append(wrapper.Handler.middlewares(GetProject), wrapper.GetProject)...,
 	)...)
 
 	router.GET(options.BaseURL+"/project/:id/board", append(

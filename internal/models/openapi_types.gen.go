@@ -310,6 +310,7 @@ type UserResponse struct {
 	HasGlobalNotifications   bool                `json:"hasGlobalNotifications"`
 	HasPersonalNotifications bool                `json:"hasPersonalNotifications"`
 	LastName                 *string             `json:"lastName"`
+	Projects                 *[]DbProjectPublic  `json:"projects"`
 	Role                     Role                `json:"role"`
 	Scopes                   Scopes              `json:"scopes"`
 	Teams                    *[]DbTeamPublic     `json:"teams"`

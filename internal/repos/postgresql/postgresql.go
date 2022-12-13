@@ -7,7 +7,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 
@@ -23,40 +22,17 @@ import (
 
 // New instantiates the PostgreSQL database using configuration defined in environment variables.
 func New(conf *envvar.Configuration, logger *zap.Logger) (*pgxpool.Pool, *sql.DB, error) {
-	get := func(v string) string {
-		res, err := conf.Get(v)
-		if err != nil {
-			log.Fatalf("Couldn't get configuration value for %s: %s", v, err)
-		}
-
-		return res
-	}
-
-	// XXX: We will revisit this code in future episodes replacing it with another solution
-	databaseHost := get("POSTGRES_SERVER")
-	databaseUsername := get("POSTGRES_USER")
-	databasePassword := get("POSTGRES_PASSWORD")
-	databaseName := get("POSTGRES_DB")
-	databaseSSLMode := get("DATABASE_SSLMODE")
-	// XXX: -
-
-	var databasePort string
-	switch env := os.Getenv("APP_ENV"); env {
-	case "prod":
-		databasePort = get("POSTGRES_PORT") // container
-	default:
-		databasePort = get("DB_PORT")
-	}
+	cfg := internal.Config()
 
 	dsn := url.URL{
 		Scheme: "postgres",
-		User:   url.UserPassword(databaseUsername, databasePassword),
-		Host:   fmt.Sprintf("%s:%s", databaseHost, databasePort),
-		Path:   databaseName,
+		User:   url.UserPassword(cfg.Postgres.User, cfg.Postgres.Password),
+		Host:   fmt.Sprintf("%s:%s", cfg.Postgres.Server, fmt.Sprint(cfg.Postgres.Port)),
+		Path:   cfg.Postgres.DB,
 	}
 
 	q := dsn.Query()
-	q.Add("sslmode", databaseSSLMode)
+	q.Add("sslmode", os.Getenv("DATABASE_SSLMODE"))
 
 	dsn.RawQuery = q.Encode()
 

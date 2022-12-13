@@ -20,9 +20,9 @@ drop table if exists work_item_comments cascade;
 
 drop table if exists work_items cascade;
 
-drop table if exists work_items_demo_project cascade;
+drop table if exists demo_project_work_items cascade;
 
-drop table if exists work_items_project_2 cascade;
+drop table if exists project_2_work_items cascade;
 
 drop table if exists kanban_steps cascade;
 

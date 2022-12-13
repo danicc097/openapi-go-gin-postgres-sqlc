@@ -26,7 +26,8 @@ type OIDCConfig struct {
 }
 
 type PostgresConfig struct {
-	Port     string `env:"DB_PORT"`
+	Port     int    `env:"DB_PORT"`
+	DBPort   string `env:"POSTGRES_PORT"`
 	User     string `env:"POSTGRES_USER"`
 	Password string `env:"POSTGRES_PASSWORD"`
 	Server   string `env:"POSTGRES_SERVER"`
