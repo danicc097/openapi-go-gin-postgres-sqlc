@@ -168,7 +168,7 @@ ensure_envvars_set() {
 
   while IFS= read -r envvar; do
     var=${envvar%%=}
-    if [[ "$var" =~ ^#.* ]]; then
+    if [[ "$var" =~ ^\#.* ]]; then
       continue
     fi
     if ! grep -qoE "^${var}[ ]?=" "$env_file"; then

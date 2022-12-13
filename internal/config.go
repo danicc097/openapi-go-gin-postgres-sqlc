@@ -26,12 +26,12 @@ type OIDCConfig struct {
 }
 
 type PostgresConfig struct {
-	Port     int    `env:"DB_PORT"`
-	DBPort   string `env:"POSTGRES_PORT"`
-	User     string `env:"POSTGRES_USER"`
-	Password string `env:"POSTGRES_PASSWORD"`
-	Server   string `env:"POSTGRES_SERVER"`
-	DB       string `env:"POSTGRES_DB"`
+	Port         int    `env:"DB_PORT"`
+	InternalPort string `env:"POSTGRES_PORT"`
+	User         string `env:"POSTGRES_USER"`
+	Password     string `env:"POSTGRES_PASSWORD"`
+	Server       string `env:"POSTGRES_SERVER"`
+	DB           string `env:"POSTGRES_DB"`
 }
 
 type RedisConfig struct {

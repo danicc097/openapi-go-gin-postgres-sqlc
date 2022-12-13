@@ -1,7 +1,5 @@
 package services
 
-// addTeam, removeTeam, projectByID
-
 import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"go.uber.org/zap"
@@ -27,3 +25,5 @@ func NewProject(logger *zap.Logger,
 		authzsvc:    authzsvc,
 	}
 }
+
+// addTeam, removeTeam, projectByID
