@@ -37,7 +37,9 @@ export default function App() {
                 path="/"
                 element={
                   <React.Suspense fallback={<FallbackLoading />}>
-                    <ProtectedRoute component={LandingPage} />
+                    <ProtectedRoute>
+                      <LandingPage />
+                    </ProtectedRoute>
                   </React.Suspense>
                 }
               />
@@ -45,7 +47,9 @@ export default function App() {
                 path="/admin/user-permissions-management"
                 element={
                   <React.Suspense fallback={<FallbackLoading />}>
-                    <ProtectedRoute component={UserPermissionsPage} />
+                    <ProtectedRoute>
+                      <UserPermissionsPage />
+                    </ProtectedRoute>
                   </React.Suspense>
                 }
               />

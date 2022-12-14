@@ -28,6 +28,8 @@ import type { DemoProjectWorkItemsResponse } from 'src/gen/model'
 import moment from 'moment'
 import { getGetProjectWorkitemsMock, getProjectMSW } from 'src/gen/project/project.msw'
 import { StyledEuiCheckbox } from 'src/components/KanbanBoard/KanbanBoard.styles'
+import ProtectedComponent from 'src/components/Permissions/ProtectedComponent'
+import { useAuthenticatedUser } from 'src/hooks/auth/useAuthenticatedUser'
 
 const makeId = htmlIdGenerator()
 
@@ -52,11 +54,12 @@ const sampleCardTitles: Record<keyof SampleCardData, string> = {
 
 // config panel allows naming as per full path, showing e.g.
 // baseWorkItem.workItemTypeID : [ Name   ] [✓] Visible
-const ProjectWorkitemsNames: Record<string, string> = {
+const ProjectWorkitemsTitles: Record<string, string> = {
   'baseWorkItem.workItemTypeID': 'Work item type ID',
 }
 
 export default function KanbanBoard() {
+  const { user } = useAuthenticatedUser()
   const { addToast } = useUISlice()
   const [sampleCard, setsampleCard] = useState({
     someBoolean: true, // checkbox
@@ -121,6 +124,8 @@ export default function KanbanBoard() {
               </EuiText>
             )
           } else if (Array.isArray(value)) {
+            // TODO generate color from name.
+            // workitem tags and types rendered separately from this, explicitly and have custom color
             const badges = value.map((item, idx) => <EuiBadge key={`${i}-${idx}`}>{item}</EuiBadge>)
             element = (
               <div key={i}>
@@ -245,52 +250,60 @@ export default function KanbanBoard() {
    */
 
   return (
-    <EuiDragDropContext onDragEnd={onDragEnd}>
-      <EuiDroppable
-        droppableId="COMPLEX_DROPPABLE_PARENT"
-        type="MACRO"
-        direction="horizontal"
-        withPanel
-        spacing="l"
-        className="eui-scrollBar"
-        style={{ display: 'flex', maxWidth: '100vw', overflowX: 'auto' }}
-      >
-        {list.map((did, didx) => (
-          <EuiDraggable
-            key={did}
-            index={didx}
-            draggableId={`COMPLEX_DRAGGABLE_${did}`}
-            spacing="l"
-            style={{ minWidth: '30vw' }}
-            disableInteractiveElementBlocking // Allows button to be drag handle
-            hasInteractiveChildren
-            isDragDisabled
-            customDragHandle
-          >
-            {(provided) => (
-              <>
-                <EuiPanel color="subdued" paddingSize="s">
-                  <EuiTitle size="xs">
-                    <EuiText textAlign="center">Column {didx}</EuiText>
-                  </EuiTitle>
-                  <EuiDroppable
-                    droppableId={`COMPLEX_DROPPABLE_AREA_${did}`}
-                    type="MICRO"
-                    spacing="m"
-                    style={{ flex: '1 0 50%' }}
-                  >
-                    {lists[`COMPLEX_DROPPABLE_AREA_${did}`].map(({ content, id }, idx) => (
-                      <EuiDraggable key={id} index={idx} draggableId={id} spacing="m">
-                        <EuiPanel>{content}</EuiPanel>
-                      </EuiDraggable>
-                    ))}
-                  </EuiDroppable>
-                </EuiPanel>
-              </>
-            )}
-          </EuiDraggable>
-        ))}
-      </EuiDroppable>
-    </EuiDragDropContext>
+    <>
+      <ProtectedComponent user={user}>
+        <>
+          {' '}
+          <EuiButton>test</EuiButton>
+        </>
+      </ProtectedComponent>
+      <EuiDragDropContext onDragEnd={onDragEnd}>
+        <EuiDroppable
+          droppableId="COMPLEX_DROPPABLE_PARENT"
+          type="MACRO"
+          direction="horizontal"
+          withPanel
+          spacing="l"
+          className="eui-scrollBar"
+          style={{ display: 'flex', maxWidth: '100vw', overflowX: 'auto' }}
+        >
+          {list.map((did, didx) => (
+            <EuiDraggable
+              key={did}
+              index={didx}
+              draggableId={`COMPLEX_DRAGGABLE_${did}`}
+              spacing="l"
+              style={{ minWidth: '30vw' }}
+              disableInteractiveElementBlocking // Allows button to be drag handle
+              hasInteractiveChildren
+              isDragDisabled
+              customDragHandle
+            >
+              {(provided) => (
+                <>
+                  <EuiPanel color="subdued" paddingSize="s">
+                    <EuiTitle size="xs">
+                      <EuiText textAlign="center">Column {didx}</EuiText>
+                    </EuiTitle>
+                    <EuiDroppable
+                      droppableId={`COMPLEX_DROPPABLE_AREA_${did}`}
+                      type="MICRO"
+                      spacing="m"
+                      style={{ flex: '1 0 50%' }}
+                    >
+                      {lists[`COMPLEX_DROPPABLE_AREA_${did}`].map(({ content, id }, idx) => (
+                        <EuiDraggable key={id} index={idx} draggableId={id} spacing="m">
+                          <EuiPanel>{content}</EuiPanel>
+                        </EuiDraggable>
+                      ))}
+                    </EuiDroppable>
+                  </EuiPanel>
+                </>
+              )}
+            </EuiDraggable>
+          ))}
+        </EuiDroppable>
+      </EuiDragDropContext>
+    </>
   )
 }

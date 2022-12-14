@@ -9,7 +9,7 @@ import { useAuthenticatedUser } from 'src/hooks/auth/useAuthenticatedUser'
 import { useEffect } from 'react'
 
 type ProtectedRouteProps = {
-  component: React.ComponentType
+  children: JSX.Element
   requiredRole?: Role
   requiredScopes?: Scopes
 }
@@ -17,12 +17,7 @@ type ProtectedRouteProps = {
 /**
  *  Requires an authenticated user and optionally specific role or scopes.
  */
-export default function ProtectedRoute({
-  component: Component,
-  requiredRole = null,
-  requiredScopes = null,
-  ...props
-}: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, requiredRole = null, requiredScopes = null }: ProtectedRouteProps) {
   const { user } = useAuthenticatedUser()
   const { addToast } = useUISlice()
 
@@ -49,9 +44,7 @@ export default function ProtectedRoute({
     window.location.replace(`${import.meta.env.VITE_AUTH_SERVER}/login`)
   }
 
-  const element = <Component {...props} />
-
   const isAuthorized = true // TODO
 
-  return <ProtectedPage element={element} isAuthorized={isAuthorized}></ProtectedPage>
+  return <ProtectedPage isAuthorized={isAuthorized}>{children}</ProtectedPage>
 }

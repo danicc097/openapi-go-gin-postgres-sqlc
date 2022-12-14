@@ -4,11 +4,11 @@ import React from 'react'
 import type { Role, Scopes } from 'src/gen/model'
 
 type ProtectedPageProps = {
-  element: JSX.Element
+  children: JSX.Element
   isAuthorized: boolean
 }
 
-export default function ProtectedPage({ element, isAuthorized }: ProtectedPageProps) {
+export default function ProtectedPage({ children, isAuthorized }: ProtectedPageProps) {
   if (!isAuthorized) {
     return (
       <EuiEmptyPrompt
@@ -20,5 +20,5 @@ export default function ProtectedPage({ element, isAuthorized }: ProtectedPagePr
     )
   }
 
-  return element
+  return children
 }
