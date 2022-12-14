@@ -16,10 +16,12 @@ import {
   EuiCodeBlock,
   EuiButton,
   EuiSpacer,
+  EuiBadge,
+  EuiCheckbox,
 } from '@elastic/eui'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
-import { isArray, isObject, random, uniqueId } from 'lodash'
+import _, { isArray, isObject, random, uniqueId } from 'lodash'
 import type { DemoProjectWorkItemsResponse } from 'src/gen/model'
 import moment from 'moment'
 import { getGetProjectWorkitemsMock, getProjectMSW } from 'src/gen/project/project.msw'
@@ -36,7 +38,7 @@ type SampleCardData = {
 }
 
 // UI title mapping for fields
-const CardDataNames: Record<keyof SampleCardData, string> = {
+const sampleCardTitles: Record<keyof SampleCardData, string> = {
   someDate: 'Some date',
   someBoolean: 'Some boolean',
   someOtherBoolean: 'Some other boolean',
@@ -93,6 +95,56 @@ export default function KanbanBoard() {
   console.log(demoProjectWI)
   Object.entries(demoProjectWI).forEach(([key, val]) => renderComponents([], [key, val]))
 
+  const renderCard = (data: any, titles: { [key: string]: string }) => {
+    return (
+      <>
+        {Object.keys(titles).map((key, i) => {
+          if (_.get(data, key) === undefined) return
+
+          const value = data[key]
+          let element
+
+          if (value instanceof Date) {
+            element = (
+              <EuiText size="s" key={i}>
+                {titles[key]}: {value.toString()}
+              </EuiText>
+            )
+          } else if (typeof value === 'string') {
+            element = (
+              <EuiText size="s" key={i}>
+                {titles[key]}: {value}
+              </EuiText>
+            )
+          } else if (Array.isArray(value)) {
+            const badges = value.map((item, idx) => <EuiBadge key={`${i}-${idx}`}>{item}</EuiBadge>)
+            element = (
+              <div key={i}>
+                {titles[key]}: {badges}
+              </div>
+            )
+          } else if (typeof value === 'boolean') {
+            element = (
+              <EuiCheckbox
+                key={i}
+                readOnly
+                compressed
+                id={`checkbox-${i}`}
+                label={titles[key]}
+                onChange={() => null}
+                checked={value}
+              ></EuiCheckbox>
+            )
+          } else if (typeof value === 'object') {
+            element = renderCard(value, titles)
+          }
+
+          return element
+        })}
+      </>
+    )
+  }
+
   const makeList = (number, start = 1) =>
     Array.from({ length: number }, (v, k) => k + start).map((el) => {
       return {
@@ -110,9 +162,7 @@ export default function KanbanBoard() {
             paddingSize="none"
             display="plain"
           >
-            <EuiCodeBlock language="html" paddingSize="s">
-              {'<yoda>Hello, young Skywalker</yoda>'}
-            </EuiCodeBlock>
+            {renderCard(sampleCard, sampleCardTitles)}
             <EuiSpacer />
             <EuiButton
               key={1}
