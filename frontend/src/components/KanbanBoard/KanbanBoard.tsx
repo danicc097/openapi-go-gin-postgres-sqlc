@@ -18,6 +18,8 @@ import {
   EuiSpacer,
   EuiBadge,
   EuiCheckbox,
+  EuiFlexGroup,
+  EuiFlexItem,
 } from '@elastic/eui'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
@@ -103,6 +105,8 @@ export default function KanbanBoard() {
 
           const value = data[key]
           let element
+          // TODO group by type and then render with minimal spacer
+          // and flex
 
           if (value instanceof Date) {
             element = (
@@ -128,6 +132,7 @@ export default function KanbanBoard() {
               <EuiCheckbox
                 key={i}
                 readOnly
+                style={{ alignContent: 'center' }}
                 compressed
                 id={`checkbox-${i}`}
                 label={titles[key]}
@@ -151,7 +156,12 @@ export default function KanbanBoard() {
         content: (
           <EuiCard
             textAlign="left"
-            title={`Card ${el}`}
+            title={
+              <EuiFlexGroup direction="row" justifyContent="spaceBetween">
+                <EuiFlexItem>Card {el}</EuiFlexItem>
+                <EuiButtonIcon iconType="documentEdit" aria-label="Heart" color="primary" />
+              </EuiFlexGroup>
+            }
             description={
               <span>
                 Just be sure not to add any <EuiCode>onClick</EuiCode> handler to the card if the children are also
@@ -161,6 +171,7 @@ export default function KanbanBoard() {
             hasBorder={false}
             paddingSize="none"
             display="plain"
+            // footer={'footer'}
           >
             {renderCard(sampleCard, sampleCardTitles)}
             <EuiSpacer />
