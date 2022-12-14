@@ -5,11 +5,17 @@ import type { Role, Scopes, UserResponse } from 'src/gen/model'
 
 type ProtectedComponentProps = {
   element: JSX.Element
+  user: UserResponse
   requiredRole?: Role
   requiredScopes?: Scopes
 }
 
-export default function ProtectedComponent({ element, requiredRole, requiredScopes }: ProtectedComponentProps) {
+// usage:
+// <...
+//   <ProtectedComponent requiredRole="manager" ...>
+//   <ProtectedComponent requiredRole="admin" ...>
+// <...
+export default function ProtectedComponent({ element, user, requiredRole, requiredScopes }: ProtectedComponentProps) {
   // TODO isAuthorized
 
   return element

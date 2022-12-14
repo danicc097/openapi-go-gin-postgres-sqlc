@@ -27,6 +27,7 @@ import _, { isArray, isObject, random, uniqueId } from 'lodash'
 import type { DemoProjectWorkItemsResponse } from 'src/gen/model'
 import moment from 'moment'
 import { getGetProjectWorkitemsMock, getProjectMSW } from 'src/gen/project/project.msw'
+import { StyledEuiCheckbox } from 'src/components/KanbanBoard/KanbanBoard.styles'
 
 const makeId = htmlIdGenerator()
 
@@ -57,14 +58,13 @@ const ProjectWorkitemsNames: Record<string, string> = {
 
 export default function KanbanBoard() {
   const { addToast } = useUISlice()
-
-  const sampleCard: SampleCardData = {
+  const [sampleCard, setsampleCard] = useState({
     someBoolean: true, // checkbox
     someOtherBoolean: false, // checkbox
     someDate: new Date(),
     someList: ['item 1', 'item 2'], // EuiBadge
     sometext: 'content for sometext.\n More content.',
-  }
+  })
 
   const demoProjectWI = getGetProjectWorkitemsMock()
 
@@ -129,7 +129,7 @@ export default function KanbanBoard() {
             )
           } else if (typeof value === 'boolean') {
             element = (
-              <EuiCheckbox
+              <StyledEuiCheckbox
                 key={i}
                 readOnly
                 style={{ alignContent: 'center' }}
@@ -138,7 +138,7 @@ export default function KanbanBoard() {
                 label={titles[key]}
                 onChange={() => null}
                 checked={value}
-              ></EuiCheckbox>
+              ></StyledEuiCheckbox>
             )
           } else if (typeof value === 'object') {
             element = renderCard(value, titles)
