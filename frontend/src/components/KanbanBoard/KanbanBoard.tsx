@@ -30,6 +30,7 @@ import { getGetProjectWorkitemsMock, getProjectMSW } from 'src/gen/project/proje
 import { StyledEuiCheckbox } from 'src/components/KanbanBoard/KanbanBoard.styles'
 import ProtectedComponent from 'src/components/Permissions/ProtectedComponent'
 import { useAuthenticatedUser } from 'src/hooks/auth/useAuthenticatedUser'
+import { generateColor } from 'src/utils/colors'
 
 const makeId = htmlIdGenerator()
 
@@ -126,7 +127,11 @@ export default function KanbanBoard() {
           } else if (Array.isArray(value)) {
             // TODO generate color from name.
             // workitem tags and types rendered separately from this, explicitly and have custom color
-            const badges = value.map((item, idx) => <EuiBadge key={`${i}-${idx}`}>{item}</EuiBadge>)
+            const badges = value.map((item, idx) => (
+              <EuiBadge key={`${i}-${idx}`} color={generateColor(item)}>
+                {item}
+              </EuiBadge>
+            ))
             element = (
               <div key={i}>
                 {titles[key]}: {badges}

@@ -64,3 +64,14 @@ export const getContrastYIQ = (hc) => {
   const [r, g, b] = [0, 2, 4].map((p) => parseInt(hc.substr(p, 2), 16))
   return (r * 299 + g * 587 + b * 114) / 1000 >= 128 ? 'black' : 'white'
 }
+
+export function generateColor(str: string): string {
+  let num = 0
+  for (const ch of str) {
+    num ^= ch.charCodeAt(0)
+  }
+
+  const offset = 6.6
+  const hue = (num * offset) % 360
+  return `hsl(${hue}, 90%, 50%)`
+}
