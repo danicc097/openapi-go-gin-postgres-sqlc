@@ -32,7 +32,7 @@ type Team struct {
 	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`   // updated_at
 
 	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
-	UserIDs     *[]User      `json:"user_ids" db:"user_ids"`         // M2M
+	Users       *[]User      `json:"users" db:"users"`               // M2M
 	// xo fields
 	_exists, _deleted bool
 }
@@ -84,7 +84,7 @@ func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 
 type TeamJoins struct {
 	TimeEntries bool
-	UserID      bool
+	Users       bool
 }
 
 // WithTeamJoin orders results by the given columns.
@@ -266,7 +266,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserID, name, projectID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.CreatedAt, &t.UpdatedAt, &t.TimeEntries, &t.UserIDs); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name, projectID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.CreatedAt, &t.UpdatedAt, &t.TimeEntries, &t.Users); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil
@@ -334,7 +334,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserID, teamID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.CreatedAt, &t.UpdatedAt, &t.TimeEntries, &t.UserIDs); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, teamID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.CreatedAt, &t.UpdatedAt, &t.TimeEntries, &t.Users); err != nil {
 		return nil, logerror(err)
 	}
 	return &t, nil

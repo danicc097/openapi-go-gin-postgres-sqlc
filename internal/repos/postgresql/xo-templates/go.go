@@ -1385,7 +1385,8 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 		var joinName string
 		switch c.Cardinality {
 		case "M2M":
-			joinName = camelExport(c.ColumnName)
+			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
+			joinName = camelExport(inflector.Pluralize(lookupName))
 		case "O2M", "M2O":
 			if c.RefTableName != sqlname {
 				continue
@@ -1683,7 +1684,8 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				var joinName string
 				switch c.Cardinality {
 				case "M2M":
-					joinName = prefix + camelExport(inflector.Pluralize(c.ColumnName))
+					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
+					joinName = prefix + camelExport(inflector.Pluralize(lookupName))
 				case "O2M", "M2O":
 					if c.RefTableName != x.SQLName {
 						continue
@@ -1714,7 +1716,8 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				var joinName string
 				switch c.Cardinality {
 				case "M2M":
-					joinName = "c.joins." + camelExport(c.ColumnName)
+					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
+					joinName = "c.joins." + camelExport(inflector.Pluralize(lookupName))
 				case "O2M", "M2O":
 					if c.RefTableName != x.Table.SQLName {
 						continue
@@ -2449,13 +2452,14 @@ func (f *Funcs) join_fields(sqlname string, public bool, constraints interface{}
 		// sync with extratypes
 		switch c.Cardinality {
 		case "M2M":
-			goName = camelExport(singularize(c.ColumnName))
+			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
+			goName = camelExport(singularize(lookupName))
 			typ = camelExport(singularize(c.RefTableName))
 			if public {
 				typ = typ + "Public"
 				tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(camel(goName)))
 			} else {
-				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(c.ColumnName), inflector.Pluralize(c.ColumnName))
+				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(lookupName), inflector.Pluralize(lookupName))
 			}
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
 			// TODO revisit. O2M and M2O from different viewpoints.

@@ -27,7 +27,7 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description"`           // description
 	Color         string `json:"color" db:"color"`                       // color
 
-	WorkItemIDs *[]WorkItem `json:"work_item_ids" db:"work_item_ids"` // M2M
+	WorkItems *[]WorkItem `json:"work_items" db:"work_items"` // M2M
 	// xo fields
 	_exists, _deleted bool
 }
@@ -55,7 +55,7 @@ func WithWorkItemTagLimit(limit int) WorkItemTagSelectConfigOption {
 type WorkItemTagOrderBy = string
 
 type WorkItemTagJoins struct {
-	WorkItemID bool
+	WorkItems bool
 }
 
 // WithWorkItemTagJoin orders results by the given columns.
@@ -226,7 +226,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItemID, name, projectID).Scan(&wit.WorkItemTagID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color, &wit.WorkItemIDs); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItems, name, projectID).Scan(&wit.WorkItemTagID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color, &wit.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &wit, nil
@@ -283,7 +283,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItemID, workItemTagID).Scan(&wit.WorkItemTagID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color, &wit.WorkItemIDs); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItems, workItemTagID).Scan(&wit.WorkItemTagID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color, &wit.WorkItems); err != nil {
 		return nil, logerror(err)
 	}
 	return &wit, nil
