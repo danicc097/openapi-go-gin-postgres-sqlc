@@ -141,6 +141,13 @@ type ProjectBoard interface {
 	ProjectBoardByID(ctx context.Context, d db.DBTX, projectID int) (*models.ProjectBoard, error)
 }
 
+// DemoProjectWorkItem defines the datastore/repository handling persisting DemoProjectWorkItem records.
+type DemoProjectWorkItem interface {
+	WorkItemByID(ctx context.Context, d db.DBTX, id int64, opts ...db.DemoProjectWorkItemSelectConfigOption) (*db.DemoProjectWorkItem, error)
+	// Create, Delete, WorkItemsByTeam,
+	// TBD if useful: WorkItemsByTag, WorkItemsByType (for closed workitem searches. open ones simply return everything and filter in client)
+}
+
 // Notification defines the datastore/repository handling persisting Notification records.
 type Notification interface {
 	LatestUserNotifications(ctx context.Context, d db.DBTX, params GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
