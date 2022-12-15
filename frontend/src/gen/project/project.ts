@@ -20,6 +20,7 @@ import type {
 } from '@tanstack/react-query'
 import type {
   InitializeProjectRequest,
+  DbProjectPublic,
   ProjectBoardResponse,
   DemoProjectWorkItemsResponse,
   GetProjectWorkitemsParams,
@@ -67,6 +68,71 @@ export const useInitializeProject = <TError = AxiosError<unknown>, TContext = un
     TContext
   >(mutationFn, mutationOptions)
 }
+/**
+ * @summary returns board data for a project
+ */
+export const getProject = (id: number, options?: AxiosRequestConfig): Promise<AxiosResponse<DbProjectPublic>> => {
+  return axios.get(`/project/${id}/`, options)
+}
+
+export const getGetProjectQueryKey = (id: number) => [`/project/${id}/`]
+
+export type GetProjectInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProject>>>
+export type GetProjectInfiniteQueryError = AxiosError<unknown>
+
+export const useGetProjectInfinite = <TData = Awaited<ReturnType<typeof getProject>>, TError = AxiosError<unknown>>(
+  id: number,
+  options?: {
+    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData>
+    axios?: AxiosRequestConfig
+  },
+): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetProjectQueryKey(id)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProject>>> = ({ signal }) =>
+    getProject(id, { signal, ...axiosOptions })
+
+  const query = useInfiniteQuery<Awaited<ReturnType<typeof getProject>>, TError, TData>(queryKey, queryFn, {
+    enabled: !!id,
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryKey
+
+  return query
+}
+
+export type GetProjectQueryResult = NonNullable<Awaited<ReturnType<typeof getProject>>>
+export type GetProjectQueryError = AxiosError<unknown>
+
+export const useGetProject = <TData = Awaited<ReturnType<typeof getProject>>, TError = AxiosError<unknown>>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData>
+    axios?: AxiosRequestConfig
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetProjectQueryKey(id)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProject>>> = ({ signal }) =>
+    getProject(id, { signal, ...axiosOptions })
+
+  const query = useQuery<Awaited<ReturnType<typeof getProject>>, TError, TData>(queryKey, queryFn, {
+    enabled: !!id,
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryKey
+
+  return query
+}
+
 /**
  * @summary returns board data for a project
  */

@@ -189,6 +189,15 @@
             "null"
           ]
         },
+        "projects": {
+          "items": {
+            "$ref": "#/definitions/DbProjectPublic"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
         "role": {
           "$ref": "#/definitions/Role"
         },

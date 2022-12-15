@@ -299,26 +299,75 @@ components:
   schemas:
     DemoProjectWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
-        baseWorkItem:
-          $ref: '#/components/schemas/DbWorkItemPublic'
-        lastMessageAt:
+        closed:
+          format: date-time
+          nullable: true
+          type: string
+        createdAt:
           format: date-time
           type: string
-        line:
+        deletedAt:
+          format: date-time
+          nullable: true
           type: string
-        ref:
+        demoProjectWorkItem:
+          $ref: '#/components/schemas/DbDemoProjectWorkItemPublic'
+        description:
           type: string
-        reopened:
-          type: boolean
+        kanbanStepID:
+          type: integer
+        members:
+          items:
+            $ref: '#/components/schemas/DbUserPublic'
+          nullable: true
+          type: array
+        metadata:
+          $ref: '#/components/schemas/PgtypeJSONB'
+        targetDate:
+          format: date-time
+          type: string
+        teamID:
+          type: integer
+        timeEntries:
+          items:
+            $ref: '#/components/schemas/DbTimeEntryPublic'
+          nullable: true
+          type: array
+        title:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        workItemComments:
+          items:
+            $ref: '#/components/schemas/DbWorkItemCommentPublic'
+          nullable: true
+          type: array
         workItemID:
+          type: integer
+        workItemTags:
+          items:
+            $ref: '#/components/schemas/DbWorkItemTagPublic'
+          nullable: true
+          type: array
+        workItemType:
+          $ref: '#/components/schemas/DbWorkItemTypePublic'
+        workItemTypeID:
           type: integer
       required:
         - workItemID
-        - ref
-        - line
-        - lastMessageAt
-        - reopened
-        - baseWorkItem
+        - title
+        - description
+        - workItemTypeID
+        - metadata
+        - teamID
+        - kanbanStepID
+        - closed
+        - targetDate
+        - createdAt
+        - updatedAt
+        - deletedAt
+        - demoProjectWorkItem
       type: object
       x-postgen-struct: RestDemoProjectWorkItemsResponse
     InitializeProjectRequest: # Generated from internal structs. DO NOT EDIT.
@@ -676,6 +725,7 @@ components:
         - color
       type: object
     DbWorkItemTypePublic: # Generated from internal structs. DO NOT EDIT.
+      nullable: true
       properties:
         color:
           type: string
@@ -803,6 +853,122 @@ components:
         - deletedAt
       type: object
     PgtypeJSONB: # Generated from internal structs. DO NOT EDIT.
+      type: object
+    DbDemoProjectWorkItemPublic: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        lastMessageAt:
+          format: date-time
+          type: string
+        line:
+          type: string
+        ref:
+          type: string
+        reopened:
+          type: boolean
+        workItemID:
+          type: integer
+      required:
+        - workItemID
+        - ref
+        - line
+        - lastMessageAt
+        - reopened
+      type: object
+    DbTimeEntryPublic: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        activityID:
+          type: integer
+        comment:
+          type: string
+        durationMinutes:
+          nullable: true
+          type: integer
+        start:
+          format: date-time
+          type: string
+        teamID:
+          nullable: true
+          type: integer
+        timeEntryID:
+          type: integer
+        userID:
+          $ref: '#/components/schemas/UuidUUID'
+        workItemID:
+          nullable: true
+          type: integer
+      required:
+        - timeEntryID
+        - workItemID
+        - activityID
+        - teamID
+        - userID
+        - comment
+        - start
+        - durationMinutes
+      type: object
+    DbUserPublic: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        email:
+          type: string
+        firstName:
+          nullable: true
+          type: string
+        fullName:
+          nullable: true
+          type: string
+        hasGlobalNotifications:
+          type: boolean
+        hasPersonalNotifications:
+          type: boolean
+        lastName:
+          nullable: true
+          type: string
+        userID:
+          $ref: '#/components/schemas/UuidUUID'
+        username:
+          type: string
+      required:
+        - userID
+        - username
+        - email
+        - firstName
+        - lastName
+        - fullName
+        - hasPersonalNotifications
+        - hasGlobalNotifications
+        - createdAt
+        - deletedAt
+      type: object
+    DbWorkItemCommentPublic: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        message:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        userID:
+          $ref: '#/components/schemas/UuidUUID'
+        workItemCommentID:
+          type: integer
+        workItemID:
+          type: integer
+      required:
+        - workItemCommentID
+        - workItemID
+        - userID
+        - message
+        - createdAt
+        - updatedAt
       type: object
   examples:
     User:

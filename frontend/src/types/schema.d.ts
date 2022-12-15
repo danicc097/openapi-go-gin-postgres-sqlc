@@ -54,6 +54,10 @@ export interface paths {
     /** creates initial data (teams, work item types, tags...) for a new project */
     post: operations["InitializeProject"];
   };
+  "/project/{id}/": {
+    /** returns board data for a project */
+    get: operations["GetProject"];
+  };
   "/project/{id}/board": {
     /** returns board data for a project */
     get: operations["GetProjectBoard"];
@@ -103,6 +107,7 @@ export interface components {
       hasGlobalNotifications: boolean;
       hasPersonalNotifications: boolean;
       lastName: string | null;
+      projects?: (components["schemas"]["DbProjectPublic"])[] | null;
       role: components["schemas"]["Role"];
       scopes: components["schemas"]["Scopes"];
       teams?: (components["schemas"]["DbTeamPublic"])[] | null;
@@ -428,6 +433,17 @@ export interface operations {
     responses: {
       /** @description Project successfully initialized. */
       204: never;
+    };
+  };
+  GetProject: {
+    /** returns board data for a project */
+    responses: {
+      /** @description Project. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["DbProjectPublic"];
+        };
+      };
     };
   };
   GetProjectBoard: {

@@ -8,6 +8,15 @@
 import { rest } from 'msw'
 import { faker } from '@faker-js/faker'
 
+export const getGetProjectMock = () => ({
+  createdAt: (() => faker.date.past())(),
+  description: faker.random.word(),
+  initialized: faker.datatype.boolean(),
+  name: faker.random.word(),
+  projectID: faker.datatype.number({ min: undefined, max: undefined }),
+  updatedAt: (() => faker.date.past())(),
+})
+
 export const getGetProjectBoardMock = () => ({
   activities: faker.helpers.arrayElement([
     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
@@ -103,6 +112,9 @@ export const getGetProjectWorkitemsMock = () =>
 export const getProjectMSW = () => [
   rest.post('*/project/:id/initialize', (_req, res, ctx) => {
     return res(ctx.delay(1000), ctx.status(200, 'Mocked status'))
+  }),
+  rest.get('*/project/:id/', (_req, res, ctx) => {
+    return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetProjectMock()))
   }),
   rest.get('*/project/:id/board', (_req, res, ctx) => {
     return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetProjectBoardMock()))

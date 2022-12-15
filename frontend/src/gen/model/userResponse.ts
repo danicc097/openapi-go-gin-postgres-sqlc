@@ -6,6 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { DbUserAPIKeyPublic } from './dbUserAPIKeyPublic'
+import type { DbProjectPublic } from './dbProjectPublic'
 import type { Role } from './role'
 import type { Scopes } from './scopes'
 import type { DbTeamPublic } from './dbTeamPublic'
@@ -21,6 +22,7 @@ export interface UserResponse {
   hasGlobalNotifications: boolean
   hasPersonalNotifications: boolean
   lastName: string | null
+  projects?: DbProjectPublic[] | null
   role: Role
   scopes: Scopes
   teams?: DbTeamPublic[] | null

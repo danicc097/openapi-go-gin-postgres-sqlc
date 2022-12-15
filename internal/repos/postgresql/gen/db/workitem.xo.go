@@ -49,8 +49,8 @@ type WorkItem struct {
 	Project2WorkItem    *Project2WorkItem    `json:"project2work_item" db:"project_2_work_item"`         // O2O
 	TimeEntries         *[]TimeEntry         `json:"time_entries" db:"time_entries"`                     // O2M
 	WorkItemComments    *[]WorkItemComment   `json:"work_item_comments" db:"work_item_comments"`         // O2M
-	Users               *[]User              `json:"users" db:"users"`                                   // M2M
-	WorkItemTags        *[]WorkItemTag       `json:"work_item_tags" db:"work_item_tags"`                 // M2M
+	Members             *[]User              `json:"members" db:"members"`                               // M2M
+	WorkItemTagIDs      *[]WorkItemTag       `json:"work_item_tag_ids" db:"work_item_tag_ids"`           // M2M
 	WorkItemType        *WorkItemType        `json:"work_item_type" db:"work_item_type"`                 // O2O
 	// xo fields
 	_exists, _deleted bool
@@ -126,8 +126,8 @@ type WorkItemJoins struct {
 	Project2WorkItem    bool
 	TimeEntries         bool
 	WorkItemComments    bool
-	Users               bool
-	WorkItemTags        bool
+	Member              bool
+	WorkItemTagID       bool
 	WorkItemType        bool
 }
 
@@ -354,7 +354,7 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 
 	// run
 	logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Users, c.joins.WorkItemTags, c.joins.WorkItemType, deletedAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Member, c.joins.WorkItemTagID, c.joins.WorkItemType, deletedAt)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -487,7 +487,7 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Users, c.joins.WorkItemTags, c.joins.WorkItemType, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Description, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.TargetDate, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.DemoProjectWorkItem, &wi.Project2WorkItem, &wi.TimeEntries, &wi.WorkItemComments, &wi.Users, &wi.WorkItemTags, &wi.WorkItemType); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Member, c.joins.WorkItemTagID, c.joins.WorkItemType, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Description, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.TargetDate, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.DemoProjectWorkItem, &wi.Project2WorkItem, &wi.TimeEntries, &wi.WorkItemComments, &wi.Members, &wi.WorkItemTagIDs, &wi.WorkItemType); err != nil {
 		return nil, logerror(err)
 	}
 	return &wi, nil

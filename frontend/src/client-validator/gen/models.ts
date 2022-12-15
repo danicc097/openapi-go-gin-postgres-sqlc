@@ -184,6 +184,7 @@ export interface UserResponse {
   hasGlobalNotifications: boolean
   hasPersonalNotifications: boolean
   lastName: string | null
+  projects?: DbProjectPublic1[] | null
   role: Role
   scopes: Scopes
   teams?: DbTeamPublic[] | null

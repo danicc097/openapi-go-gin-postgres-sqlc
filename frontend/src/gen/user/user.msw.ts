@@ -22,6 +22,17 @@ export const getGetCurrentUserMock = () => ({
   hasGlobalNotifications: faker.datatype.boolean(),
   hasPersonalNotifications: faker.datatype.boolean(),
   lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+  projects: faker.helpers.arrayElement([
+    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      createdAt: (() => faker.date.past())(),
+      description: faker.random.word(),
+      initialized: faker.datatype.boolean(),
+      name: faker.random.word(),
+      projectID: faker.datatype.number({ min: undefined, max: undefined }),
+      updatedAt: (() => faker.date.past())(),
+    })),
+    undefined,
+  ]),
   role: faker.helpers.arrayElement(Object.values(Role)),
   scopes: faker.helpers.arrayElements(Object.values(Scope)),
   teams: faker.helpers.arrayElement([
@@ -52,6 +63,17 @@ export const getUpdateUserMock = () => ({
   hasGlobalNotifications: faker.datatype.boolean(),
   hasPersonalNotifications: faker.datatype.boolean(),
   lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+  projects: faker.helpers.arrayElement([
+    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      createdAt: (() => faker.date.past())(),
+      description: faker.random.word(),
+      initialized: faker.datatype.boolean(),
+      name: faker.random.word(),
+      projectID: faker.datatype.number({ min: undefined, max: undefined }),
+      updatedAt: (() => faker.date.past())(),
+    })),
+    undefined,
+  ]),
   role: faker.helpers.arrayElement(Object.values(Role)),
   scopes: faker.helpers.arrayElements(Object.values(Scope)),
   teams: faker.helpers.arrayElement([
