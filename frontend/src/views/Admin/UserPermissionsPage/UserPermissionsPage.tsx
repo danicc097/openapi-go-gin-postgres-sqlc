@@ -40,6 +40,7 @@ import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { createLabel, renderSuperSelect } from 'src/utils/forms'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
+import UserAvatar from 'src/components/UserAvatar/UserAvatar'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -61,7 +62,11 @@ export default function UserPermissionsPage() {
       setUserOptions(
         allUsers
           ? allUsers.map((user) => ({
-              label: `${user.email}`,
+              label: (
+                <>
+                  <UserAvatar user={user} size={'s'}></UserAvatar> <>{user?.email}</>
+                </>
+              ),
               append: <EuiBadge color={roleColor(user.role)}>{user.role}</EuiBadge>,
               role: user.role,
               showIcons: false,

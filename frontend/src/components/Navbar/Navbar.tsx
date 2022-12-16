@@ -37,7 +37,7 @@ import config from '@config'
 
 export default function Navbar() {
   const [avatarMenuOpen, setAvatarMenuOpen] = useState<boolean>(false)
-  const { user, logUserOut, avatarColor } = useAuthenticatedUser()
+  const { user, logUserOut } = useAuthenticatedUser()
   const navigate = useNavigate()
   const { showTestNotification } = useNotificationAPI()
   const theme = useUISlice((state) => state.theme)
@@ -74,7 +74,7 @@ export default function Navbar() {
       onClick={() => user?.email && toggleAvatarMenu()}
     >
       {user?.email ? (
-        <UserAvatar size="l" user={user} color={avatarColor} initialsLength={2} />
+        <UserAvatar size="l" user={user} initialsLength={2} />
       ) : (
         <Link to="/login">
           <EuiAvatar size="l" color="#1E90FF" name="user" imageUrl={loginIcon} />
@@ -98,7 +98,7 @@ export default function Navbar() {
           <EuiFlexItem style={{ alignItems: 'center', flexGrow: 1 }}>
             <EuiFlexGroup direction="row" alignItems="center">
               <EuiFlexItem>
-                <UserAvatar size="l" user={user} color={avatarColor} initialsLength={2} />
+                <UserAvatar size="l" user={user} initialsLength={2} />
               </EuiFlexItem>
               <EuiFlexGroup
                 direction="column"

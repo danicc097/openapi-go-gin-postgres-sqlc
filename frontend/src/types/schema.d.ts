@@ -71,13 +71,29 @@ export interface paths {
 export interface components {
   schemas: {
     DemoProjectWorkItemsResponse: {
-      baseWorkItem: components["schemas"]["DbWorkItemPublic"];
       /** Format: date-time */
-      lastMessageAt: string;
-      line: string;
-      ref: string;
-      reopened: boolean;
+      closed: string | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt: string | null;
+      demoProjectWorkItem: components["schemas"]["DbDemoProjectWorkItemPublic"];
+      description: string;
+      kanbanStepID: number;
+      members?: (components["schemas"]["DbUserPublic"])[] | null;
+      metadata: components["schemas"]["PgtypeJSONB"];
+      /** Format: date-time */
+      targetDate: string;
+      teamID: number;
+      timeEntries?: (components["schemas"]["DbTimeEntryPublic"])[] | null;
+      title: string;
+      /** Format: date-time */
+      updatedAt: string;
+      workItemComments?: (components["schemas"]["DbWorkItemCommentPublic"])[] | null;
       workItemID: number;
+      workItemTags?: (components["schemas"]["DbWorkItemTagPublic"])[] | null;
+      workItemType?: components["schemas"]["DbWorkItemTypePublic"];
+      workItemTypeID: number;
     };
     InitializeProjectRequest: {
       activities?: (components["schemas"]["ReposActivityCreateParams"])[] | null;
@@ -231,7 +247,7 @@ export interface components {
       name: string;
       projectID: number;
       workItemTypeID: number;
-    };
+    } | null;
     ReposActivityCreateParams: {
       description?: string;
       isProductive?: boolean;
@@ -285,6 +301,49 @@ export interface components {
       workItemTypeID: number;
     };
     PgtypeJSONB: Record<string, never>;
+    DbDemoProjectWorkItemPublic: {
+      /** Format: date-time */
+      lastMessageAt: string;
+      line: string;
+      ref: string;
+      reopened: boolean;
+      workItemID: number;
+    };
+    DbTimeEntryPublic: {
+      activityID: number;
+      comment: string;
+      durationMinutes: number | null;
+      /** Format: date-time */
+      start: string;
+      teamID: number | null;
+      timeEntryID: number;
+      userID: components["schemas"]["UuidUUID"];
+      workItemID: number | null;
+    };
+    DbUserPublic: {
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt: string | null;
+      email: string;
+      firstName: string | null;
+      fullName: string | null;
+      hasGlobalNotifications: boolean;
+      hasPersonalNotifications: boolean;
+      lastName: string | null;
+      userID: components["schemas"]["UuidUUID"];
+      username: string;
+    };
+    DbWorkItemCommentPublic: {
+      /** Format: date-time */
+      createdAt: string;
+      message: string;
+      /** Format: date-time */
+      updatedAt: string;
+      userID: components["schemas"]["UuidUUID"];
+      workItemCommentID: number;
+      workItemID: number;
+    };
   };
   responses: never;
   parameters: {

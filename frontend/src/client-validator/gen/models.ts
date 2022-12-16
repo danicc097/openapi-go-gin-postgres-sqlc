@@ -6,6 +6,21 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
+export type UuidUUID = string
+export type DbWorkItemTypePublic = {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTypeID: number
+} & DbWorkItemTypePublic1
+export type DbWorkItemTypePublic1 = {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTypeID: number
+} | null
 export type DbProjectPublic = {
   createdAt: string
   description: string
@@ -27,7 +42,6 @@ export type DbUserAPIKeyPublic = {
   expiresOn: string
   userID: UuidUUID
 } & DbUserAPIKeyPublic1
-export type UuidUUID = string
 export type DbUserAPIKeyPublic1 = {
   apiKey: string
   expiresOn: string
@@ -67,28 +81,70 @@ export type WorkItemRole = 'preparer' | 'reviewer'
 export type ModelsRole = string
 
 export interface DemoProjectWorkItemsResponse {
-  baseWorkItem: DbWorkItemPublic
+  closed: string | null
+  createdAt: string
+  deletedAt: string | null
+  demoProjectWorkItem: DbDemoProjectWorkItemPublic
+  description: string
+  kanbanStepID: number
+  members?: DbUserPublic[] | null
+  metadata: PgtypeJSONB
+  targetDate: string
+  teamID: number
+  timeEntries?: DbTimeEntryPublic[] | null
+  title: string
+  updatedAt: string
+  workItemComments?: DbWorkItemCommentPublic[] | null
+  workItemID: number
+  workItemTags?: DbWorkItemTagPublic[] | null
+  workItemType?: DbWorkItemTypePublic
+  workItemTypeID: number
+}
+export interface DbDemoProjectWorkItemPublic {
   lastMessageAt: string
   line: string
   ref: string
   reopened: boolean
   workItemID: number
 }
-export interface DbWorkItemPublic {
-  closed: string | null
+export interface DbUserPublic {
   createdAt: string
   deletedAt: string | null
-  description: string
-  kanbanStepID: number
-  metadata: PgtypeJSONB
-  targetDate: string
-  teamID: number
-  title: string
-  updatedAt: string
-  workItemID: number
-  workItemTypeID: number
+  email: string
+  firstName: string | null
+  fullName: string | null
+  hasGlobalNotifications: boolean
+  hasPersonalNotifications: boolean
+  lastName: string | null
+  userID: UuidUUID
+  username: string
 }
 export interface PgtypeJSONB {}
+export interface DbTimeEntryPublic {
+  activityID: number
+  comment: string
+  durationMinutes: number | null
+  start: string
+  teamID: number | null
+  timeEntryID: number
+  userID: UuidUUID
+  workItemID: number | null
+}
+export interface DbWorkItemCommentPublic {
+  createdAt: string
+  message: string
+  updatedAt: string
+  userID: UuidUUID
+  workItemCommentID: number
+  workItemID: number
+}
+export interface DbWorkItemTagPublic {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTagID: number
+}
 export interface InitializeProjectRequest {
   activities?: ReposActivityCreateParams[] | null
   kanbanSteps?: ReposKanbanStepCreateParams[] | null
@@ -134,7 +190,7 @@ export interface ProjectBoardResponse {
   project?: DbProjectPublic
   teams?: DbTeamPublic[] | null
   workItemTags?: DbWorkItemTagPublic[] | null
-  workItemTypes?: DbWorkItemTypePublic[] | null
+  workItemTypes?: DbWorkItemTypePublic1[] | null
 }
 export interface DbActivityPublic {
   activityID: number
@@ -159,20 +215,6 @@ export interface DbTeamPublic {
   projectID: number
   teamID: number
   updatedAt: string
-}
-export interface DbWorkItemTagPublic {
-  color: string
-  description: string
-  name: string
-  projectID: number
-  workItemTagID: number
-}
-export interface DbWorkItemTypePublic {
-  color: string
-  description: string
-  name: string
-  projectID: number
-  workItemTypeID: number
 }
 export interface UserResponse {
   apiKey?: DbUserAPIKeyPublic
@@ -218,4 +260,18 @@ export interface UpdateUserRequest {
 export interface UpdateUserAuthRequest {
   role?: Role
   scopes?: Scopes
+}
+export interface DbWorkItemPublic {
+  closed: string | null
+  createdAt: string
+  deletedAt: string | null
+  description: string
+  kanbanStepID: number
+  metadata: PgtypeJSONB
+  targetDate: string
+  teamID: number
+  title: string
+  updatedAt: string
+  workItemID: number
+  workItemTypeID: number
 }

@@ -144,7 +144,10 @@ type ProjectBoard interface {
 // DemoProjectWorkItem defines the datastore/repository handling persisting DemoProjectWorkItem records.
 type DemoProjectWorkItem interface {
 	WorkItemByID(ctx context.Context, d db.DBTX, id int64, opts ...db.DemoProjectWorkItemSelectConfigOption) (*db.DemoProjectWorkItem, error)
-	// Create, Delete, WorkItemsByTeam,
+	// Create,
+	// Delete,
+	// WorkItemsByTeam(closed bool, deleted bool)
+	// Update (service has Close (Update with closed=True), Move(Update with kanban step change), ...)
 	// TBD if useful: WorkItemsByTag, WorkItemsByType (for closed workitem searches. open ones simply return everything and filter in client)
 }
 

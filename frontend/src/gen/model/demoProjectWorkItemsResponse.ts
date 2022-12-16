@@ -5,13 +5,31 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbWorkItemPublic } from './dbWorkItemPublic'
+import type { DbDemoProjectWorkItemPublic } from './dbDemoProjectWorkItemPublic'
+import type { DbUserPublic } from './dbUserPublic'
+import type { PgtypeJSONB } from './pgtypeJSONB'
+import type { DbTimeEntryPublic } from './dbTimeEntryPublic'
+import type { DbWorkItemCommentPublic } from './dbWorkItemCommentPublic'
+import type { DbWorkItemTagPublic } from './dbWorkItemTagPublic'
+import type { DbWorkItemTypePublic } from './dbWorkItemTypePublic'
 
 export interface DemoProjectWorkItemsResponse {
-  baseWorkItem: DbWorkItemPublic
-  lastMessageAt: Date
-  line: string
-  ref: string
-  reopened: boolean
+  closed: Date | null
+  createdAt: Date
+  deletedAt: Date | null
+  demoProjectWorkItem: DbDemoProjectWorkItemPublic
+  description: string
+  kanbanStepID: number
+  members?: DbUserPublic[] | null
+  metadata: PgtypeJSONB
+  targetDate: Date
+  teamID: number
+  timeEntries?: DbTimeEntryPublic[] | null
+  title: string
+  updatedAt: Date
+  workItemComments?: DbWorkItemCommentPublic[] | null
   workItemID: number
+  workItemTags?: DbWorkItemTagPublic[] | null
+  workItemType?: DbWorkItemTypePublic
+  workItemTypeID: number
 }

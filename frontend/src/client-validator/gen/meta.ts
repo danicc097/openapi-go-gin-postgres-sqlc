@@ -34,6 +34,10 @@ import {
   UuidUUID,
   DbWorkItemPublic,
   PgtypeJSONB,
+  DbDemoProjectWorkItemPublic,
+  DbTimeEntryPublic,
+  DbUserPublic,
+  DbWorkItemCommentPublic,
 } from './models'
 
 export const schemaDefinitions = {
@@ -85,6 +89,16 @@ export const schemaDefinitions = {
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
   DbWorkItemPublic: info<DbWorkItemPublic>('DbWorkItemPublic', '#/definitions/DbWorkItemPublic'),
   PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
+  DbDemoProjectWorkItemPublic: info<DbDemoProjectWorkItemPublic>(
+    'DbDemoProjectWorkItemPublic',
+    '#/definitions/DbDemoProjectWorkItemPublic',
+  ),
+  DbTimeEntryPublic: info<DbTimeEntryPublic>('DbTimeEntryPublic', '#/definitions/DbTimeEntryPublic'),
+  DbUserPublic: info<DbUserPublic>('DbUserPublic', '#/definitions/DbUserPublic'),
+  DbWorkItemCommentPublic: info<DbWorkItemCommentPublic>(
+    'DbWorkItemCommentPublic',
+    '#/definitions/DbWorkItemCommentPublic',
+  ),
 }
 
 export interface SchemaInfo<T> {

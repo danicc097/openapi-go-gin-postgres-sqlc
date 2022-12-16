@@ -6,10 +6,10 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export type DbWorkItemTypePublic = {
-  color: string
-  description: string
-  name: string
-  projectID: number
-  workItemTypeID: number
-} | null
+export interface DbDemoProjectWorkItemPublic {
+  lastMessageAt: Date
+  line: string
+  ref: string
+  reopened: boolean
+  workItemID: number
+}

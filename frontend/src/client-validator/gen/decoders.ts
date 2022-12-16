@@ -38,6 +38,10 @@ import {
   UuidUUID,
   DbWorkItemPublic,
   PgtypeJSONB,
+  DbDemoProjectWorkItemPublic,
+  DbTimeEntryPublic,
+  DbUserPublic,
+  DbWorkItemCommentPublic,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -404,5 +408,53 @@ export const PgtypeJSONBDecoder: Decoder<PgtypeJSONB> = {
       throw new Error(`Schema ${PgtypeJSONBDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, PgtypeJSONBDecoder.definitionName)
+  },
+}
+export const DbDemoProjectWorkItemPublicDecoder: Decoder<DbDemoProjectWorkItemPublic> = {
+  definitionName: 'DbDemoProjectWorkItemPublic',
+  schemaRef: '#/definitions/DbDemoProjectWorkItemPublic',
+
+  decode(json: unknown): DbDemoProjectWorkItemPublic {
+    const schema = ajv.getSchema(DbDemoProjectWorkItemPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbDemoProjectWorkItemPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbDemoProjectWorkItemPublicDecoder.definitionName)
+  },
+}
+export const DbTimeEntryPublicDecoder: Decoder<DbTimeEntryPublic> = {
+  definitionName: 'DbTimeEntryPublic',
+  schemaRef: '#/definitions/DbTimeEntryPublic',
+
+  decode(json: unknown): DbTimeEntryPublic {
+    const schema = ajv.getSchema(DbTimeEntryPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbTimeEntryPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbTimeEntryPublicDecoder.definitionName)
+  },
+}
+export const DbUserPublicDecoder: Decoder<DbUserPublic> = {
+  definitionName: 'DbUserPublic',
+  schemaRef: '#/definitions/DbUserPublic',
+
+  decode(json: unknown): DbUserPublic {
+    const schema = ajv.getSchema(DbUserPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbUserPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbUserPublicDecoder.definitionName)
+  },
+}
+export const DbWorkItemCommentPublicDecoder: Decoder<DbWorkItemCommentPublic> = {
+  definitionName: 'DbWorkItemCommentPublic',
+  schemaRef: '#/definitions/DbWorkItemCommentPublic',
+
+  decode(json: unknown): DbWorkItemCommentPublic {
+    const schema = ajv.getSchema(DbWorkItemCommentPublicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbWorkItemCommentPublicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbWorkItemCommentPublicDecoder.definitionName)
   },
 }

@@ -1,10 +1,11 @@
 import { shallowEqual } from 'react-redux'
 import { capitalize } from 'lodash'
 import { useMemo } from 'react'
-import { COLOR_BLIND_PALETTE } from 'src/utils/colors'
+import { COLOR_BLIND_PALETTE, generateColor } from 'src/utils/colors'
 import roles from '@roles'
 import scopes from '@scopes'
 import type { UserResponse } from 'src/gen/model'
+
 export const useAuthenticatedUser = () => {
   // TODO for app_env dev, remove Authorization header and comes from backend via x-api-key header
   // or have fallthorugh if authentication failed instead - would need multierror
@@ -22,8 +23,6 @@ export const useAuthenticatedUser = () => {
     createdAt: new Date(),
     deletedAt: null,
   }
-  const avatarColor =
-    COLOR_BLIND_PALETTE[capitalize(user?.email).charCodeAt(0) % COLOR_BLIND_PALETTE.length] || '#1060e0'
 
   const logUserOut = () => {
     null
@@ -31,7 +30,6 @@ export const useAuthenticatedUser = () => {
 
   return {
     user,
-    avatarColor,
     logUserOut,
   }
 }

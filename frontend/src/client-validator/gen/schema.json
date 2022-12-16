@@ -4,33 +4,110 @@
   "definitions": {
     "DemoProjectWorkItemsResponse": {
       "properties": {
-        "baseWorkItem": {
-          "$ref": "#/definitions/DbWorkItemPublic"
+        "closed": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
         },
-        "lastMessageAt": {
+        "createdAt": {
           "format": "date-time",
           "type": "string"
         },
-        "line": {
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "demoProjectWorkItem": {
+          "$ref": "#/definitions/DbDemoProjectWorkItemPublic"
+        },
+        "description": {
           "type": "string"
         },
-        "ref": {
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "members": {
+          "items": {
+            "$ref": "#/definitions/DbUserPublic"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "metadata": {
+          "$ref": "#/definitions/PgtypeJSONB"
+        },
+        "targetDate": {
+          "format": "date-time",
           "type": "string"
         },
-        "reopened": {
-          "type": "boolean"
+        "teamID": {
+          "type": "integer"
+        },
+        "timeEntries": {
+          "items": {
+            "$ref": "#/definitions/DbTimeEntryPublic"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "workItemComments": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemCommentPublic"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
         },
         "workItemID": {
+          "type": "integer"
+        },
+        "workItemTags": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTagPublic"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemType": {
+          "$ref": "#/definitions/DbWorkItemTypePublic"
+        },
+        "workItemTypeID": {
           "type": "integer"
         }
       },
       "required": [
         "workItemID",
-        "ref",
-        "line",
-        "lastMessageAt",
-        "reopened",
-        "baseWorkItem"
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "closed",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "deletedAt",
+        "demoProjectWorkItem"
       ],
       "type": "object",
       "x-postgen-struct": "RestDemoProjectWorkItemsResponse",
@@ -590,7 +667,10 @@
         "description",
         "color"
       ],
-      "type": "object",
+      "type": [
+        "object",
+        "null"
+      ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "ReposActivityCreateParams": {
@@ -764,6 +844,181 @@
     "PgtypeJSONB": {
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbDemoProjectWorkItemPublic": {
+      "properties": {
+        "lastMessageAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "line": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "reopened": {
+          "type": "boolean"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "ref",
+        "line",
+        "lastMessageAt",
+        "reopened"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbTimeEntryPublic": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeEntryID": {
+          "type": "integer"
+        },
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "timeEntryID",
+        "workItemID",
+        "activityID",
+        "teamID",
+        "userID",
+        "comment",
+        "start",
+        "durationMinutes"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserPublic": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fullName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hasGlobalNotifications": {
+          "type": "boolean"
+        },
+        "hasPersonalNotifications": {
+          "type": "boolean"
+        },
+        "lastName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        },
+        "username": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userID",
+        "username",
+        "email",
+        "firstName",
+        "lastName",
+        "fullName",
+        "hasPersonalNotifications",
+        "hasGlobalNotifications",
+        "createdAt",
+        "deletedAt"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemCommentPublic": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        },
+        "workItemCommentID": {
+          "type": "integer"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemCommentID",
+        "workItemID",
+        "userID",
+        "message",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -856,6 +1111,18 @@
     },
     "PgtypeJSONB": {
       "$ref": "#/definitions/PgtypeJSONB"
+    },
+    "DbDemoProjectWorkItemPublic": {
+      "$ref": "#/definitions/DbDemoProjectWorkItemPublic"
+    },
+    "DbTimeEntryPublic": {
+      "$ref": "#/definitions/DbTimeEntryPublic"
+    },
+    "DbUserPublic": {
+      "$ref": "#/definitions/DbUserPublic"
+    },
+    "DbWorkItemCommentPublic": {
+      "$ref": "#/definitions/DbWorkItemCommentPublic"
     }
   }
 }
