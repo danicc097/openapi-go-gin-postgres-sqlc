@@ -137,12 +137,13 @@ type DbKanbanStepPublic struct {
 
 // DbProjectPublic defines the model for DbProjectPublic.
 type DbProjectPublic struct {
-	CreatedAt   time.Time `json:"createdAt"`
-	Description string    `json:"description"`
-	Initialized bool      `json:"initialized"`
-	Name        string    `json:"name"`
-	ProjectID   int       `json:"projectID"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	BoardConfig PgtypeJSONB `json:"boardConfig"`
+	CreatedAt   time.Time   `json:"createdAt"`
+	Description string      `json:"description"`
+	Initialized bool        `json:"initialized"`
+	Name        string      `json:"name"`
+	ProjectID   int         `json:"projectID"`
+	UpdatedAt   time.Time   `json:"updatedAt"`
 }
 
 // DbTeamPublic defines the model for DbTeamPublic.

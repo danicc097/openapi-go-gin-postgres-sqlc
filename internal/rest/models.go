@@ -24,7 +24,7 @@ type DemoProjectWorkItemsResponse struct {
 	DemoProjectWorkItem db.DemoProjectWorkItemPublic `json:"demoProjectWorkItem" required:"true"`
 	TimeEntries         *[]db.TimeEntryPublic        `json:"timeEntries"`
 	WorkItemComments    *[]db.WorkItemCommentPublic  `json:"workItemComments"`
-	Members             *[]db.UserPublic             `json:"members" db:"members"`
+	Members             *[]db.UserPublic             `json:"members"`
 	WorkItemTags        *[]db.WorkItemTagPublic      `json:"workItemTags"`
 	WorkItemType        *db.WorkItemTypePublic       `json:"workItemType"`
 }
@@ -32,6 +32,21 @@ type DemoProjectWorkItemsResponse struct {
 // ProjectBoardResponse represents an OpenAPI schema response for a ProjectBoard.
 type ProjectBoardResponse struct {
 	repomodels.ProjectBoardPublic
+}
+
+// ProjectBoardConfigResponse represents an OpenAPI schema response for board configuration.
+type ProjectBoardConfigResponse struct {
+	CardConfig CardConfig `json:"cardConfig"`
+}
+
+// CardConfigUpdateRequest represents an OpenAPI schema request for board card configuration.
+type CardConfigUpdateRequest struct {
+	CardConfig
+}
+
+type CardConfig struct {
+	Body         map[string]any `json:"body"`
+	HeaderFields []string       `json:"headerFields"`
 }
 
 type ProjectBoardCreateRequest struct {

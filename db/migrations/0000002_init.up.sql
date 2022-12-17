@@ -17,6 +17,7 @@ create table projects (
   , description text not null
   , work_items_table_name text not null
   , initialized boolean not null default false
+  , board_config jsonb not null default '{}'
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
 );

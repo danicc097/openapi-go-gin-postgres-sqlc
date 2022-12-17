@@ -22,6 +22,7 @@ type projectsTable struct {
 	Description        postgres.ColumnString
 	WorkItemsTableName postgres.ColumnString
 	Initialized        postgres.ColumnBool
+	BoardConfig        postgres.ColumnString
 	CreatedAt          postgres.ColumnTimestampz
 	UpdatedAt          postgres.ColumnTimestampz
 
@@ -69,10 +70,11 @@ func newProjectsTableImpl(schemaName, tableName, alias string) projectsTable {
 		DescriptionColumn        = postgres.StringColumn("description")
 		WorkItemsTableNameColumn = postgres.StringColumn("work_items_table_name")
 		InitializedColumn        = postgres.BoolColumn("initialized")
+		BoardConfigColumn        = postgres.StringColumn("board_config")
 		CreatedAtColumn          = postgres.TimestampzColumn("created_at")
 		UpdatedAtColumn          = postgres.TimestampzColumn("updated_at")
-		allColumns               = postgres.ColumnList{ProjectIDColumn, NameColumn, DescriptionColumn, WorkItemsTableNameColumn, InitializedColumn, CreatedAtColumn, UpdatedAtColumn}
-		mutableColumns           = postgres.ColumnList{NameColumn, DescriptionColumn, WorkItemsTableNameColumn, InitializedColumn, CreatedAtColumn, UpdatedAtColumn}
+		allColumns               = postgres.ColumnList{ProjectIDColumn, NameColumn, DescriptionColumn, WorkItemsTableNameColumn, InitializedColumn, BoardConfigColumn, CreatedAtColumn, UpdatedAtColumn}
+		mutableColumns           = postgres.ColumnList{NameColumn, DescriptionColumn, WorkItemsTableNameColumn, InitializedColumn, BoardConfigColumn, CreatedAtColumn, UpdatedAtColumn}
 	)
 
 	return projectsTable{
@@ -84,6 +86,7 @@ func newProjectsTableImpl(schemaName, tableName, alias string) projectsTable {
 		Description:        DescriptionColumn,
 		WorkItemsTableName: WorkItemsTableNameColumn,
 		Initialized:        InitializedColumn,
+		BoardConfig:        BoardConfigColumn,
 		CreatedAt:          CreatedAtColumn,
 		UpdatedAt:          UpdatedAtColumn,
 
