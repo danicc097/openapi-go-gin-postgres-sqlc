@@ -22,6 +22,7 @@ export type DbWorkItemTypePublic1 = {
   workItemTypeID: number
 } | null
 export type DbProjectPublic = {
+  boardConfig: PgtypeJSONB
   createdAt: string
   description: string
   initialized: boolean
@@ -30,6 +31,7 @@ export type DbProjectPublic = {
   updatedAt: string
 } & DbProjectPublic1
 export type DbProjectPublic1 = {
+  boardConfig: PgtypeJSONB
   createdAt: string
   description: string
   initialized: boolean

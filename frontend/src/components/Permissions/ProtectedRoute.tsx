@@ -7,6 +7,7 @@ import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { useAuthenticatedUser } from 'src/hooks/auth/useAuthenticatedUser'
 import { useEffect } from 'react'
+import { isAuthorized } from 'src/services/authorization'
 
 type ProtectedRouteProps = {
   children: JSX.Element
@@ -44,7 +45,5 @@ export default function ProtectedRoute({ children, requiredRole = null, required
     window.location.replace(`${import.meta.env.VITE_AUTH_SERVER}/login`)
   }
 
-  const isAuthorized = true // TODO
-
-  return <ProtectedPage isAuthorized={isAuthorized}>{children}</ProtectedPage>
+  return <ProtectedPage isAuthorized={isAuthorized({ user, requiredRole, requiredScopes })}>{children}</ProtectedPage>
 }

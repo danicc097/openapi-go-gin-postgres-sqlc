@@ -9,7 +9,7 @@ type ModalConfig = {
   onConfirm: () => void
 }
 
-export default function useModal(config: ModalConfig) {
+export default function useConfirmModal(config: ModalConfig) {
   const [isModalVisible, setIsModalVisible] = useState(false)
 
   const showModal = () => setIsModalVisible(true)

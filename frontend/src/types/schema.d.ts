@@ -225,6 +225,7 @@ export interface components {
       timeTrackable: boolean;
     };
     DbProjectPublic: {
+      boardConfig: components["schemas"]["PgtypeJSONB"];
       /** Format: date-time */
       createdAt: string;
       description: string;

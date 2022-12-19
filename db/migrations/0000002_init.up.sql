@@ -277,6 +277,24 @@ create table work_item_types (
 
 comment on column work_item_types.project_id is 'cardinality:O2M';
 
+-- create table invoice_types (
+--   invoice_type_id serial primary key
+--   , project_id int not null
+--   , name text not null
+--   , foreign key (project_id) references projects (project_id) on delete cascade
+-- );
+
+-- create table default_invoice_type (
+--   team_id int not null
+--   , work_item_type_id int not null
+--   , invoice_type_id int not null
+--   , primary key (team_id , work_item_type_id)
+--   , foreign key (team_id) references teams (team_id) on delete cascade
+--   , foreign key (work_item_type_id) references work_item_types (work_item_type_id) on delete cascade
+--   , foreign key (invoice_type_id) references invoice_types (invoice_type_id) on delete cascade
+-- );
+
+
 
 /*
 keep track of per-project overrides in shared json, indexed by project name (unique).

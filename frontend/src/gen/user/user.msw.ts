@@ -24,6 +24,7 @@ export const getGetCurrentUserMock = () => ({
   lastName: faker.helpers.arrayElement([faker.random.word(), null]),
   projects: faker.helpers.arrayElement([
     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      boardConfig: {},
       createdAt: (() => faker.date.past())(),
       description: faker.random.word(),
       initialized: faker.datatype.boolean(),
@@ -65,6 +66,7 @@ export const getUpdateUserMock = () => ({
   lastName: faker.helpers.arrayElement([faker.random.word(), null]),
   projects: faker.helpers.arrayElement([
     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      boardConfig: {},
       createdAt: (() => faker.date.past())(),
       description: faker.random.word(),
       initialized: faker.datatype.boolean(),

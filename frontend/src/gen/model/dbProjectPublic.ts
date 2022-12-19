@@ -5,8 +5,10 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { PgtypeJSONB } from './pgtypeJSONB'
 
 export type DbProjectPublic = {
+  boardConfig: PgtypeJSONB
   createdAt: Date
   description: string
   initialized: boolean

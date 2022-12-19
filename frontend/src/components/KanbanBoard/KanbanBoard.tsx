@@ -31,6 +31,8 @@ import { StyledEuiCheckbox } from 'src/components/KanbanBoard/KanbanBoard.styles
 import ProtectedComponent from 'src/components/Permissions/ProtectedComponent'
 import { useAuthenticatedUser } from 'src/hooks/auth/useAuthenticatedUser'
 import { generateColor } from 'src/utils/colors'
+import { css } from '@emotion/css'
+import type { NestedPaths } from 'src/types/utils'
 
 const makeId = htmlIdGenerator()
 
@@ -53,13 +55,21 @@ const sampleCardTitles: Record<keyof SampleCardData, string> = {
   someList: 'Some list',
 }
 
-// config panel allows naming as per full path, showing e.g.
-// baseWorkItem.workItemTypeID : [ Name   ] [✓] Visible
-const ProjectWorkitemsTitles: Record<string, string> = {
-  'baseWorkItem.workItemTypeID': 'Work item type ID',
+const workitemTitlesMapping = {
+  workItemTypeID: 'Work item type ID',
+  targetDate: 'Target date',
+  'demoProjectWorkItem.ref': 'Ref',
+  'demoProjectWorkItem.line': 'Line',
+  'demoProjectWorkItem.reopened': 'Reopened',
 }
 
 export default function KanbanBoard() {
+  const [isModalVisible, setIsModalVisible] = useState(false)
+
+  const showModal = () => setIsModalVisible(true)
+
+  const hideModal = () => setIsModalVisible(false)
+
   const { user } = useAuthenticatedUser()
   const { addToast } = useUISlice()
   const [sampleCard, setsampleCard] = useState({
@@ -70,44 +80,13 @@ export default function KanbanBoard() {
     sometext: 'content for sometext.\n More content.',
   })
 
-  const demoProjectWI = getGetProjectWorkitemsMock()
-
-  // to ignore nested objects fields configuration panel needs
-  // to use fully qualified name based on path
-  // then _.get by `path` from field name mapping
-  const renderComponents = (parentPath: string[], [key, val]): void => {
-    const path = [...parentPath, String(key)]
-    console.log(path.join('.'))
-    if (val === null || val === undefined) {
-      return
-    }
-    // won't catch custom classes
-    if (val?.constructor === Object) {
-      console.log(`${key} is an object`)
-      Object.entries(val).forEach(([key, val]) => renderComponents(path, [key, val]))
-      console.log(`end of nested object ${key}`)
-    } else if (isArray(val)) {
-      console.log(`${key} is a list`)
-    } else if (val instanceof Date) {
-      console.log(`${key} is a date`)
-    } else if (typeof val === 'boolean') {
-      console.log(`${key} is a boolean`)
-    } else if (typeof val === 'string') {
-      console.log(`${key} is a string`)
-    }
-  }
-
-  console.log('%c demoProjectWI', 'color: #c92a2a')
-  console.log(demoProjectWI)
-  Object.entries(demoProjectWI).forEach(([key, val]) => renderComponents([], [key, val]))
-
   const renderCard = (data: any, titles: { [key: string]: string }) => {
     return (
       <>
         {Object.keys(titles).map((key, i) => {
           if (_.get(data, key) === undefined) return
 
-          const value = data[key]
+          const value = _.get(data, key)
           let element
           // TODO group by type and then render with minimal spacer
           // and flex
@@ -115,13 +94,13 @@ export default function KanbanBoard() {
           if (value instanceof Date) {
             element = (
               <EuiText size="s" key={i}>
-                {titles[key]}: {value.toString()}
+                <strong>{titles[key]}:</strong> {value.toString()}
               </EuiText>
             )
-          } else if (typeof value === 'string') {
+          } else if (typeof value === 'string' || typeof value === 'number') {
             element = (
               <EuiText size="s" key={i}>
-                {titles[key]}: {value}
+                <strong>{titles[key]}:</strong> {value}
               </EuiText>
             )
           } else if (Array.isArray(value)) {
@@ -134,7 +113,7 @@ export default function KanbanBoard() {
             ))
             element = (
               <div key={i}>
-                {titles[key]}: {badges}
+                <strong>{titles[key]}:</strong> {badges}
               </div>
             )
           } else if (typeof value === 'boolean') {
@@ -169,7 +148,15 @@ export default function KanbanBoard() {
             title={
               <EuiFlexGroup direction="row" justifyContent="spaceBetween">
                 <EuiFlexItem>Card {el}</EuiFlexItem>
-                <EuiButtonIcon iconType="documentEdit" aria-label="Heart" color="primary" />
+                <EuiButtonIcon
+                  iconType="documentEdit"
+                  aria-label="Heart"
+                  color="primary"
+                  onClick={() => {
+                    // TODO Navigate /workitem/:id
+                    null
+                  }}
+                />
               </EuiFlexGroup>
             }
             description={
@@ -183,7 +170,7 @@ export default function KanbanBoard() {
             display="plain"
             // footer={'footer'}
           >
-            {renderCard(sampleCard, sampleCardTitles)}
+            {renderCard(getGetProjectWorkitemsMock(), workitemTitlesMapping)}
             <EuiSpacer />
             <EuiButton
               key={1}
@@ -256,10 +243,16 @@ export default function KanbanBoard() {
 
   return (
     <>
-      <ProtectedComponent user={user}>
+      <ProtectedComponent>
         <>
           {' '}
           <EuiButton>test</EuiButton>
+        </>
+      </ProtectedComponent>
+      <ProtectedComponent requiredRole="superAdmin">
+        <>
+          {' '}
+          <EuiButton>test superadmin</EuiButton>
         </>
       </ProtectedComponent>
       <EuiDragDropContext onDragEnd={onDragEnd}>

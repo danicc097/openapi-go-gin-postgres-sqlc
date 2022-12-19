@@ -9,6 +9,7 @@ import { rest } from 'msw'
 import { faker } from '@faker-js/faker'
 
 export const getGetProjectMock = () => ({
+  boardConfig: {},
   createdAt: (() => faker.date.past())(),
   description: faker.random.word(),
   initialized: faker.datatype.boolean(),
@@ -42,6 +43,7 @@ export const getGetProjectBoardMock = () => ({
   ]),
   project: faker.helpers.arrayElement([
     {
+      boardConfig: {},
       createdAt: (() => faker.date.past())(),
       description: faker.random.word(),
       initialized: faker.datatype.boolean(),

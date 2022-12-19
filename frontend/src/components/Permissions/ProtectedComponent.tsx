@@ -2,21 +2,19 @@ import { EuiEmptyPrompt } from '@elastic/eui'
 import _ from 'lodash'
 import type { ReactNode } from 'react'
 import type { Role, Scopes, UserResponse } from 'src/gen/model'
+import { useAuthenticatedUser } from 'src/hooks/auth/useAuthenticatedUser'
+import { isAuthorized } from 'src/services/authorization'
 
 type ProtectedComponentProps = {
   children: JSX.Element
-  user: UserResponse
   requiredRole?: Role
   requiredScopes?: Scopes
 }
 
-// usage:
-// <...
-//   <ProtectedComponent requiredRole="manager" ...>
-//   <ProtectedComponent requiredRole="admin" ...>
-// <...
-export default function ProtectedComponent({ children, user, requiredRole, requiredScopes }: ProtectedComponentProps) {
-  // TODO isAuthorized
+export default function ProtectedComponent({ children, requiredRole, requiredScopes }: ProtectedComponentProps) {
+  const { user } = useAuthenticatedUser()
+
+  if (!isAuthorized({ user, requiredRole, requiredScopes })) return null
 
   return children
 }
