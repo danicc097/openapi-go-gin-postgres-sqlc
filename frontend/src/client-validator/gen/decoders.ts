@@ -8,6 +8,7 @@ import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
 import { validateJson } from '../validate'
 import {
+  Projects,
   DemoProjectWorkItemsResponse,
   InitializeProjectRequest,
   ProjectBoardResponse,
@@ -50,6 +51,18 @@ addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time'] })
 ajv.compile(jsonSchema)
 
 // Decoders
+export const ProjectsDecoder: Decoder<Projects> = {
+  definitionName: 'Projects',
+  schemaRef: '#/definitions/Projects',
+
+  decode(json: unknown): Projects {
+    const schema = ajv.getSchema(ProjectsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ProjectsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ProjectsDecoder.definitionName)
+  },
+}
 export const DemoProjectWorkItemsResponseDecoder: Decoder<DemoProjectWorkItemsResponse> = {
   definitionName: 'DemoProjectWorkItemsResponse',
   schemaRef: '#/definitions/DemoProjectWorkItemsResponse',

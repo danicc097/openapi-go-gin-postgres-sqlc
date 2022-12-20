@@ -39,6 +39,18 @@ func AllNotificationTypeValues() []NotificationType {
 	}
 }
 
+// Defines values for Projects.
+const (
+	DemoProject Projects = "demoProject"
+)
+
+// AllProjectsValues returns all possible values for Projects.
+func AllProjectsValues() []Projects {
+	return []Projects{
+		DemoProject,
+	}
+}
+
 // Defines values for Role.
 const (
 	Admin        Role = "admin"
@@ -301,6 +313,9 @@ type ProjectBoardResponse struct {
 	WorkItemTags  *[]DbWorkItemTagPublic  `json:"workItemTags"`
 	WorkItemTypes *[]DbWorkItemTypePublic `json:"workItemTypes"`
 }
+
+// Projects project names.
+type Projects string
 
 // ReposActivityCreateParams defines the model for ReposActivityCreateParams.
 type ReposActivityCreateParams struct {

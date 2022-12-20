@@ -15,7 +15,7 @@ const (
 	errViolatesCheckConstraint = "violates check constraint"
 )
 
-const demoProjectName = "demo project"
+const demoProjectName = "demoProject"
 
 var (
 	testPool    *pgxpool.Pool

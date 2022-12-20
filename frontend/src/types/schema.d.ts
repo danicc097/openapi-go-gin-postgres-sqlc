@@ -70,6 +70,11 @@ export interface paths {
 
 export interface components {
   schemas: {
+    /**
+     * @description project names. 
+     * @enum {string}
+     */
+    Projects: "demoProject";
     DemoProjectWorkItemsResponse: {
       /** Format: date-time */
       closed: string | null;

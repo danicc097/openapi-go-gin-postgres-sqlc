@@ -30,10 +30,10 @@ insert into projects (
   , work_items_table_name
   , initialized)
 values (
-  'demo project'
-  , 'description for demo project'
+  'demoProject'
+  , 'description for demoProject'
   , 'demo_project_work_items'
-  , true -- just for demo since it will be programmatically initialized
+  , true -- doesn't matter for demo since it will be programmatically (re)initialized
 );
 
 create table teams (
@@ -283,7 +283,6 @@ comment on column work_item_types.project_id is 'cardinality:O2M';
 --   , name text not null
 --   , foreign key (project_id) references projects (project_id) on delete cascade
 -- );
-
 -- create table default_invoice_type (
 --   team_id int not null
 --   , work_item_type_id int not null
@@ -293,9 +292,6 @@ comment on column work_item_types.project_id is 'cardinality:O2M';
 --   , foreign key (work_item_type_id) references work_item_types (work_item_type_id) on delete cascade
 --   , foreign key (invoice_type_id) references invoice_types (invoice_type_id) on delete cascade
 -- );
-
-
-
 /*
 keep track of per-project overrides in shared json, indexed by project name (unique).
 Can be directly used in backend (codegen alternative struct) and frontend
@@ -342,7 +338,7 @@ when a new project is required -> manual table creation with empty new fields, j
  - not nullable -> must set default value for the existing rows
  - nullable and custom business logic when it's required or not. previous rows remain null or with default as required
  */
--- project for tour. when starting it user joins the only demo project team. when exiting it user is removed.
+-- project for tour. when starting it user joins the only demoProject team. when exiting it user is removed.
 -- we can reset it every X hours
 create table demo_project_work_items (
   work_item_id bigint primary key references work_items (work_item_id) on delete cascade

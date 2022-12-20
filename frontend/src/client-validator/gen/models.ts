@@ -6,6 +6,10 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
+/**
+ * project names.
+ */
+export type Projects = 'demoProject'
 export type UuidUUID = string
 export type DbWorkItemTypePublic = {
   color: string

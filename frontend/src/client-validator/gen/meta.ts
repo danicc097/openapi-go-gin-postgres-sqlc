@@ -4,6 +4,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
+  Projects,
   DemoProjectWorkItemsResponse,
   InitializeProjectRequest,
   ProjectBoardResponse,
@@ -41,6 +42,7 @@ import {
 } from './models'
 
 export const schemaDefinitions = {
+  Projects: info<Projects>('Projects', '#/definitions/Projects'),
   DemoProjectWorkItemsResponse: info<DemoProjectWorkItemsResponse>(
     'DemoProjectWorkItemsResponse',
     '#/definitions/DemoProjectWorkItemsResponse',

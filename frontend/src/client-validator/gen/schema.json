@@ -2,6 +2,14 @@
   "type": "object",
   "title": "Schema",
   "definitions": {
+    "Projects": {
+      "description": "project names.",
+      "type": "string",
+      "enum": [
+        "demoProject"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "DemoProjectWorkItemsResponse": {
       "properties": {
         "closed": {
@@ -1026,6 +1034,9 @@
     }
   },
   "properties": {
+    "Projects": {
+      "$ref": "#/definitions/Projects"
+    },
     "DemoProjectWorkItemsResponse": {
       "$ref": "#/definitions/DemoProjectWorkItemsResponse"
     },
