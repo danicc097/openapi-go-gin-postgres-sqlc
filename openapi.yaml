@@ -297,13 +297,6 @@ components:
       example: 41131
       style: simple
   schemas:
-    # switch logic cleanly when needed in both back and front with this shared enum.
-    # TODO must generate enums by select * name from projects to ensure valid.
-    Projects:
-      description: project names.
-      type: string
-      enum:
-        - demoProject
     DemoProjectWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         closed:

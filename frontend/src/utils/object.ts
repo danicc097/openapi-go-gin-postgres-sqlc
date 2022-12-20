@@ -18,3 +18,7 @@ export const deepMerge = (obj, defaultObj: Record<string, any>) => {
 
   return obj
 }
+
+export function isObject(input) {
+  return input !== null && typeof input === 'object' && Object.getPrototypeOf(input).isPrototypeOf(Object)
+}

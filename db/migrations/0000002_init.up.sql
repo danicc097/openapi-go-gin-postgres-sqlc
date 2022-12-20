@@ -16,7 +16,7 @@ create table projects (
   , name text not null unique
   , description text not null
   , work_items_table_name text not null
-  , initialized boolean not null default false
+  , initialized boolean not null default false -- TODO IMPORTANT: not needed. will initialize everything via sql migration (kanban steps, wi types...)
   , board_config jsonb not null default '{}'
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
