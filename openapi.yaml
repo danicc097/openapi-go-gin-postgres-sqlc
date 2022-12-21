@@ -228,6 +228,25 @@ paths:
                 $ref: '#/components/schemas/DbProjectPublic'
       tags:
         - project
+  /project/{id}/config:
+    get:
+      security:
+        - bearer_auth: []
+        - api_key: []
+      summary: returns the project configuration
+      operationId: GetProjectConfig
+      parameters:
+        - $ref: '#/components/parameters/PathSerial'
+      responses:
+        "200":
+          description: Project config.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectConfigResponse'
+      x-required-role: admin
+      tags:
+        - project
   /project/{id}/board:
     get:
       security:
@@ -297,6 +316,23 @@ components:
       example: 41131
       style: simple
   schemas:
+    ProjectConfigResponse: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        fields:
+          items:
+            $ref: '#/components/schemas/RestProjectConfigField'
+          nullable: true
+          type: array
+        header:
+          items:
+            type: string
+          nullable: true
+          type: array
+      required:
+        - header
+        - fields
+      type: object
+      x-postgen-struct: RestProjectConfigResponse
     DemoProjectWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         closed:
@@ -972,6 +1008,19 @@ components:
         - message
         - createdAt
         - updatedAt
+      type: object
+    RestProjectConfigField: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        field:
+          type: string
+        isEditable:
+          type: boolean
+        isVisible:
+          type: boolean
+        name:
+          type: string
+        showCollapsed:
+          type: boolean
       type: object
   examples:
     User:

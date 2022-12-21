@@ -26,18 +26,6 @@ func AllNotificationTypeValues() []NotificationType {
 	}
 }
 
-// Defines values for Projects.
-const (
-	ProjectsDemoProject Projects = "demoProject"
-)
-
-// AllProjectsValues returns all possible values for Projects.
-func AllProjectsValues() []Projects {
-	return []Projects{
-		ProjectsDemoProject,
-	}
-}
-
 // Defines values for Role.
 const (
 	RoleAdmin        Role = "admin"
@@ -301,8 +289,11 @@ type ProjectBoardResponse struct {
 	WorkItemTypes *[]DbWorkItemTypePublic `json:"workItemTypes"`
 }
 
-// Projects project names.
-type Projects string
+// ProjectConfigResponse defines the model for ProjectConfigResponse.
+type ProjectConfigResponse struct {
+	Fields *[]RestProjectConfigField `json:"fields"`
+	Header *[]string                 `json:"header"`
+}
 
 // ReposActivityCreateParams defines the model for ReposActivityCreateParams.
 type ReposActivityCreateParams struct {
@@ -343,6 +334,15 @@ type ReposWorkItemTypeCreateParams struct {
 	Description *string `json:"description,omitempty"`
 	Name        *string `json:"name,omitempty"`
 	ProjectID   *int    `json:"projectID,omitempty"`
+}
+
+// RestProjectConfigField defines the model for RestProjectConfigField.
+type RestProjectConfigField struct {
+	Field         *string `json:"field,omitempty"`
+	IsEditable    *bool   `json:"isEditable,omitempty"`
+	IsVisible     *bool   `json:"isVisible,omitempty"`
+	Name          *string `json:"name,omitempty"`
+	ShowCollapsed *bool   `json:"showCollapsed,omitempty"`
 }
 
 // Role defines the model for Role.

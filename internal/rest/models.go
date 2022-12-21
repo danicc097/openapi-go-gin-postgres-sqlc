@@ -34,19 +34,17 @@ type ProjectBoardResponse struct {
 	repomodels.ProjectBoardPublic
 }
 
-// ProjectBoardConfigResponse represents an OpenAPI schema response for board configuration.
-type ProjectBoardConfigResponse struct {
-	CardConfig CardConfig `json:"cardConfig"`
+type ProjectConfigResponse struct {
+	Header []string             `json:"header" required:"true"`
+	Fields []ProjectConfigField `json:"fields" required:"true"`
 }
 
-// CardConfigUpdateRequest represents an OpenAPI schema request for board card configuration.
-type CardConfigUpdateRequest struct {
-	CardConfig
-}
-
-type CardConfig struct {
-	Body         map[string]any `json:"body"`
-	HeaderFields []string       `json:"headerFields"`
+type ProjectConfigField struct {
+	IsEditable    bool   `json:"isEditable"`
+	ShowCollapsed bool   `json:"showCollapsed"`
+	IsVisible     bool   `json:"isVisible"`
+	Field         string `json:"field"`
+	Name          string `json:"name"`
 }
 
 type ProjectBoardCreateRequest struct {

@@ -20,6 +20,16 @@ func (h *Handlers) GetProjectBoard(c *gin.Context, id int) {
 
 // GetProjectWorkitems
 func (h *Handlers) GetProjectWorkitems(c *gin.Context, id int, params models.GetProjectWorkitemsParams) {
+	// TODO create default ProjectConfigResponse with keys extracted from an initialized <project>WorkItemResponse struct
+	// and fields are overridden with db projects.metadata["Config"] values, if any
+	// 1. project by id
+	// 2. switch on models.Project enum string (pending generation for project, kanbansteps, etc)
+
+	c.String(http.StatusNotImplemented, "not implemented")
+}
+
+// GetProjectConfig
+func (h *Handlers) GetProjectConfig(c *gin.Context, id int) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 

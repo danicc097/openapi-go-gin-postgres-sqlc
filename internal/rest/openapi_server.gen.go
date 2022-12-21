@@ -38,6 +38,9 @@ type ServerInterface interface {
 	// returns board data for a project
 	// (GET /project/{id}/board)
 	GetProjectBoard(c *gin.Context, id externalRef0.PathSerial)
+	// returns the project configuration
+	// (GET /project/{id}/config)
+	GetProjectConfig(c *gin.Context, id externalRef0.PathSerial)
 	// creates initial data (teams, work item types, tags...) for a new project
 	// (POST /project/{id}/initialize)
 	InitializeProject(c *gin.Context, id externalRef0.PathSerial)
@@ -148,6 +151,27 @@ func (siw *ServerInterfaceWrapper) GetProjectBoard(c *gin.Context) {
 	c.Set(externalRef0.Api_keyScopes, []string{""})
 
 	siw.Handler.GetProjectBoard(c, id)
+}
+
+// GetProjectConfig operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetProjectConfig(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.PathSerial
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{""})
+
+	c.Set(externalRef0.Api_keyScopes, []string{""})
+
+	siw.Handler.GetProjectConfig(c, id)
 }
 
 // InitializeProject operation with its own middleware.
@@ -339,6 +363,11 @@ func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, op
 	router.GET(options.BaseURL+"/project/:id/board", append(
 		wrapper.Handler.authMiddlewares(GetProjectBoard),
 		append(wrapper.Handler.middlewares(GetProjectBoard), wrapper.GetProjectBoard)...,
+	)...)
+
+	router.GET(options.BaseURL+"/project/:id/config", append(
+		wrapper.Handler.authMiddlewares(GetProjectConfig),
+		append(wrapper.Handler.middlewares(GetProjectConfig), wrapper.GetProjectConfig)...,
 	)...)
 
 	router.POST(options.BaseURL+"/project/:id/initialize", append(

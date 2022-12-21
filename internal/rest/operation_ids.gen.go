@@ -18,6 +18,7 @@ const (
 	// Operation IDs for the 'project' tag.
 	GetProject          OperationID = "GetProject"
 	GetProjectBoard     OperationID = "GetProjectBoard"
+	GetProjectConfig    OperationID = "GetProjectConfig"
 	GetProjectWorkitems OperationID = "GetProjectWorkitems"
 	InitializeProject   OperationID = "InitializeProject"
 
