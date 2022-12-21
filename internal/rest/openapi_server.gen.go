@@ -314,12 +314,12 @@ type GinServerOptions struct {
 }
 
 // RegisterHandlers creates http.Handler with routing matching OpenAPI spec.
-func RegisterHandlers(router *gin.RouterGroup, si ServerInterface) *gin.RouterGroup {
-	return RegisterHandlersWithOptions(router, si, GinServerOptions{})
+func RegisterHandlers(router gin.IRouter, si ServerInterface) {
+	RegisterHandlersWithOptions(router, si, GinServerOptions{})
 }
 
 // RegisterHandlersWithOptions creates http.Handler with additional options
-func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, options GinServerOptions) *gin.RouterGroup {
+func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options GinServerOptions) {
 	wrapper := ServerInterfaceWrapper{
 		Handler: si,
 	}
@@ -399,6 +399,4 @@ func RegisterHandlersWithOptions(router *gin.RouterGroup, si ServerInterface, op
 		wrapper.Handler.authMiddlewares(UpdateUserAuthorization),
 		append(wrapper.Handler.middlewares(UpdateUserAuthorization), wrapper.UpdateUserAuthorization)...,
 	)...)
-
-	return router
 }

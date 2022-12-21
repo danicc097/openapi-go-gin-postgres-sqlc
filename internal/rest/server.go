@@ -239,7 +239,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 
 	handlers := NewHandlers(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authzsvc, authnsvc, authmw, provider)
 
-	vg = RegisterHandlers(vg, handlers)
+	RegisterHandlers(vg, handlers)
 
 	conf.Logger.Info("Server started")
 
