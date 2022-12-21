@@ -50,6 +50,14 @@ func NewHandlers(
 	}()
 
 	// we can have as many of these but need to delay call
+	// TODO in reality most messages wont run endlessly in a goroutine, e.g.
+	// send message to event.WorkItemMoved every time services.WorkItems.Move(...) is called
+	// we would have a map of channels opened per user id like WorkItemMovedUserChans map[string]chan string
+	// (in the future we'll have many of these like MemberAssignedUserChans to notify when added to workitem, etc.)
+	// and send a message to all members with workitem.members' userIDs.
+	// We need specific channels so that when a message is consumed we add a hardcoded "event" name
+	// ( see enum Topics) and frontend properly handles it.
+	//
 	go func() {
 		for {
 			now := time.Now().Format("2006-01-02 15:04:05")
