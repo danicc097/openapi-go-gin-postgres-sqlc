@@ -24,18 +24,6 @@ create table projects (
 
 comment on column projects.work_items_table_name is 'property:private';
 
-insert into projects (
-  name
-  , description
-  , work_items_table_name
-  , initialized)
-values (
-  'demoProject'
-  , 'description for demoProject'
-  , 'demo_project_work_items'
-  , true -- doesn't matter for demo since it will be programmatically (re)initialized
-);
-
 create table teams (
   team_id serial primary key
   , project_id int not null --limited to a project only
@@ -500,3 +488,93 @@ select
 
 select
   audit.enable_tracking ('public.work_items');
+
+
+/*
+
+ INIT
+
+ */
+
+
+insert into projects (
+  name
+  , description
+  , work_items_table_name
+  , initialized)
+values (
+  'demoProject'
+  , 'description for demoProject'
+  , 'demo_project_work_items'
+  , true -- doesn't matter for demo since it will be programmatically (re)initialized
+);
+
+insert into projects (
+  name
+  , description
+  , work_items_table_name
+  , initialized)
+values (
+  'demoProject2'
+  , 'description for demoProject2'
+  , 'demo_project_work_items'
+  , true -- doesn't matter for demo since it will be programmatically (re)initialized
+);
+
+insert into kanban_steps (
+  name
+  , description
+  , project_id
+  , color
+  )
+values (
+  'Disabled'
+  , 'This column is disabled'
+  , (select project_id from projects where name = 'demoProject')
+  , '#aaaaaa'
+);
+
+insert into kanban_steps (
+  name
+  , description
+  , project_id
+  , color
+  , step_order
+  )
+values (
+  'Received'
+  , 'description for Received column'
+  , (select project_id from projects where name = 'demoProject')
+  , '#aaaaaa'
+  , 1
+);
+
+insert into kanban_steps (
+  name
+  , description
+  , project_id
+  , color
+  , step_order
+  )
+values (
+  'Under review'
+  , 'description for Under review column'
+  , (select project_id from projects where name = 'demoProject')
+  , '#f6f343'
+  , 2
+);
+
+insert into kanban_steps (
+  name
+  , description
+  , project_id
+  , color
+  , step_order
+  )
+values (
+  'Work in progress'
+  , 'description for Work in progress column'
+  , (select project_id from projects where name = 'demoProject')
+  , '#2b2444'
+  , 3
+);

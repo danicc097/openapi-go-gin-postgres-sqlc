@@ -1026,6 +1026,12 @@ components:
         showCollapsed:
           type: boolean
       type: object
+    Project: # Generated from projects table. DO NOT EDIT.
+      enum:
+        - demoProject
+        - demoProject2
+      type: string
+      description: Existing projects
   examples:
     User:
       value:

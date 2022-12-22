@@ -196,7 +196,30 @@ x.pregen() {
         enums=$enums yq e ".$path.enum = env(enums) | (.$path.enum | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
       done
 
-      # TODO 1st: generate ``Projects`` schema enum (select * name from projects)
+      mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
+      [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
+      local enums=$(printf ",\"%s\"" "${db_projects[@]}")
+      enums="[${enums:1}]"
+      echo "Replacing enum 'Project' in $SPEC with: $enums"
+      enums=$enums yq e "
+      .components.schemas.Project.enum = env(enums) |
+      .components.schemas.Project.type = \"string\" |
+      .components.schemas.Project.description = \"Existing projects\" |
+      (.components.schemas.Project | key) line_comment=\"Generated from projects table. DO NOT EDIT.\"" -i $SPEC
+
+      # for project in ${db_projects[@]}; do
+      #   mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
+      #   [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
+      #   local enums=$(printf ",\"%s\"" "${db_projects[@]}")
+      #   enums="[${enums:1}]"
+      #   echo "Replacing enum 'Project' in $SPEC with: $enums"
+      #   enums=$enums yq e "
+      # .components.schemas.Project.enum = env(enums) |
+      # .components.schemas.Project.type = \"string\" |
+      # .components.schemas.Project.description = \"Existing projects\" |
+      # (.components.schemas.Project | key) line_comment=\"Generated from projects table. DO NOT EDIT.\"" -i $SPEC
+      # done
+
       # TODO 2nd: generate KanbanSteps, WorkItemType for every project enum generated before
       # e.g. demoProject -> select name from kanban_steps where project_id = (select project_id from projects where name = 'demoProject')
       # -> demoProjectKanbanStepReceived, demoProjectKanbanStepInProgress...

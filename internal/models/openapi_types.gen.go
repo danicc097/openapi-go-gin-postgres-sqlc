@@ -26,6 +26,20 @@ func AllNotificationTypeValues() []NotificationType {
 	}
 }
 
+// Defines values for Project.
+const (
+	ProjectDemoProject  Project = "demoProject"
+	ProjectDemoProject2 Project = "demoProject2"
+)
+
+// AllProjectValues returns all possible values for Project.
+func AllProjectValues() []Project {
+	return []Project{
+		ProjectDemoProject,
+		ProjectDemoProject2,
+	}
+}
+
 // Defines values for Role.
 const (
 	RoleAdmin        Role = "admin"
@@ -270,6 +284,9 @@ type NotificationType string
 
 // PgtypeJSONB defines the model for PgtypeJSONB.
 type PgtypeJSONB = map[string]interface{}
+
+// Project Existing projects
+type Project string
 
 // ProjectBoardResponse defines the model for ProjectBoardResponse.
 type ProjectBoardResponse struct {
