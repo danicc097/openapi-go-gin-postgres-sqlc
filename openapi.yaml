@@ -1032,6 +1032,14 @@ components:
         - demoProject2
       type: string
       description: Existing projects
+    demoProjectKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
+      enum:
+        - Disabled
+        - Received
+        - Under review
+        - Work in progress
+      type: string
+      description: Kanban columns for project demoProject
   examples:
     User:
       value:

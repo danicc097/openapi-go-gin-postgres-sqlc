@@ -493,10 +493,7 @@ select
 /*
 
  INIT
-
  */
-
-
 insert into projects (
   name
   , description
@@ -525,56 +522,65 @@ insert into kanban_steps (
   name
   , description
   , project_id
-  , color
-  )
+  , color)
 values (
   'Disabled'
   , 'This column is disabled'
-  , (select project_id from projects where name = 'demoProject')
-  , '#aaaaaa'
-);
+  , (
+    select
+      project_id
+    from
+      projects
+    where
+      name = 'demoProject') , '#aaaaaa');
 
 insert into kanban_steps (
   name
   , description
   , project_id
   , color
-  , step_order
-  )
+  , step_order)
 values (
   'Received'
   , 'description for Received column'
-  , (select project_id from projects where name = 'demoProject')
-  , '#aaaaaa'
-  , 1
-);
+  , (
+    select
+      project_id
+    from
+      projects
+    where
+      name = 'demoProject') , '#aaaaaa' , 1);
 
 insert into kanban_steps (
   name
   , description
   , project_id
   , color
-  , step_order
-  )
+  , step_order)
 values (
   'Under review'
   , 'description for Under review column'
-  , (select project_id from projects where name = 'demoProject')
-  , '#f6f343'
-  , 2
-);
+  , (
+    select
+      project_id
+    from
+      projects
+    where
+      name = 'demoProject') , '#f6f343' , 2);
 
 insert into kanban_steps (
   name
   , description
   , project_id
   , color
-  , step_order
-  )
+  , step_order)
 values (
   'Work in progress'
   , 'description for Work in progress column'
-  , (select project_id from projects where name = 'demoProject')
-  , '#2b2444'
-  , 3
-);
+  , (
+    select
+      project_id
+    from
+      projects
+    where
+      name = 'demoProject') , '#2b2444' , 3);

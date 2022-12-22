@@ -196,6 +196,7 @@ x.pregen() {
         enums=$enums yq e ".$path.enum = env(enums) | (.$path.enum | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
       done
 
+      ######## Sync projects and related project info
       mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
       [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
       local enums=$(printf ",\"%s\"" "${db_projects[@]}")
@@ -207,23 +208,26 @@ x.pregen() {
       .components.schemas.Project.description = \"Existing projects\" |
       (.components.schemas.Project | key) line_comment=\"Generated from projects table. DO NOT EDIT.\"" -i $SPEC
 
-      # for project in ${db_projects[@]}; do
-      #   mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
-      #   [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
-      #   local enums=$(printf ",\"%s\"" "${db_projects[@]}")
-      #   enums="[${enums:1}]"
-      #   echo "Replacing enum 'Project' in $SPEC with: $enums"
-      #   enums=$enums yq e "
-      # .components.schemas.Project.enum = env(enums) |
-      # .components.schemas.Project.type = \"string\" |
-      # .components.schemas.Project.description = \"Existing projects\" |
-      # (.components.schemas.Project | key) line_comment=\"Generated from projects table. DO NOT EDIT.\"" -i $SPEC
-      # done
+      for project in ${db_projects[@]}; do
+        mapfile -t kanban_steps < <(dockerdb_psql -d $POSTGRES_DB -c "
+          select
+            name
+          from
+            kanban_steps
+          where
+            project_id = (select project_id from projects where name = '$project');" 2>/dev/null)
+        [[ ${#kanban_steps[@]} -gt 0 ]] || { echo "${YELLOW}No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue; }
+        local enums=$(printf ",\"%s\"" "${kanban_steps[@]}")
+        enums="[${enums:1}]"
+        echo "Replacing enum 'Project' in $SPEC with: $enums"
+        enums=$enums yq e "
+      .components.schemas.${project}KanbanSteps.enum = env(enums) |
+      .components.schemas.${project}KanbanSteps.type = \"string\" |
+      .components.schemas.${project}KanbanSteps.description = \"Kanban columns for project $project\" |
+      (.components.schemas.${project}KanbanSteps | key) line_comment=\"Generated from kanban_steps table. DO NOT EDIT.\"" -i $SPEC
+      done
 
-      # TODO 2nd: generate KanbanSteps, WorkItemType for every project enum generated before
-      # e.g. demoProject -> select name from kanban_steps where project_id = (select project_id from projects where name = 'demoProject')
-      # -> demoProjectKanbanStepReceived, demoProjectKanbanStepInProgress...
-      # no need to capitalize, thse are just unique values for enums.
+      # TODO generate ~~KanbanSteps~~, WorkItemType for every project enum generated before
 
       ######## Ensure consistent style for future codegen
       echo "Applying PascalCase to operation IDs in $SPEC"

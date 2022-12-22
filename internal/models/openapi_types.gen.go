@@ -112,6 +112,24 @@ func AllWorkItemRoleValues() []WorkItemRole {
 	}
 }
 
+// Defines values for DemoProjectKanbanSteps.
+const (
+	DemoProjectKanbanStepsDisabled       DemoProjectKanbanSteps = "Disabled"
+	DemoProjectKanbanStepsReceived       DemoProjectKanbanSteps = "Received"
+	DemoProjectKanbanStepsUnderReview    DemoProjectKanbanSteps = "Under review"
+	DemoProjectKanbanStepsWorkInProgress DemoProjectKanbanSteps = "Work in progress"
+)
+
+// AllDemoProjectKanbanStepsValues returns all possible values for DemoProjectKanbanSteps.
+func AllDemoProjectKanbanStepsValues() []DemoProjectKanbanSteps {
+	return []DemoProjectKanbanSteps{
+		DemoProjectKanbanStepsDisabled,
+		DemoProjectKanbanStepsReceived,
+		DemoProjectKanbanStepsUnderReview,
+		DemoProjectKanbanStepsWorkInProgress,
+	}
+}
+
 // DbActivityPublic defines the model for DbActivityPublic.
 type DbActivityPublic struct {
 	ActivityID   int    `json:"activityID"`
@@ -412,6 +430,9 @@ type ValidationError struct {
 
 // WorkItemRole Role in work item for a member.
 type WorkItemRole string
+
+// DemoProjectKanbanSteps Kanban columns for project demoProject
+type DemoProjectKanbanSteps string
 
 // PathSerial defines the model for PathSerial.
 type PathSerial = int
