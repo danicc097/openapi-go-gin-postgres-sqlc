@@ -36,6 +36,10 @@ type subs map[chan string]struct{}
 type PubSub struct {
 	mu sync.RWMutex // preferable if mostly read
 
+	// TODO will need to have nested map for subs per project ( TODO models.Project)
+	// we can't have shared topic for every project unless it's GlobalAlerts (degraded performance, maintenance alert)
+	// a user will be subscribed to the current project selected in frontend.
+	// this info needs to be sent when calling /events in a query param
 	subs map[models.Topics]subs
 	// e.g. event card moved notifies all card members' userID - attempt to send if clients are connected (i.e. key exists in personalSub)
 	// TODO close and delete entries when client is gone:
@@ -44,6 +48,13 @@ type PubSub struct {
 	closed      bool
 }
 
+// in reality most messages wont run endlessly in a goroutine, we will e.g.
+// send a message to event.WorkItemMoved every time services.WorkItems.Move(...) is called
+// we would have a map of channels opened per user id like WorkItemMovedUserChans map[string]chan string
+// (in the future we'll have many of these like MemberAssignedUserChans to notify when added to workitem, etc.)
+// and send a message to all members with workitem.members' userIDs.
+// We need specific channels so that when a message is consumed we add a hardcoded "event" name
+// ( see enum Topics) and frontend properly handles it.
 func NewPubSub() *PubSub {
 	ps := &PubSub{}
 	ps.subs = make(map[models.Topics]subs)
@@ -148,6 +159,8 @@ channel use cases,etc:
 */
 
 // Events represents server events.
+// TODO requires query param projectId=...
+// to subscribe to the current project's topics only
 func (h *Handlers) Events(c *gin.Context) {
 	c.Set(skipRequestValidation, true)
 	c.Set(skipResponseValidation, true)
@@ -196,7 +209,7 @@ func (h *Handlers) Events(c *gin.Context) {
 				return true
 			}
 			c.Render(-1, sse.Event{
-				Event: string(models.TopicsUserNotifications),
+				Event: string(models.TopicsGlobalAlerts),
 				Data:  msg,
 			})
 			c.Writer.Flush()

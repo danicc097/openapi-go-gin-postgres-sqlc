@@ -540,11 +540,15 @@ components:
       description: string identifiers for SSE event listeners.
       type: string
       enum:
-        - UserNotifications
-        - ManagerNotifications
-        - AdminNotifications
-        - WorkItemMoved
-        - WorkItemClosed
+        # will not alert directly, just show badge when a new notification is sent.
+        # - UserNotifications
+        # - ManagerNotifications
+        # - AdminNotifications
+        # will use personalSubs channel per userID since it depends on
+        # members per specific workitem
+        # - WorkItemMoved
+        # - WorkItemClosed
+        - GlobalAlerts
     # TODO bookstack style ABAC
     Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string

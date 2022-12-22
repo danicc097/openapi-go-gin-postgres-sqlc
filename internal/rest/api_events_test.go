@@ -97,7 +97,7 @@ func TestSSEStream(t *testing.T) {
 	assert.Eventually(t, func() bool {
 		body := strings.ReplaceAll(res.Body.String(), " ", "")
 
-		return strings.Count(body, "event:"+string(models.TopicsUserNotifications)) == 1 &&
+		return strings.Count(body, "event:"+string(models.TopicsGlobalAlerts)) == 1 &&
 			strings.Count(body, "event:test-event") == 1
 	}, 10*time.Second, 100*time.Millisecond)
 

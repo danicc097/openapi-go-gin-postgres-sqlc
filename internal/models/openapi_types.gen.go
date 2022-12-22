@@ -74,21 +74,13 @@ func AllScopeValues() []Scope {
 
 // Defines values for Topics.
 const (
-	TopicsAdminNotifications   Topics = "AdminNotifications"
-	TopicsManagerNotifications Topics = "ManagerNotifications"
-	TopicsUserNotifications    Topics = "UserNotifications"
-	TopicsWorkItemClosed       Topics = "WorkItemClosed"
-	TopicsWorkItemMoved        Topics = "WorkItemMoved"
+	TopicsGlobalAlerts Topics = "GlobalAlerts"
 )
 
 // AllTopicsValues returns all possible values for Topics.
 func AllTopicsValues() []Topics {
 	return []Topics{
-		TopicsAdminNotifications,
-		TopicsManagerNotifications,
-		TopicsUserNotifications,
-		TopicsWorkItemClosed,
-		TopicsWorkItemMoved,
+		TopicsGlobalAlerts,
 	}
 }
 

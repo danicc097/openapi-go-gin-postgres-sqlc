@@ -47,7 +47,6 @@ readonly MIGRATIONS_DIR="db/migrations"
 readonly REPOS="internal/repos"
 readonly PG_REPO="$REPOS/postgresql"
 readonly PG_REPO_GEN="$PG_REPO/gen"
-readonly GEN_SCHEMA_CMD="cmd/gen-schema"
 readonly POSTGRES_TEST_DB="postgres_test"
 readonly MAX_COMMENT_LEN=88
 readonly MAX_FNAME_LOG_LEN=13

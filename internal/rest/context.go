@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// how could we use custom types with gin context?
 const (
 	userCtxKey             = "user"
 	ginContextKey          = "middleware.openapi/gin-context"
