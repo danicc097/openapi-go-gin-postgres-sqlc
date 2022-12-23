@@ -81,8 +81,6 @@ func renderResponse(c *gin.Context, res interface{}, status int) {
 		return
 	}
 
-	fmt.Printf("content: %v\n", string(content))
-
 	c.Status(status)
 
 	if _, err = c.Writer.Write(content); err != nil { //nolint: staticcheck

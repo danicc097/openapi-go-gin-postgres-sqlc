@@ -102,9 +102,11 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 		if err != nil {
 			// error response customized via WithCustomSchemaErrorFunc
 			renderErrorResponse(c, fmt.Sprintf("openapi request validation input: %v", err), err)
+			rbw.ResponseWriter.Write(rbw.body.Bytes())
 
 			return
 		}
+
 		input := &openapi3filter.ResponseValidationInput{
 			RequestValidationInput: rvi,
 			Status:                 rbw.Status(),
@@ -118,6 +120,7 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 		if err := openapi3filter.ValidateResponse(c.Request.Context(), input); err != nil {
 			rbw.body.Reset()
 			renderErrorResponse(c, "invalid response", internal.WrapErrorf(err, internal.ErrorCodeResponseValidationError, "OpenAPI response validation failed"))
+			rbw.ResponseWriter.Write(rbw.body.Bytes())
 
 			return
 		}
