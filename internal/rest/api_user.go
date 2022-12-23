@@ -91,7 +91,17 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 		return
 	}
 
-	renderResponse(c, user, http.StatusOK)
+	role, ok := h.authzsvc.RoleByRank(user.RoleRank)
+	if !ok {
+		msg := fmt.Sprintf("role with rank %d not found", user.RoleRank)
+		renderErrorResponse(c, msg, errors.New(msg))
+
+		return
+	}
+
+	res := UserResponse{UserPublic: user.ToPublic(), Role: role.Name, Scopes: user.Scopes}
+
+	renderResponse(c, res, http.StatusOK)
 }
 
 // UpdateUserAuthorization updates authorizastion information, e.g. roles and scopes.

@@ -163,6 +163,6 @@ func TestUpdateUserRoute(t *testing.T) {
 		srv.Handler.ServeHTTP(resp, req)
 
 		format.PrintJSON(resp)
-		assert.Equal(t, http.StatusNoContent, resp.Code)
+		assert.Equal(t, http.StatusOK, resp.Code)
 	})
 }
