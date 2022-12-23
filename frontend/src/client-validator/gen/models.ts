@@ -6,10 +6,6 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-/**
- * project names.
- */
-export type Projects = 'demoProject'
 export type UuidUUID = string
 export type DbWorkItemTypePublic = {
   color: string
@@ -70,12 +66,7 @@ export type Detail = ValidationError[]
 /**
  * string identifiers for SSE event listeners.
  */
-export type Topics =
-  | 'UserNotifications'
-  | 'ManagerNotifications'
-  | 'AdminNotifications'
-  | 'WorkItemMoved'
-  | 'WorkItemClosed'
+export type Topics = 'GlobalAlerts'
 /**
  * User notification type.
  */
@@ -85,7 +76,26 @@ export type NotificationType = 'personal' | 'global'
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
 export type ModelsRole = string
+/**
+ * Existing projects
+ */
+export type Project = 'demoProject' | 'demoProject2'
+/**
+ * Kanban columns for project demoProject
+ */
+export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 
+export interface ProjectConfigResponse {
+  fields: RestProjectConfigField[] | null
+  header: string[] | null
+}
+export interface RestProjectConfigField {
+  field?: string
+  isEditable?: boolean
+  isVisible?: boolean
+  name?: string
+  showCollapsed?: boolean
+}
 export interface DemoProjectWorkItemsResponse {
   closed: string | null
   createdAt: string

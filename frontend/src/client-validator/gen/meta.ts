@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
-  Projects,
+  ProjectConfigResponse,
   DemoProjectWorkItemsResponse,
   InitializeProjectRequest,
   ProjectBoardResponse,
@@ -39,10 +39,13 @@ import {
   DbTimeEntryPublic,
   DbUserPublic,
   DbWorkItemCommentPublic,
+  RestProjectConfigField,
+  Project,
+  demoProjectKanbanSteps,
 } from './models'
 
 export const schemaDefinitions = {
-  Projects: info<Projects>('Projects', '#/definitions/Projects'),
+  ProjectConfigResponse: info<ProjectConfigResponse>('ProjectConfigResponse', '#/definitions/ProjectConfigResponse'),
   DemoProjectWorkItemsResponse: info<DemoProjectWorkItemsResponse>(
     'DemoProjectWorkItemsResponse',
     '#/definitions/DemoProjectWorkItemsResponse',
@@ -100,6 +103,15 @@ export const schemaDefinitions = {
   DbWorkItemCommentPublic: info<DbWorkItemCommentPublic>(
     'DbWorkItemCommentPublic',
     '#/definitions/DbWorkItemCommentPublic',
+  ),
+  RestProjectConfigField: info<RestProjectConfigField>(
+    'RestProjectConfigField',
+    '#/definitions/RestProjectConfigField',
+  ),
+  Project: info<Project>('Project', '#/definitions/Project'),
+  demoProjectKanbanSteps: info<demoProjectKanbanSteps>(
+    'demoProjectKanbanSteps',
+    '#/definitions/demoProjectKanbanSteps',
   ),
 }
 

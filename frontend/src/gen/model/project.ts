@@ -7,11 +7,12 @@
  */
 
 /**
- * project names.
+ * Existing projects
  */
-export type Projects = typeof Projects[keyof typeof Projects]
+export type Project = typeof Project[keyof typeof Project]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const Projects = {
+export const Project = {
   demoProject: 'demoProject',
+  demoProject2: 'demoProject2',
 } as const

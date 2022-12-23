@@ -8,7 +8,7 @@ import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
 import { validateJson } from '../validate'
 import {
-  Projects,
+  ProjectConfigResponse,
   DemoProjectWorkItemsResponse,
   InitializeProjectRequest,
   ProjectBoardResponse,
@@ -43,6 +43,9 @@ import {
   DbTimeEntryPublic,
   DbUserPublic,
   DbWorkItemCommentPublic,
+  RestProjectConfigField,
+  Project,
+  demoProjectKanbanSteps,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -51,16 +54,16 @@ addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time'] })
 ajv.compile(jsonSchema)
 
 // Decoders
-export const ProjectsDecoder: Decoder<Projects> = {
-  definitionName: 'Projects',
-  schemaRef: '#/definitions/Projects',
+export const ProjectConfigResponseDecoder: Decoder<ProjectConfigResponse> = {
+  definitionName: 'ProjectConfigResponse',
+  schemaRef: '#/definitions/ProjectConfigResponse',
 
-  decode(json: unknown): Projects {
-    const schema = ajv.getSchema(ProjectsDecoder.schemaRef)
+  decode(json: unknown): ProjectConfigResponse {
+    const schema = ajv.getSchema(ProjectConfigResponseDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${ProjectsDecoder.definitionName} not found`)
+      throw new Error(`Schema ${ProjectConfigResponseDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, ProjectsDecoder.definitionName)
+    return validateJson(json, schema, ProjectConfigResponseDecoder.definitionName)
   },
 }
 export const DemoProjectWorkItemsResponseDecoder: Decoder<DemoProjectWorkItemsResponse> = {
@@ -469,5 +472,41 @@ export const DbWorkItemCommentPublicDecoder: Decoder<DbWorkItemCommentPublic> = 
       throw new Error(`Schema ${DbWorkItemCommentPublicDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbWorkItemCommentPublicDecoder.definitionName)
+  },
+}
+export const RestProjectConfigFieldDecoder: Decoder<RestProjectConfigField> = {
+  definitionName: 'RestProjectConfigField',
+  schemaRef: '#/definitions/RestProjectConfigField',
+
+  decode(json: unknown): RestProjectConfigField {
+    const schema = ajv.getSchema(RestProjectConfigFieldDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestProjectConfigFieldDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestProjectConfigFieldDecoder.definitionName)
+  },
+}
+export const ProjectDecoder: Decoder<Project> = {
+  definitionName: 'Project',
+  schemaRef: '#/definitions/Project',
+
+  decode(json: unknown): Project {
+    const schema = ajv.getSchema(ProjectDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ProjectDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ProjectDecoder.definitionName)
+  },
+}
+export const demoProjectKanbanStepsDecoder: Decoder<demoProjectKanbanSteps> = {
+  definitionName: 'demoProjectKanbanSteps',
+  schemaRef: '#/definitions/demoProjectKanbanSteps',
+
+  decode(json: unknown): demoProjectKanbanSteps {
+    const schema = ajv.getSchema(demoProjectKanbanStepsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${demoProjectKanbanStepsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, demoProjectKanbanStepsDecoder.definitionName)
   },
 }

@@ -26,6 +26,7 @@ const (
 	ErrorCodeUnauthorized
 	ErrorCodeUnauthenticated
 	ErrorCodeValidationError
+	ErrorCodeResponseValidationError
 
 	ErrorCodeInvalidRole
 	ErrorCodeInvalidScope

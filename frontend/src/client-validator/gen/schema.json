@@ -2,12 +2,33 @@
   "type": "object",
   "title": "Schema",
   "definitions": {
-    "Projects": {
-      "description": "project names.",
-      "type": "string",
-      "enum": [
-        "demoProject"
+    "ProjectConfigResponse": {
+      "properties": {
+        "fields": {
+          "items": {
+            "$ref": "#/definitions/RestProjectConfigField"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "header": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "header",
+        "fields"
       ],
+      "type": "object",
+      "x-postgen-struct": "RestProjectConfigResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DemoProjectWorkItemsResponse": {
@@ -341,11 +362,7 @@
       "description": "string identifiers for SSE event listeners.",
       "type": "string",
       "enum": [
-        "UserNotifications",
-        "ManagerNotifications",
-        "AdminNotifications",
-        "WorkItemMoved",
-        "WorkItemClosed"
+        "GlobalAlerts"
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -1031,11 +1048,52 @@
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestProjectConfigField": {
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "isEditable": {
+          "type": "boolean"
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "showCollapsed": {
+          "type": "boolean"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Project": {
+      "enum": [
+        "demoProject",
+        "demoProject2"
+      ],
+      "type": "string",
+      "description": "Existing projects",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "demoProjectKanbanSteps": {
+      "enum": [
+        "Disabled",
+        "Received",
+        "Under review",
+        "Work in progress"
+      ],
+      "type": "string",
+      "description": "Kanban columns for project demoProject",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
-    "Projects": {
-      "$ref": "#/definitions/Projects"
+    "ProjectConfigResponse": {
+      "$ref": "#/definitions/ProjectConfigResponse"
     },
     "DemoProjectWorkItemsResponse": {
       "$ref": "#/definitions/DemoProjectWorkItemsResponse"
@@ -1138,6 +1196,15 @@
     },
     "DbWorkItemCommentPublic": {
       "$ref": "#/definitions/DbWorkItemCommentPublic"
+    },
+    "RestProjectConfigField": {
+      "$ref": "#/definitions/RestProjectConfigField"
+    },
+    "Project": {
+      "$ref": "#/definitions/Project"
+    },
+    "demoProjectKanbanSteps": {
+      "$ref": "#/definitions/demoProjectKanbanSteps"
     }
   }
 }

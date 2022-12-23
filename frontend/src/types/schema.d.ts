@@ -58,6 +58,10 @@ export interface paths {
     /** returns board data for a project */
     get: operations["GetProject"];
   };
+  "/project/{id}/config": {
+    /** returns the project configuration */
+    get: operations["GetProjectConfig"];
+  };
   "/project/{id}/board": {
     /** returns board data for a project */
     get: operations["GetProjectBoard"];
@@ -70,11 +74,10 @@ export interface paths {
 
 export interface components {
   schemas: {
-    /**
-     * @description project names. 
-     * @enum {string}
-     */
-    Projects: "demoProject";
+    ProjectConfigResponse: {
+      fields: (components["schemas"]["RestProjectConfigField"])[] | null;
+      header: (string)[] | null;
+    };
     DemoProjectWorkItemsResponse: {
       /** Format: date-time */
       closed: string | null;
@@ -144,7 +147,7 @@ export interface components {
      * @description string identifiers for SSE event listeners. 
      * @enum {string}
      */
-    Topics: "UserNotifications" | "ManagerNotifications" | "AdminNotifications" | "WorkItemMoved" | "WorkItemClosed";
+    Topics: "GlobalAlerts";
     /** @enum {string} */
     Scope: "test-scope" | "users:read" | "users:write" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item:review";
     Scopes: (components["schemas"]["Scope"])[];
@@ -350,6 +353,23 @@ export interface components {
       workItemCommentID: number;
       workItemID: number;
     };
+    RestProjectConfigField: {
+      field?: string;
+      isEditable?: boolean;
+      isVisible?: boolean;
+      name?: string;
+      showCollapsed?: boolean;
+    };
+    /**
+     * @description Existing projects 
+     * @enum {string}
+     */
+    Project: "demoProject" | "demoProject2";
+    /**
+     * @description Kanban columns for project demoProject 
+     * @enum {string}
+     */
+    demoProjectKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
   };
   responses: never;
   parameters: {
@@ -507,6 +527,17 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["DbProjectPublic"];
+        };
+      };
+    };
+  };
+  GetProjectConfig: {
+    /** returns the project configuration */
+    responses: {
+      /** @description Project config. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ProjectConfigResponse"];
         };
       };
     };

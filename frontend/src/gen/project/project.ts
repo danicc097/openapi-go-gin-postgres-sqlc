@@ -21,6 +21,7 @@ import type {
 import type {
   InitializeProjectRequest,
   DbProjectPublic,
+  ProjectConfigResponse,
   ProjectBoardResponse,
   DemoProjectWorkItemsResponse,
   GetProjectWorkitemsParams,
@@ -123,6 +124,77 @@ export const useGetProject = <TData = Awaited<ReturnType<typeof getProject>>, TE
     getProject(id, { signal, ...axiosOptions })
 
   const query = useQuery<Awaited<ReturnType<typeof getProject>>, TError, TData>(queryKey, queryFn, {
+    enabled: !!id,
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryKey
+
+  return query
+}
+
+/**
+ * @summary returns the project configuration
+ */
+export const getProjectConfig = (
+  id: number,
+  options?: AxiosRequestConfig,
+): Promise<AxiosResponse<ProjectConfigResponse>> => {
+  return axios.get(`/project/${id}/config`, options)
+}
+
+export const getGetProjectConfigQueryKey = (id: number) => [`/project/${id}/config`]
+
+export type GetProjectConfigInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectConfig>>>
+export type GetProjectConfigInfiniteQueryError = AxiosError<unknown>
+
+export const useGetProjectConfigInfinite = <
+  TData = Awaited<ReturnType<typeof getProjectConfig>>,
+  TError = AxiosError<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData>
+    axios?: AxiosRequestConfig
+  },
+): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetProjectConfigQueryKey(id)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectConfig>>> = ({ signal }) =>
+    getProjectConfig(id, { signal, ...axiosOptions })
+
+  const query = useInfiniteQuery<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData>(queryKey, queryFn, {
+    enabled: !!id,
+    staleTime: 3600000,
+    ...queryOptions,
+  }) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryKey
+
+  return query
+}
+
+export type GetProjectConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectConfig>>>
+export type GetProjectConfigQueryError = AxiosError<unknown>
+
+export const useGetProjectConfig = <TData = Awaited<ReturnType<typeof getProjectConfig>>, TError = AxiosError<unknown>>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData>
+    axios?: AxiosRequestConfig
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const { query: queryOptions, axios: axiosOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetProjectConfigQueryKey(id)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectConfig>>> = ({ signal }) =>
+    getProjectConfig(id, { signal, ...axiosOptions })
+
+  const query = useQuery<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData>(queryKey, queryFn, {
     enabled: !!id,
     staleTime: 3600000,
     ...queryOptions,

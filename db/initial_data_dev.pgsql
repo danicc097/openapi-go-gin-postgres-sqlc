@@ -33,7 +33,7 @@ begin
       , 'user_' || i || '@email.com'
       , 'Name ' || i
       , 'Surname ' || i
-      , 1
+      , 2
       , '{users:read}'
       , 'provider_external_id' || i)
   returning
@@ -185,77 +185,6 @@ begin
     , 1
     , 'In a meeting'
     , true);
-  -- kanban steps
-  insert into kanban_steps (
-    project_id
-    , step_order
-    , "name"
-    , description
-    , time_trackable
-    , color)
-  values (
-    1
-    , null
-    , 'Disabled step'
-    , ''
-    , false
-    , '#abaaba');
-  insert into kanban_steps (
-    project_id
-    , step_order
-    , "name"
-    , description
-    , time_trackable
-    , color)
-  values (
-    1
-    , 1
-    , 'Stand-by'
-    , ''
-    , false
-    , '#abaaba');
-  insert into kanban_steps (
-    project_id
-    , step_order
-    , "name"
-    , description
-    , time_trackable
-    , color)
-  values (
-    1
-    , 2
-    , 'Preparing'
-    , ''
-    , true
-    , '#abaaba');
-  insert into kanban_steps (
-    project_id
-    , step_order
-    , "name"
-    , description
-    , time_trackable
-    , color)
-  values (
-    1
-    , 3
-    , 'Reviewing'
-    , ''
-    , true
-    , '#abaaba');
-  insert into kanban_steps (
-    project_id
-    , step_order
-    , "name"
-    , description
-    , time_trackable
-    , color)
-  values (
-    1
-    , 4
-    , 'Submitted'
-    , ''
-    , true
-    , '#abaaba');
   insert into work_item_types (
     project_id
     , "name"
