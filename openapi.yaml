@@ -573,7 +573,7 @@ components:
         - manager
         - admin
         - superAdmin
-    NotificationType:
+    NotificationType: # Generated from database enum. DO NOT EDIT.
       title: Notification type
       description: User notification type.
       type: string
@@ -589,17 +589,17 @@ components:
       enum:
         - preparer
         - reviewer
-    UpdateUserRequest: # Generated from database enum. DO NOT EDIT.
+    UpdateUserRequest:
       description: represents User data to update
       example:
-        first_name: Jane
-        last_name: Doe
+        firstName: Jane
+        lastName: Doe
       properties:
-        first_name:
+        firstName:
           description: originally from auth server but updatable
           type: string
           pattern: ^[ a-zA-Z0-9_-]+$
-        last_name:
+        lastName:
           description: originally from auth server but updatable
           type: string
           pattern: ^[ a-zA-Z0-9_-]+$

@@ -193,7 +193,7 @@ x.pregen() {
         local enums=$(printf ",\"%s\"" "${db_enums[@]}")
         enums="[${enums:1}]"
         echo "Replacing enum '$enum' in $SPEC with: $enums"
-        enums=$enums yq e ".$path.enum = env(enums) | (.$path.enum | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
+        enums=$enums yq e ".$path.enum = env(enums) | (.$path | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
       done
 
       ######## Sync projects and related project info

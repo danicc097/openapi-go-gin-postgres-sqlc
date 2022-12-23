@@ -406,10 +406,10 @@ type UpdateUserAuthRequest struct {
 // UpdateUserRequest represents User data to update
 type UpdateUserRequest struct {
 	// FirstName originally from auth server but updatable
-	FirstName *string `json:"first_name,omitempty"`
+	FirstName *string `json:"firstName,omitempty"`
 
 	// LastName originally from auth server but updatable
-	LastName *string `json:"last_name,omitempty"`
+	LastName *string `json:"lastName,omitempty"`
 }
 
 // UserResponse defines the model for UserResponse.
