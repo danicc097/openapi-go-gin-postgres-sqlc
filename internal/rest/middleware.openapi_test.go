@@ -1,7 +1,5 @@
 package rest
 
-// TODO take response vlaidation into account
-
 import (
 	"context"
 	_ "embed"
