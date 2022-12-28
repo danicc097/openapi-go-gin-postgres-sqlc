@@ -41,6 +41,7 @@ import { useUISlice } from 'src/slices/ui'
 import { createLabel, renderSuperSelect } from 'src/utils/forms'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import UserAvatar from 'src/components/UserAvatar/UserAvatar'
+import type { RequiredKeys } from 'src/types/utils'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 

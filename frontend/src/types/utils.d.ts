@@ -1,8 +1,8 @@
-type Primitive = string | number | symbol
+export type Primitive = string | number | symbol
 
-type GenericObject = Record<Primitive, unknown>
+export type GenericObject = Record<Primitive, unknown>
 
-type Join<L extends Primitive | undefined, R extends Primitive | undefined> = L extends string | number
+export type Join<L extends Primitive | undefined, R extends Primitive | undefined> = L extends string | number
   ? R extends string | number
     ? `${L}.${R}`
     : L
@@ -10,7 +10,7 @@ type Join<L extends Primitive | undefined, R extends Primitive | undefined> = L 
   ? R
   : undefined
 
-type Union<L extends unknown | undefined, R extends unknown | undefined> = L extends undefined
+export type Union<L extends unknown | undefined, R extends unknown | undefined> = L extends undefined
   ? R extends undefined
     ? undefined
     : R
@@ -35,34 +35,34 @@ export type NestedPaths<
     : Union<Union<Prev, Path>, Join<Path, K>>
 }[keyof T]
 
-declare type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType extends readonly (infer ElementType)[]
+export type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType extends readonly (infer ElementType)[]
   ? ElementType
   : never
 
 // Passing types through Expand<T> makes TS expand them instead of lazily
 // evaluating the type. This also has the benefit that intersections are merged
 // to show as one object.
-type Primitive = string | number | boolean | bigint | symbol | null | undefined
-type Expand<T> = T extends Primitive ? T : { [K in keyof T]: T[K] }
+export type Primitive = string | number | boolean | bigint | symbol | null | undefined
+export type Expand<T> = T extends Primitive ? T : { [K in keyof T]: T[K] }
 
-type OptionalKeys<T> = {
+export type OptionalKeys<T> = {
   [K in keyof T]-?: T extends Record<K, T[K]> ? never : K
 }[keyof T]
 
-type RequiredKeys<T> = {
+export type RequiredKeys<T> = {
   [K in keyof T]-?: T extends Record<K, T[K]> ? K : never
 }[keyof T] &
   keyof T
 
-type RequiredMergeKeys<T, U> = RequiredKeys<T> & RequiredKeys<U>
+export type RequiredMergeKeys<T, U> = RequiredKeys<T> & RequiredKeys<U>
 
-type OptionalMergeKeys<T, U> =
+export type OptionalMergeKeys<T, U> =
   | OptionalKeys<T>
   | OptionalKeys<U>
   | Exclude<RequiredKeys<T>, RequiredKeys<U>>
   | Exclude<RequiredKeys<U>, RequiredKeys<T>>
 
-type MergeNonUnionObjects<T, U> = Expand<
+export type MergeNonUnionObjects<T, U> = Expand<
   {
     [K in RequiredMergeKeys<T, U>]: Expand<Merge<T[K], U[K]>>
   } & {
@@ -76,11 +76,11 @@ type MergeNonUnionObjects<T, U> = Expand<
   }
 >
 
-type MergeNonUnionArrays<T extends readonly any[], U extends readonly any[]> = Array<
+export type MergeNonUnionArrays<T extends readonly any[], U extends readonly any[]> = Array<
   Expand<Merge<T[number], U[number]>>
 >
 
-type MergeArrays<T extends readonly any[], U extends readonly any[]> = [T] extends [never]
+export type MergeArrays<T extends readonly any[], U extends readonly any[]> = [T] extends [never]
   ? U extends any
     ? MergeNonUnionArrays<T, U>
     : never
@@ -94,7 +94,7 @@ type MergeArrays<T extends readonly any[], U extends readonly any[]> = [T] exten
     : never
   : never
 
-type MergeObjects<T, U> = [T] extends [never]
+export type MergeObjects<T, U> = [T] extends [never]
   ? U extends any
     ? MergeNonUnionObjects<T, U>
     : never
@@ -108,13 +108,17 @@ type MergeObjects<T, U> = [T] extends [never]
     : never
   : never
 
-type Merge<T, U> =
+export type Merge<T, U> =
   | Extract<T | U, Primitive>
   | MergeArrays<Extract<T, readonly any[]>, Extract<U, readonly any[]>>
   | MergeObjects<Exclude<T, Primitive | readonly any[]>, Exclude<U, Primitive | readonly any[]>>
 
-type Pass = 'pass'
-type Test<T, U> = [T] extends [U] ? ([U] extends [T] ? Pass : { actual: T; expected: U }) : { actual: T; expected: U }
+export type Pass = 'pass'
+export type Test<T, U> = [T] extends [U]
+  ? [U] extends [T]
+    ? Pass
+    : { actual: T; expected: U }
+  : { actual: T; expected: U }
 
 function typeAssert<T extends Pass>() {}
 

@@ -25,6 +25,7 @@ import {
   EuiTextColor,
   EuiTitle,
   formatDate,
+  htmlIdGenerator,
 } from '@elastic/eui'
 import _, { capitalize, random } from 'lodash'
 import React, { Fragment, useEffect, useReducer, useState } from 'react'
@@ -40,6 +41,7 @@ import { useUpdateUserAuthorization } from 'src/gen/user/user'
 import { useForm, UseFormReturnType } from '@mantine/form'
 import { useUISlice } from 'src/slices/ui'
 
+const makeId = htmlIdGenerator('')
 /**
  * alternative: once config comes in create a `Map` from array with key `path`
  * so that we dont have to filter (though performance doesnt matter, this page will barely be used)
@@ -146,53 +148,66 @@ export default function ProjectManagementPage() {
     if (typeof newField[key] === 'string') {
       newField[key] = e.target.value
     } else if (typeof newField[key] === 'boolean') {
-      console.log(newField)
-      console.log(e.target.value)
-      newField[key] = e.target.value === 'on'
+      newField[key] = !newField[key]
     }
     newFieldsConfig[idx] = newField
     form.setFieldValue('fields', newFieldsConfig)
     console.log(newFieldsConfig)
   }
 
-  const columns = [
-    {
-      field: 'name',
-      name: 'Name',
-      truncateText: true,
-      sortable: true,
-      render: (item, col) => {
-        return (
-          <EuiFormRow fullWidth>
-            <EuiFieldText
-              compressed
-              placeholder="Placeholder text"
-              defaultValue={form.values['fields'].find((f) => f.path === col.path)?.name}
-              onChange={(e) => onChange(e, 'name', col.path)}
-            />
-          </EuiFormRow>
-        )
-      },
-    },
-    {
-      field: 'isVisible',
-      name: 'isVisible',
-      truncateText: true,
-      sortable: true,
-      render: (item, col) => {
-        return (
-          <EuiFormRow fullWidth>
-            <EuiCheckbox
-              id={`checkbox-id-${item.path}`}
-              defaultChecked={form.values['fields'].find((f) => f.path === col.path)?.isVisible}
-              onChange={(e) => onChange(e, 'isVisible', col.path)}
-              checked={form.values['fields'].find((f) => f.path === col.path)?.isVisible}
-            />
-          </EuiFormRow>
-        )
-      },
-    },
-  ]
+  const renderTextInput = (path: string) => {
+    return (item, col) => {
+      return (
+        <EuiFormRow fullWidth>
+          <EuiFieldText compressed defaultValue={item} onChange={(e) => onChange(e, path, col.path)} />
+        </EuiFormRow>
+      )
+    }
+  }
+
+  const renderText = (item, col) => {
+    return <p>{item}</p>
+  }
+
+  const renderCheckbox = (path: string) => {
+    return (item, col) => {
+      return (
+        <EuiFormRow fullWidth>
+          <EuiCheckbox
+            compressed
+            id={`checkbox-id-${col.path}-${makeId()}`}
+            checked={form.values['fields'].find((f) => f.path === col.path)?.[path]}
+            onChange={(e) => onChange(e, path, col.path)}
+          />
+        </EuiFormRow>
+      )
+    }
+  }
+
+  const columns = []
+
+  ;[boardConfig['fields'][0]].forEach((field) => {
+    Object.entries(field).forEach(([k, v]) => {
+      const column = {}
+      column['field'] = k
+      column['name'] = k
+      column['sortable'] = true
+      column['truncateText'] = true
+      if (k === 'id') {
+      } else if (k === 'path') {
+        column['render'] = renderText
+        column['truncateText'] = false
+        column['width'] = '40vw'
+      } else if (typeof v === 'boolean') {
+        column['render'] = renderCheckbox(k)
+      } else if (typeof v === 'string') {
+        column['render'] = renderTextInput(k)
+      }
+      column['render'] && columns.push(column)
+    })
+  })
+  console.log('columns')
+  console.log(columns)
 
   const getRowProps = (item) => {
     const { id } = item
@@ -239,7 +254,7 @@ export default function ProjectManagementPage() {
 
   const generateData = () => {
     return boardConfig.fields.map((f: any) => {
-      f.id = f.path
+      f['id'] = f.path
       return f
     })
   }
@@ -272,6 +287,6 @@ export default function ProjectManagementPage() {
   )
 
   return (
-    <PageTemplate header={{ children: title }} content={element} restrictWidth={'40vw'} buttons={[]} offset={100} />
+    <PageTemplate header={{ children: title }} content={element} restrictWidth={'100vw'} buttons={[]} offset={100} />
   )
 }
