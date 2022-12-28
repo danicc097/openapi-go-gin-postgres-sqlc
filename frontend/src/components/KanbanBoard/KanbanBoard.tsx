@@ -20,6 +20,8 @@ import {
   EuiCheckbox,
   EuiFlexGroup,
   EuiFlexItem,
+  EuiLink,
+  EuiHorizontalRule,
 } from '@elastic/eui'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
@@ -33,6 +35,7 @@ import { useAuthenticatedUser } from 'src/hooks/auth/useAuthenticatedUser'
 import { generateColor } from 'src/utils/colors'
 import { css } from '@emotion/css'
 import type { NestedPaths } from 'src/types/utils'
+import { isValidURL } from 'src/utils/urls'
 
 const makeId = htmlIdGenerator()
 
@@ -103,6 +106,20 @@ const boardConfig = {
       path: 'demoProjectWorkItem.line',
       name: 'Line number',
     },
+    {
+      isEditable: true,
+      showCollapsed: true,
+      isVisible: true,
+      path: 'demoProjectWorkItem.KPIs',
+      name: 'KPIs',
+    },
+    {
+      isEditable: true,
+      showCollapsed: true,
+      isVisible: true,
+      path: 'demoProjectWorkItem.KPIs.name',
+      name: 'Name',
+    },
   ],
 }
 
@@ -131,6 +148,8 @@ export default function KanbanBoard() {
 
           let element
 
+          // TODO should accumulate elements in elements and panel elements here as well
+
           if (typeof value === 'object') {
             const nestedFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path))
             const fieldNestedObjects = getNestedObjects(nestedFields, field)
@@ -153,29 +172,27 @@ export default function KanbanBoard() {
           <EuiCard
             textAlign="left"
             title={
-              <EuiFlexGroup direction="row" justifyContent="spaceBetween">
-                <EuiFlexItem>Card {el}</EuiFlexItem>
-                <EuiButtonIcon
-                  iconType="documentEdit"
-                  aria-label="Heart"
-                  color="primary"
-                  onClick={() => {
-                    // TODO Navigate /workitem/:id
-                    null
-                  }}
-                />
-              </EuiFlexGroup>
+              <>
+                <EuiFlexGroup direction="row" justifyContent="spaceBetween">
+                  <EuiFlexItem>Card {el}</EuiFlexItem>
+                  <EuiButtonIcon
+                    iconType="documentEdit"
+                    aria-label="Heart"
+                    color="primary"
+                    onClick={() => {
+                      // TODO Navigate /workitem/:id
+                      null
+                    }}
+                  />
+                </EuiFlexGroup>
+                <EuiHorizontalRule size="full" margin="xs"></EuiHorizontalRule>
+              </>
             }
-            description={
-              <span>
-                Just be sure not to add any <EuiCode>onClick</EuiCode> handler to the card if the children are also
-                interactable.
-              </span>
-            }
+            // description={}
             hasBorder={false}
             paddingSize="none"
             display="plain"
-            // footer={'footer'}
+            // footer={<></>}
           >
             {renderCard(exampleDemoProjectWorkItem)}
             <EuiSpacer />
@@ -278,7 +295,7 @@ export default function KanbanBoard() {
               index={didx}
               draggableId={`COMPLEX_DRAGGABLE_${did}`}
               spacing="l"
-              style={{ minWidth: '30vw' }}
+              style={{ minWidth: '25vw' }}
               disableInteractiveElementBlocking // Allows button to be drag handle
               hasInteractiveChildren
               isDragDisabled
@@ -384,6 +401,11 @@ export default function KanbanBoard() {
         </EuiText>
       )
     } else if (typeof value === 'string' || typeof value === 'number') {
+      if (typeof value === 'string') {
+        if (isValidURL(value)) {
+          value = <EuiLink href={value}>{value}</EuiLink>
+        }
+      }
       element = (
         <EuiText size="s" key={i}>
           <strong>{field.name}:</strong> {value}
