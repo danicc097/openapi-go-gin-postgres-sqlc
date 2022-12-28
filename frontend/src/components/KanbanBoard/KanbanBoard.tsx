@@ -132,7 +132,7 @@ const boardConfig = {
     {
       isEditable: true,
       showCollapsed: true,
-      isVisible: true,
+      isVisible: false, // TODO should not show as panel
       path: 'demoProjectWorkItem.tags',
       name: 'Tags',
     },
@@ -169,9 +169,8 @@ export default function KanbanBoard() {
           if (_.isPlainObject(value)) {
             const nestedFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path))
             const fieldNestedObjects = getNestedObjects(nestedFields, field)
-            let arrayFields = []
             if (Array.isArray(value) && _.isPlainObject(value[0])) {
-              arrayFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path))
+              const arrayFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path + '.'))
               element = createCardPanel(arrayFields, fieldNestedObjects, skipFields, data, field, {
                 parentArrayPath: field.path,
               })
@@ -374,13 +373,16 @@ export default function KanbanBoard() {
         let el
         const val = _.get(data, field.path)
         if (Array.isArray(val) && _.isPlainObject(val[0])) {
-          const arrayFields = fields.filter((f) => f.path.startsWith(field.path))
+          const arrayFields = fields.filter((f) => f.path.startsWith(field.path + '.'))
           el = createCardPanel(arrayFields, fieldNestedObjects, skipFields, data, field, {
             parentArrayPath: field.path,
           })
 
           el && panelElements.push(el)
           continue
+        } else {
+          el = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, field)
+          el && panelElements.push(el)
         }
       }
 
@@ -407,21 +409,18 @@ export default function KanbanBoard() {
       }
     }
 
-    let title
-    if (currentField.isVisible) {
-      title = (
-        <>
-          <EuiTitle size="xxxs" css={{ color: 'dodgerblue' }}>
-            <h4>{currentField.name}</h4>
-          </EuiTitle>
-          <EuiSpacer size="xs"></EuiSpacer>
-        </>
-      )
-    }
+    const title = (
+      <>
+        <EuiTitle size="xxxs" css={{ color: 'dodgerblue' }}>
+          <h4>{currentField.name}</h4>
+        </EuiTitle>
+        <EuiSpacer size="xs"></EuiSpacer>
+      </>
+    )
 
     elements = elements.concat(<EuiSpacer size="s" />, ...panelElements)
 
-    if (elements.length > 0) {
+    if (elements.length > 0 && currentField.isVisible) {
       element = (
         <>
           <EuiPanel paddingSize="s">
@@ -458,8 +457,6 @@ export default function KanbanBoard() {
         </EuiText>
       )
     } else if (Array.isArray(value) && typeof value[0] === 'string') {
-      console.log('here')
-      // TODO generate color from name.
       // workitem tags and types rendered separately from this, explicitly and have custom color
       const badges = value.map((item, idx) => (
         <EuiBadge key={`${makeId('')}-${idx}`} color={generateColor(item)}>
