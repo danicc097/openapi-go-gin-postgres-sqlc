@@ -168,15 +168,15 @@ export interface components {
     /**
      * @description represents User data to update 
      * @example {
-     *   "first_name": "Jane",
-     *   "last_name": "Doe"
+     *   "firstName": "Jane",
+     *   "lastName": "Doe"
      * }
      */
     UpdateUserRequest: {
       /** @description originally from auth server but updatable */
-      first_name?: string;
+      firstName?: string;
       /** @description originally from auth server but updatable */
-      last_name?: string;
+      lastName?: string;
     };
     /**
      * @description represents User authorization data to update 

@@ -36,31 +36,74 @@ import type { NestedPaths } from 'src/types/utils'
 
 const makeId = htmlIdGenerator()
 
-type SampleCardData = {
-  someDate: Date
-  someBoolean: boolean
-  someOtherBoolean: boolean
-  sometext: string
-  someOptText?: string
-  someList: string[]
+const exampleDemoProjectWorkItem = {
+  workItemType: 'type 1',
+  demoProjectWorkItem: {
+    ref: 'ABCD-ABCD',
+    line: 123,
+    KPIs: [
+      {
+        complexity: 'kpi complexity 1',
+        name: 'kpi name 1',
+      },
+      {
+        complexity: 'kpi complexity 2',
+        name: 'kpi name 2',
+      },
+    ],
+    metadata: {
+      externalLink: 'https://externallink',
+      count: 123456,
+    },
+  },
 }
 
-// UI title mapping for fields
-const sampleCardTitles: Record<keyof SampleCardData, string> = {
-  someDate: 'Some date',
-  someBoolean: 'Some boolean',
-  someOtherBoolean: 'Some other boolean',
-  sometext: 'Some text',
-  someOptText: 'Some optional text',
-  someList: 'Some list',
-}
-
-const workitemTitlesMapping = {
-  workItemTypeID: 'Work item type ID',
-  targetDate: 'Target date',
-  'demoProjectWorkItem.ref': 'Ref',
-  'demoProjectWorkItem.line': 'Line',
-  'demoProjectWorkItem.reopened': 'Reopened',
+const boardConfig = {
+  header: ['demoProject.ref', 'workItemType'],
+  fields: [
+    {
+      isEditable: true,
+      showCollapsed: true,
+      isVisible: true,
+      path: 'workItemType',
+      name: 'Type',
+    },
+    {
+      isEditable: true,
+      showCollapsed: true,
+      isVisible: true,
+      path: 'demoProjectWorkItem',
+      name: 'Demo project',
+    },
+    {
+      isEditable: true,
+      showCollapsed: true,
+      isVisible: false,
+      path: 'demoProjectWorkItem.metadata',
+      name: 'Metadata',
+    },
+    {
+      isEditable: true,
+      showCollapsed: true,
+      isVisible: true,
+      path: 'demoProjectWorkItem.ref',
+      name: 'Reference',
+    },
+    {
+      isEditable: true,
+      showCollapsed: true,
+      isVisible: true,
+      path: 'demoProjectWorkItem.line',
+      name: 'Line number',
+    },
+    {
+      isEditable: true,
+      showCollapsed: true,
+      isVisible: true,
+      path: 'demoProjectWorkItem.metadata.externalLink',
+      name: 'External link',
+    },
+  ],
 }
 
 export default function KanbanBoard() {
@@ -72,66 +115,62 @@ export default function KanbanBoard() {
 
   const { user } = useAuthenticatedUser()
   const { addToast } = useUISlice()
-  const [sampleCard, setsampleCard] = useState({
-    someBoolean: true, // checkbox
-    someOtherBoolean: false, // checkbox
-    someDate: new Date(),
-    someList: ['item 1', 'item 2'], // EuiBadge
-    sometext: 'content for sometext.\n More content.',
-  })
 
-  const renderCard = (data: any, titles: { [key: string]: string }) => {
+  boardConfig.fields = _.sortBy(boardConfig.fields, 'path')
+
+  const renderCard = (data: any) => {
+    const ignoreFields = []
+
     return (
       <>
-        {Object.keys(titles).map((key, i) => {
-          if (_.get(data, key) === undefined) return
+        {boardConfig.fields.map((field, i) => {
+          if (ignoreFields.includes(field.path)) return
+          if (_.get(data, field.path) === undefined) return
 
-          const value = _.get(data, key)
+          const value = _.get(data, field.path)
+          // TODO group by type and then render
+          // nested items inside EuiPanel
+
+          const elements = []
+
           let element
-          // TODO group by type and then render with minimal spacer
-          // and flex
 
-          if (value instanceof Date) {
-            element = (
-              <EuiText size="s" key={i}>
-                <strong>{titles[key]}:</strong> {value.toString()}
-              </EuiText>
-            )
-          } else if (typeof value === 'string' || typeof value === 'number') {
-            element = (
-              <EuiText size="s" key={i}>
-                <strong>{titles[key]}:</strong> {value}
-              </EuiText>
-            )
-          } else if (Array.isArray(value)) {
-            // TODO generate color from name.
-            // workitem tags and types rendered separately from this, explicitly and have custom color
-            const badges = value.map((item, idx) => (
-              <EuiBadge key={`${i}-${idx}`} color={generateColor(item)}>
-                {item}
-              </EuiBadge>
-            ))
-            element = (
-              <div key={i}>
-                <strong>{titles[key]}:</strong> {badges}
-              </div>
-            )
-          } else if (typeof value === 'boolean') {
-            element = (
-              <StyledEuiCheckbox
-                key={i}
-                readOnly
-                style={{ alignContent: 'center' }}
-                compressed
-                id={`checkbox-${i}`}
-                label={titles[key]}
-                onChange={() => null}
-                checked={value}
-              ></StyledEuiCheckbox>
-            )
-          } else if (typeof value === 'object') {
-            element = renderCard(value, titles)
+          if (typeof value === 'object') {
+            const nestedFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path))
+            nestedFields.forEach((field) => {
+              ignoreFields.push(field.path)
+              const el = createCardField(_.get(data, field.path), i, field)
+              el && elements.push(el)
+            })
+
+            let title
+            if (field.isVisible) {
+              title = (
+                <>
+                  <EuiTitle size="xxxs">
+                    <h4>{field.name}</h4>
+                  </EuiTitle>
+                  <EuiSpacer size="xs"></EuiSpacer>
+                </>
+              )
+            }
+
+            if (elements.length > 0) {
+              element = (
+                <>
+                  <EuiPanel paddingSize="s">
+                    {title}
+                    {elements}
+                  </EuiPanel>
+                  <EuiSpacer size="s"></EuiSpacer>
+                </>
+              )
+            }
+          } else {
+            element = createCardField(value, i, field)
           }
+
+          console.log(elements)
 
           return element
         })}
@@ -170,7 +209,7 @@ export default function KanbanBoard() {
             display="plain"
             // footer={'footer'}
           >
-            {renderCard(getGetProjectWorkitemsMock(), workitemTitlesMapping)}
+            {renderCard(exampleDemoProjectWorkItem)}
             <EuiSpacer />
             <EuiButton
               key={1}
@@ -304,4 +343,53 @@ export default function KanbanBoard() {
       </EuiDragDropContext>
     </>
   )
+
+  function createCardField(
+    value: any,
+    i: number,
+    field: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string },
+  ) {
+    let element
+
+    if (value instanceof Date) {
+      element = (
+        <EuiText size="s" key={i}>
+          <strong>{field.name}:</strong> {value.toString()}
+        </EuiText>
+      )
+    } else if (typeof value === 'string' || typeof value === 'number') {
+      element = (
+        <EuiText size="s" key={i}>
+          <strong>{field.name}:</strong> {value}
+        </EuiText>
+      )
+    } else if (Array.isArray(value)) {
+      // TODO generate color from name.
+      // workitem tags and types rendered separately from this, explicitly and have custom color
+      const badges = value.map((item, idx) => (
+        <EuiBadge key={`${i}-${idx}`} color={generateColor(item)}>
+          {item}
+        </EuiBadge>
+      ))
+      element = (
+        <div key={i}>
+          <strong>{field.name}:</strong> {badges}
+        </div>
+      )
+    } else if (typeof value === 'boolean') {
+      element = (
+        <StyledEuiCheckbox
+          key={i}
+          readOnly
+          style={{ alignContent: 'center' }}
+          compressed
+          id={`checkbox-${i}`}
+          label={field.name}
+          onChange={() => null}
+          checked={value}
+        ></StyledEuiCheckbox>
+      )
+    }
+    return element
+  }
 }

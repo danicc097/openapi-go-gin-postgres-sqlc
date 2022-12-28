@@ -11,7 +11,7 @@
  */
 export interface UpdateUserRequest {
   /** originally from auth server but updatable */
-  first_name?: string
+  firstName?: string
   /** originally from auth server but updatable */
-  last_name?: string
+  lastName?: string
 }
