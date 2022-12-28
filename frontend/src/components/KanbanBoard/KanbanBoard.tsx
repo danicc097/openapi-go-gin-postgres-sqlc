@@ -49,10 +49,12 @@ const exampleDemoProjectWorkItem = {
       {
         complexity: 'kpi complexity 1',
         name: 'kpi name 1',
+        tags: ['tag 1', 'tag 5'],
       },
       {
         complexity: 'kpi complexity 2',
         name: 'kpi name 2',
+        tags: ['tag 1'],
       },
     ],
     tags: ['critical', 'external client'],
@@ -132,7 +134,14 @@ const boardConfig = {
     {
       isEditable: true,
       showCollapsed: true,
-      isVisible: false, // TODO should not show as panel
+      isVisible: true,
+      path: 'demoProjectWorkItem.KPIs.tags',
+      name: 'Tags',
+    },
+    {
+      isEditable: true,
+      showCollapsed: true,
+      isVisible: true,
       path: 'demoProjectWorkItem.tags',
       name: 'Tags',
     },
@@ -380,6 +389,7 @@ export default function KanbanBoard() {
 
           el && panelElements.push(el)
           continue
+        } else if (Array.isArray(val)) {
         } else {
           el = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, field)
           el && panelElements.push(el)
