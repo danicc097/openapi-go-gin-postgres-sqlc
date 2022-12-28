@@ -100,6 +100,13 @@ const boardConfig = {
       isEditable: true,
       showCollapsed: true,
       isVisible: true,
+      path: 'demoProjectWorkItem.metadata',
+      name: 'External link',
+    },
+    {
+      isEditable: true,
+      showCollapsed: true,
+      isVisible: true,
       path: 'demoProjectWorkItem.metadata.externalLink',
       name: 'External link',
     },
@@ -131,46 +138,19 @@ export default function KanbanBoard() {
           // TODO group by type and then render
           // nested items inside EuiPanel
 
-          const elements = []
-
           let element
 
           if (typeof value === 'object') {
-            const nestedFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path))
-            nestedFields.forEach((field) => {
-              ignoreFields.push(field.path)
-              const el = createCardField(_.get(data, field.path), i, field)
-              el && elements.push(el)
+            const nestedFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path + '.'))
+            const nestedObjects = nestedFields.filter((f) => {
+              const fieldCount = _.countBy(f.path)['.'] || 0
+              const parentFieldCount = _.countBy(field.path)['.'] || 0
+              return fieldCount > parentFieldCount
             })
-
-            let title
-            if (field.isVisible) {
-              title = (
-                <>
-                  <EuiTitle size="xxxs">
-                    <h4>{field.name}</h4>
-                  </EuiTitle>
-                  <EuiSpacer size="xs"></EuiSpacer>
-                </>
-              )
-            }
-
-            if (elements.length > 0) {
-              element = (
-                <>
-                  <EuiPanel paddingSize="s">
-                    {title}
-                    {elements}
-                  </EuiPanel>
-                  <EuiSpacer size="s"></EuiSpacer>
-                </>
-              )
-            }
+            element = createCardPanel(nestedFields, nestedObjects, ignoreFields, data, i, field)
           } else {
             element = createCardField(value, i, field)
           }
-
-          console.log(elements)
 
           return element
         })}
@@ -343,6 +323,58 @@ export default function KanbanBoard() {
       </EuiDragDropContext>
     </>
   )
+
+  function createCardPanel(
+    fields: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string }[],
+    nestedObjects: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string }[],
+    ignoreFields: any[],
+    data: any,
+    i: number,
+    currentField: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string },
+  ) {
+    // TODO deeply nesting panels inside panels
+
+    let element
+    const elements = []
+
+    fields.forEach((field, idx, ff) => {
+      ignoreFields.push(field.path)
+      // if (nestedObjects.includes(field)) {
+      //   const fff = ff.filter((f) => f.path.startsWith(field.path))
+      //   console.log(fff)
+      //   const el = createCardPanel(fff, nestedObjects, ignoreFields, data, i, field)
+      //   el && elements.push(el)
+      //   return
+      // }
+      const el = createCardField(_.get(data, field.path), i, field)
+      el && elements.push(el)
+    })
+
+    let title
+    if (currentField.isVisible) {
+      title = (
+        <>
+          <EuiTitle size="xxxs">
+            <h4>{currentField.name}</h4>
+          </EuiTitle>
+          <EuiSpacer size="xs"></EuiSpacer>
+        </>
+      )
+    }
+
+    if (elements.length > 0) {
+      element = (
+        <>
+          <EuiPanel paddingSize="s">
+            {title}
+            {elements}
+          </EuiPanel>
+          <EuiSpacer size="s"></EuiSpacer>
+        </>
+      )
+    }
+    return element
+  }
 
   function createCardField(
     value: any,
