@@ -36,6 +36,7 @@ import { generateColor } from 'src/utils/colors'
 import { css } from '@emotion/css'
 import type { NestedPaths } from 'src/types/utils'
 import { isValidURL } from 'src/utils/urls'
+import { removePrefix } from 'src/utils/strings'
 
 const makeId = htmlIdGenerator()
 
@@ -120,6 +121,13 @@ const boardConfig = {
       path: 'demoProjectWorkItem.KPIs.name',
       name: 'Name',
     },
+    {
+      isEditable: true,
+      showCollapsed: true,
+      isVisible: true,
+      path: 'demoProjectWorkItem.KPIs.complexity',
+      name: 'Complexity',
+    },
   ],
 }
 
@@ -153,8 +161,16 @@ export default function KanbanBoard() {
           if (typeof value === 'object') {
             const nestedFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path))
             const fieldNestedObjects = getNestedObjects(nestedFields, field)
-
-            element = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, field)
+            let arrayFields = []
+            if (Array.isArray(value)) {
+              arrayFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path + '.'))
+              const arrayPaths = nestedFields.map((f) => f.path)
+              element = createCardPanel(arrayFields, fieldNestedObjects, skipFields, data, field, {
+                parentArrayPath: field.path,
+              })
+            } else {
+              element = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, field)
+            }
           } else {
             element = createCardField(value, field)
           }
@@ -336,24 +352,45 @@ export default function KanbanBoard() {
     skipFields: any[],
     data: any,
     currentField: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string },
+    options?: { parentArrayPath: string },
   ) {
     let element
     let elements = []
     const panelElements = []
-
     for (const field of fields) {
       if (skipFields.includes(field.path)) continue
       skipFields.push(field.path)
       if (nestedObjects.includes(field) && typeof _.get(data, field.path) === 'object') {
-        const nestedFields = fields.filter((f) => f.path.startsWith(field.path))
+        let nestedFields = fields.filter((f) => f.path.startsWith(field.path))
         const fieldNestedObjects = getNestedObjects(nestedFields, field)
-        // TODO render panels always last and add spacing inbetween
-        const el = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, field)
+
+        let el
+        if (Array.isArray(_.get(data, field.path))) {
+          nestedFields = fields.filter((f) => f.path.startsWith(field.path + '.'))
+          el = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, field, {
+            parentArrayPath: field.path,
+          })
+        } else {
+          el = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, field)
+        }
         el && panelElements.push(el)
         continue
       }
-      const el = createCardField(_.get(data, field.path), field)
-      el && elements.push(el)
+
+      let el
+      if (options?.parentArrayPath) {
+        // TODO here we need to filter all boardConfig and find all nested elements of the array
+        // then render at once, else we render each field for every array element separately
+        _.get(data, options?.parentArrayPath)?.forEach((element) => {
+          const elementPath = removePrefix(field.path, options?.parentArrayPath).slice(1)
+          el = createCardField(_.get(element, elementPath), field)
+          el && elements.push(el)
+        })
+        elements.length > 0 && elements.push(<EuiHorizontalRule size="half" margin="xs" />)
+      } else {
+        el = createCardField(_.get(data, field.path), field)
+        el && elements.push(el)
+      }
     }
 
     let title
