@@ -78,9 +78,16 @@ const boardConfig = {
     {
       isEditable: true,
       showCollapsed: true,
-      isVisible: false,
+      isVisible: true,
       path: 'demoProjectWorkItem.metadata',
       name: 'Metadata',
+    },
+    {
+      isEditable: true,
+      showCollapsed: true,
+      isVisible: true,
+      path: 'demoProjectWorkItem.metadata.externalLink',
+      name: 'External link',
     },
     {
       isEditable: true,
@@ -95,20 +102,6 @@ const boardConfig = {
       isVisible: true,
       path: 'demoProjectWorkItem.line',
       name: 'Line number',
-    },
-    {
-      isEditable: true,
-      showCollapsed: true,
-      isVisible: true,
-      path: 'demoProjectWorkItem.metadata',
-      name: 'External link',
-    },
-    {
-      isEditable: true,
-      showCollapsed: true,
-      isVisible: true,
-      path: 'demoProjectWorkItem.metadata.externalLink',
-      name: 'External link',
     },
   ],
 }
@@ -332,23 +325,31 @@ export default function KanbanBoard() {
     i: number,
     currentField: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string },
   ) {
-    // TODO deeply nesting panels inside panels
-
     let element
     const elements = []
 
-    fields.forEach((field, idx, ff) => {
-      ignoreFields.push(field.path)
-      // if (nestedObjects.includes(field)) {
-      //   const fff = ff.filter((f) => f.path.startsWith(field.path))
-      //   console.log(fff)
-      //   const el = createCardPanel(fff, nestedObjects, ignoreFields, data, i, field)
-      //   el && elements.push(el)
-      //   return
-      // }
+    for (const field of fields) {
+      if (nestedObjects.includes(field) && typeof _.get(data, field.path) === 'object') {
+        ignoreFields.push(field.path)
+        const nestedFields = fields.filter((f) => f.path.startsWith(field.path))
+        console.log('nestedFields')
+        console.log(nestedFields)
+        const fieldNestedObjects = nestedObjects.filter((f) => {
+          const fieldCount = _.countBy(f.path)['.'] || 0
+          const parentFieldCount = _.countBy(field.path)['.'] || 0
+          return fieldCount > parentFieldCount
+        })
+        // TODO render panels always last and add spacing inbetween
+        const el = createCardPanel(nestedFields, fieldNestedObjects, ignoreFields, data, i, field)
+        el && elements.push(el)
+        continue
+      }
       const el = createCardField(_.get(data, field.path), i, field)
       el && elements.push(el)
-    })
+    }
+
+    console.log('elements')
+    console.log(elements)
 
     let title
     if (currentField.isVisible) {
