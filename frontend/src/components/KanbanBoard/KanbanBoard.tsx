@@ -25,7 +25,7 @@ import {
 } from '@elastic/eui'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
-import _, { isArray, isObject, random, uniqueId } from 'lodash'
+import _, { random, uniqueId } from 'lodash'
 import type { DemoProjectWorkItemsResponse } from 'src/gen/model'
 import moment from 'moment'
 import { getGetProjectWorkitemsMock, getProjectMSW } from 'src/gen/project/project.msw'
@@ -55,6 +55,7 @@ const exampleDemoProjectWorkItem = {
         name: 'kpi name 2',
       },
     ],
+    tags: ['critical', 'external client'],
     metadata: {
       externalLink: 'https://externallink',
       count: 123456,
@@ -128,6 +129,13 @@ const boardConfig = {
       path: 'demoProjectWorkItem.KPIs.complexity',
       name: 'Complexity',
     },
+    {
+      isEditable: true,
+      showCollapsed: true,
+      isVisible: true,
+      path: 'demoProjectWorkItem.tags',
+      name: 'Tags',
+    },
   ],
 }
 
@@ -158,13 +166,12 @@ export default function KanbanBoard() {
 
           // TODO should accumulate elements in elements and panel elements here as well
 
-          if (typeof value === 'object') {
+          if (_.isPlainObject(value)) {
             const nestedFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path))
             const fieldNestedObjects = getNestedObjects(nestedFields, field)
             let arrayFields = []
-            if (Array.isArray(value)) {
-              arrayFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path + '.'))
-              const arrayPaths = nestedFields.map((f) => f.path)
+            if (Array.isArray(value) && _.isPlainObject(value[0])) {
+              arrayFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path))
               element = createCardPanel(arrayFields, fieldNestedObjects, skipFields, data, field, {
                 parentArrayPath: field.path,
               })
@@ -361,29 +368,27 @@ export default function KanbanBoard() {
       if (skipFields.includes(field.path)) continue
       skipFields.push(field.path)
       if (nestedObjects.includes(field) && typeof _.get(data, field.path) === 'object') {
-        let nestedFields = fields.filter((f) => f.path.startsWith(field.path))
+        const nestedFields = fields.filter((f) => f.path.startsWith(field.path))
         const fieldNestedObjects = getNestedObjects(nestedFields, field)
 
         let el
-        if (Array.isArray(_.get(data, field.path))) {
-          nestedFields = fields.filter((f) => f.path.startsWith(field.path + '.'))
-          el = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, field, {
+        const val = _.get(data, field.path)
+        if (Array.isArray(val) && _.isPlainObject(val[0])) {
+          const arrayFields = fields.filter((f) => f.path.startsWith(field.path))
+          el = createCardPanel(arrayFields, fieldNestedObjects, skipFields, data, field, {
             parentArrayPath: field.path,
           })
-        } else {
-          el = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, field)
+
+          el && panelElements.push(el)
+          continue
         }
-        el && panelElements.push(el)
-        continue
       }
 
       let el
       if (options?.parentArrayPath) {
         _.get(data, options?.parentArrayPath)?.forEach((element) => {
-          console.log(element)
-          if (isObject(element)) {
+          if (_.isPlainObject(element)) {
             Object.entries(element).forEach(([k, v]) => {
-              console.log(`${options?.parentArrayPath}.${k}`)
               const elementField = fields.filter((f) => f.path.endsWith(options?.parentArrayPath + '.' + k))[0]
               if (!elementField) return
               el = createCardField(v, elementField)
@@ -395,6 +400,8 @@ export default function KanbanBoard() {
         elements.pop()
         break
       } else {
+        console.log(field)
+        console.log(_.get(data, field.path))
         el = createCardField(_.get(data, field.path), field)
         el && elements.push(el)
       }
@@ -433,7 +440,6 @@ export default function KanbanBoard() {
     field: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string },
   ) {
     let element
-
     if (value instanceof Date) {
       element = (
         <EuiText size="s" key={`${makeId('')}`}>
@@ -451,7 +457,7 @@ export default function KanbanBoard() {
           <strong>{field.name}:</strong> {value}
         </EuiText>
       )
-    } else if (Array.isArray(value)) {
+    } else if (Array.isArray(value) && typeof value[0] === 'string') {
       console.log('here')
       // TODO generate color from name.
       // workitem tags and types rendered separately from this, explicitly and have custom color
