@@ -154,9 +154,9 @@ export default function KanbanBoard() {
             const nestedFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path))
             const fieldNestedObjects = getNestedObjects(nestedFields, field)
 
-            element = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, i, field)
+            element = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, field)
           } else {
-            element = createCardField(value, i, field)
+            element = createCardField(value, field)
           }
 
           return element
@@ -189,6 +189,7 @@ export default function KanbanBoard() {
               </>
             }
             // description={}
+            titleElement="h3"
             hasBorder={false}
             paddingSize="none"
             display="plain"
@@ -334,7 +335,6 @@ export default function KanbanBoard() {
     nestedObjects: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string }[],
     skipFields: any[],
     data: any,
-    i: number,
     currentField: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string },
   ) {
     let element
@@ -348,16 +348,13 @@ export default function KanbanBoard() {
         const nestedFields = fields.filter((f) => f.path.startsWith(field.path))
         const fieldNestedObjects = getNestedObjects(nestedFields, field)
         // TODO render panels always last and add spacing inbetween
-        const el = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, i, field)
+        const el = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, field)
         el && panelElements.push(el)
         continue
       }
-      const el = createCardField(_.get(data, field.path), i, field)
+      const el = createCardField(_.get(data, field.path), field)
       el && elements.push(el)
     }
-
-    console.log('elements')
-    console.log(elements)
 
     let title
     if (currentField.isVisible) {
@@ -389,14 +386,13 @@ export default function KanbanBoard() {
 
   function createCardField(
     value: any,
-    i: number,
     field: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string },
   ) {
     let element
 
     if (value instanceof Date) {
       element = (
-        <EuiText size="s" key={i}>
+        <EuiText size="s" key={`${makeId('')}`}>
           <strong>{field.name}:</strong> {value.toString()}
         </EuiText>
       )
@@ -407,31 +403,32 @@ export default function KanbanBoard() {
         }
       }
       element = (
-        <EuiText size="s" key={i}>
+        <EuiText size="s" key={`${makeId('')}`}>
           <strong>{field.name}:</strong> {value}
         </EuiText>
       )
     } else if (Array.isArray(value)) {
+      console.log('here')
       // TODO generate color from name.
       // workitem tags and types rendered separately from this, explicitly and have custom color
       const badges = value.map((item, idx) => (
-        <EuiBadge key={`${i}-${idx}`} color={generateColor(item)}>
+        <EuiBadge key={`${makeId('')}-${idx}`} color={generateColor(item)}>
           {item}
         </EuiBadge>
       ))
       element = (
-        <div key={i}>
+        <div key={`${makeId('')}`}>
           <strong>{field.name}:</strong> {badges}
         </div>
       )
     } else if (typeof value === 'boolean') {
       element = (
         <StyledEuiCheckbox
-          key={i}
+          key={`${makeId('')}`}
           readOnly
           style={{ alignContent: 'center' }}
           compressed
-          id={`checkbox-${i}`}
+          id={`checkbox-${makeId('')}`}
           label={field.name}
           onChange={() => null}
           checked={value}
