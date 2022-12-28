@@ -119,28 +119,23 @@ export default function KanbanBoard() {
   boardConfig.fields = _.sortBy(boardConfig.fields, 'path')
 
   const renderCard = (data: any) => {
-    const ignoreFields = []
+    const skipFields = []
 
     return (
       <>
         {boardConfig.fields.map((field, i) => {
-          if (ignoreFields.includes(field.path)) return
+          if (skipFields.includes(field.path)) return
           if (_.get(data, field.path) === undefined) return
 
           const value = _.get(data, field.path)
-          // TODO group by type and then render
-          // nested items inside EuiPanel
 
           let element
 
           if (typeof value === 'object') {
-            const nestedFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path + '.'))
-            const nestedObjects = nestedFields.filter((f) => {
-              const fieldCount = _.countBy(f.path)['.'] || 0
-              const parentFieldCount = _.countBy(field.path)['.'] || 0
-              return fieldCount > parentFieldCount
-            })
-            element = createCardPanel(nestedFields, nestedObjects, ignoreFields, data, i, field)
+            const nestedFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path))
+            const fieldNestedObjects = getNestedObjects(nestedFields, field)
+
+            element = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, i, field)
           } else {
             element = createCardField(value, i, field)
           }
@@ -320,28 +315,24 @@ export default function KanbanBoard() {
   function createCardPanel(
     fields: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string }[],
     nestedObjects: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string }[],
-    ignoreFields: any[],
+    skipFields: any[],
     data: any,
     i: number,
     currentField: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string },
   ) {
     let element
-    const elements = []
+    let elements = []
+    const panelElements = []
 
     for (const field of fields) {
+      if (skipFields.includes(field.path)) continue
+      skipFields.push(field.path)
       if (nestedObjects.includes(field) && typeof _.get(data, field.path) === 'object') {
-        ignoreFields.push(field.path)
         const nestedFields = fields.filter((f) => f.path.startsWith(field.path))
-        console.log('nestedFields')
-        console.log(nestedFields)
-        const fieldNestedObjects = nestedObjects.filter((f) => {
-          const fieldCount = _.countBy(f.path)['.'] || 0
-          const parentFieldCount = _.countBy(field.path)['.'] || 0
-          return fieldCount > parentFieldCount
-        })
+        const fieldNestedObjects = getNestedObjects(nestedFields, field)
         // TODO render panels always last and add spacing inbetween
-        const el = createCardPanel(nestedFields, fieldNestedObjects, ignoreFields, data, i, field)
-        el && elements.push(el)
+        const el = createCardPanel(nestedFields, fieldNestedObjects, skipFields, data, i, field)
+        el && panelElements.push(el)
         continue
       }
       const el = createCardField(_.get(data, field.path), i, field)
@@ -355,13 +346,15 @@ export default function KanbanBoard() {
     if (currentField.isVisible) {
       title = (
         <>
-          <EuiTitle size="xxxs">
+          <EuiTitle size="xxxs" css={{ color: 'dodgerblue' }}>
             <h4>{currentField.name}</h4>
           </EuiTitle>
           <EuiSpacer size="xs"></EuiSpacer>
         </>
       )
     }
+
+    elements = elements.concat(<EuiSpacer size="s" />, ...panelElements)
 
     if (elements.length > 0) {
       element = (
@@ -425,4 +418,14 @@ export default function KanbanBoard() {
     }
     return element
   }
+}
+function getNestedObjects(
+  nestedObjects: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string }[],
+  field: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string },
+) {
+  return nestedObjects.filter((f) => {
+    const fieldCount = _.countBy(f.path)['.'] || 0
+    const parentFieldCount = _.countBy(field.path)['.'] || 0
+    return fieldCount > parentFieldCount
+  })
 }
