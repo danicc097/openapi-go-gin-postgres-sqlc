@@ -38,8 +38,6 @@ export default function Layout({ children }: LayoutProps) {
     z-index: 999;
     background-color: ${euiTheme.colors.body} !important;
     width: 100%;
-    position: fixed;
-    bottom: 0px;
     padding: 10px 0px 10px;
     display: flex;
     align-items: center;

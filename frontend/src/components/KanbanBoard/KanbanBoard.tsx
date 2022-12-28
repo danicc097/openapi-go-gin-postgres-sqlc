@@ -401,7 +401,7 @@ export default function KanbanBoard() {
         _.get(data, options?.parentArrayPath)?.forEach((element) => {
           if (_.isPlainObject(element)) {
             Object.entries(element).forEach(([k, v]) => {
-              const elementField = fields.filter((f) => f.path.endsWith(options?.parentArrayPath + '.' + k))[0]
+              const elementField = fields.find((f) => f.path.endsWith(options?.parentArrayPath + '.' + k))
               if (!elementField) return
               el = createCardField(v, elementField)
               el && elements.push(el)

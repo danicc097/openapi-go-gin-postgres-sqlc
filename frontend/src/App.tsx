@@ -13,6 +13,7 @@ import ProtectedRoute from 'src/components/Permissions/ProtectedRoute'
 const Layout = React.lazy(() => import('./components/Layout/Layout'))
 const LandingPage = React.lazy(() => import('./views/LandingPage/LandingPage'))
 const UserPermissionsPage = React.lazy(() => import('src/views/Admin/UserPermissionsPage/UserPermissionsPage'))
+const ProjectManagementPage = React.lazy(() => import('src/views/Admin/ProjectManagementPage/ProjectManagementPage'))
 
 export default function App() {
   const theme = useUISlice((state) => state?.theme)
@@ -50,6 +51,16 @@ export default function App() {
                   <React.Suspense fallback={<FallbackLoading />}>
                     <ProtectedRoute>
                       <UserPermissionsPage />
+                    </ProtectedRoute>
+                  </React.Suspense>
+                }
+              />
+              <Route
+                path="/admin/project-management"
+                element={
+                  <React.Suspense fallback={<FallbackLoading />}>
+                    <ProtectedRoute>
+                      <ProjectManagementPage />
                     </ProtectedRoute>
                   </React.Suspense>
                 }
