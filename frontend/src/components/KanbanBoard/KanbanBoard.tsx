@@ -379,14 +379,21 @@ export default function KanbanBoard() {
 
       let el
       if (options?.parentArrayPath) {
-        // TODO here we need to filter all boardConfig and find all nested elements of the array
-        // then render at once, else we render each field for every array element separately
         _.get(data, options?.parentArrayPath)?.forEach((element) => {
-          const elementPath = removePrefix(field.path, options?.parentArrayPath).slice(1)
-          el = createCardField(_.get(element, elementPath), field)
-          el && elements.push(el)
+          console.log(element)
+          if (isObject(element)) {
+            Object.entries(element).forEach(([k, v]) => {
+              console.log(`${options?.parentArrayPath}.${k}`)
+              const elementField = fields.filter((f) => f.path.endsWith(options?.parentArrayPath + '.' + k))[0]
+              if (!elementField) return
+              el = createCardField(v, elementField)
+              el && elements.push(el)
+            })
+          }
+          elements.length > 0 && elements.push(<EuiHorizontalRule size="half" margin="xs" />)
         })
-        elements.length > 0 && elements.push(<EuiHorizontalRule size="half" margin="xs" />)
+        elements.pop()
+        break
       } else {
         el = createCardField(_.get(data, field.path), field)
         el && elements.push(el)
