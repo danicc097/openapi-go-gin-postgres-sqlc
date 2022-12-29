@@ -28,13 +28,6 @@ func Test_MergeConfigFields(t *testing.T) {
 					"isEditable": true,
 					"showCollapsed": true,
 					"isVisible": true,
-					"path": "workItemType",
-					"name": "Type"
-				},
-				{
-					"isEditable": true,
-					"showCollapsed": true,
-					"isVisible": true,
 					"path": "demoProjectWorkItem",
 					"name": "Demo project"
 				},
@@ -42,8 +35,8 @@ func Test_MergeConfigFields(t *testing.T) {
 					"isEditable": true,
 					"showCollapsed": true,
 					"isVisible": true,
-					"path": "demoProjectWorkItem.metadata",
-					"name": "Metadata"
+					"path": "demoProjectWorkItem.ref",
+					"name": "Reference"
 				}
 			]
 		}
@@ -63,19 +56,19 @@ func Test_MergeConfigFields(t *testing.T) {
 		want  *models.ProjectConfig
 		error string
 	}{
-		// TODO: expand test cases with different stubs
+		// TODO: expand test cases with different stubs, test bad config in db/update request (no fields key, wrong type of array elements...)
 		{
 			name: "example",
 			args: args{
-				obj2: map[string]any{"fields": []map[string]any{
-					{"path:": "test", "name": "test"},
-					{"path:": "test.nested", "name": "test nested"},
+				obj2: map[string]any{"fields": []any{ // []any to test proper conversion later on
+					map[string]any{"path": "workItemTypeID", "name": "Updated", "isEditable": false},
+					map[string]any{"path": "inexistent", "name": "inexistent"},
 				}},
 			},
 			want: &models.ProjectConfig{
 				Header: []string{"demoProject.ref", "workItemType"},
 				Fields: []models.ProjectConfigField{
-					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "workItemTypeID", Name: "workItemTypeID"},
+					{IsEditable: false, ShowCollapsed: true, IsVisible: true, Path: "workItemTypeID", Name: "Updated"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "description", Name: "description"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "metadata", Name: "metadata"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "teamID", Name: "teamID"},
@@ -85,9 +78,9 @@ func Test_MergeConfigFields(t *testing.T) {
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "workItemID", Name: "workItemID"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "createdAt", Name: "createdAt"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "title", Name: "title"},
-					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem", Name: "demoProjectWorkItem"},
+					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem", Name: "Demo project"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem.workItemID", Name: "workItemID"},
-					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem.ref", Name: "ref"},
+					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem.ref", Name: "Reference"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem.reopened", Name: "reopened"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem.lastMessageAt", Name: "lastMessageAt"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem.line", Name: "line"},

@@ -73,7 +73,6 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 	// fmt.Printf("project.BoardConfig: %v\n", string(project.BoardConfig.Bytes))
 	fmt.Printf("obj1: %v\n", obj1)
 
-	// TODO get workitem by project id
 	var workItem any
 	switch internalmodels.Project(project.Name) {
 	case internalmodels.ProjectDemoProject:
@@ -131,8 +130,12 @@ func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, obj map[st
 		return
 	}
 
-	fields, ok := fieldsInterface.([]map[string]any)
-	if !ok {
+	var fields []map[string]any // can't type assert map values of any when obj comes from unmarshalling
+	fBlob, err := json.Marshal(fieldsInterface)
+	if err != nil {
+		return
+	}
+	if err := json.Unmarshal(fBlob, &fields); err != nil {
 		return
 	}
 
