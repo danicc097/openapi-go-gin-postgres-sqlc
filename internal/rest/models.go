@@ -34,19 +34,6 @@ type ProjectBoardResponse struct {
 	repomodels.ProjectBoardPublic
 }
 
-type ProjectConfig struct {
-	Header []string             `json:"header" required:"true"`
-	Fields []ProjectConfigField `json:"fields" required:"true"`
-}
-
-type ProjectConfigField struct {
-	IsEditable    bool   `json:"isEditable"`
-	ShowCollapsed bool   `json:"showCollapsed"`
-	IsVisible     bool   `json:"isVisible"`
-	Path          string `json:"path"`
-	Name          string `json:"name"`
-}
-
 type ProjectBoardCreateRequest struct {
 	repos.ProjectBoardCreateParams
 }

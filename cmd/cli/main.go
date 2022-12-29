@@ -7,8 +7,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"reflect"
-	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
@@ -26,71 +24,8 @@ import (
 	. "github.com/go-jet/jet/v2/postgres"
 )
 
-func GetStructKeys(s interface{}) []string {
-	var keys []string
-	val := reflect.ValueOf(s)
-	for idx := 0; idx < val.NumField(); idx++ {
-		typeField := val.Type().Field(idx)
-		jsonTag := typeField.Tag.Get("json")
-		if jsonTag == "" {
-			continue
-		}
-		key := strings.Split(jsonTag, ",")[0]
-		keys = append(keys, key)
-		if typeField.Type.Kind() == reflect.Struct {
-			subkeys := GetStructKeys(val.Field(idx).Interface())
-			for _, subkey := range subkeys {
-				keys = append(keys, key+"."+subkey)
-			}
-		}
-		if (typeField.Type.Kind() == reflect.Array || typeField.Type.Kind() == reflect.Slice) && typeField.Type.Elem().Kind() == reflect.Struct {
-			for j := 0; j < val.Field(idx).Len(); j++ {
-				elem := val.Field(idx).Index(j).Interface()
-				subkeys := GetStructKeys(elem)
-				for _, subkey := range subkeys {
-					keys = append(keys, key+"."+subkey)
-				}
-			}
-		}
-	}
-
-	return keys
-}
-
-type Example struct {
-	Key1         string `json:"key1"`
-	NestedStruct struct {
-		NestedKey         string `json:"nestedKey"`
-		NestedStructArray []struct {
-			NestedKey           string `json:"nestedKey"`
-			NestedStructInArray struct {
-				NestedKey string `json:"nestedStructInArray"`
-			} `json:"nestedKeyArray"`
-		} `json:"nestedStructArray"`
-		NestedStruct2 struct {
-			NestedKey3 string `json:"nestedKey3"`
-		} `json:"nestedKey2"`
-	} `json:"nestedStruct"`
-}
-
 // clear && go run cmd/cli/main.go -env .env.dev
 func main() {
-	ex := Example{}
-	// we actually will want to explicitly initialize what we want, and ignore some fields settiung nil
-	// OR use a correct version of InitializeStruct and then ignore some fields in structs. The latter is easier
-	// and will fail when something changes which is what we want
-	ex.NestedStruct.NestedStructArray = append(ex.NestedStruct.NestedStructArray, struct {
-		NestedKey           string "json:\"nestedKey\""
-		NestedStructInArray struct {
-			NestedKey string "json:\"nestedStructInArray\""
-		} "json:\"nestedKeyArray\""
-	}{})
-
-	// could also accept paths to ignore if needed for some reason, e.g. "nestedKeys.key"
-	keys := GetStructKeys(ex) // with these, generate a default name (title case of key itself), default settings, etc.
-	fmt.Println(keys)
-	os.Exit(1)
-
 	var env string
 
 	flag.StringVar(&env, "env", ".env", "Environment Variables filename")

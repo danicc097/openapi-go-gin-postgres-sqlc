@@ -351,7 +351,7 @@ components:
         - header
         - fields
       type: object
-      x-postgen-struct: RestProjectConfig
+      x-postgen-struct: ReposProjectConfig
     DemoProjectWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         closed:

@@ -28,7 +28,7 @@
         "fields"
       ],
       "type": "object",
-      "x-postgen-struct": "RestProjectConfig",
+      "x-postgen-struct": "ReposProjectConfig",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DemoProjectWorkItemsResponse": {
