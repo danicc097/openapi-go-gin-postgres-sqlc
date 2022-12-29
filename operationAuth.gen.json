@@ -69,6 +69,11 @@
     "role": "admin",
     "requiresAuthentication": true
   },
+  "UpdateProjectConfig": {
+    "scopes": null,
+    "role": "admin",
+    "requiresAuthentication": true
+  },
   "GetProjectBoard": {
     "scopes": null,
     "role": null,

@@ -161,13 +161,12 @@ type DbKanbanStepPublic struct {
 
 // DbProjectPublic defines the model for DbProjectPublic.
 type DbProjectPublic struct {
-	BoardConfig PgtypeJSONB `json:"boardConfig"`
-	CreatedAt   time.Time   `json:"createdAt"`
-	Description string      `json:"description"`
-	Initialized bool        `json:"initialized"`
-	Name        string      `json:"name"`
-	ProjectID   int         `json:"projectID"`
-	UpdatedAt   time.Time   `json:"updatedAt"`
+	CreatedAt   time.Time `json:"createdAt"`
+	Description string    `json:"description"`
+	Initialized bool      `json:"initialized"`
+	Name        string    `json:"name"`
+	ProjectID   int       `json:"projectID"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 // DbTeamPublic defines the model for DbTeamPublic.
@@ -316,8 +315,8 @@ type ProjectBoardResponse struct {
 	WorkItemTypes *[]DbWorkItemTypePublic `json:"workItemTypes"`
 }
 
-// ProjectConfigResponse defines the model for ProjectConfigResponse.
-type ProjectConfigResponse struct {
+// ProjectConfig defines the model for ProjectConfig.
+type ProjectConfig struct {
 	Fields *[]RestProjectConfigField `json:"fields"`
 	Header *[]string                 `json:"header"`
 }
@@ -365,10 +364,10 @@ type ReposWorkItemTypeCreateParams struct {
 
 // RestProjectConfigField defines the model for RestProjectConfigField.
 type RestProjectConfigField struct {
-	Field         *string `json:"field,omitempty"`
 	IsEditable    *bool   `json:"isEditable,omitempty"`
 	IsVisible     *bool   `json:"isVisible,omitempty"`
 	Name          *string `json:"name,omitempty"`
+	Path          *string `json:"path,omitempty"`
 	ShowCollapsed *bool   `json:"showCollapsed,omitempty"`
 }
 
@@ -445,6 +444,9 @@ type GetProjectWorkitemsParams struct {
 	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
 	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
 }
+
+// UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
+type UpdateProjectConfigJSONRequestBody = ProjectConfig
 
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
 type InitializeProjectJSONRequestBody = InitializeProjectRequest

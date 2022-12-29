@@ -21,6 +21,7 @@ const (
 	GetProjectConfig    OperationID = "GetProjectConfig"
 	GetProjectWorkitems OperationID = "GetProjectWorkitems"
 	InitializeProject   OperationID = "InitializeProject"
+	UpdateProjectConfig OperationID = "UpdateProjectConfig"
 
 	// Operation IDs for the 'user' tag.
 	DeleteUser              OperationID = "DeleteUser"

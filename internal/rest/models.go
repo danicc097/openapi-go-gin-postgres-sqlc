@@ -34,7 +34,7 @@ type ProjectBoardResponse struct {
 	repomodels.ProjectBoardPublic
 }
 
-type ProjectConfigResponse struct {
+type ProjectConfig struct {
 	Header []string             `json:"header" required:"true"`
 	Fields []ProjectConfigField `json:"fields" required:"true"`
 }
@@ -43,7 +43,7 @@ type ProjectConfigField struct {
 	IsEditable    bool   `json:"isEditable"`
 	ShowCollapsed bool   `json:"showCollapsed"`
 	IsVisible     bool   `json:"isVisible"`
-	Field         string `json:"field"`
+	Path          string `json:"path"`
 	Name          string `json:"name"`
 }
 

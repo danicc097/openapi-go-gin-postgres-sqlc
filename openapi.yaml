@@ -243,7 +243,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectConfigResponse'
+                $ref: '#/components/schemas/ProjectConfig'
+      x-required-role: admin
+      tags:
+        - project
+    put:
+      security:
+        - bearer_auth: []
+        - api_key: []
+      summary: updates the project configuration
+      operationId: UpdateProjectConfig
+      parameters:
+        - $ref: '#/components/parameters/PathSerial'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectConfig'
+      responses:
+        "204":
+          description: Config updated successfully.
       x-required-role: admin
       tags:
         - project
@@ -316,7 +335,7 @@ components:
       example: 41131
       style: simple
   schemas:
-    ProjectConfigResponse: # Generated from internal structs. DO NOT EDIT.
+    ProjectConfig: # Generated from internal structs. DO NOT EDIT.
       properties:
         fields:
           items:
@@ -332,7 +351,7 @@ components:
         - header
         - fields
       type: object
-      x-postgen-struct: RestProjectConfigResponse
+      x-postgen-struct: RestProjectConfig
     DemoProjectWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         closed:
@@ -723,8 +742,6 @@ components:
     DbProjectPublic: # Generated from internal structs. DO NOT EDIT.
       nullable: true
       properties:
-        boardConfig:
-          $ref: '#/components/schemas/PgtypeJSONB'
         createdAt:
           format: date-time
           type: string
@@ -744,7 +761,6 @@ components:
         - name
         - description
         - initialized
-        - boardConfig
         - createdAt
         - updatedAt
       type: object
@@ -1015,13 +1031,13 @@ components:
       type: object
     RestProjectConfigField: # Generated from internal structs. DO NOT EDIT.
       properties:
-        field:
-          type: string
         isEditable:
           type: boolean
         isVisible:
           type: boolean
         name:
+          type: string
+        path:
           type: string
         showCollapsed:
           type: boolean

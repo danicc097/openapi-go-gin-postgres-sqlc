@@ -7,9 +7,9 @@
  */
 
 export interface RestProjectConfigField {
-  field?: string
   isEditable?: boolean
   isVisible?: boolean
   name?: string
+  path?: string
   showCollapsed?: boolean
 }

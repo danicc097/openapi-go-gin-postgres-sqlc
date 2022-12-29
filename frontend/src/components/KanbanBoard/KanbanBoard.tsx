@@ -26,7 +26,7 @@ import {
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import _, { random, uniqueId } from 'lodash'
-import type { DemoProjectWorkItemsResponse } from 'src/gen/model'
+import type { DemoProjectWorkItemsResponse, ProjectConfig } from 'src/gen/model'
 import moment from 'moment'
 import { getGetProjectWorkitemsMock, getProjectMSW } from 'src/gen/project/project.msw'
 import { StyledEuiCheckbox } from 'src/components/KanbanBoard/KanbanBoard.styles'
@@ -34,7 +34,7 @@ import ProtectedComponent from 'src/components/Permissions/ProtectedComponent'
 import { useAuthenticatedUser } from 'src/hooks/auth/useAuthenticatedUser'
 import { generateColor } from 'src/utils/colors'
 import { css } from '@emotion/css'
-import type { NestedPaths } from 'src/types/utils'
+import type { ArrayElement, NestedPaths } from 'src/types/utils'
 import { isValidURL } from 'src/utils/urls'
 import { removePrefix } from 'src/utils/strings'
 
@@ -65,7 +65,7 @@ const exampleDemoProjectWorkItem = {
   },
 }
 
-const boardConfig = {
+const boardConfig: ProjectConfig = {
   header: ['demoProject.ref', 'workItemType'],
   fields: [
     {
@@ -291,10 +291,6 @@ export default function KanbanBoard() {
    *
    * - ignore card moved in own column
    * - order by target date desc
-   * - render children dynamically:
-   *    - date/string/number: text
-   *    - bool: checkbox
-   *    - array: EuiBadge or comma delim
    */
 
   return (
@@ -362,11 +358,11 @@ export default function KanbanBoard() {
   )
 
   function createCardPanel(
-    fields: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string }[],
-    nestedObjects: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string }[],
-    skipFields: any[],
-    data: any,
-    currentField: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string },
+    fields: ProjectConfig['fields'],
+    nestedObjects: ProjectConfig['fields'],
+    skipFields: string[],
+    data: any, // TODO oneof workitems (see schema type helpers)
+    currentField: ArrayElement<ProjectConfig['fields']>,
     options?: { parentArrayPath: string },
   ) {
     let element
@@ -444,10 +440,7 @@ export default function KanbanBoard() {
     return element
   }
 
-  function createCardField(
-    value: any,
-    field: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string },
-  ) {
+  function createCardField(value: any, field: ArrayElement<ProjectConfig['fields']>) {
     let element
     if (value instanceof Date) {
       element = (
@@ -495,10 +488,7 @@ export default function KanbanBoard() {
     return element
   }
 }
-function getNestedObjects(
-  nestedObjects: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string }[],
-  field: { isEditable: boolean; showCollapsed: boolean; isVisible: boolean; path: string; name: string },
-) {
+function getNestedObjects(nestedObjects: ProjectConfig['fields'], field: ArrayElement<ProjectConfig['fields']>) {
   return nestedObjects.filter((f) => {
     const fieldCount = _.countBy(f.path)['.'] || 0
     const parentFieldCount = _.countBy(field.path)['.'] || 0

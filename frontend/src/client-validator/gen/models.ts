@@ -22,7 +22,6 @@ export type DbWorkItemTypePublic1 = {
   workItemTypeID: number
 } | null
 export type DbProjectPublic = {
-  boardConfig: PgtypeJSONB
   createdAt: string
   description: string
   initialized: boolean
@@ -31,7 +30,6 @@ export type DbProjectPublic = {
   updatedAt: string
 } & DbProjectPublic1
 export type DbProjectPublic1 = {
-  boardConfig: PgtypeJSONB
   createdAt: string
   description: string
   initialized: boolean
@@ -85,15 +83,15 @@ export type Project = 'demoProject' | 'demoProject2'
  */
 export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 
-export interface ProjectConfigResponse {
+export interface ProjectConfig {
   fields: RestProjectConfigField[] | null
   header: string[] | null
 }
 export interface RestProjectConfigField {
-  field?: string
   isEditable?: boolean
   isVisible?: boolean
   name?: string
+  path?: string
   showCollapsed?: boolean
 }
 export interface DemoProjectWorkItemsResponse {

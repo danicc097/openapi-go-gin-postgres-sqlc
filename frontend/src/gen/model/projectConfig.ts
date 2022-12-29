@@ -7,7 +7,7 @@
  */
 import type { RestProjectConfigField } from './restProjectConfigField'
 
-export interface ProjectConfigResponse {
+export interface ProjectConfig {
   fields: RestProjectConfigField[] | null
   header: string[] | null
 }

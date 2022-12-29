@@ -174,13 +174,12 @@ type DbKanbanStepPublic struct {
 
 // DbProjectPublic defines the model for DbProjectPublic.
 type DbProjectPublic struct {
-	BoardConfig PgtypeJSONB `json:"boardConfig"`
-	CreatedAt   time.Time   `json:"createdAt"`
-	Description string      `json:"description"`
-	Initialized bool        `json:"initialized"`
-	Name        string      `json:"name"`
-	ProjectID   int         `json:"projectID"`
-	UpdatedAt   time.Time   `json:"updatedAt"`
+	CreatedAt   time.Time `json:"createdAt"`
+	Description string    `json:"description"`
+	Initialized bool      `json:"initialized"`
+	Name        string    `json:"name"`
+	ProjectID   int       `json:"projectID"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 // DbTeamPublic defines the model for DbTeamPublic.
@@ -329,8 +328,8 @@ type ProjectBoardResponse struct {
 	WorkItemTypes *[]DbWorkItemTypePublic `json:"workItemTypes"`
 }
 
-// ProjectConfigResponse defines the model for ProjectConfigResponse.
-type ProjectConfigResponse struct {
+// ProjectConfig defines the model for ProjectConfig.
+type ProjectConfig struct {
 	Fields *[]RestProjectConfigField `json:"fields"`
 	Header *[]string                 `json:"header"`
 }
@@ -378,10 +377,10 @@ type ReposWorkItemTypeCreateParams struct {
 
 // RestProjectConfigField defines the model for RestProjectConfigField.
 type RestProjectConfigField struct {
-	Field         *string `json:"field,omitempty"`
 	IsEditable    *bool   `json:"isEditable,omitempty"`
 	IsVisible     *bool   `json:"isVisible,omitempty"`
 	Name          *string `json:"name,omitempty"`
+	Path          *string `json:"path,omitempty"`
 	ShowCollapsed *bool   `json:"showCollapsed,omitempty"`
 }
 
@@ -458,6 +457,9 @@ type GetProjectWorkitemsParams struct {
 	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
 	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
 }
+
+// UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
+type UpdateProjectConfigJSONRequestBody = ProjectConfig
 
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
 type InitializeProjectJSONRequestBody = InitializeProjectRequest
@@ -567,6 +569,11 @@ type ClientInterface interface {
 
 	// GetProjectConfig request
 	GetProjectConfig(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectConfig request with any body
+	UpdateProjectConfigWithBody(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateProjectConfig(ctx context.Context, id PathSerial, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// InitializeProject request with any body
 	InitializeProjectWithBody(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -691,6 +698,30 @@ func (c *Client) GetProjectBoard(ctx context.Context, id PathSerial, reqEditors 
 
 func (c *Client) GetProjectConfig(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetProjectConfigRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateProjectConfigWithBody(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectConfigRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateProjectConfig(ctx context.Context, id PathSerial, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectConfigRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1073,6 +1104,53 @@ func NewGetProjectConfigRequest(server string, id PathSerial) (*http.Request, er
 	return req, nil
 }
 
+// NewUpdateProjectConfigRequest calls the generic UpdateProjectConfig builder with application/json body
+func NewUpdateProjectConfigRequest(server string, id PathSerial, body UpdateProjectConfigJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateProjectConfigRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateProjectConfigRequestWithBody generates requests for UpdateProjectConfig with any type of body
+func NewUpdateProjectConfigRequestWithBody(server string, id PathSerial, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/project/%s/config", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewInitializeProjectRequest calls the generic InitializeProject builder with application/json body
 func NewInitializeProjectRequest(server string, id PathSerial, body InitializeProjectJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -1415,6 +1493,11 @@ type ClientWithResponsesInterface interface {
 	// GetProjectConfig request
 	GetProjectConfigWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectConfigResponse, error)
 
+	// UpdateProjectConfig request with any body
+	UpdateProjectConfigWithBodyWithResponse(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error)
+
+	UpdateProjectConfigWithResponse(ctx context.Context, id PathSerial, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error)
+
 	// InitializeProject request with any body
 	InitializeProjectWithBodyWithResponse(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
 
@@ -1616,7 +1699,7 @@ func (r GetProjectBoardResponse) StatusCode() int {
 type GetProjectConfigResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ProjectConfigResponse
+	JSON200      *ProjectConfig
 }
 
 // Status returns HTTPResponse.Status
@@ -1629,6 +1712,27 @@ func (r GetProjectConfigResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetProjectConfigResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateProjectConfigResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateProjectConfigResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateProjectConfigResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1845,6 +1949,23 @@ func (c *ClientWithResponses) GetProjectConfigWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseGetProjectConfigResponse(rsp)
+}
+
+// UpdateProjectConfigWithBodyWithResponse request with arbitrary body returning *UpdateProjectConfigResponse
+func (c *ClientWithResponses) UpdateProjectConfigWithBodyWithResponse(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error) {
+	rsp, err := c.UpdateProjectConfigWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectConfigResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateProjectConfigWithResponse(ctx context.Context, id PathSerial, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error) {
+	rsp, err := c.UpdateProjectConfig(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectConfigResponse(rsp)
 }
 
 // InitializeProjectWithBodyWithResponse request with arbitrary body returning *InitializeProjectResponse
@@ -2118,12 +2239,28 @@ func ParseGetProjectConfigResponse(rsp *http.Response) (*GetProjectConfigRespons
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ProjectConfigResponse
+		var dest ProjectConfig
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseUpdateProjectConfigResponse parses an HTTP response from a UpdateProjectConfigWithResponse call
+func ParseUpdateProjectConfigResponse(rsp *http.Response) (*UpdateProjectConfigResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateProjectConfigResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil

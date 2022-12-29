@@ -20,10 +20,10 @@ type ProjectPublic struct {
 	Name        string `json:"name" required:"true"`        // name
 	Description string `json:"description" required:"true"` // description
 
-	Initialized bool         `json:"initialized" required:"true"` // initialized
-	BoardConfig pgtype.JSONB `json:"boardConfig" required:"true"` // board_config
-	CreatedAt   time.Time    `json:"createdAt" required:"true"`   // created_at
-	UpdatedAt   time.Time    `json:"updatedAt" required:"true"`   // updated_at
+	Initialized bool `json:"initialized" required:"true"` // initialized
+
+	CreatedAt time.Time `json:"createdAt" required:"true"` // created_at
+	UpdatedAt time.Time `json:"updatedAt" required:"true"` // updated_at
 }
 
 // Project represents a row from 'public.projects'.
@@ -48,7 +48,7 @@ type Project struct {
 
 func (x *Project) ToPublic() ProjectPublic {
 	return ProjectPublic{
-		ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Initialized: x.Initialized, BoardConfig: x.BoardConfig, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
+		ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Initialized: x.Initialized, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
 	}
 }
 

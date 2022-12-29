@@ -9,7 +9,6 @@ import { rest } from 'msw'
 import { faker } from '@faker-js/faker'
 
 export const getGetProjectMock = () => ({
-  boardConfig: {},
   createdAt: (() => faker.date.past())(),
   description: faker.random.word(),
   initialized: faker.datatype.boolean(),
@@ -20,10 +19,10 @@ export const getGetProjectMock = () => ({
 
 export const getGetProjectConfigMock = () => ({
   fields: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    field: faker.helpers.arrayElement([faker.random.word(), undefined]),
     isEditable: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
     isVisible: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
     name: faker.helpers.arrayElement([faker.random.word(), undefined]),
+    path: faker.helpers.arrayElement([faker.random.word(), undefined]),
     showCollapsed: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
   })),
   header: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
@@ -56,7 +55,6 @@ export const getGetProjectBoardMock = () => ({
   ]),
   project: faker.helpers.arrayElement([
     {
-      boardConfig: {},
       createdAt: (() => faker.date.past())(),
       description: faker.random.word(),
       initialized: faker.datatype.boolean(),
@@ -195,6 +193,9 @@ export const getProjectMSW = () => [
   }),
   rest.get('*/project/:id/config', (_req, res, ctx) => {
     return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetProjectConfigMock()))
+  }),
+  rest.put('*/project/:id/config', (_req, res, ctx) => {
+    return res(ctx.delay(1000), ctx.status(200, 'Mocked status'))
   }),
   rest.get('*/project/:id/board', (_req, res, ctx) => {
     return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetProjectBoardMock()))

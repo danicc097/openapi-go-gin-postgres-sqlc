@@ -492,6 +492,21 @@ x.gen.proto() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
+# Run frontend code generation.
+x.gen.frontend() {
+  { { {
+    (
+      set -a
+      # export to replace config with envvars
+      source ".env.$env"
+      set +a
+
+      cd frontend
+      pnpm run generate
+    )
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
 # Run all codegen and postgen commands for the project.
 x.gen() {
   rm -rf "$CACHE_PG_REPO_GEN"
@@ -549,6 +564,8 @@ x.gen() {
     # done
 
     x.lint
+    x.gen.frontend
+
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   rm "$CACHE/$SPEC"
   rm -rf "$CACHE_PG_REPO_GEN"

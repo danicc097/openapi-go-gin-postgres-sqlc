@@ -61,6 +61,8 @@ export interface paths {
   "/project/{id}/config": {
     /** returns the project configuration */
     get: operations["GetProjectConfig"];
+    /** updates the project configuration */
+    put: operations["UpdateProjectConfig"];
   };
   "/project/{id}/board": {
     /** returns board data for a project */
@@ -74,7 +76,7 @@ export interface paths {
 
 export interface components {
   schemas: {
-    ProjectConfigResponse: {
+    ProjectConfig: {
       fields: (components["schemas"]["RestProjectConfigField"])[] | null;
       header: (string)[] | null;
     };
@@ -233,7 +235,6 @@ export interface components {
       timeTrackable: boolean;
     };
     DbProjectPublic: {
-      boardConfig: components["schemas"]["PgtypeJSONB"];
       /** Format: date-time */
       createdAt: string;
       description: string;
@@ -354,10 +355,10 @@ export interface components {
       workItemID: number;
     };
     RestProjectConfigField: {
-      field?: string;
       isEditable?: boolean;
       isVisible?: boolean;
       name?: string;
+      path?: string;
       showCollapsed?: boolean;
     };
     /**
@@ -537,9 +538,21 @@ export interface operations {
       /** @description Project config. */
       200: {
         content: {
-          "application/json": components["schemas"]["ProjectConfigResponse"];
+          "application/json": components["schemas"]["ProjectConfig"];
         };
       };
+    };
+  };
+  UpdateProjectConfig: {
+    /** updates the project configuration */
+    requestBody?: {
+      content: {
+        "application/json": components["schemas"]["ProjectConfig"];
+      };
+    };
+    responses: {
+      /** @description Config updated successfully. */
+      204: never;
     };
   };
   GetProjectBoard: {

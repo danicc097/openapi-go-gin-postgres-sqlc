@@ -72,6 +72,14 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{}
 	case Ping:
 		return []gin.HandlerFunc{}
+	case UpdateProjectConfig:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					MinimumRole: models.Role("admin"),
+				}),
+		}
 	case UpdateUser:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),

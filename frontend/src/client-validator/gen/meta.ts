@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
-  ProjectConfigResponse,
+  ProjectConfig,
   DemoProjectWorkItemsResponse,
   InitializeProjectRequest,
   ProjectBoardResponse,
@@ -45,7 +45,7 @@ import {
 } from './models'
 
 export const schemaDefinitions = {
-  ProjectConfigResponse: info<ProjectConfigResponse>('ProjectConfigResponse', '#/definitions/ProjectConfigResponse'),
+  ProjectConfig: info<ProjectConfig>('ProjectConfig', '#/definitions/ProjectConfig'),
   DemoProjectWorkItemsResponse: info<DemoProjectWorkItemsResponse>(
     'DemoProjectWorkItemsResponse',
     '#/definitions/DemoProjectWorkItemsResponse',

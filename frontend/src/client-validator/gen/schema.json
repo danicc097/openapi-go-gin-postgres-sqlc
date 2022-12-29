@@ -2,7 +2,7 @@
   "type": "object",
   "title": "Schema",
   "definitions": {
-    "ProjectConfigResponse": {
+    "ProjectConfig": {
       "properties": {
         "fields": {
           "items": {
@@ -28,7 +28,7 @@
         "fields"
       ],
       "type": "object",
-      "x-postgen-struct": "RestProjectConfigResponse",
+      "x-postgen-struct": "RestProjectConfig",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DemoProjectWorkItemsResponse": {
@@ -604,9 +604,6 @@
     },
     "DbProjectPublic": {
       "properties": {
-        "boardConfig": {
-          "$ref": "#/definitions/PgtypeJSONB"
-        },
         "createdAt": {
           "format": "date-time",
           "type": "string"
@@ -633,7 +630,6 @@
         "name",
         "description",
         "initialized",
-        "boardConfig",
         "createdAt",
         "updatedAt"
       ],
@@ -1051,9 +1047,6 @@
     },
     "RestProjectConfigField": {
       "properties": {
-        "field": {
-          "type": "string"
-        },
         "isEditable": {
           "type": "boolean"
         },
@@ -1061,6 +1054,9 @@
           "type": "boolean"
         },
         "name": {
+          "type": "string"
+        },
+        "path": {
           "type": "string"
         },
         "showCollapsed": {
@@ -1092,8 +1088,8 @@
     }
   },
   "properties": {
-    "ProjectConfigResponse": {
-      "$ref": "#/definitions/ProjectConfigResponse"
+    "ProjectConfig": {
+      "$ref": "#/definitions/ProjectConfig"
     },
     "DemoProjectWorkItemsResponse": {
       "$ref": "#/definitions/DemoProjectWorkItemsResponse"

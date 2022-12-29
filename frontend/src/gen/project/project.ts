@@ -21,7 +21,7 @@ import type {
 import type {
   InitializeProjectRequest,
   DbProjectPublic,
-  ProjectConfigResponse,
+  ProjectConfig,
   ProjectBoardResponse,
   DemoProjectWorkItemsResponse,
   GetProjectWorkitemsParams,
@@ -137,10 +137,7 @@ export const useGetProject = <TData = Awaited<ReturnType<typeof getProject>>, TE
 /**
  * @summary returns the project configuration
  */
-export const getProjectConfig = (
-  id: number,
-  options?: AxiosRequestConfig,
-): Promise<AxiosResponse<ProjectConfigResponse>> => {
+export const getProjectConfig = (id: number, options?: AxiosRequestConfig): Promise<AxiosResponse<ProjectConfig>> => {
   return axios.get(`/project/${id}/config`, options)
 }
 
@@ -205,6 +202,48 @@ export const useGetProjectConfig = <TData = Awaited<ReturnType<typeof getProject
   return query
 }
 
+/**
+ * @summary updates the project configuration
+ */
+export const updateProjectConfig = (
+  id: number,
+  projectConfig: ProjectConfig,
+  options?: AxiosRequestConfig,
+): Promise<AxiosResponse<void>> => {
+  return axios.put(`/project/${id}/config`, projectConfig, options)
+}
+
+export type UpdateProjectConfigMutationResult = NonNullable<Awaited<ReturnType<typeof updateProjectConfig>>>
+export type UpdateProjectConfigMutationBody = ProjectConfig
+export type UpdateProjectConfigMutationError = AxiosError<unknown>
+
+export const useUpdateProjectConfig = <TError = AxiosError<unknown>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProjectConfig>>,
+    TError,
+    { id: number; data: ProjectConfig },
+    TContext
+  >
+  axios?: AxiosRequestConfig
+}) => {
+  const { mutation: mutationOptions, axios: axiosOptions } = options ?? {}
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateProjectConfig>>,
+    { id: number; data: ProjectConfig }
+  > = (props) => {
+    const { id, data } = props ?? {}
+
+    return updateProjectConfig(id, data, axiosOptions)
+  }
+
+  return useMutation<
+    Awaited<ReturnType<typeof updateProjectConfig>>,
+    TError,
+    { id: number; data: ProjectConfig },
+    TContext
+  >(mutationFn, mutationOptions)
+}
 /**
  * @summary returns board data for a project
  */

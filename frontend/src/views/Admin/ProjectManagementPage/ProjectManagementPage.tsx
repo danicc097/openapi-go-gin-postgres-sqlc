@@ -29,7 +29,7 @@ import {
 } from '@elastic/eui'
 import _, { capitalize, random } from 'lodash'
 import React, { Fragment, useEffect, useReducer, useState } from 'react'
-import type { Scope, Scopes, UpdateUserAuthRequest, UserResponse } from 'src/gen/model'
+import type { ProjectConfig, Scope, Scopes, UpdateUserAuthRequest, UserResponse } from 'src/gen/model'
 import { roleColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'
 import scopes from '@scopes'
@@ -46,7 +46,7 @@ const makeId = htmlIdGenerator('')
  * alternative: once config comes in create a `Map` from array with key `path`
  * so that we dont have to filter (though performance doesnt matter, this page will barely be used)
  */
-const boardConfig = {
+const boardConfig: ProjectConfig = {
   header: ['demoProject.ref', 'workItemType'],
   fields: [
     {

@@ -14,6 +14,9 @@ func (h *Handlers) InitializeProject(c *gin.Context, id int) {
 }
 
 // GetProjectBoard
+// TODO see cli main. should extract list of keys and create a default object from those
+// by filling models.ProjectConfig.
+// then config is merged with the current projects.board_config object only for existing field paths
 func (h *Handlers) GetProjectBoard(c *gin.Context, id int) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
@@ -30,6 +33,11 @@ func (h *Handlers) GetProjectWorkitems(c *gin.Context, id int, params models.Get
 
 // GetProjectConfig
 func (h *Handlers) GetProjectConfig(c *gin.Context, id int) {
+	c.String(http.StatusNotImplemented, "not implemented")
+}
+
+// UpdateProjectConfig
+func (h *Handlers) UpdateProjectConfig(c *gin.Context, id int) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
