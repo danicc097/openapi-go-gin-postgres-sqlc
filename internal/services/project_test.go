@@ -5,19 +5,19 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"
 )
 
 func Test_MergeConfigFields(t *testing.T) {
-	p := NewProject(zaptest.NewLogger(t), postgresql.NewProject(), postgresql.NewTeam())
+	fakeProjectRepo := &repostesting.FakeProject{}
+	fakeTeamRepo := &repostesting.FakeTeam{}
+	p := NewProject(zaptest.NewLogger(t), fakeProjectRepo, fakeTeamRepo)
 
 	type args struct {
-		obj1     models.ProjectConfig
-		obj2     any
-		pathKeys []string
+		obj2 any
 	}
 	tests := []struct {
 		name  string

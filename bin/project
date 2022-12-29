@@ -460,6 +460,8 @@ x.gen.counterfeiter() {
         counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
         counterfeiter -o internal/repos/repostesting/user.gen.go $repos User &
         counterfeiter -o internal/repos/repostesting/notification.gen.go $repos Notification &
+        counterfeiter -o internal/repos/repostesting/project.gen.go $repos Project &
+        counterfeiter -o internal/repos/repostesting/team.gen.go $repos Team &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
         md5sum $envvar $repos $tfidfpb >"$CACHE/counterfeiter.md5" &
@@ -469,6 +471,8 @@ x.gen.counterfeiter() {
       # counterfeiter is unaware of grpc's obscure mustEmbedUnimplemented***() for forward server compatibility
       sed -i '/type FakeMovieGenreServer struct {/a v1\.UnimplementedMovieGenreServer' \
         internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go
+    else
+      echo "Skipping generation. Force regen with --x-force-regen"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
