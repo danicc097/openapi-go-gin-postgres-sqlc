@@ -5,9 +5,9 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestProjectConfigField } from './restProjectConfigField'
+import type { ModelsProjectConfigField } from './modelsProjectConfigField'
 
 export interface ProjectConfig {
-  fields: RestProjectConfigField[] | null
+  fields: ModelsProjectConfigField[] | null
   header: string[] | null
 }

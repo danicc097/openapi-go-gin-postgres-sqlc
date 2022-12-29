@@ -77,7 +77,7 @@ export interface paths {
 export interface components {
   schemas: {
     ProjectConfig: {
-      fields: (components["schemas"]["RestProjectConfigField"])[] | null;
+      fields: (components["schemas"]["ModelsProjectConfigField"])[] | null;
       header: (string)[] | null;
     };
     DemoProjectWorkItemsResponse: {
@@ -371,6 +371,13 @@ export interface components {
      * @enum {string}
      */
     demoProjectKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
+    ModelsProjectConfigField: {
+      isEditable: boolean;
+      isVisible: boolean;
+      name: string;
+      path: string;
+      showCollapsed: boolean;
+    };
   };
   responses: never;
   parameters: {

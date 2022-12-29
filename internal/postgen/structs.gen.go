@@ -3,6 +3,7 @@
 package postgen
 
 import (
+	repomodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	rest "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 )
@@ -113,4 +114,11 @@ var PublicStructs = map[string]any{
 	"RestWorkItemResponse":             rest.WorkItemResponse{},
 	"RestTeamCreateRequest":            rest.TeamCreateRequest{},
 	"RestTeamUpdateRequest":            rest.TeamUpdateRequest{},
+
+	//
+
+	"ModelsProjectBoard":       repomodels.ProjectBoard{},
+	"ModelsProjectBoardPublic": repomodels.ProjectBoardPublic{},
+	"ModelsProjectConfig":      repomodels.ProjectConfig{},
+	"ModelsProjectConfigField": repomodels.ProjectConfigField{},
 }

@@ -84,15 +84,15 @@ export type Project = 'demoProject' | 'demoProject2'
 export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 
 export interface ProjectConfig {
-  fields: RestProjectConfigField[] | null
+  fields: ModelsProjectConfigField[] | null
   header: string[] | null
 }
-export interface RestProjectConfigField {
-  isEditable?: boolean
-  isVisible?: boolean
-  name?: string
-  path?: string
-  showCollapsed?: boolean
+export interface ModelsProjectConfigField {
+  isEditable: boolean
+  isVisible: boolean
+  name: string
+  path: string
+  showCollapsed: boolean
 }
 export interface DemoProjectWorkItemsResponse {
   closed: string | null
@@ -288,4 +288,11 @@ export interface DbWorkItemPublic {
   updatedAt: string
   workItemID: number
   workItemTypeID: number
+}
+export interface RestProjectConfigField {
+  isEditable?: boolean
+  isVisible?: boolean
+  name?: string
+  path?: string
+  showCollapsed?: boolean
 }

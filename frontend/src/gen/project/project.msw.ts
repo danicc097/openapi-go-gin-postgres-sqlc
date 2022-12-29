@@ -19,11 +19,11 @@ export const getGetProjectMock = () => ({
 
 export const getGetProjectConfigMock = () => ({
   fields: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    isEditable: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
-    isVisible: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
-    name: faker.helpers.arrayElement([faker.random.word(), undefined]),
-    path: faker.helpers.arrayElement([faker.random.word(), undefined]),
-    showCollapsed: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+    isEditable: faker.datatype.boolean(),
+    isVisible: faker.datatype.boolean(),
+    name: faker.random.word(),
+    path: faker.random.word(),
+    showCollapsed: faker.datatype.boolean(),
   })),
   header: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
     faker.random.word(),

@@ -1054,7 +1054,7 @@ run_shared_services() {
 # generate db structs for use with swaggest/openapi-go.
 # no need for ast parsing since all code in db is generated and predictable
 generate_structs_map() {
-  readarray -t structs < <(find "$PG_REPO_GEN/db/" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
+  readarray -t structs < <(find "$PG_REPO_GEN/db" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
   for struct in ${structs[@]}; do
     map_fields+=("\"Db$struct\": db.$struct{},")
   done
@@ -1064,6 +1064,16 @@ generate_structs_map() {
   readarray -t structs < <(find "internal/rest" -name "models.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
   for struct in ${structs[@]}; do
     map_fields+=("\"Rest$struct\": rest.$struct{},")
+  done
+  map_fields+=("
+  //
+  ")
+  readarray -t structs < <(find "internal/repos/models" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
+  for struct in ${structs[@]}; do
+    # openapi-go uses the last dir as defaultDefName regardless (models)
+    # in a sense this is not too bad since a duplicated model name from different packages will not compile
+    # as the map key is duplicated.
+    map_fields+=("\"Models$struct\": repomodels.$struct{},")
   done
 
   out="internal/postgen/structs.gen.go"
@@ -1075,6 +1085,7 @@ package postgen
 import (
   db "$GOMOD_PKG/$PG_REPO_GEN/db"
 	rest "$GOMOD_PKG/internal/rest"
+	repomodels "$GOMOD_PKG/internal/repos/models"
   )
     var PublicStructs = map[string]any{
 $(printf "%s\n" "${map_fields[@]}")
@@ -1098,6 +1109,7 @@ update_spec_with_structs() {
   ((${#struct_names_list} == 0)) && return
 
   go build -o gen-schema cmd/gen-schema/main.go || echo "Could not rebuild gen-schema" >&2
+  echo " lsit ${struct_names_list[*]}"
   ./gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml

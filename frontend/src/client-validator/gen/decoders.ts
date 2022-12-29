@@ -46,6 +46,7 @@ import {
   RestProjectConfigField,
   Project,
   demoProjectKanbanSteps,
+  ModelsProjectConfigField,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -508,5 +509,17 @@ export const demoProjectKanbanStepsDecoder: Decoder<demoProjectKanbanSteps> = {
       throw new Error(`Schema ${demoProjectKanbanStepsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, demoProjectKanbanStepsDecoder.definitionName)
+  },
+}
+export const ModelsProjectConfigFieldDecoder: Decoder<ModelsProjectConfigField> = {
+  definitionName: 'ModelsProjectConfigField',
+  schemaRef: '#/definitions/ModelsProjectConfigField',
+
+  decode(json: unknown): ModelsProjectConfigField {
+    const schema = ajv.getSchema(ModelsProjectConfigFieldDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ModelsProjectConfigFieldDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ModelsProjectConfigFieldDecoder.definitionName)
   },
 }

@@ -339,7 +339,7 @@ components:
       properties:
         fields:
           items:
-            $ref: '#/components/schemas/RestProjectConfigField'
+            $ref: '#/components/schemas/ModelsProjectConfigField'
           nullable: true
           type: array
         header:
@@ -351,7 +351,7 @@ components:
         - header
         - fields
       type: object
-      x-postgen-struct: ReposProjectConfig
+      x-postgen-struct: ModelsProjectConfig
     DemoProjectWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         closed:
@@ -1029,19 +1029,6 @@ components:
         - createdAt
         - updatedAt
       type: object
-    RestProjectConfigField: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        isEditable:
-          type: boolean
-        isVisible:
-          type: boolean
-        name:
-          type: string
-        path:
-          type: string
-        showCollapsed:
-          type: boolean
-      type: object
     Project: # Generated from projects table. DO NOT EDIT.
       enum:
         - demoProject
@@ -1056,6 +1043,25 @@ components:
         - Work in progress
       type: string
       description: Kanban columns for project demoProject
+    ModelsProjectConfigField: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        isEditable:
+          type: boolean
+        isVisible:
+          type: boolean
+        name:
+          type: string
+        path:
+          type: string
+        showCollapsed:
+          type: boolean
+      required:
+        - isEditable
+        - showCollapsed
+        - isVisible
+        - path
+        - name
+      type: object
   examples:
     User:
       value:

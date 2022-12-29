@@ -293,6 +293,15 @@ type InitializeProjectRequest struct {
 	WorkItemTypes *[]ReposWorkItemTypeCreateParams `json:"workItemTypes"`
 }
 
+// ModelsProjectConfigField defines the model for ModelsProjectConfigField.
+type ModelsProjectConfigField struct {
+	IsEditable    bool   `json:"isEditable"`
+	IsVisible     bool   `json:"isVisible"`
+	Name          string `json:"name"`
+	Path          string `json:"path"`
+	ShowCollapsed bool   `json:"showCollapsed"`
+}
+
 // ModelsRole defines the model for ModelsRole.
 type ModelsRole = string
 
@@ -317,8 +326,8 @@ type ProjectBoardResponse struct {
 
 // ProjectConfig defines the model for ProjectConfig.
 type ProjectConfig struct {
-	Fields *[]RestProjectConfigField `json:"fields"`
-	Header *[]string                 `json:"header"`
+	Fields *[]ModelsProjectConfigField `json:"fields"`
+	Header *[]string                   `json:"header"`
 }
 
 // ReposActivityCreateParams defines the model for ReposActivityCreateParams.

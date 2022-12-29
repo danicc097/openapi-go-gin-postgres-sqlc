@@ -42,6 +42,7 @@ import {
   RestProjectConfigField,
   Project,
   demoProjectKanbanSteps,
+  ModelsProjectConfigField,
 } from './models'
 
 export const schemaDefinitions = {
@@ -112,6 +113,10 @@ export const schemaDefinitions = {
   demoProjectKanbanSteps: info<demoProjectKanbanSteps>(
     'demoProjectKanbanSteps',
     '#/definitions/demoProjectKanbanSteps',
+  ),
+  ModelsProjectConfigField: info<ModelsProjectConfigField>(
+    'ModelsProjectConfigField',
+    '#/definitions/ModelsProjectConfigField',
   ),
 }
 

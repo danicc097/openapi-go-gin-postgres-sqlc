@@ -6,7 +6,7 @@
       "properties": {
         "fields": {
           "items": {
-            "$ref": "#/definitions/RestProjectConfigField"
+            "$ref": "#/definitions/ModelsProjectConfigField"
           },
           "type": [
             "array",
@@ -28,7 +28,7 @@
         "fields"
       ],
       "type": "object",
-      "x-postgen-struct": "ReposProjectConfig",
+      "x-postgen-struct": "ModelsProjectConfig",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DemoProjectWorkItemsResponse": {
@@ -1085,6 +1085,34 @@
       "type": "string",
       "description": "Kanban columns for project demoProject",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsProjectConfigField": {
+      "properties": {
+        "isEditable": {
+          "type": "boolean"
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "showCollapsed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "isEditable",
+        "showCollapsed",
+        "isVisible",
+        "path",
+        "name"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -1201,6 +1229,9 @@
     },
     "demoProjectKanbanSteps": {
       "$ref": "#/definitions/demoProjectKanbanSteps"
+    },
+    "ModelsProjectConfigField": {
+      "$ref": "#/definitions/ModelsProjectConfigField"
     }
   }
 }
