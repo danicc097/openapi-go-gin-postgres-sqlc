@@ -3,17 +3,17 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/structs"
 	"go.uber.org/zap"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 type Project struct {
@@ -56,7 +56,7 @@ func (p *Project) ProjectByID(ctx context.Context, d db.DBTX, projectID int) (*d
 // pathKeys : optional keys to generate the initial config from. obj1 will be merged into this object
 // TODO accepts projectID to get both pathKeys and obj1 every time
 // (we dont know any of those, just projectID)
-func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID int, obj2 any) (*models.ProjectConfig, error) {
+func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID int, obj2 map[string]any) (*models.ProjectConfig, error) {
 	project, err := p.projectRepo.ProjectByID(ctx, d, projectID)
 	if err != nil {
 		return nil, internal.NewErrorf(internal.ErrorCodeNotFound, "project not found")
@@ -65,14 +65,32 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 	fieldsMap := make(map[string]map[string]any)
 
 	var obj1 models.ProjectConfig
-	_ = json.Unmarshal(project.BoardConfig.Bytes, &obj1)
+	err = json.Unmarshal(project.BoardConfig.Bytes, &obj1)
+	if err != nil {
+		return nil, internal.NewErrorf(internal.ErrorCodeUnknown, "invalid stored board config: %v", err)
+	}
 
-	pathKeys := structs.GetStructKeys(obj1, "")
+	// fmt.Printf("project.BoardConfig: %v\n", string(project.BoardConfig.Bytes))
+	fmt.Printf("obj1: %v\n", obj1)
+
+	// TODO get workitem by project id
+	var workItem any
+	switch internalmodels.Project(project.Name) {
+	case internalmodels.ProjectDemoProject:
+		workItem = internalmodels.DemoProjectWorkItemsResponse{}
+	}
+	pathKeys := structs.GetStructKeys(workItem, "")
+	fmt.Printf("pathKeys: %v\n", pathKeys)
 
 	for _, path := range pathKeys {
 		fieldsMap[path] = defaultConfigField(path)
 	}
-	p.mergeFieldsMap(fieldsMap, obj1)
+
+	var obj1Map map[string]any
+	fj, _ := json.Marshal(obj1)
+	json.Unmarshal(fj, &obj1Map)
+
+	p.mergeFieldsMap(fieldsMap, obj1Map)
 
 	p.mergeFieldsMap(fieldsMap, obj2)
 
@@ -90,10 +108,9 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 }
 
 func defaultConfigField(path string) map[string]any {
-	tcaser := cases.Title(language.English)
 	f := models.ProjectConfigField{
 		Path:          path,
-		Name:          tcaser.String(path[strings.LastIndex(path, ".")+1:]),
+		Name:          path[strings.LastIndex(path, ".")+1:],
 		IsVisible:     true,
 		IsEditable:    true,
 		ShowCollapsed: true,
@@ -107,13 +124,9 @@ func defaultConfigField(path string) map[string]any {
 	return jsonMap
 }
 
-func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, obj any) {
-	objMap, ok := obj.(map[string]any)
-	if !ok {
-		return
-	}
-
-	fieldsInterface, ok := objMap["fields"]
+// https://github.com/icza/dyno looks promising
+func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, obj map[string]any) {
+	fieldsInterface, ok := obj["fields"]
 	if !ok {
 		return
 	}
@@ -136,6 +149,7 @@ func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, obj any) {
 				if reflect.TypeOf(value) != reflect.TypeOf(newField[key]) {
 					continue
 				}
+				fmt.Printf("value: %v\n", value)
 				newField[key] = value
 			}
 			fieldsMap[path] = newField
