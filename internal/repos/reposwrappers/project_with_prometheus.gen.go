@@ -8,6 +8,7 @@ import (
 	"context"
 	"time"
 
+	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/prometheus/client_golang/prometheus"
@@ -53,7 +54,7 @@ func (_d ProjectWithPrometheus) ProjectByID(ctx context.Context, d db.DBTX, id i
 }
 
 // ProjectByName implements repos.Project
-func (_d ProjectWithPrometheus) ProjectByName(ctx context.Context, d db.DBTX, name string) (pp1 *db.Project, err error) {
+func (_d ProjectWithPrometheus) ProjectByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (pp1 *db.Project, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

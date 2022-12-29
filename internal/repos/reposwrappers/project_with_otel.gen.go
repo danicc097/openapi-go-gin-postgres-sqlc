@@ -7,6 +7,7 @@ package reposwrappers
 import (
 	"context"
 
+	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.opentelemetry.io/otel"
@@ -60,7 +61,7 @@ func (_d ProjectWithTracing) ProjectByID(ctx context.Context, d db.DBTX, id int)
 }
 
 // ProjectByName implements repos.Project
-func (_d ProjectWithTracing) ProjectByName(ctx context.Context, d db.DBTX, name string) (pp1 *db.Project, err error) {
+func (_d ProjectWithTracing) ProjectByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (pp1 *db.Project, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Project.ProjectByName")
 	defer func() {
 		if _d._spanDecorator != nil {

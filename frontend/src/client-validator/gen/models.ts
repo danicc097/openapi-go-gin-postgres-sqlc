@@ -289,10 +289,3 @@ export interface DbWorkItemPublic {
   workItemID: number
   workItemTypeID: number
 }
-export interface RestProjectConfigField {
-  isEditable?: boolean
-  isVisible?: boolean
-  name?: string
-  path?: string
-  showCollapsed?: boolean
-}

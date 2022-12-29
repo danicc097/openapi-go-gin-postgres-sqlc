@@ -44,7 +44,10 @@ func Test_MergeConfigFields(t *testing.T) {
 		// },
 	}
 	for _, tc := range tests {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := p.MergeConfigFields(context.Background(), &pgxpool.Pool{}, 1, tc.args.obj2)
 			if (err != nil) && tc.error == "" {
 				t.Fatalf("unexpected error = %v", err)

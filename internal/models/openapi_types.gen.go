@@ -371,15 +371,6 @@ type ReposWorkItemTypeCreateParams struct {
 	ProjectID   *int    `json:"projectID,omitempty"`
 }
 
-// RestProjectConfigField defines the model for RestProjectConfigField.
-type RestProjectConfigField struct {
-	IsEditable    *bool   `json:"isEditable,omitempty"`
-	IsVisible     *bool   `json:"isVisible,omitempty"`
-	Name          *string `json:"name,omitempty"`
-	Path          *string `json:"path,omitempty"`
-	ShowCollapsed *bool   `json:"showCollapsed,omitempty"`
-}
-
 // Role defines the model for Role.
 type Role string
 

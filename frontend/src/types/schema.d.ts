@@ -354,13 +354,6 @@ export interface components {
       workItemCommentID: number;
       workItemID: number;
     };
-    RestProjectConfigField: {
-      isEditable?: boolean;
-      isVisible?: boolean;
-      name?: string;
-      path?: string;
-      showCollapsed?: boolean;
-    };
     /**
      * @description Existing projects 
      * @enum {string}

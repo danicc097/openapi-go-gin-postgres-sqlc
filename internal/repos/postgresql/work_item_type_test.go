@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
@@ -17,7 +18,7 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 	workItemTypeRepo := postgresql.NewWorkItemType()
 
 	ctx := context.Background()
-	project, err := projectRepo.ProjectByName(ctx, testPool, demoProjectName)
+	project, err := projectRepo.ProjectByName(ctx, testPool, internalmodels.ProjectDemoProject)
 	if err != nil {
 		t.Fatalf("projectRepo.ProjectByName unexpected error = %v", err)
 	}

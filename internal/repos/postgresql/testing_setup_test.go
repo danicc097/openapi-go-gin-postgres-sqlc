@@ -15,8 +15,6 @@ const (
 	errViolatesCheckConstraint = "violates check constraint"
 )
 
-const demoProjectName = "demoProject"
-
 var (
 	testPool    *pgxpool.Pool
 	testSQLPool *sql.DB // for jet, use .Sql() to use pgx directly

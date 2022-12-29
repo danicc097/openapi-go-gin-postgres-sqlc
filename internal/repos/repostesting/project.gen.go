@@ -5,6 +5,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
@@ -25,12 +26,12 @@ type FakeProject struct {
 		result1 *db.Project
 		result2 error
 	}
-	ProjectByNameStub        func(context.Context, db.DBTX, string) (*db.Project, error)
+	ProjectByNameStub        func(context.Context, db.DBTX, models.Project) (*db.Project, error)
 	projectByNameMutex       sync.RWMutex
 	projectByNameArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 string
+		arg3 models.Project
 	}
 	projectByNameReturns struct {
 		result1 *db.Project
@@ -110,13 +111,13 @@ func (fake *FakeProject) ProjectByIDReturnsOnCall(i int, result1 *db.Project, re
 	}{result1, result2}
 }
 
-func (fake *FakeProject) ProjectByName(arg1 context.Context, arg2 db.DBTX, arg3 string) (*db.Project, error) {
+func (fake *FakeProject) ProjectByName(arg1 context.Context, arg2 db.DBTX, arg3 models.Project) (*db.Project, error) {
 	fake.projectByNameMutex.Lock()
 	ret, specificReturn := fake.projectByNameReturnsOnCall[len(fake.projectByNameArgsForCall)]
 	fake.projectByNameArgsForCall = append(fake.projectByNameArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 string
+		arg3 models.Project
 	}{arg1, arg2, arg3})
 	stub := fake.ProjectByNameStub
 	fakeReturns := fake.projectByNameReturns
@@ -137,13 +138,13 @@ func (fake *FakeProject) ProjectByNameCallCount() int {
 	return len(fake.projectByNameArgsForCall)
 }
 
-func (fake *FakeProject) ProjectByNameCalls(stub func(context.Context, db.DBTX, string) (*db.Project, error)) {
+func (fake *FakeProject) ProjectByNameCalls(stub func(context.Context, db.DBTX, models.Project) (*db.Project, error)) {
 	fake.projectByNameMutex.Lock()
 	defer fake.projectByNameMutex.Unlock()
 	fake.ProjectByNameStub = stub
 }
 
-func (fake *FakeProject) ProjectByNameArgsForCall(i int) (context.Context, db.DBTX, string) {
+func (fake *FakeProject) ProjectByNameArgsForCall(i int) (context.Context, db.DBTX, models.Project) {
 	fake.projectByNameMutex.RLock()
 	defer fake.projectByNameMutex.RUnlock()
 	argsForCall := fake.projectByNameArgsForCall[i]

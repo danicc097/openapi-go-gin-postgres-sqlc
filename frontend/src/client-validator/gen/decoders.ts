@@ -43,7 +43,6 @@ import {
   DbTimeEntryPublic,
   DbUserPublic,
   DbWorkItemCommentPublic,
-  RestProjectConfigField,
   Project,
   demoProjectKanbanSteps,
   ModelsProjectConfigField,
@@ -473,18 +472,6 @@ export const DbWorkItemCommentPublicDecoder: Decoder<DbWorkItemCommentPublic> = 
       throw new Error(`Schema ${DbWorkItemCommentPublicDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbWorkItemCommentPublicDecoder.definitionName)
-  },
-}
-export const RestProjectConfigFieldDecoder: Decoder<RestProjectConfigField> = {
-  definitionName: 'RestProjectConfigField',
-  schemaRef: '#/definitions/RestProjectConfigField',
-
-  decode(json: unknown): RestProjectConfigField {
-    const schema = ajv.getSchema(RestProjectConfigFieldDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${RestProjectConfigFieldDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, RestProjectConfigFieldDecoder.definitionName)
   },
 }
 export const ProjectDecoder: Decoder<Project> = {

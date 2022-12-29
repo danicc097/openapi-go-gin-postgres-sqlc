@@ -1045,27 +1045,6 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestProjectConfigField": {
-      "properties": {
-        "isEditable": {
-          "type": "boolean"
-        },
-        "isVisible": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        },
-        "showCollapsed": {
-          "type": "boolean"
-        }
-      },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "Project": {
       "enum": [
         "demoProject",
@@ -1220,9 +1199,6 @@
     },
     "DbWorkItemCommentPublic": {
       "$ref": "#/definitions/DbWorkItemCommentPublic"
-    },
-    "RestProjectConfigField": {
-      "$ref": "#/definitions/RestProjectConfigField"
     },
     "Project": {
       "$ref": "#/definitions/Project"

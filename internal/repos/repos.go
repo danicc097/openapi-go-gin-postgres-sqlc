@@ -3,6 +3,7 @@ package repos
 import (
 	"context"
 
+	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/google/uuid"
@@ -175,7 +176,7 @@ type User interface {
 // Project defines the datastore/repository handling persisting Project records.
 // Projects are manually created on demand.
 type Project interface {
-	ProjectByName(ctx context.Context, d db.DBTX, name string) (*db.Project, error)
+	ProjectByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (*db.Project, error)
 	ProjectByID(ctx context.Context, d db.DBTX, id int) (*db.Project, error)
 }
 

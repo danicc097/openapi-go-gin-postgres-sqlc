@@ -39,7 +39,6 @@ import {
   DbTimeEntryPublic,
   DbUserPublic,
   DbWorkItemCommentPublic,
-  RestProjectConfigField,
   Project,
   demoProjectKanbanSteps,
   ModelsProjectConfigField,
@@ -104,10 +103,6 @@ export const schemaDefinitions = {
   DbWorkItemCommentPublic: info<DbWorkItemCommentPublic>(
     'DbWorkItemCommentPublic',
     '#/definitions/DbWorkItemCommentPublic',
-  ),
-  RestProjectConfigField: info<RestProjectConfigField>(
-    'RestProjectConfigField',
-    '#/definitions/RestProjectConfigField',
   ),
   Project: info<Project>('Project', '#/definitions/Project'),
   demoProjectKanbanSteps: info<demoProjectKanbanSteps>(
