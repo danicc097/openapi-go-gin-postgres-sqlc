@@ -9,6 +9,7 @@ import { EuiProvider, useEuiTheme } from '@elastic/eui'
 import { useUISlice } from 'src/slices/ui'
 import { useNotificationAPI } from 'src/hooks/ui/useNotificationAPI'
 import ProtectedRoute from 'src/components/Permissions/ProtectedRoute'
+import NotFoundPage from 'src/components/NotFoundPage/NotFoundPage'
 
 const Layout = React.lazy(() => import('./components/Layout/Layout'))
 const LandingPage = React.lazy(() => import('./views/LandingPage/LandingPage'))
@@ -61,6 +62,16 @@ export default function App() {
                   <React.Suspense fallback={<FallbackLoading />}>
                     <ProtectedRoute>
                       <ProjectManagementPage />
+                    </ProtectedRoute>
+                  </React.Suspense>
+                }
+              />
+              <Route
+                path="*"
+                element={
+                  <React.Suspense fallback={<FallbackLoading />}>
+                    <ProtectedRoute>
+                      <NotFoundPage />
                     </ProtectedRoute>
                   </React.Suspense>
                 }
