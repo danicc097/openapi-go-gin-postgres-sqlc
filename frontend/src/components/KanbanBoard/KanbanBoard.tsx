@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   EuiDragDropContext,
   EuiDraggable,
@@ -70,7 +70,7 @@ const boardConfig: ProjectConfig = {
   fields: [
     {
       isEditable: true,
-      showCollapsed: true,
+      showCollapsed: false,
       isVisible: true,
       path: 'workItemType',
       name: 'Type',
@@ -84,14 +84,14 @@ const boardConfig: ProjectConfig = {
     },
     {
       isEditable: true,
-      showCollapsed: true,
+      showCollapsed: false,
       isVisible: true,
       path: 'demoProjectWorkItem.metadata',
       name: 'Metadata',
     },
     {
       isEditable: true,
-      showCollapsed: true,
+      showCollapsed: false,
       isVisible: true,
       path: 'demoProjectWorkItem.metadata.externalLink',
       name: 'External link',
@@ -126,14 +126,14 @@ const boardConfig: ProjectConfig = {
     },
     {
       isEditable: true,
-      showCollapsed: true,
+      showCollapsed: false,
       isVisible: true,
       path: 'demoProjectWorkItem.KPIs.complexity',
       name: 'Complexity',
     },
     {
       isEditable: true,
-      showCollapsed: true,
+      showCollapsed: false,
       isVisible: true,
       path: 'demoProjectWorkItem.KPIs.tags',
       name: 'Tags',
@@ -150,6 +150,7 @@ const boardConfig: ProjectConfig = {
 
 export default function KanbanBoard() {
   const [isModalVisible, setIsModalVisible] = useState(false)
+  const [cardsCollapsed, setCardsCollapsed] = useState(false)
 
   const showModal = () => setIsModalVisible(true)
 
@@ -171,12 +172,17 @@ export default function KanbanBoard() {
 
           const value = _.get(data, field.path)
 
+          if (cardsCollapsed && !field.showCollapsed) return
+
           let element
 
           // TODO should accumulate elements in elements and panel elements here as well
 
           if (_.isPlainObject(value)) {
-            const nestedFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path))
+            let nestedFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path))
+            if (cardsCollapsed) {
+              nestedFields = nestedFields.filter((f) => f.showCollapsed)
+            }
             const fieldNestedObjects = getNestedObjects(nestedFields, field)
             if (Array.isArray(value) && _.isPlainObject(value[0])) {
               const arrayFields = boardConfig.fields.filter((f) => f.path.startsWith(field.path + '.'))
@@ -195,79 +201,74 @@ export default function KanbanBoard() {
       </>
     )
   }
-
-  const makeList = (number, start = 1) =>
-    Array.from({ length: number }, (v, k) => k + start).map((el) => {
-      return {
-        content: (
-          <EuiCard
-            textAlign="left"
-            title={
-              <>
-                <EuiFlexGroup direction="row" justifyContent="spaceBetween">
-                  <EuiFlexItem>Card {el}</EuiFlexItem>
-                  <EuiButtonIcon
-                    iconType="documentEdit"
-                    aria-label="Heart"
-                    color="primary"
-                    onClick={() => {
-                      // TODO Navigate /workitem/:id
-                      null
-                    }}
-                  />
-                </EuiFlexGroup>
-                <EuiHorizontalRule size="full" margin="xs"></EuiHorizontalRule>
-              </>
-            }
-            // description={}
-            titleElement="h3"
-            hasBorder={false}
-            paddingSize="none"
-            display="plain"
-            // footer={<></>}
-          >
-            {renderCard(exampleDemoProjectWorkItem)}
-            <EuiSpacer />
-            <EuiButton
-              key={1}
-              size="s"
-              onClick={() =>
-                addToast({
-                  id: ToastId.AuthzError + uniqueId(),
-                  title: 'clicked',
-                  color: 'success',
-                  iconType: 'alert',
-                  toastLifeTimeMs: 15000,
-                  text: 'clicked.',
-                })
-              }
-            >
-              New toast
-            </EuiButton>
-          </EuiCard>
-        ),
-        id: makeId(),
-      }
-    })
-
   const [list, setList] = useState([1, 2, 3, 4])
-  const [list1, setList1] = useState(makeList(3))
-  const [list2, setList2] = useState(makeList(3, 4))
-  const [list3, setList3] = useState(makeList(1, 7))
-  const [list4, setList4] = useState(makeList(1, 8))
+  const [list1, setList1] = useState([])
+
+  useEffect(() => {
+    setList1(
+      Array.from({ length: 3 }, (v, k) => k + 1).map((el) => {
+        return {
+          content: (
+            <EuiCard
+              textAlign="left"
+              title={
+                <>
+                  <EuiFlexGroup direction="row" justifyContent="spaceBetween">
+                    <EuiFlexItem>Card {el}</EuiFlexItem>
+                    <EuiButtonIcon
+                      iconType="documentEdit"
+                      aria-label="Heart"
+                      color="primary"
+                      onClick={() => {
+                        // TODO Navigate /workitem/:id
+                        null
+                      }}
+                    />
+                  </EuiFlexGroup>
+                  <EuiHorizontalRule size="full" margin="xs"></EuiHorizontalRule>
+                </>
+              }
+              // description={}
+              titleElement="h3"
+              hasBorder={false}
+              paddingSize="none"
+              display="plain"
+              // footer={<></>}
+            >
+              {renderCard(exampleDemoProjectWorkItem)}
+              <EuiSpacer />
+              <EuiButton
+                key={1}
+                size="s"
+                onClick={() =>
+                  addToast({
+                    id: ToastId.AuthzError + uniqueId(),
+                    title: 'clicked',
+                    color: 'success',
+                    iconType: 'alert',
+                    toastLifeTimeMs: 15000,
+                    text: 'clicked.',
+                  })
+                }
+              >
+                New toast
+              </EuiButton>
+            </EuiCard>
+          ),
+          id: makeId(),
+        }
+      }),
+    )
+  }, [cardsCollapsed])
+
+  // dynamic from project list of kanban steps
   const lists = {
     COMPLEX_DROPPABLE_PARENT: list,
     COMPLEX_DROPPABLE_AREA_1: list1,
-    COMPLEX_DROPPABLE_AREA_2: list2,
-    COMPLEX_DROPPABLE_AREA_3: list3,
-    COMPLEX_DROPPABLE_AREA_4: list4,
   }
   const actions = {
     COMPLEX_DROPPABLE_PARENT: setList,
     COMPLEX_DROPPABLE_AREA_1: setList1,
-    COMPLEX_DROPPABLE_AREA_2: setList2,
-    COMPLEX_DROPPABLE_AREA_3: setList3,
-    COMPLEX_DROPPABLE_AREA_4: setList4,
   }
   const onDragEnd: DragDropContextProps['onDragEnd'] = ({ source, destination }) => {
     if (source && destination) {
@@ -297,13 +298,11 @@ export default function KanbanBoard() {
     <>
       <ProtectedComponent>
         <>
-          {' '}
-          <EuiButton>test</EuiButton>
+          <EuiButton onClick={() => setCardsCollapsed(!cardsCollapsed)}>Collapse</EuiButton>
         </>
       </ProtectedComponent>
       <ProtectedComponent requiredRole="superAdmin">
         <>
-          {' '}
           <EuiButton>test superadmin</EuiButton>
         </>
       </ProtectedComponent>
@@ -317,7 +316,7 @@ export default function KanbanBoard() {
           className="eui-scrollBar"
           style={{ display: 'flex', maxWidth: '100vw', overflowX: 'auto' }}
         >
-          {list.map((did, didx) => (
+          {list?.map((did, didx) => (
             <EuiDraggable
               key={did}
               index={didx}
@@ -341,7 +340,7 @@ export default function KanbanBoard() {
                       spacing="m"
                       style={{ flex: '1 0 50%' }}
                     >
-                      {lists[`COMPLEX_DROPPABLE_AREA_${did}`].map(({ content, id }, idx) => (
+                      {lists[`COMPLEX_DROPPABLE_AREA_${did}`]?.map(({ content, id }, idx) => (
                         <EuiDraggable key={id} index={idx} draggableId={id} spacing="m">
                           <EuiPanel>{content}</EuiPanel>
                         </EuiDraggable>
