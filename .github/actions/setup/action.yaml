@@ -30,7 +30,7 @@ runs:
       shell: bash
       run: |
 
-        apt-get install moreutils # sponge
+        sudo apt-get -y install moreutils # sponge
 
         source .envrc
 
