@@ -15,13 +15,14 @@ trap errtrap SIGUSR1
 trap cleanup 0
 
 cleanup() {
-  [[ $restore_cache = 1 ]] &&
+  if [[ $restore_cache = 1 ]]; then
     {
       echo "Restoring $SPEC and $PG_REPO_GEN"
       mv "$CACHE/$SPEC" "$SPEC"
       rm -rf "$PG_REPO_GEN"
       mv "$CACHE_PG_REPO_GEN" "$PG_REPO"
     }
+  fi
 }
 
 killgroup() {
