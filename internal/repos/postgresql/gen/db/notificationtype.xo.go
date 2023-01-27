@@ -8,60 +8,32 @@ import (
 )
 
 // NotificationType is the 'notification_type' enum type from schema 'public'.
-type NotificationType uint16
+type NotificationType string
 
 // NotificationType values.
 const (
 	// NotificationTypePersonal is the 'personal' notification_type.
-	NotificationTypePersonal NotificationType = 1
+	NotificationTypePersonal NotificationType = "personal"
 	// NotificationTypeGlobal is the 'global' notification_type.
-	NotificationTypeGlobal NotificationType = 2
+	NotificationTypeGlobal NotificationType = "global"
 )
-
-// String satisfies the fmt.Stringer interface.
-func (nt NotificationType) String() string {
-	switch nt {
-	case NotificationTypePersonal:
-		return "personal"
-	case NotificationTypeGlobal:
-		return "global"
-	}
-	return fmt.Sprintf("NotificationType(%d)", nt)
-}
-
-// MarshalText marshals NotificationType into text.
-func (nt NotificationType) MarshalText() ([]byte, error) {
-	return []byte(nt.String()), nil
-}
-
-// UnmarshalText unmarshals NotificationType from text.
-func (nt *NotificationType) UnmarshalText(buf []byte) error {
-	switch str := string(buf); str {
-	case "personal":
-		*nt = NotificationTypePersonal
-	case "global":
-		*nt = NotificationTypeGlobal
-	default:
-		return ErrInvalidNotificationType(str)
-	}
-	return nil
-}
 
 // Value satisfies the driver.Valuer interface.
 func (nt NotificationType) Value() (driver.Value, error) {
-	return nt.String(), nil
+	return string(nt), nil
 }
 
 // Scan satisfies the sql.Scanner interface.
-func (nt *NotificationType) Scan(v interface{}) error {
-	switch buf := v.(type) {
+func (nt *NotificationType) Scan(src interface{}) error {
+	switch s := src.(type) {
 	case []byte:
-		return nt.UnmarshalText(buf)
+		*nt = NotificationType(s)
 	case string:
-		return nt.UnmarshalText([]byte(buf))
+		*nt = NotificationType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NotificationType: %T", src)
 	}
-
-	return ErrInvalidNotificationType(fmt.Sprintf("%T", v))
+	return nil
 }
 
 // NullNotificationType represents a null 'notification_type' enum for schema 'public'.
@@ -82,7 +54,7 @@ func (nnt NullNotificationType) Value() (driver.Value, error) {
 // Scan satisfies the sql.Scanner interface.
 func (nnt *NullNotificationType) Scan(v interface{}) error {
 	if v == nil {
-		nnt.NotificationType, nnt.Valid = 0, false
+		nnt.NotificationType, nnt.Valid = "", false
 		return nil
 	}
 	err := nnt.NotificationType.Scan(v)

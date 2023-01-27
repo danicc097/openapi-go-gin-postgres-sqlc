@@ -26,6 +26,20 @@ func AllNotificationTypeValues() []NotificationType {
 	}
 }
 
+// Defines values for Project.
+const (
+	ProjectDemoProject  Project = "demoProject"
+	ProjectDemoProject2 Project = "demoProject2"
+)
+
+// AllProjectValues returns all possible values for Project.
+func AllProjectValues() []Project {
+	return []Project{
+		ProjectDemoProject,
+		ProjectDemoProject2,
+	}
+}
+
 // Defines values for Role.
 const (
 	RoleAdmin        Role = "admin"
@@ -74,21 +88,13 @@ func AllScopeValues() []Scope {
 
 // Defines values for Topics.
 const (
-	TopicsAdminNotifications   Topics = "AdminNotifications"
-	TopicsManagerNotifications Topics = "ManagerNotifications"
-	TopicsUserNotifications    Topics = "UserNotifications"
-	TopicsWorkItemClosed       Topics = "WorkItemClosed"
-	TopicsWorkItemMoved        Topics = "WorkItemMoved"
+	TopicsGlobalAlerts Topics = "GlobalAlerts"
 )
 
 // AllTopicsValues returns all possible values for Topics.
 func AllTopicsValues() []Topics {
 	return []Topics{
-		TopicsAdminNotifications,
-		TopicsManagerNotifications,
-		TopicsUserNotifications,
-		TopicsWorkItemClosed,
-		TopicsWorkItemMoved,
+		TopicsGlobalAlerts,
 	}
 }
 
@@ -106,6 +112,24 @@ func AllWorkItemRoleValues() []WorkItemRole {
 	}
 }
 
+// Defines values for DemoProjectKanbanSteps.
+const (
+	DemoProjectKanbanStepsDisabled       DemoProjectKanbanSteps = "Disabled"
+	DemoProjectKanbanStepsReceived       DemoProjectKanbanSteps = "Received"
+	DemoProjectKanbanStepsUnderReview    DemoProjectKanbanSteps = "Under review"
+	DemoProjectKanbanStepsWorkInProgress DemoProjectKanbanSteps = "Work in progress"
+)
+
+// AllDemoProjectKanbanStepsValues returns all possible values for DemoProjectKanbanSteps.
+func AllDemoProjectKanbanStepsValues() []DemoProjectKanbanSteps {
+	return []DemoProjectKanbanSteps{
+		DemoProjectKanbanStepsDisabled,
+		DemoProjectKanbanStepsReceived,
+		DemoProjectKanbanStepsUnderReview,
+		DemoProjectKanbanStepsWorkInProgress,
+	}
+}
+
 // DbActivityPublic defines the model for DbActivityPublic.
 type DbActivityPublic struct {
 	ActivityID   int    `json:"activityID"`
@@ -113,6 +137,15 @@ type DbActivityPublic struct {
 	IsProductive bool   `json:"isProductive"`
 	Name         string `json:"name"`
 	ProjectID    int    `json:"projectID"`
+}
+
+// DbDemoProjectWorkItemPublic defines the model for DbDemoProjectWorkItemPublic.
+type DbDemoProjectWorkItemPublic struct {
+	LastMessageAt time.Time `json:"lastMessageAt"`
+	Line          string    `json:"line"`
+	Ref           string    `json:"ref"`
+	Reopened      bool      `json:"reopened"`
+	WorkItemID    int       `json:"workItemID"`
 }
 
 // DbKanbanStepPublic defines the model for DbKanbanStepPublic.
@@ -146,11 +179,63 @@ type DbTeamPublic struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
+// DbTimeEntryPublic defines the model for DbTimeEntryPublic.
+type DbTimeEntryPublic struct {
+	ActivityID      int       `json:"activityID"`
+	Comment         string    `json:"comment"`
+	DurationMinutes *int      `json:"durationMinutes"`
+	Start           time.Time `json:"start"`
+	TeamID          *int      `json:"teamID"`
+	TimeEntryID     int       `json:"timeEntryID"`
+	UserID          UuidUUID  `json:"userID"`
+	WorkItemID      *int      `json:"workItemID"`
+}
+
 // DbUserAPIKeyPublic defines the model for DbUserAPIKeyPublic.
 type DbUserAPIKeyPublic struct {
 	ApiKey    string    `json:"apiKey"`
 	ExpiresOn time.Time `json:"expiresOn"`
 	UserID    UuidUUID  `json:"userID"`
+}
+
+// DbUserPublic defines the model for DbUserPublic.
+type DbUserPublic struct {
+	CreatedAt                time.Time  `json:"createdAt"`
+	DeletedAt                *time.Time `json:"deletedAt"`
+	Email                    string     `json:"email"`
+	FirstName                *string    `json:"firstName"`
+	FullName                 *string    `json:"fullName"`
+	HasGlobalNotifications   bool       `json:"hasGlobalNotifications"`
+	HasPersonalNotifications bool       `json:"hasPersonalNotifications"`
+	LastName                 *string    `json:"lastName"`
+	UserID                   UuidUUID   `json:"userID"`
+	Username                 string     `json:"username"`
+}
+
+// DbWorkItemCommentPublic defines the model for DbWorkItemCommentPublic.
+type DbWorkItemCommentPublic struct {
+	CreatedAt         time.Time `json:"createdAt"`
+	Message           string    `json:"message"`
+	UpdatedAt         time.Time `json:"updatedAt"`
+	UserID            UuidUUID  `json:"userID"`
+	WorkItemCommentID int       `json:"workItemCommentID"`
+	WorkItemID        int       `json:"workItemID"`
+}
+
+// DbWorkItemPublic defines the model for DbWorkItemPublic.
+type DbWorkItemPublic struct {
+	Closed         *time.Time  `json:"closed"`
+	CreatedAt      time.Time   `json:"createdAt"`
+	DeletedAt      *time.Time  `json:"deletedAt"`
+	Description    string      `json:"description"`
+	KanbanStepID   int         `json:"kanbanStepID"`
+	Metadata       PgtypeJSONB `json:"metadata"`
+	TargetDate     time.Time   `json:"targetDate"`
+	TeamID         int         `json:"teamID"`
+	Title          string      `json:"title"`
+	UpdatedAt      time.Time   `json:"updatedAt"`
+	WorkItemID     int         `json:"workItemID"`
+	WorkItemTypeID int         `json:"workItemTypeID"`
 }
 
 // DbWorkItemTagPublic defines the model for DbWorkItemTagPublic.
@@ -171,6 +256,28 @@ type DbWorkItemTypePublic struct {
 	WorkItemTypeID int    `json:"workItemTypeID"`
 }
 
+// DemoProjectWorkItemsResponse defines the model for DemoProjectWorkItemsResponse.
+type DemoProjectWorkItemsResponse struct {
+	Closed              *time.Time                  `json:"closed"`
+	CreatedAt           time.Time                   `json:"createdAt"`
+	DeletedAt           *time.Time                  `json:"deletedAt"`
+	DemoProjectWorkItem DbDemoProjectWorkItemPublic `json:"demoProjectWorkItem"`
+	Description         string                      `json:"description"`
+	KanbanStepID        int                         `json:"kanbanStepID"`
+	Members             *[]DbUserPublic             `json:"members"`
+	Metadata            PgtypeJSONB                 `json:"metadata"`
+	TargetDate          time.Time                   `json:"targetDate"`
+	TeamID              int                         `json:"teamID"`
+	TimeEntries         *[]DbTimeEntryPublic        `json:"timeEntries"`
+	Title               string                      `json:"title"`
+	UpdatedAt           time.Time                   `json:"updatedAt"`
+	WorkItemComments    *[]DbWorkItemCommentPublic  `json:"workItemComments"`
+	WorkItemID          int                         `json:"workItemID"`
+	WorkItemTags        *[]DbWorkItemTagPublic      `json:"workItemTags"`
+	WorkItemType        *DbWorkItemTypePublic       `json:"workItemType"`
+	WorkItemTypeID      int                         `json:"workItemTypeID"`
+}
+
 // HTTPValidationError defines the model for HTTPValidationError.
 type HTTPValidationError struct {
 	Detail *[]ValidationError `json:"detail,omitempty"`
@@ -186,17 +293,26 @@ type InitializeProjectRequest struct {
 	WorkItemTypes *[]ReposWorkItemTypeCreateParams `json:"workItemTypes"`
 }
 
+// ModelsProjectConfigField defines the model for ModelsProjectConfigField.
+type ModelsProjectConfigField struct {
+	IsEditable    bool   `json:"isEditable"`
+	IsVisible     bool   `json:"isVisible"`
+	Name          string `json:"name"`
+	Path          string `json:"path"`
+	ShowCollapsed bool   `json:"showCollapsed"`
+}
+
 // ModelsRole defines the model for ModelsRole.
 type ModelsRole = string
-
-// ModelsScope defines the model for ModelsScope.
-type ModelsScope = string
 
 // NotificationType User notification type.
 type NotificationType string
 
 // PgtypeJSONB defines the model for PgtypeJSONB.
 type PgtypeJSONB = map[string]interface{}
+
+// Project Existing projects
+type Project string
 
 // ProjectBoardResponse defines the model for ProjectBoardResponse.
 type ProjectBoardResponse struct {
@@ -206,6 +322,12 @@ type ProjectBoardResponse struct {
 	Teams         *[]DbTeamPublic         `json:"teams"`
 	WorkItemTags  *[]DbWorkItemTagPublic  `json:"workItemTags"`
 	WorkItemTypes *[]DbWorkItemTypePublic `json:"workItemTypes"`
+}
+
+// ProjectConfig defines the model for ProjectConfig.
+type ProjectConfig struct {
+	Fields *[]ModelsProjectConfigField `json:"fields"`
+	Header *[]string                   `json:"header"`
 }
 
 // ReposActivityCreateParams defines the model for ReposActivityCreateParams.
@@ -258,29 +380,6 @@ type Scope string
 // Scopes defines the model for Scopes.
 type Scopes = []Scope
 
-// TeamPublic defines the model for TeamPublic.
-type TeamPublic struct {
-	CreatedAt   time.Time   `json:"createdAt"`
-	Description string      `json:"description"`
-	Metadata    PgtypeJSONB `json:"metadata"`
-	Name        string      `json:"name"`
-	ProjectID   int         `json:"projectID"`
-	TeamID      int         `json:"teamID"`
-	UpdatedAt   time.Time   `json:"updatedAt"`
-}
-
-// TimeEntryPublic defines the model for TimeEntryPublic.
-type TimeEntryPublic struct {
-	ActivityID      *int       `json:"activityID,omitempty"`
-	Comment         *string    `json:"comment,omitempty"`
-	DurationMinutes *int       `json:"durationMinutes"`
-	Start           *time.Time `json:"start,omitempty"`
-	TeamID          *int       `json:"teamID"`
-	TimeEntryID     *int       `json:"timeEntryID,omitempty"`
-	UserID          *UuidUUID  `json:"userID,omitempty"`
-	WorkItemID      *int       `json:"workItemID"`
-}
-
 // Topics string identifiers for SSE event listeners.
 type Topics string
 
@@ -293,17 +392,10 @@ type UpdateUserAuthRequest struct {
 // UpdateUserRequest represents User data to update
 type UpdateUserRequest struct {
 	// FirstName originally from auth server but updatable
-	FirstName *string `json:"first_name,omitempty"`
+	FirstName *string `json:"firstName,omitempty"`
 
 	// LastName originally from auth server but updatable
-	LastName *string `json:"last_name,omitempty"`
-}
-
-// UserAPIKeyPublic defines the model for UserAPIKeyPublic.
-type UserAPIKeyPublic struct {
-	ApiKey    string    `json:"apiKey"`
-	ExpiresOn time.Time `json:"expiresOn"`
-	UserID    UuidUUID  `json:"userID"`
+	LastName *string `json:"lastName,omitempty"`
 }
 
 // UserResponse defines the model for UserResponse.
@@ -317,6 +409,7 @@ type UserResponse struct {
 	HasGlobalNotifications   bool                `json:"hasGlobalNotifications"`
 	HasPersonalNotifications bool                `json:"hasPersonalNotifications"`
 	LastName                 *string             `json:"lastName"`
+	Projects                 *[]DbProjectPublic  `json:"projects"`
 	Role                     Role                `json:"role"`
 	Scopes                   Scopes              `json:"scopes"`
 	Teams                    *[]DbTeamPublic     `json:"teams"`
@@ -334,24 +427,26 @@ type ValidationError struct {
 	Type string   `json:"type"`
 }
 
-// WorkItemCommentPublic defines the model for WorkItemCommentPublic.
-type WorkItemCommentPublic struct {
-	CreatedAt         *time.Time `json:"createdAt,omitempty"`
-	Message           *string    `json:"message,omitempty"`
-	UpdatedAt         *time.Time `json:"updatedAt,omitempty"`
-	UserID            *UuidUUID  `json:"userID,omitempty"`
-	WorkItemCommentID *int       `json:"workItemCommentID,omitempty"`
-	WorkItemID        *int       `json:"workItemID,omitempty"`
-}
-
 // WorkItemRole Role in work item for a member.
 type WorkItemRole string
 
-// Serial defines the model for serial.
-type Serial = int
+// DemoProjectKanbanSteps Kanban columns for project demoProject
+type DemoProjectKanbanSteps string
+
+// PathSerial defines the model for PathSerial.
+type PathSerial = int
 
 // Uuid defines the model for uuid.
 type Uuid = string
+
+// GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
+type GetProjectWorkitemsParams struct {
+	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
+	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
+}
+
+// UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
+type UpdateProjectConfigJSONRequestBody = ProjectConfig
 
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
 type InitializeProjectJSONRequestBody = InitializeProjectRequest

@@ -8,8 +8,8 @@
       "DOM.Iterable",
       "ESNext"
     ],
-    "allowJs": false,
     "skipLibCheck": true,
+    "allowJs": false,
     "strict": false,
     "forceConsistentCasingInFileNames": true,
     "importsNotUsedAsValues": "error",
@@ -24,23 +24,18 @@
     "baseUrl": ".",
     "sourceMap": true,
     "paths": {
-      "@assets/*": [
-        "assets/*"
-      ],
       "@roles": [
-        "../roles.json"
+        "roles.json"
       ],
       "@scopes": [
-        "../scopes.json"
+        "scopes.json"
       ],
-    }
+      "@operationAuth": [
+        "operationAuth.gen.json"
+      ],
+      "@config": [
+        "config.json"
+      ],
+    },
   },
-  "include": [
-    "src"
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.vite.json"
-    }
-  ]
 }

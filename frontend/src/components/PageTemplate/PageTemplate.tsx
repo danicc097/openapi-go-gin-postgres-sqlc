@@ -12,6 +12,7 @@ type PageTemplateProps = {
   sidebarSticky?: EuiPageSidebarProps['sticky']
   offset?: EuiPageTemplateProps['offset']
   grow?: EuiPageTemplateProps['grow']
+  restrictWidth?: EuiPageTemplateProps['restrictWidth']
 }
 
 export default function PageTemplate({
@@ -23,17 +24,26 @@ export default function PageTemplate({
   bottomBorder = true,
   sidebarSticky,
   offset,
+  restrictWidth,
   grow,
 }: PageTemplateProps) {
   return (
-    <EuiPageTemplate panelled={panelled} bottomBorder={bottomBorder} grow={grow} offset={offset}>
+    <EuiPageTemplate
+      restrictWidth={restrictWidth}
+      panelled={panelled}
+      bottomBorder={bottomBorder}
+      grow={grow}
+      offset={offset}
+      // paddingSize="none"
+      style={{ paddingBlockStart: 0 }}
+    >
       {sidebar && <EuiPageTemplate.Sidebar sticky={sidebarSticky}>{sidebar}</EuiPageTemplate.Sidebar>}
       {header && <EuiPageTemplate.Header {...header} rightSideItems={[...buttons]} />}
-      <EuiPageTemplate.Section grow={false} bottomBorder={bottomBorder}>
+      {/* <EuiPageTemplate.Section grow={false} bottomBorder={bottomBorder}>
         <EuiText textAlign="center">
           <strong>Stack EuiPageTemplate sections and headers to create your custom content order.</strong>
         </EuiText>
-      </EuiPageTemplate.Section>
+      </EuiPageTemplate.Section> */}
       <EuiPageTemplate.Section>{content}</EuiPageTemplate.Section>
     </EuiPageTemplate>
   )

@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/stretchr/testify/assert"
@@ -18,8 +19,8 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 	projectID := 1
 
 	type argsString struct {
-		filter string
-		fn     func(context.Context, db.DBTX, string) (*db.Project, error)
+		filter internalmodels.Project
+		fn     func(context.Context, db.DBTX, internalmodels.Project) (*db.Project, error)
 	}
 
 	testString := []struct {
@@ -29,7 +30,7 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 		{
 			name: "name",
 			args: argsString{
-				filter: demoProjectName,
+				filter: internalmodels.ProjectDemoProject,
 				fn:     (projectRepo.ProjectByName),
 			},
 		},
@@ -39,7 +40,7 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundProject, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
+			foundProject, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -51,9 +52,9 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 
 			errContains := errNoRows
 
-			filter := "inexistent project"
+			filter := internalmodels.Project("inexistent project")
 
-			_, err := tc.args.fn(context.Background(), testpool, filter)
+			_, err := tc.args.fn(context.Background(), testPool, filter)
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}
@@ -82,7 +83,7 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundProject, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
+			foundProject, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -96,7 +97,7 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 
 			filter := 254364 // does not exist
 
-			_, err := tc.args.fn(context.Background(), testpool, filter)
+			_, err := tc.args.fn(context.Background(), testPool, filter)
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}

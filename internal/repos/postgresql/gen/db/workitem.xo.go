@@ -45,11 +45,13 @@ type WorkItem struct {
 	UpdatedAt      time.Time    `json:"updated_at" db:"updated_at"`               // updated_at
 	DeletedAt      *time.Time   `json:"deleted_at" db:"deleted_at"`               // deleted_at
 
-	TimeEntries      *[]TimeEntry       `json:"time_entries" db:"time_entries"`             // O2M
-	WorkItemComments *[]WorkItemComment `json:"work_item_comments" db:"work_item_comments"` // O2M
-	Users            *[]User            `json:"users" db:"users"`                           // M2M
-	WorkItemTags     *[]WorkItemTag     `json:"work_item_tags" db:"work_item_tags"`         // M2M
-	WorkItemType     *WorkItemType      `json:"work_item_type" db:"work_item_type"`         // O2O
+	DemoProjectWorkItem *DemoProjectWorkItem `json:"demo_project_work_item" db:"demo_project_work_item"` // O2O
+	Project2WorkItem    *Project2WorkItem    `json:"project2work_item" db:"project_2_work_item"`         // O2O
+	TimeEntries         *[]TimeEntry         `json:"time_entries" db:"time_entries"`                     // O2M
+	WorkItemComments    *[]WorkItemComment   `json:"work_item_comments" db:"work_item_comments"`         // O2M
+	Members             *[]User              `json:"members" db:"members"`                               // M2M
+	WorkItemTags        *[]WorkItemTag       `json:"work_item_tags" db:"work_item_tags"`                 // M2M
+	WorkItemType        *WorkItemType        `json:"work_item_type" db:"work_item_type"`                 // O2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -120,11 +122,13 @@ func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 }
 
 type WorkItemJoins struct {
-	TimeEntries      bool
-	WorkItemComments bool
-	Users            bool
-	WorkItemTags     bool
-	WorkItemType     bool
+	DemoProjectWorkItem bool
+	Project2WorkItem    bool
+	TimeEntries         bool
+	WorkItemComments    bool
+	Members             bool
+	WorkItemTags        bool
+	WorkItemType        bool
 }
 
 // WithWorkItemJoin orders results by the given columns.
@@ -268,13 +272,19 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
-(case when $3::boolean = true then joined_users.users end)::jsonb as users,
-(case when $4::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
-(case when $5::boolean = true then row_to_json(work_item_types.*) end)::jsonb as work_item_type `+
+(case when $1::boolean = true then row_to_json(demo_project_work_items.*) end)::jsonb as demo_project_work_item,
+(case when $2::boolean = true then row_to_json(project_2_work_items.*) end)::jsonb as project_2_work_item,
+(case when $3::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $4::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
+(case when $5::boolean = true then joined_users.users end)::jsonb as users,
+(case when $6::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
+(case when $7::boolean = true then row_to_json(work_item_types.*) end)::jsonb as work_item_type `+
 		`FROM public.work_items `+
-		`-- O2M join generated from "time_entries_work_item_id_fkey"
+		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
+left join demo_project_work_items on demo_project_work_items.work_item_id = work_items.work_item_id
+-- O2O join generated from "project_2_work_items_work_item_id_fkey"
+left join project_2_work_items on project_2_work_items.work_item_id = work_items.work_item_id
+-- O2M join generated from "time_entries_work_item_id_fkey"
 left join (
   select
   work_item_id as time_entries_work_item_id
@@ -338,13 +348,13 @@ left join (
 				work_item_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_work_item_id = work_items.work_item_id
 -- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_item_types on work_item_types.work_item_type_id = work_items.work_item_type_id`+
-		` WHERE work_items.deleted_at = $6 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s `, c.deletedAt)
+		` WHERE work_items.deleted_at = $8 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Users, c.joins.WorkItemTags, c.joins.WorkItemType, deletedAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, deletedAt)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -391,13 +401,19 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
-(case when $3::boolean = true then joined_users.users end)::jsonb as users,
-(case when $4::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
-(case when $5::boolean = true then row_to_json(work_item_types.*) end)::jsonb as work_item_type `+
+(case when $1::boolean = true then row_to_json(demo_project_work_items.*) end)::jsonb as demo_project_work_item,
+(case when $2::boolean = true then row_to_json(project_2_work_items.*) end)::jsonb as project_2_work_item,
+(case when $3::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
+(case when $4::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
+(case when $5::boolean = true then joined_users.users end)::jsonb as users,
+(case when $6::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
+(case when $7::boolean = true then row_to_json(work_item_types.*) end)::jsonb as work_item_type `+
 		`FROM public.work_items `+
-		`-- O2M join generated from "time_entries_work_item_id_fkey"
+		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
+left join demo_project_work_items on demo_project_work_items.work_item_id = work_items.work_item_id
+-- O2O join generated from "project_2_work_items_work_item_id_fkey"
+left join project_2_work_items on project_2_work_items.work_item_id = work_items.work_item_id
+-- O2M join generated from "time_entries_work_item_id_fkey"
 left join (
   select
   work_item_id as time_entries_work_item_id
@@ -461,7 +477,7 @@ left join (
 				work_item_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_work_item_id = work_items.work_item_id
 -- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_item_types on work_item_types.work_item_type_id = work_items.work_item_type_id`+
-		` WHERE work_items.work_item_id = $6  AND work_items.deleted_at is %s `, c.deletedAt)
+		` WHERE work_items.work_item_id = $8  AND work_items.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -471,7 +487,7 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Users, c.joins.WorkItemTags, c.joins.WorkItemType, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Description, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.TargetDate, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.TimeEntries, &wi.WorkItemComments, &wi.Users, &wi.WorkItemTags, &wi.WorkItemType); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Description, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.TargetDate, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.DemoProjectWorkItem, &wi.Project2WorkItem, &wi.TimeEntries, &wi.WorkItemComments, &wi.Members, &wi.WorkItemTags, &wi.WorkItemType); err != nil {
 		return nil, logerror(err)
 	}
 	return &wi, nil

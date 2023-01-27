@@ -15,6 +15,7 @@ export default ({ mode }) => {
   // import.meta.env.VITE_PORT available here with: process.env.VITE_PORT
 
   return defineConfig({
+    base: '/',
     plugins: [
       react({
         jsxImportSource: '@emotion/react',
@@ -23,10 +24,9 @@ export default ({ mode }) => {
           plugins: ['@emotion/babel-plugin'],
         },
       }),
-      tsconfigPaths(),
+      tsconfigPaths({ root: '.' }),
       dynamicImport({}),
     ],
-
     server: {
       port: Number(Config.FRONTEND_PORT) || 5143,
       strictPort: true,
@@ -38,7 +38,6 @@ export default ({ mode }) => {
     define: {
       'process.env.NODE_ENV': `"${mode}"`,
     },
-    // root: './src',
     build: {
       minify: 'terser',
       terserOptions: {
@@ -59,26 +58,5 @@ export default ({ mode }) => {
         exclude: [],
       },
     },
-    // TODO moved to vitest in v3
-    // test: {
-    //   deps: {
-    //     inline: ['framer-motion'],
-    //   },
-    //   globals: true,
-    //   environmentOptions: {
-    //     jsdom: {
-    //       console: true,
-    //     },
-    //   },
-    //   environment: 'jsdom',
-    //   setupFiles: './src/setupTests.ts',
-    //   coverage: {
-    //     reporter: ['text', 'html'],
-    //     exclude: ['node_modules/', 'src/setupTests.ts'],
-    //   },
-    //   // transformMode: {
-    //   //   web: [/\.[jt]sx$/],
-    //   // },
-    // },
   })
 }

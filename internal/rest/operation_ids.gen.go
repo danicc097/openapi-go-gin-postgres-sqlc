@@ -16,8 +16,12 @@ const (
 	Ping               OperationID = "Ping"
 
 	// Operation IDs for the 'project' tag.
-	GetProjectBoard   OperationID = "GetProjectBoard"
-	InitializeProject OperationID = "InitializeProject"
+	GetProject          OperationID = "GetProject"
+	GetProjectBoard     OperationID = "GetProjectBoard"
+	GetProjectConfig    OperationID = "GetProjectConfig"
+	GetProjectWorkitems OperationID = "GetProjectWorkitems"
+	InitializeProject   OperationID = "InitializeProject"
+	UpdateProjectConfig OperationID = "UpdateProjectConfig"
 
 	// Operation IDs for the 'user' tag.
 	DeleteUser              OperationID = "DeleteUser"

@@ -7,15 +7,29 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
 
 type User struct {
-	logger   *zap.Logger
-	urepo    repos.User
-	authzsvc *Authorization
+	logger           *zap.Logger
+	urepo            repos.User
+	notificationrepo repos.Notification
+	authzsvc         *Authorization
+}
+
+// TODO repo should be aware of models Role and Scope
+// NOTE: the most important distinction about repositories is that they represent collections of entities. They do not represent database storage or caching or any number of technical concerns. Repositories represent collections. How you hold those collections is simply an implementation detail.
+type UserRegisterParams struct {
+	Username   string
+	Email      string
+	FirstName  *string
+	LastName   *string
+	ExternalID string
+	Scopes     []models.Scope
+	Role       models.Role
 }
 
 type UserUpdateParams struct {
@@ -33,25 +47,45 @@ type UserUpdateAuthorizationParams struct {
 }
 
 // NewUser returns a new User service.
-func NewUser(logger *zap.Logger, urepo repos.User, authzsvc *Authorization) *User {
+func NewUser(logger *zap.Logger, urepo repos.User, notificationrepo repos.Notification, authzsvc *Authorization) *User {
 	return &User{
-		logger:   logger,
-		urepo:    urepo,
-		authzsvc: authzsvc,
+		logger:           logger,
+		urepo:            urepo,
+		authzsvc:         authzsvc,
+		notificationrepo: notificationrepo,
 	}
 }
 
 // Register registers a user.
-// TODO accepts basic parameters instead of user *db.User and everything else is default,
-// returns a *db.User. must not pass a db.User here
-// IMPORTANT: no endpoint for user creation. Only when coming from auth server.
-// we will not support password auth.
-func (u *User) Register(ctx context.Context, d db.DBTX, params repos.UserCreateParams) (*db.User, error) {
+func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParams) (*db.User, error) {
 	defer newOTELSpan(ctx, "User.Register").End()
 
-	// TODO construct db.User and fill missing fields with default roles, etc.
-	// instead of passing it directly
-	user, err := u.urepo.Create(ctx, d, params)
+	var rank int16
+	role, err := u.authzsvc.RoleByName(string(params.Role))
+	if err != nil {
+		return nil, errors.Wrap(err, "authzsvc.RoleByName")
+	}
+	rank = role.Rank
+
+	// append default scopes per role regardless of current
+	params.Scopes = append(params.Scopes, u.authzsvc.DefaultScopes(role)...)
+
+	scopes := make([]string, 0, len(params.Scopes))
+	for _, s := range params.Scopes {
+		scopes = append(scopes, string(s))
+	}
+
+	repoParams := repos.UserCreateParams{
+		FirstName:  params.FirstName,
+		LastName:   params.LastName,
+		Username:   params.Username,
+		Email:      params.Email,
+		ExternalID: params.ExternalID,
+		RoleRank:   rank,
+		Scopes:     scopes,
+	}
+
+	user, err := u.urepo.Create(ctx, d, repoParams)
 	if err != nil {
 		return nil, errors.Wrap(err, "urepo.Create")
 	}
@@ -70,7 +104,12 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		return nil, errors.New("params cannot be nil")
 	}
 
-	user, err := u.urepo.UserByID(ctx, d, id)
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, internal.NewErrorf(internal.ErrorCodeInvalidUUID, "could not parse UUID")
+	}
+
+	user, err := u.urepo.UserByID(ctx, d, uid)
 	if err != nil {
 		return nil, errors.Wrap(err, "urepo.UserByID")
 	}
@@ -85,7 +124,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot change another user's information")
 	}
 
-	user, err = u.urepo.Update(ctx, d, id, repos.UserUpdateParams{
+	user, err = u.urepo.Update(ctx, d, uid, repos.UserUpdateParams{
 		FirstName: params.FirstName,
 		LastName:  params.LastName,
 	})
@@ -106,7 +145,12 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		return nil, errors.New("params cannot be nil")
 	}
 
-	user, err := u.urepo.UserByID(ctx, d, id)
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, internal.NewErrorf(internal.ErrorCodeInvalidUUID, "could not parse UUID")
+	}
+
+	user, err := u.urepo.UserByID(ctx, d, uid)
 	if err != nil {
 		return nil, errors.Wrap(err, "urepo.UserByID")
 	}
@@ -161,7 +205,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		scopes = &ss
 	}
 
-	user, err = u.urepo.Update(ctx, d, id, repos.UserUpdateParams{
+	user, err = u.urepo.Update(ctx, d, uid, repos.UserUpdateParams{
 		Scopes: scopes,
 		Rank:   rank,
 	})
@@ -181,6 +225,18 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 	}
 
 	return uak, nil
+}
+
+// UserByExternalID gets a user by ExternalID.
+func (u *User) UserByExternalID(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
+	defer newOTELSpan(ctx, "User.UserByExternalID").End()
+
+	user, err := u.urepo.UserByExternalID(ctx, d, id)
+	if err != nil {
+		return nil, errors.Wrap(err, "urepo.UserByExternalID")
+	}
+
+	return user, nil
 }
 
 // UserByEmail gets a user by email.
@@ -217,4 +273,30 @@ func (u *User) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.
 	}
 
 	return user, nil
+}
+
+// TODO
+func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userID string) ([]db.GetUserNotificationsRow, error) {
+	// this will also set user.has_new_personal_notifications to false in the same tx
+	return []db.GetUserNotificationsRow{}, nil
+
+	// defer newOTELSpan(ctx, "User.UserByAPIKey").End()
+
+	// uid, err := uuid.Parse(userID)
+	// if err != nil {
+	// 	return nil, internal.NewErrorf(internal.ErrorCodeInvalidUUID, "could not parse UUID")
+	// }
+
+	// user, err := u.notificationrepo.LatestUserNotifications(ctx, d, db.GetUserNotificationsParams{UserID: uid})
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "urepo.UserByAPIKey")
+	// }
+
+	// return user, nil
+}
+
+// TODO
+func (u *User) LatestGlobalNotifications(ctx context.Context, d db.DBTX, userID string) ([]db.GetUserNotificationsRow, error) {
+	// this will also set user.has_new_global_notifications to false in the same tx
+	return []db.GetUserNotificationsRow{}, nil
 }

@@ -16,24 +16,15 @@ create table projects (
   , name text not null unique
   , description text not null
   , work_items_table_name text not null
-  , initialized boolean not null default false
+  , initialized boolean not null default false -- TODO IMPORTANT: not needed. will initialize everything via sql migration (kanban steps, wi types...)
+  , board_config jsonb not null default '{}'
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
 );
 
 comment on column projects.work_items_table_name is 'property:private';
 
-insert into projects (
-  name
-  , description
-  , work_items_table_name
-  , initialized)
-values (
-  'demo project'
-  , 'description for demo project'
-  , 'work_items_demo_project'
-  , true -- just for demo since it will be programmatically initialized
-);
+comment on column projects.board_config is 'property:private';
 
 create table teams (
   team_id serial primary key
@@ -141,13 +132,13 @@ create table notifications (
   , title text not null
   , body text not null
   , label text not null
-  , link text null
+  , link text
   , created_at timestamp with time zone default current_timestamp not null
   , sender uuid not null
   , receiver uuid -- can be null for 'global' type
   , notification_type notification_type not null
-  , foreign key (sender) references users (user_id)
-  , foreign key (receiver) references users (user_id)
+  , foreign key (sender) references users (user_id) on delete cascade
+  , foreign key (receiver) references users (user_id) on delete cascade
   , check (num_nonnulls (receiver_rank , receiver) = 1)
 );
 
@@ -157,62 +148,71 @@ create table user_notifications (
   user_notification_id bigserial primary key
   , notification_id int not null
   , read boolean default false not null -- frontend simply sends a list of user_notification_id to mark as read
-  , created_at timestamp with time zone default current_timestamp not null
   , user_id uuid not null
-  , foreign key (user_id) references users (user_id)
-  , foreign key (notification_id) references notifications (notification_id)
+  , unique (notification_id , user_id)
+  , foreign key (user_id) references users (user_id) on delete cascade
+  , foreign key (notification_id) references notifications (notification_id) on delete cascade
 );
+
+comment on column user_notifications.notification_id is 'cardinality:O2O';
 
 create index on user_notifications (user_id);
 
 -- read field simply used to show 'NEW' label but there is no filtering
-/*
-trigger on user_notifications. we simply want has_new_*** = true or false
-
-pubsub:
- - https://eli.thegreenplace.net/2020/pubsub-using-channels-in-go/
- - redis: https://stackoverflow.com/questions/59873784/redis-pub-sub-max-subscribers-and-publishers
- */
-create or replace function user_notifications_users_update ()
+create or replace function notification_fan_out ()
   returns trigger
   language plpgsql
   as $function$
 declare
-  n_type notification_type;
+  receiver_id uuid;
 begin
-  select
-    notification_type
-  from
-    notifications
-  where
-    notification_id = new.notification_id into n_type;
-  -- TODO trigger on notifications if notification is 'global' create user_notification for all affected
-  -- with rank >= receiver_rank
-  -- else if 'personal' create for the given receiver (user_id)
-  -- in both cases update users.has_*_notifications accordingly
-  update
-    users
-  set
-    has_personal_notifications = case when n_type = 'personal' then
-      true
-    else
-      has_personal_notifications
-    end
-    , has_global_notifications = case when n_type = 'global' then
-      true
-    else
-      has_global_notifications
-    end
-  where
-    user_id = new.user_id;
+  case when new.notification_type = 'personal' then
+    update
+      users
+    set
+      has_personal_notifications = true
+    where
+      user_id = new.receiver;
+      --
+      insert into user_notifications (
+        notification_id
+        , user_id)
+      values (
+        new.notification_id
+        , new.receiver);
+  when new.notification_type = 'global' then
+    update
+      users
+    set
+      has_global_notifications = true
+    where
+      role_rank >= new.receiver_rank;
+      --
+      for receiver_id in (
+        select
+          user_id
+        from
+          users
+        where
+          role_rank >= new.receiver_rank)
+        loop
+          insert into user_notifications (
+            notification_id
+            , user_id)
+          values (
+            new.notification_id
+            , receiver_id);
+          end loop;
+  end case;
   -- it's after trigger so wouldn't mattern anyway
   return null;
 end
 $function$;
 
-create trigger user_notifications_users_update
-  after insert on user_notifications for each row
-  execute function user_notifications_users_update ();
+-- deletes get cascaded
+create trigger notifications_fan_out
+  after insert on notifications for each row
+  execute function notification_fan_out ();
 
 create table user_team (
   team_id int not null
@@ -267,7 +267,21 @@ create table work_item_types (
 
 comment on column work_item_types.project_id is 'cardinality:O2M';
 
-
+-- create table invoice_types (
+--   invoice_type_id serial primary key
+--   , project_id int not null
+--   , name text not null
+--   , foreign key (project_id) references projects (project_id) on delete cascade
+-- );
+-- create table default_invoice_type (
+--   team_id int not null
+--   , work_item_type_id int not null
+--   , invoice_type_id int not null
+--   , primary key (team_id , work_item_type_id)
+--   , foreign key (team_id) references teams (team_id) on delete cascade
+--   , foreign key (work_item_type_id) references work_item_types (work_item_type_id) on delete cascade
+--   , foreign key (invoice_type_id) references invoice_types (invoice_type_id) on delete cascade
+-- );
 /*
 keep track of per-project overrides in shared json, indexed by project name (unique).
 Can be directly used in backend (codegen alternative struct) and frontend
@@ -314,9 +328,9 @@ when a new project is required -> manual table creation with empty new fields, j
  - not nullable -> must set default value for the existing rows
  - nullable and custom business logic when it's required or not. previous rows remain null or with default as required
  */
--- project for tour. when starting it user joins the only demo project team. when exiting it user is removed.
+-- project for tour. when starting it user joins the only demoProject team. when exiting it user is removed.
 -- we can reset it every X hours
-create table work_items_demo_project (
+create table demo_project_work_items (
   work_item_id bigint primary key references work_items (work_item_id) on delete cascade
   , ref text not null
   , line text not null
@@ -324,18 +338,18 @@ create table work_items_demo_project (
   , reopened boolean not null default false
 );
 
-create index on work_items_demo_project (ref , line);
+create index on demo_project_work_items (ref , line);
 
-create table work_items_project_2 (
+create table project_2_work_items (
   work_item_id bigint primary key references work_items (work_item_id) on delete cascade
   , custom_date_for_project_2 timestamp with time zone
 );
 
 comment on column work_items.work_item_id is 'cardinality:O2O';
 
-comment on column work_items_demo_project.work_item_id is 'cardinality:O2O';
+comment on column demo_project_work_items.work_item_id is 'cardinality:O2O';
 
-comment on column work_items_project_2.work_item_id is 'cardinality:O2O';
+comment on column project_2_work_items.work_item_id is 'cardinality:O2O';
 
 -- for finding all deleted work items exclusively
 create index on work_items (deleted_at)
@@ -392,6 +406,7 @@ create type work_item_role as ENUM (
 create table work_item_member (
   work_item_id bigint not null
   , member uuid not null
+  , role work_item_role not null
   , primary key (work_item_id , member)
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
   , foreign key (member) references users (user_id) on delete cascade
@@ -476,3 +491,99 @@ select
 
 select
   audit.enable_tracking ('public.work_items');
+
+
+/*
+
+ INIT
+ */
+insert into projects (
+  name
+  , description
+  , work_items_table_name
+  , initialized)
+values (
+  'demoProject'
+  , 'description for demoProject'
+  , 'demo_project_work_items'
+  , true -- doesn't matter for demo since it will be programmatically (re)initialized
+);
+
+insert into projects (
+  name
+  , description
+  , work_items_table_name
+  , initialized)
+values (
+  'demoProject2'
+  , 'description for demoProject2'
+  , 'demo_project_work_items'
+  , true -- doesn't matter for demo since it will be programmatically (re)initialized
+);
+
+insert into kanban_steps (
+  name
+  , description
+  , project_id
+  , color)
+values (
+  'Disabled'
+  , 'This column is disabled'
+  , (
+    select
+      project_id
+    from
+      projects
+    where
+      name = 'demoProject') , '#aaaaaa');
+
+insert into kanban_steps (
+  name
+  , description
+  , project_id
+  , color
+  , step_order)
+values (
+  'Received'
+  , 'description for Received column'
+  , (
+    select
+      project_id
+    from
+      projects
+    where
+      name = 'demoProject') , '#aaaaaa' , 1);
+
+insert into kanban_steps (
+  name
+  , description
+  , project_id
+  , color
+  , step_order)
+values (
+  'Under review'
+  , 'description for Under review column'
+  , (
+    select
+      project_id
+    from
+      projects
+    where
+      name = 'demoProject') , '#f6f343' , 2);
+
+insert into kanban_steps (
+  name
+  , description
+  , project_id
+  , color
+  , step_order)
+values (
+  'Work in progress'
+  , 'description for Work in progress column'
+  , (
+    select
+      project_id
+    from
+      projects
+    where
+      name = 'demoProject') , '#2b2444' , 3);

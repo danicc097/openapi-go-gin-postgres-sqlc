@@ -50,6 +50,10 @@ func NewHandlers(
 	}()
 
 	// we can have as many of these but need to delay call
+	// we probably won't have an infinite running goroutine like this,
+	// will send messages to channels on specific events.
+	// but will be useful if we need to check something external
+	// every X timeframe (e.g. wiki documents alert, new documents loaded for an active workitem, etc.)
 	go func() {
 		for {
 			now := time.Now().Format("2006-01-02 15:04:05")

@@ -43,6 +43,9 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 		case internal.ErrorCodeValidationError:
 			status = http.StatusBadRequest
 			resp.Message = ierr.Error()
+		case internal.ErrorCodeResponseValidationError:
+			status = http.StatusUnprocessableEntity
+			resp.Message = ierr.Error()
 		case internal.ErrorCodeAlreadyExists:
 			status = http.StatusConflict
 		case internal.ErrorCodeUnauthorized:

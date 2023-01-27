@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgtype"
 )
 
 // ProjectPublic represents fields that may be exposed from 'public.projects'
@@ -18,20 +20,22 @@ type ProjectPublic struct {
 	Name        string `json:"name" required:"true"`        // name
 	Description string `json:"description" required:"true"` // description
 
-	Initialized bool      `json:"initialized" required:"true"` // initialized
-	CreatedAt   time.Time `json:"createdAt" required:"true"`   // created_at
-	UpdatedAt   time.Time `json:"updatedAt" required:"true"`   // updated_at
+	Initialized bool `json:"initialized" required:"true"` // initialized
+
+	CreatedAt time.Time `json:"createdAt" required:"true"` // created_at
+	UpdatedAt time.Time `json:"updatedAt" required:"true"` // updated_at
 }
 
 // Project represents a row from 'public.projects'.
 type Project struct {
-	ProjectID          int       `json:"project_id" db:"project_id"`                       // project_id
-	Name               string    `json:"name" db:"name"`                                   // name
-	Description        string    `json:"description" db:"description"`                     // description
-	WorkItemsTableName string    `json:"work_items_table_name" db:"work_items_table_name"` // work_items_table_name
-	Initialized        bool      `json:"initialized" db:"initialized"`                     // initialized
-	CreatedAt          time.Time `json:"created_at" db:"created_at"`                       // created_at
-	UpdatedAt          time.Time `json:"updated_at" db:"updated_at"`                       // updated_at
+	ProjectID          int          `json:"project_id" db:"project_id"`                       // project_id
+	Name               string       `json:"name" db:"name"`                                   // name
+	Description        string       `json:"description" db:"description"`                     // description
+	WorkItemsTableName string       `json:"work_items_table_name" db:"work_items_table_name"` // work_items_table_name
+	Initialized        bool         `json:"initialized" db:"initialized"`                     // initialized
+	BoardConfig        pgtype.JSONB `json:"board_config" db:"board_config"`                   // board_config
+	CreatedAt          time.Time    `json:"created_at" db:"created_at"`                       // created_at
+	UpdatedAt          time.Time    `json:"updated_at" db:"updated_at"`                       // updated_at
 
 	Activities    *[]Activity     `json:"activities" db:"activities"`           // O2M
 	KanbanSteps   *[]KanbanStep   `json:"kanban_steps" db:"kanban_steps"`       // O2M
@@ -123,13 +127,13 @@ func (p *Project) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.projects (` +
-		`name, description, work_items_table_name, initialized` +
+		`name, description, work_items_table_name, initialized, board_config` +
 		`) VALUES (` +
-		`$1, $2, $3, $4` +
+		`$1, $2, $3, $4, $5` +
 		`) RETURNING project_id, created_at, updated_at `
 	// run
-	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized)
-	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized).Scan(&p.ProjectID, &p.CreatedAt, &p.UpdatedAt); err != nil {
+	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig)
+	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig).Scan(&p.ProjectID, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -147,12 +151,12 @@ func (p *Project) Update(ctx context.Context, db DB) error {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.projects SET ` +
-		`name = $1, description = $2, work_items_table_name = $3, initialized = $4 ` +
-		`WHERE project_id = $5 ` +
+		`name = $1, description = $2, work_items_table_name = $3, initialized = $4, board_config = $5 ` +
+		`WHERE project_id = $6 ` +
 		`RETURNING project_id, created_at, updated_at `
 	// run
-	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.CreatedAt, p.UpdatedAt, p.ProjectID)
-	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.ProjectID).Scan(&p.ProjectID, &p.CreatedAt, &p.UpdatedAt); err != nil {
+	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt, p.ProjectID)
+	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.ProjectID).Scan(&p.ProjectID, &p.CreatedAt, &p.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	return nil
@@ -174,16 +178,16 @@ func (p *Project) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.projects (` +
-		`project_id, name, description, work_items_table_name, initialized` +
+		`project_id, name, description, work_items_table_name, initialized, board_config` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
+		`$1, $2, $3, $4, $5, $6` +
 		`)` +
 		` ON CONFLICT (project_id) DO ` +
 		`UPDATE SET ` +
-		`name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, initialized = EXCLUDED.initialized  `
+		`name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, initialized = EXCLUDED.initialized, board_config = EXCLUDED.board_config  `
 	// run
-	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized)
-	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized); err != nil {
+	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig)
+	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -229,6 +233,7 @@ projects.name,
 projects.description,
 projects.work_items_table_name,
 projects.initialized,
+projects.board_config,
 projects.created_at,
 projects.updated_at,
 (case when $1::boolean = true then joined_activities.activities end)::jsonb as activities,
@@ -292,7 +297,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, name).Scan(&p.ProjectID, &p.Name, &p.Description, &p.WorkItemsTableName, &p.Initialized, &p.CreatedAt, &p.UpdatedAt, &p.Activities, &p.KanbanSteps, &p.Teams, &p.WorkItemTags, &p.WorkItemTypes); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, name).Scan(&p.ProjectID, &p.Name, &p.Description, &p.WorkItemsTableName, &p.Initialized, &p.BoardConfig, &p.CreatedAt, &p.UpdatedAt, &p.Activities, &p.KanbanSteps, &p.Teams, &p.WorkItemTags, &p.WorkItemTypes); err != nil {
 		return nil, logerror(err)
 	}
 	return &p, nil
@@ -315,6 +320,7 @@ projects.name,
 projects.description,
 projects.work_items_table_name,
 projects.initialized,
+projects.board_config,
 projects.created_at,
 projects.updated_at,
 (case when $1::boolean = true then joined_activities.activities end)::jsonb as activities,
@@ -378,7 +384,7 @@ left join (
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID).Scan(&p.ProjectID, &p.Name, &p.Description, &p.WorkItemsTableName, &p.Initialized, &p.CreatedAt, &p.UpdatedAt, &p.Activities, &p.KanbanSteps, &p.Teams, &p.WorkItemTags, &p.WorkItemTypes); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID).Scan(&p.ProjectID, &p.Name, &p.Description, &p.WorkItemsTableName, &p.Initialized, &p.BoardConfig, &p.CreatedAt, &p.UpdatedAt, &p.Activities, &p.KanbanSteps, &p.Teams, &p.WorkItemTags, &p.WorkItemTypes); err != nil {
 		return nil, logerror(err)
 	}
 	return &p, nil

@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -28,9 +29,9 @@ import (
 	internal "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
@@ -46,6 +47,7 @@ type Config struct {
 	// Port to listen to. Use ":0" for a random port.
 	Address string
 	Pool    *pgxpool.Pool
+	SQLPool *sql.DB
 	Redis   *rv8.Client
 	Logger  *zap.Logger
 	// SpecPath is the OpenAPI spec filepath.
@@ -104,6 +106,8 @@ var key = []byte("test1234test1234")
 
 // NewServer returns a new http server.
 func NewServer(conf Config, opts ...ServerOption) (*server, error) {
+	appCfg := internal.Config()
+
 	if err := conf.validate(); err != nil {
 		return nil, fmt.Errorf("server config validation: %w", err)
 	}
@@ -146,15 +150,15 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	}
 
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
-	vg := router.Group(os.Getenv("API_VERSION"))
+	vg := router.Group(appCfg.APIVersion)
 	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
 
 	// oidc
-	clientID := os.Getenv("OIDC_CLIENT_ID")
-	clientSecret := os.Getenv("OIDC_CLIENT_SECRET")
-	keyPath := os.Getenv("OIDC_KEY_PATH") // not used
-	issuer := os.Getenv("OIDC_ISSUER")
-	scopes := strings.Split(os.Getenv("OIDC_SCOPES"), " ")
+	clientID := appCfg.OIDC.ClientID
+	clientSecret := appCfg.OIDC.ClientSecret
+	keyPath := "" // not used
+	issuer := appCfg.OIDC.Issuer
+	scopes := strings.Split(appCfg.OIDC.Scopes, " ")
 
 	redirectURI := internal.BuildAPIURL(conf.MyProviderCallbackPath)
 	cookieHandler := httphelper.NewCookieHandler(key, key, httphelper.WithUnsecure())
@@ -202,22 +206,24 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	oasMw := newOpenapiMiddleware(conf.Logger, openapi)
 
 	rlMw := newRateLimitMiddleware(conf.Logger, 25, 10)
-	switch os.Getenv("APP_ENV") {
+	switch appCfg.AppEnv {
 	case "prod":
 		vg.Use(rlMw.Limit())
 	}
 	vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))
 
-	retryCount := 1
-	retryInterval := 1 * time.Second
-	urepo := repos.NewUserWithTracing(
-		repos.NewUserWithRetry(
-			repos.NewUserWithTimeout(
-				postgresql.NewUser(),
-				repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second},
-			),
-			retryCount,
-			retryInterval,
+	urepo := reposwrappers.NewUserWithTracing(
+		reposwrappers.NewUserWithTimeout(
+			postgresql.NewUser(),
+			reposwrappers.UserWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
+	notifrepo := reposwrappers.NewNotificationWithTracing(
+		reposwrappers.NewNotificationWithTimeout(
+			postgresql.NewNotification(),
+			reposwrappers.NotificationWithTimeoutConfig{},
 		),
 		postgresql.OtelName,
 		nil,
@@ -227,13 +233,13 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("NewAuthorization: %w", err)
 	}
-	usvc := services.NewUser(conf.Logger, urepo, authzsvc)
+	usvc := services.NewUser(conf.Logger, urepo, notifrepo, authzsvc)
 	authnsvc := services.NewAuthentication(conf.Logger, usvc, conf.Pool)
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, authnsvc, authzsvc, usvc)
 
 	handlers := NewHandlers(conf.Logger, conf.Pool, conf.MovieSvcClient, usvc, authzsvc, authnsvc, authmw, provider)
 
-	vg = RegisterHandlers(vg, handlers)
+	RegisterHandlers(vg, handlers)
 
 	conf.Logger.Info("Server started")
 
@@ -263,7 +269,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 
 	var logger *zap.Logger
 	// XXX there's work being done in https://github.com/uptrace/opentelemetry-go-extra/tree/main/otelzap
-	switch os.Getenv("APP_ENV") {
+	switch internal.Config().AppEnv {
 	case "prod":
 		logger, err = zap.NewProduction()
 	default:
@@ -274,7 +280,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "zap.New")
 	}
 
-	pool, err := postgresql.New(conf, logger)
+	pool, sqlpool, err := postgresql.New(conf, logger)
 	if err != nil {
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "postgresql.New")
 	}
@@ -304,6 +310,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 	srv, err := NewServer(Config{
 		Address:                address,
 		Pool:                   pool,
+		SQLPool:                sqlpool,
 		Redis:                  rdb,
 		Logger:                 logger,
 		SpecPath:               specPath,
@@ -362,7 +369,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		// ErrServerClosed."
 		var err error
 
-		switch env := os.Getenv("APP_ENV"); env {
+		switch internal.Config().AppEnv {
 		case "dev", "ci":
 			// err = srv.httpsrv.ListenAndServe()
 			err = srv.httpsrv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")

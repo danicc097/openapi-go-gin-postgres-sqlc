@@ -12,6 +12,10 @@ runs:
     # - name: Set up Docker Buildx
     #   uses: docker/setup-buildx-action@v2
 
+    - uses: pnpm/action-setup@v2
+      with:
+        version: 7.6.0
+
     - name: Setup Go
       uses: actions/setup-go@v3
       with:
@@ -29,7 +33,7 @@ runs:
 
         mv docker/.env.ci docker/.env
 
-        project e2e.sync-deps --x-env=ci
+        # project e2e.sync-deps --x-env=ci # won't use python playwright
         project install-tools --x-env=ci
         project fetch.swagger-ui --x-env=ci
         bash bin/scripts/install-pg_format.sh

@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,13 +18,13 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 	workItemTypeRepo := postgresql.NewWorkItemType()
 
 	ctx := context.Background()
-	project, err := projectRepo.ProjectByName(ctx, testpool, demoProjectName)
+	project, err := projectRepo.ProjectByName(ctx, testPool, internalmodels.ProjectDemoProject)
 	if err != nil {
 		t.Fatalf("projectRepo.ProjectByName unexpected error = %v", err)
 	}
-	tcp := randomWorkItemTypeCreateParams(t, project.ProjectID)
+	tcp := postgresqltestutil.RandomWorkItemTypeCreateParams(t, project.ProjectID)
 
-	workItemType, err := workItemTypeRepo.Create(ctx, testpool, tcp)
+	workItemType, err := workItemTypeRepo.Create(ctx, testPool, tcp)
 	if err != nil {
 		t.Fatalf("workItemTypeRepo.Create unexpected error = %v", err)
 	}
@@ -53,7 +53,7 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundWorkItemType, err := tc.args.fn(context.Background(), testpool, tc.args.filter, tc.args.projectID)
+			foundWorkItemType, err := tc.args.fn(context.Background(), testPool, tc.args.filter, tc.args.projectID)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -67,7 +67,7 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 
 			filter := "inexistent workItemType"
 
-			_, err := tc.args.fn(context.Background(), testpool, filter, tc.args.projectID)
+			_, err := tc.args.fn(context.Background(), testPool, filter, tc.args.projectID)
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}
@@ -96,7 +96,7 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundWorkItemType, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
+			foundWorkItemType, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -110,22 +110,11 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 
 			filter := 254364 // does not exist
 
-			_, err := tc.args.fn(context.Background(), testpool, filter)
+			_, err := tc.args.fn(context.Background(), testPool, filter)
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}
 			assert.Contains(t, err.Error(), errContains)
 		})
-	}
-}
-
-func randomWorkItemTypeCreateParams(t *testing.T, projectID int) repos.WorkItemTypeCreateParams {
-	t.Helper()
-
-	return repos.WorkItemTypeCreateParams{
-		Name:        "WorkItemType " + testutil.RandomNameIdentifier(3, "-"),
-		Description: testutil.RandomString(10),
-		ProjectID:   projectID,
-		Color:       "#aaaaaa",
 	}
 }

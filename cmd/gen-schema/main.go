@@ -39,13 +39,8 @@ func main() {
 
 	// update when adding new packages to gen structs map
 	reflector.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
-		// enough magic already
-		// if strings.HasPrefix(defaultDefName, "Db") {
-		// 	return strings.TrimPrefix(defaultDefName, "Db")
-		// }
-		// if strings.HasPrefix(defaultDefName, "Rest") {
-		// 	return strings.TrimPrefix(defaultDefName, "Rest")
-		// }
+		// default name comes from package directory, not the given import alias
+		// e.g. repomodels -/-> Repomodels, its the last dir (models)
 
 		return defaultDefName
 	})
@@ -54,7 +49,7 @@ func main() {
 		dummyOp := openapi3.Operation{}
 		st, ok := postgen.PublicStructs[sn]
 		if !ok {
-			log.Fatalf("struct-name %s does not exist in db package", sn)
+			log.Fatalf("struct-name %s does not exist in PublicStructs", sn)
 		}
 
 		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))

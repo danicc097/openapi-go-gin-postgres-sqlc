@@ -9,8 +9,11 @@ import (
 )
 
 type Querier interface {
+	// plpgsql-language-server:disable
+	CreateNotification(ctx context.Context, db DBTX, arg CreateNotificationParams) error
+	DeleteNotification(ctx context.Context, db DBTX, notificationID int32) error
 	GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetUserRow, error)
-	ListAllUsers2(ctx context.Context, db DBTX) ([]ListAllUsers2Row, error)
+	GetUserNotifications(ctx context.Context, db DBTX, arg GetUserNotificationsParams) ([]GetUserNotificationsRow, error)
 	// plpgsql-language-server:disable
 	RegisterNewUser(ctx context.Context, db DBTX, arg RegisterNewUserParams) (RegisterNewUserRow, error)
 	// update

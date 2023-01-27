@@ -56,14 +56,3 @@ select
   , updated_at
 from
   users;
-
--- name: ListAllUsers2 :many
-select
-  user_id
-  , username
-  , email
-  , role_rank
-  , created_at
-  , updated_at
-from
-  users;

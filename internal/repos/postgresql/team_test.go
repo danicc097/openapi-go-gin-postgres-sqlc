@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,13 +19,13 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 
 	ctx := context.Background()
 
-	project, err := projectRepo.ProjectByName(ctx, testpool, demoProjectName)
+	project, err := projectRepo.ProjectByName(ctx, testPool, internalmodels.ProjectDemoProject)
 	if err != nil {
 		t.Fatalf("projectRepo.ProjectByName unexpected error = %v", err)
 	}
-	tcp := randomTeamCreateParams(t, project.ProjectID)
+	tcp := postgresqltestutil.RandomTeamCreateParams(t, project.ProjectID)
 
-	team, err := teamRepo.Create(ctx, testpool, tcp)
+	team, err := teamRepo.Create(ctx, testPool, tcp)
 	if err != nil {
 		t.Fatalf("teamRepo.Create unexpected error = %v", err)
 	}
@@ -54,7 +54,7 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundTeam, err := tc.args.fn(context.Background(), testpool, tc.args.filter, tc.args.projectID)
+			foundTeam, err := tc.args.fn(context.Background(), testPool, tc.args.filter, tc.args.projectID)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -68,7 +68,7 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 
 			filter := "inexistent team"
 
-			_, err := tc.args.fn(context.Background(), testpool, filter, tc.args.projectID)
+			_, err := tc.args.fn(context.Background(), testPool, filter, tc.args.projectID)
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}
@@ -97,7 +97,7 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundTeam, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
+			foundTeam, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -111,21 +111,11 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 
 			filter := 254364 // does not exist
 
-			_, err := tc.args.fn(context.Background(), testpool, filter)
+			_, err := tc.args.fn(context.Background(), testPool, filter)
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}
 			assert.Contains(t, err.Error(), errContains)
 		})
-	}
-}
-
-func randomTeamCreateParams(t *testing.T, projectID int) repos.TeamCreateParams {
-	t.Helper()
-
-	return repos.TeamCreateParams{
-		Name:        "Team " + testutil.RandomNameIdentifier(3, "-"),
-		Description: testutil.RandomString(10),
-		ProjectID:   projectID,
 	}
 }

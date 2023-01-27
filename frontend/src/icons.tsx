@@ -497,7 +497,7 @@ const cachedIcons: IconComponentCacheType = {
   appSavedObjects: app_saved_objects,
   EuiIconAppSearchProfiler: app_search_profiler,
   // app_security_analytics,
-  appSecurity: app_security,
+  securityApp: app_security,
   apps: apps,
   appSpaces: app_spaces,
   appSql: app_sql,

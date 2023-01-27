@@ -12,10 +12,21 @@ set -Eeo pipefail
 trap killgroup SIGINT
 
 trap errtrap SIGUSR1
+trap cleanup 0
+
+cleanup() {
+  if [[ $restore_cache = 1 ]]; then
+    {
+      echo "Restoring $SPEC and $PG_REPO_GEN"
+      mv "$CACHE/$SPEC" "$SPEC"
+      rm -rf "$PG_REPO_GEN"
+      mv "$CACHE_PG_REPO_GEN" "$PG_REPO"
+    }
+  fi
+}
 
 killgroup() {
   printf "\nkilling spawned processes...\n"
-
   # kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
   kill_descendants 2>/dev/null || true
   pgrep -P $PROC | xargs kill
@@ -37,7 +48,6 @@ readonly MIGRATIONS_DIR="db/migrations"
 readonly REPOS="internal/repos"
 readonly PG_REPO="$REPOS/postgresql"
 readonly PG_REPO_GEN="$PG_REPO/gen"
-readonly GEN_SCHEMA_CMD="cmd/gen-schema"
 readonly POSTGRES_TEST_DB="postgres_test"
 readonly MAX_COMMENT_LEN=88
 readonly MAX_FNAME_LOG_LEN=13
@@ -46,7 +56,10 @@ readonly GEN_POSTGRES_DB="gen_db"
 pkg="$(head -1 go.mod)"
 readonly GOMOD_PKG="${pkg#module *}"
 readonly OPID_AUTH="operationAuth.gen.json"
+readonly CACHE=".generate.cache"
+readonly CACHE_PG_REPO_GEN="$CACHE/gen"
 
+restore_cache=0
 pids=""
 env="dev"
 dump_prefix="dump_${env}_"
@@ -153,98 +166,134 @@ x.fetch.swagger-ui() {
 # Run pre-generation scripts in the internal package.
 x.pregen() {
   { { {
-    echo "Running generation"
+    (
+      POSTGRES_DB="$GEN_POSTGRES_DB"
 
-    missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
-    [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
+      echo "Running generation"
 
-    # don't want this to block if getting bad gen later on
-    go build -o pregen cmd/pregen/main.go || echo "Could not rebuild pregen" >&2
+      missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
+      [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
-    ./pregen -env=".env.$env" --validate-spec-only
+      # don't want this to block if getting bad gen later on
+      go build -o pregen cmd/pregen/main.go || echo "Could not rebuild pregen" >&2
 
-    x.db.drop
-    x.migrate up
+      ./pregen -env=".env.$env" --validate-spec-only
 
-    ######## Sync enums from db with spec
-    # example: `x-db-enum: user_role` will use the db's "user_role" enum
-    local vext="x-db-enum"
-    for enum in $(yq e ".. | select(has(\"$vext\")).$vext" $SPEC); do
-      local db_enums=()
-      local path="$(enum_name=$enum yq e ".. | select(has(\"$vext\") and .$vext == env(enum_name)) | (path | join(\".\"))" $SPEC)"
-      mapfile -t db_enums < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
+      x.db.drop
+      x.migrate up
 
-      [[ ${#db_enums[@]} -gt 0 ]] || err "$vext: Enum '$enum' not found in database $POSTGRES_DB"
-      local enums=$(printf ",\"%s\"" "${db_enums[@]}")
+      ######## Sync enums from db with spec
+      # example: `x-db-enum: user_role` will use the db's "user_role" enum
+      local vext="x-db-enum"
+      for enum in $(yq e ".. | select(has(\"$vext\")).$vext" $SPEC); do
+        local db_enums=()
+        local path="$(enum_name=$enum yq e ".. | select(has(\"$vext\") and .$vext == env(enum_name)) | (path | join(\".\"))" $SPEC)"
+        mapfile -t db_enums < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
+
+        [[ ${#db_enums[@]} -gt 0 ]] || err "$vext: Enum '$enum' not found in database $POSTGRES_DB"
+        local enums=$(printf ",\"%s\"" "${db_enums[@]}")
+        enums="[${enums:1}]"
+        echo "Replacing enum '$enum' in $SPEC with: $enums"
+        enums=$enums yq e ".$path.enum = env(enums) | (.$path | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
+      done
+
+      ######## Sync projects and related project info
+      mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
+      [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
+      local enums=$(printf ",\"%s\"" "${db_projects[@]}")
       enums="[${enums:1}]"
-      echo "Replacing enum '$enum' in $SPEC with: $enums"
-      enums=$enums yq e ".$path.enum = env(enums)" -i $SPEC
-    done
+      echo "Replacing enum 'Project' in $SPEC with: $enums"
+      enums=$enums yq e "
+      .components.schemas.Project.enum = env(enums) |
+      .components.schemas.Project.type = \"string\" |
+      .components.schemas.Project.description = \"Existing projects\" |
+      (.components.schemas.Project | key) line_comment=\"Generated from projects table. DO NOT EDIT.\"" -i $SPEC
 
-    ######## Ensure consistent style for future codegen
-    echo "Applying PascalCase to operation IDs in $SPEC"
-    for opid in $(yq e ".. | select(has(\"operationId\")).operationId" $SPEC); do
-      local new_opid="$(to_pascal $opid)"
-      local paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" $SPEC)
-      readarray -t paths <<<$paths
-      local escaped_path="$(join_yq_paths paths)"
-      new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" -i $SPEC
-    done
+      for project in ${db_projects[@]}; do
+        mapfile -t kanban_steps < <(dockerdb_psql -d $POSTGRES_DB -c "
+          select
+            name
+          from
+            kanban_steps
+          where
+            project_id = (select project_id from projects where name = '$project');" 2>/dev/null)
+        [[ ${#kanban_steps[@]} -gt 0 ]] || { echo "${YELLOW}No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue; }
+        local enums=$(printf ",\"%s\"" "${kanban_steps[@]}")
+        enums="[${enums:1}]"
+        echo "Replacing enum 'Project' in $SPEC with: $enums"
+        enums=$enums yq e "
+      .components.schemas.${project}KanbanSteps.enum = env(enums) |
+      .components.schemas.${project}KanbanSteps.type = \"string\" |
+      .components.schemas.${project}KanbanSteps.description = \"Kanban columns for project $project\" |
+      (.components.schemas.${project}KanbanSteps | key) line_comment=\"Generated from kanban_steps table. DO NOT EDIT.\"" -i $SPEC
+      done
 
-    ######## Sync enums with external sources and validate
-    ######## external json files are the source of truth
-    # frontend scopes: 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right) and show aggregated
-    # arrays can't be nested
-    declare -A enum_src_files=(
-      [Scope]="scopes.json"
-      [Role]="roles.json"
-    )
-    declare -A enum_vext=(
-      [Scope]="x-required-scopes"
-      [Role]="x-required-role"
-    )
-    for enum in ${!enum_src_files[@]}; do
-      [[ $(yq e ".components.schemas | has(\"$enum\")" $SPEC) = "false" ]] &&
-        yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC
+      # TODO generate ~~KanbanSteps~~, WorkItemType for every project enum generated before
 
-      local src_file="${enum_src_files[$enum]}"
-      vext="${enum_vext[$enum]}"
+      ######## Ensure consistent style for future codegen
+      echo "Applying PascalCase to operation IDs in $SPEC"
+      for opid in $(yq e ".. | select(has(\"operationId\")).operationId" $SPEC); do
+        local new_opid="$(to_pascal $opid)"
+        local paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" $SPEC)
+        readarray -t paths <<<$paths
+        local escaped_path="$(join_yq_paths paths)"
+        new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" -i $SPEC
+      done
 
-      enums=$(yq -P '.[] | key' $src_file)
-      readarray -t enums <<<$enums
+      ######## Sync enums with external sources and validate
+      ######## external json files are the source of truth
+      # frontend scopes: 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right) and show aggregated
+      # arrays can't be nested
+      declare -A enum_src_files=(
+        [Scope]="scopes.json"
+        [Role]="roles.json"
+      )
+      declare -A enum_vext=(
+        [Scope]="x-required-scopes"
+        [Role]="x-required-role"
+      )
+      for enum in ${!enum_src_files[@]}; do
+        [[ $(yq e ".components.schemas | has(\"$enum\")" $SPEC) = "false" ]] &&
+          yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC
 
-      echo "Replacing '$enum' enum in $SPEC with $src_file"
-      yq e "
+        local src_file="${enum_src_files[$enum]}"
+        vext="${enum_vext[$enum]}"
+
+        enums=$(yq -P '.[] | key' $src_file)
+        readarray -t enums <<<$enums
+
+        echo "Replacing '$enum' enum in $SPEC with $src_file"
+        yq e "
         (.components.schemas.$enum | key) line_comment=\"Generated from $src_file keys. DO NOT EDIT.\"
       " -i $SPEC
-      local enums_arr=$(printf ",\"%s\"" "${enums[@]}")
-      enums_arr="[${enums_arr:1}]"
-      enums_arr=$enums_arr yq e ".components.schemas.$enum.enum = env(enums_arr)" -i $SPEC
+        local enums_arr=$(printf ",\"%s\"" "${enums[@]}")
+        enums_arr="[${enums_arr:1}]"
+        enums_arr=$enums_arr yq e ".components.schemas.$enum.enum = env(enums_arr)" -i $SPEC
 
-      readarray spec_enums < <(yq e ".paths[][].$vext | select(length > 0)" openapi.yaml)
-      spec_enums=("${spec_enums[*]//- /}")
-      mapfile -t spec_enums < <(printf "\"%s\"\n" ${spec_enums[*]})
-      mapfile -t clean_enums < <(printf "\"%s\"\n" ${enums[*]})
-      for spec_enum in "${spec_enums[@]}"; do
-        [[ ! " ${clean_enums[*]} " =~ " ${spec_enum} " ]] && err "$spec_enum is not a valid '$enum'"
+        readarray spec_enums < <(yq e ".paths[][].$vext | select(length > 0)" openapi.yaml)
+        spec_enums=("${spec_enums[*]//- /}")
+        mapfile -t spec_enums < <(printf "\"%s\"\n" ${spec_enums[*]})
+        mapfile -t clean_enums < <(printf "\"%s\"\n" ${enums[*]})
+        for spec_enum in "${spec_enums[@]}"; do
+          [[ ! " ${clean_enums[*]} " =~ " ${spec_enum} " ]] && err "$spec_enum is not a valid '$enum'"
+        done
       done
-    done
 
-    ######## Generate shared policies once the spec has been validated
-    echo "Writing shared auth policies"
-    yq -o=json e "
+      ######## Generate shared policies once the spec has been validated
+      echo "Writing shared auth policies"
+      yq -o=json e "
     .paths[][]
     | {.operationId: { \"scopes\": .x-required-scopes, \"role\": .x-required-role, \"requiresAuthentication\": has(\"security\")}}
     | select(.[]) as \$i ireduce ({}; . + \$i)
   " openapi.yaml >$OPID_AUTH
 
-    yq --prettyPrint '.. style="single"' -i $SPEC
-    # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
-    # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
-    sed -i 's/!!merge //' $SPEC
+      yq --prettyPrint '.. style="single"' -i $SPEC
+      # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
+      # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
+      sed -i 's/!!merge //' $SPEC
 
-    ./pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
-
+      ./pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
+    )
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -275,9 +324,7 @@ x.postgen() {
 
     go build -o postgen cmd/postgen/main.go || echo "Could not rebuild postgen" >&2
     ./postgen -env=".env.$env"
-  } \
-    2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 # Generate type-safe Go code from SQL.
@@ -316,11 +363,9 @@ x.gen.xo() {
 
     wait
 
-    files=$(find . \
-      -path "$PG_REPO_GEN/db" \
+    files=$(find "$PG_REPO_GEN/db" \
       -name "*.go")
     goimports -w $files
-
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -357,7 +402,7 @@ x.gen.gowrap() {
       "prometheus:with_prometheus"
     )
 
-    local repo_interfaces="User"
+    local repo_interfaces="User Notification Project Team WorkItemTag WorkItemType"
     for iface in ${repo_interfaces[@]}; do
       for suffix in ${suffixes[@]}; do
         {
@@ -369,7 +414,7 @@ x.gen.gowrap() {
             -p $GOMOD_PKG/internal/repos \
             -i $iface \
             -t "internal/gowrap-templates/$tmpl.tmpl" \
-            -o "internal/repos/${iface,,}_$suffix.gen.go"
+            -o "internal/repos/reposwrappers/${iface,,}_$suffix.gen.go"
         } &
       done
     done
@@ -396,8 +441,7 @@ x.gen.client-server() {
     ./oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
     ./oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
 
-  } \
-    2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 # Generate mocks for specified interfaces. Runs are cached to `cachedir`.
@@ -405,28 +449,31 @@ x.gen.client-server() {
 x.gen.counterfeiter() {
   # This shouldn't pose any problems, the interface is the only input to counterfeiter.
   { { {
-    cache="$1"
-
     envvar="internal/envvar/envvar.go"
     repos="internal/repos/repos.go"
     tfidfpb="internal/pb/python-ml-app-protos/tfidf/v1/service_grpc.pb.go"
 
     echo "Running generation"
 
-    if ! md5sum -c "$cache/counterfeiter.md5" >/dev/null || [[ $FORCE_REGEN -eq 1 ]]; then
+    if ! md5sum -c "$CACHE/counterfeiter.md5" >/dev/null || [[ $FORCE_REGEN -eq 1 ]]; then
       echo "Recreating mocks"
       {
         counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
         counterfeiter -o internal/repos/repostesting/user.gen.go $repos User &
+        counterfeiter -o internal/repos/repostesting/notification.gen.go $repos Notification &
+        counterfeiter -o internal/repos/repostesting/project.gen.go $repos Project &
+        counterfeiter -o internal/repos/repostesting/team.gen.go $repos Team &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
-        md5sum $envvar $repos $tfidfpb >"$cache/counterfeiter.md5" &
+        md5sum $envvar $repos $tfidfpb >"$CACHE/counterfeiter.md5" &
         wait
       } 2>&1 # outputs to stderr for some reason
 
       # counterfeiter is unaware of grpc's obscure mustEmbedUnimplemented***() for forward server compatibility
       sed -i '/type FakeMovieGenreServer struct {/a v1\.UnimplementedMovieGenreServer' \
         internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go
+    else
+      echo "Skipping generation. Force regen with --x-force-regen"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -450,54 +497,84 @@ x.gen.proto() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Run all codegen and postgen commands for the project.
-x.gen() {
+# Run frontend code generation.
+x.gen.frontend() {
   { { {
-    echo "Running code generation"
-    # must always be consistent regardless of current env
     (
-      POSTGRES_DB=$GEN_POSTGRES_DB
+      set -a
+      # export to replace config with envvars
+      source ".env.$env"
+      set +a
 
-      local cache=".generate.cache"
-
-      mkdir -p "$cache"
-
-      x.db.recreate
-
-      x.pregen
-
-      rm -rf "$PG_REPO_GEN"
-
-      # TODO try use gnu parallel and exit when anyone fails
-      # (with current setup the whole x.gen is executed and only then
-      # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
-
-      go generate ./... &
-      x.gen.gowrap &
-      x.gen.sqlc &
-      x.gen.proto &
-      wait
-
-      x.gen.xo &
-      x.gen.jet &
-
-      wait
-
-      x.postgen &
-      x.gen.counterfeiter "$cache" & # delay since it depends on generated output too
-
-      wait
-
-      x.gen.client-server # depends on schemas generated in postgen
-
-      # vscode will randomly lose connection when restarting
-      # for pid in $(pidof gopls); do
-      #   restart_pid $pid &
-      # done
-
-      x.lint
+      cd frontend
+      pnpm run generate
     )
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Run all codegen and postgen commands for the project.
+x.gen() {
+  rm -rf "$CACHE_PG_REPO_GEN"
+  mkdir -p "$CACHE"
+  cp "$SPEC" "$CACHE"
+  cp -r "$PG_REPO_GEN" "$CACHE_PG_REPO_GEN"
+  restore_cache=1
+  { { {
+    echo "Running code generation"
+
+    POSTGRES_DB="$GEN_POSTGRES_DB" x.db.recreate
+    x.pregen
+    rm -rf "$PG_REPO_GEN"
+
+    # TODO try use gnu parallel and exit when anyone fails
+    # (with current setup the whole x.gen is executed and only then
+    # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
+    set -e
+    go generate ./... &
+    x.gen.gowrap &
+    x.gen.sqlc &
+    x.gen.proto &
+
+    wait
+
+    x.gen.xo &
+    x.gen.jet &
+
+    set -e
+    declare -i err=0 werr=0
+    while
+      wait -fn || werr=$?
+      ((werr != 127))
+    do
+      err=$werr
+      ((err == 0)) || break # handle error as soon as it happens
+    done
+    #trap 'wait || :' EXIT # wait for all jobs before exiting (regardless of handling above)
+    if ((err != 0)); then
+      echo "Job failed"
+      kill -s SIGUSR1 $PROC
+      return
+    fi
+
+    x.postgen &
+    x.gen.counterfeiter & # delay since it depends on generated output too
+
+    wait
+
+    x.gen.client-server # depends on schemas generated in postgen
+
+    # vscode will randomly lose connection when restarting
+    # for pid in $(pidof gopls); do
+    #   restart_pid $pid &
+    # done
+
+    x.lint
+    x.gen.frontend
+
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  rm "$CACHE/$SPEC"
+  rm -rf "$CACHE_PG_REPO_GEN"
+  restore_cache=0
 }
 
 # Lint the entire project.
@@ -516,6 +593,8 @@ x.lint.go() {
       -not -path "**/$PROTO_DIR/*" \
       -not -path "**/$PG_REPO_GEN/*" \
       -not -path "**/testdata/*" \
+      -not -path "**/node_modules/*" \
+      -not -path "**/.venv/*" \
       -not -path "**/*.cache/*" \
       -not -path "**/vendor/*" \
       -not -path "**/*.gen.*" \
@@ -604,18 +683,15 @@ x.build() {
 # Run backend with hot-reloading.
 x.run.backend-hr() {
   run_shared_services up -d --build --remove-orphans
-  # TODO new include_files flag in fork, e.g. for openapi.yaml.
-  # else generated .yaml files trigger rebuild.
-  # --build.include_files "openapi.yaml" \
   # NOTE: building binary very unreliable, leads to bin not found.
-  [[ -z $NO_GEN ]] && pre_build_cmd="bin/project gen"
+  # [[ -z $NO_GEN ]] && pre_build_cmd="bin/project gen" # gen too slow at this point, always disable
   air \
     --build.pre_build_cmd "$pre_build_cmd" \
     --build.cmd "" \
     --build.bin "go run ./cmd/rest-server/ -env=.env.$env" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,*.cache" \
+    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,*.cache,$CACHE" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
@@ -979,7 +1055,7 @@ run_shared_services() {
 # generate db structs for use with swaggest/openapi-go.
 # no need for ast parsing since all code in db is generated and predictable
 generate_structs_map() {
-  readarray -t structs < <(find "$PG_REPO_GEN/db/" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
+  readarray -t structs < <(find "$PG_REPO_GEN/db" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
   for struct in ${structs[@]}; do
     map_fields+=("\"Db$struct\": db.$struct{},")
   done
@@ -989,6 +1065,16 @@ generate_structs_map() {
   readarray -t structs < <(find "internal/rest" -name "models.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
   for struct in ${structs[@]}; do
     map_fields+=("\"Rest$struct\": rest.$struct{},")
+  done
+  map_fields+=("
+  //
+  ")
+  readarray -t structs < <(find "internal/repos/models" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
+  for struct in ${structs[@]}; do
+    # openapi-go uses the last dir as defaultDefName regardless (models)
+    # in a sense this is not too bad since a duplicated model name from different packages will not compile
+    # as the map key is duplicated.
+    map_fields+=("\"Models$struct\": repomodels.$struct{},")
   done
 
   out="internal/postgen/structs.gen.go"
@@ -1000,6 +1086,7 @@ package postgen
 import (
   db "$GOMOD_PKG/$PG_REPO_GEN/db"
 	rest "$GOMOD_PKG/internal/rest"
+	repomodels "$GOMOD_PKG/internal/repos/models"
   )
     var PublicStructs = map[string]any{
 $(printf "%s\n" "${map_fields[@]}")
@@ -1023,9 +1110,9 @@ update_spec_with_structs() {
   ((${#struct_names_list} == 0)) && return
 
   go build -o gen-schema cmd/gen-schema/main.go || echo "Could not rebuild gen-schema" >&2
+  echo " lsit ${struct_names_list[*]}"
   ./gen-schema --struct-names $struct_names_list | yq '
-    with_entries(select(.key == "components")) |
-    (.components.schemas[] | key) line_comment="Generated from db package structs. DO NOT EDIT."' \
+    with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml
 
   # replace every schema generated directly or indirectly.
@@ -1036,6 +1123,7 @@ update_spec_with_structs() {
         ) as \$new_schema
         | select(fi == 0)
         | .components.schemas.$new_schema_key = \$new_schema
+        | (.components.schemas.$new_schema_key | key) line_comment=\"Generated from internal structs. DO NOT EDIT.\"
       " "$SPEC" /tmp/openapi.yaml >/tmp/final-spec
 
     mv /tmp/final-spec "$SPEC"

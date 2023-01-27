@@ -3,8 +3,10 @@ package repos
 import (
 	"context"
 
+	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/google/uuid"
 )
 
 // Boards limited to one per project. All teams in a project share the same board.
@@ -92,6 +94,11 @@ type TeamUpdateParams struct {
 	Description *string
 }
 
+type (
+	GetUserNotificationsParams = db.GetUserNotificationsParams
+	NotificationCreateParams   = db.CreateNotificationParams
+)
+
 type UserCreateParams struct {
 	Username   string
 	Email      string
@@ -103,10 +110,12 @@ type UserCreateParams struct {
 }
 
 type UserUpdateParams struct {
-	FirstName *string
-	LastName  *string
-	Rank      *int16
-	Scopes    *[]string
+	FirstName                *string
+	LastName                 *string
+	Rank                     *int16
+	Scopes                   *[]string
+	HasPersonalNotifications *bool
+	HasGlobalNotifications   *bool
 }
 
 // ProjectBoard defines the datastore/repository handling persisting ProjectBoard records.
@@ -133,16 +142,33 @@ type ProjectBoard interface {
 	ProjectBoardByID(ctx context.Context, d db.DBTX, projectID int) (*models.ProjectBoard, error)
 }
 
+// DemoProjectWorkItem defines the datastore/repository handling persisting DemoProjectWorkItem records.
+type DemoProjectWorkItem interface {
+	WorkItemByID(ctx context.Context, d db.DBTX, id int64, opts ...db.DemoProjectWorkItemSelectConfigOption) (*db.DemoProjectWorkItem, error)
+	// Create,
+	// Delete,
+	// WorkItemsByTeam(closed bool, deleted bool)
+	// Update (service has Close (Update with closed=True), Move(Update with kanban step change), ...)
+	// TBD if useful: WorkItemsByTag, WorkItemsByType (for closed workitem searches. open ones simply return everything and filter in client)
+}
+
+// Notification defines the datastore/repository handling persisting Notification records.
+type Notification interface {
+	LatestUserNotifications(ctx context.Context, d db.DBTX, params GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
+	Create(ctx context.Context, d db.DBTX, params NotificationCreateParams) error
+	Delete(ctx context.Context, d db.DBTX, notificationID int32) error
+}
+
 // User defines the datastore/repository handling persisting User records.
 type User interface {
-	UserByID(ctx context.Context, d db.DBTX, id string) (*db.User, error)
+	UserByID(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error)
 	UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error)
 	UserByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error)
 	UserByExternalID(ctx context.Context, d db.DBTX, extID string) (*db.User, error)
 	UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error)
 	Create(ctx context.Context, d db.DBTX, params UserCreateParams) (*db.User, error)
-	Update(ctx context.Context, d db.DBTX, id string, params UserUpdateParams) (*db.User, error)
-	Delete(ctx context.Context, d db.DBTX, id string) (*db.User, error)
+	Update(ctx context.Context, d db.DBTX, id uuid.UUID, params UserUpdateParams) (*db.User, error)
+	Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error)
 	// CreateAPIKey requires an existing user.
 	CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error)
 }
@@ -150,7 +176,7 @@ type User interface {
 // Project defines the datastore/repository handling persisting Project records.
 // Projects are manually created on demand.
 type Project interface {
-	ProjectByName(ctx context.Context, d db.DBTX, name string) (*db.Project, error)
+	ProjectByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (*db.Project, error)
 	ProjectByID(ctx context.Context, d db.DBTX, id int) (*db.Project, error)
 }
 

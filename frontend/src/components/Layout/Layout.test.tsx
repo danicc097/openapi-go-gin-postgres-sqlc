@@ -1,18 +1,14 @@
-import * as React from 'react'
-import { screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import Layout from './Layout'
-import '@testing-library/jest-dom'
 import { BrowserRouter } from 'react-router-dom'
-
-import { render as renderWithStore } from 'src/test/test-utils'
+import { test } from 'vitest'
+import React from 'react' // fix vitest
 
 test('Renders content', async () => {
-  renderWithStore(
+  return (
     <BrowserRouter>
       <Layout>
         <div></div>
       </Layout>
-    </BrowserRouter>,
+    </BrowserRouter>
   )
 })

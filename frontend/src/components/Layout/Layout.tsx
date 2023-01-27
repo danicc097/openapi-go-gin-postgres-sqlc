@@ -7,28 +7,37 @@ import { StyledLayout } from './Layout.styles'
 import { css } from '@emotion/react'
 import { Fragment } from 'react'
 import * as S from './Layout.styles'
-import { useUISlice } from 'src/slices/ui'
+import { Theme, useUISlice } from 'src/slices/ui'
 import shallow from 'zustand/shallow'
 import Navbar from 'src/components/Navbar/Navbar'
+import lightTheme from '@elastic/eui/dist/eui_theme_light.min.css'
+import darkTheme from '@elastic/eui/dist/eui_theme_dark.min.css'
 
 type LayoutProps = {
   children: React.ReactElement
 }
 
+function stylesheet(theme: Theme): string {
+  return theme === 'dark' ? darkTheme : lightTheme
+}
+
 export default function Layout({ children }: LayoutProps) {
   const toasts = useUISlice((state) => state?.toastList, shallow)
-  const { addToast, dismissToast } = useUISlice()
+  const { addToast, dismissToast, theme } = useUISlice()
 
   const { euiTheme } = useEuiTheme()
 
-  // const { setStyleSheetLoaded, providerTheme, styleSheet, theme } = useTheme()
+  useEffect(() => {
+    const style = document.createElement('style')
+    style.id = `theme-style-${theme}`
+    style.textContent = stylesheet(theme)
+    document.head.appendChild(style)
+  }, [theme])
 
   const footerCSS = css`
     z-index: 999;
     background-color: ${euiTheme.colors.body} !important;
     width: 100%;
-    position: fixed;
-    bottom: 0px;
     padding: 10px 0px 10px;
     display: flex;
     align-items: center;

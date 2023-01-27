@@ -8,7 +8,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,17 +16,10 @@ import (
 func TestUser_Update(t *testing.T) {
 	t.Parallel()
 
-	userRepo := postgresql.NewUser()
-
-	ucp := randomUserCreateParams(t)
-
-	user, err := userRepo.Create(context.Background(), testpool, ucp)
-	if err != nil {
-		t.Fatalf("unexpected error = %v", err)
-	}
+	user := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
-		id     string
+		id     uuid.UUID
 		params repos.UserUpdateParams
 	}
 	type params struct {
@@ -39,10 +32,10 @@ func TestUser_Update(t *testing.T) {
 		{
 			name: "updated",
 			args: args{
-				id: user.UserID.String(),
+				id: user.UserID,
 				params: repos.UserUpdateParams{
 					Rank:   pointers.New[int16](10),
-					Scopes: &[]string{"test"},
+					Scopes: &[]string{"test", "test", "test"},
 				},
 			},
 			want: func() *db.User {
@@ -60,7 +53,7 @@ func TestUser_Update(t *testing.T) {
 			t.Parallel()
 
 			u := postgresql.NewUser()
-			got, err := u.Update(context.Background(), testpool, tt.args.id, tt.args.params)
+			got, err := u.Update(context.Background(), testPool, tt.args.id, tt.args.params)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("User.Update() error = %v, wantErr %v", err, tt.wantErr)
 
@@ -76,17 +69,10 @@ func TestUser_Update(t *testing.T) {
 func TestUser_MarkAsDeleted(t *testing.T) {
 	t.Parallel()
 
-	userRepo := postgresql.NewUser()
-
-	ucp := randomUserCreateParams(t)
-
-	user, err := userRepo.Create(context.Background(), testpool, ucp)
-	if err != nil {
-		t.Fatalf("unexpected error = %v", err)
-	}
+	user := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
-		id string
+		id uuid.UUID
 	}
 	type params struct {
 		name          string
@@ -97,7 +83,7 @@ func TestUser_MarkAsDeleted(t *testing.T) {
 		{
 			name: "deleted",
 			args: args{
-				id: user.UserID.String(),
+				id: user.UserID,
 			},
 			errorContains: errNoRows,
 		},
@@ -108,14 +94,14 @@ func TestUser_MarkAsDeleted(t *testing.T) {
 			t.Parallel()
 
 			u := postgresql.NewUser()
-			_, err := u.Delete(context.Background(), testpool, tt.args.id)
+			_, err := u.Delete(context.Background(), testPool, tt.args.id)
 			if err != nil {
 				t.Errorf("User.Delete() unexpected error = %v", err)
 
 				return
 			}
 
-			_, err = u.UserByID(context.Background(), testpool, tt.args.id)
+			_, err = u.UserByID(context.Background(), testPool, tt.args.id)
 			if err == nil {
 				t.Error("wanted error but got nothing", err)
 
@@ -131,57 +117,45 @@ func TestUser_UserByIndexedQueries(t *testing.T) {
 
 	userRepo := postgresql.NewUser()
 
-	ucp := randomUserCreateParams(t)
+	user := postgresqltestutil.NewRandomUser(t, testPool)
 
-	user, err := userRepo.Create(context.Background(), testpool, ucp)
-	if err != nil {
-		t.Fatalf("unexpected error = %v", err)
-	}
-
-	type args struct {
+	type argsString struct {
 		filter string
 		fn     func(context.Context, db.DBTX, string) (*db.User, error)
 	}
 
-	tests := []struct {
+	testsString := []struct {
 		name string
-		args args
+		args argsString
 	}{
 		{
 			name: "external_id",
-			args: args{
+			args: argsString{
 				filter: user.ExternalID,
 				fn:     (userRepo.UserByExternalID),
 			},
 		},
 		{
-			name: "user_id",
-			args: args{
-				filter: user.UserID.String(),
-				fn:     (userRepo.UserByID),
-			},
-		},
-		{
 			name: "email",
-			args: args{
+			args: argsString{
 				filter: user.Email,
 				fn:     (userRepo.UserByEmail),
 			},
 		},
 		{
 			name: "username",
-			args: args{
+			args: argsString{
 				filter: user.Username,
 				fn:     (userRepo.UserByUsername),
 			},
 		},
 	}
-	for _, tc := range tests {
+	for _, tc := range testsString {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundUser, err := tc.args.fn(context.Background(), testpool, tc.args.filter)
+			foundUser, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -193,10 +167,53 @@ func TestUser_UserByIndexedQueries(t *testing.T) {
 
 			errContains := errNoRows
 
-			// valid as of now for any text and uuid index unless there are specific table checks
-			filter := uuid.New().String()
+			filter := "does not exist"
 
-			_, err := tc.args.fn(context.Background(), testpool, filter)
+			_, err := tc.args.fn(context.Background(), testPool, filter)
+			if err == nil {
+				t.Fatalf("expected error = '%v' but got nothing", errContains)
+			}
+			assert.Contains(t, err.Error(), errContains)
+		})
+	}
+
+	type argsUUID struct {
+		filter uuid.UUID
+		fn     func(context.Context, db.DBTX, uuid.UUID) (*db.User, error)
+	}
+
+	testsUUID := []struct {
+		name string
+		args argsUUID
+	}{
+		{
+			name: "user_id",
+			args: argsUUID{
+				filter: user.UserID,
+				fn:     (userRepo.UserByID),
+			},
+		},
+	}
+	for _, tc := range testsUUID {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			foundUser, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
+			if err != nil {
+				t.Fatalf("unexpected error = %v", err)
+			}
+			assert.Equal(t, foundUser.UserID, user.UserID)
+		})
+
+		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
+			t.Parallel()
+
+			errContains := errNoRows
+
+			filter := uuid.New() // does not exist
+
+			_, err := tc.args.fn(context.Background(), testPool, filter)
 			if err == nil {
 				t.Fatalf("expected error = '%v' but got nothing", errContains)
 			}
@@ -213,14 +230,9 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	t.Run("correct api key creation", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := randomUserCreateParams(t)
+		user := postgresqltestutil.NewRandomUser(t, testPool)
 
-		user, err := userRepo.Create(context.Background(), testpool, ucp)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
-
-		uak, err := userRepo.CreateAPIKey(context.Background(), testpool, user)
+		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, user)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
@@ -234,7 +246,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		errContains := "could not save api key"
 
-		_, err := userRepo.CreateAPIKey(context.Background(), testpool, &db.User{UserID: uuid.New()})
+		_, err := userRepo.CreateAPIKey(context.Background(), testPool, &db.User{UserID: uuid.New()})
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
@@ -244,19 +256,14 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	t.Run("can get user by api key", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := randomUserCreateParams(t)
+		newUser := postgresqltestutil.NewRandomUser(t, testPool)
 
-		newUser, err := userRepo.Create(context.Background(), testpool, ucp)
+		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
 
-		uak, err := userRepo.CreateAPIKey(context.Background(), testpool, newUser)
-		if err != nil {
-			t.Fatalf("unexpected error = %v", err)
-		}
-
-		user, err := userRepo.UserByAPIKey(context.Background(), testpool, uak.APIKey)
+		user, err := userRepo.UserByAPIKey(context.Background(), testPool, uak.APIKey)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
@@ -270,7 +277,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		errContains := errNoRows
 
-		_, err := userRepo.UserByAPIKey(context.Background(), testpool, "missing")
+		_, err := userRepo.UserByAPIKey(context.Background(), testPool, "missing")
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
@@ -299,7 +306,7 @@ func TestUser_Create(t *testing.T) {
 	t.Run("correct user", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := randomUserCreateParams(t)
+		ucp := postgresqltestutil.RandomUserCreateParams(t)
 
 		want := want{
 			FullName:         pointers.New(*ucp.FirstName + " " + *ucp.LastName),
@@ -310,7 +317,7 @@ func TestUser_Create(t *testing.T) {
 			params: ucp,
 		}
 
-		got, err := userRepo.Create(context.Background(), testpool, args.params)
+		got, err := userRepo.Create(context.Background(), testPool, args.params)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
@@ -328,33 +335,19 @@ func TestUser_Create(t *testing.T) {
 	t.Run("role rank less than zero", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := randomUserCreateParams(t)
+		ucp := postgresqltestutil.RandomUserCreateParams(t)
 		ucp.RoleRank = int16(-1)
 
 		args := args{
 			params: ucp,
 		}
 
-		errContains := "violates check constraint"
+		errContains := errViolatesCheckConstraint
 
-		_, err := userRepo.Create(context.Background(), testpool, args.params)
+		_, err := userRepo.Create(context.Background(), testPool, args.params)
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
 		assert.Contains(t, err.Error(), errContains)
 	})
-}
-
-func randomUserCreateParams(t *testing.T) repos.UserCreateParams {
-	t.Helper()
-
-	return repos.UserCreateParams{
-		Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
-		Email:      testutil.RandomEmail(),
-		FirstName:  pointers.New(testutil.RandomFirstName()),
-		LastName:   pointers.New(testutil.RandomLastName()),
-		ExternalID: testutil.RandomString(10),
-		Scopes:     []string{"scope1", "scope2"},
-		RoleRank:   int16(2),
-	}
 }

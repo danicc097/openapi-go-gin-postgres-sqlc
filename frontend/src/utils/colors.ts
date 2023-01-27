@@ -1,6 +1,7 @@
 import { makeHighContrastColor } from '@elastic/eui'
 import type roles from '@roles'
 import scopes from '@scopes'
+import _ from 'lodash'
 
 const LIGHT_BLUE = 'rgb(78, 197, 241)'
 const LIGHT_GREEN = 'rgb(13, 242, 200)'
@@ -63,4 +64,23 @@ export const COLOR_BLIND_PALETTE = ['#999999', '#E69F00', '#56B4E9', '#009E73', 
 export const getContrastYIQ = (hc) => {
   const [r, g, b] = [0, 2, 4].map((p) => parseInt(hc.substr(p, 2), 16))
   return (r * 299 + g * 587 + b * 114) / 1000 >= 128 ? 'black' : 'white'
+}
+
+export function generateColor(str: string): string {
+  if (str === '' || !str) {
+    return '#aaa'
+  }
+  let num = 0
+  for (const ch of str) {
+    num += ch.charCodeAt(0)
+  }
+
+  let hex = Math.floor(num * 4554323).toString(16)
+  if (hex.length < 6) {
+    hex = _.padStart(hex, 6, '0')
+  } else if (hex.length > 6) {
+    hex = hex.slice(0, 6)
+  }
+
+  return `#${hex}`
 }

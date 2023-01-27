@@ -39,6 +39,20 @@ func AllNotificationTypeValues() []NotificationType {
 	}
 }
 
+// Defines values for Project.
+const (
+	DemoProject  Project = "demoProject"
+	DemoProject2 Project = "demoProject2"
+)
+
+// AllProjectValues returns all possible values for Project.
+func AllProjectValues() []Project {
+	return []Project{
+		DemoProject,
+		DemoProject2,
+	}
+}
+
 // Defines values for Role.
 const (
 	Admin        Role = "admin"
@@ -87,21 +101,13 @@ func AllScopeValues() []Scope {
 
 // Defines values for Topics.
 const (
-	AdminNotifications   Topics = "AdminNotifications"
-	ManagerNotifications Topics = "ManagerNotifications"
-	UserNotifications    Topics = "UserNotifications"
-	WorkItemClosed       Topics = "WorkItemClosed"
-	WorkItemMoved        Topics = "WorkItemMoved"
+	GlobalAlerts Topics = "GlobalAlerts"
 )
 
 // AllTopicsValues returns all possible values for Topics.
 func AllTopicsValues() []Topics {
 	return []Topics{
-		AdminNotifications,
-		ManagerNotifications,
-		UserNotifications,
-		WorkItemClosed,
-		WorkItemMoved,
+		GlobalAlerts,
 	}
 }
 
@@ -119,6 +125,24 @@ func AllWorkItemRoleValues() []WorkItemRole {
 	}
 }
 
+// Defines values for DemoProjectKanbanSteps.
+const (
+	Disabled       DemoProjectKanbanSteps = "Disabled"
+	Received       DemoProjectKanbanSteps = "Received"
+	UnderReview    DemoProjectKanbanSteps = "Under review"
+	WorkInProgress DemoProjectKanbanSteps = "Work in progress"
+)
+
+// AllDemoProjectKanbanStepsValues returns all possible values for DemoProjectKanbanSteps.
+func AllDemoProjectKanbanStepsValues() []DemoProjectKanbanSteps {
+	return []DemoProjectKanbanSteps{
+		Disabled,
+		Received,
+		UnderReview,
+		WorkInProgress,
+	}
+}
+
 // DbActivityPublic defines the model for DbActivityPublic.
 type DbActivityPublic struct {
 	ActivityID   int    `json:"activityID"`
@@ -126,6 +150,15 @@ type DbActivityPublic struct {
 	IsProductive bool   `json:"isProductive"`
 	Name         string `json:"name"`
 	ProjectID    int    `json:"projectID"`
+}
+
+// DbDemoProjectWorkItemPublic defines the model for DbDemoProjectWorkItemPublic.
+type DbDemoProjectWorkItemPublic struct {
+	LastMessageAt time.Time `json:"lastMessageAt"`
+	Line          string    `json:"line"`
+	Ref           string    `json:"ref"`
+	Reopened      bool      `json:"reopened"`
+	WorkItemID    int       `json:"workItemID"`
 }
 
 // DbKanbanStepPublic defines the model for DbKanbanStepPublic.
@@ -159,11 +192,63 @@ type DbTeamPublic struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
+// DbTimeEntryPublic defines the model for DbTimeEntryPublic.
+type DbTimeEntryPublic struct {
+	ActivityID      int       `json:"activityID"`
+	Comment         string    `json:"comment"`
+	DurationMinutes *int      `json:"durationMinutes"`
+	Start           time.Time `json:"start"`
+	TeamID          *int      `json:"teamID"`
+	TimeEntryID     int       `json:"timeEntryID"`
+	UserID          UuidUUID  `json:"userID"`
+	WorkItemID      *int      `json:"workItemID"`
+}
+
 // DbUserAPIKeyPublic defines the model for DbUserAPIKeyPublic.
 type DbUserAPIKeyPublic struct {
 	ApiKey    string    `json:"apiKey"`
 	ExpiresOn time.Time `json:"expiresOn"`
 	UserID    UuidUUID  `json:"userID"`
+}
+
+// DbUserPublic defines the model for DbUserPublic.
+type DbUserPublic struct {
+	CreatedAt                time.Time  `json:"createdAt"`
+	DeletedAt                *time.Time `json:"deletedAt"`
+	Email                    string     `json:"email"`
+	FirstName                *string    `json:"firstName"`
+	FullName                 *string    `json:"fullName"`
+	HasGlobalNotifications   bool       `json:"hasGlobalNotifications"`
+	HasPersonalNotifications bool       `json:"hasPersonalNotifications"`
+	LastName                 *string    `json:"lastName"`
+	UserID                   UuidUUID   `json:"userID"`
+	Username                 string     `json:"username"`
+}
+
+// DbWorkItemCommentPublic defines the model for DbWorkItemCommentPublic.
+type DbWorkItemCommentPublic struct {
+	CreatedAt         time.Time `json:"createdAt"`
+	Message           string    `json:"message"`
+	UpdatedAt         time.Time `json:"updatedAt"`
+	UserID            UuidUUID  `json:"userID"`
+	WorkItemCommentID int       `json:"workItemCommentID"`
+	WorkItemID        int       `json:"workItemID"`
+}
+
+// DbWorkItemPublic defines the model for DbWorkItemPublic.
+type DbWorkItemPublic struct {
+	Closed         *time.Time  `json:"closed"`
+	CreatedAt      time.Time   `json:"createdAt"`
+	DeletedAt      *time.Time  `json:"deletedAt"`
+	Description    string      `json:"description"`
+	KanbanStepID   int         `json:"kanbanStepID"`
+	Metadata       PgtypeJSONB `json:"metadata"`
+	TargetDate     time.Time   `json:"targetDate"`
+	TeamID         int         `json:"teamID"`
+	Title          string      `json:"title"`
+	UpdatedAt      time.Time   `json:"updatedAt"`
+	WorkItemID     int         `json:"workItemID"`
+	WorkItemTypeID int         `json:"workItemTypeID"`
 }
 
 // DbWorkItemTagPublic defines the model for DbWorkItemTagPublic.
@@ -184,6 +269,28 @@ type DbWorkItemTypePublic struct {
 	WorkItemTypeID int    `json:"workItemTypeID"`
 }
 
+// DemoProjectWorkItemsResponse defines the model for DemoProjectWorkItemsResponse.
+type DemoProjectWorkItemsResponse struct {
+	Closed              *time.Time                  `json:"closed"`
+	CreatedAt           time.Time                   `json:"createdAt"`
+	DeletedAt           *time.Time                  `json:"deletedAt"`
+	DemoProjectWorkItem DbDemoProjectWorkItemPublic `json:"demoProjectWorkItem"`
+	Description         string                      `json:"description"`
+	KanbanStepID        int                         `json:"kanbanStepID"`
+	Members             *[]DbUserPublic             `json:"members"`
+	Metadata            PgtypeJSONB                 `json:"metadata"`
+	TargetDate          time.Time                   `json:"targetDate"`
+	TeamID              int                         `json:"teamID"`
+	TimeEntries         *[]DbTimeEntryPublic        `json:"timeEntries"`
+	Title               string                      `json:"title"`
+	UpdatedAt           time.Time                   `json:"updatedAt"`
+	WorkItemComments    *[]DbWorkItemCommentPublic  `json:"workItemComments"`
+	WorkItemID          int                         `json:"workItemID"`
+	WorkItemTags        *[]DbWorkItemTagPublic      `json:"workItemTags"`
+	WorkItemType        *DbWorkItemTypePublic       `json:"workItemType"`
+	WorkItemTypeID      int                         `json:"workItemTypeID"`
+}
+
 // HTTPValidationError defines the model for HTTPValidationError.
 type HTTPValidationError struct {
 	Detail *[]ValidationError `json:"detail,omitempty"`
@@ -199,17 +306,26 @@ type InitializeProjectRequest struct {
 	WorkItemTypes *[]ReposWorkItemTypeCreateParams `json:"workItemTypes"`
 }
 
+// ModelsProjectConfigField defines the model for ModelsProjectConfigField.
+type ModelsProjectConfigField struct {
+	IsEditable    bool   `json:"isEditable"`
+	IsVisible     bool   `json:"isVisible"`
+	Name          string `json:"name"`
+	Path          string `json:"path"`
+	ShowCollapsed bool   `json:"showCollapsed"`
+}
+
 // ModelsRole defines the model for ModelsRole.
 type ModelsRole = string
-
-// ModelsScope defines the model for ModelsScope.
-type ModelsScope = string
 
 // NotificationType User notification type.
 type NotificationType string
 
 // PgtypeJSONB defines the model for PgtypeJSONB.
 type PgtypeJSONB = map[string]interface{}
+
+// Project Existing projects
+type Project string
 
 // ProjectBoardResponse defines the model for ProjectBoardResponse.
 type ProjectBoardResponse struct {
@@ -219,6 +335,12 @@ type ProjectBoardResponse struct {
 	Teams         *[]DbTeamPublic         `json:"teams"`
 	WorkItemTags  *[]DbWorkItemTagPublic  `json:"workItemTags"`
 	WorkItemTypes *[]DbWorkItemTypePublic `json:"workItemTypes"`
+}
+
+// ProjectConfig defines the model for ProjectConfig.
+type ProjectConfig struct {
+	Fields *[]ModelsProjectConfigField `json:"fields"`
+	Header *[]string                   `json:"header"`
 }
 
 // ReposActivityCreateParams defines the model for ReposActivityCreateParams.
@@ -271,29 +393,6 @@ type Scope string
 // Scopes defines the model for Scopes.
 type Scopes = []Scope
 
-// TeamPublic defines the model for TeamPublic.
-type TeamPublic struct {
-	CreatedAt   time.Time   `json:"createdAt"`
-	Description string      `json:"description"`
-	Metadata    PgtypeJSONB `json:"metadata"`
-	Name        string      `json:"name"`
-	ProjectID   int         `json:"projectID"`
-	TeamID      int         `json:"teamID"`
-	UpdatedAt   time.Time   `json:"updatedAt"`
-}
-
-// TimeEntryPublic defines the model for TimeEntryPublic.
-type TimeEntryPublic struct {
-	ActivityID      *int       `json:"activityID,omitempty"`
-	Comment         *string    `json:"comment,omitempty"`
-	DurationMinutes *int       `json:"durationMinutes"`
-	Start           *time.Time `json:"start,omitempty"`
-	TeamID          *int       `json:"teamID"`
-	TimeEntryID     *int       `json:"timeEntryID,omitempty"`
-	UserID          *UuidUUID  `json:"userID,omitempty"`
-	WorkItemID      *int       `json:"workItemID"`
-}
-
 // Topics string identifiers for SSE event listeners.
 type Topics string
 
@@ -306,17 +405,10 @@ type UpdateUserAuthRequest struct {
 // UpdateUserRequest represents User data to update
 type UpdateUserRequest struct {
 	// FirstName originally from auth server but updatable
-	FirstName *string `json:"first_name,omitempty"`
+	FirstName *string `json:"firstName,omitempty"`
 
 	// LastName originally from auth server but updatable
-	LastName *string `json:"last_name,omitempty"`
-}
-
-// UserAPIKeyPublic defines the model for UserAPIKeyPublic.
-type UserAPIKeyPublic struct {
-	ApiKey    string    `json:"apiKey"`
-	ExpiresOn time.Time `json:"expiresOn"`
-	UserID    UuidUUID  `json:"userID"`
+	LastName *string `json:"lastName,omitempty"`
 }
 
 // UserResponse defines the model for UserResponse.
@@ -330,6 +422,7 @@ type UserResponse struct {
 	HasGlobalNotifications   bool                `json:"hasGlobalNotifications"`
 	HasPersonalNotifications bool                `json:"hasPersonalNotifications"`
 	LastName                 *string             `json:"lastName"`
+	Projects                 *[]DbProjectPublic  `json:"projects"`
 	Role                     Role                `json:"role"`
 	Scopes                   Scopes              `json:"scopes"`
 	Teams                    *[]DbTeamPublic     `json:"teams"`
@@ -347,24 +440,26 @@ type ValidationError struct {
 	Type string   `json:"type"`
 }
 
-// WorkItemCommentPublic defines the model for WorkItemCommentPublic.
-type WorkItemCommentPublic struct {
-	CreatedAt         *time.Time `json:"createdAt,omitempty"`
-	Message           *string    `json:"message,omitempty"`
-	UpdatedAt         *time.Time `json:"updatedAt,omitempty"`
-	UserID            *UuidUUID  `json:"userID,omitempty"`
-	WorkItemCommentID *int       `json:"workItemCommentID,omitempty"`
-	WorkItemID        *int       `json:"workItemID,omitempty"`
-}
-
 // WorkItemRole Role in work item for a member.
 type WorkItemRole string
 
-// Serial defines the model for serial.
-type Serial = int
+// DemoProjectKanbanSteps Kanban columns for project demoProject
+type DemoProjectKanbanSteps string
+
+// PathSerial defines the model for PathSerial.
+type PathSerial = int
 
 // Uuid defines the model for uuid.
 type Uuid = string
+
+// GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
+type GetProjectWorkitemsParams struct {
+	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
+	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
+}
+
+// UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
+type UpdateProjectConfigJSONRequestBody = ProjectConfig
 
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
 type InitializeProjectJSONRequestBody = InitializeProjectRequest
@@ -466,13 +561,27 @@ type ClientInterface interface {
 	// Ping request
 	Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetProject request
+	GetProject(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetProjectBoard request
-	GetProjectBoard(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetProjectBoard(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectConfig request
+	GetProjectConfig(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateProjectConfig request with any body
+	UpdateProjectConfigWithBody(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateProjectConfig(ctx context.Context, id PathSerial, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// InitializeProject request with any body
-	InitializeProjectWithBody(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	InitializeProjectWithBody(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	InitializeProject(ctx context.Context, id Serial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	InitializeProject(ctx context.Context, id PathSerial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetProjectWorkitems request
+	GetProjectWorkitems(ctx context.Context, id PathSerial, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCurrentUser request
 	GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -563,7 +672,19 @@ func (c *Client) Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetProjectBoard(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetProject(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProjectBoard(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetProjectBoardRequest(c.Server, id)
 	if err != nil {
 		return nil, err
@@ -575,7 +696,43 @@ func (c *Client) GetProjectBoard(ctx context.Context, id Serial, reqEditors ...R
 	return c.Client.Do(req)
 }
 
-func (c *Client) InitializeProjectWithBody(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetProjectConfig(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectConfigRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateProjectConfigWithBody(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectConfigRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateProjectConfig(ctx context.Context, id PathSerial, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateProjectConfigRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) InitializeProjectWithBody(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewInitializeProjectRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -587,8 +744,20 @@ func (c *Client) InitializeProjectWithBody(ctx context.Context, id Serial, conte
 	return c.Client.Do(req)
 }
 
-func (c *Client) InitializeProject(ctx context.Context, id Serial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) InitializeProject(ctx context.Context, id PathSerial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewInitializeProjectRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetProjectWorkitems(ctx context.Context, id PathSerial, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetProjectWorkitemsRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -833,8 +1002,42 @@ func NewPingRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewGetProjectRequest generates requests for GetProject
+func NewGetProjectRequest(server string, id PathSerial) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/project/%s/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetProjectBoardRequest generates requests for GetProjectBoard
-func NewGetProjectBoardRequest(server string, id Serial) (*http.Request, error) {
+func NewGetProjectBoardRequest(server string, id PathSerial) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -867,8 +1070,89 @@ func NewGetProjectBoardRequest(server string, id Serial) (*http.Request, error) 
 	return req, nil
 }
 
+// NewGetProjectConfigRequest generates requests for GetProjectConfig
+func NewGetProjectConfigRequest(server string, id PathSerial) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/project/%s/config", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateProjectConfigRequest calls the generic UpdateProjectConfig builder with application/json body
+func NewUpdateProjectConfigRequest(server string, id PathSerial, body UpdateProjectConfigJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateProjectConfigRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateProjectConfigRequestWithBody generates requests for UpdateProjectConfig with any type of body
+func NewUpdateProjectConfigRequestWithBody(server string, id PathSerial, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/project/%s/config", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewInitializeProjectRequest calls the generic InitializeProject builder with application/json body
-func NewInitializeProjectRequest(server string, id Serial, body InitializeProjectJSONRequestBody) (*http.Request, error) {
+func NewInitializeProjectRequest(server string, id PathSerial, body InitializeProjectJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -879,7 +1163,7 @@ func NewInitializeProjectRequest(server string, id Serial, body InitializeProjec
 }
 
 // NewInitializeProjectRequestWithBody generates requests for InitializeProject with any type of body
-func NewInitializeProjectRequestWithBody(server string, id Serial, contentType string, body io.Reader) (*http.Request, error) {
+func NewInitializeProjectRequestWithBody(server string, id PathSerial, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -910,6 +1194,76 @@ func NewInitializeProjectRequestWithBody(server string, id Serial, contentType s
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetProjectWorkitemsRequest generates requests for GetProjectWorkitems
+func NewGetProjectWorkitemsRequest(server string, id PathSerial, params *GetProjectWorkitemsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/project/%s/workitems", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Open != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "open", runtime.ParamLocationQuery, *params.Open); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Deleted != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "deleted", runtime.ParamLocationQuery, *params.Deleted); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -1130,13 +1484,27 @@ type ClientWithResponsesInterface interface {
 	// Ping request
 	PingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PingResponse, error)
 
+	// GetProject request
+	GetProjectWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectResponse, error)
+
 	// GetProjectBoard request
-	GetProjectBoardWithResponse(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error)
+	GetProjectBoardWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error)
+
+	// GetProjectConfig request
+	GetProjectConfigWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectConfigResponse, error)
+
+	// UpdateProjectConfig request with any body
+	UpdateProjectConfigWithBodyWithResponse(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error)
+
+	UpdateProjectConfigWithResponse(ctx context.Context, id PathSerial, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error)
 
 	// InitializeProject request with any body
-	InitializeProjectWithBodyWithResponse(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
+	InitializeProjectWithBodyWithResponse(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
 
-	InitializeProjectWithResponse(ctx context.Context, id Serial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
+	InitializeProjectWithResponse(ctx context.Context, id PathSerial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
+
+	// GetProjectWorkitems request
+	GetProjectWorkitemsWithResponse(ctx context.Context, id PathSerial, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*GetProjectWorkitemsResponse, error)
 
 	// GetCurrentUser request
 	GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error)
@@ -1284,6 +1652,28 @@ func (r PingResponse) StatusCode() int {
 	return 0
 }
 
+type GetProjectResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DbProjectPublic
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetProjectBoardResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -1306,6 +1696,49 @@ func (r GetProjectBoardResponse) StatusCode() int {
 	return 0
 }
 
+type GetProjectConfigResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProjectConfig
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectConfigResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectConfigResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateProjectConfigResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateProjectConfigResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateProjectConfigResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type InitializeProjectResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -1321,6 +1754,30 @@ func (r InitializeProjectResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r InitializeProjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetProjectWorkitemsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		union json.RawMessage
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetProjectWorkitemsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetProjectWorkitemsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1467,8 +1924,17 @@ func (c *ClientWithResponses) PingWithResponse(ctx context.Context, reqEditors .
 	return ParsePingResponse(rsp)
 }
 
+// GetProjectWithResponse request returning *GetProjectResponse
+func (c *ClientWithResponses) GetProjectWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectResponse, error) {
+	rsp, err := c.GetProject(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectResponse(rsp)
+}
+
 // GetProjectBoardWithResponse request returning *GetProjectBoardResponse
-func (c *ClientWithResponses) GetProjectBoardWithResponse(ctx context.Context, id Serial, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error) {
+func (c *ClientWithResponses) GetProjectBoardWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error) {
 	rsp, err := c.GetProjectBoard(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -1476,8 +1942,34 @@ func (c *ClientWithResponses) GetProjectBoardWithResponse(ctx context.Context, i
 	return ParseGetProjectBoardResponse(rsp)
 }
 
+// GetProjectConfigWithResponse request returning *GetProjectConfigResponse
+func (c *ClientWithResponses) GetProjectConfigWithResponse(ctx context.Context, id PathSerial, reqEditors ...RequestEditorFn) (*GetProjectConfigResponse, error) {
+	rsp, err := c.GetProjectConfig(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectConfigResponse(rsp)
+}
+
+// UpdateProjectConfigWithBodyWithResponse request with arbitrary body returning *UpdateProjectConfigResponse
+func (c *ClientWithResponses) UpdateProjectConfigWithBodyWithResponse(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error) {
+	rsp, err := c.UpdateProjectConfigWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectConfigResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateProjectConfigWithResponse(ctx context.Context, id PathSerial, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error) {
+	rsp, err := c.UpdateProjectConfig(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateProjectConfigResponse(rsp)
+}
+
 // InitializeProjectWithBodyWithResponse request with arbitrary body returning *InitializeProjectResponse
-func (c *ClientWithResponses) InitializeProjectWithBodyWithResponse(ctx context.Context, id Serial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error) {
+func (c *ClientWithResponses) InitializeProjectWithBodyWithResponse(ctx context.Context, id PathSerial, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error) {
 	rsp, err := c.InitializeProjectWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -1485,12 +1977,21 @@ func (c *ClientWithResponses) InitializeProjectWithBodyWithResponse(ctx context.
 	return ParseInitializeProjectResponse(rsp)
 }
 
-func (c *ClientWithResponses) InitializeProjectWithResponse(ctx context.Context, id Serial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error) {
+func (c *ClientWithResponses) InitializeProjectWithResponse(ctx context.Context, id PathSerial, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error) {
 	rsp, err := c.InitializeProject(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseInitializeProjectResponse(rsp)
+}
+
+// GetProjectWorkitemsWithResponse request returning *GetProjectWorkitemsResponse
+func (c *ClientWithResponses) GetProjectWorkitemsWithResponse(ctx context.Context, id PathSerial, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*GetProjectWorkitemsResponse, error) {
+	rsp, err := c.GetProjectWorkitems(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetProjectWorkitemsResponse(rsp)
 }
 
 // GetCurrentUserWithResponse request returning *GetCurrentUserResponse
@@ -1671,6 +2172,32 @@ func ParsePingResponse(rsp *http.Response) (*PingResponse, error) {
 	return response, nil
 }
 
+// ParseGetProjectResponse parses an HTTP response from a GetProjectWithResponse call
+func ParseGetProjectResponse(rsp *http.Response) (*GetProjectResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DbProjectPublic
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetProjectBoardResponse parses an HTTP response from a GetProjectBoardWithResponse call
 func ParseGetProjectBoardResponse(rsp *http.Response) (*GetProjectBoardResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -1697,6 +2224,48 @@ func ParseGetProjectBoardResponse(rsp *http.Response) (*GetProjectBoardResponse,
 	return response, nil
 }
 
+// ParseGetProjectConfigResponse parses an HTTP response from a GetProjectConfigWithResponse call
+func ParseGetProjectConfigResponse(rsp *http.Response) (*GetProjectConfigResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectConfigResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProjectConfig
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateProjectConfigResponse parses an HTTP response from a UpdateProjectConfigWithResponse call
+func ParseUpdateProjectConfigResponse(rsp *http.Response) (*UpdateProjectConfigResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateProjectConfigResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
 // ParseInitializeProjectResponse parses an HTTP response from a InitializeProjectWithResponse call
 func ParseInitializeProjectResponse(rsp *http.Response) (*InitializeProjectResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -1708,6 +2277,34 @@ func ParseInitializeProjectResponse(rsp *http.Response) (*InitializeProjectRespo
 	response := &InitializeProjectResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetProjectWorkitemsResponse parses an HTTP response from a GetProjectWorkitemsWithResponse call
+func ParseGetProjectWorkitemsResponse(rsp *http.Response) (*GetProjectWorkitemsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetProjectWorkitemsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			union json.RawMessage
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil

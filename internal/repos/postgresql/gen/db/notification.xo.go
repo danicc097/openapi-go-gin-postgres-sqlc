@@ -41,6 +41,7 @@ type Notification struct {
 	Receiver         *uuid.UUID       `json:"receiver" db:"receiver"`                   // receiver
 	NotificationType NotificationType `json:"notification_type" db:"notification_type"` // notification_type
 
+	UserNotification *UserNotification `json:"user_notification" db:"user_notification"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -86,7 +87,9 @@ func WithNotificationOrderBy(rows ...NotificationOrderBy) NotificationSelectConf
 	}
 }
 
-type NotificationJoins struct{}
+type NotificationJoins struct {
+	UserNotification bool
+}
 
 // WithNotificationJoin orders results by the given columns.
 func WithNotificationJoin(joins NotificationJoins) NotificationSelectConfigOption {
@@ -226,10 +229,12 @@ notifications.link,
 notifications.created_at,
 notifications.sender,
 notifications.receiver,
-notifications.notification_type ` +
+notifications.notification_type,
+(case when $1::boolean = true then row_to_json(user_notifications.*) end)::jsonb as user_notification ` +
 		`FROM public.notifications ` +
-		`` +
-		` WHERE notifications.notification_id = $1 `
+		`-- O2O join generated from "user_notifications_notification_id_fkey"
+left join user_notifications on user_notifications.notification_id = notifications.notification_id` +
+		` WHERE notifications.notification_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -239,7 +244,7 @@ notifications.notification_type ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, notificationID).Scan(&n.NotificationID, &n.ReceiverRank, &n.Title, &n.Body, &n.Label, &n.Link, &n.CreatedAt, &n.Sender, &n.Receiver, &n.NotificationType); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, c.joins.UserNotification, notificationID).Scan(&n.NotificationID, &n.ReceiverRank, &n.Title, &n.Body, &n.Label, &n.Link, &n.CreatedAt, &n.Sender, &n.Receiver, &n.NotificationType, &n.UserNotification); err != nil {
 		return nil, logerror(err)
 	}
 	return &n, nil
@@ -266,16 +271,18 @@ notifications.link,
 notifications.created_at,
 notifications.sender,
 notifications.receiver,
-notifications.notification_type ` +
+notifications.notification_type,
+(case when $1::boolean = true then row_to_json(user_notifications.*) end)::jsonb as user_notification ` +
 		`FROM public.notifications ` +
-		`` +
-		` WHERE notifications.receiver_rank = $1 AND notifications.notification_type = $2 AND notifications.created_at = $3 `
+		`-- O2O join generated from "user_notifications_notification_id_fkey"
+left join user_notifications on user_notifications.notification_id = notifications.notification_id` +
+		` WHERE notifications.receiver_rank = $2 AND notifications.notification_type = $3 AND notifications.created_at = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	logf(sqlstr, receiverRank, notificationType, createdAt)
-	rows, err := db.Query(ctx, sqlstr, receiverRank, notificationType, createdAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.UserNotification, receiverRank, notificationType, createdAt)
 	if err != nil {
 		return nil, logerror(err)
 	}

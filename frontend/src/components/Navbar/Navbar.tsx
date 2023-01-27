@@ -29,14 +29,15 @@ import { useNotificationAPI } from 'src/hooks/ui/useNotificationAPI'
 import logoDark from 'src/assets/logo/two-white-clouds.svg'
 import logoLight from 'src/assets/logo/two-black-clouds.svg'
 import { AvatarMenu, StyledEuiHeader, LogoSection } from './Navbar.styles'
-import type { User } from 'src/redux/slices/gen/internalApi'
 import { useUISlice } from 'src/slices/ui'
 import { useAuthenticatedUser } from 'src/hooks/auth/useAuthenticatedUser'
-import { ThemeSwitcher } from 'src/ThemeSwitcher/ThemeSwitcher'
+import { ThemeSwitcher } from 'src/components/ThemeSwitcher/ThemeSwitcher'
+import _ from 'lodash'
+import config from '@config'
 
 export default function Navbar() {
   const [avatarMenuOpen, setAvatarMenuOpen] = useState<boolean>(false)
-  const { user, logUserOut, avatarColor } = useAuthenticatedUser()
+  const { user, logUserOut } = useAuthenticatedUser()
   const navigate = useNavigate()
   const { showTestNotification } = useNotificationAPI()
   const theme = useUISlice((state) => state.theme)
@@ -73,7 +74,7 @@ export default function Navbar() {
       onClick={() => user?.email && toggleAvatarMenu()}
     >
       {user?.email ? (
-        <UserAvatar size="l" user={user} color={avatarColor} initialsLength={2} />
+        <UserAvatar size="l" user={user} initialsLength={2} />
       ) : (
         <Link to="/login">
           <EuiAvatar size="l" color="#1E90FF" name="user" imageUrl={loginIcon} />
@@ -89,21 +90,25 @@ export default function Navbar() {
         <EuiFlexGroup
           gutterSize="xs"
           direction="column"
-          alignItems="center"
-          justifyContent="center"
+          alignItems="flexEnd"
+          justifyContent="spaceAround"
           className="avatar-dropdown"
           style={{ alignItems: 'center' }}
         >
-          <EuiFlexItem grow style={{ alignItems: 'center', flexGrow: 1 }}>
+          <EuiFlexItem style={{ alignItems: 'center', flexGrow: 1 }}>
             <EuiFlexGroup direction="row" alignItems="center">
-              <EuiFlexItem grow>
-                <UserAvatar size="l" user={user} color={avatarColor} initialsLength={2} />
+              <EuiFlexItem>
+                <UserAvatar size="l" user={user} initialsLength={2} />
               </EuiFlexItem>
-              <EuiFlexGroup direction="column" alignItems="flexStart" className="avatar-dropdown-user">
-                <EuiFlexItem grow>
+              <EuiFlexGroup
+                direction="column"
+                justifyContent="spaceAround"
+                // alignItems="center"
+              >
+                <EuiFlexItem>
                   <strong>{user?.username}</strong>
                 </EuiFlexItem>
-                <EuiFlexItem grow>{user?.email}</EuiFlexItem>
+                <EuiFlexItem>{_.truncate(user?.email, { length: 25 })}</EuiFlexItem>
               </EuiFlexGroup>
             </EuiFlexGroup>
           </EuiFlexItem>
@@ -124,7 +129,7 @@ export default function Navbar() {
               <EuiIcon type="user" size="m" />
             </EuiFlexItem>
             <EuiFlexItem grow={8}>
-              <Link to="/profile">Profile</Link>
+              <EuiLink href={`${config.AUTH_SERVER_UI_PROFILE}`}>Profile</EuiLink>
             </EuiFlexItem>
           </EuiFlexGroup>
 
@@ -174,7 +179,7 @@ export default function Navbar() {
       sections={[
         {
           items: [
-            user?.external_id !== '' ? <CollapsibleNav user={user} /> : null,
+            user?.userID !== '' ? <CollapsibleNav user={user} /> : null,
 
             <LogoSection href="/" key={0}>
               <EuiIcon type={logo} size="l" />

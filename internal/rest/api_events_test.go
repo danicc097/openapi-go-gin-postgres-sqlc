@@ -69,7 +69,7 @@ func TestSSEStream(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	req = req.WithContext(ctx)
 
-	srv, err := runTestServer(t, testpool, []gin.HandlerFunc{func(c *gin.Context) {
+	srv, err := runTestServer(t, testPool, []gin.HandlerFunc{func(c *gin.Context) {
 		c.Next()
 	}})
 	if err != nil {
@@ -84,6 +84,7 @@ func TestSSEStream(t *testing.T) {
 			case <-stopCh:
 				return
 			default:
+				time.Sleep(1 * time.Second) // TODO remove when actually testing something
 				srv.Handler.ServeHTTP(res, req)
 			}
 		}
@@ -92,11 +93,11 @@ func TestSSEStream(t *testing.T) {
 	// TODO trigger events
 
 	// TODO also test 2 clients concurrently receive, and when one leaves, the other still receives.
-
+	// ff
 	assert.Eventually(t, func() bool {
 		body := strings.ReplaceAll(res.Body.String(), " ", "")
 
-		return strings.Count(body, "event:"+string(models.TopicsUserNotifications)) == 1 &&
+		return strings.Count(body, "event:"+string(models.TopicsGlobalAlerts)) == 1 &&
 			strings.Count(body, "event:test-event") == 1
 	}, 10*time.Second, 100*time.Millisecond)
 

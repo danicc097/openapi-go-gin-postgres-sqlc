@@ -14,14 +14,16 @@ import (
 // Include "property:private" in a SQL column comment to exclude a field.
 // Joins may be explicitly added in the Response struct.
 type WorkItemMemberPublic struct {
-	WorkItemID int64     `json:"workItemID" required:"true"` // work_item_id
-	Member     uuid.UUID `json:"member" required:"true"`     // member
+	WorkItemID int64        `json:"workItemID" required:"true"` // work_item_id
+	Member     uuid.UUID    `json:"member" required:"true"`     // member
+	Role       WorkItemRole `json:"role" required:"true"`       // role
 }
 
 // WorkItemMember represents a row from 'public.work_item_member'.
 type WorkItemMember struct {
-	WorkItemID int64     `json:"work_item_id" db:"work_item_id"` // work_item_id
-	Member     uuid.UUID `json:"member" db:"member"`             // member
+	WorkItemID int64        `json:"work_item_id" db:"work_item_id"` // work_item_id
+	Member     uuid.UUID    `json:"member" db:"member"`             // member
+	Role       WorkItemRole `json:"role" db:"role"`                 // role
 
 	// xo fields
 	_exists, _deleted bool
@@ -29,7 +31,7 @@ type WorkItemMember struct {
 
 func (x *WorkItemMember) ToPublic() WorkItemMemberPublic {
 	return WorkItemMemberPublic{
-		WorkItemID: x.WorkItemID, Member: x.Member,
+		WorkItemID: x.WorkItemID, Member: x.Member, Role: x.Role,
 	}
 }
 
@@ -79,13 +81,13 @@ func (wim *WorkItemMember) Insert(ctx context.Context, db DB) error {
 	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.work_item_member (` +
-		`work_item_id, member` +
+		`work_item_id, member, role` +
 		`) VALUES (` +
-		`$1, $2` +
+		`$1, $2, $3` +
 		`) `
 	// run
-	logf(sqlstr, wim.WorkItemID, wim.Member)
-	if _, err := db.Exec(ctx, sqlstr, wim.WorkItemID, wim.Member); err != nil {
+	logf(sqlstr, wim.WorkItemID, wim.Member, wim.Role)
+	if _, err := db.Exec(ctx, sqlstr, wim.WorkItemID, wim.Member, wim.Role); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -93,7 +95,59 @@ func (wim *WorkItemMember) Insert(ctx context.Context, db DB) error {
 	return nil
 }
 
-// ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
+// Update updates a WorkItemMember in the database.
+func (wim *WorkItemMember) Update(ctx context.Context, db DB) error {
+	switch {
+	case !wim._exists: // doesn't exist
+		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+	case wim._deleted: // deleted
+		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+	}
+	// update with composite primary key
+	sqlstr := `UPDATE public.work_item_member SET ` +
+		`role = $1 ` +
+		`WHERE work_item_id = $2  AND member = $3 ` +
+		`RETURNING work_item_id, member `
+	// run
+	logf(sqlstr, wim.Role, wim.WorkItemID, wim.Member)
+	if err := db.QueryRow(ctx, sqlstr, wim.Role, wim.WorkItemID, wim.Member).Scan(); err != nil {
+		return logerror(err)
+	}
+	return nil
+}
+
+// Save saves the WorkItemMember to the database.
+func (wim *WorkItemMember) Save(ctx context.Context, db DB) error {
+	if wim.Exists() {
+		return wim.Update(ctx, db)
+	}
+	return wim.Insert(ctx, db)
+}
+
+// Upsert performs an upsert for WorkItemMember.
+func (wim *WorkItemMember) Upsert(ctx context.Context, db DB) error {
+	switch {
+	case wim._deleted: // deleted
+		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
+	}
+	// upsert
+	sqlstr := `INSERT INTO public.work_item_member (` +
+		`work_item_id, member, role` +
+		`) VALUES (` +
+		`$1, $2, $3` +
+		`)` +
+		` ON CONFLICT (work_item_id, member) DO ` +
+		`UPDATE SET ` +
+		`role = EXCLUDED.role  `
+	// run
+	logf(sqlstr, wim.WorkItemID, wim.Member, wim.Role)
+	if _, err := db.Exec(ctx, sqlstr, wim.WorkItemID, wim.Member, wim.Role); err != nil {
+		return logerror(err)
+	}
+	// set exists
+	wim._exists = true
+	return nil
+}
 
 // Delete deletes the WorkItemMember from the database.
 func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
@@ -129,7 +183,8 @@ func WorkItemMemberByMemberWorkItemID(ctx context.Context, db DB, member uuid.UU
 	// query
 	sqlstr := `SELECT ` +
 		`work_item_member.work_item_id,
-work_item_member.member ` +
+work_item_member.member,
+work_item_member.role ` +
 		`FROM public.work_item_member ` +
 		`` +
 		` WHERE work_item_member.member = $1 AND work_item_member.work_item_id = $2 `
@@ -150,7 +205,7 @@ work_item_member.member ` +
 			_exists: true,
 		}
 		// scan
-		if err := rows.Scan(&wim.WorkItemID, &wim.Member); err != nil {
+		if err := rows.Scan(&wim.WorkItemID, &wim.Member, &wim.Role); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &wim)
@@ -174,7 +229,8 @@ func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, workItemID int
 	// query
 	sqlstr := `SELECT ` +
 		`work_item_member.work_item_id,
-work_item_member.member ` +
+work_item_member.member,
+work_item_member.role ` +
 		`FROM public.work_item_member ` +
 		`` +
 		` WHERE work_item_member.work_item_id = $1 AND work_item_member.member = $2 `
@@ -187,7 +243,7 @@ work_item_member.member ` +
 		_exists: true,
 	}
 
-	if err := db.QueryRow(ctx, sqlstr, workItemID, member).Scan(&wim.WorkItemID, &wim.Member); err != nil {
+	if err := db.QueryRow(ctx, sqlstr, workItemID, member).Scan(&wim.WorkItemID, &wim.Member, &wim.Role); err != nil {
 		return nil, logerror(err)
 	}
 	return &wim, nil

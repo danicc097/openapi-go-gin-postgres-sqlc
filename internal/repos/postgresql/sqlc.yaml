@@ -30,5 +30,7 @@ sql:
         # Customize the name of generated struct fields.
         # https://docs.sqlc.dev/en/stable/reference/config.html?highlight=Renaming%20fields#renaming-fields
         overrides:
+          - go_type: "github.com/google/uuid.UUID"
+            db_type: "uuid"
         # It is a collection of definitions that dictates which types are used to map a database types.
         # https://docs.sqlc.dev/en/stable/reference/config.html?highlight=Renaming%20fields#renaming-fields

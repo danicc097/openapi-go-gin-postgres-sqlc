@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,8 +13,8 @@ import (
 	internaldomain "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
@@ -29,7 +30,10 @@ import (
 	"go.uber.org/zap/zaptest"
 )
 
-var testpool *pgxpool.Pool
+var (
+	testPool    *pgxpool.Pool
+	testSQLPool *sql.DB // for jet, use .Sql() to use pgx directly
+)
 
 func TestMain(m *testing.M) {
 	os.Exit(testMain(m))
@@ -41,17 +45,19 @@ func testMain(m *testing.M) int {
 	// call flag.Parse() here if TestMain uses flags
 	var err error
 
-	testpool, err = testutil.NewDB()
+	testPool, testSQLPool, err = testutil.NewDB()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Couldn't create testpool: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Couldn't create testPool: %s\n", err)
 		os.Exit(1)
 	}
-	defer testpool.Close()
+	defer testPool.Close()
 
 	return m.Run()
 }
 
-func runTestServer(t *testing.T, testpool *pgxpool.Pool, middlewares []gin.HandlerFunc) (*http.Server, error) {
+func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.HandlerFunc) (*http.Server, error) {
+	t.Helper()
+
 	ctx := context.Background()
 
 	if err := envvar.Load(fmt.Sprintf("../../.env.%s", os.Getenv("APP_ENV"))); err != nil {
@@ -86,7 +92,7 @@ func runTestServer(t *testing.T, testpool *pgxpool.Pool, middlewares []gin.Handl
 
 	srv, err := NewServer(Config{
 		Address:         ":0", // random next available for each test server
-		Pool:            testpool,
+		Pool:            testPool,
 		Redis:           rdb,
 		Logger:          logger,
 		SpecPath:        "../../openapi.yaml",
@@ -107,20 +113,20 @@ func newTestFixtureFactory(t *testing.T) *resttestutil.FixtureFactory {
 	if err != nil {
 		t.Fatalf("services.NewAuthorization: %v", err)
 	}
-	retryCount := 1
-	retryInterval := 1 * time.Second
 	usvc := services.NewUser(
 		logger,
-		repos.NewUserWithTracing(
-			repos.NewUserWithRetry(
-				repos.NewUserWithTimeout(
-					postgresql.NewUser(), repos.UserWithTimeoutConfig{CreateTimeout: 10 * time.Second}),
-				retryCount, retryInterval),
+		reposwrappers.NewUserWithTracing(
+			reposwrappers.NewUserWithTimeout(
+				postgresql.NewUser(), reposwrappers.UserWithTimeoutConfig{}),
+			postgresql.OtelName, nil),
+		reposwrappers.NewNotificationWithTracing(
+			reposwrappers.NewNotificationWithTimeout(
+				postgresql.NewNotification(), reposwrappers.NotificationWithTimeoutConfig{}),
 			postgresql.OtelName, nil),
 		authzsvc,
 	)
-	authnsvc := services.NewAuthentication(logger, usvc, testpool)
+	authnsvc := services.NewAuthentication(logger, usvc, testPool)
 
-	ff := resttestutil.NewFixtureFactory(usvc, testpool, authnsvc, authzsvc)
+	ff := resttestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
 	return ff
 }

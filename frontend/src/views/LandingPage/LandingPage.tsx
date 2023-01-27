@@ -6,7 +6,7 @@ import { useUISlice } from 'src/slices/ui'
 import { ToastId } from 'src/utils/toasts'
 
 export default function LandingPage() {
-  const { switchTheme, addToast, dismissToast } = useUISlice()
+  const { setTheme, addToast, dismissToast } = useUISlice()
 
   useEffect(() => {
     null
@@ -15,6 +15,8 @@ export default function LandingPage() {
   return (
     <PageTemplate
       content={<KanbanBoard></KanbanBoard>}
+      restrictWidth={false}
+      grow={true}
       header={{ description: 'My header' }}
       buttons={[
         <EuiButton
@@ -31,9 +33,6 @@ export default function LandingPage() {
           }
         >
           New toast
-        </EuiButton>,
-        <EuiButton key={2} onClick={() => switchTheme()}>
-          Switch theme
         </EuiButton>,
       ]}
     ></PageTemplate>

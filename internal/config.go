@@ -1,83 +1,169 @@
 package internal
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
+	"reflect"
 	"runtime"
+	"strconv"
+	"sync"
+)
 
-	"github.com/pkg/errors"
+var (
+	lock = &sync.Mutex{}
+
+	config *AppConfig
 )
 
 type OIDCConfig struct {
-	ClientID     string `json:"clientId" validate:"required"`
-	ClientSecret string `json:"clientSecret" validate:"required"`
-	Issuer       string `json:"issuer" validate:"required"`
-	Scopes       string `json:"scopes" validate:"required"`
-
-	Domain     string  `json:"-" validate:"required"` // env var
-	ServerPort *string `json:"-"`                     // optional,env var
+	ClientID     string  `env:"OIDC_CLIENT_ID"`
+	ClientSecret string  `env:"OIDC_CLIENT_SECRET"`
+	Issuer       string  `env:"OIDC_ISSUER"`
+	Scopes       string  `env:"OIDC_SCOPES"`
+	Domain       string  `env:"OIDC_DOMAIN"`
+	ServerPort   *string `env:"OIDC_SERVER_PORT"`
 }
 
 type PostgresConfig struct {
-	Port     string `json:"-" validate:"required"` // env var
-	User     string `json:"-" validate:"required"` // env var
-	Password string `json:"-" validate:"required"` // env var
-	Server   string `json:"-" validate:"required"` // env var
-	DB       string `json:"-" validate:"required"` // env var
+	Port         int    `env:"DB_PORT"`
+	InternalPort string `env:"POSTGRES_PORT"`
+	User         string `env:"POSTGRES_USER"`
+	Password     string `env:"POSTGRES_PASSWORD"`
+	Server       string `env:"POSTGRES_SERVER"`
+	DB           string `env:"POSTGRES_DB"`
 }
 
 type RedisConfig struct {
-	DB   string `json:"-" validate:"required"` // env var
-	Host string `json:"-" validate:"required"` // env var
+	DB   string `env:"REDIS_DB"`
+	Host string `env:"REDIS_HOST"`
 }
 
-// TODO frontend still needs .env.<env> for dynamic config.json
-// without rebuilding.
-// Postgres and backend also need .env shared.
-// We could have DBConfig struct with json:"-"
-// and on startup fill it in with whatever is in the current env,
-// then validate it as usual.
-// this way postgres can reuse the .env.* as usual
-// and get typed config
-// ^ do the same for .env values that are shared with frontend:
-// TDLR whatever appears in .env.template must have json:"-" and env is loaded to the struct after unmarshalling config/*.json
-
-// UPDATE:
-// IMPORTANT: bin/project sources .env.* and is vital to work with. docker-compose also uses it...
-// so in the end it the config struct will for the most part be filled with env vars
-
-// sharing config between packages:
-// os.getenv is very convenient.
-// the closest we can get: internal.Config() returns the already built and validated *config.
-// returning a copy every single time is too bad. its an internal package so
-// just need to ensure nothing silly is being done like overwriting it...
-
-// AppConfig contains app settings which are read from a config file. Excluded fields from JSON are read from environment variables.
+// AppConfig contains app settings.
 type AppConfig struct {
-	Postgres PostgresConfig `json:"-" validate:"required"`
-	Redis    RedisConfig    `json:"-" validate:"required"`
-	OIDC     OIDCConfig     `json:"oidc" validate:"required"`
+	Postgres PostgresConfig
+	Redis    RedisConfig
+	OIDC     OIDCConfig
 
-	Domain     string `json:"-" validate:"required"`
-	APIPort    string `json:"-" validate:"required"`
-	APIVersion string `json:"-" validate:"required"`
-	APIPrefix  string `json:"-" validate:"required"`
-	AppEnv     string `json:"-" validate:"required"`
-	SigningKey string `json:"signingKey" validate:"required"`
+	Domain     string `env:"DOMAIN"`
+	APIPort    string `env:"API_PORT"`
+	APIVersion string `env:"API_VERSION"`
+	APIPrefix  string `env:"API_PREFIX"`
+	AppEnv     string `env:"APP_ENV"`
+	SigningKey string `env:"SIGNING_KEY"`
 }
 
-// don't. instead do it in NewConfig, so calling it without an error is enough to know its valid.
-func (ac *AppConfig) Validate() error {
-	// see https://github.com/go-playground/validator/blob/master/_examples/struct-level/main.go and other examples
+// NewAppConfig initializes app config from current environment variables.
+// Config can be replaced with consequent calls and accessed through Config().
+func NewAppConfig() error {
+	cfg := &AppConfig{}
+
+	lock.Lock()
+	defer lock.Unlock()
+
+	if err := LoadEnvToConfig(cfg); err != nil {
+		return fmt.Errorf("LoadEnvToConfig: %w", err)
+	}
+	config = cfg
+
 	return nil
 }
 
-// NewAppConfig returns a new AppConfig.
-func NewAppConfig() *AppConfig {
-	return &AppConfig{}
+// Config returns the current app config and panics if it was not initialized via NewAppConfig.
+func Config() *AppConfig {
+	if config == nil {
+		panic("app configuration has not yet been initialized")
+	}
+
+	return config
+}
+
+// LoadEnvToConfig loads env vars to a given struct based on an `env` tag.
+func LoadEnvToConfig(config any) error {
+	cfg := reflect.ValueOf(config)
+
+	if cfg.Kind() == reflect.Pointer {
+		cfg = cfg.Elem()
+	}
+
+	for idx := 0; idx < cfg.NumField(); idx++ {
+		fType := cfg.Type().Field(idx)
+		fld := cfg.Field(idx)
+
+		if fld.Kind() == reflect.Struct {
+			if !fld.CanInterface() { // unexported
+				continue
+			}
+			if err := LoadEnvToConfig(fld.Addr().Interface()); err != nil {
+				return fmt.Errorf("nested struct %s env loading: %w", cfg.Type().Field(idx).Name, err)
+			}
+		}
+
+		if !fld.CanSet() {
+			continue
+		}
+
+		if env, ok := fType.Tag.Lookup("env"); ok && len(env) > 0 {
+			err := setEnvToField(env, fld)
+			if err != nil {
+				return fmt.Errorf("could not set %q to %q: %w", env, cfg.Type().Field(idx).Name, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func setEnvToField(envvar string, field reflect.Value) error {
+	val, present := os.LookupEnv(envvar)
+
+	if !present && field.Kind() != reflect.Pointer {
+		return fmt.Errorf("%s is not set but required", envvar)
+	}
+
+	var isPtr bool
+
+	kind := field.Kind()
+	if kind == reflect.Pointer {
+		kind = field.Type().Elem().Kind()
+		isPtr = true
+	}
+
+	if val == "" && isPtr && kind != reflect.String {
+		return nil
+	}
+
+	switch kind {
+	case reflect.String:
+		if !present && isPtr {
+			setVal[*string](false, field, nil) // since default val is always ""
+
+			return nil
+		}
+		setVal(isPtr, field, val)
+	case reflect.Int:
+		v, err := strconv.Atoi(val)
+		if err != nil {
+			return fmt.Errorf("could not convert %s to int: %w", envvar, err)
+		}
+		setVal(isPtr, field, v)
+	case reflect.Bool:
+		v, err := strconv.ParseBool(val)
+		if err != nil {
+			return fmt.Errorf("could not convert %s to bool: %w", envvar, err)
+		}
+		setVal(isPtr, field, v)
+	}
+
+	return nil
+}
+
+func setVal[T any](isPtr bool, field reflect.Value, v T) {
+	if isPtr {
+		field.Set(reflect.ValueOf(&v))
+	} else {
+		field.Set(reflect.ValueOf(v))
+	}
 }
 
 // Returns the directory of the file this function lives in.
@@ -87,17 +173,17 @@ func getFileRuntimeDirectory() string {
 	return path.Join(path.Dir(b))
 }
 
-var localConfigPath = filepath.Join(getFileRuntimeDirectory(), "config/%s.json")
+// var localConfigPath = filepath.Join(getFileRuntimeDirectory(), "config/%s.json")
 
-// GenerateConfigTemplate creates a template.json config file for reference.
-func GenerateConfigTemplate() error {
-	cfg, err := json.MarshalIndent(&AppConfig{}, "", "  ")
-	if err != nil {
-		return errors.Wrap(err, "could not marshal template config json")
-	}
-	if err := os.WriteFile(fmt.Sprintf(localConfigPath, "template"), cfg, 0o777); err != nil {
-		return errors.Wrap(err, "could not save template config json")
-	}
+// // GenerateConfigTemplate creates a template.json config file for reference.
+// func GenerateConfigTemplate() error {
+// 	cfg, err := json.MarshalIndent(&AppConfig{}, "", "  ")
+// 	if err != nil {
+// 		return errors.Wrap(err, "could not marshal template config json")
+// 	}
+// 	if err := os.WriteFile(fmt.Sprintf(localConfigPath, "template"), cfg, 0o777); err != nil {
+// 		return errors.Wrap(err, "could not save template config json")
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
