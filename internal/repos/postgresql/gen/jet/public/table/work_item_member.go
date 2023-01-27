@@ -19,6 +19,7 @@ type workItemMemberTable struct {
 	//Columns
 	WorkItemID postgres.ColumnInteger
 	Member     postgres.ColumnString
+	Role       postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -61,8 +62,9 @@ func newWorkItemMemberTableImpl(schemaName, tableName, alias string) workItemMem
 	var (
 		WorkItemIDColumn = postgres.IntegerColumn("work_item_id")
 		MemberColumn     = postgres.StringColumn("member")
-		allColumns       = postgres.ColumnList{WorkItemIDColumn, MemberColumn}
-		mutableColumns   = postgres.ColumnList{}
+		RoleColumn       = postgres.StringColumn("role")
+		allColumns       = postgres.ColumnList{WorkItemIDColumn, MemberColumn, RoleColumn}
+		mutableColumns   = postgres.ColumnList{RoleColumn}
 	)
 
 	return workItemMemberTable{
@@ -71,6 +73,7 @@ func newWorkItemMemberTableImpl(schemaName, tableName, alias string) workItemMem
 		//Columns
 		WorkItemID: WorkItemIDColumn,
 		Member:     MemberColumn,
+		Role:       RoleColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

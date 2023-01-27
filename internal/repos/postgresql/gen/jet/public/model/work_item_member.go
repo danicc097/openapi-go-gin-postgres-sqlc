@@ -12,6 +12,7 @@ import (
 )
 
 type WorkItemMember struct {
-	WorkItemID int64     `sql:"primary_key" db:"work_item_id"`
-	Member     uuid.UUID `sql:"primary_key" db:"member"`
+	WorkItemID int64        `sql:"primary_key" db:"work_item_id"`
+	Member     uuid.UUID    `sql:"primary_key" db:"member"`
+	Role       WorkItemRole `db:"role"`
 }

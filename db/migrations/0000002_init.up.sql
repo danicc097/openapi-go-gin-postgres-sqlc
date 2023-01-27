@@ -406,6 +406,7 @@ create type work_item_role as ENUM (
 create table work_item_member (
   work_item_id bigint not null
   , member uuid not null
+  , role work_item_role not null
   , primary key (work_item_id , member)
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
   , foreign key (member) references users (user_id) on delete cascade
