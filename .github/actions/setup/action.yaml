@@ -29,6 +29,9 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
+
+        apt-get install moreutils # sponge
+
         source .envrc
 
         mv docker/.env.ci docker/.env
