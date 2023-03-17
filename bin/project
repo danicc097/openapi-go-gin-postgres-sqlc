@@ -1156,7 +1156,7 @@ usage() {
       awk '{$1=$1;print}'
   }
 
-  construct_column() {
+  construct_row() {
     comment_parser="$1"
     for i in ${!lns[@]}; do
       comment_paragraph="$($comment_parser)"
@@ -1218,7 +1218,7 @@ usage() {
     shopt -u extdebug
   done
 
-  x_functions="$(construct_column command_comments_parser)"
+  x_functions="$(construct_row command_comments_parser)"
 
   lns=()
   rows=()
@@ -1231,7 +1231,7 @@ usage() {
     rows+=("${c%%)*}")
   done
 
-  x_options="$(construct_column command_options_comments_parser)"
+  x_options="$(construct_row command_options_comments_parser)"
 
   cat <<EOF
 
