@@ -642,7 +642,7 @@ x.test.backend-setup() {
 # Args: [...]
 x.test() {
   { { {
-    yes y | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
+    yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
     APP_ENV="$env" go test "$@" ./...
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
