@@ -12,17 +12,10 @@ set -Eeo pipefail
 trap killgroup SIGINT
 
 trap errtrap SIGUSR1
-trap cleanup 0
+trap exit-cleanup 0
 
-cleanup() {
-  if [[ $restore_cache = 1 ]]; then
-    {
-      echo "Restoring $SPEC and $PG_REPO_GEN"
-      mv "$CACHE/$SPEC" "$SPEC"
-      rm -rf "$PG_REPO_GEN"
-      mv "$CACHE_PG_REPO_GEN" "$PG_REPO"
-    }
-  fi
+exit-cleanup() {
+  [[ $restore_cache = 1 ]] && cache-gen.restore
 }
 
 killgroup() {
@@ -1146,11 +1139,17 @@ cache-gen() {
   restore_cache=1
 }
 
-# cleanups gen cache
 cache-gen.cleanup() {
-  rm "$CACHE/$SPEC" || true
-  rm -rf "$CACHE_PG_REPO_GEN" || true
+  rm -f "$CACHE/$SPEC" 2>/dev/null
+  rm -rf "$CACHE_PG_REPO_GEN" 2>/dev/null
   restore_cache=0
+}
+
+cache-gen.restore() {
+  echo "Restoring $SPEC and $PG_REPO_GEN"
+  mv "$CACHE/$SPEC" "$SPEC"
+  rm -rf "$PG_REPO_GEN"
+  mv "$CACHE_PG_REPO_GEN" "$PG_REPO"
 }
 
 usage() {
