@@ -35,6 +35,7 @@ func (f *fakeUserStore) set(id uuid.UUID, user *db.User) {
 
 // NewFakeUser returns a mock for the User repository, initializing it with copies of
 // the passed users.
+// deprecated: use postgres repo directly
 func NewFakeUser(users ...*db.User) *FakeUser {
 	fks := &fakeUserStore{
 		users: make(map[uuid.UUID]db.User),

@@ -17,11 +17,10 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 )
 
 // New instantiates the PostgreSQL database using configuration defined in environment variables.
-func New(conf *envvar.Configuration, logger *zap.Logger) (*pgxpool.Pool, *sql.DB, error) {
+func New(logger *zap.Logger) (*pgxpool.Pool, *sql.DB, error) {
 	cfg := internal.Config()
 
 	dsn := url.URL{

@@ -56,8 +56,7 @@ func main() {
 	}
 
 	logger, _ := zap.NewDevelopment()
-	conf := envvar.New()
-	pool, sqlpool, err := postgresql.New(conf, logger)
+	pool, sqlpool, err := postgresql.New(logger)
 	if err != nil {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}

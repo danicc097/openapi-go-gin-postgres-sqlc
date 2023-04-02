@@ -514,7 +514,7 @@ x.gen.frontend() {
 
 # Run all codegen and postgen commands for the project.
 x.gen() {
-  cache-gen
+  cache-gen # Modification of vars inside would be local to subshell (caused by pipeline)
   { { {
     echo "Running code generation"
 
@@ -626,7 +626,7 @@ x.lint.sql() {
 # Run required backend pre-test setup: services, database cleanup, codegen...
 # Can be called independently, e.g. before running tests through an IDE.
 x.test.backend-setup() {
-  cache-gen
+  cache-gen # Modification of vars inside would be local to subshell (caused by pipeline)
   { { {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts

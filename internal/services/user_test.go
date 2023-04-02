@@ -6,14 +6,23 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"
 )
+
+type testUsers struct {
+	guest, user, advanced, manager, admin *db.User
+}
+
+type testRoles struct {
+	guest, user, advanced, manager, admin services.Role
+}
 
 func TestUser_UpdateUser(t *testing.T) {
 	t.Parallel()
@@ -35,10 +44,7 @@ func TestUser_UpdateUser(t *testing.T) {
 		LastName  *string
 	}
 
-	// TODO structs instead for both roles and users
-	guestRole, userRole, advancedUserRole, managerRole, adminRole := getRoles(t, authzsvc)
-
-	_, normalUser, advancedUser, _, adminUser := fakeUsers(guestRole, userRole, advancedUserRole, managerRole, adminRole)
+	testUsers := createTestUsers(t, testPool, authzsvc)
 
 	tests := []struct {
 		name  string
@@ -52,20 +58,20 @@ func TestUser_UpdateUser(t *testing.T) {
 				params: &models.UpdateUserRequest{
 					FirstName: pointers.New("changed"),
 				},
-				id:     normalUser.UserID.String(),
-				caller: normalUser,
+				id:     testUsers.user.UserID.String(),
+				caller: testUsers.user,
 			},
 			want: want{
 				FirstName: pointers.New("changed"),
-				LastName:  advancedUser.LastName,
+				LastName:  testUsers.advanced.LastName,
 			},
 		},
 		{
 			name: "cannot_update_different_user",
 			args: args{
 				params: &models.UpdateUserRequest{},
-				id:     normalUser.UserID.String(),
-				caller: advancedUser,
+				id:     testUsers.user.UserID.String(),
+				caller: testUsers.advanced,
 			},
 			error: "cannot change another user's information",
 		},
@@ -76,8 +82,8 @@ func TestUser_UpdateUser(t *testing.T) {
 					FirstName: pointers.New("changed"),
 					LastName:  pointers.New("changed"),
 				},
-				id:     normalUser.UserID.String(),
-				caller: adminUser,
+				id:     testUsers.user.UserID.String(),
+				caller: testUsers.admin,
 			},
 			want: want{
 				FirstName: pointers.New("changed"),
@@ -91,11 +97,12 @@ func TestUser_UpdateUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			urepo := repostesting.NewFakeUser(normalUser, advancedUser, adminUser)
+			urepo := postgresql.NewUser()
+
 			notificationrepo := repostesting.NewFakeNotification()
 
 			u := services.NewUser(logger, urepo, notificationrepo, authzsvc)
-			got, err := u.Update(context.Background(), &pgxpool.Pool{}, tc.args.id, tc.args.caller, tc.args.params)
+			got, err := u.Update(context.Background(), testPool, tc.args.id, tc.args.caller, tc.args.params)
 			if (err != nil) && tc.error == "" {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -107,6 +114,7 @@ func TestUser_UpdateUser(t *testing.T) {
 
 				return
 			}
+
 			assert.Equal(t, tc.want.FirstName, got.FirstName)
 			assert.Equal(t, tc.want.LastName, got.LastName)
 		})
@@ -127,9 +135,10 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 	// e.g. cannot_set_scope_unassigned_to_self  and can_set_scopes_asigned_to_self
 	// should have test struct field{callerScopes: []...} , therefore when we look at the test case
 	// we see all relevant parameters and input.
-	guestRole, userRole, advancedUserRole, managerRole, adminRole := getRoles(t, authzsvc)
 
-	guestUser, normalUser, advancedUser, managerUser, adminUser := fakeUsers(guestRole, userRole, advancedUserRole, managerRole, adminRole)
+	roles := getRoles(t, authzsvc)
+
+	testUsers := createTestUsers(t, testPool, authzsvc)
 
 	type args struct {
 		params *models.UpdateUserAuthRequest
@@ -154,12 +163,12 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 					Scopes: &[]models.Scope{models.ScopeUsersRead, models.ScopeTestScope},
 					Role:   (*models.Role)(pointers.New(string(models.RoleManager))),
 				},
-				id:     normalUser.UserID.String(),
-				caller: managerUser,
+				id:     testUsers.user.UserID.String(),
+				caller: testUsers.manager,
 			},
 			want: want{
 				Scopes: []string{string(models.ScopeUsersRead), string(models.ScopeTestScope)},
-				Rank:   managerRole.Rank,
+				Rank:   roles.manager.Rank,
 			},
 		},
 		{
@@ -168,8 +177,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Role: (*models.Role)(pointers.New(string(models.RoleAdmin))),
 				},
-				id:     normalUser.UserID.String(),
-				caller: managerUser,
+				id:     testUsers.user.UserID.String(),
+				caller: testUsers.manager,
 			},
 			error: "cannot set a user rank higher than self",
 		},
@@ -179,8 +188,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &[]models.Scope{models.ScopeUsersRead, models.ScopeProjectSettingsWrite, models.ScopeUsersWrite},
 				},
-				id:     normalUser.UserID.String(),
-				caller: adminUser,
+				id:     testUsers.user.UserID.String(),
+				caller: testUsers.admin,
 			},
 			error: "cannot set a scope unassigned to self",
 		},
@@ -190,12 +199,12 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &[]models.Scope{models.ScopeUsersRead, models.ScopeProjectSettingsWrite},
 				},
-				id:     normalUser.UserID.String(),
-				caller: adminUser,
+				id:     testUsers.user.UserID.String(),
+				caller: testUsers.admin,
 			},
 			want: want{
 				Scopes: []string{string(models.ScopeUsersRead), string(models.ScopeProjectSettingsWrite)},
-				Rank:   normalUser.RoleRank,
+				Rank:   testUsers.user.RoleRank,
 			},
 		},
 		{
@@ -204,8 +213,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &[]models.Scope{},
 				},
-				id:     managerUser.UserID.String(),
-				caller: managerUser,
+				id:     testUsers.manager.UserID.String(),
+				caller: testUsers.manager,
 			},
 			error: "cannot update your own authorization information",
 		},
@@ -215,8 +224,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Role: (*models.Role)(pointers.New(string(models.RoleGuest))),
 				},
-				id:     advancedUser.UserID.String(),
-				caller: managerUser,
+				id:     testUsers.advanced.UserID.String(),
+				caller: testUsers.manager,
 			},
 			error: "cannot demote a user role",
 		},
@@ -226,8 +235,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &[]models.Scope{},
 				},
-				id:     normalUser.UserID.String(),
-				caller: managerUser,
+				id:     testUsers.user.UserID.String(),
+				caller: testUsers.manager,
 			},
 			error: "cannot unassign a user's scope",
 		},
@@ -237,12 +246,12 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &[]models.Scope{},
 				},
-				id:     normalUser.UserID.String(),
-				caller: adminUser,
+				id:     testUsers.user.UserID.String(),
+				caller: testUsers.admin,
 			},
 			want: want{
 				Scopes: []string{},
-				Rank:   normalUser.RoleRank,
+				Rank:   testUsers.user.RoleRank,
 			},
 		},
 		{
@@ -251,12 +260,12 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Role: (*models.Role)(pointers.New(string(models.RoleGuest))),
 				},
-				id:     advancedUser.UserID.String(),
-				caller: adminUser,
+				id:     testUsers.advanced.UserID.String(),
+				caller: testUsers.admin,
 			},
 			want: want{
-				Rank:   guestUser.RoleRank,
-				Scopes: advancedUser.Scopes,
+				Rank:   roles.guest.Rank,
+				Scopes: testUsers.advanced.Scopes,
 			},
 		},
 	}
@@ -266,11 +275,12 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			urepo := repostesting.NewFakeUser(normalUser, advancedUser, managerUser, adminUser)
+			urepo := postgresql.NewUser()
+
 			notificationrepo := repostesting.NewFakeNotification()
 
 			u := services.NewUser(logger, urepo, notificationrepo, authzsvc)
-			got, err := u.UpdateUserAuthorization(context.Background(), &pgxpool.Pool{}, tc.args.id, tc.args.caller, tc.args.params)
+			got, err := u.UpdateUserAuthorization(context.Background(), testPool, tc.args.id, tc.args.caller, tc.args.params)
 			if (err != nil) && tc.error == "" {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -288,37 +298,48 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 	}
 }
 
-func fakeUsers(guestRole, userRole, advancedUserRole, managerRole, adminRole services.Role) (*db.User, *db.User, *db.User, *db.User, *db.User) {
-	guestUser := &db.User{
-		UserID:   uuid.New(),
-		RoleRank: guestRole.Rank,
-		Scopes:   []string{string(models.ScopeTestScope)},
-	}
-	normalUser := &db.User{
-		UserID:   uuid.New(),
-		RoleRank: userRole.Rank,
-		Scopes:   []string{string(models.ScopeTestScope)},
-	}
-	advancedUser := &db.User{
-		UserID:   uuid.New(),
-		RoleRank: advancedUserRole.Rank,
-		Scopes:   []string{string(models.ScopeTestScope)},
-	}
-	managerUser := &db.User{
-		UserID:   uuid.New(),
-		RoleRank: managerRole.Rank,
-		Scopes:   []string{string(models.ScopeUsersRead), string(models.ScopeTestScope)},
-	}
-	adminUser := &db.User{
-		UserID:   uuid.New(),
-		RoleRank: adminRole.Rank,
-		Scopes:   []string{string(models.ScopeUsersRead), string(models.ScopeProjectSettingsWrite)},
-	}
+func createTestUsers(t *testing.T, pool *pgxpool.Pool, authzsvc *services.Authorization) testUsers {
+	t.Helper()
 
-	return guestUser, normalUser, advancedUser, managerUser, adminUser
+	roles := getRoles(t, authzsvc)
+
+	urepo := postgresql.NewUser()
+
+	ucp := postgresqltestutil.RandomUserCreateParams(t)
+	ucp.RoleRank = roles.guest.Rank
+	ucp.Scopes = []string{string(models.ScopeTestScope)}
+	guest, _ := urepo.Create(context.Background(), pool, ucp)
+
+	ucp = postgresqltestutil.RandomUserCreateParams(t)
+	ucp.RoleRank = roles.user.Rank
+	ucp.Scopes = []string{string(models.ScopeTestScope)}
+	user, _ := urepo.Create(context.Background(), pool, ucp)
+
+	ucp = postgresqltestutil.RandomUserCreateParams(t)
+	ucp.RoleRank = roles.advanced.Rank
+	ucp.Scopes = []string{string(models.ScopeTestScope)}
+	advanced, _ := urepo.Create(context.Background(), pool, ucp)
+
+	ucp = postgresqltestutil.RandomUserCreateParams(t)
+	ucp.RoleRank = roles.manager.Rank
+	ucp.Scopes = []string{string(models.ScopeUsersRead), string(models.ScopeTestScope)}
+	manager, _ := urepo.Create(context.Background(), pool, ucp)
+
+	ucp = postgresqltestutil.RandomUserCreateParams(t)
+	ucp.RoleRank = roles.admin.Rank
+	ucp.Scopes = []string{string(models.ScopeUsersRead), string(models.ScopeProjectSettingsWrite)}
+	admin, _ := urepo.Create(context.Background(), pool, ucp)
+
+	return testUsers{
+		guest:    guest,
+		user:     user,
+		advanced: advanced,
+		manager:  manager,
+		admin:    admin,
+	}
 }
 
-func getRoles(t *testing.T, authzsvc *services.Authorization) (services.Role, services.Role, services.Role, services.Role, services.Role) {
+func getRoles(t *testing.T, authzsvc *services.Authorization) testRoles {
 	t.Helper()
 
 	guestRole, err := authzsvc.RoleByName(string(models.RoleGuest))
@@ -329,7 +350,7 @@ func getRoles(t *testing.T, authzsvc *services.Authorization) (services.Role, se
 	if err != nil {
 		t.Fatalf("RoleByName: %v", err)
 	}
-	advancedUserRole, err := authzsvc.RoleByName(string(models.RoleAdvancedUser))
+	advancedRole, err := authzsvc.RoleByName(string(models.RoleAdvancedUser))
 	if err != nil {
 		t.Fatalf("RoleByName: %v", err)
 	}
@@ -342,5 +363,11 @@ func getRoles(t *testing.T, authzsvc *services.Authorization) (services.Role, se
 		t.Fatalf("RoleByName: %v", err)
 	}
 
-	return guestRole, userRole, advancedUserRole, managerRole, adminRole
+	return testRoles{
+		guest:    guestRole,
+		user:     userRole,
+		advanced: advancedRole,
+		manager:  managerRole,
+		admin:    adminRole,
+	}
 }
