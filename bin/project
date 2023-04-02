@@ -663,7 +663,7 @@ x.test-watch() {
         --timefmt='%s' |
         while read -r event_time event_file 2>/dev/null || sleep $latency; do
           clear
-          APP_ENV="$env" go test "$@" ./... && echo "${GREEN}✓ All tests passing${OFF}"
+          APP_ENV="$env" go test "$@" && echo "${GREEN}✓ All tests passing${OFF}"
         done
     done
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

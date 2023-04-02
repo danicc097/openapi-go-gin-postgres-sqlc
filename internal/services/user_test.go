@@ -11,7 +11,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"
 )
@@ -25,7 +25,7 @@ type testRoles struct {
 }
 
 func TestUser_UpdateUser(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 
 	logger := zaptest.NewLogger(t)
 
@@ -44,7 +44,8 @@ func TestUser_UpdateUser(t *testing.T) {
 		LastName  *string
 	}
 
-	testUsers := createTestUsers(t, testPool, authzsvc)
+	roles := getRoles(t, authzsvc)
+	testUsers := createTestUsers(t, roles)
 
 	tests := []struct {
 		name  string
@@ -63,7 +64,7 @@ func TestUser_UpdateUser(t *testing.T) {
 			},
 			want: want{
 				FirstName: pointers.New("changed"),
-				LastName:  testUsers.advanced.LastName,
+				LastName:  testUsers.user.LastName,
 			},
 		},
 		{
@@ -95,14 +96,18 @@ func TestUser_UpdateUser(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
+			// t.Parallel()
 
 			urepo := postgresql.NewUser()
 
 			notificationrepo := repostesting.NewFakeNotification()
 
+			ctx := context.Background()
+			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
+			defer tx.Rollback(ctx)
+
 			u := services.NewUser(logger, urepo, notificationrepo, authzsvc)
-			got, err := u.Update(context.Background(), testPool, tc.args.id, tc.args.caller, tc.args.params)
+			got, err := u.Update(ctx, tx, tc.args.id, tc.args.caller, tc.args.params)
 			if (err != nil) && tc.error == "" {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -122,7 +127,7 @@ func TestUser_UpdateUser(t *testing.T) {
 }
 
 func TestUser_UpdateUserAuthorization(t *testing.T) {
-	t.Parallel()
+	// t.Parallel()
 
 	logger := zaptest.NewLogger(t)
 
@@ -137,8 +142,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 	// we see all relevant parameters and input.
 
 	roles := getRoles(t, authzsvc)
-
-	testUsers := createTestUsers(t, testPool, authzsvc)
+	testUsers := createTestUsers(t, roles)
 
 	type args struct {
 		params *models.UpdateUserAuthRequest
@@ -273,14 +277,18 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
+			// t.Parallel()
 
 			urepo := postgresql.NewUser()
 
 			notificationrepo := repostesting.NewFakeNotification()
 
+			ctx := context.Background()
+			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
+			defer tx.Rollback(ctx)
+
 			u := services.NewUser(logger, urepo, notificationrepo, authzsvc)
-			got, err := u.UpdateUserAuthorization(context.Background(), testPool, tc.args.id, tc.args.caller, tc.args.params)
+			got, err := u.UpdateUserAuthorization(ctx, tx, tc.args.id, tc.args.caller, tc.args.params)
 			if (err != nil) && tc.error == "" {
 				t.Fatalf("unexpected error = %v", err)
 			}
@@ -292,43 +300,42 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 
 				return
 			}
+
 			assert.Equal(t, tc.want.Scopes, got.Scopes)
 			assert.Equal(t, tc.want.Rank, got.RoleRank)
 		})
 	}
 }
 
-func createTestUsers(t *testing.T, pool *pgxpool.Pool, authzsvc *services.Authorization) testUsers {
+func createTestUsers(t *testing.T, roles testRoles) testUsers {
 	t.Helper()
-
-	roles := getRoles(t, authzsvc)
 
 	urepo := postgresql.NewUser()
 
 	ucp := postgresqltestutil.RandomUserCreateParams(t)
 	ucp.RoleRank = roles.guest.Rank
 	ucp.Scopes = []string{string(models.ScopeTestScope)}
-	guest, _ := urepo.Create(context.Background(), pool, ucp)
+	guest, _ := urepo.Create(context.Background(), testPool, ucp)
 
 	ucp = postgresqltestutil.RandomUserCreateParams(t)
 	ucp.RoleRank = roles.user.Rank
 	ucp.Scopes = []string{string(models.ScopeTestScope)}
-	user, _ := urepo.Create(context.Background(), pool, ucp)
+	user, _ := urepo.Create(context.Background(), testPool, ucp)
 
 	ucp = postgresqltestutil.RandomUserCreateParams(t)
 	ucp.RoleRank = roles.advanced.Rank
 	ucp.Scopes = []string{string(models.ScopeTestScope)}
-	advanced, _ := urepo.Create(context.Background(), pool, ucp)
+	advanced, _ := urepo.Create(context.Background(), testPool, ucp)
 
 	ucp = postgresqltestutil.RandomUserCreateParams(t)
 	ucp.RoleRank = roles.manager.Rank
 	ucp.Scopes = []string{string(models.ScopeUsersRead), string(models.ScopeTestScope)}
-	manager, _ := urepo.Create(context.Background(), pool, ucp)
+	manager, _ := urepo.Create(context.Background(), testPool, ucp)
 
 	ucp = postgresqltestutil.RandomUserCreateParams(t)
 	ucp.RoleRank = roles.admin.Rank
 	ucp.Scopes = []string{string(models.ScopeUsersRead), string(models.ScopeProjectSettingsWrite)}
-	admin, _ := urepo.Create(context.Background(), pool, ucp)
+	admin, _ := urepo.Create(context.Background(), testPool, ucp)
 
 	return testUsers{
 		guest:    guest,
