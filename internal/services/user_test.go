@@ -25,7 +25,7 @@ type testRoles struct {
 }
 
 func TestUser_UpdateUser(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	logger := zaptest.NewLogger(t)
 
@@ -96,7 +96,7 @@ func TestUser_UpdateUser(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			// t.Parallel()
+			t.Parallel()
 
 			urepo := postgresql.NewUser()
 
@@ -127,7 +127,7 @@ func TestUser_UpdateUser(t *testing.T) {
 }
 
 func TestUser_UpdateUserAuthorization(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 
 	logger := zaptest.NewLogger(t)
 
@@ -277,7 +277,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			// t.Parallel()
+			t.Parallel()
 
 			urepo := postgresql.NewUser()
 
