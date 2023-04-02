@@ -514,11 +514,7 @@ x.gen.frontend() {
 
 # Run all codegen and postgen commands for the project.
 x.gen() {
-  rm -rf "$CACHE_PG_REPO_GEN"
-  mkdir -p "$CACHE"
-  cp "$SPEC" "$CACHE"
-  cp -r "$PG_REPO_GEN" "$CACHE_PG_REPO_GEN"
-  restore_cache=1
+  cache-gen
   { { {
     echo "Running code generation"
 
@@ -572,9 +568,7 @@ x.gen() {
     x.gen.frontend
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  rm "$CACHE/$SPEC"
-  rm -rf "$CACHE_PG_REPO_GEN"
-  restore_cache=0
+  cache-gen.cleanup
 }
 
 # Lint the entire project.
@@ -632,6 +626,7 @@ x.lint.sql() {
 # Run required backend pre-test setup: services, database cleanup, codegen...
 # Can be called independently, e.g. before running tests through an IDE.
 x.test.backend-setup() {
+  cache-gen
   { { {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts
@@ -640,6 +635,7 @@ x.test.backend-setup() {
     # no need to migrate, done on every test run internally
     drop_and_recreate_db $POSTGRES_TEST_DB
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  cache-gen.cleanup
 }
 
 # Test the entire project. Accepts `go test` parameters.
@@ -1139,6 +1135,22 @@ xo_schema() {
   xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
     --src "$PG_REPO"/xo-templates \
     "$@"
+}
+
+# saves the current gen state to allow restoring in the event of early exit
+cache-gen() {
+  cache-gen.cleanup
+  mkdir -p "$CACHE"
+  cp "$SPEC" "$CACHE"
+  cp -r "$PG_REPO_GEN" "$CACHE_PG_REPO_GEN"
+  restore_cache=1
+}
+
+# cleanups gen cache
+cache-gen.cleanup() {
+  rm "$CACHE/$SPEC" || true
+  rm -rf "$CACHE_PG_REPO_GEN" || true
+  restore_cache=0
 }
 
 usage() {
