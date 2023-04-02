@@ -280,7 +280,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "zap.New")
 	}
 
-	pool, sqlpool, err := postgresql.New(conf, logger)
+	pool, sqlpool, err := postgresql.New(logger)
 	if err != nil {
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "postgresql.New")
 	}

@@ -7,7 +7,6 @@ import (
 	"path"
 	"runtime"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -17,12 +16,11 @@ import (
 	"go.uber.org/zap"
 )
 
-// NewDB returns a new testing Postgres pool.
+// NewDB returns a new (shared) testing Postgres pool with up-to-date migrations.
 func NewDB() (*pgxpool.Pool, *sql.DB, error) {
-	conf := envvar.New()
 	logger, _ := zap.NewDevelopment()
 
-	pool, sqlpool, err := postgresql.New(conf, logger)
+	pool, sqlpool, err := postgresql.New(logger)
 	if err != nil {
 		fmt.Printf("Couldn't create pool: %s\n", err)
 		return nil, nil, err
