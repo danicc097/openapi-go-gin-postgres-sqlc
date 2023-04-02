@@ -1,5 +1,12 @@
 #!/bin/bash
 # shellcheck disable=1091,2155,2068,2086,2031
+#
+#
+# Main s̶c̶r̶i̶p̶t program to manage the entire project stack.
+#
+# For first-timers, ensure all dependencies and tools are installed with `project bootstrap`.
+#
+#
 
 export PROC=$$
 
