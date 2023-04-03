@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -18,17 +19,19 @@ import (
 
 	// dot import so go code would resemble as much as native SQL
 	// dot import is not mandatory
-
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/jet/public/model"
 	. "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/jet/public/table"
 	. "github.com/go-jet/jet/v2/postgres"
+	"github.com/jackc/pgx/v5"
 )
 
 // clear && go run cmd/cli/main.go -env .env.dev
 func main() {
 	var env string
+	var init bool
 
 	flag.StringVar(&env, "env", ".env", "Environment Variables filename")
+	flag.BoolVar(&init, "init", false, "Run initial data script")
 	flag.Parse()
 
 	if err := envvar.Load(env); err != nil {
@@ -43,16 +46,20 @@ func main() {
 	)
 	cmd.Dir = "."
 	if out, err := cmd.CombinedOutput(); err != nil {
+		fmt.Print("1")
 		errAndExit(out, err)
 	}
 
-	cmd = exec.Command(
-		"bash", "-c",
-		"project db.initial-data",
-	)
-	cmd.Dir = "."
-	if out, err := cmd.CombinedOutput(); err != nil {
-		errAndExit(out, err)
+	if init {
+		cmd = exec.Command(
+			"bash", "-c",
+			"project db.initial-data",
+		)
+		cmd.Dir = "."
+		if _, err := cmd.CombinedOutput(); err != nil {
+			fmt.Print("2")
+			// errAndExit(out, err) // exit code 1 for some reason
+		}
 	}
 
 	logger, _ := zap.NewDevelopment()
@@ -125,6 +132,51 @@ func main() {
 		log.Fatal(err.Error())
 	}
 	format.PrintJSON(nn)
+
+	rows, _ := pool.Query(context.Background(), `SELECT user_api_keys.user_api_key_id,
+	user_api_keys.api_key,
+	user_api_keys.expires_on,
+	user_api_keys.user_id,
+	row_to_json(users.*) as user
+	FROM public.user_api_keys
+	left join users on users.user_id = user_api_keys.user_id
+	WHERE user_api_keys.api_key = 'a4ec61a4-2a3a-4d20-a2b0-b5f295f48fb0-key-hashed'`) // select api_key from user_api_keys limit 1;
+	// {
+	// 	"user_api_key_id":3,
+	// 	"api_key":"a4ec61a4-2a3a-4d20-a2b0-b5f295f48fb0-key-hashed",
+	// 	"expires_on":"2023-07-12T13:38:47.697612Z",
+	// 	"user_id":"a4ec61a4-2a3a-4d20-a2b0-b5f295f48fb0",
+	// 	"user":{
+	// 		 "user_id":"a4ec61a4-2a3a-4d20-a2b0-b5f295f48fb0",
+	// 		 "username":"user_2",
+	// 		 "email":"user_2@email.com",
+	// 		 "first_name":"Name 2",
+	// 		 "last_name":"Surname 2",
+	// 		 "full_name":"Name 2 Surname 2",
+	// 		 "external_id":"provider_external_id2",
+	// 		 "api_key_id":3,
+	// 		 "scopes":[
+	// 				"users:read"
+	// 		 ],
+	// 		 "role_rank":2,
+	// 		 "has_personal_notifications":false,
+	// 		 "has_global_notifications":true,
+	// 		 "created_at":"2023-04-03T13:38:47.697612Z",
+	// 		 "updated_at":"2023-04-03T13:38:47.697612Z",
+	// 		 "deleted_at":null,
+	// 		 "time_entries":null,
+	// 		 "user_api_key":null,
+	// 		 "teams":null,
+	// 		 "work_items":null // cannot use omitempty for joins, since it would not distinguish nil from empty array.
+	// 	}
+	// }
+	uaks, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[db.UserAPIKey])
+	if err != nil {
+		fmt.Printf("CollectRows error: %v", err)
+		return
+	}
+	b, _ := json.Marshal(uaks[0])
+	fmt.Printf("uaks[0]: %+v\n", string(b))
 }
 
 func errAndExit(out []byte, err error) {
