@@ -182,28 +182,29 @@ func main() {
 	//
 	type AnotherTable struct{}
 	type User struct {
-		UserID2 string `db:"user_id_2"`
-		Name    string `db:"name"`
+		UserID int    `json:"userId" db:"user_id"`
+		Name   string `json:"name" db:"name"`
 	}
 	type UserAPIKey struct {
-		UserAPIKeyID int    `db:"user_api_key_id"`
-		UserID       string `db:"user_id"`
+		UserAPIKeyID int `json:"userApiKeyId" db:"user_api_key_id"`
+		UserID       int `json:"userId" db:"user_id"`
 
-		User         *User         `db:"user"`
-		AnotherTable *AnotherTable `db:"another_table"`
+		User         *User         `json:"user" db:"user"`
+		AnotherTable *AnotherTable `json:"anotherTable" db:"another_table"`
 	}
 	rows, _ = pool.Query(context.Background(), `
 	WITH user_api_keys AS (
-		SELECT '1' AS user_id, 101 AS user_api_key_id, 'abc123' AS api_key
+		SELECT 1 AS user_id, 101 AS user_api_key_id, 'abc123' AS api_key
 	), users AS (
-		SELECT '1' AS user_id_2, 'John Doe' AS name
+		SELECT 1 AS user_id, 'John Doe' AS name
 	)
-	SELECT user_api_keys.user_api_key_id, user_api_keys.user_id, row_to_json(users.*) AS user
+	SELECT user_api_keys.user_api_key_id, user_api_keys.user_id, row(users.*) AS user
 	FROM user_api_keys
-	LEFT JOIN users ON users.user_id_2 = user_api_keys.user_id
+	LEFT JOIN users ON users.user_id = user_api_keys.user_id
 	WHERE user_api_keys.api_key = 'abc123';
 	`)
 	uaks_test, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	fmt.Printf("err: %v\n", err)
 	bt, _ := json.Marshal(uaks_test[0])
 	fmt.Printf("uaks_test[0]: %+v\n", string(bt))
 }
