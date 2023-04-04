@@ -75,9 +75,8 @@ Simplified:
 
 ## TODOs
 
-- Pgx v5 + [logging](https://github.com/jackc/pgx/issues/1381) (dependent on
-  sqlc support) to support custom struct tag scanning and allow switch to json
-  camel
+- Pgx v5 db struct tag scanning and switch to json
+  camel (pending release)
 
 - Meaningful project name.
 
@@ -108,6 +107,6 @@ Simplified:
     Creators don't use openapi so that's a red flag for the generator itself.
   - orval react-query looks promising: https://github.com/anymaniax/orval/tree/master/samples/react-query
 
-  2. state management:
+  1. state management:
     - zustand + react-query should by far cover all needs. Data will be heavily
       dependent on backend.
