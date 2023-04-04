@@ -9,38 +9,20 @@ import (
 	"time"
 )
 
-// TeamPublic represents fields that may be exposed from 'public.teams'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type TeamPublic struct {
-	TeamID      int       `json:"teamID" required:"true"`      // team_id
-	ProjectID   int       `json:"projectID" required:"true"`   // project_id
-	Name        string    `json:"name" required:"true"`        // name
-	Description string    `json:"description" required:"true"` // description
-	CreatedAt   time.Time `json:"createdAt" required:"true"`   // created_at
-	UpdatedAt   time.Time `json:"updatedAt" required:"true"`   // updated_at
-}
-
 // Team represents a row from 'public.teams'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Team struct {
-	TeamID      int       `json:"team_id" db:"team_id"`         // team_id
-	ProjectID   int       `json:"project_id" db:"project_id"`   // project_id
+	TeamID      int       `json:"teamID" db:"team_id"`          // team_id
+	ProjectID   int       `json:"projectID" db:"project_id"`    // project_id
 	Name        string    `json:"name" db:"name"`               // name
 	Description string    `json:"description" db:"description"` // description
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`   // created_at
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`   // updated_at
+	CreatedAt   time.Time `json:"createdAt" db:"created_at"`    // created_at
+	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at"`    // updated_at
 
 	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
 	Users       *[]User      `json:"users" db:"users"`               // M2M
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *Team) ToPublic() TeamPublic {
-	return TeamPublic{
-		TeamID: x.TeamID, ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
-	}
 }
 
 type TeamSelectConfig struct {
@@ -229,7 +211,7 @@ teams.updated_at,
 left join (
   select
   team_id as time_entries_team_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -238,7 +220,7 @@ left join (
 left join (
 	select
 		team_id as users_team_id
-		, json_agg(users.*) as users
+		, array_agg(users.*) as users
 	from
 		user_team
 		join users using (user_id)
@@ -297,7 +279,7 @@ teams.updated_at,
 left join (
   select
   team_id as time_entries_team_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -306,7 +288,7 @@ left join (
 left join (
 	select
 		team_id as users_team_id
-		, json_agg(users.*) as users
+		, array_agg(users.*) as users
 	from
 		user_team
 		join users using (user_id)

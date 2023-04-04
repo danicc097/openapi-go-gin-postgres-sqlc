@@ -7,35 +7,18 @@ import (
 	"fmt"
 )
 
-// WorkItemTypePublic represents fields that may be exposed from 'public.work_item_types'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type WorkItemTypePublic struct {
-	WorkItemTypeID int    `json:"workItemTypeID" required:"true"` // work_item_type_id
-	ProjectID      int    `json:"projectID" required:"true"`      // project_id
-	Name           string `json:"name" required:"true"`           // name
-	Description    string `json:"description" required:"true"`    // description
-	Color          string `json:"color" required:"true"`          // color
-}
-
 // WorkItemType represents a row from 'public.work_item_types'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type WorkItemType struct {
-	WorkItemTypeID int    `json:"work_item_type_id" db:"work_item_type_id"` // work_item_type_id
-	ProjectID      int    `json:"project_id" db:"project_id"`               // project_id
-	Name           string `json:"name" db:"name"`                           // name
-	Description    string `json:"description" db:"description"`             // description
-	Color          string `json:"color" db:"color"`                         // color
+	WorkItemTypeID int    `json:"workItemTypeID" db:"work_item_type_id"` // work_item_type_id
+	ProjectID      int    `json:"projectID" db:"project_id"`             // project_id
+	Name           string `json:"name" db:"name"`                        // name
+	Description    string `json:"description" db:"description"`          // description
+	Color          string `json:"color" db:"color"`                      // color
 
 	WorkItem *WorkItem `json:"work_item" db:"work_item"` // O2O
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *WorkItemType) ToPublic() WorkItemTypePublic {
-	return WorkItemTypePublic{
-		WorkItemTypeID: x.WorkItemTypeID, ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Color: x.Color,
-	}
 }
 
 type WorkItemTypeSelectConfig struct {
@@ -192,7 +175,7 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true then row_to_json(work_items.*) end)::jsonb as work_item ` +
+(case when $1::boolean = true then row(work_items.*) end)::jsonb as work_item ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
@@ -229,7 +212,7 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true then row_to_json(work_items.*) end)::jsonb as work_item ` +
+(case when $1::boolean = true then row(work_items.*) end)::jsonb as work_item ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +

@@ -210,8 +210,8 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				// TODO bring camel back once pgx v5 and sqlc work correctly
 				// see any pgx release past v5.3.1
 				// and will need to see what to do about sqlc, if anything
-				// Default:    `json:"{{ camel .GoName }}" db:"{{ .SQLName }}"`,
-				Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
+				Default: `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}" db:"{{ .field.SQLName }}"`,
+				// Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
 			},
 			{
 				ContextKey: PublicFieldTagKey,
@@ -2006,7 +2006,7 @@ func (f *Funcs) sqlstr_delete(v interface{}) []string {
 const (
 	M2MSelect = `(case when {{.Nth}}::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end)::jsonb as {{.JoinTable}}`
 	O2MSelect = M2MSelect
-	O2OSelect = `(case when {{.Nth}}::boolean = true then row_to_json({{.JoinTable}}.*) end)::jsonb as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
+	O2OSelect = `(case when {{.Nth}}::boolean = true then row({{.JoinTable}}.*) end)::jsonb as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
 )
 
 const (
@@ -2014,7 +2014,7 @@ const (
 left join (
 	select
 		{{.LookupColumn}} as {{.JoinTable}}_{{.LookupRefColumn}}
-		, json_agg({{.JoinTable}}.*) as {{.JoinTable}}
+		, array_agg({{.JoinTable}}.*) as {{.JoinTable}}
 	from
 		{{.LookupTable}}
 		join {{.JoinTable}} using ({{.JoinTablePK}})
@@ -2036,7 +2036,7 @@ left join (
 left join (
   select
   {{.JoinColumn}} as {{.JoinTable}}_{{.JoinRefColumn}}
-    , json_agg({{.JoinTable}}.*) as {{.JoinTable}}
+    , array_agg({{.JoinTable}}.*) as {{.JoinTable}}
   from
     {{.JoinTable}}
    group by
@@ -2393,18 +2393,9 @@ func (f *Funcs) typefn(typ string) string {
 // field generates a field definition for a struct.
 func (f *Funcs) field(field Field, public bool) (string, error) {
 	buf := new(bytes.Buffer)
-	if public {
-		if contains(field.Properties, privateFieldProperty) {
-			return "", nil
-		} else {
-			if err := f.publicfieldtag.Funcs(f.FuncMap()).Execute(buf, field); err != nil {
-				return "", err
-			}
-		}
-	} else {
-		if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, field); err != nil {
-			return "", err
-		}
+	ignoreJSON := contains(field.Properties, privateFieldProperty)
+	if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, map[string]any{"field": field, "ignoreJSON": ignoreJSON}); err != nil {
+		return "", err
 	}
 	var tag string
 	if s := buf.String(); s != "" {

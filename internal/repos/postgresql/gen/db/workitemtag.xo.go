@@ -7,35 +7,18 @@ import (
 	"fmt"
 )
 
-// WorkItemTagPublic represents fields that may be exposed from 'public.work_item_tags'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type WorkItemTagPublic struct {
-	WorkItemTagID int    `json:"workItemTagID" required:"true"` // work_item_tag_id
-	ProjectID     int    `json:"projectID" required:"true"`     // project_id
-	Name          string `json:"name" required:"true"`          // name
-	Description   string `json:"description" required:"true"`   // description
-	Color         string `json:"color" required:"true"`         // color
-}
-
 // WorkItemTag represents a row from 'public.work_item_tags'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type WorkItemTag struct {
-	WorkItemTagID int    `json:"work_item_tag_id" db:"work_item_tag_id"` // work_item_tag_id
-	ProjectID     int    `json:"project_id" db:"project_id"`             // project_id
-	Name          string `json:"name" db:"name"`                         // name
-	Description   string `json:"description" db:"description"`           // description
-	Color         string `json:"color" db:"color"`                       // color
+	WorkItemTagID int    `json:"workItemTagID" db:"work_item_tag_id"` // work_item_tag_id
+	ProjectID     int    `json:"projectID" db:"project_id"`           // project_id
+	Name          string `json:"name" db:"name"`                      // name
+	Description   string `json:"description" db:"description"`        // description
+	Color         string `json:"color" db:"color"`                    // color
 
 	WorkItems *[]WorkItem `json:"work_items" db:"work_items"` // M2M
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *WorkItemTag) ToPublic() WorkItemTagPublic {
-	return WorkItemTagPublic{
-		WorkItemTagID: x.WorkItemTagID, ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Color: x.Color,
-	}
 }
 
 type WorkItemTagSelectConfig struct {
@@ -198,7 +181,7 @@ work_item_tags.color,
 left join (
 	select
 		work_item_tag_id as work_items_work_item_tag_id
-		, json_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as work_items
 	from
 		work_item_work_item_tag
 		join work_items using (work_item_id)
@@ -255,7 +238,7 @@ work_item_tags.color,
 left join (
 	select
 		work_item_tag_id as work_items_work_item_tag_id
-		, json_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as work_items
 	from
 		work_item_work_item_tag
 		join work_items using (work_item_id)

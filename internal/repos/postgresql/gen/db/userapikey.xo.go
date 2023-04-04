@@ -11,32 +11,17 @@ import (
 	"github.com/google/uuid"
 )
 
-// UserAPIKeyPublic represents fields that may be exposed from 'public.user_api_keys'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type UserAPIKeyPublic struct {
-	APIKey    string    `json:"apiKey" required:"true"`    // api_key
-	ExpiresOn time.Time `json:"expiresOn" required:"true"` // expires_on
-	UserID    uuid.UUID `json:"userID" required:"true"`    // user_id
-}
-
 // UserAPIKey represents a row from 'public.user_api_keys'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type UserAPIKey struct {
-	UserAPIKeyID int       `json:"user_api_key_id" db:"user_api_key_id"` // user_api_key_id
-	APIKey       string    `json:"api_key" db:"api_key"`                 // api_key
-	ExpiresOn    time.Time `json:"expires_on" db:"expires_on"`           // expires_on
-	UserID       uuid.UUID `json:"user_id" db:"user_id"`                 // user_id
+	UserAPIKeyID int       `json:"-" db:"user_api_key_id"`    // user_api_key_id
+	APIKey       string    `json:"apiKey" db:"api_key"`       // api_key
+	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on"` // expires_on
+	UserID       uuid.UUID `json:"userID" db:"user_id"`       // user_id
 
 	User *User `json:"user" db:"user"` // O2O
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *UserAPIKey) ToPublic() UserAPIKeyPublic {
-	return UserAPIKeyPublic{
-		APIKey: x.APIKey, ExpiresOn: x.ExpiresOn, UserID: x.UserID,
-	}
 }
 
 type UserAPIKeySelectConfig struct {
@@ -211,7 +196,7 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true then row_to_json(users.*) end)::jsonb as user ` +
+(case when $1::boolean = true then row(users.*) end)::jsonb as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +
@@ -247,7 +232,7 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true then row_to_json(users.*) end)::jsonb as user ` +
+(case when $1::boolean = true then row(users.*) end)::jsonb as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +
@@ -283,7 +268,7 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true then row_to_json(users.*) end)::jsonb as user ` +
+(case when $1::boolean = true then row(users.*) end)::jsonb as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +

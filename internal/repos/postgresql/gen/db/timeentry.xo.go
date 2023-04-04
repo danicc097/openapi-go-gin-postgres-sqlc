@@ -11,40 +11,20 @@ import (
 	"github.com/google/uuid"
 )
 
-// TimeEntryPublic represents fields that may be exposed from 'public.time_entries'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type TimeEntryPublic struct {
-	TimeEntryID     int64     `json:"timeEntryID" required:"true"`     // time_entry_id
-	WorkItemID      *int64    `json:"workItemID" required:"true"`      // work_item_id
-	ActivityID      int       `json:"activityID" required:"true"`      // activity_id
-	TeamID          *int      `json:"teamID" required:"true"`          // team_id
-	UserID          uuid.UUID `json:"userID" required:"true"`          // user_id
-	Comment         string    `json:"comment" required:"true"`         // comment
-	Start           time.Time `json:"start" required:"true"`           // start
-	DurationMinutes *int      `json:"durationMinutes" required:"true"` // duration_minutes
-}
-
 // TimeEntry represents a row from 'public.time_entries'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type TimeEntry struct {
-	TimeEntryID     int64     `json:"time_entry_id" db:"time_entry_id"`       // time_entry_id
-	WorkItemID      *int64    `json:"work_item_id" db:"work_item_id"`         // work_item_id
-	ActivityID      int       `json:"activity_id" db:"activity_id"`           // activity_id
-	TeamID          *int      `json:"team_id" db:"team_id"`                   // team_id
-	UserID          uuid.UUID `json:"user_id" db:"user_id"`                   // user_id
-	Comment         string    `json:"comment" db:"comment"`                   // comment
-	Start           time.Time `json:"start" db:"start"`                       // start
-	DurationMinutes *int      `json:"duration_minutes" db:"duration_minutes"` // duration_minutes
+	TimeEntryID     int64     `json:"timeEntryID" db:"time_entry_id"`        // time_entry_id
+	WorkItemID      *int64    `json:"workItemID" db:"work_item_id"`          // work_item_id
+	ActivityID      int       `json:"activityID" db:"activity_id"`           // activity_id
+	TeamID          *int      `json:"teamID" db:"team_id"`                   // team_id
+	UserID          uuid.UUID `json:"userID" db:"user_id"`                   // user_id
+	Comment         string    `json:"comment" db:"comment"`                  // comment
+	Start           time.Time `json:"start" db:"start"`                      // start
+	DurationMinutes *int      `json:"durationMinutes" db:"duration_minutes"` // duration_minutes
 
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *TimeEntry) ToPublic() TimeEntryPublic {
-	return TimeEntryPublic{
-		TimeEntryID: x.TimeEntryID, WorkItemID: x.WorkItemID, ActivityID: x.ActivityID, TeamID: x.TeamID, UserID: x.UserID, Comment: x.Comment, Start: x.Start, DurationMinutes: x.DurationMinutes,
-	}
 }
 
 type TimeEntrySelectConfig struct {

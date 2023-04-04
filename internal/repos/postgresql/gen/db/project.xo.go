@@ -11,31 +11,17 @@ import (
 	"github.com/jackc/pgtype"
 )
 
-// ProjectPublic represents fields that may be exposed from 'public.projects'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type ProjectPublic struct {
-	ProjectID   int    `json:"projectID" required:"true"`   // project_id
-	Name        string `json:"name" required:"true"`        // name
-	Description string `json:"description" required:"true"` // description
-
-	Initialized bool `json:"initialized" required:"true"` // initialized
-
-	CreatedAt time.Time `json:"createdAt" required:"true"` // created_at
-	UpdatedAt time.Time `json:"updatedAt" required:"true"` // updated_at
-}
-
 // Project represents a row from 'public.projects'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Project struct {
-	ProjectID          int          `json:"project_id" db:"project_id"`                       // project_id
-	Name               string       `json:"name" db:"name"`                                   // name
-	Description        string       `json:"description" db:"description"`                     // description
-	WorkItemsTableName string       `json:"work_items_table_name" db:"work_items_table_name"` // work_items_table_name
-	Initialized        bool         `json:"initialized" db:"initialized"`                     // initialized
-	BoardConfig        pgtype.JSONB `json:"board_config" db:"board_config"`                   // board_config
-	CreatedAt          time.Time    `json:"created_at" db:"created_at"`                       // created_at
-	UpdatedAt          time.Time    `json:"updated_at" db:"updated_at"`                       // updated_at
+	ProjectID          int          `json:"projectID" db:"project_id"`    // project_id
+	Name               string       `json:"name" db:"name"`               // name
+	Description        string       `json:"description" db:"description"` // description
+	WorkItemsTableName string       `json:"-" db:"work_items_table_name"` // work_items_table_name
+	Initialized        bool         `json:"initialized" db:"initialized"` // initialized
+	BoardConfig        pgtype.JSONB `json:"-" db:"board_config"`          // board_config
+	CreatedAt          time.Time    `json:"createdAt" db:"created_at"`    // created_at
+	UpdatedAt          time.Time    `json:"updatedAt" db:"updated_at"`    // updated_at
 
 	Activities    *[]Activity     `json:"activities" db:"activities"`           // O2M
 	KanbanSteps   *[]KanbanStep   `json:"kanban_steps" db:"kanban_steps"`       // O2M
@@ -44,12 +30,6 @@ type Project struct {
 	WorkItemTypes *[]WorkItemType `json:"work_item_types" db:"work_item_types"` // O2M
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *Project) ToPublic() ProjectPublic {
-	return ProjectPublic{
-		ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Initialized: x.Initialized, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
-	}
 }
 
 type ProjectSelectConfig struct {
@@ -246,7 +226,7 @@ projects.updated_at,
 left join (
   select
   project_id as activities_project_id
-    , json_agg(activities.*) as activities
+    , array_agg(activities.*) as activities
   from
     activities
    group by
@@ -255,7 +235,7 @@ left join (
 left join (
   select
   project_id as kanban_steps_project_id
-    , json_agg(kanban_steps.*) as kanban_steps
+    , array_agg(kanban_steps.*) as kanban_steps
   from
     kanban_steps
    group by
@@ -264,7 +244,7 @@ left join (
 left join (
   select
   project_id as teams_project_id
-    , json_agg(teams.*) as teams
+    , array_agg(teams.*) as teams
   from
     teams
    group by
@@ -273,7 +253,7 @@ left join (
 left join (
   select
   project_id as work_item_tags_project_id
-    , json_agg(work_item_tags.*) as work_item_tags
+    , array_agg(work_item_tags.*) as work_item_tags
   from
     work_item_tags
    group by
@@ -282,7 +262,7 @@ left join (
 left join (
   select
   project_id as work_item_types_project_id
-    , json_agg(work_item_types.*) as work_item_types
+    , array_agg(work_item_types.*) as work_item_types
   from
     work_item_types
    group by
@@ -333,7 +313,7 @@ projects.updated_at,
 left join (
   select
   project_id as activities_project_id
-    , json_agg(activities.*) as activities
+    , array_agg(activities.*) as activities
   from
     activities
    group by
@@ -342,7 +322,7 @@ left join (
 left join (
   select
   project_id as kanban_steps_project_id
-    , json_agg(kanban_steps.*) as kanban_steps
+    , array_agg(kanban_steps.*) as kanban_steps
   from
     kanban_steps
    group by
@@ -351,7 +331,7 @@ left join (
 left join (
   select
   project_id as teams_project_id
-    , json_agg(teams.*) as teams
+    , array_agg(teams.*) as teams
   from
     teams
    group by
@@ -360,7 +340,7 @@ left join (
 left join (
   select
   project_id as work_item_tags_project_id
-    , json_agg(work_item_tags.*) as work_item_tags
+    , array_agg(work_item_tags.*) as work_item_tags
   from
     work_item_tags
    group by
@@ -369,7 +349,7 @@ left join (
 left join (
   select
   project_id as work_item_types_project_id
-    , json_agg(work_item_types.*) as work_item_types
+    , array_agg(work_item_types.*) as work_item_types
   from
     work_item_types
    group by

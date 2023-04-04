@@ -7,35 +7,18 @@ import (
 	"fmt"
 )
 
-// ActivityPublic represents fields that may be exposed from 'public.activities'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type ActivityPublic struct {
-	ActivityID   int    `json:"activityID" required:"true"`   // activity_id
-	ProjectID    int    `json:"projectID" required:"true"`    // project_id
-	Name         string `json:"name" required:"true"`         // name
-	Description  string `json:"description" required:"true"`  // description
-	IsProductive bool   `json:"isProductive" required:"true"` // is_productive
-}
-
 // Activity represents a row from 'public.activities'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Activity struct {
-	ActivityID   int    `json:"activity_id" db:"activity_id"`     // activity_id
-	ProjectID    int    `json:"project_id" db:"project_id"`       // project_id
-	Name         string `json:"name" db:"name"`                   // name
-	Description  string `json:"description" db:"description"`     // description
-	IsProductive bool   `json:"is_productive" db:"is_productive"` // is_productive
+	ActivityID   int    `json:"activityID" db:"activity_id"`     // activity_id
+	ProjectID    int    `json:"projectID" db:"project_id"`       // project_id
+	Name         string `json:"name" db:"name"`                  // name
+	Description  string `json:"description" db:"description"`    // description
+	IsProductive bool   `json:"isProductive" db:"is_productive"` // is_productive
 
 	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *Activity) ToPublic() ActivityPublic {
-	return ActivityPublic{
-		ActivityID: x.ActivityID, ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, IsProductive: x.IsProductive,
-	}
 }
 
 type ActivitySelectConfig struct {
@@ -198,7 +181,7 @@ activities.is_productive,
 left join (
   select
   activity_id as time_entries_activity_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -242,7 +225,7 @@ activities.is_productive,
 left join (
   select
   activity_id as time_entries_activity_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by

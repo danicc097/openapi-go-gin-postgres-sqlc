@@ -93,13 +93,13 @@ func (o *PreGen) ValidateProjectSpec() error {
 }
 
 func (o *PreGen) Generate() error {
-	if err := o.validateSpec(); err != nil {
-		return fmt.Errorf("validate spec: %w", err)
-	}
+	// if err := o.validateSpec(); err != nil {
+	// 	return fmt.Errorf("validate spec: %w", err)
+	// }
 
-	if err := o.analyzeSpec(); err != nil {
-		return fmt.Errorf("analyze spec: %w", err)
-	}
+	// if err := o.analyzeSpec(); err != nil {
+	// 	return fmt.Errorf("analyze spec: %w", err)
+	// }
 
 	// if err := internal.GenerateConfigTemplate(); err != nil {
 	// 	return fmt.Errorf("internal.GenerateConfigTemplate: %w", err)

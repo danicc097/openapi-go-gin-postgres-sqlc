@@ -11,45 +11,23 @@ import (
 	"github.com/google/uuid"
 )
 
-// NotificationPublic represents fields that may be exposed from 'public.notifications'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type NotificationPublic struct {
-	NotificationID   int              `json:"notificationID" required:"true"`   // notification_id
-	ReceiverRank     *int16           `json:"receiverRank" required:"true"`     // receiver_rank
-	Title            string           `json:"title" required:"true"`            // title
-	Body             string           `json:"body" required:"true"`             // body
-	Label            string           `json:"label" required:"true"`            // label
-	Link             *string          `json:"link" required:"true"`             // link
-	CreatedAt        time.Time        `json:"createdAt" required:"true"`        // created_at
-	Sender           uuid.UUID        `json:"sender" required:"true"`           // sender
-	Receiver         *uuid.UUID       `json:"receiver" required:"true"`         // receiver
-	NotificationType NotificationType `json:"notificationType" required:"true"` // notification_type
-}
-
 // Notification represents a row from 'public.notifications'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Notification struct {
-	NotificationID   int              `json:"notification_id" db:"notification_id"`     // notification_id
-	ReceiverRank     *int16           `json:"receiver_rank" db:"receiver_rank"`         // receiver_rank
-	Title            string           `json:"title" db:"title"`                         // title
-	Body             string           `json:"body" db:"body"`                           // body
-	Label            string           `json:"label" db:"label"`                         // label
-	Link             *string          `json:"link" db:"link"`                           // link
-	CreatedAt        time.Time        `json:"created_at" db:"created_at"`               // created_at
-	Sender           uuid.UUID        `json:"sender" db:"sender"`                       // sender
-	Receiver         *uuid.UUID       `json:"receiver" db:"receiver"`                   // receiver
-	NotificationType NotificationType `json:"notification_type" db:"notification_type"` // notification_type
+	NotificationID   int              `json:"notificationID" db:"notification_id"`     // notification_id
+	ReceiverRank     *int16           `json:"receiverRank" db:"receiver_rank"`         // receiver_rank
+	Title            string           `json:"title" db:"title"`                        // title
+	Body             string           `json:"body" db:"body"`                          // body
+	Label            string           `json:"label" db:"label"`                        // label
+	Link             *string          `json:"link" db:"link"`                          // link
+	CreatedAt        time.Time        `json:"createdAt" db:"created_at"`               // created_at
+	Sender           uuid.UUID        `json:"sender" db:"sender"`                      // sender
+	Receiver         *uuid.UUID       `json:"receiver" db:"receiver"`                  // receiver
+	NotificationType NotificationType `json:"notificationType" db:"notification_type"` // notification_type
 
 	UserNotification *UserNotification `json:"user_notification" db:"user_notification"` // O2O
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *Notification) ToPublic() NotificationPublic {
-	return NotificationPublic{
-		NotificationID: x.NotificationID, ReceiverRank: x.ReceiverRank, Title: x.Title, Body: x.Body, Label: x.Label, Link: x.Link, CreatedAt: x.CreatedAt, Sender: x.Sender, Receiver: x.Receiver, NotificationType: x.NotificationType,
-	}
 }
 
 type NotificationSelectConfig struct {
@@ -230,7 +208,7 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true then row_to_json(user_notifications.*) end)::jsonb as user_notification ` +
+(case when $1::boolean = true then row(user_notifications.*) end)::jsonb as user_notification ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join user_notifications on user_notifications.notification_id = notifications.notification_id` +
@@ -272,7 +250,7 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true then row_to_json(user_notifications.*) end)::jsonb as user_notification ` +
+(case when $1::boolean = true then row(user_notifications.*) end)::jsonb as user_notification ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join user_notifications on user_notifications.notification_id = notifications.notification_id` +

@@ -9,30 +9,15 @@ import (
 	"github.com/google/uuid"
 )
 
-// WorkItemMemberPublic represents fields that may be exposed from 'public.work_item_member'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type WorkItemMemberPublic struct {
-	WorkItemID int64        `json:"workItemID" required:"true"` // work_item_id
-	Member     uuid.UUID    `json:"member" required:"true"`     // member
-	Role       WorkItemRole `json:"role" required:"true"`       // role
-}
-
 // WorkItemMember represents a row from 'public.work_item_member'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type WorkItemMember struct {
-	WorkItemID int64        `json:"work_item_id" db:"work_item_id"` // work_item_id
-	Member     uuid.UUID    `json:"member" db:"member"`             // member
-	Role       WorkItemRole `json:"role" db:"role"`                 // role
+	WorkItemID int64        `json:"workItemID" db:"work_item_id"` // work_item_id
+	Member     uuid.UUID    `json:"member" db:"member"`           // member
+	Role       WorkItemRole `json:"role" db:"role"`               // role
 
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *WorkItemMember) ToPublic() WorkItemMemberPublic {
-	return WorkItemMemberPublic{
-		WorkItemID: x.WorkItemID, Member: x.Member, Role: x.Role,
-	}
 }
 
 type WorkItemMemberSelectConfig struct {

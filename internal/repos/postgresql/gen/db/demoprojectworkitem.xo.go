@@ -9,35 +9,18 @@ import (
 	"time"
 )
 
-// DemoProjectWorkItemPublic represents fields that may be exposed from 'public.demo_project_work_items'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type DemoProjectWorkItemPublic struct {
-	WorkItemID    int64     `json:"workItemID" required:"true"`    // work_item_id
-	Ref           string    `json:"ref" required:"true"`           // ref
-	Line          string    `json:"line" required:"true"`          // line
-	LastMessageAt time.Time `json:"lastMessageAt" required:"true"` // last_message_at
-	Reopened      bool      `json:"reopened" required:"true"`      // reopened
-}
-
 // DemoProjectWorkItem represents a row from 'public.demo_project_work_items'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type DemoProjectWorkItem struct {
-	WorkItemID    int64     `json:"work_item_id" db:"work_item_id"`       // work_item_id
-	Ref           string    `json:"ref" db:"ref"`                         // ref
-	Line          string    `json:"line" db:"line"`                       // line
-	LastMessageAt time.Time `json:"last_message_at" db:"last_message_at"` // last_message_at
-	Reopened      bool      `json:"reopened" db:"reopened"`               // reopened
+	WorkItemID    int64     `json:"workItemID" db:"work_item_id"`       // work_item_id
+	Ref           string    `json:"ref" db:"ref"`                       // ref
+	Line          string    `json:"line" db:"line"`                     // line
+	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at"` // last_message_at
+	Reopened      bool      `json:"reopened" db:"reopened"`             // reopened
 
 	WorkItem *WorkItem `json:"work_item" db:"work_item"` // O2O
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *DemoProjectWorkItem) ToPublic() DemoProjectWorkItemPublic {
-	return DemoProjectWorkItemPublic{
-		WorkItemID: x.WorkItemID, Ref: x.Ref, Line: x.Line, LastMessageAt: x.LastMessageAt, Reopened: x.Reopened,
-	}
 }
 
 type DemoProjectWorkItemSelectConfig struct {
@@ -213,7 +196,7 @@ demo_project_work_items.ref,
 demo_project_work_items.line,
 demo_project_work_items.last_message_at,
 demo_project_work_items.reopened,
-(case when $1::boolean = true then row_to_json(work_items.*) end)::jsonb as work_item ` +
+(case when $1::boolean = true then row(work_items.*) end)::jsonb as work_item ` +
 		`FROM public.demo_project_work_items ` +
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = demo_project_work_items.work_item_id` +
@@ -250,7 +233,7 @@ demo_project_work_items.ref,
 demo_project_work_items.line,
 demo_project_work_items.last_message_at,
 demo_project_work_items.reopened,
-(case when $1::boolean = true then row_to_json(work_items.*) end)::jsonb as work_item ` +
+(case when $1::boolean = true then row(work_items.*) end)::jsonb as work_item ` +
 		`FROM public.demo_project_work_items ` +
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = demo_project_work_items.work_item_id` +

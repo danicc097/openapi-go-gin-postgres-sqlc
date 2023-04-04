@@ -11,36 +11,18 @@ import (
 	"github.com/google/uuid"
 )
 
-// WorkItemCommentPublic represents fields that may be exposed from 'public.work_item_comments'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type WorkItemCommentPublic struct {
-	WorkItemCommentID int64     `json:"workItemCommentID" required:"true"` // work_item_comment_id
-	WorkItemID        int64     `json:"workItemID" required:"true"`        // work_item_id
-	UserID            uuid.UUID `json:"userID" required:"true"`            // user_id
-	Message           string    `json:"message" required:"true"`           // message
-	CreatedAt         time.Time `json:"createdAt" required:"true"`         // created_at
-	UpdatedAt         time.Time `json:"updatedAt" required:"true"`         // updated_at
-}
-
 // WorkItemComment represents a row from 'public.work_item_comments'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type WorkItemComment struct {
-	WorkItemCommentID int64     `json:"work_item_comment_id" db:"work_item_comment_id"` // work_item_comment_id
-	WorkItemID        int64     `json:"work_item_id" db:"work_item_id"`                 // work_item_id
-	UserID            uuid.UUID `json:"user_id" db:"user_id"`                           // user_id
-	Message           string    `json:"message" db:"message"`                           // message
-	CreatedAt         time.Time `json:"created_at" db:"created_at"`                     // created_at
-	UpdatedAt         time.Time `json:"updated_at" db:"updated_at"`                     // updated_at
+	WorkItemCommentID int64     `json:"workItemCommentID" db:"work_item_comment_id"` // work_item_comment_id
+	WorkItemID        int64     `json:"workItemID" db:"work_item_id"`                // work_item_id
+	UserID            uuid.UUID `json:"userID" db:"user_id"`                         // user_id
+	Message           string    `json:"message" db:"message"`                        // message
+	CreatedAt         time.Time `json:"createdAt" db:"created_at"`                   // created_at
+	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at"`                   // updated_at
 
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *WorkItemComment) ToPublic() WorkItemCommentPublic {
-	return WorkItemCommentPublic{
-		WorkItemCommentID: x.WorkItemCommentID, WorkItemID: x.WorkItemID, UserID: x.UserID, Message: x.Message, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
-	}
 }
 
 type WorkItemCommentSelectConfig struct {

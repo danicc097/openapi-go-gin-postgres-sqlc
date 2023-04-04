@@ -7,28 +7,14 @@ import (
 	"fmt"
 )
 
-// SchemaMigrationPublic represents fields that may be exposed from 'public.schema_migrations'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type SchemaMigrationPublic struct {
-	Version int64 `json:"version" required:"true"` // version
-	Dirty   bool  `json:"dirty" required:"true"`   // dirty
-}
-
 // SchemaMigration represents a row from 'public.schema_migrations'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type SchemaMigration struct {
 	Version int64 `json:"version" db:"version"` // version
 	Dirty   bool  `json:"dirty" db:"dirty"`     // dirty
 
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *SchemaMigration) ToPublic() SchemaMigrationPublic {
-	return SchemaMigrationPublic{
-		Version: x.Version, Dirty: x.Dirty,
-	}
 }
 
 type SchemaMigrationSelectConfig struct {

@@ -11,39 +11,21 @@ import (
 	"github.com/jackc/pgtype"
 )
 
-// WorkItemPublic represents fields that may be exposed from 'public.work_items'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type WorkItemPublic struct {
-	WorkItemID     int64        `json:"workItemID" required:"true"`     // work_item_id
-	Title          string       `json:"title" required:"true"`          // title
-	Description    string       `json:"description" required:"true"`    // description
-	WorkItemTypeID int          `json:"workItemTypeID" required:"true"` // work_item_type_id
-	Metadata       pgtype.JSONB `json:"metadata" required:"true"`       // metadata
-	TeamID         int          `json:"teamID" required:"true"`         // team_id
-	KanbanStepID   int          `json:"kanbanStepID" required:"true"`   // kanban_step_id
-	Closed         *time.Time   `json:"closed" required:"true"`         // closed
-	TargetDate     time.Time    `json:"targetDate" required:"true"`     // target_date
-	CreatedAt      time.Time    `json:"createdAt" required:"true"`      // created_at
-	UpdatedAt      time.Time    `json:"updatedAt" required:"true"`      // updated_at
-	DeletedAt      *time.Time   `json:"deletedAt" required:"true"`      // deleted_at
-}
-
 // WorkItem represents a row from 'public.work_items'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type WorkItem struct {
-	WorkItemID     int64        `json:"work_item_id" db:"work_item_id"`           // work_item_id
-	Title          string       `json:"title" db:"title"`                         // title
-	Description    string       `json:"description" db:"description"`             // description
-	WorkItemTypeID int          `json:"work_item_type_id" db:"work_item_type_id"` // work_item_type_id
-	Metadata       pgtype.JSONB `json:"metadata" db:"metadata"`                   // metadata
-	TeamID         int          `json:"team_id" db:"team_id"`                     // team_id
-	KanbanStepID   int          `json:"kanban_step_id" db:"kanban_step_id"`       // kanban_step_id
-	Closed         *time.Time   `json:"closed" db:"closed"`                       // closed
-	TargetDate     time.Time    `json:"target_date" db:"target_date"`             // target_date
-	CreatedAt      time.Time    `json:"created_at" db:"created_at"`               // created_at
-	UpdatedAt      time.Time    `json:"updated_at" db:"updated_at"`               // updated_at
-	DeletedAt      *time.Time   `json:"deleted_at" db:"deleted_at"`               // deleted_at
+	WorkItemID     int64        `json:"workItemID" db:"work_item_id"`          // work_item_id
+	Title          string       `json:"title" db:"title"`                      // title
+	Description    string       `json:"description" db:"description"`          // description
+	WorkItemTypeID int          `json:"workItemTypeID" db:"work_item_type_id"` // work_item_type_id
+	Metadata       pgtype.JSONB `json:"metadata" db:"metadata"`                // metadata
+	TeamID         int          `json:"teamID" db:"team_id"`                   // team_id
+	KanbanStepID   int          `json:"kanbanStepID" db:"kanban_step_id"`      // kanban_step_id
+	Closed         *time.Time   `json:"closed" db:"closed"`                    // closed
+	TargetDate     time.Time    `json:"targetDate" db:"target_date"`           // target_date
+	CreatedAt      time.Time    `json:"createdAt" db:"created_at"`             // created_at
+	UpdatedAt      time.Time    `json:"updatedAt" db:"updated_at"`             // updated_at
+	DeletedAt      *time.Time   `json:"deletedAt" db:"deleted_at"`             // deleted_at
 
 	DemoProjectWorkItem *DemoProjectWorkItem `json:"demo_project_work_item" db:"demo_project_work_item"` // O2O
 	Project2WorkItem    *Project2WorkItem    `json:"project2work_item" db:"project_2_work_item"`         // O2O
@@ -54,12 +36,6 @@ type WorkItem struct {
 	WorkItemType        *WorkItemType        `json:"work_item_type" db:"work_item_type"`                 // O2O
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *WorkItem) ToPublic() WorkItemPublic {
-	return WorkItemPublic{
-		WorkItemID: x.WorkItemID, Title: x.Title, Description: x.Description, WorkItemTypeID: x.WorkItemTypeID, Metadata: x.Metadata, TeamID: x.TeamID, KanbanStepID: x.KanbanStepID, Closed: x.Closed, TargetDate: x.TargetDate, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt, DeletedAt: x.DeletedAt,
-	}
 }
 
 type WorkItemSelectConfig struct {
@@ -272,13 +248,13 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then row_to_json(demo_project_work_items.*) end)::jsonb as demo_project_work_item,
-(case when $2::boolean = true then row_to_json(project_2_work_items.*) end)::jsonb as project_2_work_item,
+(case when $1::boolean = true then row(demo_project_work_items.*) end)::jsonb as demo_project_work_item,
+(case when $2::boolean = true then row(project_2_work_items.*) end)::jsonb as project_2_work_item,
 (case when $3::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $4::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
 (case when $5::boolean = true then joined_users.users end)::jsonb as users,
 (case when $6::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
-(case when $7::boolean = true then row_to_json(work_item_types.*) end)::jsonb as work_item_type `+
+(case when $7::boolean = true then row(work_item_types.*) end)::jsonb as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
 left join demo_project_work_items on demo_project_work_items.work_item_id = work_items.work_item_id
@@ -288,7 +264,7 @@ left join project_2_work_items on project_2_work_items.work_item_id = work_items
 left join (
   select
   work_item_id as time_entries_work_item_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -297,7 +273,7 @@ left join (
 left join (
   select
   work_item_id as work_item_comments_work_item_id
-    , json_agg(work_item_comments.*) as work_item_comments
+    , array_agg(work_item_comments.*) as work_item_comments
   from
     work_item_comments
    group by
@@ -306,7 +282,7 @@ left join (
 left join (
 	select
 		work_item_id as users_work_item_id
-		, json_agg(users.*) as users
+		, array_agg(users.*) as users
 	from
 		work_item_member
 		join users using (user_id)
@@ -328,7 +304,7 @@ left join (
 left join (
 	select
 		work_item_id as work_item_tags_work_item_id
-		, json_agg(work_item_tags.*) as work_item_tags
+		, array_agg(work_item_tags.*) as work_item_tags
 	from
 		work_item_work_item_tag
 		join work_item_tags using (work_item_tag_id)
@@ -401,13 +377,13 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then row_to_json(demo_project_work_items.*) end)::jsonb as demo_project_work_item,
-(case when $2::boolean = true then row_to_json(project_2_work_items.*) end)::jsonb as project_2_work_item,
+(case when $1::boolean = true then row(demo_project_work_items.*) end)::jsonb as demo_project_work_item,
+(case when $2::boolean = true then row(project_2_work_items.*) end)::jsonb as project_2_work_item,
 (case when $3::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
 (case when $4::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
 (case when $5::boolean = true then joined_users.users end)::jsonb as users,
 (case when $6::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
-(case when $7::boolean = true then row_to_json(work_item_types.*) end)::jsonb as work_item_type `+
+(case when $7::boolean = true then row(work_item_types.*) end)::jsonb as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
 left join demo_project_work_items on demo_project_work_items.work_item_id = work_items.work_item_id
@@ -417,7 +393,7 @@ left join project_2_work_items on project_2_work_items.work_item_id = work_items
 left join (
   select
   work_item_id as time_entries_work_item_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -426,7 +402,7 @@ left join (
 left join (
   select
   work_item_id as work_item_comments_work_item_id
-    , json_agg(work_item_comments.*) as work_item_comments
+    , array_agg(work_item_comments.*) as work_item_comments
   from
     work_item_comments
    group by
@@ -435,7 +411,7 @@ left join (
 left join (
 	select
 		work_item_id as users_work_item_id
-		, json_agg(users.*) as users
+		, array_agg(users.*) as users
 	from
 		work_item_member
 		join users using (user_id)
@@ -457,7 +433,7 @@ left join (
 left join (
 	select
 		work_item_id as work_item_tags_work_item_id
-		, json_agg(work_item_tags.*) as work_item_tags
+		, array_agg(work_item_tags.*) as work_item_tags
 	from
 		work_item_work_item_tag
 		join work_item_tags using (work_item_tag_id)

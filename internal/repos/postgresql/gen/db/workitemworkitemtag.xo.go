@@ -7,28 +7,14 @@ import (
 	"fmt"
 )
 
-// WorkItemWorkItemTagPublic represents fields that may be exposed from 'public.work_item_work_item_tag'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type WorkItemWorkItemTagPublic struct {
-	WorkItemTagID int   `json:"workItemTagID" required:"true"` // work_item_tag_id
-	WorkItemID    int64 `json:"workItemID" required:"true"`    // work_item_id
-}
-
 // WorkItemWorkItemTag represents a row from 'public.work_item_work_item_tag'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type WorkItemWorkItemTag struct {
-	WorkItemTagID int   `json:"work_item_tag_id" db:"work_item_tag_id"` // work_item_tag_id
-	WorkItemID    int64 `json:"work_item_id" db:"work_item_id"`         // work_item_id
+	WorkItemTagID int   `json:"workItemTagID" db:"work_item_tag_id"` // work_item_tag_id
+	WorkItemID    int64 `json:"workItemID" db:"work_item_id"`        // work_item_id
 
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *WorkItemWorkItemTag) ToPublic() WorkItemWorkItemTagPublic {
-	return WorkItemWorkItemTagPublic{
-		WorkItemTagID: x.WorkItemTagID, WorkItemID: x.WorkItemID,
-	}
 }
 
 type WorkItemWorkItemTagSelectConfig struct {

@@ -9,29 +9,15 @@ import (
 	"time"
 )
 
-// Project2WorkItemPublic represents fields that may be exposed from 'public.project_2_work_items'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type Project2WorkItemPublic struct {
-	WorkItemID            int64      `json:"workItemID" required:"true"`            // work_item_id
-	CustomDateForProject2 *time.Time `json:"customDateForProject2" required:"true"` // custom_date_for_project_2
-}
-
 // Project2WorkItem represents a row from 'public.project_2_work_items'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Project2WorkItem struct {
-	WorkItemID            int64      `json:"work_item_id" db:"work_item_id"`                           // work_item_id
-	CustomDateForProject2 *time.Time `json:"custom_date_for_project_2" db:"custom_date_for_project_2"` // custom_date_for_project_2
+	WorkItemID            int64      `json:"workItemID" db:"work_item_id"`                         // work_item_id
+	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2"` // custom_date_for_project_2
 
 	WorkItem *WorkItem `json:"work_item" db:"work_item"` // O2O
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *Project2WorkItem) ToPublic() Project2WorkItemPublic {
-	return Project2WorkItemPublic{
-		WorkItemID: x.WorkItemID, CustomDateForProject2: x.CustomDateForProject2,
-	}
 }
 
 type Project2WorkItemSelectConfig struct {
@@ -204,7 +190,7 @@ func Project2WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, 
 	sqlstr := `SELECT ` +
 		`project_2_work_items.work_item_id,
 project_2_work_items.custom_date_for_project_2,
-(case when $1::boolean = true then row_to_json(work_items.*) end)::jsonb as work_item ` +
+(case when $1::boolean = true then row(work_items.*) end)::jsonb as work_item ` +
 		`FROM public.project_2_work_items ` +
 		`-- O2O join generated from "project_2_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = project_2_work_items.work_item_id` +

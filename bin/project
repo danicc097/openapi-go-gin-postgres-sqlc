@@ -177,6 +177,7 @@ x.pregen() {
       # don't want this to block if getting bad gen later on
       go build -o pregen cmd/pregen/main.go || echo "Could not rebuild pregen" >&2
 
+      # spec must always be valid. Schemas to generate should exist with the appropiate vendor extension
       ./pregen -env=".env.$env" --validate-spec-only
 
       x.db.drop
@@ -1106,7 +1107,7 @@ update_spec_with_structs() {
   ((${#struct_names_list} == 0)) && return
 
   go build -o gen-schema cmd/gen-schema/main.go || echo "Could not rebuild gen-schema" >&2
-  echo " lsit ${struct_names_list[*]}"
+
   ./gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml

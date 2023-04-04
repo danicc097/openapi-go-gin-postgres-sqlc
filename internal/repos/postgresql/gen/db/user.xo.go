@@ -11,42 +11,24 @@ import (
 	"github.com/google/uuid"
 )
 
-// UserPublic represents fields that may be exposed from 'public.users'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type UserPublic struct {
-	UserID    uuid.UUID `json:"userID" required:"true"`    // user_id
-	Username  string    `json:"username" required:"true"`  // username
-	Email     string    `json:"email" required:"true"`     // email
-	FirstName *string   `json:"firstName" required:"true"` // first_name
-	LastName  *string   `json:"lastName" required:"true"`  // last_name
-	FullName  *string   `json:"fullName" required:"true"`  // full_name
-
-	HasPersonalNotifications bool      `json:"hasPersonalNotifications" required:"true"` // has_personal_notifications
-	HasGlobalNotifications   bool      `json:"hasGlobalNotifications" required:"true"`   // has_global_notifications
-	CreatedAt                time.Time `json:"createdAt" required:"true"`                // created_at
-
-	DeletedAt *time.Time `json:"deletedAt" required:"true"` // deleted_at
-}
-
 // User represents a row from 'public.users'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type User struct {
-	UserID                   uuid.UUID  `json:"user_id" db:"user_id"`                                       // user_id
-	Username                 string     `json:"username" db:"username"`                                     // username
-	Email                    string     `json:"email" db:"email"`                                           // email
-	FirstName                *string    `json:"first_name" db:"first_name"`                                 // first_name
-	LastName                 *string    `json:"last_name" db:"last_name"`                                   // last_name
-	FullName                 *string    `json:"full_name" db:"full_name"`                                   // full_name
-	ExternalID               string     `json:"external_id" db:"external_id"`                               // external_id
-	APIKeyID                 *int       `json:"api_key_id" db:"api_key_id"`                                 // api_key_id
-	Scopes                   []string   `json:"scopes" db:"scopes"`                                         // scopes
-	RoleRank                 int16      `json:"role_rank" db:"role_rank"`                                   // role_rank
-	HasPersonalNotifications bool       `json:"has_personal_notifications" db:"has_personal_notifications"` // has_personal_notifications
-	HasGlobalNotifications   bool       `json:"has_global_notifications" db:"has_global_notifications"`     // has_global_notifications
-	CreatedAt                time.Time  `json:"created_at" db:"created_at"`                                 // created_at
-	UpdatedAt                time.Time  `json:"updated_at" db:"updated_at"`                                 // updated_at
-	DeletedAt                *time.Time `json:"deleted_at" db:"deleted_at"`                                 // deleted_at
+	UserID                   uuid.UUID  `json:"userID" db:"user_id"`                                      // user_id
+	Username                 string     `json:"username" db:"username"`                                   // username
+	Email                    string     `json:"email" db:"email"`                                         // email
+	FirstName                *string    `json:"firstName" db:"first_name"`                                // first_name
+	LastName                 *string    `json:"lastName" db:"last_name"`                                  // last_name
+	FullName                 *string    `json:"fullName" db:"full_name"`                                  // full_name
+	ExternalID               string     `json:"-" db:"external_id"`                                       // external_id
+	APIKeyID                 *int       `json:"-" db:"api_key_id"`                                        // api_key_id
+	Scopes                   []string   `json:"-" db:"scopes"`                                            // scopes
+	RoleRank                 int16      `json:"-" db:"role_rank"`                                         // role_rank
+	HasPersonalNotifications bool       `json:"hasPersonalNotifications" db:"has_personal_notifications"` // has_personal_notifications
+	HasGlobalNotifications   bool       `json:"hasGlobalNotifications" db:"has_global_notifications"`     // has_global_notifications
+	CreatedAt                time.Time  `json:"createdAt" db:"created_at"`                                // created_at
+	UpdatedAt                time.Time  `json:"-" db:"updated_at"`                                        // updated_at
+	DeletedAt                *time.Time `json:"deletedAt" db:"deleted_at"`                                // deleted_at
 
 	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
 	UserAPIKey  *UserAPIKey  `json:"user_api_key" db:"user_api_key"` // O2O
@@ -54,12 +36,6 @@ type User struct {
 	WorkItems   *[]WorkItem  `json:"work_items" db:"work_items"`     // M2M
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *User) ToPublic() UserPublic {
-	return UserPublic{
-		UserID: x.UserID, Username: x.Username, Email: x.Email, FirstName: x.FirstName, LastName: x.LastName, FullName: x.FullName, HasPersonalNotifications: x.HasPersonalNotifications, HasGlobalNotifications: x.HasGlobalNotifications, CreatedAt: x.CreatedAt, DeletedAt: x.DeletedAt,
-	}
 }
 
 type UserSelectConfig struct {
@@ -265,7 +241,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $2::boolean = true then row(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
 (case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
 		`FROM public.users `+
@@ -273,7 +249,7 @@ users.deleted_at,
 left join (
   select
   user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -284,7 +260,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_id as teams_user_id
-		, json_agg(teams.*) as teams
+		, array_agg(teams.*) as teams
 	from
 		user_team
 		join teams using (team_id)
@@ -306,7 +282,7 @@ left join (
 left join (
 	select
 		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as work_items
 	from
 		work_item_member
 		join work_items using (work_item_id)
@@ -381,7 +357,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $2::boolean = true then row(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
 (case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
 		`FROM public.users `+
@@ -389,7 +365,7 @@ users.deleted_at,
 left join (
   select
   user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -400,7 +376,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_id as teams_user_id
-		, json_agg(teams.*) as teams
+		, array_agg(teams.*) as teams
 	from
 		user_team
 		join teams using (team_id)
@@ -422,7 +398,7 @@ left join (
 left join (
 	select
 		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as work_items
 	from
 		work_item_member
 		join work_items using (work_item_id)
@@ -497,7 +473,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $2::boolean = true then row(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
 (case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
 		`FROM public.users `+
@@ -505,7 +481,7 @@ users.deleted_at,
 left join (
   select
   user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -516,7 +492,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_id as teams_user_id
-		, json_agg(teams.*) as teams
+		, array_agg(teams.*) as teams
 	from
 		user_team
 		join teams using (team_id)
@@ -538,7 +514,7 @@ left join (
 left join (
 	select
 		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as work_items
 	from
 		work_item_member
 		join work_items using (work_item_id)
@@ -600,7 +576,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $2::boolean = true then row(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
 (case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
 		`FROM public.users `+
@@ -608,7 +584,7 @@ users.deleted_at,
 left join (
   select
   user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -619,7 +595,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_id as teams_user_id
-		, json_agg(teams.*) as teams
+		, array_agg(teams.*) as teams
 	from
 		user_team
 		join teams using (team_id)
@@ -641,7 +617,7 @@ left join (
 left join (
 	select
 		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as work_items
 	from
 		work_item_member
 		join work_items using (work_item_id)
@@ -703,7 +679,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $2::boolean = true then row(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
 (case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
 		`FROM public.users `+
@@ -711,7 +687,7 @@ users.deleted_at,
 left join (
   select
   user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -722,7 +698,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_id as teams_user_id
-		, json_agg(teams.*) as teams
+		, array_agg(teams.*) as teams
 	from
 		user_team
 		join teams using (team_id)
@@ -744,7 +720,7 @@ left join (
 left join (
 	select
 		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as work_items
 	from
 		work_item_member
 		join work_items using (work_item_id)
@@ -806,7 +782,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $2::boolean = true then row(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
 (case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
 		`FROM public.users `+
@@ -814,7 +790,7 @@ users.deleted_at,
 left join (
   select
   user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -825,7 +801,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_id as teams_user_id
-		, json_agg(teams.*) as teams
+		, array_agg(teams.*) as teams
 	from
 		user_team
 		join teams using (team_id)
@@ -847,7 +823,7 @@ left join (
 left join (
 	select
 		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as work_items
 	from
 		work_item_member
 		join work_items using (work_item_id)
@@ -922,7 +898,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
+(case when $2::boolean = true then row(user_api_keys.*) end)::jsonb as user_api_key,
 (case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
 (case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
 		`FROM public.users `+
@@ -930,7 +906,7 @@ users.deleted_at,
 left join (
   select
   user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -941,7 +917,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_id as teams_user_id
-		, json_agg(teams.*) as teams
+		, array_agg(teams.*) as teams
 	from
 		user_team
 		join teams using (team_id)
@@ -963,7 +939,7 @@ left join (
 left join (
 	select
 		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as work_items
 	from
 		work_item_member
 		join work_items using (work_item_id)

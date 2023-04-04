@@ -9,28 +9,14 @@ import (
 	"github.com/google/uuid"
 )
 
-// UserTeamPublic represents fields that may be exposed from 'public.user_team'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type UserTeamPublic struct {
-	TeamID int       `json:"teamID" required:"true"` // team_id
-	UserID uuid.UUID `json:"userID" required:"true"` // user_id
-}
-
 // UserTeam represents a row from 'public.user_team'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type UserTeam struct {
-	TeamID int       `json:"team_id" db:"team_id"` // team_id
-	UserID uuid.UUID `json:"user_id" db:"user_id"` // user_id
+	TeamID int       `json:"teamID" db:"team_id"` // team_id
+	UserID uuid.UUID `json:"userID" db:"user_id"` // user_id
 
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *UserTeam) ToPublic() UserTeamPublic {
-	return UserTeamPublic{
-		TeamID: x.TeamID, UserID: x.UserID,
-	}
 }
 
 type UserTeamSelectConfig struct {

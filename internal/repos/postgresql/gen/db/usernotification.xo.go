@@ -9,33 +9,17 @@ import (
 	"github.com/google/uuid"
 )
 
-// UserNotificationPublic represents fields that may be exposed from 'public.user_notifications'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type UserNotificationPublic struct {
-	UserNotificationID int64     `json:"userNotificationID" required:"true"` // user_notification_id
-	NotificationID     int       `json:"notificationID" required:"true"`     // notification_id
-	Read               bool      `json:"read" required:"true"`               // read
-	UserID             uuid.UUID `json:"userID" required:"true"`             // user_id
-}
-
 // UserNotification represents a row from 'public.user_notifications'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type UserNotification struct {
-	UserNotificationID int64     `json:"user_notification_id" db:"user_notification_id"` // user_notification_id
-	NotificationID     int       `json:"notification_id" db:"notification_id"`           // notification_id
-	Read               bool      `json:"read" db:"read"`                                 // read
-	UserID             uuid.UUID `json:"user_id" db:"user_id"`                           // user_id
+	UserNotificationID int64     `json:"userNotificationID" db:"user_notification_id"` // user_notification_id
+	NotificationID     int       `json:"notificationID" db:"notification_id"`          // notification_id
+	Read               bool      `json:"read" db:"read"`                               // read
+	UserID             uuid.UUID `json:"userID" db:"user_id"`                          // user_id
 
 	Notification *Notification `json:"notification" db:"notification"` // O2O
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *UserNotification) ToPublic() UserNotificationPublic {
-	return UserNotificationPublic{
-		UserNotificationID: x.UserNotificationID, NotificationID: x.NotificationID, Read: x.Read, UserID: x.UserID,
-	}
 }
 
 type UserNotificationSelectConfig struct {
@@ -191,7 +175,7 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true then row_to_json(notifications.*) end)::jsonb as notification ` +
+(case when $1::boolean = true then row(notifications.*) end)::jsonb as notification ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join notifications on notifications.notification_id = user_notifications.notification_id` +
@@ -227,7 +211,7 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true then row_to_json(notifications.*) end)::jsonb as notification ` +
+(case when $1::boolean = true then row(notifications.*) end)::jsonb as notification ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join notifications on notifications.notification_id = user_notifications.notification_id` +
@@ -263,7 +247,7 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opt
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true then row_to_json(notifications.*) end)::jsonb as notification ` +
+(case when $1::boolean = true then row(notifications.*) end)::jsonb as notification ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join notifications on notifications.notification_id = user_notifications.notification_id` +

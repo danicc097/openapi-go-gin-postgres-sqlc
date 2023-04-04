@@ -7,38 +7,19 @@ import (
 	"fmt"
 )
 
-// KanbanStepPublic represents fields that may be exposed from 'public.kanban_steps'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type KanbanStepPublic struct {
-	KanbanStepID  int    `json:"kanbanStepID" required:"true"`  // kanban_step_id
-	ProjectID     int    `json:"projectID" required:"true"`     // project_id
-	StepOrder     *int16 `json:"stepOrder" required:"true"`     // step_order
-	Name          string `json:"name" required:"true"`          // name
-	Description   string `json:"description" required:"true"`   // description
-	Color         string `json:"color" required:"true"`         // color
-	TimeTrackable bool   `json:"timeTrackable" required:"true"` // time_trackable
-}
-
 // KanbanStep represents a row from 'public.kanban_steps'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type KanbanStep struct {
-	KanbanStepID  int    `json:"kanban_step_id" db:"kanban_step_id"` // kanban_step_id
-	ProjectID     int    `json:"project_id" db:"project_id"`         // project_id
-	StepOrder     *int16 `json:"step_order" db:"step_order"`         // step_order
-	Name          string `json:"name" db:"name"`                     // name
-	Description   string `json:"description" db:"description"`       // description
-	Color         string `json:"color" db:"color"`                   // color
-	TimeTrackable bool   `json:"time_trackable" db:"time_trackable"` // time_trackable
+	KanbanStepID  int    `json:"kanbanStepID" db:"kanban_step_id"`  // kanban_step_id
+	ProjectID     int    `json:"projectID" db:"project_id"`         // project_id
+	StepOrder     *int16 `json:"stepOrder" db:"step_order"`         // step_order
+	Name          string `json:"name" db:"name"`                    // name
+	Description   string `json:"description" db:"description"`      // description
+	Color         string `json:"color" db:"color"`                  // color
+	TimeTrackable bool   `json:"timeTrackable" db:"time_trackable"` // time_trackable
 
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *KanbanStep) ToPublic() KanbanStepPublic {
-	return KanbanStepPublic{
-		KanbanStepID: x.KanbanStepID, ProjectID: x.ProjectID, StepOrder: x.StepOrder, Name: x.Name, Description: x.Description, Color: x.Color, TimeTrackable: x.TimeTrackable,
-	}
 }
 
 type KanbanStepSelectConfig struct {

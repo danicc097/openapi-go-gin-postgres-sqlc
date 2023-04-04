@@ -21,13 +21,10 @@ type batchItemFunc func(br BatchResults) error
 // Query sets fn to be called when the response to qq is received.
 func (qq *QueuedQuery) Query(fn func(rows Rows) error) {
 	qq.fn = func(br BatchResults) error {
-		rows, err := br.Query()
-		if err != nil {
-			return err
-		}
+		rows, _ := br.Query()
 		defer rows.Close()
 
-		err = fn(rows)
+		err := fn(rows)
 		if err != nil {
 			return err
 		}
@@ -228,7 +225,7 @@ func (br *batchResults) Close() error {
 	for br.err == nil && !br.closed && br.b != nil && br.qqIdx < len(br.b.queuedQueries) {
 		if br.b.queuedQueries[br.qqIdx].fn != nil {
 			err := br.b.queuedQueries[br.qqIdx].fn(br)
-			if err != nil && br.err == nil {
+			if err != nil {
 				br.err = err
 			}
 		} else {
@@ -401,7 +398,7 @@ func (br *pipelineBatchResults) Close() error {
 	for br.err == nil && !br.closed && br.b != nil && br.qqIdx < len(br.b.queuedQueries) {
 		if br.b.queuedQueries[br.qqIdx].fn != nil {
 			err := br.b.queuedQueries[br.qqIdx].fn(br)
-			if err != nil && br.err == nil {
+			if err != nil {
 				br.err = err
 			}
 		} else {
