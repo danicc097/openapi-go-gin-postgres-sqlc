@@ -208,8 +208,8 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Short:      "g",
 				// migrate to camel once Response structs and adapters done
 				// TODO bring camel back once pgx v5 and sqlc work correctly
-				// scan to custom tag recently a feature in pgx: https://github.com/jackc/pgx/commit/14be51536bbf5e183b68ee9a5fcadaf0d045e503
-				// see tests: https://github.com/jackc/pgx/blob/fbfafb3edfc378681c2bad91b1a126e7e6df3f5b/rows_test.go#L545
+				// see any pgx release past v5.3.1
+				// and will need to see what to do about sqlc, if anything
 				// Default:    `json:"{{ camel .GoName }}" db:"{{ .SQLName }}"`,
 				Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
 			},
