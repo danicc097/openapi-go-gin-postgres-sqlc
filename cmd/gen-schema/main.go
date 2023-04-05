@@ -10,12 +10,14 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/slices"
 	"github.com/swaggest/openapi-go/openapi3"
 )
 
@@ -38,7 +40,6 @@ func main() {
 
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
-	// update when adding new packages to gen structs map
 	reflector.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
 		// default name comes from package directory, not the given import alias
 		// e.g. repomodels -/-> Repomodels, its the last dir (models)
@@ -47,12 +48,12 @@ func main() {
 	})
 
 	fmt.Fprintf(os.Stderr, "postgen.PublicStructs: %v\n", postgen.PublicStructs)
+	fmt.Fprintf(os.Stderr, "structNames: %v\n", structNames)
 
-	keys := make([]string, 0, len(reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues))
-	for k := range reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues {
-		keys = append(keys, k)
-	}
-	fmt.Fprintf(os.Stderr, "keys: %v\n", keys)
+	structNames = slices.Unique(structNames)
+	sort.SliceStable(structNames, func(i, j int) bool {
+		return structNames[i] < structNames[j]
+	})
 
 	for i, sn := range structNames {
 		dummyOp := openapi3.Operation{}
@@ -62,9 +63,18 @@ func main() {
 		}
 		fmt.Fprintf(os.Stderr, "sn: %v\n", sn)
 		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
+
+		keys := make([]string, 0, len(reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues))
+		for k := range reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues {
+			keys = append(keys, k)
+		}
+		fmt.Fprintf(os.Stderr, "keys len: %v\n", len(reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues)) // added ops and schemas dont seem to update correctly, not incremental...
+		// sss, _ := reflector.Spec.MarshalYAML()
+
+		// fmt.Fprintf(os.Stderr, "sss: %v\n", string(sss))
 		// ensure json tags are set for all top level fields in the struct. Either skip "-" or set fields.
-		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-postgen-struct": sn}
 		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
+		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-postgen-struct": sn}
 		// reflector.Spec.Paths.MapOfPathItemValues["mypath"].MapOfOperationValues["method"].
 	}
 	s, err := reflector.Spec.MarshalYAML()

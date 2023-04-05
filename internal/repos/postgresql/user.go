@@ -8,21 +8,9 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/slices"
 	"github.com/google/uuid"
 )
-
-func unique[T comparable](s []T) []T {
-	set := make(map[T]struct{})
-	res := []T{}
-	for _, element := range s {
-		if _, ok := set[element]; !ok {
-			set[element] = struct{}{}
-			res = append(res, element)
-		}
-	}
-
-	return res
-}
 
 // User represents the repository used for interacting with User records.
 type User struct {
@@ -46,7 +34,7 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params repos.UserCreatePar
 		LastName:   params.LastName,
 		ExternalID: params.ExternalID,
 		RoleRank:   params.RoleRank,
-		Scopes:     unique(params.Scopes),
+		Scopes:     slices.Unique(params.Scopes),
 	}
 
 	if err := user.Save(ctx, d); err != nil {
@@ -70,7 +58,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params repos
 		user.LastName = params.LastName
 	}
 	if params.Scopes != nil {
-		user.Scopes = unique(*params.Scopes)
+		user.Scopes = slices.Unique(*params.Scopes)
 	}
 	if params.Rank != nil {
 		user.RoleRank = *params.Rank

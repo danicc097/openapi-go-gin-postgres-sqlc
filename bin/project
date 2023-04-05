@@ -1112,6 +1112,7 @@ update_spec_with_structs() {
   # FIXME e.g. operation_ids.gen.go is overridden with an empty template when pregen fails and breaks gen-schema
   go build -o gen-schema cmd/gen-schema/main.go || echo "Could not rebuild gen-schema" >&2
 
+  echo -e struct_names_list: $struct_names_list
   ./gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml
