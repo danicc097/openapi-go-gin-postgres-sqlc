@@ -5,31 +5,31 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbDemoProjectWorkItemPublic } from './dbDemoProjectWorkItemPublic'
-import type { DbUserPublic } from './dbUserPublic'
+import type { DbDemoProjectWorkItem } from './dbDemoProjectWorkItem'
+import type { DbUser } from './dbUser'
 import type { PgtypeJSONB } from './pgtypeJSONB'
-import type { DbTimeEntryPublic } from './dbTimeEntryPublic'
-import type { DbWorkItemCommentPublic } from './dbWorkItemCommentPublic'
-import type { DbWorkItemTagPublic } from './dbWorkItemTagPublic'
-import type { DbWorkItemTypePublic } from './dbWorkItemTypePublic'
+import type { DbTimeEntry } from './dbTimeEntry'
+import type { DbWorkItemComment } from './dbWorkItemComment'
+import type { DbWorkItemTag } from './dbWorkItemTag'
+import type { DbWorkItemType } from './dbWorkItemType'
 
 export interface DemoProjectWorkItemsResponse {
   closed: Date | null
   createdAt: Date
   deletedAt: Date | null
-  demoProjectWorkItem: DbDemoProjectWorkItemPublic
+  demoProjectWorkItem: DbDemoProjectWorkItem
   description: string
   kanbanStepID: number
-  members?: DbUserPublic[] | null
+  members?: DbUser[] | null
   metadata: PgtypeJSONB
   targetDate: Date
   teamID: number
-  timeEntries?: DbTimeEntryPublic[] | null
+  timeEntries?: DbTimeEntry[] | null
   title: string
   updatedAt: Date
-  workItemComments?: DbWorkItemCommentPublic[] | null
+  workItemComments?: DbWorkItemComment[] | null
   workItemID: number
-  workItemTags?: DbWorkItemTagPublic[] | null
-  workItemType?: DbWorkItemTypePublic
+  workItemTags?: DbWorkItemTag[] | null
+  workItemType?: DbWorkItemType
   workItemTypeID: number
 }

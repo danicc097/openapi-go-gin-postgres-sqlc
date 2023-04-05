@@ -76,6 +76,17 @@ export interface paths {
 
 export interface components {
   schemas: {
+    DbActivity: Record<string, never>;
+    DbKanbanStep: Record<string, never>;
+    DbProject: Record<string, never>;
+    DbTeam: Record<string, never>;
+    DbWorkItemTag: Record<string, never>;
+    DbWorkItemType: Record<string, never>;
+    DbDemoProjectWorkItem: Record<string, never>;
+    DbUserAPIKey: Record<string, never>;
+    DbUser: Record<string, never>;
+    DbTimeEntry: Record<string, never>;
+    DbWorkItemComment: Record<string, never>;
     ProjectConfig: {
       fields: (components["schemas"]["ModelsProjectConfigField"])[] | null;
       header: (string)[] | null;
@@ -87,22 +98,22 @@ export interface components {
       createdAt: string;
       /** Format: date-time */
       deletedAt: string | null;
-      demoProjectWorkItem: components["schemas"]["DbDemoProjectWorkItemPublic"];
+      demoProjectWorkItem: components["schemas"]["DbDemoProjectWorkItem"];
       description: string;
       kanbanStepID: number;
-      members?: (components["schemas"]["DbUserPublic"])[] | null;
+      members?: (components["schemas"]["DbUser"])[] | null;
       metadata: components["schemas"]["PgtypeJSONB"];
       /** Format: date-time */
       targetDate: string;
       teamID: number;
-      timeEntries?: (components["schemas"]["DbTimeEntryPublic"])[] | null;
+      timeEntries?: (components["schemas"]["DbTimeEntry"])[] | null;
       title: string;
       /** Format: date-time */
       updatedAt: string;
-      workItemComments?: (components["schemas"]["DbWorkItemCommentPublic"])[] | null;
+      workItemComments?: (components["schemas"]["DbWorkItemComment"])[] | null;
       workItemID: number;
-      workItemTags?: (components["schemas"]["DbWorkItemTagPublic"])[] | null;
-      workItemType?: components["schemas"]["DbWorkItemTypePublic"];
+      workItemTags?: (components["schemas"]["DbWorkItemTag"])[] | null;
+      workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
     };
     InitializeProjectRequest: {
@@ -113,16 +124,16 @@ export interface components {
       workItemTags?: (components["schemas"]["ReposWorkItemTagCreateParams"])[] | null;
       workItemTypes?: (components["schemas"]["ReposWorkItemTypeCreateParams"])[] | null;
     };
-    ProjectBoardResponse: {
-      activities?: (components["schemas"]["DbActivityPublic"])[] | null;
-      kanbanSteps?: (components["schemas"]["DbKanbanStepPublic"])[] | null;
-      project?: components["schemas"]["DbProjectPublic"];
-      teams?: (components["schemas"]["DbTeamPublic"])[] | null;
-      workItemTags?: (components["schemas"]["DbWorkItemTagPublic"])[] | null;
-      workItemTypes?: (components["schemas"]["DbWorkItemTypePublic"])[] | null;
+    RestProjectBoardResponse: {
+      activities?: (components["schemas"]["DbActivity"])[] | null;
+      kanbanSteps?: (components["schemas"]["DbKanbanStep"])[] | null;
+      project?: components["schemas"]["DbProject"];
+      teams?: (components["schemas"]["DbTeam"])[] | null;
+      workItemTags?: (components["schemas"]["DbWorkItemTag"])[] | null;
+      workItemTypes?: (components["schemas"]["DbWorkItemType"])[] | null;
     };
     UserResponse: {
-      apiKey?: components["schemas"]["DbUserAPIKeyPublic"];
+      apiKey?: components["schemas"]["DbUserAPIKey"];
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
@@ -133,10 +144,10 @@ export interface components {
       hasGlobalNotifications: boolean;
       hasPersonalNotifications: boolean;
       lastName: string | null;
-      projects?: (components["schemas"]["DbProjectPublic"])[] | null;
+      projects?: (components["schemas"]["DbProject"])[] | null;
       role: components["schemas"]["Role"];
       scopes: components["schemas"]["Scopes"];
-      teams?: (components["schemas"]["DbTeamPublic"])[] | null;
+      teams?: (components["schemas"]["DbTeam"])[] | null;
       userID: components["schemas"]["UuidUUID"];
       username: string;
     };
@@ -202,62 +213,6 @@ export interface components {
       /** Error Type */
       type: string;
     };
-    DbTeamPublic: {
-      /** Format: date-time */
-      createdAt: string;
-      description: string;
-      name: string;
-      projectID: number;
-      teamID: number;
-      /** Format: date-time */
-      updatedAt: string;
-    };
-    DbUserAPIKeyPublic: {
-      apiKey: string;
-      /** Format: date-time */
-      expiresOn: string;
-      userID: components["schemas"]["UuidUUID"];
-    } | null;
-    DbActivityPublic: {
-      activityID: number;
-      description: string;
-      isProductive: boolean;
-      name: string;
-      projectID: number;
-    };
-    DbKanbanStepPublic: {
-      color: string;
-      description: string;
-      kanbanStepID: number;
-      name: string;
-      projectID: number;
-      stepOrder: number | null;
-      timeTrackable: boolean;
-    };
-    DbProjectPublic: {
-      /** Format: date-time */
-      createdAt: string;
-      description: string;
-      initialized: boolean;
-      name: string;
-      projectID: number;
-      /** Format: date-time */
-      updatedAt: string;
-    } | null;
-    DbWorkItemTagPublic: {
-      color: string;
-      description: string;
-      name: string;
-      projectID: number;
-      workItemTagID: number;
-    };
-    DbWorkItemTypePublic: {
-      color: string;
-      description: string;
-      name: string;
-      projectID: number;
-      workItemTypeID: number;
-    } | null;
     ReposActivityCreateParams: {
       description?: string;
       isProductive?: boolean;
@@ -291,69 +246,7 @@ export interface components {
     };
     ModelsRole: string;
     UuidUUID: string;
-    DbWorkItemPublic: {
-      /** Format: date-time */
-      closed: string | null;
-      /** Format: date-time */
-      createdAt: string;
-      /** Format: date-time */
-      deletedAt: string | null;
-      description: string;
-      kanbanStepID: number;
-      metadata: components["schemas"]["PgtypeJSONB"];
-      /** Format: date-time */
-      targetDate: string;
-      teamID: number;
-      title: string;
-      /** Format: date-time */
-      updatedAt: string;
-      workItemID: number;
-      workItemTypeID: number;
-    };
     PgtypeJSONB: Record<string, never>;
-    DbDemoProjectWorkItemPublic: {
-      /** Format: date-time */
-      lastMessageAt: string;
-      line: string;
-      ref: string;
-      reopened: boolean;
-      workItemID: number;
-    };
-    DbTimeEntryPublic: {
-      activityID: number;
-      comment: string;
-      durationMinutes: number | null;
-      /** Format: date-time */
-      start: string;
-      teamID: number | null;
-      timeEntryID: number;
-      userID: components["schemas"]["UuidUUID"];
-      workItemID: number | null;
-    };
-    DbUserPublic: {
-      /** Format: date-time */
-      createdAt: string;
-      /** Format: date-time */
-      deletedAt: string | null;
-      email: string;
-      firstName: string | null;
-      fullName: string | null;
-      hasGlobalNotifications: boolean;
-      hasPersonalNotifications: boolean;
-      lastName: string | null;
-      userID: components["schemas"]["UuidUUID"];
-      username: string;
-    };
-    DbWorkItemCommentPublic: {
-      /** Format: date-time */
-      createdAt: string;
-      message: string;
-      /** Format: date-time */
-      updatedAt: string;
-      userID: components["schemas"]["UuidUUID"];
-      workItemCommentID: number;
-      workItemID: number;
-    };
     /**
      * @description Existing projects 
      * @enum {string}
@@ -527,7 +420,7 @@ export interface operations {
       /** @description Project. */
       200: {
         content: {
-          "application/json": components["schemas"]["DbProjectPublic"];
+          "application/json": components["schemas"]["DbProject"];
         };
       };
     };
@@ -561,7 +454,7 @@ export interface operations {
       /** @description Project successfully initialized. */
       200: {
         content: {
-          "application/json": components["schemas"]["ProjectBoardResponse"];
+          "application/json": components["schemas"]["RestProjectBoardResponse"];
         };
       };
     };

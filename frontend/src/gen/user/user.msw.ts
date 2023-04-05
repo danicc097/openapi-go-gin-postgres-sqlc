@@ -10,10 +10,7 @@ import { faker } from '@faker-js/faker'
 import { Role, Scope } from '.././model'
 
 export const getGetCurrentUserMock = () => ({
-  apiKey: faker.helpers.arrayElement([
-    { apiKey: faker.random.word(), expiresOn: (() => faker.date.past())(), userID: faker.random.word() },
-    undefined,
-  ]),
+  apiKey: faker.helpers.arrayElement([{}, undefined]),
   createdAt: (() => faker.date.past())(),
   deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
   email: (() => faker.internet.email())(),
@@ -23,27 +20,13 @@ export const getGetCurrentUserMock = () => ({
   hasPersonalNotifications: faker.datatype.boolean(),
   lastName: faker.helpers.arrayElement([faker.random.word(), null]),
   projects: faker.helpers.arrayElement([
-    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-      createdAt: (() => faker.date.past())(),
-      description: faker.random.word(),
-      initialized: faker.datatype.boolean(),
-      name: faker.random.word(),
-      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-      updatedAt: (() => faker.date.past())(),
-    })),
+    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({})),
     undefined,
   ]),
   role: faker.helpers.arrayElement(Object.values(Role)),
   scopes: faker.helpers.arrayElements(Object.values(Scope)),
   teams: faker.helpers.arrayElement([
-    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-      createdAt: (() => faker.date.past())(),
-      description: faker.random.word(),
-      name: faker.random.word(),
-      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-      updatedAt: (() => faker.date.past())(),
-    })),
+    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({})),
     undefined,
   ]),
   userID: faker.random.word(),
@@ -51,10 +34,7 @@ export const getGetCurrentUserMock = () => ({
 })
 
 export const getUpdateUserMock = () => ({
-  apiKey: faker.helpers.arrayElement([
-    { apiKey: faker.random.word(), expiresOn: (() => faker.date.past())(), userID: faker.random.word() },
-    undefined,
-  ]),
+  apiKey: faker.helpers.arrayElement([{}, undefined]),
   createdAt: (() => faker.date.past())(),
   deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
   email: (() => faker.internet.email())(),
@@ -64,27 +44,13 @@ export const getUpdateUserMock = () => ({
   hasPersonalNotifications: faker.datatype.boolean(),
   lastName: faker.helpers.arrayElement([faker.random.word(), null]),
   projects: faker.helpers.arrayElement([
-    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-      createdAt: (() => faker.date.past())(),
-      description: faker.random.word(),
-      initialized: faker.datatype.boolean(),
-      name: faker.random.word(),
-      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-      updatedAt: (() => faker.date.past())(),
-    })),
+    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({})),
     undefined,
   ]),
   role: faker.helpers.arrayElement(Object.values(Role)),
   scopes: faker.helpers.arrayElements(Object.values(Scope)),
   teams: faker.helpers.arrayElement([
-    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-      createdAt: (() => faker.date.past())(),
-      description: faker.random.word(),
-      name: faker.random.word(),
-      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-      updatedAt: (() => faker.date.past())(),
-    })),
+    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({})),
     undefined,
   ]),
   userID: faker.random.word(),

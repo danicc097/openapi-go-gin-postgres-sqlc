@@ -1106,6 +1106,10 @@ update_spec_with_structs() {
   struct_names_list=$(join_by "," ${struct_names[*]})
   ((${#struct_names_list} == 0)) && return
 
+  # FIXME this build is not allowed to fail as of now, since new structs (internal/postgen/structs.gen.go:11)
+  # won't be available in that case. This requires a compilable state in all packages that gen-schema imports
+  # to create the map, else we are stuck forever in a bad state unless we checkout a valid version and carefully update.
+  # FIXME e.g. operation_ids.gen.go is overridden with an empty template when pregen fails and breaks gen-schema
   go build -o gen-schema cmd/gen-schema/main.go || echo "Could not rebuild gen-schema" >&2
 
   ./gen-schema --struct-names $struct_names_list | yq '

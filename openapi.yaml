@@ -281,7 +281,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectBoardResponse'
+                $ref: '#/components/schemas/RestProjectBoardResponse'
       tags:
         - project
   /project/{id}/workitems:
@@ -478,7 +478,7 @@ components:
           type: array
       type: object
       x-postgen-struct: RestProjectBoardCreateRequest
-    ProjectBoardResponse: # Generated from internal structs. DO NOT EDIT.
+    RestProjectBoardResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         activities:
           items:

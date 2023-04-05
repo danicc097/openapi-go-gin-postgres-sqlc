@@ -6,11 +6,4 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export interface DbTeamPublic {
-  createdAt: Date
-  description: string
-  name: string
-  projectID: number
-  teamID: number
-  updatedAt: Date
-}
+export type DbActivity = unknown

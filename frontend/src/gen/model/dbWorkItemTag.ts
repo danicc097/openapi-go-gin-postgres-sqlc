@@ -5,10 +5,5 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { UuidUUID } from './uuidUUID'
 
-export type DbUserAPIKeyPublic = {
-  apiKey: string
-  expiresOn: Date
-  userID: UuidUUID
-} | null
+export type DbWorkItemTag = unknown

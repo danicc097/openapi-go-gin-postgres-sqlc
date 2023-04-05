@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -45,13 +46,21 @@ func main() {
 		return defaultDefName
 	})
 
+	fmt.Fprintf(os.Stderr, "postgen.PublicStructs: %v\n", postgen.PublicStructs)
+
+	keys := make([]string, 0, len(reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues))
+	for k := range reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues {
+		keys = append(keys, k)
+	}
+	fmt.Fprintf(os.Stderr, "keys: %v\n", keys)
+
 	for i, sn := range structNames {
 		dummyOp := openapi3.Operation{}
 		st, ok := postgen.PublicStructs[sn]
 		if !ok {
 			log.Fatalf("struct-name %s does not exist in PublicStructs", sn)
 		}
-
+		fmt.Fprintf(os.Stderr, "sn: %v\n", sn)
 		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
 		// ensure json tags are set for all top level fields in the struct. Either skip "-" or set fields.
 		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-postgen-struct": sn}

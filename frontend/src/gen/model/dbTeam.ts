@@ -6,10 +6,4 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export interface DbDemoProjectWorkItemPublic {
-  lastMessageAt: Date
-  line: string
-  ref: string
-  reopened: boolean
-  workItemID: number
-}
+export type DbTeam = unknown

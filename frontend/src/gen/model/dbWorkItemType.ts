@@ -6,11 +6,4 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export type DbProjectPublic = {
-  createdAt: Date
-  description: string
-  initialized: boolean
-  name: string
-  projectID: number
-  updatedAt: Date
-} | null
+export type DbWorkItemType = unknown
