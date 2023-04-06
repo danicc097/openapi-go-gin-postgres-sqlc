@@ -66,6 +66,7 @@ var PublicStructs = map[string]any{
 }
 
 func main() {
+	// must use first capitalized
 	structNames := []string{
 		"St1",
 		"St2",
