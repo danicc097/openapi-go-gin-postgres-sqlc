@@ -67,13 +67,17 @@ func main() {
 	type User struct {
 		UserID int     `json:"userID" db:"user_id"`
 		Name   string  `json:"name" db:"name"`
-		Teams  []*Team `json:"teams" db:"teams"`
+		Teams  *[]Team `json:"teams" db:"teams"`
 	}
 	rows, _ := pool.Query(context.Background(), `
 WITH user_team AS (
 	SELECT 1 AS user_id, 1 AS team_id
 	UNION ALL
 	SELECT 1 AS user_id, 2 AS team_id
+	UNION ALL
+	SELECT 99999 AS user_id, 1 AS team_id
+	UNION ALL
+	SELECT 99999 AS user_id, 2 AS team_id
 ), users AS (
 	SELECT 1 AS user_id, 'John Doe' AS name
 ),teams AS (
