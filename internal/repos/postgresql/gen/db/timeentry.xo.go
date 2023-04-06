@@ -66,7 +66,7 @@ func WithTimeEntryOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption 
 type TimeEntryJoins struct {
 }
 
-// WithTimeEntryJoin orders results by the given columns.
+// WithTimeEntryJoin joins with the given tables.
 func WithTimeEntryJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
 		s.joins = joins
@@ -85,7 +85,7 @@ func (te *TimeEntry) Deleted() bool {
 }
 
 // Insert inserts the TimeEntry to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 	switch {
 	case te._exists: // already exists
@@ -104,11 +104,11 @@ func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 
 	rows, err := db.Query(ctx, sqlstr, te.TimeEntryID, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/Insert/db.Query: %w", err))
 	}
 	newte, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newte._exists = true
 	te = &newte
@@ -134,11 +134,11 @@ func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 
 	rows, err := db.Query(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/Update/db.Query: %w", err))
 	}
 	newte, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/Update/pgx.CollectOneRow: %w", err))
 	}
 	newte._exists = true
 	te = &newte
@@ -230,11 +230,11 @@ time_entries.duration_minutes ` +
 	logf(sqlstr, timeEntryID)
 	rows, err := db.Query(ctx, sqlstr, timeEntryID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/db.Query: %w", err))
 	}
 	te, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/pgx.CollectOneRow: %w", err))
 	}
 	te._exists = true
 	return &te, nil
@@ -274,19 +274,10 @@ time_entries.duration_minutes ` +
 	}
 	defer rows.Close()
 	// process
-	var res []*TimeEntry
-	for rows.Next() {
-		te := TimeEntry{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&te.TimeEntryID, &te.WorkItemID, &te.ActivityID, &te.TeamID, &te.UserID, &te.Comment, &te.Start, &te.DurationMinutes); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &te)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*TimeEntry])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -325,19 +316,10 @@ time_entries.duration_minutes ` +
 	}
 	defer rows.Close()
 	// process
-	var res []*TimeEntry
-	for rows.Next() {
-		te := TimeEntry{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&te.TimeEntryID, &te.WorkItemID, &te.ActivityID, &te.TeamID, &te.UserID, &te.Comment, &te.Start, &te.DurationMinutes); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &te)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*TimeEntry])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

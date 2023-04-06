@@ -45,7 +45,7 @@ type UserNotificationJoins struct {
 	Notification bool
 }
 
-// WithUserNotificationJoin orders results by the given columns.
+// WithUserNotificationJoin joins with the given tables.
 func WithUserNotificationJoin(joins UserNotificationJoins) UserNotificationSelectConfigOption {
 	return func(s *UserNotificationSelectConfig) {
 		s.joins = joins
@@ -64,7 +64,7 @@ func (un *UserNotification) Deleted() bool {
 }
 
 // Insert inserts the UserNotification to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotification, error) {
 	switch {
 	case un._exists: // already exists
@@ -83,11 +83,11 @@ func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotificatio
 
 	rows, err := db.Query(ctx, sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Insert/db.Query: %w", err))
 	}
 	newun, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newun._exists = true
 	un = &newun
@@ -113,11 +113,11 @@ func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotificatio
 
 	rows, err := db.Query(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Update/db.Query: %w", err))
 	}
 	newun, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/Update/pgx.CollectOneRow: %w", err))
 	}
 	newun._exists = true
 	un = &newun
@@ -207,11 +207,11 @@ left join notifications on notifications.notification_id = user_notifications.no
 	logf(sqlstr, notificationID, userID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, notificationID, userID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByNotificationIDUserID/db.Query: %w", err))
 	}
 	un, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByNotificationIDUserID/pgx.CollectOneRow: %w", err))
 	}
 	un._exists = true
 	return &un, nil
@@ -245,11 +245,11 @@ left join notifications on notifications.notification_id = user_notifications.no
 	logf(sqlstr, userNotificationID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, userNotificationID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByUserNotificationID/db.Query: %w", err))
 	}
 	un, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByUserNotificationID/pgx.CollectOneRow: %w", err))
 	}
 	un._exists = true
 	return &un, nil
@@ -287,19 +287,10 @@ left join notifications on notifications.notification_id = user_notifications.no
 	}
 	defer rows.Close()
 	// process
-	var res []*UserNotification
-	for rows.Next() {
-		un := UserNotification{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&un.UserNotificationID, &un.NotificationID, &un.Read, &un.UserID); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &un)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserNotification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

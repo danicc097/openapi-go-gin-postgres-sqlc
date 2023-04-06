@@ -97,7 +97,7 @@ type UserJoins struct {
 	WorkItems   bool
 }
 
-// WithUserJoin orders results by the given columns.
+// WithUserJoin joins with the given tables.
 func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		s.joins = joins
@@ -116,7 +116,7 @@ func (u *User) Deleted() bool {
 }
 
 // Insert inserts the User to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	switch {
 	case u._exists: // already exists
@@ -135,11 +135,11 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 
 	rows, err := db.Query(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("User/Insert/db.Query: %w", err))
 	}
 	newu, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("User/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newu._exists = true
 	u = &newu
@@ -165,11 +165,11 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 
 	rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("User/Update/db.Query: %w", err))
 	}
 	newu, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("User/Update/pgx.CollectOneRow: %w", err))
 	}
 	newu._exists = true
 	u = &newu
@@ -330,19 +330,10 @@ left join (
 	}
 	defer rows.Close()
 	// process
-	var res []*User
-	for rows.Next() {
-		u := User{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &u)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -446,19 +437,10 @@ left join (
 	}
 	defer rows.Close()
 	// process
-	var res []*User
-	for rows.Next() {
-		u := User{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &u)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -558,11 +540,11 @@ left join (
 	logf(sqlstr, email)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, email)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("users/UserByEmail/db.Query: %w", err))
 	}
 	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("users/UserByEmail/pgx.CollectOneRow: %w", err))
 	}
 	u._exists = true
 	return &u, nil
@@ -663,11 +645,11 @@ left join (
 	logf(sqlstr, externalID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, externalID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("users/UserByExternalID/db.Query: %w", err))
 	}
 	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("users/UserByExternalID/pgx.CollectOneRow: %w", err))
 	}
 	u._exists = true
 	return &u, nil
@@ -768,11 +750,11 @@ left join (
 	logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, userID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
 	}
 	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("users/UserByUserID/pgx.CollectOneRow: %w", err))
 	}
 	u._exists = true
 	return &u, nil
@@ -877,19 +859,10 @@ left join (
 	}
 	defer rows.Close()
 	// process
-	var res []*User
-	for rows.Next() {
-		u := User{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &u)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -989,11 +962,11 @@ left join (
 	logf(sqlstr, username)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, username)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("users/UserByUsername/db.Query: %w", err))
 	}
 	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("users/UserByUsername/pgx.CollectOneRow: %w", err))
 	}
 	u._exists = true
 	return &u, nil

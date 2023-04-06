@@ -68,7 +68,7 @@ func WithWorkItemCommentOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentS
 type WorkItemCommentJoins struct {
 }
 
-// WithWorkItemCommentJoin orders results by the given columns.
+// WithWorkItemCommentJoin joins with the given tables.
 func WithWorkItemCommentJoin(joins WorkItemCommentJoins) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
 		s.joins = joins
@@ -87,7 +87,7 @@ func (wic *WorkItemComment) Deleted() bool {
 }
 
 // Insert inserts the WorkItemComment to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment, error) {
 	switch {
 	case wic._exists: // already exists
@@ -106,11 +106,11 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment
 
 	rows, err := db.Query(ctx, sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Insert/db.Query: %w", err))
 	}
 	newwic, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemComment])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newwic._exists = true
 	wic = &newwic
@@ -136,11 +136,11 @@ func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment
 
 	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Update/db.Query: %w", err))
 	}
 	newwic, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemComment])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemComment/Update/pgx.CollectOneRow: %w", err))
 	}
 	newwic._exists = true
 	wic = &newwic
@@ -230,11 +230,11 @@ work_item_comments.updated_at ` +
 	logf(sqlstr, workItemCommentID)
 	rows, err := db.Query(ctx, sqlstr, workItemCommentID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/db.Query: %w", err))
 	}
 	wic, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemComment])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/pgx.CollectOneRow: %w", err))
 	}
 	wic._exists = true
 	return &wic, nil
@@ -272,19 +272,10 @@ work_item_comments.updated_at ` +
 	}
 	defer rows.Close()
 	// process
-	var res []*WorkItemComment
-	for rows.Next() {
-		wic := WorkItemComment{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&wic.WorkItemCommentID, &wic.WorkItemID, &wic.UserID, &wic.Message, &wic.CreatedAt, &wic.UpdatedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &wic)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemComment])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

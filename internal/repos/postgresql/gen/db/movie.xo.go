@@ -42,7 +42,7 @@ const ()
 type MovieJoins struct {
 }
 
-// WithMovieJoin orders results by the given columns.
+// WithMovieJoin joins with the given tables.
 func WithMovieJoin(joins MovieJoins) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
 		s.joins = joins
@@ -61,7 +61,7 @@ func (m *Movie) Deleted() bool {
 }
 
 // Insert inserts the Movie to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 	switch {
 	case m._exists: // already exists
@@ -80,11 +80,11 @@ func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 
 	rows, err := db.Query(ctx, sqlstr, m.MovieID, m.Title, m.Year, m.Synopsis)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Movie/Insert/db.Query: %w", err))
 	}
 	newm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Movie])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Movie/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newm._exists = true
 	m = &newm
@@ -110,11 +110,11 @@ func (m *Movie) Update(ctx context.Context, db DB) (*Movie, error) {
 
 	rows, err := db.Query(ctx, sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Movie/Update/db.Query: %w", err))
 	}
 	newm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Movie])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Movie/Update/pgx.CollectOneRow: %w", err))
 	}
 	newm._exists = true
 	m = &newm
@@ -202,11 +202,11 @@ movies.synopsis ` +
 	logf(sqlstr, movieID)
 	rows, err := db.Query(ctx, sqlstr, movieID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("movies/MovieByMovieID/db.Query: %w", err))
 	}
 	m, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Movie])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("movies/MovieByMovieID/pgx.CollectOneRow: %w", err))
 	}
 	m._exists = true
 	return &m, nil

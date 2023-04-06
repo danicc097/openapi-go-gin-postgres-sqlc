@@ -40,7 +40,7 @@ const ()
 type SchemaMigrationJoins struct {
 }
 
-// WithSchemaMigrationJoin orders results by the given columns.
+// WithSchemaMigrationJoin joins with the given tables.
 func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
 		s.joins = joins
@@ -59,7 +59,7 @@ func (sm *SchemaMigration) Deleted() bool {
 }
 
 // Insert inserts the SchemaMigration to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration, error) {
 	switch {
 	case sm._exists: // already exists
@@ -77,11 +77,11 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration,
 	logf(sqlstr, sm.Version, sm.Dirty)
 	rows, err := db.Query(ctx, sqlstr, sm.Version, sm.Dirty)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("SchemaMigration/Insert/db.Query: %w", err))
 	}
 	newsm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[SchemaMigration])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("SchemaMigration/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newsm._exists = true
 	sm = &newsm
@@ -107,11 +107,11 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration,
 
 	rows, err := db.Query(ctx, sqlstr, sm.Dirty, sm.Version)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("SchemaMigration/Update/db.Query: %w", err))
 	}
 	newsm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[SchemaMigration])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("SchemaMigration/Update/pgx.CollectOneRow: %w", err))
 	}
 	newsm._exists = true
 	sm = &newsm
@@ -197,11 +197,11 @@ schema_migrations.dirty ` +
 	logf(sqlstr, version)
 	rows, err := db.Query(ctx, sqlstr, version)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/db.Query: %w", err))
 	}
 	sm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[SchemaMigration])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/pgx.CollectOneRow: %w", err))
 	}
 	sm._exists = true
 	return &sm, nil

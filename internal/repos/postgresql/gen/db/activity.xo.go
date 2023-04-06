@@ -45,7 +45,7 @@ type ActivityJoins struct {
 	TimeEntries bool
 }
 
-// WithActivityJoin orders results by the given columns.
+// WithActivityJoin joins with the given tables.
 func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 	return func(s *ActivitySelectConfig) {
 		s.joins = joins
@@ -64,7 +64,7 @@ func (a *Activity) Deleted() bool {
 }
 
 // Insert inserts the Activity to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 	switch {
 	case a._exists: // already exists
@@ -83,11 +83,11 @@ func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 
 	rows, err := db.Query(ctx, sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Insert/db.Query: %w", err))
 	}
 	newa, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newa._exists = true
 	a = &newa
@@ -113,11 +113,11 @@ func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 
 	rows, err := db.Query(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Update/db.Query: %w", err))
 	}
 	newa, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/Update/pgx.CollectOneRow: %w", err))
 	}
 	newa._exists = true
 	a = &newa
@@ -215,11 +215,11 @@ left join (
 	logf(sqlstr, name, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, name, projectID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/db.Query: %w", err))
 	}
 	a, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
 	a._exists = true
 	return &a, nil
@@ -261,11 +261,11 @@ left join (
 	logf(sqlstr, activityID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, activityID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/db.Query: %w", err))
 	}
 	a, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/pgx.CollectOneRow: %w", err))
 	}
 	a._exists = true
 	return &a, nil

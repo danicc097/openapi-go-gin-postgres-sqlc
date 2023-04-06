@@ -74,9 +74,9 @@ func main() {
 	user, err := db.UserByUsername(context.Background(), pool, username,
 		db.WithUserJoin(db.UserJoins{
 			// TODO fix array_agg pgx collect and reenable
-			// TimeEntries: true,
-			// WorkItems:   true,
-			// Teams:       true,
+			TimeEntries: true,
+			WorkItems:   true,
+			Teams:       true,
 		}),
 		db.WithUserOrderBy(db.UserCreatedAtDescNullsLast))
 	if err != nil {

@@ -40,7 +40,7 @@ const ()
 type WorkItemWorkItemTagJoins struct {
 }
 
-// WithWorkItemWorkItemTagJoin orders results by the given columns.
+// WithWorkItemWorkItemTagJoin joins with the given tables.
 func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
 	return func(s *WorkItemWorkItemTagSelectConfig) {
 		s.joins = joins
@@ -59,7 +59,7 @@ func (wiwit *WorkItemWorkItemTag) Deleted() bool {
 }
 
 // Insert inserts the WorkItemWorkItemTag to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemWorkItemTag, error) {
 	switch {
 	case wiwit._exists: // already exists
@@ -77,11 +77,11 @@ func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemW
 	logf(sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
 	rows, err := db.Query(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Insert/db.Query: %w", err))
 	}
 	newwiwit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newwiwit._exists = true
 	wiwit = &newwiwit
@@ -136,11 +136,11 @@ work_item_work_item_tag.work_item_id ` +
 	logf(sqlstr, workItemID, workItemTagID)
 	rows, err := db.Query(ctx, sqlstr, workItemID, workItemTagID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_work_item_tag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/db.Query: %w", err))
 	}
 	wiwit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_work_item_tag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/pgx.CollectOneRow: %w", err))
 	}
 	wiwit._exists = true
 	return &wiwit, nil
@@ -174,19 +174,10 @@ work_item_work_item_tag.work_item_id ` +
 	}
 	defer rows.Close()
 	// process
-	var res []*WorkItemWorkItemTag
-	for rows.Next() {
-		wiwit := WorkItemWorkItemTag{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&wiwit.WorkItemTagID, &wiwit.WorkItemID); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &wiwit)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemWorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

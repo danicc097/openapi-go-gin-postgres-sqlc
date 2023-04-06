@@ -108,7 +108,7 @@ type WorkItemJoins struct {
 	WorkItemType        bool
 }
 
-// WithWorkItemJoin orders results by the given columns.
+// WithWorkItemJoin joins with the given tables.
 func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
 		s.joins = joins
@@ -127,7 +127,7 @@ func (wi *WorkItem) Deleted() bool {
 }
 
 // Insert inserts the WorkItem to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	switch {
 	case wi._exists: // already exists
@@ -146,11 +146,11 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 
 	rows, err := db.Query(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Insert/db.Query: %w", err))
 	}
 	newwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newwi._exists = true
 	wi = &newwi
@@ -176,11 +176,11 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 
 	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Update/db.Query: %w", err))
 	}
 	newwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItem/Update/pgx.CollectOneRow: %w", err))
 	}
 	newwi._exists = true
 	wi = &newwi
@@ -354,19 +354,10 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 	}
 	defer rows.Close()
 	// process
-	var res []*WorkItem
-	for rows.Next() {
-		wi := WorkItem{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&wi.WorkItemID, &wi.Title, &wi.Description, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.TargetDate, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &wi)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -479,11 +470,11 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 	logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, workItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", err))
 	}
 	wi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
 	}
 	wi._exists = true
 	return &wi, nil

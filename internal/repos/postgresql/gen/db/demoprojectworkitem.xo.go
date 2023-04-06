@@ -64,7 +64,7 @@ type DemoProjectWorkItemJoins struct {
 	WorkItem bool
 }
 
-// WithDemoProjectWorkItemJoin orders results by the given columns.
+// WithDemoProjectWorkItemJoin joins with the given tables.
 func WithDemoProjectWorkItemJoin(joins DemoProjectWorkItemJoins) DemoProjectWorkItemSelectConfigOption {
 	return func(s *DemoProjectWorkItemSelectConfig) {
 		s.joins = joins
@@ -83,7 +83,7 @@ func (dpwi *DemoProjectWorkItem) Deleted() bool {
 }
 
 // Insert inserts the DemoProjectWorkItem to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (dpwi *DemoProjectWorkItem) Insert(ctx context.Context, db DB) (*DemoProjectWorkItem, error) {
 	switch {
 	case dpwi._exists: // already exists
@@ -101,11 +101,11 @@ func (dpwi *DemoProjectWorkItem) Insert(ctx context.Context, db DB) (*DemoProjec
 	logf(sqlstr, dpwi.WorkItemID, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened)
 	rows, err := db.Query(ctx, sqlstr, dpwi.WorkItemID, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DemoProjectWorkItem/Insert/db.Query: %w", err))
 	}
 	newdpwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DemoProjectWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("DemoProjectWorkItem/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newdpwi._exists = true
 	dpwi = &newdpwi
@@ -131,11 +131,11 @@ func (dpwi *DemoProjectWorkItem) Update(ctx context.Context, db DB) (*DemoProjec
 
 	rows, err := db.Query(ctx, sqlstr, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened, dpwi.WorkItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("DemoProjectWorkItem/Update/db.Query: %w", err))
 	}
 	newdpwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DemoProjectWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("DemoProjectWorkItem/Update/pgx.CollectOneRow: %w", err))
 	}
 	newdpwi._exists = true
 	dpwi = &newdpwi
@@ -226,11 +226,11 @@ left join work_items on work_items.work_item_id = demo_project_work_items.work_i
 	logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("demo_project_work_items/DemoProjectWorkItemByWorkItemID/db.Query: %w", err))
 	}
 	dpwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DemoProjectWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("demo_project_work_items/DemoProjectWorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
 	}
 	dpwi._exists = true
 	return &dpwi, nil
@@ -269,19 +269,10 @@ left join work_items on work_items.work_item_id = demo_project_work_items.work_i
 	}
 	defer rows.Close()
 	// process
-	var res []*DemoProjectWorkItem
-	for rows.Next() {
-		dpwi := DemoProjectWorkItem{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&dpwi.WorkItemID, &dpwi.Ref, &dpwi.Line, &dpwi.LastMessageAt, &dpwi.Reopened); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &dpwi)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*DemoProjectWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

@@ -120,11 +120,11 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- if $i.IsUnique }}
   rows, err := {{ db "Query" $i }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $i.Table.SQLName }}/{{ $i.Func }}/db.Query: %w", err))
 	}
 	{{ short $i.Table }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$i.Table.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $i.Table.SQLName }}/{{ $i.Func }}/pgx.CollectOneRow: %w", err))
 	}
 
 	{{- if $i.Table.PrimaryKeys }}
@@ -139,21 +139,10 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 	}
 	defer rows.Close()
 	// process
-	var res []*{{ $i.Table.GoName }}
-	for rows.Next() {
-		{{ short $i.Table }} := {{ $i.Table.GoName }}{
-		{{- if $i.Table.PrimaryKeys }}
-			_exists: true,
-		{{ end -}}
-		}
-		// scan
-		if err := rows.Scan({{ names_ignore (print "&" (short $i.Table) ".")  $i.Table }}); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &{{ short $i.Table }})
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+  {{/* might need to use non pointer []<st> in return if we get a NumField of non-struct type*/}}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*{{$i.Table.GoName}}])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 {{- end }}
@@ -245,7 +234,7 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 }
 
 // {{ func_name_context "Insert" }} inserts the {{ $t.GoName }} to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+{{/* TODO insert may generate rows. use Query instead of exec */}}
 {{ recv_context $t "Insert" }} {
 	switch {
 	case {{ short $t }}._exists: // already exists
@@ -260,11 +249,11 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	{{ logf $t }}
 	rows, err := {{ db_prefix "Query" true false $t }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/db.Query: %w", err))
 	}
 	new{{ short $t }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/pgx.CollectOneRow: %w", err))
 	}
 {{- else -}}
 	// insert (primary key generated and returned by database)
@@ -274,11 +263,11 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 
 	rows, err := {{ db_prefix "Query" true false $t }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/db.Query: %w", err))
 	}
 	new{{ short $t }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/pgx.CollectOneRow: %w", err))
 	}
 {{- end }}
 	new{{ short $t }}._exists = true
@@ -313,11 +302,11 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 
   rows, err := {{ db_update "Query" $t }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Update/db.Query: %w", err))
 	}
 	new{{ short $t }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Update/pgx.CollectOneRow: %w", err))
 	}
   new{{ short $t }}._exists = true
   {{ short $t }} = &new{{ short $t }}

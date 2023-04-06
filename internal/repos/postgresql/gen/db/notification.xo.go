@@ -70,7 +70,7 @@ type NotificationJoins struct {
 	UserNotification bool
 }
 
-// WithNotificationJoin orders results by the given columns.
+// WithNotificationJoin joins with the given tables.
 func WithNotificationJoin(joins NotificationJoins) NotificationSelectConfigOption {
 	return func(s *NotificationSelectConfig) {
 		s.joins = joins
@@ -89,7 +89,7 @@ func (n *Notification) Deleted() bool {
 }
 
 // Insert inserts the Notification to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error) {
 	switch {
 	case n._exists: // already exists
@@ -108,11 +108,11 @@ func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error)
 
 	rows, err := db.Query(ctx, sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/Insert/db.Query: %w", err))
 	}
 	newn, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Notification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newn._exists = true
 	n = &newn
@@ -138,11 +138,11 @@ func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error)
 
 	rows, err := db.Query(ctx, sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType, n.NotificationID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/Update/db.Query: %w", err))
 	}
 	newn, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Notification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Notification/Update/pgx.CollectOneRow: %w", err))
 	}
 	newn._exists = true
 	n = &newn
@@ -238,11 +238,11 @@ left join user_notifications on user_notifications.notification_id = notificatio
 	logf(sqlstr, notificationID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.UserNotification, notificationID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", err))
 	}
 	n, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Notification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/pgx.CollectOneRow: %w", err))
 	}
 	n._exists = true
 	return &n, nil
@@ -286,19 +286,10 @@ left join user_notifications on user_notifications.notification_id = notificatio
 	}
 	defer rows.Close()
 	// process
-	var res []*Notification
-	for rows.Next() {
-		n := Notification{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&n.NotificationID, &n.ReceiverRank, &n.Title, &n.Body, &n.Label, &n.Link, &n.CreatedAt, &n.Sender, &n.Receiver, &n.NotificationType); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &n)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Notification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

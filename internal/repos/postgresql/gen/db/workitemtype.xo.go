@@ -45,7 +45,7 @@ type WorkItemTypeJoins struct {
 	WorkItem bool
 }
 
-// WithWorkItemTypeJoin orders results by the given columns.
+// WithWorkItemTypeJoin joins with the given tables.
 func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOption {
 	return func(s *WorkItemTypeSelectConfig) {
 		s.joins = joins
@@ -64,7 +64,7 @@ func (wit *WorkItemType) Deleted() bool {
 }
 
 // Insert inserts the WorkItemType to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, error) {
 	switch {
 	case wit._exists: // already exists
@@ -83,11 +83,11 @@ func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, erro
 
 	rows, err := db.Query(ctx, sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemType/Insert/db.Query: %w", err))
 	}
 	newwit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemType])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemType/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newwit._exists = true
 	wit = &newwit
@@ -113,11 +113,11 @@ func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, erro
 
 	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemType/Update/db.Query: %w", err))
 	}
 	newwit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemType])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemType/Update/pgx.CollectOneRow: %w", err))
 	}
 	newwit._exists = true
 	wit = &newwit
@@ -208,11 +208,11 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	logf(sqlstr, name, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, name, projectID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByNameProjectID/db.Query: %w", err))
 	}
 	wit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemType])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
 	wit._exists = true
 	return &wit, nil
@@ -247,11 +247,11 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	logf(sqlstr, workItemTypeID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemTypeID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByWorkItemTypeID/db.Query: %w", err))
 	}
 	wit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemType])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByWorkItemTypeID/pgx.CollectOneRow: %w", err))
 	}
 	wit._exists = true
 	return &wit, nil

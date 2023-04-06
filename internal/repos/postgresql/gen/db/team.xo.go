@@ -71,7 +71,7 @@ type TeamJoins struct {
 	Users       bool
 }
 
-// WithTeamJoin orders results by the given columns.
+// WithTeamJoin joins with the given tables.
 func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
 		s.joins = joins
@@ -90,7 +90,7 @@ func (t *Team) Deleted() bool {
 }
 
 // Insert inserts the Team to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 	switch {
 	case t._exists: // already exists
@@ -109,11 +109,11 @@ func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 
 	rows, err := db.Query(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Team/Insert/db.Query: %w", err))
 	}
 	newt, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Team])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Team/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newt._exists = true
 	t = &newt
@@ -139,11 +139,11 @@ func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 
 	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt, t.TeamID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Team/Update/db.Query: %w", err))
 	}
 	newt, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Team])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Team/Update/pgx.CollectOneRow: %w", err))
 	}
 	newt._exists = true
 	t = &newt
@@ -265,11 +265,11 @@ left join (
 	logf(sqlstr, name, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name, projectID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/db.Query: %w", err))
 	}
 	t, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Team])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
 	t._exists = true
 	return &t, nil
@@ -335,11 +335,11 @@ left join (
 	logf(sqlstr, teamID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, teamID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/db.Query: %w", err))
 	}
 	t, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Team])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/pgx.CollectOneRow: %w", err))
 	}
 	t._exists = true
 	return &t, nil

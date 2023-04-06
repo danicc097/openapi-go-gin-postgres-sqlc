@@ -64,7 +64,7 @@ type UserAPIKeyJoins struct {
 	User bool
 }
 
-// WithUserAPIKeyJoin orders results by the given columns.
+// WithUserAPIKeyJoin joins with the given tables.
 func WithUserAPIKeyJoin(joins UserAPIKeyJoins) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
 		s.joins = joins
@@ -83,7 +83,7 @@ func (uak *UserAPIKey) Deleted() bool {
 }
 
 // Insert inserts the UserAPIKey to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 	switch {
 	case uak._exists: // already exists
@@ -102,11 +102,11 @@ func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 
 	rows, err := db.Query(ctx, sqlstr, uak.UserAPIKeyID, uak.APIKey, uak.ExpiresOn, uak.UserID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Insert/db.Query: %w", err))
 	}
 	newuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newuak._exists = true
 	uak = &newuak
@@ -132,11 +132,11 @@ func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
 
 	rows, err := db.Query(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Update/db.Query: %w", err))
 	}
 	newuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("UserAPIKey/Update/pgx.CollectOneRow: %w", err))
 	}
 	newuak._exists = true
 	uak = &newuak
@@ -226,11 +226,11 @@ left join users on users.user_id = user_api_keys.user_id` +
 	logf(sqlstr, apiKey)
 	rows, err := db.Query(ctx, sqlstr, c.joins.User, apiKey)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", err))
 	}
 	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/pgx.CollectOneRow: %w", err))
 	}
 	uak._exists = true
 	return &uak, nil
@@ -264,11 +264,11 @@ left join users on users.user_id = user_api_keys.user_id` +
 	logf(sqlstr, userAPIKeyID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.User, userAPIKeyID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", err))
 	}
 	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/pgx.CollectOneRow: %w", err))
 	}
 	uak._exists = true
 	return &uak, nil
@@ -302,11 +302,11 @@ left join users on users.user_id = user_api_keys.user_id` +
 	logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.User, userID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", err))
 	}
 	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/pgx.CollectOneRow: %w", err))
 	}
 	uak._exists = true
 	return &uak, nil

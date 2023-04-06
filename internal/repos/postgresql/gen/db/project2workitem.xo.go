@@ -61,7 +61,7 @@ type Project2WorkItemJoins struct {
 	WorkItem bool
 }
 
-// WithProject2WorkItemJoin orders results by the given columns.
+// WithProject2WorkItemJoin joins with the given tables.
 func WithProject2WorkItemJoin(joins Project2WorkItemJoins) Project2WorkItemSelectConfigOption {
 	return func(s *Project2WorkItemSelectConfig) {
 		s.joins = joins
@@ -80,7 +80,7 @@ func (pi *Project2WorkItem) Deleted() bool {
 }
 
 // Insert inserts the Project2WorkItem to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (pi *Project2WorkItem) Insert(ctx context.Context, db DB) (*Project2WorkItem, error) {
 	switch {
 	case pi._exists: // already exists
@@ -98,11 +98,11 @@ func (pi *Project2WorkItem) Insert(ctx context.Context, db DB) (*Project2WorkIte
 	logf(sqlstr, pi.WorkItemID, pi.CustomDateForProject2)
 	rows, err := db.Query(ctx, sqlstr, pi.WorkItemID, pi.CustomDateForProject2)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Project2WorkItem/Insert/db.Query: %w", err))
 	}
 	newpi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project2WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Project2WorkItem/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newpi._exists = true
 	pi = &newpi
@@ -128,11 +128,11 @@ func (pi *Project2WorkItem) Update(ctx context.Context, db DB) (*Project2WorkIte
 
 	rows, err := db.Query(ctx, sqlstr, pi.CustomDateForProject2, pi.WorkItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Project2WorkItem/Update/db.Query: %w", err))
 	}
 	newpi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project2WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Project2WorkItem/Update/pgx.CollectOneRow: %w", err))
 	}
 	newpi._exists = true
 	pi = &newpi
@@ -220,11 +220,11 @@ left join work_items on work_items.work_item_id = project_2_work_items.work_item
 	logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("project_2_work_items/Project2WorkItemByWorkItemID/db.Query: %w", err))
 	}
 	pi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project2WorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("project_2_work_items/Project2WorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
 	}
 	pi._exists = true
 	return &pi, nil

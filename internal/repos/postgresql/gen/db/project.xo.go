@@ -80,7 +80,7 @@ type ProjectJoins struct {
 	WorkItemTypes bool
 }
 
-// WithProjectJoin orders results by the given columns.
+// WithProjectJoin joins with the given tables.
 func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		s.joins = joins
@@ -99,7 +99,7 @@ func (p *Project) Deleted() bool {
 }
 
 // Insert inserts the Project to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 	switch {
 	case p._exists: // already exists
@@ -118,11 +118,11 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 
 	rows, err := db.Query(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Project/Insert/db.Query: %w", err))
 	}
 	newp, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Project/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newp._exists = true
 	p = &newp
@@ -148,11 +148,11 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 
 	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt, p.ProjectID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("Project/Update/db.Query: %w", err))
 	}
 	newp, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("Project/Update/pgx.CollectOneRow: %w", err))
 	}
 	newp._exists = true
 	p = &newp
@@ -293,11 +293,11 @@ left join (
 	logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, name)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("projects/ProjectByName/db.Query: %w", err))
 	}
 	p, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("projects/ProjectByName/pgx.CollectOneRow: %w", err))
 	}
 	p._exists = true
 	return &p, nil
@@ -382,11 +382,11 @@ left join (
 	logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/db.Query: %w", err))
 	}
 	p, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/pgx.CollectOneRow: %w", err))
 	}
 	p._exists = true
 	return &p, nil

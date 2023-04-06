@@ -41,7 +41,7 @@ const ()
 type UserTeamJoins struct {
 }
 
-// WithUserTeamJoin orders results by the given columns.
+// WithUserTeamJoin joins with the given tables.
 func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
 		s.joins = joins
@@ -60,7 +60,7 @@ func (ut *UserTeam) Deleted() bool {
 }
 
 // Insert inserts the UserTeam to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 	switch {
 	case ut._exists: // already exists
@@ -78,11 +78,11 @@ func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 	logf(sqlstr, ut.TeamID, ut.UserID)
 	rows, err := db.Query(ctx, sqlstr, ut.TeamID, ut.UserID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("UserTeam/Insert/db.Query: %w", err))
 	}
 	newut, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("UserTeam/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newut._exists = true
 	ut = &newut
@@ -137,11 +137,11 @@ user_team.user_id ` +
 	logf(sqlstr, userID, teamID)
 	rows, err := db.Query(ctx, sqlstr, userID, teamID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("user_team/UserTeamByUserIDTeamID/db.Query: %w", err))
 	}
 	ut, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("user_team/UserTeamByUserIDTeamID/pgx.CollectOneRow: %w", err))
 	}
 	ut._exists = true
 	return &ut, nil
@@ -175,19 +175,10 @@ user_team.user_id ` +
 	}
 	defer rows.Close()
 	// process
-	var res []*UserTeam
-	for rows.Next() {
-		ut := UserTeam{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&ut.TeamID, &ut.UserID); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &ut)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserTeam])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -220,19 +211,10 @@ user_team.user_id ` +
 	}
 	defer rows.Close()
 	// process
-	var res []*UserTeam
-	for rows.Next() {
-		ut := UserTeam{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&ut.TeamID, &ut.UserID); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &ut)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserTeam])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

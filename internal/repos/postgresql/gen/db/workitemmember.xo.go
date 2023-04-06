@@ -42,7 +42,7 @@ const ()
 type WorkItemMemberJoins struct {
 }
 
-// WithWorkItemMemberJoin orders results by the given columns.
+// WithWorkItemMemberJoin joins with the given tables.
 func WithWorkItemMemberJoin(joins WorkItemMemberJoins) WorkItemMemberSelectConfigOption {
 	return func(s *WorkItemMemberSelectConfig) {
 		s.joins = joins
@@ -61,7 +61,7 @@ func (wim *WorkItemMember) Deleted() bool {
 }
 
 // Insert inserts the WorkItemMember to the database.
-/* TODO insert may generate rows. use Query instead of exec */
+
 func (wim *WorkItemMember) Insert(ctx context.Context, db DB) (*WorkItemMember, error) {
 	switch {
 	case wim._exists: // already exists
@@ -79,11 +79,11 @@ func (wim *WorkItemMember) Insert(ctx context.Context, db DB) (*WorkItemMember, 
 	logf(sqlstr, wim.WorkItemID, wim.Member, wim.Role)
 	rows, err := db.Query(ctx, sqlstr, wim.WorkItemID, wim.Member, wim.Role)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemMember/Insert/db.Query: %w", err))
 	}
 	newwim, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemMember])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemMember/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newwim._exists = true
 	wim = &newwim
@@ -109,11 +109,11 @@ func (wim *WorkItemMember) Update(ctx context.Context, db DB) (*WorkItemMember, 
 
 	rows, err := db.Query(ctx, sqlstr, wim.Role, wim.WorkItemID, wim.Member)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemMember/Update/db.Query: %w", err))
 	}
 	newwim, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemMember])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemMember/Update/pgx.CollectOneRow: %w", err))
 	}
 	newwim._exists = true
 	wim = &newwim
@@ -204,19 +204,10 @@ work_item_member.role ` +
 	}
 	defer rows.Close()
 	// process
-	var res []*WorkItemMember
-	for rows.Next() {
-		wim := WorkItemMember{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&wim.WorkItemID, &wim.Member, &wim.Role); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &wim)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemMember])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -246,11 +237,11 @@ work_item_member.role ` +
 	logf(sqlstr, workItemID, member)
 	rows, err := db.Query(ctx, sqlstr, workItemID, member)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_member/WorkItemMemberByWorkItemIDMember/db.Query: %w", err))
 	}
 	wim, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemMember])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+		return nil, logerror(fmt.Errorf("work_item_member/WorkItemMemberByWorkItemIDMember/pgx.CollectOneRow: %w", err))
 	}
 	wim._exists = true
 	return &wim, nil
