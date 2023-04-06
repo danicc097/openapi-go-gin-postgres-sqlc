@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 // UserAPIKey represents a row from 'public.user_api_keys'.
@@ -196,7 +197,7 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true then row(users.*) end)::jsonb as user ` +
+(case when $1::boolean = true then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +
@@ -209,9 +210,13 @@ left join users on users.user_id = user_api_keys.user_id` +
 	uak := UserAPIKey{
 		_exists: true,
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.User, apiKey).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID, &uak.User); err != nil {
-		return nil, logerror(err)
+	rows, err:= db.Query(ctx, sqlstr, c.joins.User, apiKey)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
+	}
+	uak, err = pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
 	return &uak, nil
 }
@@ -232,7 +237,7 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true then row(users.*) end)::jsonb as user ` +
+(case when $1::boolean = true then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +
@@ -268,7 +273,7 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true then row(users.*) end)::jsonb as user ` +
+(case when $1::boolean = true then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +
