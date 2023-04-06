@@ -6,7 +6,7 @@
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
-import { validateJson } from '../validate'
+import { validateJson } from './validate'
 import {
   DbActivity,
   DbKanbanStep,
@@ -45,6 +45,8 @@ import {
   Project,
   demoProjectKanbanSteps,
   ModelsProjectConfigField,
+  DbProject2WorkItem,
+  DbWorkItem,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -495,5 +497,29 @@ export const ModelsProjectConfigFieldDecoder: Decoder<ModelsProjectConfigField> 
       throw new Error(`Schema ${ModelsProjectConfigFieldDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ModelsProjectConfigFieldDecoder.definitionName)
+  },
+}
+export const DbProject2WorkItemDecoder: Decoder<DbProject2WorkItem> = {
+  definitionName: 'DbProject2WorkItem',
+  schemaRef: '#/definitions/DbProject2WorkItem',
+
+  decode(json: unknown): DbProject2WorkItem {
+    const schema = ajv.getSchema(DbProject2WorkItemDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbProject2WorkItemDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbProject2WorkItemDecoder.definitionName)
+  },
+}
+export const DbWorkItemDecoder: Decoder<DbWorkItem> = {
+  definitionName: 'DbWorkItem',
+  schemaRef: '#/definitions/DbWorkItem',
+
+  decode(json: unknown): DbWorkItem {
+    const schema = ajv.getSchema(DbWorkItemDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbWorkItemDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbWorkItemDecoder.definitionName)
   },
 }

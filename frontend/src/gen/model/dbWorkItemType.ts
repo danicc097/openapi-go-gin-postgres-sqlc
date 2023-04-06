@@ -5,5 +5,13 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { DbWorkItem } from './dbWorkItem'
 
-export type DbWorkItemType = unknown
+export type DbWorkItemType = {
+  color?: string
+  description?: string
+  name?: string
+  projectID?: number
+  workItem?: DbWorkItem
+  workItemTypeID?: number
+} | null

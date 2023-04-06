@@ -25,7 +25,7 @@ type Notification struct {
 	Receiver         *uuid.UUID       `json:"receiver" db:"receiver"`                  // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type"` // notification_type
 
-	UserNotification *UserNotification `json:"user_notification" db:"user_notification"` // O2O
+	UserNotification *UserNotification `json:"userNotification" db:"user_notification"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }

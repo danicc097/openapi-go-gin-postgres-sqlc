@@ -15,7 +15,7 @@ type Project2WorkItem struct {
 	WorkItemID            int64      `json:"workItemID" db:"work_item_id"`                         // work_item_id
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2"` // custom_date_for_project_2
 
-	WorkItem *WorkItem `json:"work_item" db:"work_item"` // O2O
+	WorkItem *WorkItem `json:"workItem" db:"work_item"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }

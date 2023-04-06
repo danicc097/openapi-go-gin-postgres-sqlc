@@ -65,12 +65,19 @@ func main() {
 	fmt.Println(string(s))
 }
 
-func hasJSONTag(input any) bool {
+func hasJSONTag(input interface{}) bool {
 	t := reflect.TypeOf(input)
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		if _, ok := field.Tag.Lookup("json"); ok {
 			return true
+		}
+
+		// Check embedded structs
+		if field.Type.Kind() == reflect.Struct && field.Anonymous {
+			if hasJSONTag(reflect.New(field.Type).Elem().Interface()) {
+				return true
+			}
 		}
 	}
 

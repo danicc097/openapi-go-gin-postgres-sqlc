@@ -3,46 +3,441 @@
   "title": "Schema",
   "definitions": {
     "DbActivity": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string"
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "timeEntries": {
+          "items": {
+            "$ref": "#/definitions/DbTimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
       "x-postgen-struct": "DbActivity",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbKanbanStep": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "stepOrder": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeTrackable": {
+          "type": "boolean"
+        }
+      },
+      "type": "object",
       "x-postgen-struct": "DbKanbanStep",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbProject": {
+      "properties": {
+        "activities": {
+          "items": {
+            "$ref": "#/definitions/DbActivity"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "initialized": {
+          "type": "boolean"
+        },
+        "kanbanSteps": {
+          "items": {
+            "$ref": "#/definitions/DbKanbanStep"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teams": {
+          "items": {
+            "$ref": "#/definitions/DbTeam"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "workItemTags": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTag"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemTypes": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemType"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
       "x-postgen-struct": "DbProject",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbTeam": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "timeEntries": {
+          "items": {
+            "$ref": "#/definitions/DbTimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "users": {
+          "items": {
+            "$ref": "#/definitions/DbUser"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
       "x-postgen-struct": "DbTeam",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemTag": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTagID": {
+          "type": "integer"
+        },
+        "workItems": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItem"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
       "x-postgen-struct": "DbWorkItemTag",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemType": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItem": {
+          "$ref": "#/definitions/DbWorkItem"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ],
       "x-postgen-struct": "DbWorkItemType",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbDemoProjectWorkItem": {
+      "properties": {
+        "lastMessageAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "line": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "reopened": {
+          "type": "boolean"
+        },
+        "workItem": {
+          "$ref": "#/definitions/DbWorkItem"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ],
       "x-postgen-struct": "DbDemoProjectWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbUserAPIKey": {
+      "properties": {
+        "apiKey": {
+          "type": "string"
+        },
+        "expiresOn": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "user": {
+          "$ref": "#/definitions/DbUser"
+        },
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ],
       "x-postgen-struct": "DbUserAPIKey",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbUser": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fullName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hasGlobalNotifications": {
+          "type": "boolean"
+        },
+        "hasPersonalNotifications": {
+          "type": "boolean"
+        },
+        "lastName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "teams": {
+          "items": {
+            "$ref": "#/definitions/DbTeam"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "timeEntries": {
+          "items": {
+            "$ref": "#/definitions/DbTimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "userAPIKey": {
+          "$ref": "#/definitions/DbUserAPIKey"
+        },
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        },
+        "username": {
+          "type": "string"
+        },
+        "workItems": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItem"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
       "x-postgen-struct": "DbUser",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbTimeEntry": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeEntryID": {
+          "type": "integer"
+        },
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
       "x-postgen-struct": "DbTimeEntry",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemComment": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        },
+        "workItemCommentID": {
+          "type": "integer"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
       "x-postgen-struct": "DbWorkItemComment",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -116,6 +511,9 @@
         "metadata": {
           "$ref": "#/definitions/PgtypeJSONB"
         },
+        "project2workItem": {
+          "$ref": "#/definitions/DbProject2WorkItem"
+        },
         "targetDate": {
           "format": "date-time",
           "type": "string"
@@ -168,18 +566,6 @@
         }
       },
       "required": [
-        "workItemID",
-        "title",
-        "description",
-        "workItemTypeID",
-        "metadata",
-        "teamID",
-        "kanbanStepID",
-        "closed",
-        "targetDate",
-        "createdAt",
-        "updatedAt",
-        "deletedAt",
         "demoProjectWorkItem"
       ],
       "type": "object",
@@ -243,53 +629,8 @@
     },
     "RestProjectBoardResponse": {
       "properties": {
-        "activities": {
-          "items": {
-            "$ref": "#/definitions/DbActivity"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "kanbanSteps": {
-          "items": {
-            "$ref": "#/definitions/DbKanbanStep"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
         "project": {
           "$ref": "#/definitions/DbProject"
-        },
-        "teams": {
-          "items": {
-            "$ref": "#/definitions/DbTeam"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemTags": {
-          "items": {
-            "$ref": "#/definitions/DbWorkItemTag"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemTypes": {
-          "items": {
-            "$ref": "#/definitions/DbWorkItemType"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         }
       },
       "type": "object",
@@ -300,44 +641,6 @@
       "properties": {
         "apiKey": {
           "$ref": "#/definitions/DbUserAPIKey"
-        },
-        "createdAt": {
-          "format": "date-time",
-          "type": "string"
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "email": {
-          "type": "string"
-        },
-        "firstName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "fullName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "hasGlobalNotifications": {
-          "type": "boolean"
-        },
-        "hasPersonalNotifications": {
-          "type": "boolean"
-        },
-        "lastName": {
-          "type": [
-            "string",
-            "null"
-          ]
         },
         "projects": {
           "items": {
@@ -362,27 +665,11 @@
             "array",
             "null"
           ]
-        },
-        "userID": {
-          "$ref": "#/definitions/UuidUUID"
-        },
-        "username": {
-          "type": "string"
         }
       },
       "required": [
         "role",
-        "scopes",
-        "userID",
-        "username",
-        "email",
-        "firstName",
-        "lastName",
-        "fullName",
-        "hasPersonalNotifications",
-        "hasGlobalNotifications",
-        "createdAt",
-        "deletedAt"
+        "scopes"
       ],
       "type": "object",
       "x-postgen-struct": "RestUserResponse",
@@ -673,6 +960,127 @@
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbProject2WorkItem": {
+      "properties": {
+        "customDateForProject2": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workItem": {
+          "$ref": "#/definitions/DbWorkItem"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItem": {
+      "properties": {
+        "closed": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "demoProjectWorkItem": {
+          "$ref": "#/definitions/DbDemoProjectWorkItem"
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "members": {
+          "items": {
+            "$ref": "#/definitions/DbUser"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "metadata": {
+          "$ref": "#/definitions/PgtypeJSONB"
+        },
+        "project2workItem": {
+          "$ref": "#/definitions/DbProject2WorkItem"
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "timeEntries": {
+          "items": {
+            "$ref": "#/definitions/DbTimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "workItemComments": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemComment"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTags": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTag"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemType": {
+          "$ref": "#/definitions/DbWorkItemType"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "DbWorkItem",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -786,6 +1194,12 @@
     },
     "ModelsProjectConfigField": {
       "$ref": "#/definitions/ModelsProjectConfigField"
+    },
+    "DbProject2WorkItem": {
+      "$ref": "#/definitions/DbProject2WorkItem"
+    },
+    "DbWorkItem": {
+      "$ref": "#/definitions/DbWorkItem"
     }
   }
 }

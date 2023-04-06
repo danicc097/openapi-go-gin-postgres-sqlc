@@ -5,18 +5,8 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbActivity } from './dbActivity'
-import type { DbKanbanStep } from './dbKanbanStep'
 import type { DbProject } from './dbProject'
-import type { DbTeam } from './dbTeam'
-import type { DbWorkItemTag } from './dbWorkItemTag'
-import type { DbWorkItemType } from './dbWorkItemType'
 
 export interface RestProjectBoardResponse {
-  activities?: DbActivity[] | null
-  kanbanSteps?: DbKanbanStep[] | null
   project?: DbProject
-  teams?: DbTeam[] | null
-  workItemTags?: DbWorkItemTag[] | null
-  workItemTypes?: DbWorkItemType[] | null
 }

@@ -41,6 +41,8 @@ import {
   Project,
   demoProjectKanbanSteps,
   ModelsProjectConfigField,
+  DbProject2WorkItem,
+  DbWorkItem,
 } from './models'
 
 export const schemaDefinitions = {
@@ -108,6 +110,8 @@ export const schemaDefinitions = {
     'ModelsProjectConfigField',
     '#/definitions/ModelsProjectConfigField',
   ),
+  DbProject2WorkItem: info<DbProject2WorkItem>('DbProject2WorkItem', '#/definitions/DbProject2WorkItem'),
+  DbWorkItem: info<DbWorkItem>('DbWorkItem', '#/definitions/DbWorkItem'),
 }
 
 export interface SchemaInfo<T> {

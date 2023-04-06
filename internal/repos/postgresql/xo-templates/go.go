@@ -2450,7 +2450,7 @@ func (f *Funcs) join_fields(sqlname string, public bool, constraints interface{}
 				typ = typ + "Public"
 				tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(camel(goName)))
 			} else {
-				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(lookupName), inflector.Pluralize(lookupName))
+				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(camel(lookupName)), inflector.Pluralize(lookupName))
 			}
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
 			// TODO revisit. O2M and M2O from different viewpoints.
@@ -2464,7 +2464,7 @@ func (f *Funcs) join_fields(sqlname string, public bool, constraints interface{}
 				typ = typ + "Public"
 				tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(camel(goName)))
 			} else {
-				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(c.TableName), inflector.Pluralize(c.TableName))
+				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(camel(c.TableName)), inflector.Pluralize(c.TableName))
 			}
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
 		case "O2O":
@@ -2475,7 +2475,7 @@ func (f *Funcs) join_fields(sqlname string, public bool, constraints interface{}
 					typ = typ + "Public"
 					tag = fmt.Sprintf("`json:\"%s\"`", inflector.Singularize(camel(goName)))
 				} else {
-					tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", snaker.CamelToSnake(goName), inflector.Singularize(c.RefTableName))
+					tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", camel(goName), inflector.Singularize(c.RefTableName))
 				}
 				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, c.Cardinality))
 			}
@@ -2486,7 +2486,7 @@ func (f *Funcs) join_fields(sqlname string, public bool, constraints interface{}
 					typ = typ + "Public"
 					tag = fmt.Sprintf("`json:\"%s\"`", inflector.Singularize(camel(goName)))
 				} else {
-					tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", snaker.CamelToSnake(goName), inflector.Singularize(c.TableName))
+					tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", camel(goName), inflector.Singularize(c.TableName))
 				}
 				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, c.Cardinality))
 			}

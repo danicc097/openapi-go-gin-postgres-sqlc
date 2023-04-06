@@ -7,11 +7,8 @@
  */
 import type { DbWorkItem } from './dbWorkItem'
 
-export interface DbWorkItemTag {
-  color?: string
-  description?: string
-  name?: string
-  projectID?: number
-  workItemTagID?: number
-  workItems?: DbWorkItem[] | null
-}
+export type DbProject2WorkItem = {
+  customDateForProject2?: Date | null
+  workItem?: DbWorkItem
+  workItemID?: number
+} | null

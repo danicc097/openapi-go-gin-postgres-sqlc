@@ -5,5 +5,13 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { DbTimeEntry } from './dbTimeEntry'
 
-export type DbActivity = unknown
+export interface DbActivity {
+  activityID?: number
+  description?: string
+  isProductive?: boolean
+  name?: string
+  projectID?: number
+  timeEntries?: DbTimeEntry[] | null
+}

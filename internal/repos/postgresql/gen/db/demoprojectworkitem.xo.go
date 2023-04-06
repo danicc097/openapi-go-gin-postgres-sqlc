@@ -18,7 +18,7 @@ type DemoProjectWorkItem struct {
 	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at"` // last_message_at
 	Reopened      bool      `json:"reopened" db:"reopened"`             // reopened
 
-	WorkItem *WorkItem `json:"work_item" db:"work_item"` // O2O
+	WorkItem *WorkItem `json:"workItem" db:"work_item"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }

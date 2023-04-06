@@ -14,11 +14,11 @@ import type { DbWorkItemComment } from './dbWorkItemComment'
 import type { DbWorkItemTag } from './dbWorkItemTag'
 import type { DbWorkItemType } from './dbWorkItemType'
 
-export interface DemoProjectWorkItemsResponse {
+export interface DbWorkItem {
   closed?: Date | null
   createdAt?: Date
   deletedAt?: Date | null
-  demoProjectWorkItem: DbDemoProjectWorkItem
+  demoProjectWorkItem?: DbDemoProjectWorkItem
   description?: string
   kanbanStepID?: number
   members?: DbUser[] | null

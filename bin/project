@@ -4,7 +4,7 @@
 #
 # Main s̶c̶r̶i̶p̶t program to manage the entire project stack.
 #
-# For first-timers, ensure all dependencies and tools are installed with `project bootstrap`.
+# For first-timers, ensure all dependencies and tools are installed with `project bootstrap` and run `project gen` at least once to build required tools and ensure your output is deterministic.
 #
 #
 

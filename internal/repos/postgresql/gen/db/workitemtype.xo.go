@@ -16,7 +16,7 @@ type WorkItemType struct {
 	Description    string `json:"description" db:"description"`          // description
 	Color          string `json:"color" db:"color"`                      // color
 
-	WorkItem *WorkItem `json:"work_item" db:"work_item"` // O2O
+	WorkItem *WorkItem `json:"workItem" db:"work_item"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }

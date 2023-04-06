@@ -23,11 +23,11 @@ type Project struct {
 	CreatedAt          time.Time    `json:"createdAt" db:"created_at"`    // created_at
 	UpdatedAt          time.Time    `json:"updatedAt" db:"updated_at"`    // updated_at
 
-	Activities    *[]Activity     `json:"activities" db:"activities"`           // O2M
-	KanbanSteps   *[]KanbanStep   `json:"kanban_steps" db:"kanban_steps"`       // O2M
-	Teams         *[]Team         `json:"teams" db:"teams"`                     // O2M
-	WorkItemTags  *[]WorkItemTag  `json:"work_item_tags" db:"work_item_tags"`   // O2M
-	WorkItemTypes *[]WorkItemType `json:"work_item_types" db:"work_item_types"` // O2M
+	Activities    *[]Activity     `json:"activities" db:"activities"`         // O2M
+	KanbanSteps   *[]KanbanStep   `json:"kanbanSteps" db:"kanban_steps"`      // O2M
+	Teams         *[]Team         `json:"teams" db:"teams"`                   // O2M
+	WorkItemTags  *[]WorkItemTag  `json:"workItemTags" db:"work_item_tags"`   // O2M
+	WorkItemTypes *[]WorkItemType `json:"workItemTypes" db:"work_item_types"` // O2M
 	// xo fields
 	_exists, _deleted bool
 }

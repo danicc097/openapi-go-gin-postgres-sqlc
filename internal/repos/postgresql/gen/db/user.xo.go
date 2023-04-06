@@ -30,10 +30,10 @@ type User struct {
 	UpdatedAt                time.Time  `json:"-" db:"updated_at"`                                        // updated_at
 	DeletedAt                *time.Time `json:"deletedAt" db:"deleted_at"`                                // deleted_at
 
-	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
-	UserAPIKey  *UserAPIKey  `json:"user_api_key" db:"user_api_key"` // O2O
-	Teams       *[]Team      `json:"teams" db:"teams"`               // M2M
-	WorkItems   *[]WorkItem  `json:"work_items" db:"work_items"`     // M2M
+	TimeEntries *[]TimeEntry `json:"timeEntries" db:"time_entries"` // O2M
+	UserAPIKey  *UserAPIKey  `json:"userAPIKey" db:"user_api_key"`  // O2O
+	Teams       *[]Team      `json:"teams" db:"teams"`              // M2M
+	WorkItems   *[]WorkItem  `json:"workItems" db:"work_items"`     // M2M
 	// xo fields
 	_exists, _deleted bool
 }

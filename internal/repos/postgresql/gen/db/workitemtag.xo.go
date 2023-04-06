@@ -16,7 +16,7 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description"`        // description
 	Color         string `json:"color" db:"color"`                    // color
 
-	WorkItems *[]WorkItem `json:"work_items" db:"work_items"` // M2M
+	WorkItems *[]WorkItem `json:"workItems" db:"work_items"` // M2M
 	// xo fields
 	_exists, _deleted bool
 }

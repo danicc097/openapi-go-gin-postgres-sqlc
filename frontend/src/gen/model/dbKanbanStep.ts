@@ -6,4 +6,12 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export type DbKanbanStep = unknown
+export interface DbKanbanStep {
+  color?: string
+  description?: string
+  kanbanStepID?: number
+  name?: string
+  projectID?: number
+  stepOrder?: number | null
+  timeTrackable?: boolean
+}
