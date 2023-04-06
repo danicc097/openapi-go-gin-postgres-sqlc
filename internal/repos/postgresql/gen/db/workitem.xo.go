@@ -268,10 +268,10 @@ work_items.updated_at,
 work_items.deleted_at,
 (case when $1::boolean = true then row(demo_project_work_items.*) end) as demo_project_work_item,
 (case when $2::boolean = true then row(project_2_work_items.*) end) as project_2_work_item,
-(case when $3::boolean = true then joined_time_entries.time_entries end) as time_entries,
-(case when $4::boolean = true then joined_work_item_comments.work_item_comments end) as work_item_comments,
-(case when $5::boolean = true then joined_users.users end) as users,
-(case when $6::boolean = true then joined_work_item_tags.work_item_tags end) as work_item_tags,
+(case when $3::boolean = true then array_agg(joined_time_entries.time_entries) end) as time_entries,
+(case when $4::boolean = true then array_agg(joined_work_item_comments.work_item_comments) end) as work_item_comments,
+(case when $5::boolean = true then array_agg(joined_users.users) end) as users,
+(case when $6::boolean = true then array_agg(joined_work_item_tags.work_item_tags) end) as work_item_tags,
 (case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
@@ -364,10 +364,10 @@ work_items.updated_at,
 work_items.deleted_at,
 (case when $1::boolean = true then row(demo_project_work_items.*) end) as demo_project_work_item,
 (case when $2::boolean = true then row(project_2_work_items.*) end) as project_2_work_item,
-(case when $3::boolean = true then joined_time_entries.time_entries end) as time_entries,
-(case when $4::boolean = true then joined_work_item_comments.work_item_comments end) as work_item_comments,
-(case when $5::boolean = true then joined_users.users end) as users,
-(case when $6::boolean = true then joined_work_item_tags.work_item_tags end) as work_item_tags,
+(case when $3::boolean = true then array_agg(joined_time_entries.time_entries) end) as time_entries,
+(case when $4::boolean = true then array_agg(joined_work_item_comments.work_item_comments) end) as work_item_comments,
+(case when $5::boolean = true then array_agg(joined_users.users) end) as users,
+(case when $6::boolean = true then array_agg(joined_work_item_tags.work_item_tags) end) as work_item_tags,
 (case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"

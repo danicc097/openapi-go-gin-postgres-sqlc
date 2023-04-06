@@ -258,10 +258,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
+(case when $3::boolean = true then array_agg(joined_teams.teams) end) as teams,
+(case when $4::boolean = true then array_agg(joined_work_items.work_items) end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -341,10 +341,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
+(case when $3::boolean = true then array_agg(joined_teams.teams) end) as teams,
+(case when $4::boolean = true then array_agg(joined_work_items.work_items) end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -424,10 +424,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
+(case when $3::boolean = true then array_agg(joined_teams.teams) end) as teams,
+(case when $4::boolean = true then array_agg(joined_work_items.work_items) end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -505,10 +505,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
+(case when $3::boolean = true then array_agg(joined_teams.teams) end) as teams,
+(case when $4::boolean = true then array_agg(joined_work_items.work_items) end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -586,10 +586,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
+(case when $3::boolean = true then array_agg(joined_teams.teams) end) as teams,
+(case when $4::boolean = true then array_agg(joined_work_items.work_items) end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -667,10 +667,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
+(case when $3::boolean = true then array_agg(joined_teams.teams) end) as teams,
+(case when $4::boolean = true then array_agg(joined_work_items.work_items) end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -750,10 +750,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
+(case when $3::boolean = true then array_agg(joined_teams.teams) end) as teams,
+(case when $4::boolean = true then array_agg(joined_work_items.work_items) end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (

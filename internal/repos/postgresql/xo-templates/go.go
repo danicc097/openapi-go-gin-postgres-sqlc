@@ -2003,7 +2003,7 @@ func (f *Funcs) sqlstr_delete(v interface{}) []string {
 }
 
 const (
-	M2MSelect = `(case when {{.Nth}}::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end) as {{.JoinTable}}`
+	M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(joined_{{.JoinTable}}.{{.JoinTable}}) end) as {{.JoinTable}}`
 	O2MSelect = M2MSelect
 	O2OSelect = `(case when {{.Nth}}::boolean = true then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
 )
