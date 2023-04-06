@@ -82,7 +82,7 @@ WITH user_team AS (
 	SELECT 2 AS team_id, 'team 2' AS name
 )
 SELECT users.user_id,
-array_agg(joined_teams.teams) as teams
+array_agg(joined_teams.teams) filter (where joined_teams.teams is not null) as teams
 FROM users
 left join (
 	select

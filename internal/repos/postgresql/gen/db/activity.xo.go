@@ -196,7 +196,7 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) end) as time_entries ` +
+(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) filter (where joined_teams.teams is not null) end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
@@ -242,7 +242,7 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) end) as time_entries ` +
+(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) filter (where joined_teams.teams is not null) end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2M join generated from "time_entries_activity_id_fkey"
 left join (

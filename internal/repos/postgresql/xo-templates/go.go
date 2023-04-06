@@ -2003,7 +2003,7 @@ func (f *Funcs) sqlstr_delete(v interface{}) []string {
 }
 
 const (
-	M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(joined_{{.JoinTable}}.{{.JoinTable}}) end) as {{.JoinTable}}`
+	M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(joined_{{.JoinTable}}.{{.JoinTable}}) filter (where joined_teams.teams is not null) end) as {{.JoinTable}}`
 	O2MSelect = M2MSelect
 	O2OSelect = `(case when {{.Nth}}::boolean = true then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
 )
@@ -2112,6 +2112,8 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		} else {
 			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
 		}
+
+		// TODO if m2m join need group by {{.CurrentTable}}.{{.LookupRefColumn}}
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
 }
