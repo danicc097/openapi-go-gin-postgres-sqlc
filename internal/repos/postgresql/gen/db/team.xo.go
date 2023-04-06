@@ -238,25 +238,13 @@ left join (
 -- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
-		team_id as users_team_id
-		, array_agg(users.*) as users
-	from
-		user_team
-		join users using (user_id)
-	where
-		team_id in (
-			select
-				team_id
-			from
-				user_team
-			where
-				user_id = any (
-					select
-						user_id
-					from
-						users))
-			group by
-				team_id) joined_users on joined_users.users_team_id = teams.team_id` +
+		user_team.team_id as users_team_id
+		, row(users.*) as users
+		from user_team
+    join users using (user_id)
+    group by users_team_id, users.user_id
+  ) as joined_users on joined_users.users_team_id = teams.team_id
+` +
 		` WHERE teams.name = $3 AND teams.project_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -308,25 +296,13 @@ left join (
 -- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
-		team_id as users_team_id
-		, array_agg(users.*) as users
-	from
-		user_team
-		join users using (user_id)
-	where
-		team_id in (
-			select
-				team_id
-			from
-				user_team
-			where
-				user_id = any (
-					select
-						user_id
-					from
-						users))
-			group by
-				team_id) joined_users on joined_users.users_team_id = teams.team_id` +
+		user_team.team_id as users_team_id
+		, row(users.*) as users
+		from user_team
+    join users using (user_id)
+    group by users_team_id, users.user_id
+  ) as joined_users on joined_users.users_team_id = teams.team_id
+` +
 		` WHERE teams.team_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

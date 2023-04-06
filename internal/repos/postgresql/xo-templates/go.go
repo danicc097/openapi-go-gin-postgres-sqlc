@@ -2012,25 +2012,13 @@ const (
 	M2MJoin = `
 left join (
 	select
-		{{.LookupColumn}} as {{.JoinTable}}_{{.LookupRefColumn}}
-		, array_agg({{.JoinTable}}.*) as {{.JoinTable}}
-	from
-		{{.LookupTable}}
-		join {{.JoinTable}} using ({{.JoinTablePK}})
-	where
-		{{.LookupColumn}} in (
-			select
-				{{.LookupColumn}}
-			from
-				{{.LookupTable}}
-			where
-				{{.JoinTablePK}} = any (
-					select
-						{{.JoinTablePK}}
-					from
-						{{.JoinTable}}))
-			group by
-				{{.LookupColumn}}) joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.JoinTable}}_{{.LookupRefColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}`
+		{{.LookupTable}}.{{.LookupColumn}} as {{.JoinTable}}_{{.LookupColumn}}
+		, row({{.JoinTable}}.*) as {{.JoinTable}}
+		from {{.LookupTable}}
+    join {{.JoinTable}} using ({{.JoinTablePK}})
+    group by {{.JoinTable}}_{{.LookupColumn}}, {{.JoinTable}}.{{.JoinTablePK}}
+  ) as joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.JoinTable}}_{{.LookupColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}
+`
 	M2OJoin = `
 left join (
   select

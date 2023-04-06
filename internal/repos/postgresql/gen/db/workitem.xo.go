@@ -299,47 +299,23 @@ left join (
 -- M2M join generated from "work_item_member_member_fkey"
 left join (
 	select
-		work_item_id as users_work_item_id
-		, array_agg(users.*) as users
-	from
-		work_item_member
-		join users using (user_id)
-	where
-		work_item_id in (
-			select
-				work_item_id
-			from
-				work_item_member
-			where
-				user_id = any (
-					select
-						user_id
-					from
-						users))
-			group by
-				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id
+		work_item_member.work_item_id as users_work_item_id
+		, row(users.*) as users
+		from work_item_member
+    join users using (user_id)
+    group by users_work_item_id, users.user_id
+  ) as joined_users on joined_users.users_work_item_id = work_items.work_item_id
+
 -- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
 	select
-		work_item_id as work_item_tags_work_item_id
-		, array_agg(work_item_tags.*) as work_item_tags
-	from
-		work_item_work_item_tag
-		join work_item_tags using (work_item_tag_id)
-	where
-		work_item_id in (
-			select
-				work_item_id
-			from
-				work_item_work_item_tag
-			where
-				work_item_tag_id = any (
-					select
-						work_item_tag_id
-					from
-						work_item_tags))
-			group by
-				work_item_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_work_item_id = work_items.work_item_id
+		work_item_work_item_tag.work_item_id as work_item_tags_work_item_id
+		, row(work_item_tags.*) as work_item_tags
+		from work_item_work_item_tag
+    join work_item_tags using (work_item_tag_id)
+    group by work_item_tags_work_item_id, work_item_tags.work_item_tag_id
+  ) as joined_work_item_tags on joined_work_item_tags.work_item_tags_work_item_id = work_items.work_item_id
+
 -- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_item_types on work_item_types.work_item_type_id = work_items.work_item_type_id`+
 		` WHERE work_items.deleted_at = $8 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s `, c.deletedAt)
@@ -419,47 +395,23 @@ left join (
 -- M2M join generated from "work_item_member_member_fkey"
 left join (
 	select
-		work_item_id as users_work_item_id
-		, array_agg(users.*) as users
-	from
-		work_item_member
-		join users using (user_id)
-	where
-		work_item_id in (
-			select
-				work_item_id
-			from
-				work_item_member
-			where
-				user_id = any (
-					select
-						user_id
-					from
-						users))
-			group by
-				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id
+		work_item_member.work_item_id as users_work_item_id
+		, row(users.*) as users
+		from work_item_member
+    join users using (user_id)
+    group by users_work_item_id, users.user_id
+  ) as joined_users on joined_users.users_work_item_id = work_items.work_item_id
+
 -- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
 	select
-		work_item_id as work_item_tags_work_item_id
-		, array_agg(work_item_tags.*) as work_item_tags
-	from
-		work_item_work_item_tag
-		join work_item_tags using (work_item_tag_id)
-	where
-		work_item_id in (
-			select
-				work_item_id
-			from
-				work_item_work_item_tag
-			where
-				work_item_tag_id = any (
-					select
-						work_item_tag_id
-					from
-						work_item_tags))
-			group by
-				work_item_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_work_item_id = work_items.work_item_id
+		work_item_work_item_tag.work_item_id as work_item_tags_work_item_id
+		, row(work_item_tags.*) as work_item_tags
+		from work_item_work_item_tag
+    join work_item_tags using (work_item_tag_id)
+    group by work_item_tags_work_item_id, work_item_tags.work_item_tag_id
+  ) as joined_work_item_tags on joined_work_item_tags.work_item_tags_work_item_id = work_items.work_item_id
+
 -- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_item_types on work_item_types.work_item_type_id = work_items.work_item_type_id`+
 		` WHERE work_items.work_item_id = $8  AND work_items.deleted_at is %s `, c.deletedAt)

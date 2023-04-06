@@ -201,25 +201,13 @@ work_item_tags.color,
 		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
-		work_item_tag_id as work_items_work_item_tag_id
-		, array_agg(work_items.*) as work_items
-	from
-		work_item_work_item_tag
-		join work_items using (work_item_id)
-	where
-		work_item_tag_id in (
-			select
-				work_item_tag_id
-			from
-				work_item_work_item_tag
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				work_item_tag_id) joined_work_items on joined_work_items.work_items_work_item_tag_id = work_item_tags.work_item_tag_id` +
+		work_item_work_item_tag.work_item_tag_id as work_items_work_item_tag_id
+		, row(work_items.*) as work_items
+		from work_item_work_item_tag
+    join work_items using (work_item_id)
+    group by work_items_work_item_tag_id, work_items.work_item_id
+  ) as joined_work_items on joined_work_items.work_items_work_item_tag_id = work_item_tags.work_item_tag_id
+` +
 		` WHERE work_item_tags.name = $2 AND work_item_tags.project_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -260,25 +248,13 @@ work_item_tags.color,
 		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
-		work_item_tag_id as work_items_work_item_tag_id
-		, array_agg(work_items.*) as work_items
-	from
-		work_item_work_item_tag
-		join work_items using (work_item_id)
-	where
-		work_item_tag_id in (
-			select
-				work_item_tag_id
-			from
-				work_item_work_item_tag
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				work_item_tag_id) joined_work_items on joined_work_items.work_items_work_item_tag_id = work_item_tags.work_item_tag_id` +
+		work_item_work_item_tag.work_item_tag_id as work_items_work_item_tag_id
+		, row(work_items.*) as work_items
+		from work_item_work_item_tag
+    join work_items using (work_item_id)
+    group by work_items_work_item_tag_id, work_items.work_item_id
+  ) as joined_work_items on joined_work_items.work_items_work_item_tag_id = work_item_tags.work_item_tag_id
+` +
 		` WHERE work_item_tags.work_item_tag_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -277,47 +277,23 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_id as teams_user_id
-		, array_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+		user_team.user_id as teams_user_id
+		, row(teams.*) as teams
+		from user_team
+    join teams using (team_id)
+    group by teams_user_id, teams.team_id
+  ) as joined_teams on joined_teams.teams_user_id = users.user_id
+
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		member as work_items_user_id
-		, array_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		work_item_member.member as work_items_member
+		, row(work_items.*) as work_items
+		from work_item_member
+    join work_items using (work_item_id)
+    group by work_items_member, work_items.work_item_id
+  ) as joined_work_items on joined_work_items.work_items_member = users.user_id
+`+
 		` WHERE users.created_at = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -384,47 +360,23 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_id as teams_user_id
-		, array_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+		user_team.user_id as teams_user_id
+		, row(teams.*) as teams
+		from user_team
+    join teams using (team_id)
+    group by teams_user_id, teams.team_id
+  ) as joined_teams on joined_teams.teams_user_id = users.user_id
+
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		member as work_items_user_id
-		, array_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		work_item_member.member as work_items_member
+		, row(work_items.*) as work_items
+		from work_item_member
+    join work_items using (work_item_id)
+    group by work_items_member, work_items.work_item_id
+  ) as joined_work_items on joined_work_items.work_items_member = users.user_id
+`+
 		` WHERE users.deleted_at = $5 AND (deleted_at IS NOT NULL)  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -491,47 +443,23 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_id as teams_user_id
-		, array_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+		user_team.user_id as teams_user_id
+		, row(teams.*) as teams
+		from user_team
+    join teams using (team_id)
+    group by teams_user_id, teams.team_id
+  ) as joined_teams on joined_teams.teams_user_id = users.user_id
+
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		member as work_items_user_id
-		, array_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		work_item_member.member as work_items_member
+		, row(work_items.*) as work_items
+		from work_item_member
+    join work_items using (work_item_id)
+    group by work_items_member, work_items.work_item_id
+  ) as joined_work_items on joined_work_items.work_items_member = users.user_id
+`+
 		` WHERE users.email = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -596,47 +524,23 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_id as teams_user_id
-		, array_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+		user_team.user_id as teams_user_id
+		, row(teams.*) as teams
+		from user_team
+    join teams using (team_id)
+    group by teams_user_id, teams.team_id
+  ) as joined_teams on joined_teams.teams_user_id = users.user_id
+
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		member as work_items_user_id
-		, array_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		work_item_member.member as work_items_member
+		, row(work_items.*) as work_items
+		from work_item_member
+    join work_items using (work_item_id)
+    group by work_items_member, work_items.work_item_id
+  ) as joined_work_items on joined_work_items.work_items_member = users.user_id
+`+
 		` WHERE users.external_id = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -701,47 +605,23 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_id as teams_user_id
-		, array_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+		user_team.user_id as teams_user_id
+		, row(teams.*) as teams
+		from user_team
+    join teams using (team_id)
+    group by teams_user_id, teams.team_id
+  ) as joined_teams on joined_teams.teams_user_id = users.user_id
+
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		member as work_items_user_id
-		, array_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		work_item_member.member as work_items_member
+		, row(work_items.*) as work_items
+		from work_item_member
+    join work_items using (work_item_id)
+    group by work_items_member, work_items.work_item_id
+  ) as joined_work_items on joined_work_items.work_items_member = users.user_id
+`+
 		` WHERE users.user_id = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -806,47 +686,23 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_id as teams_user_id
-		, array_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+		user_team.user_id as teams_user_id
+		, row(teams.*) as teams
+		from user_team
+    join teams using (team_id)
+    group by teams_user_id, teams.team_id
+  ) as joined_teams on joined_teams.teams_user_id = users.user_id
+
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		member as work_items_user_id
-		, array_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		work_item_member.member as work_items_member
+		, row(work_items.*) as work_items
+		from work_item_member
+    join work_items using (work_item_id)
+    group by work_items_member, work_items.work_item_id
+  ) as joined_work_items on joined_work_items.work_items_member = users.user_id
+`+
 		` WHERE users.updated_at = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -913,47 +769,23 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_id as teams_user_id
-		, array_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+		user_team.user_id as teams_user_id
+		, row(teams.*) as teams
+		from user_team
+    join teams using (team_id)
+    group by teams_user_id, teams.team_id
+  ) as joined_teams on joined_teams.teams_user_id = users.user_id
+
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		member as work_items_user_id
-		, array_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		work_item_member.member as work_items_member
+		, row(work_items.*) as work_items
+		from work_item_member
+    join work_items using (work_item_id)
+    group by work_items_member, work_items.work_item_id
+  ) as joined_work_items on joined_work_items.work_items_member = users.user_id
+`+
 		` WHERE users.username = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
