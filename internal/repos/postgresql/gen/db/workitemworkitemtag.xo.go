@@ -5,6 +5,8 @@ package db
 import (
 	"context"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // WorkItemWorkItemTag represents a row from 'public.work_item_work_item_tag'.
@@ -33,7 +35,10 @@ func WithWorkItemWorkItemTagLimit(limit int) WorkItemWorkItemTagSelectConfigOpti
 
 type WorkItemWorkItemTagOrderBy = string
 
-type WorkItemWorkItemTagJoins struct{}
+const ()
+
+type WorkItemWorkItemTagJoins struct {
+}
 
 // WithWorkItemWorkItemTagJoin orders results by the given columns.
 func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
@@ -54,12 +59,13 @@ func (wiwit *WorkItemWorkItemTag) Deleted() bool {
 }
 
 // Insert inserts the WorkItemWorkItemTag to the database.
-func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemWorkItemTag, error) {
 	switch {
 	case wiwit._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case wiwit._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.work_item_work_item_tag (` +
@@ -69,12 +75,18 @@ func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) error {
 		`) `
 	// run
 	logf(sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
-	if _, err := db.Exec(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID); err != nil {
-		return logerror(err)
+	rows, err := db.Query(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	wiwit._exists = true
-	return nil
+	newwiwit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newwiwit._exists = true
+	wiwit = &newwiwit
+
+	return wiwit, nil
 }
 
 // ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
@@ -122,13 +134,15 @@ work_item_work_item_tag.work_item_id ` +
 
 	// run
 	logf(sqlstr, workItemID, workItemTagID)
-	wiwit := WorkItemWorkItemTag{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, workItemID, workItemTagID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, workItemID, workItemTagID).Scan(&wiwit.WorkItemTagID, &wiwit.WorkItemID); err != nil {
-		return nil, logerror(err)
+	wiwit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	wiwit._exists = true
 	return &wiwit, nil
 }
 

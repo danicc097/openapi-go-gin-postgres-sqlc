@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // Team represents a row from 'public.teams'.
@@ -88,52 +90,69 @@ func (t *Team) Deleted() bool {
 }
 
 // Insert inserts the Team to the database.
-func (t *Team) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 	switch {
 	case t._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case t._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.teams (` +
-		`project_id, name, description` +
+		`project_id, name, description, created_at, updated_at` +
 		`) VALUES (` +
-		`$1, $2, $3` +
-		`) RETURNING team_id, created_at, updated_at `
+		`$1, $2, $3, $4, $5` +
+		`) RETURNING * `
 	// run
-	logf(sqlstr, t.ProjectID, t.Name, t.Description)
-	if err := db.QueryRow(ctx, sqlstr, t.ProjectID, t.Name, t.Description).Scan(&t.TeamID, &t.CreatedAt, &t.UpdatedAt); err != nil {
-		return logerror(err)
+	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt)
+
+	rows, err := db.Query(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	t._exists = true
-	return nil
+	newt, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Team])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newt._exists = true
+	t = &newt
+
+	return t, nil
 }
 
 // Update updates a Team in the database.
-func (t *Team) Update(ctx context.Context, db DB) error {
+func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 	switch {
 	case !t._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case t._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.teams SET ` +
-		`project_id = $1, name = $2, description = $3 ` +
-		`WHERE team_id = $4 ` +
-		`RETURNING team_id, created_at, updated_at `
+		`project_id = $1, name = $2, description = $3, created_at = $4, updated_at = $5 ` +
+		`WHERE team_id = $6 ` +
+		`RETURNING * `
 	// run
 	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt, t.TeamID)
-	if err := db.QueryRow(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.TeamID).Scan(&t.TeamID, &t.CreatedAt, &t.UpdatedAt); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt, t.TeamID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	return nil
+	newt, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Team])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newt._exists = true
+	t = &newt
+
+	return t, nil
 }
 
 // Save saves the Team to the database.
-func (t *Team) Save(ctx context.Context, db DB) error {
+func (t *Team) Save(ctx context.Context, db DB) (*Team, error) {
 	if t.Exists() {
 		return t.Update(ctx, db)
 	}
@@ -148,16 +167,16 @@ func (t *Team) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.teams (` +
-		`team_id, project_id, name, description` +
+		`team_id, project_id, name, description, created_at, updated_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4` +
+		`$1, $2, $3, $4, $5, $6` +
 		`)` +
 		` ON CONFLICT (team_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description  `
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at  `
 	// run
-	logf(sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description)
-	if _, err := db.Exec(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description); err != nil {
+	logf(sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt)
+	if _, err := db.Exec(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -204,8 +223,8 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then joined_users.users end)::jsonb as users ` +
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then joined_users.users end) as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -244,13 +263,15 @@ left join (
 
 	// run
 	logf(sqlstr, name, projectID)
-	t := Team{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name, projectID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name, projectID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.CreatedAt, &t.UpdatedAt, &t.TimeEntries, &t.Users); err != nil {
-		return nil, logerror(err)
+	t, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Team])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	t._exists = true
 	return &t, nil
 }
 
@@ -272,8 +293,8 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then joined_users.users end)::jsonb as users ` +
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then joined_users.users end) as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -312,13 +333,15 @@ left join (
 
 	// run
 	logf(sqlstr, teamID)
-	t := Team{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, teamID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, teamID).Scan(&t.TeamID, &t.ProjectID, &t.Name, &t.Description, &t.CreatedAt, &t.UpdatedAt, &t.TimeEntries, &t.Users); err != nil {
-		return nil, logerror(err)
+	t, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Team])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	t._exists = true
 	return &t, nil
 }
 

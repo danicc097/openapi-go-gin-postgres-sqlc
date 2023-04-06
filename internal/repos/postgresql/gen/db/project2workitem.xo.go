@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // Project2WorkItem represents a row from 'public.project_2_work_items'.
@@ -78,12 +80,13 @@ func (pi *Project2WorkItem) Deleted() bool {
 }
 
 // Insert inserts the Project2WorkItem to the database.
-func (pi *Project2WorkItem) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (pi *Project2WorkItem) Insert(ctx context.Context, db DB) (*Project2WorkItem, error) {
 	switch {
 	case pi._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case pi._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.project_2_work_items (` +
@@ -93,37 +96,52 @@ func (pi *Project2WorkItem) Insert(ctx context.Context, db DB) error {
 		`) `
 	// run
 	logf(sqlstr, pi.WorkItemID, pi.CustomDateForProject2)
-	if _, err := db.Exec(ctx, sqlstr, pi.WorkItemID, pi.CustomDateForProject2); err != nil {
-		return logerror(err)
+	rows, err := db.Query(ctx, sqlstr, pi.WorkItemID, pi.CustomDateForProject2)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	pi._exists = true
-	return nil
+	newpi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project2WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newpi._exists = true
+	pi = &newpi
+
+	return pi, nil
 }
 
 // Update updates a Project2WorkItem in the database.
-func (pi *Project2WorkItem) Update(ctx context.Context, db DB) error {
+func (pi *Project2WorkItem) Update(ctx context.Context, db DB) (*Project2WorkItem, error) {
 	switch {
 	case !pi._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case pi._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.project_2_work_items SET ` +
 		`custom_date_for_project_2 = $1 ` +
 		`WHERE work_item_id = $2 ` +
-		`RETURNING work_item_id `
+		`RETURNING * `
 	// run
 	logf(sqlstr, pi.CustomDateForProject2, pi.WorkItemID)
-	if err := db.QueryRow(ctx, sqlstr, pi.CustomDateForProject2, pi.WorkItemID).Scan(); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, pi.CustomDateForProject2, pi.WorkItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	return nil
+	newpi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project2WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newpi._exists = true
+	pi = &newpi
+
+	return pi, nil
 }
 
 // Save saves the Project2WorkItem to the database.
-func (pi *Project2WorkItem) Save(ctx context.Context, db DB) error {
+func (pi *Project2WorkItem) Save(ctx context.Context, db DB) (*Project2WorkItem, error) {
 	if pi.Exists() {
 		return pi.Update(ctx, db)
 	}
@@ -190,7 +208,7 @@ func Project2WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, 
 	sqlstr := `SELECT ` +
 		`project_2_work_items.work_item_id,
 project_2_work_items.custom_date_for_project_2,
-(case when $1::boolean = true then row(work_items.*) end)::jsonb as work_item ` +
+(case when $1::boolean = true then row(work_items.*) end) as work_item ` +
 		`FROM public.project_2_work_items ` +
 		`-- O2O join generated from "project_2_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = project_2_work_items.work_item_id` +
@@ -200,13 +218,15 @@ left join work_items on work_items.work_item_id = project_2_work_items.work_item
 
 	// run
 	logf(sqlstr, workItemID)
-	pi := Project2WorkItem{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItem, workItemID).Scan(&pi.WorkItemID, &pi.CustomDateForProject2, &pi.WorkItem); err != nil {
-		return nil, logerror(err)
+	pi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project2WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	pi._exists = true
 	return &pi, nil
 }
 

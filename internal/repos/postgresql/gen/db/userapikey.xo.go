@@ -83,52 +83,69 @@ func (uak *UserAPIKey) Deleted() bool {
 }
 
 // Insert inserts the UserAPIKey to the database.
-func (uak *UserAPIKey) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 	switch {
 	case uak._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case uak._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.user_api_keys (` +
 		`api_key, expires_on, user_id` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) RETURNING user_api_key_id `
+		`) RETURNING * `
 	// run
 	logf(sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID)
-	if err := db.QueryRow(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID).Scan(&uak.UserAPIKeyID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, uak.UserAPIKeyID, uak.APIKey, uak.ExpiresOn, uak.UserID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	uak._exists = true
-	return nil
+	newuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newuak._exists = true
+	uak = &newuak
+
+	return uak, nil
 }
 
 // Update updates a UserAPIKey in the database.
-func (uak *UserAPIKey) Update(ctx context.Context, db DB) error {
+func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
 	switch {
 	case !uak._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case uak._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.user_api_keys SET ` +
 		`api_key = $1, expires_on = $2, user_id = $3 ` +
 		`WHERE user_api_key_id = $4 ` +
-		`RETURNING user_api_key_id `
+		`RETURNING * `
 	// run
 	logf(sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID)
-	if err := db.QueryRow(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID).Scan(&uak.UserAPIKeyID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	return nil
+	newuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newuak._exists = true
+	uak = &newuak
+
+	return uak, nil
 }
 
 // Save saves the UserAPIKey to the database.
-func (uak *UserAPIKey) Save(ctx context.Context, db DB) error {
+func (uak *UserAPIKey) Save(ctx context.Context, db DB) (*UserAPIKey, error) {
 	if uak.Exists() {
 		return uak.Update(ctx, db)
 	}
@@ -207,17 +224,15 @@ left join users on users.user_id = user_api_keys.user_id` +
 
 	// run
 	logf(sqlstr, apiKey)
-	uak := UserAPIKey{
-		_exists: true,
-	}
-	rows, err:= db.Query(ctx, sqlstr, c.joins.User, apiKey)
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, apiKey)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	uak, err = pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	uak._exists = true
 	return &uak, nil
 }
 
@@ -247,13 +262,15 @@ left join users on users.user_id = user_api_keys.user_id` +
 
 	// run
 	logf(sqlstr, userAPIKeyID)
-	uak := UserAPIKey{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, userAPIKeyID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.User, userAPIKeyID).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID, &uak.User); err != nil {
-		return nil, logerror(err)
+	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	uak._exists = true
 	return &uak, nil
 }
 
@@ -283,13 +300,15 @@ left join users on users.user_id = user_api_keys.user_id` +
 
 	// run
 	logf(sqlstr, userID)
-	uak := UserAPIKey{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, userID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.User, userID).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID, &uak.User); err != nil {
-		return nil, logerror(err)
+	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	uak._exists = true
 	return &uak, nil
 }
 

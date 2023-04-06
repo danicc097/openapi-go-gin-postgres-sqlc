@@ -37,7 +37,7 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params repos.UserCreatePar
 		Scopes:     slices.Unique(params.Scopes),
 	}
 
-	if err := user.Save(ctx, d); err != nil {
+	if _, err := user.Save(ctx, d); err != nil {
 		return nil, err
 	}
 
@@ -70,7 +70,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params repos
 		user.HasPersonalNotifications = *params.HasPersonalNotifications
 	}
 
-	err = user.Update(ctx, d)
+	_, err = user.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not update user: %w", parseErrorDetail(err))
 	}
@@ -86,7 +86,7 @@ func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, e
 
 	user.DeletedAt = pointers.New(time.Now())
 
-	err = user.Update(ctx, d)
+	_, err = user.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not mark user as deleted: %w", parseErrorDetail(err))
 	}
@@ -149,12 +149,12 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 		ExpiresOn: time.Now().AddDate(1, 0, 0),
 		UserID:    user.UserID,
 	}
-	if err := uak.Save(ctx, d); err != nil {
+	if _, err := uak.Save(ctx, d); err != nil {
 		return nil, fmt.Errorf("could not save api key: %w", parseErrorDetail(err))
 	}
 
 	user.APIKeyID = pointers.New(uak.UserAPIKeyID)
-	if err := user.Update(ctx, d); err != nil {
+	if _, err := user.Update(ctx, d); err != nil {
 		return nil, fmt.Errorf("could not update user: %w", parseErrorDetail(err))
 	}
 

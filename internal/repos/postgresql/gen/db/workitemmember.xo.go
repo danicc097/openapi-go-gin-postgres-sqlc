@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 // WorkItemMember represents a row from 'public.work_item_member'.
@@ -36,7 +37,10 @@ func WithWorkItemMemberLimit(limit int) WorkItemMemberSelectConfigOption {
 
 type WorkItemMemberOrderBy = string
 
-type WorkItemMemberJoins struct{}
+const ()
+
+type WorkItemMemberJoins struct {
+}
 
 // WithWorkItemMemberJoin orders results by the given columns.
 func WithWorkItemMemberJoin(joins WorkItemMemberJoins) WorkItemMemberSelectConfigOption {
@@ -57,12 +61,13 @@ func (wim *WorkItemMember) Deleted() bool {
 }
 
 // Insert inserts the WorkItemMember to the database.
-func (wim *WorkItemMember) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (wim *WorkItemMember) Insert(ctx context.Context, db DB) (*WorkItemMember, error) {
 	switch {
 	case wim._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case wim._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.work_item_member (` +
@@ -72,37 +77,52 @@ func (wim *WorkItemMember) Insert(ctx context.Context, db DB) error {
 		`) `
 	// run
 	logf(sqlstr, wim.WorkItemID, wim.Member, wim.Role)
-	if _, err := db.Exec(ctx, sqlstr, wim.WorkItemID, wim.Member, wim.Role); err != nil {
-		return logerror(err)
+	rows, err := db.Query(ctx, sqlstr, wim.WorkItemID, wim.Member, wim.Role)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	wim._exists = true
-	return nil
+	newwim, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemMember])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newwim._exists = true
+	wim = &newwim
+
+	return wim, nil
 }
 
 // Update updates a WorkItemMember in the database.
-func (wim *WorkItemMember) Update(ctx context.Context, db DB) error {
+func (wim *WorkItemMember) Update(ctx context.Context, db DB) (*WorkItemMember, error) {
 	switch {
 	case !wim._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case wim._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_member SET ` +
 		`role = $1 ` +
 		`WHERE work_item_id = $2  AND member = $3 ` +
-		`RETURNING work_item_id, member `
+		`RETURNING * `
 	// run
 	logf(sqlstr, wim.Role, wim.WorkItemID, wim.Member)
-	if err := db.QueryRow(ctx, sqlstr, wim.Role, wim.WorkItemID, wim.Member).Scan(); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, wim.Role, wim.WorkItemID, wim.Member)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	return nil
+	newwim, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemMember])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newwim._exists = true
+	wim = &newwim
+
+	return wim, nil
 }
 
 // Save saves the WorkItemMember to the database.
-func (wim *WorkItemMember) Save(ctx context.Context, db DB) error {
+func (wim *WorkItemMember) Save(ctx context.Context, db DB) (*WorkItemMember, error) {
 	if wim.Exists() {
 		return wim.Update(ctx, db)
 	}
@@ -224,13 +244,15 @@ work_item_member.role ` +
 
 	// run
 	logf(sqlstr, workItemID, member)
-	wim := WorkItemMember{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, workItemID, member)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, workItemID, member).Scan(&wim.WorkItemID, &wim.Member, &wim.Role); err != nil {
-		return nil, logerror(err)
+	wim, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemMember])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	wim._exists = true
 	return &wim, nil
 }
 

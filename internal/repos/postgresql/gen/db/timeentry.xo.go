@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 // TimeEntry represents a row from 'public.time_entries'.
@@ -62,7 +63,8 @@ func WithTimeEntryOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption 
 	}
 }
 
-type TimeEntryJoins struct{}
+type TimeEntryJoins struct {
+}
 
 // WithTimeEntryJoin orders results by the given columns.
 func WithTimeEntryJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
@@ -83,52 +85,69 @@ func (te *TimeEntry) Deleted() bool {
 }
 
 // Insert inserts the TimeEntry to the database.
-func (te *TimeEntry) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 	switch {
 	case te._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case te._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.time_entries (` +
 		`work_item_id, activity_id, team_id, user_id, comment, start, duration_minutes` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7` +
-		`) RETURNING time_entry_id `
+		`) RETURNING * `
 	// run
 	logf(sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
-	if err := db.QueryRow(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes).Scan(&te.TimeEntryID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, te.TimeEntryID, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	te._exists = true
-	return nil
+	newte, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[TimeEntry])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newte._exists = true
+	te = &newte
+
+	return te, nil
 }
 
 // Update updates a TimeEntry in the database.
-func (te *TimeEntry) Update(ctx context.Context, db DB) error {
+func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 	switch {
 	case !te._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case te._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.time_entries SET ` +
 		`work_item_id = $1, activity_id = $2, team_id = $3, user_id = $4, comment = $5, start = $6, duration_minutes = $7 ` +
 		`WHERE time_entry_id = $8 ` +
-		`RETURNING time_entry_id `
+		`RETURNING * `
 	// run
 	logf(sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID)
-	if err := db.QueryRow(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID).Scan(&te.TimeEntryID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	return nil
+	newte, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[TimeEntry])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newte._exists = true
+	te = &newte
+
+	return te, nil
 }
 
 // Save saves the TimeEntry to the database.
-func (te *TimeEntry) Save(ctx context.Context, db DB) error {
+func (te *TimeEntry) Save(ctx context.Context, db DB) (*TimeEntry, error) {
 	if te.Exists() {
 		return te.Update(ctx, db)
 	}
@@ -209,13 +228,15 @@ time_entries.duration_minutes ` +
 
 	// run
 	logf(sqlstr, timeEntryID)
-	te := TimeEntry{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, timeEntryID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, timeEntryID).Scan(&te.TimeEntryID, &te.WorkItemID, &te.ActivityID, &te.TeamID, &te.UserID, &te.Comment, &te.Start, &te.DurationMinutes); err != nil {
-		return nil, logerror(err)
+	te, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[TimeEntry])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	te._exists = true
 	return &te, nil
 }
 

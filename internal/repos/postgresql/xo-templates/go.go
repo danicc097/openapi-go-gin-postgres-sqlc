@@ -206,11 +206,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Type:       "string",
 				Desc:       "field tag",
 				Short:      "g",
-				// migrate to camel once Response structs and adapters done
-				// TODO bring camel back once pgx v5 and sqlc work correctly
-				// see any pgx release past v5.3.1
-				// and will need to see what to do about sqlc, if anything
-				Default: `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}" db:"{{ .field.SQLName }}"`,
+				Default:    `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}" db:"{{ if .field.IsIgnored }}-{{ else }}{{ .field.SQLName }}{{end}}"`,
 				// Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
 			},
 			{
@@ -1237,8 +1233,6 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
 			}
 		}
 	case Index:
-		// TODO include join options, order by and limit options struct here if any
-		// better: func opts so we extend with basically anything (joins, orderbys, limits...)
 		params = append(params, f.params(x.Fields, true))
 		params = append(params, "opts ..."+x.Table.GoName+"SelectConfigOption")
 		rt := "*" + x.Table.GoName
@@ -1405,8 +1399,9 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	}
 	buf.WriteString("}\n")
 
+	// recursive would go out of hand quickly, use go-jet or sqlc for these cases.
 	buf.WriteString(fmt.Sprintf(`
-	// With%[1]sJoin orders results by the given columns.
+	// With%[1]sJoin joins with the given tables.
 func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
 		s.joins = joins
@@ -1450,6 +1445,11 @@ func (f *Funcs) recv(name string, context bool, t Table, v interface{}) string {
 	switch x := v.(type) {
 	case ForeignKey:
 		r = append(r, "*"+x.RefTable)
+	case string:
+		if x == "Upsert" || x == "Delete" { // upsert and delete only exec
+			break
+		}
+		r = append(r, "*"+t.GoName)
 	}
 	r = append(r, "error")
 	return fmt.Sprintf("func (%s *%s) %s(%s) (%s)", short, t.GoName, name, strings.Join(p, ", "), strings.Join(r, ", "))
@@ -1526,6 +1526,7 @@ func (f *Funcs) db(name string, v ...interface{}) string {
 }
 
 // db_prefix generates a db.<name>Context(ctx, sqlstr, <prefix>.param, ...).
+// Similar to db
 //
 // Will skip the specific parameters based on the type provided.
 func (f *Funcs) db_prefix(name string, includeGenerated bool, includeIgnored bool, vs ...interface{}) string {
@@ -1700,7 +1701,9 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 					}
 				default:
 				}
-				names = append(names, joinName)
+				if joinName != "" {
+					names = append(names, joinName)
+				}
 			}
 		case []Field:
 			for _, p := range x {
@@ -1754,6 +1757,7 @@ func (f *Funcs) names_all(prefix string, z ...interface{}) string {
 }
 
 // names_ignore generates a list of all names, ignoring fields that match the value in ignore.
+// TODO use db:"-" instead since pgx v5
 func (f *Funcs) names_ignore(prefix string, v interface{}, ignore ...interface{}) string {
 	m := make(map[string]bool)
 	for _, v := range ignore {
@@ -1889,7 +1893,7 @@ func (f *Funcs) sqlstr_insert(v interface{}) []string {
 		// add return clause
 		switch f.driver {
 		case "postgres":
-			lines[len(lines)-1] += ` RETURNING ` + strings.Join(generatedFields, ", ")
+			lines[len(lines)-1] += ` RETURNING *`
 		}
 		return lines
 	}
@@ -1939,18 +1943,13 @@ func (f *Funcs) sqlstr_update(v interface{}) []string {
 	// build pkey vals
 	switch x := v.(type) {
 	case Table:
-		var list, returns []string
-		for _, z := range x.Fields {
-			if z.IsPrimary || z.IsGenerated || z.IsIgnored {
-				returns = append(returns, z.SQLName)
-			}
-		}
+		var conditions []string
 		n, lines := f.sqlstr_update_base("", v)
 		for i, z := range x.PrimaryKeys {
-			list = append(list, fmt.Sprintf("%s = %s ", f.colname(z), f.nth(n+i)))
+			conditions = append(conditions, fmt.Sprintf("%s = %s ", f.colname(z), f.nth(n+i)))
 		}
 
-		return append(lines, "WHERE "+strings.Join(list, " AND "), "RETURNING "+strings.Join(returns, ", "))
+		return append(lines, "WHERE "+strings.Join(conditions, " AND "), "RETURNING *")
 	}
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 20: %T ]]", v)}
 }

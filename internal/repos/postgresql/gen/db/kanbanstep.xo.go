@@ -5,6 +5,8 @@ package db
 import (
 	"context"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // KanbanStep represents a row from 'public.kanban_steps'.
@@ -38,7 +40,10 @@ func WithKanbanStepLimit(limit int) KanbanStepSelectConfigOption {
 
 type KanbanStepOrderBy = string
 
-type KanbanStepJoins struct{}
+const ()
+
+type KanbanStepJoins struct {
+}
 
 // WithKanbanStepJoin orders results by the given columns.
 func WithKanbanStepJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
@@ -59,52 +64,69 @@ func (ks *KanbanStep) Deleted() bool {
 }
 
 // Insert inserts the KanbanStep to the database.
-func (ks *KanbanStep) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 	switch {
 	case ks._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case ks._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.kanban_steps (` +
 		`project_id, step_order, name, description, color, time_trackable` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6` +
-		`) RETURNING kanban_step_id `
+		`) RETURNING * `
 	// run
 	logf(sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
-	if err := db.QueryRow(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable).Scan(&ks.KanbanStepID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	ks._exists = true
-	return nil
+	newks, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[KanbanStep])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newks._exists = true
+	ks = &newks
+
+	return ks, nil
 }
 
 // Update updates a KanbanStep in the database.
-func (ks *KanbanStep) Update(ctx context.Context, db DB) error {
+func (ks *KanbanStep) Update(ctx context.Context, db DB) (*KanbanStep, error) {
 	switch {
 	case !ks._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case ks._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.kanban_steps SET ` +
 		`project_id = $1, step_order = $2, name = $3, description = $4, color = $5, time_trackable = $6 ` +
 		`WHERE kanban_step_id = $7 ` +
-		`RETURNING kanban_step_id `
+		`RETURNING * `
 	// run
 	logf(sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
-	if err := db.QueryRow(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID).Scan(&ks.KanbanStepID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable, ks.KanbanStepID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	return nil
+	newks, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[KanbanStep])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newks._exists = true
+	ks = &newks
+
+	return ks, nil
 }
 
 // Save saves the KanbanStep to the database.
-func (ks *KanbanStep) Save(ctx context.Context, db DB) error {
+func (ks *KanbanStep) Save(ctx context.Context, db DB) (*KanbanStep, error) {
 	if ks.Exists() {
 		return ks.Update(ctx, db)
 	}
@@ -184,13 +206,15 @@ kanban_steps.time_trackable ` +
 
 	// run
 	logf(sqlstr, kanbanStepID)
-	ks := KanbanStep{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, kanbanStepID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, kanbanStepID).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable); err != nil {
-		return nil, logerror(err)
+	ks, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[KanbanStep])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	ks._exists = true
 	return &ks, nil
 }
 
@@ -221,13 +245,15 @@ kanban_steps.time_trackable ` +
 
 	// run
 	logf(sqlstr, projectID, name)
-	ks := KanbanStep{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, projectID, name)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, projectID, name).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable); err != nil {
-		return nil, logerror(err)
+	ks, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[KanbanStep])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	ks._exists = true
 	return &ks, nil
 }
 
@@ -258,13 +284,15 @@ kanban_steps.time_trackable ` +
 
 	// run
 	logf(sqlstr, projectID, name, stepOrder)
-	ks := KanbanStep{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, projectID, name, stepOrder)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, projectID, name, stepOrder).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable); err != nil {
-		return nil, logerror(err)
+	ks, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[KanbanStep])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	ks._exists = true
 	return &ks, nil
 }
 
@@ -295,13 +323,15 @@ kanban_steps.time_trackable ` +
 
 	// run
 	logf(sqlstr, projectID, stepOrder)
-	ks := KanbanStep{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, projectID, stepOrder)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, projectID, stepOrder).Scan(&ks.KanbanStepID, &ks.ProjectID, &ks.StepOrder, &ks.Name, &ks.Description, &ks.Color, &ks.TimeTrackable); err != nil {
-		return nil, logerror(err)
+	ks, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[KanbanStep])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	ks._exists = true
 	return &ks, nil
 }
 

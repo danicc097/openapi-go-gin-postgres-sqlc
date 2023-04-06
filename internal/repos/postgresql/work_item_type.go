@@ -30,7 +30,7 @@ func (u *WorkItemType) Create(ctx context.Context, d db.DBTX, params repos.WorkI
 		Color:       params.Color,
 	}
 
-	if err := workItemType.Save(ctx, d); err != nil {
+	if _, err := workItemType.Save(ctx, d); err != nil {
 		return nil, err
 	}
 
@@ -53,7 +53,7 @@ func (u *WorkItemType) Update(ctx context.Context, d db.DBTX, id int, params rep
 		workItemType.Color = *params.Color
 	}
 
-	err = workItemType.Update(ctx, d)
+	_, err = workItemType.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not update workItemType: %w", parseErrorDetail(err))
 	}

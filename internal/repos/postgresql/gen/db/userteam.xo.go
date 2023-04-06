@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 // UserTeam represents a row from 'public.user_team'.
@@ -35,7 +36,10 @@ func WithUserTeamLimit(limit int) UserTeamSelectConfigOption {
 
 type UserTeamOrderBy = string
 
-type UserTeamJoins struct{}
+const ()
+
+type UserTeamJoins struct {
+}
 
 // WithUserTeamJoin orders results by the given columns.
 func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
@@ -56,12 +60,13 @@ func (ut *UserTeam) Deleted() bool {
 }
 
 // Insert inserts the UserTeam to the database.
-func (ut *UserTeam) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 	switch {
 	case ut._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case ut._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.user_team (` +
@@ -71,12 +76,18 @@ func (ut *UserTeam) Insert(ctx context.Context, db DB) error {
 		`) `
 	// run
 	logf(sqlstr, ut.TeamID, ut.UserID)
-	if _, err := db.Exec(ctx, sqlstr, ut.TeamID, ut.UserID); err != nil {
-		return logerror(err)
+	rows, err := db.Query(ctx, sqlstr, ut.TeamID, ut.UserID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	ut._exists = true
-	return nil
+	newut, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserTeam])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newut._exists = true
+	ut = &newut
+
+	return ut, nil
 }
 
 // ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
@@ -124,13 +135,15 @@ user_team.user_id ` +
 
 	// run
 	logf(sqlstr, userID, teamID)
-	ut := UserTeam{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, userID, teamID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, userID, teamID).Scan(&ut.TeamID, &ut.UserID); err != nil {
-		return nil, logerror(err)
+	ut, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserTeam])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	ut._exists = true
 	return &ut, nil
 }
 

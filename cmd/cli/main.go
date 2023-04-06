@@ -73,9 +73,10 @@ func main() {
 	// username := "superadmin"
 	user, err := db.UserByUsername(context.Background(), pool, username,
 		db.WithUserJoin(db.UserJoins{
-			TimeEntries: true,
-			WorkItems:   true,
-			Teams:       true,
+			// TODO fix array_agg pgx collect and reenable
+			// TimeEntries: true,
+			// WorkItems:   true,
+			// Teams:       true,
 		}),
 		db.WithUserOrderBy(db.UserCreatedAtDescNullsLast))
 	if err != nil {
@@ -140,36 +141,7 @@ func main() {
 	row_to_json(users.*) as user
 	FROM public.user_api_keys
 	left join users on users.user_id = user_api_keys.user_id
-	WHERE user_api_keys.api_key = 'a4ec61a4-2a3a-4d20-a2b0-b5f295f48fb0-key-hashed'`) // select api_key from user_api_keys limit 1;
-	// {
-	// 	"user_api_key_id":3,
-	// 	"api_key":"a4ec61a4-2a3a-4d20-a2b0-b5f295f48fb0-key-hashed",
-	// 	"expires_on":"2023-07-12T13:38:47.697612Z",
-	// 	"user_id":"a4ec61a4-2a3a-4d20-a2b0-b5f295f48fb0",
-	// 	"user":{
-	// 		 "user_id":"a4ec61a4-2a3a-4d20-a2b0-b5f295f48fb0",
-	// 		 "username":"user_2",
-	// 		 "email":"user_2@email.com",
-	// 		 "first_name":"Name 2",
-	// 		 "last_name":"Surname 2",
-	// 		 "full_name":"Name 2 Surname 2",
-	// 		 "external_id":"provider_external_id2",
-	// 		 "api_key_id":3,
-	// 		 "scopes":[
-	// 				"users:read"
-	// 		 ],
-	// 		 "role_rank":2,
-	// 		 "has_personal_notifications":false,
-	// 		 "has_global_notifications":true,
-	// 		 "created_at":"2023-04-03T13:38:47.697612Z",
-	// 		 "updated_at":"2023-04-03T13:38:47.697612Z",
-	// 		 "deleted_at":null,
-	// 		 "time_entries":null,
-	// 		 "user_api_key":null,
-	// 		 "teams":null,
-	// 		 "work_items":null // cannot use omitempty for joins, since it would not distinguish nil from empty array.
-	// 	}
-	// }
+	WHERE user_api_keys.api_key = 'bd142374-fdf8-4ccf-b588-0361131e115d-key-hashed'`) // select api_key from user_api_keys limit 1;
 	uaks, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[db.UserAPIKey])
 	if err != nil {
 		fmt.Printf("CollectRows error: %v", err)
@@ -207,6 +179,35 @@ func main() {
 	fmt.Printf("err: %v\n", err)
 	bt, _ := json.Marshal(uaks_test[0])
 	fmt.Printf("uaks_test[0]: %+v\n", string(bt))
+
+	type UserItem struct {
+		UserItemID int    `json:"userItemID" db:"user_item_id"`
+		UserID     int    `json:"userID" db:"user_id"`
+		Item       string `json:"item" db:"item"`
+	}
+	type CustomUser struct {
+		UserID    int         `json:"userID" db:"user_id"`
+		Name      string      `json:"name" db:"name"`
+		UserItems []*UserItem `json:"userItems" db:"user_items"`
+	}
+	rows, _ = pool.Query(context.Background(), `
+	WITH user_items AS (
+		SELECT 1 AS user_id, 101 AS user_item_id, 'item 1' AS item
+		UNION ALL
+		SELECT 1 AS user_id, 102 AS user_item_id, 'item 2' AS item
+	), users AS (
+		SELECT 1 AS user_id, 'John Doe' AS name
+	)
+	SELECT users.user_id, array_agg(user_items.*) AS user_items
+	FROM users
+	LEFT JOIN user_items ON users.user_id = user_items.user_id
+	GROUP BY users.user_id;
+	`)
+	userItems, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[CustomUser])
+	fmt.Printf("err: %v\n", err)
+	bt, _ = json.Marshal(userItems[0])
+	fmt.Printf("userItems[0]: %+v\n", string(bt))
+	// {"userID":1,"name":"","userItems":[{"userItemID":1,"userID":101,"item":"item 1"},{"userItemID":1,"userID":102,"item":"item 2"}]}
 }
 
 func errAndExit(out []byte, err error) {

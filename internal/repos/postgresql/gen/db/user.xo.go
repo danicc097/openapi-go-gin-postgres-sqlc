@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 // User represents a row from 'public.users'.
@@ -115,52 +116,69 @@ func (u *User) Deleted() bool {
 }
 
 // Insert inserts the User to the database.
-func (u *User) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	switch {
 	case u._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case u._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.users (` +
-		`username, email, first_name, last_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
+		`username, email, first_name, last_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, created_at, updated_at, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11` +
-		`) RETURNING user_id, full_name, created_at, updated_at `
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13` +
+		`) RETURNING * `
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt).Scan(&u.UserID, &u.FullName, &u.CreatedAt, &u.UpdatedAt); err != nil {
-		return logerror(err)
+	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt)
+
+	rows, err := db.Query(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	u._exists = true
-	return nil
+	newu, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newu._exists = true
+	u = &newu
+
+	return u, nil
 }
 
 // Update updates a User in the database.
-func (u *User) Update(ctx context.Context, db DB) error {
+func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	switch {
 	case !u._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case u._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.users SET ` +
-		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, has_personal_notifications = $9, has_global_notifications = $10, deleted_at = $11 ` +
-		`WHERE user_id = $12 ` +
-		`RETURNING user_id, full_name, created_at, updated_at `
+		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, has_personal_notifications = $9, has_global_notifications = $10, created_at = $11, updated_at = $12, deleted_at = $13 ` +
+		`WHERE user_id = $14 ` +
+		`RETURNING * `
 	// run
 	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
-	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt, u.UserID).Scan(&u.UserID, &u.FullName, &u.CreatedAt, &u.UpdatedAt); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	return nil
+	newu, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newu._exists = true
+	u = &newu
+
+	return u, nil
 }
 
 // Save saves the User to the database.
-func (u *User) Save(ctx context.Context, db DB) error {
+func (u *User) Save(ctx context.Context, db DB) (*User, error) {
 	if u.Exists() {
 		return u.Update(ctx, db)
 	}
@@ -175,16 +193,16 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.users (` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, created_at, updated_at, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15` +
 		`)` +
 		` ON CONFLICT (user_id) DO ` +
 		`UPDATE SET ` +
-		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, deleted_at = EXCLUDED.deleted_at  `
+		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, deleted_at = EXCLUDED.deleted_at  `
 	// run
-	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt); err != nil {
+	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -240,10 +258,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -356,10 +374,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -472,10 +490,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -538,13 +556,15 @@ left join (
 
 	// run
 	logf(sqlstr, email)
-	u := User{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, email)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.UserAPIKey, &u.Teams, &u.WorkItems); err != nil {
-		return nil, logerror(err)
+	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	u._exists = true
 	return &u, nil
 }
 
@@ -575,10 +595,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -641,13 +661,15 @@ left join (
 
 	// run
 	logf(sqlstr, externalID)
-	u := User{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, externalID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, externalID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.UserAPIKey, &u.Teams, &u.WorkItems); err != nil {
-		return nil, logerror(err)
+	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	u._exists = true
 	return &u, nil
 }
 
@@ -678,10 +700,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -744,13 +766,15 @@ left join (
 
 	// run
 	logf(sqlstr, userID)
-	u := User{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, userID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.UserAPIKey, &u.Teams, &u.WorkItems); err != nil {
-		return nil, logerror(err)
+	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	u._exists = true
 	return &u, nil
 }
 
@@ -781,10 +805,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -897,10 +921,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -963,13 +987,15 @@ left join (
 
 	// run
 	logf(sqlstr, username)
-	u := User{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, username)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.UserAPIKey, &u.Teams, &u.WorkItems); err != nil {
-		return nil, logerror(err)
+	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	u._exists = true
 	return &u, nil
 }
 

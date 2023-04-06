@@ -5,6 +5,8 @@ package db
 import (
 	"context"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // WorkItemTag represents a row from 'public.work_item_tags'.
@@ -37,6 +39,8 @@ func WithWorkItemTagLimit(limit int) WorkItemTagSelectConfigOption {
 
 type WorkItemTagOrderBy = string
 
+const ()
+
 type WorkItemTagJoins struct {
 	WorkItems bool
 }
@@ -60,52 +64,69 @@ func (wit *WorkItemTag) Deleted() bool {
 }
 
 // Insert inserts the WorkItemTag to the database.
-func (wit *WorkItemTag) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error) {
 	switch {
 	case wit._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case wit._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_tags (` +
 		`project_id, name, description, color` +
 		`) VALUES (` +
 		`$1, $2, $3, $4` +
-		`) RETURNING work_item_tag_id `
+		`) RETURNING * `
 	// run
 	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color)
-	if err := db.QueryRow(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color).Scan(&wit.WorkItemTagID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, wit.WorkItemTagID, wit.ProjectID, wit.Name, wit.Description, wit.Color)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	wit._exists = true
-	return nil
+	newwit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newwit._exists = true
+	wit = &newwit
+
+	return wit, nil
 }
 
 // Update updates a WorkItemTag in the database.
-func (wit *WorkItemTag) Update(ctx context.Context, db DB) error {
+func (wit *WorkItemTag) Update(ctx context.Context, db DB) (*WorkItemTag, error) {
 	switch {
 	case !wit._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case wit._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_tags SET ` +
 		`project_id = $1, name = $2, description = $3, color = $4 ` +
 		`WHERE work_item_tag_id = $5 ` +
-		`RETURNING work_item_tag_id `
+		`RETURNING * `
 	// run
 	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID)
-	if err := db.QueryRow(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID).Scan(&wit.WorkItemTagID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTagID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	return nil
+	newwit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newwit._exists = true
+	wit = &newwit
+
+	return wit, nil
 }
 
 // Save saves the WorkItemTag to the database.
-func (wit *WorkItemTag) Save(ctx context.Context, db DB) error {
+func (wit *WorkItemTag) Save(ctx context.Context, db DB) (*WorkItemTag, error) {
 	if wit.Exists() {
 		return wit.Update(ctx, db)
 	}
@@ -175,7 +196,7 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
+(case when $1::boolean = true then joined_work_items.work_items end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -205,13 +226,15 @@ left join (
 
 	// run
 	logf(sqlstr, name, projectID)
-	wit := WorkItemTag{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, name, projectID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItems, name, projectID).Scan(&wit.WorkItemTagID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color, &wit.WorkItems); err != nil {
-		return nil, logerror(err)
+	wit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	wit._exists = true
 	return &wit, nil
 }
 
@@ -232,7 +255,7 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true then joined_work_items.work_items end)::jsonb as work_items ` +
+(case when $1::boolean = true then joined_work_items.work_items end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -262,13 +285,15 @@ left join (
 
 	// run
 	logf(sqlstr, workItemTagID)
-	wit := WorkItemTag{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, workItemTagID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItems, workItemTagID).Scan(&wit.WorkItemTagID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color, &wit.WorkItems); err != nil {
-		return nil, logerror(err)
+	wit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	wit._exists = true
 	return &wit, nil
 }
 

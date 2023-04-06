@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 // UserNotification represents a row from 'public.user_notifications'.
@@ -38,6 +39,8 @@ func WithUserNotificationLimit(limit int) UserNotificationSelectConfigOption {
 
 type UserNotificationOrderBy = string
 
+const ()
+
 type UserNotificationJoins struct {
 	Notification bool
 }
@@ -61,52 +64,69 @@ func (un *UserNotification) Deleted() bool {
 }
 
 // Insert inserts the UserNotification to the database.
-func (un *UserNotification) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotification, error) {
 	switch {
 	case un._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case un._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.user_notifications (` +
 		`notification_id, read, user_id` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) RETURNING user_notification_id `
+		`) RETURNING * `
 	// run
 	logf(sqlstr, un.NotificationID, un.Read, un.UserID)
-	if err := db.QueryRow(ctx, sqlstr, un.NotificationID, un.Read, un.UserID).Scan(&un.UserNotificationID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	un._exists = true
-	return nil
+	newun, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserNotification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newun._exists = true
+	un = &newun
+
+	return un, nil
 }
 
 // Update updates a UserNotification in the database.
-func (un *UserNotification) Update(ctx context.Context, db DB) error {
+func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotification, error) {
 	switch {
 	case !un._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case un._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.user_notifications SET ` +
 		`notification_id = $1, read = $2, user_id = $3 ` +
 		`WHERE user_notification_id = $4 ` +
-		`RETURNING user_notification_id `
+		`RETURNING * `
 	// run
 	logf(sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
-	if err := db.QueryRow(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID).Scan(&un.UserNotificationID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	return nil
+	newun, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserNotification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newun._exists = true
+	un = &newun
+
+	return un, nil
 }
 
 // Save saves the UserNotification to the database.
-func (un *UserNotification) Save(ctx context.Context, db DB) error {
+func (un *UserNotification) Save(ctx context.Context, db DB) (*UserNotification, error) {
 	if un.Exists() {
 		return un.Update(ctx, db)
 	}
@@ -175,7 +195,7 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true then row(notifications.*) end)::jsonb as notification ` +
+(case when $1::boolean = true then row(notifications.*) end) as notification ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join notifications on notifications.notification_id = user_notifications.notification_id` +
@@ -185,13 +205,15 @@ left join notifications on notifications.notification_id = user_notifications.no
 
 	// run
 	logf(sqlstr, notificationID, userID)
-	un := UserNotification{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, notificationID, userID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.Notification, notificationID, userID).Scan(&un.UserNotificationID, &un.NotificationID, &un.Read, &un.UserID, &un.Notification); err != nil {
-		return nil, logerror(err)
+	un, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserNotification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	un._exists = true
 	return &un, nil
 }
 
@@ -211,7 +233,7 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true then row(notifications.*) end)::jsonb as notification ` +
+(case when $1::boolean = true then row(notifications.*) end) as notification ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join notifications on notifications.notification_id = user_notifications.notification_id` +
@@ -221,13 +243,15 @@ left join notifications on notifications.notification_id = user_notifications.no
 
 	// run
 	logf(sqlstr, userNotificationID)
-	un := UserNotification{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, userNotificationID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.Notification, userNotificationID).Scan(&un.UserNotificationID, &un.NotificationID, &un.Read, &un.UserID, &un.Notification); err != nil {
-		return nil, logerror(err)
+	un, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserNotification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	un._exists = true
 	return &un, nil
 }
 
@@ -247,7 +271,7 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opt
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true then row(notifications.*) end)::jsonb as notification ` +
+(case when $1::boolean = true then row(notifications.*) end) as notification ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join notifications on notifications.notification_id = user_notifications.notification_id` +

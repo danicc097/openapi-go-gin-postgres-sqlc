@@ -4,7 +4,8 @@
 #
 # Main s̶c̶r̶i̶p̶t program to manage the entire project stack.
 #
-# For first-timers, ensure all dependencies and tools are installed with `project bootstrap` and run `project gen` at least once to build required tools and ensure your output is deterministic.
+# For first-timers, ensure all dependencies and tools are installed with `project bootstrap`
+# and run `project gen` at least once to build required tools and also ensure your output is deterministic.
 #
 #
 
@@ -345,10 +346,10 @@ x.gen.xo() {
     # xo schema --help
 
     mkdir -p "$PG_REPO_GEN"/db
-    xo_schema -o "$PG_REPO_GEN"/db \
-      --schema public \
-      --ignore "*.created_at" \
-      --ignore "*.updated_at" || err "Failed xo public schema generation" &
+    xo_schema -o "$PG_REPO_GEN"/db --debug \
+      --schema public || err "Failed xo public schema generation" &
+    # --ignore "*.created_at" \
+    # --ignore "*.updated_at"
 
     mkdir -p "$PG_REPO_GEN"/db/v
     xo_schema -o "$PG_REPO_GEN"/db/v \

@@ -5,6 +5,8 @@ package db
 import (
 	"context"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // Movie represents a row from 'public.movies'.
@@ -35,7 +37,10 @@ func WithMovieLimit(limit int) MovieSelectConfigOption {
 
 type MovieOrderBy = string
 
-type MovieJoins struct{}
+const ()
+
+type MovieJoins struct {
+}
 
 // WithMovieJoin orders results by the given columns.
 func WithMovieJoin(joins MovieJoins) MovieSelectConfigOption {
@@ -56,52 +61,69 @@ func (m *Movie) Deleted() bool {
 }
 
 // Insert inserts the Movie to the database.
-func (m *Movie) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 	switch {
 	case m._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case m._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.movies (` +
 		`title, year, synopsis` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) RETURNING movie_id `
+		`) RETURNING * `
 	// run
 	logf(sqlstr, m.Title, m.Year, m.Synopsis)
-	if err := db.QueryRow(ctx, sqlstr, m.Title, m.Year, m.Synopsis).Scan(&m.MovieID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, m.MovieID, m.Title, m.Year, m.Synopsis)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	m._exists = true
-	return nil
+	newm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Movie])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newm._exists = true
+	m = &newm
+
+	return m, nil
 }
 
 // Update updates a Movie in the database.
-func (m *Movie) Update(ctx context.Context, db DB) error {
+func (m *Movie) Update(ctx context.Context, db DB) (*Movie, error) {
 	switch {
 	case !m._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case m._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.movies SET ` +
 		`title = $1, year = $2, synopsis = $3 ` +
 		`WHERE movie_id = $4 ` +
-		`RETURNING movie_id `
+		`RETURNING * `
 	// run
 	logf(sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID)
-	if err := db.QueryRow(ctx, sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID).Scan(&m.MovieID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, m.Title, m.Year, m.Synopsis, m.MovieID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	return nil
+	newm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Movie])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newm._exists = true
+	m = &newm
+
+	return m, nil
 }
 
 // Save saves the Movie to the database.
-func (m *Movie) Save(ctx context.Context, db DB) error {
+func (m *Movie) Save(ctx context.Context, db DB) (*Movie, error) {
 	if m.Exists() {
 		return m.Update(ctx, db)
 	}
@@ -178,12 +200,14 @@ movies.synopsis ` +
 
 	// run
 	logf(sqlstr, movieID)
-	m := Movie{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, movieID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, movieID).Scan(&m.MovieID, &m.Title, &m.Year, &m.Synopsis); err != nil {
-		return nil, logerror(err)
+	m, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Movie])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	m._exists = true
 	return &m, nil
 }

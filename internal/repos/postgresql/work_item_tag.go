@@ -30,7 +30,7 @@ func (u *WorkItemTag) Create(ctx context.Context, d db.DBTX, params repos.WorkIt
 		Color:       params.Color,
 	}
 
-	if err := workItemTag.Save(ctx, d); err != nil {
+	if _, err := workItemTag.Save(ctx, d); err != nil {
 		return nil, err
 	}
 
@@ -53,7 +53,7 @@ func (u *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params repo
 		workItemTag.Color = *params.Color
 	}
 
-	err = workItemTag.Update(ctx, d)
+	_, err = workItemTag.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not update workItemTag: %w", parseErrorDetail(err))
 	}

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgtype"
+	"github.com/jackc/pgx/v5"
 )
 
 // WorkItem represents a row from 'public.work_items'.
@@ -126,52 +127,69 @@ func (wi *WorkItem) Deleted() bool {
 }
 
 // Insert inserts the WorkItem to the database.
-func (wi *WorkItem) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	switch {
 	case wi._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case wi._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_items (` +
-		`title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at` +
+		`title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, created_at, updated_at, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
-		`) RETURNING work_item_id, created_at, updated_at `
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11` +
+		`) RETURNING * `
 	// run
-	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt).Scan(&wi.WorkItemID, &wi.CreatedAt, &wi.UpdatedAt); err != nil {
-		return logerror(err)
+	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt)
+
+	rows, err := db.Query(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	wi._exists = true
-	return nil
+	newwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newwi._exists = true
+	wi = &newwi
+
+	return wi, nil
 }
 
 // Update updates a WorkItem in the database.
-func (wi *WorkItem) Update(ctx context.Context, db DB) error {
+func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	switch {
 	case !wi._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case wi._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_items SET ` +
-		`title = $1, description = $2, work_item_type_id = $3, metadata = $4, team_id = $5, kanban_step_id = $6, closed = $7, target_date = $8, deleted_at = $9 ` +
-		`WHERE work_item_id = $10 ` +
-		`RETURNING work_item_id, created_at, updated_at `
+		`title = $1, description = $2, work_item_type_id = $3, metadata = $4, team_id = $5, kanban_step_id = $6, closed = $7, target_date = $8, created_at = $9, updated_at = $10, deleted_at = $11 ` +
+		`WHERE work_item_id = $12 ` +
+		`RETURNING * `
 	// run
 	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
-	if err := db.QueryRow(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt, wi.WorkItemID).Scan(&wi.WorkItemID, &wi.CreatedAt, &wi.UpdatedAt); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	return nil
+	newwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newwi._exists = true
+	wi = &newwi
+
+	return wi, nil
 }
 
 // Save saves the WorkItem to the database.
-func (wi *WorkItem) Save(ctx context.Context, db DB) error {
+func (wi *WorkItem) Save(ctx context.Context, db DB) (*WorkItem, error) {
 	if wi.Exists() {
 		return wi.Update(ctx, db)
 	}
@@ -186,16 +204,16 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_items (` +
-		`work_item_id, title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at` +
+		`work_item_id, title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, created_at, updated_at, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12` +
 		`)` +
 		` ON CONFLICT (work_item_id) DO ` +
 		`UPDATE SET ` +
-		`title = EXCLUDED.title, description = EXCLUDED.description, work_item_type_id = EXCLUDED.work_item_type_id, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, closed = EXCLUDED.closed, target_date = EXCLUDED.target_date, deleted_at = EXCLUDED.deleted_at  `
+		`title = EXCLUDED.title, description = EXCLUDED.description, work_item_type_id = EXCLUDED.work_item_type_id, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, closed = EXCLUDED.closed, target_date = EXCLUDED.target_date, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, deleted_at = EXCLUDED.deleted_at  `
 	// run
-	logf(sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt); err != nil {
+	logf(sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -248,13 +266,13 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then row(demo_project_work_items.*) end)::jsonb as demo_project_work_item,
-(case when $2::boolean = true then row(project_2_work_items.*) end)::jsonb as project_2_work_item,
-(case when $3::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $4::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
-(case when $5::boolean = true then joined_users.users end)::jsonb as users,
-(case when $6::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
-(case when $7::boolean = true then row(work_item_types.*) end)::jsonb as work_item_type `+
+(case when $1::boolean = true then row(demo_project_work_items.*) end) as demo_project_work_item,
+(case when $2::boolean = true then row(project_2_work_items.*) end) as project_2_work_item,
+(case when $3::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $4::boolean = true then joined_work_item_comments.work_item_comments end) as work_item_comments,
+(case when $5::boolean = true then joined_users.users end) as users,
+(case when $6::boolean = true then joined_work_item_tags.work_item_tags end) as work_item_tags,
+(case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
 left join demo_project_work_items on demo_project_work_items.work_item_id = work_items.work_item_id
@@ -377,13 +395,13 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then row(demo_project_work_items.*) end)::jsonb as demo_project_work_item,
-(case when $2::boolean = true then row(project_2_work_items.*) end)::jsonb as project_2_work_item,
-(case when $3::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $4::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
-(case when $5::boolean = true then joined_users.users end)::jsonb as users,
-(case when $6::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
-(case when $7::boolean = true then row(work_item_types.*) end)::jsonb as work_item_type `+
+(case when $1::boolean = true then row(demo_project_work_items.*) end) as demo_project_work_item,
+(case when $2::boolean = true then row(project_2_work_items.*) end) as project_2_work_item,
+(case when $3::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $4::boolean = true then joined_work_item_comments.work_item_comments end) as work_item_comments,
+(case when $5::boolean = true then joined_users.users end) as users,
+(case when $6::boolean = true then joined_work_item_tags.work_item_tags end) as work_item_tags,
+(case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
 left join demo_project_work_items on demo_project_work_items.work_item_id = work_items.work_item_id
@@ -459,13 +477,15 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 
 	// run
 	logf(sqlstr, workItemID)
-	wi := WorkItem{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, workItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Description, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.TargetDate, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.DemoProjectWorkItem, &wi.Project2WorkItem, &wi.TimeEntries, &wi.WorkItemComments, &wi.Members, &wi.WorkItemTags, &wi.WorkItemType); err != nil {
-		return nil, logerror(err)
+	wi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	wi._exists = true
 	return &wi, nil
 }
 

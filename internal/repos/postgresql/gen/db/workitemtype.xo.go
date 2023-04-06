@@ -5,6 +5,8 @@ package db
 import (
 	"context"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // WorkItemType represents a row from 'public.work_item_types'.
@@ -37,6 +39,8 @@ func WithWorkItemTypeLimit(limit int) WorkItemTypeSelectConfigOption {
 
 type WorkItemTypeOrderBy = string
 
+const ()
+
 type WorkItemTypeJoins struct {
 	WorkItem bool
 }
@@ -60,52 +64,69 @@ func (wit *WorkItemType) Deleted() bool {
 }
 
 // Insert inserts the WorkItemType to the database.
-func (wit *WorkItemType) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, error) {
 	switch {
 	case wit._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case wit._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_types (` +
 		`project_id, name, description, color` +
 		`) VALUES (` +
 		`$1, $2, $3, $4` +
-		`) RETURNING work_item_type_id `
+		`) RETURNING * `
 	// run
 	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color)
-	if err := db.QueryRow(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color).Scan(&wit.WorkItemTypeID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	wit._exists = true
-	return nil
+	newwit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemType])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newwit._exists = true
+	wit = &newwit
+
+	return wit, nil
 }
 
 // Update updates a WorkItemType in the database.
-func (wit *WorkItemType) Update(ctx context.Context, db DB) error {
+func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, error) {
 	switch {
 	case !wit._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case wit._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_types SET ` +
 		`project_id = $1, name = $2, description = $3, color = $4 ` +
 		`WHERE work_item_type_id = $5 ` +
-		`RETURNING work_item_type_id `
+		`RETURNING * `
 	// run
 	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
-	if err := db.QueryRow(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID).Scan(&wit.WorkItemTypeID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	return nil
+	newwit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemType])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newwit._exists = true
+	wit = &newwit
+
+	return wit, nil
 }
 
 // Save saves the WorkItemType to the database.
-func (wit *WorkItemType) Save(ctx context.Context, db DB) error {
+func (wit *WorkItemType) Save(ctx context.Context, db DB) (*WorkItemType, error) {
 	if wit.Exists() {
 		return wit.Update(ctx, db)
 	}
@@ -175,7 +196,7 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true then row(work_items.*) end)::jsonb as work_item ` +
+(case when $1::boolean = true then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
@@ -185,13 +206,15 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 
 	// run
 	logf(sqlstr, name, projectID)
-	wit := WorkItemType{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, name, projectID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItem, name, projectID).Scan(&wit.WorkItemTypeID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color, &wit.WorkItem); err != nil {
-		return nil, logerror(err)
+	wit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemType])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	wit._exists = true
 	return &wit, nil
 }
 
@@ -212,7 +235,7 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true then row(work_items.*) end)::jsonb as work_item ` +
+(case when $1::boolean = true then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
@@ -222,13 +245,15 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 
 	// run
 	logf(sqlstr, workItemTypeID)
-	wit := WorkItemType{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemTypeID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItem, workItemTypeID).Scan(&wit.WorkItemTypeID, &wit.ProjectID, &wit.Name, &wit.Description, &wit.Color, &wit.WorkItem); err != nil {
-		return nil, logerror(err)
+	wit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemType])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	wit._exists = true
 	return &wit, nil
 }
 

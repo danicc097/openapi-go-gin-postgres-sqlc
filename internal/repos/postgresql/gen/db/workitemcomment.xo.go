@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 // WorkItemComment represents a row from 'public.work_item_comments'.
@@ -64,7 +65,8 @@ func WithWorkItemCommentOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentS
 	}
 }
 
-type WorkItemCommentJoins struct{}
+type WorkItemCommentJoins struct {
+}
 
 // WithWorkItemCommentJoin orders results by the given columns.
 func WithWorkItemCommentJoin(joins WorkItemCommentJoins) WorkItemCommentSelectConfigOption {
@@ -85,52 +87,69 @@ func (wic *WorkItemComment) Deleted() bool {
 }
 
 // Insert inserts the WorkItemComment to the database.
-func (wic *WorkItemComment) Insert(ctx context.Context, db DB) error {
+/* TODO insert may generate rows. use Query instead of exec */
+func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment, error) {
 	switch {
 	case wic._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case wic._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_comments (` +
-		`work_item_id, user_id, message` +
+		`work_item_id, user_id, message, created_at, updated_at` +
 		`) VALUES (` +
-		`$1, $2, $3` +
-		`) RETURNING work_item_comment_id, created_at, updated_at `
+		`$1, $2, $3, $4, $5` +
+		`) RETURNING * `
 	// run
-	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message)
-	if err := db.QueryRow(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message).Scan(&wic.WorkItemCommentID, &wic.CreatedAt, &wic.UpdatedAt); err != nil {
-		return logerror(err)
+	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt)
+
+	rows, err := db.Query(ctx, sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	// set exists
-	wic._exists = true
-	return nil
+	newwic, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemComment])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newwic._exists = true
+	wic = &newwic
+
+	return wic, nil
 }
 
 // Update updates a WorkItemComment in the database.
-func (wic *WorkItemComment) Update(ctx context.Context, db DB) error {
+func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment, error) {
 	switch {
 	case !wic._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case wic._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_comments SET ` +
-		`work_item_id = $1, user_id = $2, message = $3 ` +
-		`WHERE work_item_comment_id = $4 ` +
-		`RETURNING work_item_comment_id, created_at, updated_at `
+		`work_item_id = $1, user_id = $2, message = $3, created_at = $4, updated_at = $5 ` +
+		`WHERE work_item_comment_id = $6 ` +
+		`RETURNING * `
 	// run
 	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID)
-	if err := db.QueryRow(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.WorkItemCommentID).Scan(&wic.WorkItemCommentID, &wic.CreatedAt, &wic.UpdatedAt); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-	return nil
+	newwic, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemComment])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
+	}
+	newwic._exists = true
+	wic = &newwic
+
+	return wic, nil
 }
 
 // Save saves the WorkItemComment to the database.
-func (wic *WorkItemComment) Save(ctx context.Context, db DB) error {
+func (wic *WorkItemComment) Save(ctx context.Context, db DB) (*WorkItemComment, error) {
 	if wic.Exists() {
 		return wic.Update(ctx, db)
 	}
@@ -145,16 +164,16 @@ func (wic *WorkItemComment) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_item_comments (` +
-		`work_item_comment_id, work_item_id, user_id, message` +
+		`work_item_comment_id, work_item_id, user_id, message, created_at, updated_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4` +
+		`$1, $2, $3, $4, $5, $6` +
 		`)` +
 		` ON CONFLICT (work_item_comment_id) DO ` +
 		`UPDATE SET ` +
-		`work_item_id = EXCLUDED.work_item_id, user_id = EXCLUDED.user_id, message = EXCLUDED.message  `
+		`work_item_id = EXCLUDED.work_item_id, user_id = EXCLUDED.user_id, message = EXCLUDED.message, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at  `
 	// run
-	logf(sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message)
-	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message); err != nil {
+	logf(sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt)
+	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -209,13 +228,15 @@ work_item_comments.updated_at ` +
 
 	// run
 	logf(sqlstr, workItemCommentID)
-	wic := WorkItemComment{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, workItemCommentID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, workItemCommentID).Scan(&wic.WorkItemCommentID, &wic.WorkItemID, &wic.UserID, &wic.Message, &wic.CreatedAt, &wic.UpdatedAt); err != nil {
-		return nil, logerror(err)
+	wic, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemComment])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectOneRow: %w", err))
 	}
+	wic._exists = true
 	return &wic, nil
 }
 
