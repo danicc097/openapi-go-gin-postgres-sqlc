@@ -8,6 +8,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
+	"runtime"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
@@ -18,13 +20,18 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// Returns the directory of the file this function lives in.
+func getFileRuntimeDirectory() string {
+	_, b, _, _ := runtime.Caller(0)
+
+	return path.Join(path.Dir(b))
+}
+
 // clear && go run cmd/cli/main.go -env .env.dev
 func main() {
 	var env string
-	var init bool
 
 	flag.StringVar(&env, "env", ".env", "Environment Variables filename")
-	flag.BoolVar(&init, "init", false, "Run initial data script")
 	flag.Parse()
 
 	if err := envvar.Load(env); err != nil {
@@ -43,18 +50,6 @@ func main() {
 		errAndExit(out, err)
 	}
 
-	if init {
-		cmd = exec.Command(
-			"bash", "-c",
-			"project db.initial-data",
-		)
-		cmd.Dir = "."
-		if _, err := cmd.CombinedOutput(); err != nil {
-			fmt.Print("2")
-			// errAndExit(out, err) // exit code 1 for some reason
-		}
-	}
-
 	logger, _ := zap.NewDevelopment()
 	pool, _, err := postgresql.New(logger)
 	if err != nil {
@@ -65,45 +60,47 @@ func main() {
 		Name   string `json:"team" db:"team"`
 	}
 	type User struct {
-		UserID int     `json:"userID" db:"user_id"`
-		Name   string  `json:"name" db:"name"`
-		Teams  []*Team `json:"teams" db:"teams"`
+		UserID  int       `json:"userID" db:"user_id"`
+		Name    string    `json:"name" db:"name"`
+		Teams   *[]Team   `json:"teams" db:"teams"`
+		Strings *[]string `json:"strings" db:"strings"`
 	}
-	rows, _ := pool.Query(context.Background(), `
-WITH user_team AS (
-	SELECT 1 AS user_id, 1 AS team_id
-	UNION ALL
-	SELECT 1 AS user_id, 2 AS team_id
-	UNION ALL
-	SELECT 999 AS user_id, 1 AS team_id
-	UNION ALL
-	SELECT 999 AS user_id, 2 AS team_id
-), users AS (
-	SELECT 1 AS user_id, 'John Doe' AS name
-	UNION ALL
-	SELECT 999 AS user_id, '999' AS name
-),teams AS (
-	SELECT 1 AS team_id, 'team 1' AS name
-	UNION ALL
-	SELECT 2 AS team_id, 'team 2' AS name
-)
-SELECT users.user_id
-,joined_teams.teams as teams
-FROM users
-left join (
-	select
-		user_team.user_id as teams_user_id
-		, array_agg(teams.*) as teams
-		from user_team
-    join teams using (team_id)
-    group by teams_user_id
-  ) as joined_teams on joined_teams.teams_user_id = users.user_id
-	`)
+
+	// query, _ := os.ReadFile("cmd/pgx-tests/query.sql")
+	query := `
+	WITH user_team AS (
+		SELECT 1 AS user_id, 1 AS team_id
+		UNION ALL
+		SELECT 1 AS user_id, 2 AS team_id
+	), users AS (
+		SELECT 1 AS user_id, 'John Doe' AS name
+	),teams AS (
+		SELECT 1 AS team_id, 'team 1' AS name
+		UNION ALL
+		SELECT 2 AS team_id, 'team 2' AS name
+	)
+	SELECT users.user_id
+	,joined_teams.teams as teams
+	, string_to_array('a b c', ' ')::text[] as strings
+	FROM users
+	left join (
+		select
+			user_team.user_id as teams_user_id
+			, array_agg(teams.*) as teams
+			from user_team
+			join teams using (team_id)
+			group by teams_user_id
+		) as joined_teams on joined_teams.teams_user_id = users.user_id
+	`
+	rows, _ := pool.Query(context.Background(), query)
 	users, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	fmt.Printf("err: %v\n", err)
 	js, _ := json.Marshal(users[0])
 	fmt.Printf("user: %+v\n", string(js))
 	// {"userID":1,"name":"","teams":[{"teamID":1,"team":"team 1"},{"teamID":2,"team":"team 2"}]}
+
+	// TODO workaround
+	// xo generates _teams []*Team and teams *[]*Team. if !c.join.Teams then set teams = nil, else set to &_teams. barely any overhead.
 }
 
 func errAndExit(out []byte, err error) {
