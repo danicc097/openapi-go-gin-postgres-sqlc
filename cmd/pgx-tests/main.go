@@ -67,7 +67,7 @@ func main() {
 	type User struct {
 		UserID int     `json:"userID" db:"user_id"`
 		Name   string  `json:"name" db:"name"`
-		Teams  *[]Team `json:"teams" db:"teams"`
+		Teams  []*Team `json:"teams" db:"teams"`
 	}
 	rows, _ := pool.Query(context.Background(), `
 WITH user_team AS (
@@ -75,18 +75,20 @@ WITH user_team AS (
 	UNION ALL
 	SELECT 1 AS user_id, 2 AS team_id
 	UNION ALL
-	SELECT 99999 AS user_id, 1 AS team_id
+	SELECT 999 AS user_id, 1 AS team_id
 	UNION ALL
-	SELECT 99999 AS user_id, 2 AS team_id
+	SELECT 999 AS user_id, 2 AS team_id
 ), users AS (
 	SELECT 1 AS user_id, 'John Doe' AS name
+	UNION ALL
+	SELECT 999 AS user_id, '999' AS name
 ),teams AS (
 	SELECT 1 AS team_id, 'team 1' AS name
 	UNION ALL
 	SELECT 2 AS team_id, 'team 2' AS name
 )
 SELECT users.user_id
-,array_agg(joined_teams.teams) filter (where joined_teams.teams is not null) as teams
+,joined_teams.teams as teams
 FROM users
 left join (
 	select
@@ -94,15 +96,14 @@ left join (
 		, array_agg(teams.*) as teams
 		from user_team
     join teams using (team_id)
-    group by teams_user_id, teams.team_id, teams.name
+    group by teams_user_id
   ) as joined_teams on joined_teams.teams_user_id = users.user_id
-group by users.user_id
 	`)
-	userTeams, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
+	users, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	fmt.Printf("err: %v\n", err)
-	js, _ := json.Marshal(userTeams[0])
-	fmt.Printf("userTeams[0]: %+v\n", string(js))
-	// {"userID":1,"name":"","userTeams":[{"userTeamID":1,"userID":101,"team":"team 1"},{"userTeamID":1,"userID":102,"team":"team 2"}]}
+	js, _ := json.Marshal(users[0])
+	fmt.Printf("user: %+v\n", string(js))
+	// {"userID":1,"name":"","teams":[{"teamID":1,"team":"team 1"},{"teamID":2,"team":"team 2"}]}
 }
 
 func errAndExit(out []byte, err error) {
