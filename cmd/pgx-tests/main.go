@@ -85,13 +85,13 @@ WITH user_team AS (
 	UNION ALL
 	SELECT 2 AS team_id, 'team 2' AS name
 )
-SELECT users.user_id,
-array_agg(joined_teams.teams) filter (where joined_teams.teams is not null) as teams
+SELECT users.user_id
+,array_agg(joined_teams.teams) filter (where joined_teams.teams is not null) as teams
 FROM users
 left join (
 	select
 		user_team.user_id as teams_user_id
-		, row(teams.*) as teams
+		, array_agg(teams.*) as teams
 		from user_team
     join teams using (team_id)
     group by teams_user_id, teams.team_id, teams.name

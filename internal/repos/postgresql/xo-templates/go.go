@@ -2003,7 +2003,8 @@ func (f *Funcs) sqlstr_delete(v interface{}) []string {
 }
 
 const (
-	M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(joined_{{.JoinTable}}.{{.JoinTable}}) filter (where joined_teams.teams is not null) end) as {{.JoinTable}}`
+	M2MSelect = `(case when {{.Nth}}::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end) as {{.JoinTable}}`
+	// M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(joined_{{.JoinTable}}.{{.JoinTable}}) filter (where joined_teams.teams is not null) end) as {{.JoinTable}}`
 	O2MSelect = M2MSelect
 	O2OSelect = `(case when {{.Nth}}::boolean = true then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
 )
@@ -2012,12 +2013,12 @@ const (
 	M2MJoin = `
 left join (
 	select
-		{{.LookupTable}}.{{.LookupColumn}} as {{.JoinTable}}_{{.LookupColumn}}
-		, row({{.JoinTable}}.*) as {{.JoinTable}}
+		{{.LookupTable}}.{{.LookupColumn}} as {{.LookupTable}}_{{.LookupColumn}}
+		, array_agg({{.JoinTable}}.*) as {{.JoinTable}}
 		from {{.LookupTable}}
     join {{.JoinTable}} using ({{.JoinTablePK}})
-    group by {{.JoinTable}}_{{.LookupColumn}}, {{.JoinTable}}.{{.JoinTablePK}}
-  ) as joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.JoinTable}}_{{.LookupColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}
+    group by {{.LookupTable}}_{{.LookupColumn}}
+  ) as joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.LookupTable}}_{{.LookupColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}
 `
 	M2OJoin = `
 left join (

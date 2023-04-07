@@ -196,17 +196,17 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true then array_agg(joined_work_items.work_items) filter (where joined_teams.teams is not null) end) as work_items ` +
+(case when $1::boolean = true then joined_work_items.work_items end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
-		work_item_work_item_tag.work_item_tag_id as work_items_work_item_tag_id
-		, row(work_items.*) as work_items
+		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+		, array_agg(work_items.*) as work_items
 		from work_item_work_item_tag
     join work_items using (work_item_id)
-    group by work_items_work_item_tag_id, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_items_work_item_tag_id = work_item_tags.work_item_tag_id
+    group by work_item_work_item_tag_work_item_tag_id
+  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
 		` WHERE work_item_tags.name = $2 AND work_item_tags.project_id = $3 `
 	sqlstr += c.orderBy
@@ -243,17 +243,17 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true then array_agg(joined_work_items.work_items) filter (where joined_teams.teams is not null) end) as work_items ` +
+(case when $1::boolean = true then joined_work_items.work_items end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
-		work_item_work_item_tag.work_item_tag_id as work_items_work_item_tag_id
-		, row(work_items.*) as work_items
+		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+		, array_agg(work_items.*) as work_items
 		from work_item_work_item_tag
     join work_items using (work_item_id)
-    group by work_items_work_item_tag_id, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_items_work_item_tag_id = work_item_tags.work_item_tag_id
+    group by work_item_work_item_tag_work_item_tag_id
+  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
 		` WHERE work_item_tags.work_item_tag_id = $2 `
 	sqlstr += c.orderBy

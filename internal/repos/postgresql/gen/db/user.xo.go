@@ -258,10 +258,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) filter (where joined_teams.teams is not null) end) as time_entries,
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then array_agg(joined_teams.teams) filter (where joined_teams.teams is not null) end) as teams,
-(case when $4::boolean = true then array_agg(joined_work_items.work_items) filter (where joined_teams.teams is not null) end) as work_items `+
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -277,22 +277,22 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_team.user_id as teams_user_id
-		, row(teams.*) as teams
+		user_team.user_id as user_team_user_id
+		, array_agg(teams.*) as teams
 		from user_team
     join teams using (team_id)
-    group by teams_user_id, teams.team_id
-  ) as joined_teams on joined_teams.teams_user_id = users.user_id
+    group by user_team_user_id
+  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		work_item_member.member as work_items_member
-		, row(work_items.*) as work_items
+		work_item_member.member as work_item_member_member
+		, array_agg(work_items.*) as work_items
 		from work_item_member
     join work_items using (work_item_id)
-    group by work_items_member, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_items_member = users.user_id
+    group by work_item_member_member
+  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.created_at = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
@@ -341,10 +341,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) filter (where joined_teams.teams is not null) end) as time_entries,
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then array_agg(joined_teams.teams) filter (where joined_teams.teams is not null) end) as teams,
-(case when $4::boolean = true then array_agg(joined_work_items.work_items) filter (where joined_teams.teams is not null) end) as work_items `+
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -360,22 +360,22 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_team.user_id as teams_user_id
-		, row(teams.*) as teams
+		user_team.user_id as user_team_user_id
+		, array_agg(teams.*) as teams
 		from user_team
     join teams using (team_id)
-    group by teams_user_id, teams.team_id
-  ) as joined_teams on joined_teams.teams_user_id = users.user_id
+    group by user_team_user_id
+  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		work_item_member.member as work_items_member
-		, row(work_items.*) as work_items
+		work_item_member.member as work_item_member_member
+		, array_agg(work_items.*) as work_items
 		from work_item_member
     join work_items using (work_item_id)
-    group by work_items_member, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_items_member = users.user_id
+    group by work_item_member_member
+  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.deleted_at = $5 AND (deleted_at IS NOT NULL)  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
@@ -424,10 +424,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) filter (where joined_teams.teams is not null) end) as time_entries,
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then array_agg(joined_teams.teams) filter (where joined_teams.teams is not null) end) as teams,
-(case when $4::boolean = true then array_agg(joined_work_items.work_items) filter (where joined_teams.teams is not null) end) as work_items `+
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -443,22 +443,22 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_team.user_id as teams_user_id
-		, row(teams.*) as teams
+		user_team.user_id as user_team_user_id
+		, array_agg(teams.*) as teams
 		from user_team
     join teams using (team_id)
-    group by teams_user_id, teams.team_id
-  ) as joined_teams on joined_teams.teams_user_id = users.user_id
+    group by user_team_user_id
+  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		work_item_member.member as work_items_member
-		, row(work_items.*) as work_items
+		work_item_member.member as work_item_member_member
+		, array_agg(work_items.*) as work_items
 		from work_item_member
     join work_items using (work_item_id)
-    group by work_items_member, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_items_member = users.user_id
+    group by work_item_member_member
+  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.email = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
@@ -505,10 +505,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) filter (where joined_teams.teams is not null) end) as time_entries,
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then array_agg(joined_teams.teams) filter (where joined_teams.teams is not null) end) as teams,
-(case when $4::boolean = true then array_agg(joined_work_items.work_items) filter (where joined_teams.teams is not null) end) as work_items `+
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -524,22 +524,22 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_team.user_id as teams_user_id
-		, row(teams.*) as teams
+		user_team.user_id as user_team_user_id
+		, array_agg(teams.*) as teams
 		from user_team
     join teams using (team_id)
-    group by teams_user_id, teams.team_id
-  ) as joined_teams on joined_teams.teams_user_id = users.user_id
+    group by user_team_user_id
+  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		work_item_member.member as work_items_member
-		, row(work_items.*) as work_items
+		work_item_member.member as work_item_member_member
+		, array_agg(work_items.*) as work_items
 		from work_item_member
     join work_items using (work_item_id)
-    group by work_items_member, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_items_member = users.user_id
+    group by work_item_member_member
+  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.external_id = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
@@ -586,10 +586,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) filter (where joined_teams.teams is not null) end) as time_entries,
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then array_agg(joined_teams.teams) filter (where joined_teams.teams is not null) end) as teams,
-(case when $4::boolean = true then array_agg(joined_work_items.work_items) filter (where joined_teams.teams is not null) end) as work_items `+
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -605,22 +605,22 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_team.user_id as teams_user_id
-		, row(teams.*) as teams
+		user_team.user_id as user_team_user_id
+		, array_agg(teams.*) as teams
 		from user_team
     join teams using (team_id)
-    group by teams_user_id, teams.team_id
-  ) as joined_teams on joined_teams.teams_user_id = users.user_id
+    group by user_team_user_id
+  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		work_item_member.member as work_items_member
-		, row(work_items.*) as work_items
+		work_item_member.member as work_item_member_member
+		, array_agg(work_items.*) as work_items
 		from work_item_member
     join work_items using (work_item_id)
-    group by work_items_member, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_items_member = users.user_id
+    group by work_item_member_member
+  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.user_id = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
@@ -667,10 +667,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) filter (where joined_teams.teams is not null) end) as time_entries,
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then array_agg(joined_teams.teams) filter (where joined_teams.teams is not null) end) as teams,
-(case when $4::boolean = true then array_agg(joined_work_items.work_items) filter (where joined_teams.teams is not null) end) as work_items `+
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -686,22 +686,22 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_team.user_id as teams_user_id
-		, row(teams.*) as teams
+		user_team.user_id as user_team_user_id
+		, array_agg(teams.*) as teams
 		from user_team
     join teams using (team_id)
-    group by teams_user_id, teams.team_id
-  ) as joined_teams on joined_teams.teams_user_id = users.user_id
+    group by user_team_user_id
+  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		work_item_member.member as work_items_member
-		, row(work_items.*) as work_items
+		work_item_member.member as work_item_member_member
+		, array_agg(work_items.*) as work_items
 		from work_item_member
     join work_items using (work_item_id)
-    group by work_items_member, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_items_member = users.user_id
+    group by work_item_member_member
+  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
 		` WHERE users.updated_at = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
@@ -750,7 +750,10 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $3::boolean = true or $1::boolean = true or $2::boolean = true or $4::boolean = true then array_agg(joined_teams.teams) filter (where joined_teams.teams is not null) end) as teams `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -762,28 +765,28 @@ left join (
    group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey"
---left join user_api_keys on user_api_keys.user_id = users.user_id
+left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_team.user_id as teams_user_id
-		, row(teams.*) as teams
+		user_team.user_id as user_team_user_id
+		, array_agg(teams.*) as teams
 		from user_team
     join teams using (team_id)
-    group by teams_user_id, teams.team_id
-  ) as joined_teams on joined_teams.teams_user_id = users.user_id
+    group by user_team_user_id
+  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		work_item_member.member as work_items_member
-		, row(work_items.*) as work_items
+		work_item_member.member as work_item_member_member
+		, array_agg(work_items.*) as work_items
 		from work_item_member
     join work_items using (work_item_id)
-    group by work_items_member, work_items.work_item_id
-  ) as joined_work_items on joined_work_items.work_items_member = users.user_id
+    group by work_item_member_member
+  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
-		` WHERE users.username = $5  AND users.deleted_at is %s group by users.user_id `, c.deletedAt)
+		` WHERE users.username = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

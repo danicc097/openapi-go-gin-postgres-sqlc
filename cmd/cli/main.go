@@ -180,15 +180,15 @@ func main() {
 	bt, _ := json.Marshal(uaks_test[0])
 	fmt.Printf("uaks_test[0]: %+v\n", string(bt))
 
-	type UserItem struct {
+	type Item struct {
 		UserItemID int    `json:"userItemID" db:"user_item_id"`
 		UserID     int    `json:"userID" db:"user_id"`
 		Item       string `json:"item" db:"item"`
 	}
 	type CustomUser struct {
-		UserID    int         `json:"userID" db:"user_id"`
-		Name      string      `json:"name" db:"name"`
-		UserItems []*UserItem `json:"userItems" db:"user_items"`
+		UserID int     `json:"userID" db:"user_id"`
+		Name   string  `json:"name" db:"name"`
+		Items  []*Item `json:"items" db:"items"`
 	}
 	rows, _ = pool.Query(context.Background(), `
 	WITH user_items AS (
@@ -198,7 +198,7 @@ func main() {
 	), users AS (
 		SELECT 1 AS user_id, 'John Doe' AS name
 	)
-	SELECT users.user_id, array_agg(user_items.*) AS user_items
+	SELECT users.user_id, array_agg(user_items.*) AS items
 	FROM users
 	LEFT JOIN user_items ON users.user_id = user_items.user_id
 	GROUP BY users.user_id;

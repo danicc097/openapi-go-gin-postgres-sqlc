@@ -223,8 +223,8 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) filter (where joined_teams.teams is not null) end) as time_entries,
-(case when $2::boolean = true then array_agg(joined_users.users) filter (where joined_teams.teams is not null) end) as users ` +
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then joined_users.users end) as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -238,12 +238,12 @@ left join (
 -- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
-		user_team.team_id as users_team_id
-		, row(users.*) as users
+		user_team.team_id as user_team_team_id
+		, array_agg(users.*) as users
 		from user_team
     join users using (user_id)
-    group by users_team_id, users.user_id
-  ) as joined_users on joined_users.users_team_id = teams.team_id
+    group by user_team_team_id
+  ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
 		` WHERE teams.name = $3 AND teams.project_id = $4 `
 	sqlstr += c.orderBy
@@ -281,8 +281,8 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true then array_agg(joined_time_entries.time_entries) filter (where joined_teams.teams is not null) end) as time_entries,
-(case when $2::boolean = true then array_agg(joined_users.users) filter (where joined_teams.teams is not null) end) as users ` +
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then joined_users.users end) as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -296,12 +296,12 @@ left join (
 -- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
-		user_team.team_id as users_team_id
-		, row(users.*) as users
+		user_team.team_id as user_team_team_id
+		, array_agg(users.*) as users
 		from user_team
     join users using (user_id)
-    group by users_team_id, users.user_id
-  ) as joined_users on joined_users.users_team_id = teams.team_id
+    group by user_team_team_id
+  ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
 		` WHERE teams.team_id = $3 `
 	sqlstr += c.orderBy
