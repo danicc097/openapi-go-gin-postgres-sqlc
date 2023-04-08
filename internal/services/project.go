@@ -78,7 +78,7 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 	case internalmodels.ProjectDemoProject:
 		workItem = internalmodels.DemoProjectWorkItemsResponse{}
 	}
-	pathKeys := structs.GetStructKeys(workItem, "")
+	pathKeys := structs.GetKeys(workItem, "")
 	fmt.Printf("pathKeys: %v\n", pathKeys)
 
 	for _, path := range pathKeys {
@@ -118,7 +118,7 @@ func defaultConfigField(path string) map[string]any {
 	var jsonMap map[string]any
 
 	fj, _ := json.Marshal(f)
-	json.Unmarshal(fj, &jsonMap)
+	_ = json.Unmarshal(fj, &jsonMap)
 
 	return jsonMap
 }
@@ -129,7 +129,6 @@ func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, obj map[st
 	if !ok {
 		return
 	}
-
 	var fields []map[string]any // can't type assert map values of any when obj comes from unmarshalling
 	fBlob, err := json.Marshal(fieldsInterface)
 	if err != nil {

@@ -1,4 +1,4 @@
-package services
+package services_test
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/google/go-cmp/cmp"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -17,6 +18,8 @@ import (
 )
 
 func Test_MergeConfigFields(t *testing.T) {
+	t.Parallel()
+
 	fakeProjectRepo := &repostesting.FakeProject{}
 	fakeProjectRepo.ProjectByIDStub = func(ctx context.Context, d db.DBTX, i int) (*db.Project, error) {
 		return &db.Project{
@@ -45,7 +48,7 @@ func Test_MergeConfigFields(t *testing.T) {
 		}, nil
 	}
 	fakeTeamRepo := &repostesting.FakeTeam{}
-	p := NewProject(zaptest.NewLogger(t), fakeProjectRepo, fakeTeamRepo)
+	p := services.NewProject(zaptest.NewLogger(t), fakeProjectRepo, fakeTeamRepo)
 
 	type args struct {
 		obj2 map[string]any
