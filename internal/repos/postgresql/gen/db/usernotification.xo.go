@@ -81,7 +81,7 @@ func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotificatio
 	// run
 	logf(sqlstr, un.NotificationID, un.Read, un.UserID)
 
-	rows, err := db.Query(ctx, sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID)
+	rows, err := db.Query(ctx, sqlstr, un.NotificationID, un.Read, un.UserID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/Insert/db.Query: %w", err))
 	}

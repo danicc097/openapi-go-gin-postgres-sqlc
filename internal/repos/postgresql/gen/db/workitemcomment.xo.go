@@ -104,7 +104,7 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment
 	// run
 	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt)
 
-	rows, err := db.Query(ctx, sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt)
+	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Insert/db.Query: %w", err))
 	}

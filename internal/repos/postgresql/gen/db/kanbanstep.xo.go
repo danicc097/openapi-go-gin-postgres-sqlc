@@ -81,7 +81,7 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 	// run
 	logf(sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
 
-	rows, err := db.Query(ctx, sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
+	rows, err := db.Query(ctx, sqlstr, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Insert/db.Query: %w", err))
 	}

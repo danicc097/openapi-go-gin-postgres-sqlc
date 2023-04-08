@@ -19,7 +19,7 @@ require (
 	github.com/jackc/pgerrcode v0.0.0-20201024163028-a0d42d470451
 	github.com/jackc/pgtype v1.11.0
 	github.com/jackc/pgx-zap v0.0.0-20220909013905-c08a18c611dd
-	github.com/jackc/pgx/v5 v5.3.2-0.20230401011805-be79f1c8f598
+	github.com/jackc/pgx/v5 v5.3.2-0.20230408193948-847f888631e7
 	github.com/joho/godotenv v1.4.0
 	github.com/kenshaw/inflector v0.2.0
 	github.com/kenshaw/snaker v0.2.0
@@ -71,7 +71,7 @@ require (
 	github.com/swaggest/refl v1.1.0 // indirect
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9 // indirect
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 )
@@ -114,12 +114,12 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.36.1
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	golang.org/x/crypto v0.6.0 // indirect
-	golang.org/x/mod v0.7.0 // indirect
-	golang.org/x/net v0.6.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/crypto v0.8.0 // indirect
+	golang.org/x/mod v0.8.0 // indirect
+	golang.org/x/net v0.9.0 // indirect
+	golang.org/x/sys v0.7.0 // indirect
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306
-	golang.org/x/tools v0.3.0
+	golang.org/x/tools v0.6.0
 	google.golang.org/genproto v0.0.0-20220317150908-0efb43f6373e // indirect
 	google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf v1.28.1

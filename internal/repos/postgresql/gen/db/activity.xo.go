@@ -81,7 +81,7 @@ func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 	// run
 	logf(sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive)
 
-	rows, err := db.Query(ctx, sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive)
+	rows, err := db.Query(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Insert/db.Query: %w", err))
 	}

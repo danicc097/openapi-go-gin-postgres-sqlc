@@ -33,7 +33,7 @@ type User struct {
 
 	TimeEntries *[]TimeEntry `json:"timeEntries" db:"time_entries"` // O2M
 	UserAPIKey  *UserAPIKey  `json:"userAPIKey" db:"user_api_key"`  // O2O
-	Teams       []*Team      `json:"teams" db:"teams"`              // M2M
+	Teams       *[]Team      `json:"teams" db:"teams"`              // M2M
 	WorkItems   *[]WorkItem  `json:"workItems" db:"work_items"`     // M2M
 	// xo fields
 	_exists, _deleted bool
@@ -133,7 +133,7 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	// run
 	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt)
 
-	rows, err := db.Query(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt)
+	rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Insert/db.Query: %w", err))
 	}

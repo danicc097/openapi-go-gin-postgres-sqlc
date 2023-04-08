@@ -6,7 +6,7 @@
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
-import { validateJson } from './validate'
+import { validateJson } from '../validate'
 import {
   DbActivity,
   DbKanbanStep,

@@ -78,7 +78,7 @@ func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 	// run
 	logf(sqlstr, m.Title, m.Year, m.Synopsis)
 
-	rows, err := db.Query(ctx, sqlstr, m.MovieID, m.Title, m.Year, m.Synopsis)
+	rows, err := db.Query(ctx, sqlstr, m.Title, m.Year, m.Synopsis)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Movie/Insert/db.Query: %w", err))
 	}

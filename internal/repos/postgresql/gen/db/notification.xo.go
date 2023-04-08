@@ -106,7 +106,7 @@ func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error)
 	// run
 	logf(sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType)
 
-	rows, err := db.Query(ctx, sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType)
+	rows, err := db.Query(ctx, sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Insert/db.Query: %w", err))
 	}

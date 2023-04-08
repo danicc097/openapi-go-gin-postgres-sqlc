@@ -81,7 +81,7 @@ func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, erro
 	// run
 	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color)
 
-	rows, err := db.Query(ctx, sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color)
+	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Insert/db.Query: %w", err))
 	}

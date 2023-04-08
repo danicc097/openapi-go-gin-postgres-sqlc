@@ -98,9 +98,6 @@ func main() {
 	js, _ := json.Marshal(users[0])
 	fmt.Printf("user: %+v\n", string(js))
 	// {"userID":1,"name":"","teams":[{"teamID":1,"team":"team 1"},{"teamID":2,"team":"team 2"}]}
-
-	// TODO workaround
-	// xo generates _teams []*Team and teams *[]*Team. if !c.join.Teams then set teams = nil, else set to &_teams. barely any overhead.
 }
 
 func errAndExit(out []byte, err error) {

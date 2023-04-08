@@ -116,7 +116,7 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 	// run
 	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt)
 
-	rows, err := db.Query(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt)
+	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Insert/db.Query: %w", err))
 	}

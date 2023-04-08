@@ -100,7 +100,7 @@ func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 	// run
 	logf(sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID)
 
-	rows, err := db.Query(ctx, sqlstr, uak.UserAPIKeyID, uak.APIKey, uak.ExpiresOn, uak.UserID)
+	rows, err := db.Query(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Insert/db.Query: %w", err))
 	}

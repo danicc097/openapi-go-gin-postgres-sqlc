@@ -247,7 +247,7 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	{{ sqlstr "insert_manual" $t }}
 	// run
 	{{ logf $t }}
-	rows, err := {{ db_prefix "Query" true false $t }}
+	rows, err := {{ db_prefix "Query" false false $t }}
 	if err != nil {
 		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/db.Query: %w", err))
 	}
@@ -261,7 +261,7 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	// run
 	{{ logf $t $t.Generated $t.Ignored }}
 
-	rows, err := {{ db_prefix "Query" true false $t }}
+	rows, err := {{ db_prefix "Query" false false $t }}
 	if err != nil {
 		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/db.Query: %w", err))
 	}

@@ -102,7 +102,7 @@ func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 	// run
 	logf(sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
 
-	rows, err := db.Query(ctx, sqlstr, te.TimeEntryID, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
+	rows, err := db.Query(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/Insert/db.Query: %w", err))
 	}

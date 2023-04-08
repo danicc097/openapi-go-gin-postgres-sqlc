@@ -107,7 +107,7 @@ func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 	// run
 	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt)
 
-	rows, err := db.Query(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt)
+	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Insert/db.Query: %w", err))
 	}
