@@ -212,7 +212,7 @@ export interface ModelsProjectConfigField {
   path: string
   showCollapsed: boolean
 }
-export interface DemoProjectWorkItemsResponse {
+export interface RestDemoProjectWorkItemsResponse {
   closed?: string | null
   createdAt?: string
   deletedAt?: string | null

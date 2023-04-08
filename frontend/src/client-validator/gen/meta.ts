@@ -16,7 +16,7 @@ import {
   DbTimeEntry,
   DbWorkItemComment,
   ProjectConfig,
-  DemoProjectWorkItemsResponse,
+  RestDemoProjectWorkItemsResponse,
   InitializeProjectRequest,
   RestProjectBoardResponse,
   UserResponse,
@@ -58,9 +58,9 @@ export const schemaDefinitions = {
   DbTimeEntry: info<DbTimeEntry>('DbTimeEntry', '#/definitions/DbTimeEntry'),
   DbWorkItemComment: info<DbWorkItemComment>('DbWorkItemComment', '#/definitions/DbWorkItemComment'),
   ProjectConfig: info<ProjectConfig>('ProjectConfig', '#/definitions/ProjectConfig'),
-  DemoProjectWorkItemsResponse: info<DemoProjectWorkItemsResponse>(
-    'DemoProjectWorkItemsResponse',
-    '#/definitions/DemoProjectWorkItemsResponse',
+  RestDemoProjectWorkItemsResponse: info<RestDemoProjectWorkItemsResponse>(
+    'RestDemoProjectWorkItemsResponse',
+    '#/definitions/RestDemoProjectWorkItemsResponse',
   ),
   InitializeProjectRequest: info<InitializeProjectRequest>(
     'InitializeProjectRequest',

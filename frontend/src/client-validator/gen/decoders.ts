@@ -20,7 +20,7 @@ import {
   DbTimeEntry,
   DbWorkItemComment,
   ProjectConfig,
-  DemoProjectWorkItemsResponse,
+  RestDemoProjectWorkItemsResponse,
   InitializeProjectRequest,
   RestProjectBoardResponse,
   UserResponse,
@@ -199,16 +199,16 @@ export const ProjectConfigDecoder: Decoder<ProjectConfig> = {
     return validateJson(json, schema, ProjectConfigDecoder.definitionName)
   },
 }
-export const DemoProjectWorkItemsResponseDecoder: Decoder<DemoProjectWorkItemsResponse> = {
-  definitionName: 'DemoProjectWorkItemsResponse',
-  schemaRef: '#/definitions/DemoProjectWorkItemsResponse',
+export const RestDemoProjectWorkItemsResponseDecoder: Decoder<RestDemoProjectWorkItemsResponse> = {
+  definitionName: 'RestDemoProjectWorkItemsResponse',
+  schemaRef: '#/definitions/RestDemoProjectWorkItemsResponse',
 
-  decode(json: unknown): DemoProjectWorkItemsResponse {
-    const schema = ajv.getSchema(DemoProjectWorkItemsResponseDecoder.schemaRef)
+  decode(json: unknown): RestDemoProjectWorkItemsResponse {
+    const schema = ajv.getSchema(RestDemoProjectWorkItemsResponseDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${DemoProjectWorkItemsResponseDecoder.definitionName} not found`)
+      throw new Error(`Schema ${RestDemoProjectWorkItemsResponseDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, DemoProjectWorkItemsResponseDecoder.definitionName)
+    return validateJson(json, schema, RestDemoProjectWorkItemsResponseDecoder.definitionName)
   },
 }
 export const InitializeProjectRequestDecoder: Decoder<InitializeProjectRequest> = {

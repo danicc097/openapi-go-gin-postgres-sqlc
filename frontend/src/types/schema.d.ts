@@ -195,7 +195,7 @@ export interface components {
       fields: (components["schemas"]["ModelsProjectConfigField"])[] | null;
       header: (string)[] | null;
     };
-    DemoProjectWorkItemsResponse: {
+    RestDemoProjectWorkItemsResponse: {
       /** Format: date-time */
       closed?: string | null;
       /** Format: date-time */
@@ -591,7 +591,7 @@ export interface operations {
       /** @description Project successfully initialized. */
       200: {
         content: {
-          "application/json": components["schemas"]["DemoProjectWorkItemsResponse"];
+          "application/json": components["schemas"]["RestDemoProjectWorkItemsResponse"];
         };
       };
     };

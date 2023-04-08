@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
@@ -76,7 +77,14 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 	var workItem any
 	switch internalmodels.Project(project.Name) {
 	case internalmodels.ProjectDemoProject:
-		workItem = internalmodels.DemoProjectWorkItemsResponse{}
+		// FIXME due to structs package, its broken if all fields are pointers
+		// because they're all nil reflect.Pointer's so no keys are generated
+		// either put shared models in a literal "internalmodels" folder
+		// and let generated model types be or fix oapicodegen or
+		// initialize the below struct with zero values
+		workItem := &internalmodels.RestDemoProjectWorkItemsResponse{}
+		createZeroStructFields(reflect.ValueOf(workItem), 10)
+		format.PrintJSON(workItem)
 	}
 	pathKeys := structs.GetKeys(workItem, "")
 	fmt.Printf("pathKeys: %v\n", pathKeys)
@@ -155,6 +163,35 @@ func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, obj map[st
 				newField[key] = value
 			}
 			fieldsMap[path] = newField
+		}
+	}
+}
+
+func createZeroStructFields(v reflect.Value, maxDepth int) {
+	if maxDepth == 0 {
+		return
+	}
+	maxDepth--
+	switch v.Kind() {
+	case reflect.Ptr:
+		if v.IsNil() {
+			v.Set(reflect.New(v.Type().Elem()))
+		}
+		createZeroStructFields(v.Elem(), maxDepth)
+	case reflect.Struct:
+		for i := 0; i < v.NumField(); i++ {
+			field := v.Field(i)
+			if field.CanSet() {
+				createZeroStructFields(field, maxDepth)
+			}
+		}
+	case reflect.Slice, reflect.Array:
+		for i := 0; i < v.Len(); i++ {
+			createZeroStructFields(v.Index(i), maxDepth)
+		}
+	case reflect.Map:
+		for _, key := range v.MapKeys() {
+			createZeroStructFields(v.MapIndex(key), maxDepth)
 		}
 	}
 }

@@ -299,29 +299,6 @@ type DbWorkItemType struct {
 	WorkItemTypeID *int        `json:"workItemTypeID,omitempty"`
 }
 
-// DemoProjectWorkItemsResponse defines the model for DemoProjectWorkItemsResponse.
-type DemoProjectWorkItemsResponse struct {
-	Closed              *time.Time             `json:"closed"`
-	CreatedAt           *time.Time             `json:"createdAt,omitempty"`
-	DeletedAt           *time.Time             `json:"deletedAt"`
-	DemoProjectWorkItem *DbDemoProjectWorkItem `json:"demoProjectWorkItem"`
-	Description         *string                `json:"description,omitempty"`
-	KanbanStepID        *int                   `json:"kanbanStepID,omitempty"`
-	Members             *[]DbUser              `json:"members"`
-	Metadata            *PgtypeJSONB           `json:"metadata,omitempty"`
-	Project2workItem    *DbProject2WorkItem    `json:"project2workItem"`
-	TargetDate          *time.Time             `json:"targetDate,omitempty"`
-	TeamID              *int                   `json:"teamID,omitempty"`
-	TimeEntries         *[]DbTimeEntry         `json:"timeEntries"`
-	Title               *string                `json:"title,omitempty"`
-	UpdatedAt           *time.Time             `json:"updatedAt,omitempty"`
-	WorkItemComments    *[]DbWorkItemComment   `json:"workItemComments"`
-	WorkItemID          *int                   `json:"workItemID,omitempty"`
-	WorkItemTags        *[]DbWorkItemTag       `json:"workItemTags"`
-	WorkItemType        *DbWorkItemType        `json:"workItemType"`
-	WorkItemTypeID      *int                   `json:"workItemTypeID,omitempty"`
-}
-
 // HTTPValidationError defines the model for HTTPValidationError.
 type HTTPValidationError struct {
 	Detail *[]ValidationError `json:"detail,omitempty"`
@@ -403,6 +380,29 @@ type ReposWorkItemTypeCreateParams struct {
 	Description *string `json:"description,omitempty"`
 	Name        *string `json:"name,omitempty"`
 	ProjectID   *int    `json:"projectID,omitempty"`
+}
+
+// RestDemoProjectWorkItemsResponse defines the model for RestDemoProjectWorkItemsResponse.
+type RestDemoProjectWorkItemsResponse struct {
+	Closed              *time.Time             `json:"closed"`
+	CreatedAt           *time.Time             `json:"createdAt,omitempty"`
+	DeletedAt           *time.Time             `json:"deletedAt"`
+	DemoProjectWorkItem *DbDemoProjectWorkItem `json:"demoProjectWorkItem"`
+	Description         *string                `json:"description,omitempty"`
+	KanbanStepID        *int                   `json:"kanbanStepID,omitempty"`
+	Members             *[]DbUser              `json:"members"`
+	Metadata            *PgtypeJSONB           `json:"metadata,omitempty"`
+	Project2workItem    *DbProject2WorkItem    `json:"project2workItem"`
+	TargetDate          *time.Time             `json:"targetDate,omitempty"`
+	TeamID              *int                   `json:"teamID,omitempty"`
+	TimeEntries         *[]DbTimeEntry         `json:"timeEntries"`
+	Title               *string                `json:"title,omitempty"`
+	UpdatedAt           *time.Time             `json:"updatedAt,omitempty"`
+	WorkItemComments    *[]DbWorkItemComment   `json:"workItemComments"`
+	WorkItemID          *int                   `json:"workItemID,omitempty"`
+	WorkItemTags        *[]DbWorkItemTag       `json:"workItemTags"`
+	WorkItemType        *DbWorkItemType        `json:"workItemType"`
+	WorkItemTypeID      *int                   `json:"workItemTypeID,omitempty"`
 }
 
 // RestProjectBoardResponse defines the model for RestProjectBoardResponse.
