@@ -12,18 +12,18 @@ import type { UuidUUID } from './uuidUUID'
 import type { DbWorkItem } from './dbWorkItem'
 
 export interface DbUser {
-  createdAt?: Date
-  deletedAt?: Date | null
-  email?: string
-  firstName?: string | null
-  fullName?: string | null
-  hasGlobalNotifications?: boolean
-  hasPersonalNotifications?: boolean
-  lastName?: string | null
+  createdAt: Date
+  deletedAt: Date | null
+  email: string
+  firstName: string | null
+  fullName: string | null
+  hasGlobalNotifications: boolean
+  hasPersonalNotifications: boolean
+  lastName: string | null
   teams?: DbTeam[] | null
   timeEntries?: DbTimeEntry[] | null
   userAPIKey?: DbUserAPIKey
-  userID?: UuidUUID
-  username?: string
+  userID: UuidUUID
+  username: string
   workItems?: DbWorkItem[] | null
 }

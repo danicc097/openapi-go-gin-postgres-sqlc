@@ -8,7 +8,7 @@
 import type { DbWorkItem } from './dbWorkItem'
 
 export type DbProject2WorkItem = {
-  customDateForProject2?: Date | null
+  customDateForProject2: Date | null
   workItem?: DbWorkItem
-  workItemID?: number
+  workItemID: number
 } | null

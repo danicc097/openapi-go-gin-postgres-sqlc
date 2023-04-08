@@ -15,12 +15,12 @@ import (
 // WorkItemComment represents a row from 'public.work_item_comments'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type WorkItemComment struct {
-	WorkItemCommentID int64     `json:"workItemCommentID" db:"work_item_comment_id"` // work_item_comment_id
-	WorkItemID        int64     `json:"workItemID" db:"work_item_id"`                // work_item_id
-	UserID            uuid.UUID `json:"userID" db:"user_id"`                         // user_id
-	Message           string    `json:"message" db:"message"`                        // message
-	CreatedAt         time.Time `json:"createdAt" db:"created_at"`                   // created_at
-	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at"`                   // updated_at
+	WorkItemCommentID int64     `json:"workItemCommentID" db:"work_item_comment_id" required:"true"` // work_item_comment_id
+	WorkItemID        int64     `json:"workItemID" db:"work_item_id" required:"true"`                // work_item_id
+	UserID            uuid.UUID `json:"userID" db:"user_id" required:"true"`                         // user_id
+	Message           string    `json:"message" db:"message" required:"true"`                        // message
+	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true"`                   // created_at
+	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at" required:"true"`                   // updated_at
 
 	// xo fields
 	_exists, _deleted bool

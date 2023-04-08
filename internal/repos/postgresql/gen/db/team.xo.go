@@ -14,12 +14,12 @@ import (
 // Team represents a row from 'public.teams'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Team struct {
-	TeamID      int       `json:"teamID" db:"team_id"`          // team_id
-	ProjectID   int       `json:"projectID" db:"project_id"`    // project_id
-	Name        string    `json:"name" db:"name"`               // name
-	Description string    `json:"description" db:"description"` // description
-	CreatedAt   time.Time `json:"createdAt" db:"created_at"`    // created_at
-	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at"`    // updated_at
+	TeamID      int       `json:"teamID" db:"team_id" required:"true"`          // team_id
+	ProjectID   int       `json:"projectID" db:"project_id" required:"true"`    // project_id
+	Name        string    `json:"name" db:"name" required:"true"`               // name
+	Description string    `json:"description" db:"description" required:"true"` // description
+	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
+	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
 	TimeEntries *[]TimeEntry `json:"timeEntries" db:"time_entries"` // O2M
 	Users       *[]User      `json:"users" db:"users"`              // M2M

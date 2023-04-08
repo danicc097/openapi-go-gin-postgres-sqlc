@@ -15,23 +15,23 @@ import type { DbWorkItemTag } from './dbWorkItemTag'
 import type { DbWorkItemType } from './dbWorkItemType'
 
 export interface RestDemoProjectWorkItemsResponse {
-  closed?: Date | null
-  createdAt?: Date
-  deletedAt?: Date | null
+  closed: Date | null
+  createdAt: Date
+  deletedAt: Date | null
   demoProjectWorkItem: DbDemoProjectWorkItem
-  description?: string
-  kanbanStepID?: number
+  description: string
+  kanbanStepID: number
   members?: DbUser[] | null
-  metadata?: PgtypeJSONB
+  metadata: PgtypeJSONB
   project2workItem?: DbProject2WorkItem
-  targetDate?: Date
-  teamID?: number
+  targetDate: Date
+  teamID: number
   timeEntries?: DbTimeEntry[] | null
-  title?: string
-  updatedAt?: Date
+  title: string
+  updatedAt: Date
   workItemComments?: DbWorkItemComment[] | null
-  workItemID?: number
+  workItemID: number
   workItemTags?: DbWorkItemTag[] | null
   workItemType?: DbWorkItemType
-  workItemTypeID?: number
+  workItemTypeID: number
 }

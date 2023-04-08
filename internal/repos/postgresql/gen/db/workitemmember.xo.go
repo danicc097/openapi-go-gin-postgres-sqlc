@@ -13,9 +13,9 @@ import (
 // WorkItemMember represents a row from 'public.work_item_member'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type WorkItemMember struct {
-	WorkItemID int64        `json:"workItemID" db:"work_item_id"` // work_item_id
-	Member     uuid.UUID    `json:"member" db:"member"`           // member
-	Role       WorkItemRole `json:"role" db:"role"`               // role
+	WorkItemID int64        `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
+	Member     uuid.UUID    `json:"member" db:"member" required:"true"`           // member
+	Role       WorkItemRole `json:"role" db:"role" required:"true"`               // role
 
 	// xo fields
 	_exists, _deleted bool

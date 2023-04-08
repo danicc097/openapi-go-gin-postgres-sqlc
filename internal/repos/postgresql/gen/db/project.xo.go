@@ -15,14 +15,14 @@ import (
 // Project represents a row from 'public.projects'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Project struct {
-	ProjectID          int          `json:"projectID" db:"project_id"`    // project_id
-	Name               string       `json:"name" db:"name"`               // name
-	Description        string       `json:"description" db:"description"` // description
-	WorkItemsTableName string       `json:"-" db:"work_items_table_name"` // work_items_table_name
-	Initialized        bool         `json:"initialized" db:"initialized"` // initialized
-	BoardConfig        pgtype.JSONB `json:"-" db:"board_config"`          // board_config
-	CreatedAt          time.Time    `json:"createdAt" db:"created_at"`    // created_at
-	UpdatedAt          time.Time    `json:"updatedAt" db:"updated_at"`    // updated_at
+	ProjectID          int          `json:"projectID" db:"project_id" required:"true"`    // project_id
+	Name               string       `json:"name" db:"name" required:"true"`               // name
+	Description        string       `json:"description" db:"description" required:"true"` // description
+	WorkItemsTableName string       `json:"-" db:"work_items_table_name" `                // work_items_table_name
+	Initialized        bool         `json:"initialized" db:"initialized" required:"true"` // initialized
+	BoardConfig        pgtype.JSONB `json:"-" db:"board_config" `                         // board_config
+	CreatedAt          time.Time    `json:"createdAt" db:"created_at" required:"true"`    // created_at
+	UpdatedAt          time.Time    `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
 	Activities    *[]Activity     `json:"activities" db:"activities"`         // O2M
 	KanbanSteps   *[]KanbanStep   `json:"kanbanSteps" db:"kanban_steps"`      // O2M

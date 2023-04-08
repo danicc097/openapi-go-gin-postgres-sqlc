@@ -13,8 +13,8 @@ import (
 // UserTeam represents a row from 'public.user_team'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type UserTeam struct {
-	TeamID int       `json:"teamID" db:"team_id"` // team_id
-	UserID uuid.UUID `json:"userID" db:"user_id"` // user_id
+	TeamID int       `json:"teamID" db:"team_id" required:"true"` // team_id
+	UserID uuid.UUID `json:"userID" db:"user_id" required:"true"` // user_id
 
 	// xo fields
 	_exists, _deleted bool

@@ -29,6 +29,13 @@
           ]
         }
       },
+      "required": [
+        "activityID",
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
       "type": "object",
       "x-postgen-struct": "DbActivity",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -60,6 +67,15 @@
           "type": "boolean"
         }
       },
+      "required": [
+        "kanbanStepID",
+        "projectID",
+        "stepOrder",
+        "name",
+        "description",
+        "color",
+        "timeTrackable"
+      ],
       "type": "object",
       "x-postgen-struct": "DbKanbanStep",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -132,6 +148,14 @@
           ]
         }
       },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "initialized",
+        "createdAt",
+        "updatedAt"
+      ],
       "type": "object",
       "x-postgen-struct": "DbProject",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -177,6 +201,14 @@
           ]
         }
       },
+      "required": [
+        "teamID",
+        "projectID",
+        "name",
+        "description",
+        "createdAt",
+        "updatedAt"
+      ],
       "type": "object",
       "x-postgen-struct": "DbTeam",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -208,6 +240,13 @@
           ]
         }
       },
+      "required": [
+        "workItemTagID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
       "type": "object",
       "x-postgen-struct": "DbWorkItemTag",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -233,6 +272,13 @@
           "type": "integer"
         }
       },
+      "required": [
+        "workItemTypeID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
       "type": [
         "object",
         "null"
@@ -262,6 +308,13 @@
           "type": "integer"
         }
       },
+      "required": [
+        "workItemID",
+        "ref",
+        "line",
+        "lastMessageAt",
+        "reopened"
+      ],
       "type": [
         "object",
         "null"
@@ -285,6 +338,11 @@
           "$ref": "#/definitions/UuidUUID"
         }
       },
+      "required": [
+        "apiKey",
+        "expiresOn",
+        "userID"
+      ],
       "type": [
         "object",
         "null"
@@ -369,6 +427,18 @@
           ]
         }
       },
+      "required": [
+        "userID",
+        "username",
+        "email",
+        "firstName",
+        "lastName",
+        "fullName",
+        "hasPersonalNotifications",
+        "hasGlobalNotifications",
+        "createdAt",
+        "deletedAt"
+      ],
       "type": "object",
       "x-postgen-struct": "DbUser",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -410,6 +480,16 @@
           ]
         }
       },
+      "required": [
+        "timeEntryID",
+        "workItemID",
+        "activityID",
+        "teamID",
+        "userID",
+        "comment",
+        "start",
+        "durationMinutes"
+      ],
       "type": "object",
       "x-postgen-struct": "DbTimeEntry",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -437,6 +517,14 @@
           "type": "integer"
         }
       },
+      "required": [
+        "workItemCommentID",
+        "workItemID",
+        "userID",
+        "message",
+        "createdAt",
+        "updatedAt"
+      ],
       "type": "object",
       "x-postgen-struct": "DbWorkItemComment",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -566,6 +654,18 @@
         }
       },
       "required": [
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "closed",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "deletedAt",
         "demoProjectWorkItem"
       ],
       "type": "object",
@@ -977,6 +1077,10 @@
           "type": "integer"
         }
       },
+      "required": [
+        "workItemID",
+        "customDateForProject2"
+      ],
       "type": [
         "object",
         "null"
@@ -1078,6 +1182,20 @@
           "type": "integer"
         }
       },
+      "required": [
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "closed",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "deletedAt"
+      ],
       "type": "object",
       "x-postgen-struct": "DbWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"

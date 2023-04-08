@@ -12,10 +12,10 @@ import (
 // Movie represents a row from 'public.movies'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Movie struct {
-	MovieID  int    `json:"movieID" db:"movie_id"`  // movie_id
-	Title    string `json:"title" db:"title"`       // title
-	Year     int    `json:"year" db:"year"`         // year
-	Synopsis string `json:"synopsis" db:"synopsis"` // synopsis
+	MovieID  int    `json:"movieID" db:"movie_id" required:"true"`  // movie_id
+	Title    string `json:"title" db:"title" required:"true"`       // title
+	Year     int    `json:"year" db:"year" required:"true"`         // year
+	Synopsis string `json:"synopsis" db:"synopsis" required:"true"` // synopsis
 
 	// xo fields
 	_exists, _deleted bool

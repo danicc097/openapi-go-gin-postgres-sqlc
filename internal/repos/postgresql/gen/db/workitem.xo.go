@@ -15,18 +15,18 @@ import (
 // WorkItem represents a row from 'public.work_items'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type WorkItem struct {
-	WorkItemID     int64        `json:"workItemID" db:"work_item_id"`          // work_item_id
-	Title          string       `json:"title" db:"title"`                      // title
-	Description    string       `json:"description" db:"description"`          // description
-	WorkItemTypeID int          `json:"workItemTypeID" db:"work_item_type_id"` // work_item_type_id
-	Metadata       pgtype.JSONB `json:"metadata" db:"metadata"`                // metadata
-	TeamID         int          `json:"teamID" db:"team_id"`                   // team_id
-	KanbanStepID   int          `json:"kanbanStepID" db:"kanban_step_id"`      // kanban_step_id
-	Closed         *time.Time   `json:"closed" db:"closed"`                    // closed
-	TargetDate     time.Time    `json:"targetDate" db:"target_date"`           // target_date
-	CreatedAt      time.Time    `json:"createdAt" db:"created_at"`             // created_at
-	UpdatedAt      time.Time    `json:"updatedAt" db:"updated_at"`             // updated_at
-	DeletedAt      *time.Time   `json:"deletedAt" db:"deleted_at"`             // deleted_at
+	WorkItemID     int64        `json:"workItemID" db:"work_item_id" required:"true"`          // work_item_id
+	Title          string       `json:"title" db:"title" required:"true"`                      // title
+	Description    string       `json:"description" db:"description" required:"true"`          // description
+	WorkItemTypeID int          `json:"workItemTypeID" db:"work_item_type_id" required:"true"` // work_item_type_id
+	Metadata       pgtype.JSONB `json:"metadata" db:"metadata" required:"true"`                // metadata
+	TeamID         int          `json:"teamID" db:"team_id" required:"true"`                   // team_id
+	KanbanStepID   int          `json:"kanbanStepID" db:"kanban_step_id" required:"true"`      // kanban_step_id
+	Closed         *time.Time   `json:"closed" db:"closed" required:"true"`                    // closed
+	TargetDate     time.Time    `json:"targetDate" db:"target_date" required:"true"`           // target_date
+	CreatedAt      time.Time    `json:"createdAt" db:"created_at" required:"true"`             // created_at
+	UpdatedAt      time.Time    `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
+	DeletedAt      *time.Time   `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
 
 	DemoProjectWorkItem *DemoProjectWorkItem `json:"demoProjectWorkItem" db:"demo_project_work_item"` // O2O
 	Project2WorkItem    *Project2WorkItem    `json:"project2workItem" db:"project_2_work_item"`       // O2O

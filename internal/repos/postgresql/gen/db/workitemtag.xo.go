@@ -12,11 +12,11 @@ import (
 // WorkItemTag represents a row from 'public.work_item_tags'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type WorkItemTag struct {
-	WorkItemTagID int    `json:"workItemTagID" db:"work_item_tag_id"` // work_item_tag_id
-	ProjectID     int    `json:"projectID" db:"project_id"`           // project_id
-	Name          string `json:"name" db:"name"`                      // name
-	Description   string `json:"description" db:"description"`        // description
-	Color         string `json:"color" db:"color"`                    // color
+	WorkItemTagID int    `json:"workItemTagID" db:"work_item_tag_id" required:"true"` // work_item_tag_id
+	ProjectID     int    `json:"projectID" db:"project_id" required:"true"`           // project_id
+	Name          string `json:"name" db:"name" required:"true"`                      // name
+	Description   string `json:"description" db:"description" required:"true"`        // description
+	Color         string `json:"color" db:"color" required:"true"`                    // color
 
 	WorkItems *[]WorkItem `json:"workItems" db:"work_items"` // M2M
 	// xo fields

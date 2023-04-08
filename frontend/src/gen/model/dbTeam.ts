@@ -9,12 +9,12 @@ import type { DbTimeEntry } from './dbTimeEntry'
 import type { DbUser } from './dbUser'
 
 export interface DbTeam {
-  createdAt?: Date
-  description?: string
-  name?: string
-  projectID?: number
-  teamID?: number
+  createdAt: Date
+  description: string
+  name: string
+  projectID: number
+  teamID: number
   timeEntries?: DbTimeEntry[] | null
-  updatedAt?: Date
+  updatedAt: Date
   users?: DbUser[] | null
 }

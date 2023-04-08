@@ -14,11 +14,11 @@ import (
 // DemoProjectWorkItem represents a row from 'public.demo_project_work_items'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type DemoProjectWorkItem struct {
-	WorkItemID    int64     `json:"workItemID" db:"work_item_id"`       // work_item_id
-	Ref           string    `json:"ref" db:"ref"`                       // ref
-	Line          string    `json:"line" db:"line"`                     // line
-	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at"` // last_message_at
-	Reopened      bool      `json:"reopened" db:"reopened"`             // reopened
+	WorkItemID    int64     `json:"workItemID" db:"work_item_id" required:"true"`       // work_item_id
+	Ref           string    `json:"ref" db:"ref" required:"true"`                       // ref
+	Line          string    `json:"line" db:"line" required:"true"`                     // line
+	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at" required:"true"` // last_message_at
+	Reopened      bool      `json:"reopened" db:"reopened" required:"true"`             // reopened
 
 	WorkItem *WorkItem `json:"workItem" db:"work_item"` // O2O
 	// xo fields

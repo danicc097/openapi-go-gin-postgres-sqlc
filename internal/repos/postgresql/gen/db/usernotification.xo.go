@@ -13,10 +13,10 @@ import (
 // UserNotification represents a row from 'public.user_notifications'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type UserNotification struct {
-	UserNotificationID int64     `json:"userNotificationID" db:"user_notification_id"` // user_notification_id
-	NotificationID     int       `json:"notificationID" db:"notification_id"`          // notification_id
-	Read               bool      `json:"read" db:"read"`                               // read
-	UserID             uuid.UUID `json:"userID" db:"user_id"`                          // user_id
+	UserNotificationID int64     `json:"userNotificationID" db:"user_notification_id" required:"true"` // user_notification_id
+	NotificationID     int       `json:"notificationID" db:"notification_id" required:"true"`          // notification_id
+	Read               bool      `json:"read" db:"read" required:"true"`                               // read
+	UserID             uuid.UUID `json:"userID" db:"user_id" required:"true"`                          // user_id
 
 	Notification *Notification `json:"notification" db:"notification"` // O2O
 	// xo fields

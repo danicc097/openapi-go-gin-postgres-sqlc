@@ -13,14 +13,14 @@ import type { DbWorkItemType } from './dbWorkItemType'
 
 export interface DbProject {
   activities?: DbActivity[] | null
-  createdAt?: Date
-  description?: string
-  initialized?: boolean
+  createdAt: Date
+  description: string
+  initialized: boolean
   kanbanSteps?: DbKanbanStep[] | null
-  name?: string
-  projectID?: number
+  name: string
+  projectID: number
   teams?: DbTeam[] | null
-  updatedAt?: Date
+  updatedAt: Date
   workItemTags?: DbWorkItemTag[] | null
   workItemTypes?: DbWorkItemType[] | null
 }

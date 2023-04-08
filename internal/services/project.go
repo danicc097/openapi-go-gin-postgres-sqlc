@@ -83,7 +83,7 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 		// and let generated model types be or fix oapicodegen or
 		// initialize the below struct with zero values
 		workItem := &internalmodels.RestDemoProjectWorkItemsResponse{}
-		createZeroStructFields(reflect.ValueOf(workItem), 10)
+		createZeroStructFields(reflect.ValueOf(workItem), 5)
 		format.PrintJSON(workItem)
 	}
 	pathKeys := structs.GetKeys(workItem, "")

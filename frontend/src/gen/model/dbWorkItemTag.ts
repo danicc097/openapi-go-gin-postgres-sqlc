@@ -8,10 +8,10 @@
 import type { DbWorkItem } from './dbWorkItem'
 
 export interface DbWorkItemTag {
-  color?: string
-  description?: string
-  name?: string
-  projectID?: number
-  workItemTagID?: number
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTagID: number
   workItems?: DbWorkItem[] | null
 }

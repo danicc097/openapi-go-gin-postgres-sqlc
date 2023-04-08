@@ -12,8 +12,8 @@ import (
 // SchemaMigration represents a row from 'public.schema_migrations'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type SchemaMigration struct {
-	Version int64 `json:"version" db:"version"` // version
-	Dirty   bool  `json:"dirty" db:"dirty"`     // dirty
+	Version int64 `json:"version" db:"version" required:"true"` // version
+	Dirty   bool  `json:"dirty" db:"dirty" required:"true"`     // dirty
 
 	// xo fields
 	_exists, _deleted bool

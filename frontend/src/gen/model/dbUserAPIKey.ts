@@ -9,8 +9,8 @@ import type { DbUser } from './dbUser'
 import type { UuidUUID } from './uuidUUID'
 
 export type DbUserAPIKey = {
-  apiKey?: string
-  expiresOn?: Date
+  apiKey: string
+  expiresOn: Date
   user?: DbUser
-  userID?: UuidUUID
+  userID: UuidUUID
 } | null

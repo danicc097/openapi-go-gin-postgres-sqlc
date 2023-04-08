@@ -145,46 +145,46 @@ func AllDemoProjectKanbanStepsValues() []DemoProjectKanbanSteps {
 
 // DbActivity defines the model for DbActivity.
 type DbActivity struct {
-	ActivityID   *int           `json:"activityID,omitempty"`
-	Description  *string        `json:"description,omitempty"`
-	IsProductive *bool          `json:"isProductive,omitempty"`
-	Name         *string        `json:"name,omitempty"`
-	ProjectID    *int           `json:"projectID,omitempty"`
+	ActivityID   int            `json:"activityID"`
+	Description  string         `json:"description"`
+	IsProductive bool           `json:"isProductive"`
+	Name         string         `json:"name"`
+	ProjectID    int            `json:"projectID"`
 	TimeEntries  *[]DbTimeEntry `json:"timeEntries"`
 }
 
 // DbDemoProjectWorkItem defines the model for DbDemoProjectWorkItem.
 type DbDemoProjectWorkItem struct {
-	LastMessageAt *time.Time  `json:"lastMessageAt,omitempty"`
-	Line          *string     `json:"line,omitempty"`
-	Ref           *string     `json:"ref,omitempty"`
-	Reopened      *bool       `json:"reopened,omitempty"`
+	LastMessageAt time.Time   `json:"lastMessageAt"`
+	Line          string      `json:"line"`
+	Ref           string      `json:"ref"`
+	Reopened      bool        `json:"reopened"`
 	WorkItem      *DbWorkItem `json:"workItem,omitempty"`
-	WorkItemID    *int        `json:"workItemID,omitempty"`
+	WorkItemID    int         `json:"workItemID"`
 }
 
 // DbKanbanStep defines the model for DbKanbanStep.
 type DbKanbanStep struct {
-	Color         *string `json:"color,omitempty"`
-	Description   *string `json:"description,omitempty"`
-	KanbanStepID  *int    `json:"kanbanStepID,omitempty"`
-	Name          *string `json:"name,omitempty"`
-	ProjectID     *int    `json:"projectID,omitempty"`
-	StepOrder     *int    `json:"stepOrder"`
-	TimeTrackable *bool   `json:"timeTrackable,omitempty"`
+	Color         string `json:"color"`
+	Description   string `json:"description"`
+	KanbanStepID  int    `json:"kanbanStepID"`
+	Name          string `json:"name"`
+	ProjectID     int    `json:"projectID"`
+	StepOrder     *int   `json:"stepOrder"`
+	TimeTrackable bool   `json:"timeTrackable"`
 }
 
 // DbProject defines the model for DbProject.
 type DbProject struct {
 	Activities    *[]DbActivity     `json:"activities"`
-	CreatedAt     *time.Time        `json:"createdAt,omitempty"`
-	Description   *string           `json:"description,omitempty"`
-	Initialized   *bool             `json:"initialized,omitempty"`
+	CreatedAt     time.Time         `json:"createdAt"`
+	Description   string            `json:"description"`
+	Initialized   bool              `json:"initialized"`
 	KanbanSteps   *[]DbKanbanStep   `json:"kanbanSteps"`
-	Name          *string           `json:"name,omitempty"`
-	ProjectID     *int              `json:"projectID,omitempty"`
+	Name          string            `json:"name"`
+	ProjectID     int               `json:"projectID"`
 	Teams         *[]DbTeam         `json:"teams"`
-	UpdatedAt     *time.Time        `json:"updatedAt,omitempty"`
+	UpdatedAt     time.Time         `json:"updatedAt"`
 	WorkItemTags  *[]DbWorkItemTag  `json:"workItemTags"`
 	WorkItemTypes *[]DbWorkItemType `json:"workItemTypes"`
 }
@@ -193,110 +193,110 @@ type DbProject struct {
 type DbProject2WorkItem struct {
 	CustomDateForProject2 *time.Time  `json:"customDateForProject2"`
 	WorkItem              *DbWorkItem `json:"workItem,omitempty"`
-	WorkItemID            *int        `json:"workItemID,omitempty"`
+	WorkItemID            int         `json:"workItemID"`
 }
 
 // DbTeam defines the model for DbTeam.
 type DbTeam struct {
-	CreatedAt   *time.Time     `json:"createdAt,omitempty"`
-	Description *string        `json:"description,omitempty"`
-	Name        *string        `json:"name,omitempty"`
-	ProjectID   *int           `json:"projectID,omitempty"`
-	TeamID      *int           `json:"teamID,omitempty"`
+	CreatedAt   time.Time      `json:"createdAt"`
+	Description string         `json:"description"`
+	Name        string         `json:"name"`
+	ProjectID   int            `json:"projectID"`
+	TeamID      int            `json:"teamID"`
 	TimeEntries *[]DbTimeEntry `json:"timeEntries"`
-	UpdatedAt   *time.Time     `json:"updatedAt,omitempty"`
+	UpdatedAt   time.Time      `json:"updatedAt"`
 	Users       *[]DbUser      `json:"users"`
 }
 
 // DbTimeEntry defines the model for DbTimeEntry.
 type DbTimeEntry struct {
-	ActivityID      *int       `json:"activityID,omitempty"`
-	Comment         *string    `json:"comment,omitempty"`
-	DurationMinutes *int       `json:"durationMinutes"`
-	Start           *time.Time `json:"start,omitempty"`
-	TeamID          *int       `json:"teamID"`
-	TimeEntryID     *int       `json:"timeEntryID,omitempty"`
-	UserID          *UuidUUID  `json:"userID,omitempty"`
-	WorkItemID      *int       `json:"workItemID"`
+	ActivityID      int       `json:"activityID"`
+	Comment         string    `json:"comment"`
+	DurationMinutes *int      `json:"durationMinutes"`
+	Start           time.Time `json:"start"`
+	TeamID          *int      `json:"teamID"`
+	TimeEntryID     int       `json:"timeEntryID"`
+	UserID          UuidUUID  `json:"userID"`
+	WorkItemID      *int      `json:"workItemID"`
 }
 
 // DbUser defines the model for DbUser.
 type DbUser struct {
-	CreatedAt                *time.Time     `json:"createdAt,omitempty"`
+	CreatedAt                time.Time      `json:"createdAt"`
 	DeletedAt                *time.Time     `json:"deletedAt"`
-	Email                    *string        `json:"email,omitempty"`
+	Email                    string         `json:"email"`
 	FirstName                *string        `json:"firstName"`
 	FullName                 *string        `json:"fullName"`
-	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications,omitempty"`
-	HasPersonalNotifications *bool          `json:"hasPersonalNotifications,omitempty"`
+	HasGlobalNotifications   bool           `json:"hasGlobalNotifications"`
+	HasPersonalNotifications bool           `json:"hasPersonalNotifications"`
 	LastName                 *string        `json:"lastName"`
 	Teams                    *[]DbTeam      `json:"teams"`
 	TimeEntries              *[]DbTimeEntry `json:"timeEntries"`
 	UserAPIKey               *DbUserAPIKey  `json:"userAPIKey"`
-	UserID                   *UuidUUID      `json:"userID,omitempty"`
-	Username                 *string        `json:"username,omitempty"`
+	UserID                   UuidUUID       `json:"userID"`
+	Username                 string         `json:"username"`
 	WorkItems                *[]DbWorkItem  `json:"workItems"`
 }
 
 // DbUserAPIKey defines the model for DbUserAPIKey.
 type DbUserAPIKey struct {
-	ApiKey    *string    `json:"apiKey,omitempty"`
-	ExpiresOn *time.Time `json:"expiresOn,omitempty"`
-	User      *DbUser    `json:"user,omitempty"`
-	UserID    *UuidUUID  `json:"userID,omitempty"`
+	ApiKey    string    `json:"apiKey"`
+	ExpiresOn time.Time `json:"expiresOn"`
+	User      *DbUser   `json:"user,omitempty"`
+	UserID    UuidUUID  `json:"userID"`
 }
 
 // DbWorkItem defines the model for DbWorkItem.
 type DbWorkItem struct {
 	Closed              *time.Time             `json:"closed"`
-	CreatedAt           *time.Time             `json:"createdAt,omitempty"`
+	CreatedAt           time.Time              `json:"createdAt"`
 	DeletedAt           *time.Time             `json:"deletedAt"`
 	DemoProjectWorkItem *DbDemoProjectWorkItem `json:"demoProjectWorkItem"`
-	Description         *string                `json:"description,omitempty"`
-	KanbanStepID        *int                   `json:"kanbanStepID,omitempty"`
+	Description         string                 `json:"description"`
+	KanbanStepID        int                    `json:"kanbanStepID"`
 	Members             *[]DbUser              `json:"members"`
-	Metadata            *PgtypeJSONB           `json:"metadata,omitempty"`
+	Metadata            PgtypeJSONB            `json:"metadata"`
 	Project2workItem    *DbProject2WorkItem    `json:"project2workItem"`
-	TargetDate          *time.Time             `json:"targetDate,omitempty"`
-	TeamID              *int                   `json:"teamID,omitempty"`
+	TargetDate          time.Time              `json:"targetDate"`
+	TeamID              int                    `json:"teamID"`
 	TimeEntries         *[]DbTimeEntry         `json:"timeEntries"`
-	Title               *string                `json:"title,omitempty"`
-	UpdatedAt           *time.Time             `json:"updatedAt,omitempty"`
+	Title               string                 `json:"title"`
+	UpdatedAt           time.Time              `json:"updatedAt"`
 	WorkItemComments    *[]DbWorkItemComment   `json:"workItemComments"`
-	WorkItemID          *int                   `json:"workItemID,omitempty"`
+	WorkItemID          int                    `json:"workItemID"`
 	WorkItemTags        *[]DbWorkItemTag       `json:"workItemTags"`
 	WorkItemType        *DbWorkItemType        `json:"workItemType"`
-	WorkItemTypeID      *int                   `json:"workItemTypeID,omitempty"`
+	WorkItemTypeID      int                    `json:"workItemTypeID"`
 }
 
 // DbWorkItemComment defines the model for DbWorkItemComment.
 type DbWorkItemComment struct {
-	CreatedAt         *time.Time `json:"createdAt,omitempty"`
-	Message           *string    `json:"message,omitempty"`
-	UpdatedAt         *time.Time `json:"updatedAt,omitempty"`
-	UserID            *UuidUUID  `json:"userID,omitempty"`
-	WorkItemCommentID *int       `json:"workItemCommentID,omitempty"`
-	WorkItemID        *int       `json:"workItemID,omitempty"`
+	CreatedAt         time.Time `json:"createdAt"`
+	Message           string    `json:"message"`
+	UpdatedAt         time.Time `json:"updatedAt"`
+	UserID            UuidUUID  `json:"userID"`
+	WorkItemCommentID int       `json:"workItemCommentID"`
+	WorkItemID        int       `json:"workItemID"`
 }
 
 // DbWorkItemTag defines the model for DbWorkItemTag.
 type DbWorkItemTag struct {
-	Color         *string       `json:"color,omitempty"`
-	Description   *string       `json:"description,omitempty"`
-	Name          *string       `json:"name,omitempty"`
-	ProjectID     *int          `json:"projectID,omitempty"`
-	WorkItemTagID *int          `json:"workItemTagID,omitempty"`
+	Color         string        `json:"color"`
+	Description   string        `json:"description"`
+	Name          string        `json:"name"`
+	ProjectID     int           `json:"projectID"`
+	WorkItemTagID int           `json:"workItemTagID"`
 	WorkItems     *[]DbWorkItem `json:"workItems"`
 }
 
 // DbWorkItemType defines the model for DbWorkItemType.
 type DbWorkItemType struct {
-	Color          *string     `json:"color,omitempty"`
-	Description    *string     `json:"description,omitempty"`
-	Name           *string     `json:"name,omitempty"`
-	ProjectID      *int        `json:"projectID,omitempty"`
+	Color          string      `json:"color"`
+	Description    string      `json:"description"`
+	Name           string      `json:"name"`
+	ProjectID      int         `json:"projectID"`
 	WorkItem       *DbWorkItem `json:"workItem,omitempty"`
-	WorkItemTypeID *int        `json:"workItemTypeID,omitempty"`
+	WorkItemTypeID int         `json:"workItemTypeID"`
 }
 
 // HTTPValidationError defines the model for HTTPValidationError.
@@ -385,24 +385,24 @@ type ReposWorkItemTypeCreateParams struct {
 // RestDemoProjectWorkItemsResponse defines the model for RestDemoProjectWorkItemsResponse.
 type RestDemoProjectWorkItemsResponse struct {
 	Closed              *time.Time             `json:"closed"`
-	CreatedAt           *time.Time             `json:"createdAt,omitempty"`
+	CreatedAt           time.Time              `json:"createdAt"`
 	DeletedAt           *time.Time             `json:"deletedAt"`
 	DemoProjectWorkItem *DbDemoProjectWorkItem `json:"demoProjectWorkItem"`
-	Description         *string                `json:"description,omitempty"`
-	KanbanStepID        *int                   `json:"kanbanStepID,omitempty"`
+	Description         string                 `json:"description"`
+	KanbanStepID        int                    `json:"kanbanStepID"`
 	Members             *[]DbUser              `json:"members"`
-	Metadata            *PgtypeJSONB           `json:"metadata,omitempty"`
+	Metadata            PgtypeJSONB            `json:"metadata"`
 	Project2workItem    *DbProject2WorkItem    `json:"project2workItem"`
-	TargetDate          *time.Time             `json:"targetDate,omitempty"`
-	TeamID              *int                   `json:"teamID,omitempty"`
+	TargetDate          time.Time              `json:"targetDate"`
+	TeamID              int                    `json:"teamID"`
 	TimeEntries         *[]DbTimeEntry         `json:"timeEntries"`
-	Title               *string                `json:"title,omitempty"`
-	UpdatedAt           *time.Time             `json:"updatedAt,omitempty"`
+	Title               string                 `json:"title"`
+	UpdatedAt           time.Time              `json:"updatedAt"`
 	WorkItemComments    *[]DbWorkItemComment   `json:"workItemComments"`
-	WorkItemID          *int                   `json:"workItemID,omitempty"`
+	WorkItemID          int                    `json:"workItemID"`
 	WorkItemTags        *[]DbWorkItemTag       `json:"workItemTags"`
 	WorkItemType        *DbWorkItemType        `json:"workItemType"`
-	WorkItemTypeID      *int                   `json:"workItemTypeID,omitempty"`
+	WorkItemTypeID      int                    `json:"workItemTypeID"`
 }
 
 // RestProjectBoardResponse defines the model for RestProjectBoardResponse.

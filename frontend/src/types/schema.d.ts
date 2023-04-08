@@ -77,119 +77,119 @@ export interface paths {
 export interface components {
   schemas: {
     DbActivity: {
-      activityID?: number;
-      description?: string;
-      isProductive?: boolean;
-      name?: string;
-      projectID?: number;
+      activityID: number;
+      description: string;
+      isProductive: boolean;
+      name: string;
+      projectID: number;
       timeEntries?: (components["schemas"]["DbTimeEntry"])[] | null;
     };
     DbKanbanStep: {
-      color?: string;
-      description?: string;
-      kanbanStepID?: number;
-      name?: string;
-      projectID?: number;
-      stepOrder?: number | null;
-      timeTrackable?: boolean;
+      color: string;
+      description: string;
+      kanbanStepID: number;
+      name: string;
+      projectID: number;
+      stepOrder: number | null;
+      timeTrackable: boolean;
     };
     DbProject: {
       activities?: (components["schemas"]["DbActivity"])[] | null;
       /** Format: date-time */
-      createdAt?: string;
-      description?: string;
-      initialized?: boolean;
+      createdAt: string;
+      description: string;
+      initialized: boolean;
       kanbanSteps?: (components["schemas"]["DbKanbanStep"])[] | null;
-      name?: string;
-      projectID?: number;
+      name: string;
+      projectID: number;
       teams?: (components["schemas"]["DbTeam"])[] | null;
       /** Format: date-time */
-      updatedAt?: string;
+      updatedAt: string;
       workItemTags?: (components["schemas"]["DbWorkItemTag"])[] | null;
       workItemTypes?: (components["schemas"]["DbWorkItemType"])[] | null;
     };
     DbTeam: {
       /** Format: date-time */
-      createdAt?: string;
-      description?: string;
-      name?: string;
-      projectID?: number;
-      teamID?: number;
+      createdAt: string;
+      description: string;
+      name: string;
+      projectID: number;
+      teamID: number;
       timeEntries?: (components["schemas"]["DbTimeEntry"])[] | null;
       /** Format: date-time */
-      updatedAt?: string;
+      updatedAt: string;
       users?: (components["schemas"]["DbUser"])[] | null;
     };
     DbWorkItemTag: {
-      color?: string;
-      description?: string;
-      name?: string;
-      projectID?: number;
-      workItemTagID?: number;
+      color: string;
+      description: string;
+      name: string;
+      projectID: number;
+      workItemTagID: number;
       workItems?: (components["schemas"]["DbWorkItem"])[] | null;
     };
     DbWorkItemType: {
-      color?: string;
-      description?: string;
-      name?: string;
-      projectID?: number;
+      color: string;
+      description: string;
+      name: string;
+      projectID: number;
       workItem?: components["schemas"]["DbWorkItem"];
-      workItemTypeID?: number;
+      workItemTypeID: number;
     } | null;
     DbDemoProjectWorkItem: {
       /** Format: date-time */
-      lastMessageAt?: string;
-      line?: string;
-      ref?: string;
-      reopened?: boolean;
+      lastMessageAt: string;
+      line: string;
+      ref: string;
+      reopened: boolean;
       workItem?: components["schemas"]["DbWorkItem"];
-      workItemID?: number;
+      workItemID: number;
     } | null;
     DbUserAPIKey: {
-      apiKey?: string;
+      apiKey: string;
       /** Format: date-time */
-      expiresOn?: string;
+      expiresOn: string;
       user?: components["schemas"]["DbUser"];
-      userID?: components["schemas"]["UuidUUID"];
+      userID: components["schemas"]["UuidUUID"];
     } | null;
     DbUser: {
       /** Format: date-time */
-      createdAt?: string;
+      createdAt: string;
       /** Format: date-time */
-      deletedAt?: string | null;
-      email?: string;
-      firstName?: string | null;
-      fullName?: string | null;
-      hasGlobalNotifications?: boolean;
-      hasPersonalNotifications?: boolean;
-      lastName?: string | null;
+      deletedAt: string | null;
+      email: string;
+      firstName: string | null;
+      fullName: string | null;
+      hasGlobalNotifications: boolean;
+      hasPersonalNotifications: boolean;
+      lastName: string | null;
       teams?: (components["schemas"]["DbTeam"])[] | null;
       timeEntries?: (components["schemas"]["DbTimeEntry"])[] | null;
       userAPIKey?: components["schemas"]["DbUserAPIKey"];
-      userID?: components["schemas"]["UuidUUID"];
-      username?: string;
+      userID: components["schemas"]["UuidUUID"];
+      username: string;
       workItems?: (components["schemas"]["DbWorkItem"])[] | null;
     };
     DbTimeEntry: {
-      activityID?: number;
-      comment?: string;
-      durationMinutes?: number | null;
+      activityID: number;
+      comment: string;
+      durationMinutes: number | null;
       /** Format: date-time */
-      start?: string;
-      teamID?: number | null;
-      timeEntryID?: number;
-      userID?: components["schemas"]["UuidUUID"];
-      workItemID?: number | null;
+      start: string;
+      teamID: number | null;
+      timeEntryID: number;
+      userID: components["schemas"]["UuidUUID"];
+      workItemID: number | null;
     };
     DbWorkItemComment: {
       /** Format: date-time */
-      createdAt?: string;
-      message?: string;
+      createdAt: string;
+      message: string;
       /** Format: date-time */
-      updatedAt?: string;
-      userID?: components["schemas"]["UuidUUID"];
-      workItemCommentID?: number;
-      workItemID?: number;
+      updatedAt: string;
+      userID: components["schemas"]["UuidUUID"];
+      workItemCommentID: number;
+      workItemID: number;
     };
     ProjectConfig: {
       fields: (components["schemas"]["ModelsProjectConfigField"])[] | null;
@@ -197,29 +197,29 @@ export interface components {
     };
     RestDemoProjectWorkItemsResponse: {
       /** Format: date-time */
-      closed?: string | null;
+      closed: string | null;
       /** Format: date-time */
-      createdAt?: string;
+      createdAt: string;
       /** Format: date-time */
-      deletedAt?: string | null;
+      deletedAt: string | null;
       demoProjectWorkItem: components["schemas"]["DbDemoProjectWorkItem"];
-      description?: string;
-      kanbanStepID?: number;
+      description: string;
+      kanbanStepID: number;
       members?: (components["schemas"]["DbUser"])[] | null;
-      metadata?: components["schemas"]["PgtypeJSONB"];
+      metadata: components["schemas"]["PgtypeJSONB"];
       project2workItem?: components["schemas"]["DbProject2WorkItem"];
       /** Format: date-time */
-      targetDate?: string;
-      teamID?: number;
+      targetDate: string;
+      teamID: number;
       timeEntries?: (components["schemas"]["DbTimeEntry"])[] | null;
-      title?: string;
+      title: string;
       /** Format: date-time */
-      updatedAt?: string;
+      updatedAt: string;
       workItemComments?: (components["schemas"]["DbWorkItemComment"])[] | null;
-      workItemID?: number;
+      workItemID: number;
       workItemTags?: (components["schemas"]["DbWorkItemTag"])[] | null;
       workItemType?: components["schemas"]["DbWorkItemType"];
-      workItemTypeID?: number;
+      workItemTypeID: number;
     };
     InitializeProjectRequest: {
       activities?: (components["schemas"]["ReposActivityCreateParams"])[] | null;
@@ -354,35 +354,35 @@ export interface components {
     };
     DbProject2WorkItem: ({
       /** Format: date-time */
-      customDateForProject2?: string | null;
+      customDateForProject2: string | null;
       workItem?: components["schemas"]["DbWorkItem"];
-      workItemID?: number;
+      workItemID: number;
     }) | null;
     DbWorkItem: {
       /** Format: date-time */
-      closed?: string | null;
+      closed: string | null;
       /** Format: date-time */
-      createdAt?: string;
+      createdAt: string;
       /** Format: date-time */
-      deletedAt?: string | null;
+      deletedAt: string | null;
       demoProjectWorkItem?: components["schemas"]["DbDemoProjectWorkItem"];
-      description?: string;
-      kanbanStepID?: number;
+      description: string;
+      kanbanStepID: number;
       members?: (components["schemas"]["DbUser"])[] | null;
-      metadata?: components["schemas"]["PgtypeJSONB"];
+      metadata: components["schemas"]["PgtypeJSONB"];
       project2workItem?: components["schemas"]["DbProject2WorkItem"];
       /** Format: date-time */
-      targetDate?: string;
-      teamID?: number;
+      targetDate: string;
+      teamID: number;
       timeEntries?: (components["schemas"]["DbTimeEntry"])[] | null;
-      title?: string;
+      title: string;
       /** Format: date-time */
-      updatedAt?: string;
+      updatedAt: string;
       workItemComments?: (components["schemas"]["DbWorkItemComment"])[] | null;
-      workItemID?: number;
+      workItemID: number;
       workItemTags?: (components["schemas"]["DbWorkItemTag"])[] | null;
       workItemType?: components["schemas"]["DbWorkItemType"];
-      workItemTypeID?: number;
+      workItemTypeID: number;
     };
   };
   responses: never;

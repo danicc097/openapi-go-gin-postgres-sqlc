@@ -20,7 +20,7 @@ type UserResponse struct {
 
 // DemoProjectWorkItemsResponse represents an OpenAPI schema response for a ProjectBoard.
 type DemoProjectWorkItemsResponse struct {
-	db.WorkItem
+	db.WorkItem         `required:"true"`
 	DemoProjectWorkItem db.DemoProjectWorkItem `json:"demoProjectWorkItem" required:"true"`
 	TimeEntries         *[]db.TimeEntry        `json:"timeEntries"`
 	WorkItemComments    *[]db.WorkItemComment  `json:"workItemComments"`

@@ -8,12 +8,12 @@
 import type { UuidUUID } from './uuidUUID'
 
 export interface DbTimeEntry {
-  activityID?: number
-  comment?: string
-  durationMinutes?: number | null
-  start?: Date
-  teamID?: number | null
-  timeEntryID?: number
-  userID?: UuidUUID
-  workItemID?: number | null
+  activityID: number
+  comment: string
+  durationMinutes: number | null
+  start: Date
+  teamID: number | null
+  timeEntryID: number
+  userID: UuidUUID
+  workItemID: number | null
 }

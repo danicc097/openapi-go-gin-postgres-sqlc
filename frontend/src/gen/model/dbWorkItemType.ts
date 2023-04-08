@@ -8,10 +8,10 @@
 import type { DbWorkItem } from './dbWorkItem'
 
 export type DbWorkItemType = {
-  color?: string
-  description?: string
-  name?: string
-  projectID?: number
+  color: string
+  description: string
+  name: string
+  projectID: number
   workItem?: DbWorkItem
-  workItemTypeID?: number
+  workItemTypeID: number
 } | null

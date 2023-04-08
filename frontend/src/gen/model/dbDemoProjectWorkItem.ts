@@ -8,10 +8,10 @@
 import type { DbWorkItem } from './dbWorkItem'
 
 export type DbDemoProjectWorkItem = {
-  lastMessageAt?: Date
-  line?: string
-  ref?: string
-  reopened?: boolean
+  lastMessageAt: Date
+  line: string
+  ref: string
+  reopened: boolean
   workItem?: DbWorkItem
-  workItemID?: number
+  workItemID: number
 } | null

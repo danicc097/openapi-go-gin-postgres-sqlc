@@ -15,10 +15,10 @@ import (
 // UserAPIKey represents a row from 'public.user_api_keys'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type UserAPIKey struct {
-	UserAPIKeyID int       `json:"-" db:"user_api_key_id"`    // user_api_key_id
-	APIKey       string    `json:"apiKey" db:"api_key"`       // api_key
-	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on"` // expires_on
-	UserID       uuid.UUID `json:"userID" db:"user_id"`       // user_id
+	UserAPIKeyID int       `json:"-" db:"user_api_key_id" `                   // user_api_key_id
+	APIKey       string    `json:"apiKey" db:"api_key" required:"true"`       // api_key
+	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on" required:"true"` // expires_on
+	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true"`       // user_id
 
 	User *User `json:"user" db:"user"` // O2O
 	// xo fields

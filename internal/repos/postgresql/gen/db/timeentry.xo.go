@@ -15,14 +15,14 @@ import (
 // TimeEntry represents a row from 'public.time_entries'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type TimeEntry struct {
-	TimeEntryID     int64     `json:"timeEntryID" db:"time_entry_id"`        // time_entry_id
-	WorkItemID      *int64    `json:"workItemID" db:"work_item_id"`          // work_item_id
-	ActivityID      int       `json:"activityID" db:"activity_id"`           // activity_id
-	TeamID          *int      `json:"teamID" db:"team_id"`                   // team_id
-	UserID          uuid.UUID `json:"userID" db:"user_id"`                   // user_id
-	Comment         string    `json:"comment" db:"comment"`                  // comment
-	Start           time.Time `json:"start" db:"start"`                      // start
-	DurationMinutes *int      `json:"durationMinutes" db:"duration_minutes"` // duration_minutes
+	TimeEntryID     int64     `json:"timeEntryID" db:"time_entry_id" required:"true"`        // time_entry_id
+	WorkItemID      *int64    `json:"workItemID" db:"work_item_id" required:"true"`          // work_item_id
+	ActivityID      int       `json:"activityID" db:"activity_id" required:"true"`           // activity_id
+	TeamID          *int      `json:"teamID" db:"team_id" required:"true"`                   // team_id
+	UserID          uuid.UUID `json:"userID" db:"user_id" required:"true"`                   // user_id
+	Comment         string    `json:"comment" db:"comment" required:"true"`                  // comment
+	Start           time.Time `json:"start" db:"start" required:"true"`                      // start
+	DurationMinutes *int      `json:"durationMinutes" db:"duration_minutes" required:"true"` // duration_minutes
 
 	// xo fields
 	_exists, _deleted bool

@@ -8,10 +8,10 @@
 import type { UuidUUID } from './uuidUUID'
 
 export interface DbWorkItemComment {
-  createdAt?: Date
-  message?: string
-  updatedAt?: Date
-  userID?: UuidUUID
-  workItemCommentID?: number
-  workItemID?: number
+  createdAt: Date
+  message: string
+  updatedAt: Date
+  userID: UuidUUID
+  workItemCommentID: number
+  workItemID: number
 }

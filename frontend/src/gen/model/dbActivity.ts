@@ -8,10 +8,10 @@
 import type { DbTimeEntry } from './dbTimeEntry'
 
 export interface DbActivity {
-  activityID?: number
-  description?: string
-  isProductive?: boolean
-  name?: string
-  projectID?: number
+  activityID: number
+  description: string
+  isProductive: boolean
+  name: string
+  projectID: number
   timeEntries?: DbTimeEntry[] | null
 }

@@ -206,7 +206,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Type:       "string",
 				Desc:       "field tag",
 				Short:      "g",
-				Default:    `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}" db:"{{ if .field.IsIgnored }}-{{ else }}{{ .field.SQLName }}{{end}}"`,
+				Default:    `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}" db:"{{ if .field.IsIgnored }}-{{ else }}{{ .field.SQLName }}{{end}}" {{ if not .ignoreJSON }}required:"true"{{end}}`,
 				// Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
 			},
 			{

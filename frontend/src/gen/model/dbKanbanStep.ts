@@ -7,11 +7,11 @@
  */
 
 export interface DbKanbanStep {
-  color?: string
-  description?: string
-  kanbanStepID?: number
-  name?: string
-  projectID?: number
-  stepOrder?: number | null
-  timeTrackable?: boolean
+  color: string
+  description: string
+  kanbanStepID: number
+  name: string
+  projectID: number
+  stepOrder: number | null
+  timeTrackable: boolean
 }

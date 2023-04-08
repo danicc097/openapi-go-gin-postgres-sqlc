@@ -12,11 +12,11 @@ import (
 // Activity represents a row from 'public.activities'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Activity struct {
-	ActivityID   int    `json:"activityID" db:"activity_id"`     // activity_id
-	ProjectID    int    `json:"projectID" db:"project_id"`       // project_id
-	Name         string `json:"name" db:"name"`                  // name
-	Description  string `json:"description" db:"description"`    // description
-	IsProductive bool   `json:"isProductive" db:"is_productive"` // is_productive
+	ActivityID   int    `json:"activityID" db:"activity_id" required:"true"`     // activity_id
+	ProjectID    int    `json:"projectID" db:"project_id" required:"true"`       // project_id
+	Name         string `json:"name" db:"name" required:"true"`                  // name
+	Description  string `json:"description" db:"description" required:"true"`    // description
+	IsProductive bool   `json:"isProductive" db:"is_productive" required:"true"` // is_productive
 
 	TimeEntries *[]TimeEntry `json:"timeEntries" db:"time_entries"` // O2M
 	// xo fields

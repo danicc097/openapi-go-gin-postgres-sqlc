@@ -15,16 +15,16 @@ import (
 // Notification represents a row from 'public.notifications'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Notification struct {
-	NotificationID   int              `json:"notificationID" db:"notification_id"`     // notification_id
-	ReceiverRank     *int16           `json:"receiverRank" db:"receiver_rank"`         // receiver_rank
-	Title            string           `json:"title" db:"title"`                        // title
-	Body             string           `json:"body" db:"body"`                          // body
-	Label            string           `json:"label" db:"label"`                        // label
-	Link             *string          `json:"link" db:"link"`                          // link
-	CreatedAt        time.Time        `json:"createdAt" db:"created_at"`               // created_at
-	Sender           uuid.UUID        `json:"sender" db:"sender"`                      // sender
-	Receiver         *uuid.UUID       `json:"receiver" db:"receiver"`                  // receiver
-	NotificationType NotificationType `json:"notificationType" db:"notification_type"` // notification_type
+	NotificationID   int              `json:"notificationID" db:"notification_id" required:"true"`     // notification_id
+	ReceiverRank     *int16           `json:"receiverRank" db:"receiver_rank" required:"true"`         // receiver_rank
+	Title            string           `json:"title" db:"title" required:"true"`                        // title
+	Body             string           `json:"body" db:"body" required:"true"`                          // body
+	Label            string           `json:"label" db:"label" required:"true"`                        // label
+	Link             *string          `json:"link" db:"link" required:"true"`                          // link
+	CreatedAt        time.Time        `json:"createdAt" db:"created_at" required:"true"`               // created_at
+	Sender           uuid.UUID        `json:"sender" db:"sender" required:"true"`                      // sender
+	Receiver         *uuid.UUID       `json:"receiver" db:"receiver" required:"true"`                  // receiver
+	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true"` // notification_type
 
 	UserNotification *UserNotification `json:"userNotification" db:"user_notification"` // O2O
 	// xo fields
