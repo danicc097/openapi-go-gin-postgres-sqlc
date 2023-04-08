@@ -115,7 +115,7 @@ func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error)
 		return nil, logerror(fmt.Errorf("Notification/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newn._exists = true
-	n = &newn
+	*n = newn
 
 	return n, nil
 }
@@ -145,7 +145,7 @@ func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error)
 		return nil, logerror(fmt.Errorf("Notification/Update/pgx.CollectOneRow: %w", err))
 	}
 	newn._exists = true
-	n = &newn
+	*n = newn
 
 	return n, nil
 }

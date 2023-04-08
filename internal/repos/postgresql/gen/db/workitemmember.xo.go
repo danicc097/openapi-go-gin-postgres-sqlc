@@ -86,7 +86,7 @@ func (wim *WorkItemMember) Insert(ctx context.Context, db DB) (*WorkItemMember, 
 		return nil, logerror(fmt.Errorf("WorkItemMember/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newwim._exists = true
-	wim = &newwim
+	*wim = newwim
 
 	return wim, nil
 }
@@ -116,7 +116,7 @@ func (wim *WorkItemMember) Update(ctx context.Context, db DB) (*WorkItemMember, 
 		return nil, logerror(fmt.Errorf("WorkItemMember/Update/pgx.CollectOneRow: %w", err))
 	}
 	newwim._exists = true
-	wim = &newwim
+	*wim = newwim
 
 	return wim, nil
 }

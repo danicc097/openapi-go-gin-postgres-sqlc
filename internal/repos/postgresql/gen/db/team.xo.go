@@ -116,7 +116,7 @@ func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 		return nil, logerror(fmt.Errorf("Team/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newt._exists = true
-	t = &newt
+	*t = newt
 
 	return t, nil
 }
@@ -146,7 +146,7 @@ func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 		return nil, logerror(fmt.Errorf("Team/Update/pgx.CollectOneRow: %w", err))
 	}
 	newt._exists = true
-	t = &newt
+	*t = newt
 
 	return t, nil
 }

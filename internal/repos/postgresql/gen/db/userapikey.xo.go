@@ -109,7 +109,7 @@ func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newuak._exists = true
-	uak = &newuak
+	*uak = newuak
 
 	return uak, nil
 }
@@ -139,7 +139,7 @@ func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Update/pgx.CollectOneRow: %w", err))
 	}
 	newuak._exists = true
-	uak = &newuak
+	*uak = newuak
 
 	return uak, nil
 }

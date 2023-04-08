@@ -84,7 +84,7 @@ func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemW
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newwiwit._exists = true
-	wiwit = &newwiwit
+	*wiwit = newwiwit
 
 	return wiwit, nil
 }

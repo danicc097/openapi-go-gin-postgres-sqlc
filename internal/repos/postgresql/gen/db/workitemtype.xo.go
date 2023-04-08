@@ -90,7 +90,7 @@ func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, erro
 		return nil, logerror(fmt.Errorf("WorkItemType/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newwit._exists = true
-	wit = &newwit
+	*wit = newwit
 
 	return wit, nil
 }
@@ -120,7 +120,7 @@ func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, erro
 		return nil, logerror(fmt.Errorf("WorkItemType/Update/pgx.CollectOneRow: %w", err))
 	}
 	newwit._exists = true
-	wit = &newwit
+	*wit = newwit
 
 	return wit, nil
 }

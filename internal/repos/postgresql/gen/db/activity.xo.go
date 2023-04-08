@@ -90,7 +90,7 @@ func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 		return nil, logerror(fmt.Errorf("Activity/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newa._exists = true
-	a = &newa
+	*a = newa
 
 	return a, nil
 }
@@ -120,7 +120,7 @@ func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 		return nil, logerror(fmt.Errorf("Activity/Update/pgx.CollectOneRow: %w", err))
 	}
 	newa._exists = true
-	a = &newa
+	*a = newa
 
 	return a, nil
 }

@@ -90,7 +90,7 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 		return nil, logerror(fmt.Errorf("KanbanStep/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newks._exists = true
-	ks = &newks
+	*ks = newks
 
 	return ks, nil
 }
@@ -120,7 +120,7 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) (*KanbanStep, error) {
 		return nil, logerror(fmt.Errorf("KanbanStep/Update/pgx.CollectOneRow: %w", err))
 	}
 	newks._exists = true
-	ks = &newks
+	*ks = newks
 
 	return ks, nil
 }

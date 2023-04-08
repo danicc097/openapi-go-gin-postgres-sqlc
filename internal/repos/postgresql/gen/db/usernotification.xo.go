@@ -90,7 +90,7 @@ func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotificatio
 		return nil, logerror(fmt.Errorf("UserNotification/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newun._exists = true
-	un = &newun
+	*un = newun
 
 	return un, nil
 }
@@ -120,7 +120,7 @@ func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotificatio
 		return nil, logerror(fmt.Errorf("UserNotification/Update/pgx.CollectOneRow: %w", err))
 	}
 	newun._exists = true
-	un = &newun
+	*un = newun
 
 	return un, nil
 }

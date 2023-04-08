@@ -153,7 +153,7 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 		return nil, logerror(fmt.Errorf("WorkItem/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newwi._exists = true
-	wi = &newwi
+	*wi = newwi
 
 	return wi, nil
 }
@@ -183,7 +183,7 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 		return nil, logerror(fmt.Errorf("WorkItem/Update/pgx.CollectOneRow: %w", err))
 	}
 	newwi._exists = true
-	wi = &newwi
+	*wi = newwi
 
 	return wi, nil
 }

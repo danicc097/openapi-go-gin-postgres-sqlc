@@ -125,7 +125,7 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 		return nil, logerror(fmt.Errorf("Project/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newp._exists = true
-	p = &newp
+	*p = newp
 
 	return p, nil
 }
@@ -155,7 +155,7 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 		return nil, logerror(fmt.Errorf("Project/Update/pgx.CollectOneRow: %w", err))
 	}
 	newp._exists = true
-	p = &newp
+	*p = newp
 
 	return p, nil
 }

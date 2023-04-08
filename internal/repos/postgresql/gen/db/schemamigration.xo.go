@@ -84,7 +84,7 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration,
 		return nil, logerror(fmt.Errorf("SchemaMigration/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newsm._exists = true
-	sm = &newsm
+	*sm = newsm
 
 	return sm, nil
 }
@@ -114,7 +114,7 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration,
 		return nil, logerror(fmt.Errorf("SchemaMigration/Update/pgx.CollectOneRow: %w", err))
 	}
 	newsm._exists = true
-	sm = &newsm
+	*sm = newsm
 
 	return sm, nil
 }

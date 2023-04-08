@@ -271,7 +271,7 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	}
 {{- end }}
 	new{{ short $t }}._exists = true
-  {{ short $t }} = &new{{ short $t }}
+  *{{ short $t }} = new{{ short $t }}
 
 	return {{ short $t }}, nil
 }
@@ -309,7 +309,7 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Update/pgx.CollectOneRow: %w", err))
 	}
   new{{ short $t }}._exists = true
-  {{ short $t }} = &new{{ short $t }}
+  *{{ short $t }} = new{{ short $t }}
 
 	return {{ short $t }}, nil
 }

@@ -105,7 +105,7 @@ func (pi *Project2WorkItem) Insert(ctx context.Context, db DB) (*Project2WorkIte
 		return nil, logerror(fmt.Errorf("Project2WorkItem/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newpi._exists = true
-	pi = &newpi
+	*pi = newpi
 
 	return pi, nil
 }
@@ -135,7 +135,7 @@ func (pi *Project2WorkItem) Update(ctx context.Context, db DB) (*Project2WorkIte
 		return nil, logerror(fmt.Errorf("Project2WorkItem/Update/pgx.CollectOneRow: %w", err))
 	}
 	newpi._exists = true
-	pi = &newpi
+	*pi = newpi
 
 	return pi, nil
 }

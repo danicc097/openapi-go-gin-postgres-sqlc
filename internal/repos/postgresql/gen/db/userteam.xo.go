@@ -85,7 +85,7 @@ func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 		return nil, logerror(fmt.Errorf("UserTeam/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newut._exists = true
-	ut = &newut
+	*ut = newut
 
 	return ut, nil
 }

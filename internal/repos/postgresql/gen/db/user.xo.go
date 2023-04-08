@@ -142,7 +142,7 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 		return nil, logerror(fmt.Errorf("User/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newu._exists = true
-	u = &newu
+	*u = newu
 
 	return u, nil
 }
@@ -172,7 +172,7 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 		return nil, logerror(fmt.Errorf("User/Update/pgx.CollectOneRow: %w", err))
 	}
 	newu._exists = true
-	u = &newu
+	*u = newu
 
 	return u, nil
 }

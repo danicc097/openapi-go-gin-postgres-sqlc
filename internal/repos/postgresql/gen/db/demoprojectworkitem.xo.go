@@ -108,7 +108,7 @@ func (dpwi *DemoProjectWorkItem) Insert(ctx context.Context, db DB) (*DemoProjec
 		return nil, logerror(fmt.Errorf("DemoProjectWorkItem/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newdpwi._exists = true
-	dpwi = &newdpwi
+	*dpwi = newdpwi
 
 	return dpwi, nil
 }
@@ -138,7 +138,7 @@ func (dpwi *DemoProjectWorkItem) Update(ctx context.Context, db DB) (*DemoProjec
 		return nil, logerror(fmt.Errorf("DemoProjectWorkItem/Update/pgx.CollectOneRow: %w", err))
 	}
 	newdpwi._exists = true
-	dpwi = &newdpwi
+	*dpwi = newdpwi
 
 	return dpwi, nil
 }

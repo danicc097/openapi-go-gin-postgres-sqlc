@@ -111,7 +111,7 @@ func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 		return nil, logerror(fmt.Errorf("TimeEntry/Insert/pgx.CollectOneRow: %w", err))
 	}
 	newte._exists = true
-	te = &newte
+	*te = newte
 
 	return te, nil
 }
@@ -141,7 +141,7 @@ func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 		return nil, logerror(fmt.Errorf("TimeEntry/Update/pgx.CollectOneRow: %w", err))
 	}
 	newte._exists = true
-	te = &newte
+	*te = newte
 
 	return te, nil
 }
