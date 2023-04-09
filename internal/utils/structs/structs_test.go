@@ -3,7 +3,7 @@ package structs_test
 import (
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/structs"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/structs"
 	"github.com/google/go-cmp/cmp"
 )
 
