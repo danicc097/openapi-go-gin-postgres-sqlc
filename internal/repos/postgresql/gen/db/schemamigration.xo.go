@@ -5,30 +5,18 @@ package db
 import (
 	"context"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 )
 
-// SchemaMigrationPublic represents fields that may be exposed from 'public.schema_migrations'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type SchemaMigrationPublic struct {
-	Version int64 `json:"version" required:"true"` // version
-	Dirty   bool  `json:"dirty" required:"true"`   // dirty
-}
-
 // SchemaMigration represents a row from 'public.schema_migrations'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type SchemaMigration struct {
-	Version int64 `json:"version" db:"version"` // version
-	Dirty   bool  `json:"dirty" db:"dirty"`     // dirty
+	Version int64 `json:"version" db:"version" required:"true"` // version
+	Dirty   bool  `json:"dirty" db:"dirty" required:"true"`     // dirty
 
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *SchemaMigration) ToPublic() SchemaMigrationPublic {
-	return SchemaMigrationPublic{
-		Version: x.Version, Dirty: x.Dirty,
-	}
 }
 
 type SchemaMigrationSelectConfig struct {
@@ -47,9 +35,12 @@ func WithSchemaMigrationLimit(limit int) SchemaMigrationSelectConfigOption {
 
 type SchemaMigrationOrderBy = string
 
-type SchemaMigrationJoins struct{}
+const ()
 
-// WithSchemaMigrationJoin orders results by the given columns.
+type SchemaMigrationJoins struct {
+}
+
+// WithSchemaMigrationJoin joins with the given tables.
 func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
 		s.joins = joins
@@ -68,12 +59,13 @@ func (sm *SchemaMigration) Deleted() bool {
 }
 
 // Insert inserts the SchemaMigration to the database.
-func (sm *SchemaMigration) Insert(ctx context.Context, db DB) error {
+
+func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration, error) {
 	switch {
 	case sm._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case sm._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.schema_migrations (` +
@@ -83,37 +75,52 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) error {
 		`) `
 	// run
 	logf(sqlstr, sm.Version, sm.Dirty)
-	if _, err := db.Exec(ctx, sqlstr, sm.Version, sm.Dirty); err != nil {
-		return logerror(err)
+	rows, err := db.Query(ctx, sqlstr, sm.Version, sm.Dirty)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("SchemaMigration/Insert/db.Query: %w", err))
 	}
-	// set exists
-	sm._exists = true
-	return nil
+	newsm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[SchemaMigration])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("SchemaMigration/Insert/pgx.CollectOneRow: %w", err))
+	}
+	newsm._exists = true
+	*sm = newsm
+
+	return sm, nil
 }
 
 // Update updates a SchemaMigration in the database.
-func (sm *SchemaMigration) Update(ctx context.Context, db DB) error {
+func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration, error) {
 	switch {
 	case !sm._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case sm._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.schema_migrations SET ` +
 		`dirty = $1 ` +
 		`WHERE version = $2 ` +
-		`RETURNING version `
+		`RETURNING * `
 	// run
 	logf(sqlstr, sm.Dirty, sm.Version)
-	if err := db.QueryRow(ctx, sqlstr, sm.Dirty, sm.Version).Scan(); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, sm.Dirty, sm.Version)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("SchemaMigration/Update/db.Query: %w", err))
 	}
-	return nil
+	newsm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[SchemaMigration])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("SchemaMigration/Update/pgx.CollectOneRow: %w", err))
+	}
+	newsm._exists = true
+	*sm = newsm
+
+	return sm, nil
 }
 
 // Save saves the SchemaMigration to the database.
-func (sm *SchemaMigration) Save(ctx context.Context, db DB) error {
+func (sm *SchemaMigration) Save(ctx context.Context, db DB) (*SchemaMigration, error) {
 	if sm.Exists() {
 		return sm.Update(ctx, db)
 	}
@@ -188,12 +195,14 @@ schema_migrations.dirty ` +
 
 	// run
 	logf(sqlstr, version)
-	sm := SchemaMigration{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, version)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, version).Scan(&sm.Version, &sm.Dirty); err != nil {
-		return nil, logerror(err)
+	sm, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[SchemaMigration])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/pgx.CollectOneRow: %w", err))
 	}
+	sm._exists = true
 	return &sm, nil
 }

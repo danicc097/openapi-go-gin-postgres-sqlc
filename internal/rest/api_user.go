@@ -39,7 +39,7 @@ func (h *Handlers) GetCurrentUser(c *gin.Context) {
 		return
 	}
 
-	res := UserResponse{UserPublic: user.ToPublic(), Role: role.Name, Scopes: user.Scopes}
+	res := UserResponse{User: user, Role: role.Name, Scopes: user.Scopes}
 
 	c.JSON(http.StatusOK, res)
 }
@@ -99,7 +99,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id string) {
 		return
 	}
 
-	res := UserResponse{UserPublic: user.ToPublic(), Role: role.Name, Scopes: user.Scopes}
+	res := UserResponse{User: user, Role: role.Name, Scopes: user.Scopes}
 
 	renderResponse(c, res, http.StatusOK)
 }

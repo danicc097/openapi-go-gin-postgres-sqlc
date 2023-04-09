@@ -49,26 +49,36 @@ runs:
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
 
-    - name: Install dependencies
+    - name: Install dependencies (1)
       shell: bash
       run: |
-
-        sudo apt-get install -y moreutils # sponge
-
         source .envrc
 
-        mv docker/.env.ci docker/.env
-
-        # project e2e.sync-deps --x-env=ci # won't use python playwright
-        project install-tools --x-env=ci
-        project fetch.swagger-ui --x-env=ci
+        sudo apt-get install -y moreutils # sponge
         bash bin/scripts/install-pg_format.sh
         bash bin/scripts/install-mkcert.sh
         bash bin/scripts/install-proto.sh
 
-        git clone https://github.com/danicc097/traefik-boostrap.git
+
+        mv docker/.env.ci docker/.env
+
+    - name: Install dependencies (2)
+      shell: bash
+      run: |
+        source .envrc
+
+        # project e2e.sync-deps --x-env=ci # won't use python playwright
+        project install-tools --x-env=ci
+        project fetch.swagger-ui --x-env=ci
+
+    - name: Install dependencies (3)
+      shell: bash
+      run: |
+        source .envrc
+
+        git clone https://github.com/danicc097/traefik-bootstrap.git
         docker network create traefik-net || true
-        cd traefik-boostrap
+        cd traefik-bootstrap
         ./mkcert-certificates
         ./compose-up
 

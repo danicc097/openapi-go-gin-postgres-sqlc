@@ -9,34 +9,20 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
-// UserAPIKeyPublic represents fields that may be exposed from 'public.user_api_keys'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type UserAPIKeyPublic struct {
-	APIKey    string    `json:"apiKey" required:"true"`    // api_key
-	ExpiresOn time.Time `json:"expiresOn" required:"true"` // expires_on
-	UserID    uuid.UUID `json:"userID" required:"true"`    // user_id
-}
-
 // UserAPIKey represents a row from 'public.user_api_keys'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type UserAPIKey struct {
-	UserAPIKeyID int       `json:"user_api_key_id" db:"user_api_key_id"` // user_api_key_id
-	APIKey       string    `json:"api_key" db:"api_key"`                 // api_key
-	ExpiresOn    time.Time `json:"expires_on" db:"expires_on"`           // expires_on
-	UserID       uuid.UUID `json:"user_id" db:"user_id"`                 // user_id
+	UserAPIKeyID int       `json:"-" db:"user_api_key_id" `                   // user_api_key_id
+	APIKey       string    `json:"apiKey" db:"api_key" required:"true"`       // api_key
+	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on" required:"true"` // expires_on
+	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true"`       // user_id
 
 	User *User `json:"user" db:"user"` // O2O
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *UserAPIKey) ToPublic() UserAPIKeyPublic {
-	return UserAPIKeyPublic{
-		APIKey: x.APIKey, ExpiresOn: x.ExpiresOn, UserID: x.UserID,
-	}
 }
 
 type UserAPIKeySelectConfig struct {
@@ -78,7 +64,7 @@ type UserAPIKeyJoins struct {
 	User bool
 }
 
-// WithUserAPIKeyJoin orders results by the given columns.
+// WithUserAPIKeyJoin joins with the given tables.
 func WithUserAPIKeyJoin(joins UserAPIKeyJoins) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
 		s.joins = joins
@@ -97,52 +83,69 @@ func (uak *UserAPIKey) Deleted() bool {
 }
 
 // Insert inserts the UserAPIKey to the database.
-func (uak *UserAPIKey) Insert(ctx context.Context, db DB) error {
+
+func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 	switch {
 	case uak._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case uak._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.user_api_keys (` +
 		`api_key, expires_on, user_id` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) RETURNING user_api_key_id `
+		`) RETURNING * `
 	// run
 	logf(sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID)
-	if err := db.QueryRow(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID).Scan(&uak.UserAPIKeyID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserAPIKey/Insert/db.Query: %w", err))
 	}
-	// set exists
-	uak._exists = true
-	return nil
+	newuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserAPIKey/Insert/pgx.CollectOneRow: %w", err))
+	}
+	newuak._exists = true
+	*uak = newuak
+
+	return uak, nil
 }
 
 // Update updates a UserAPIKey in the database.
-func (uak *UserAPIKey) Update(ctx context.Context, db DB) error {
+func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
 	switch {
 	case !uak._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case uak._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.user_api_keys SET ` +
 		`api_key = $1, expires_on = $2, user_id = $3 ` +
 		`WHERE user_api_key_id = $4 ` +
-		`RETURNING user_api_key_id `
+		`RETURNING * `
 	// run
 	logf(sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID)
-	if err := db.QueryRow(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID).Scan(&uak.UserAPIKeyID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserAPIKey/Update/db.Query: %w", err))
 	}
-	return nil
+	newuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserAPIKey/Update/pgx.CollectOneRow: %w", err))
+	}
+	newuak._exists = true
+	*uak = newuak
+
+	return uak, nil
 }
 
 // Save saves the UserAPIKey to the database.
-func (uak *UserAPIKey) Save(ctx context.Context, db DB) error {
+func (uak *UserAPIKey) Save(ctx context.Context, db DB) (*UserAPIKey, error) {
 	if uak.Exists() {
 		return uak.Update(ctx, db)
 	}
@@ -211,7 +214,7 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true then row_to_json(users.*) end)::jsonb as user ` +
+(case when $1::boolean = true then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +
@@ -221,13 +224,15 @@ left join users on users.user_id = user_api_keys.user_id` +
 
 	// run
 	logf(sqlstr, apiKey)
-	uak := UserAPIKey{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, apiKey)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.User, apiKey).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID, &uak.User); err != nil {
-		return nil, logerror(err)
+	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/pgx.CollectOneRow: %w", err))
 	}
+	uak._exists = true
 	return &uak, nil
 }
 
@@ -247,7 +252,7 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true then row_to_json(users.*) end)::jsonb as user ` +
+(case when $1::boolean = true then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +
@@ -257,13 +262,15 @@ left join users on users.user_id = user_api_keys.user_id` +
 
 	// run
 	logf(sqlstr, userAPIKeyID)
-	uak := UserAPIKey{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, userAPIKeyID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.User, userAPIKeyID).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID, &uak.User); err != nil {
-		return nil, logerror(err)
+	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/pgx.CollectOneRow: %w", err))
 	}
+	uak._exists = true
 	return &uak, nil
 }
 
@@ -283,7 +290,7 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true then row_to_json(users.*) end)::jsonb as user ` +
+(case when $1::boolean = true then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +
@@ -293,13 +300,15 @@ left join users on users.user_id = user_api_keys.user_id` +
 
 	// run
 	logf(sqlstr, userID)
-	uak := UserAPIKey{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, userID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.User, userID).Scan(&uak.UserAPIKeyID, &uak.APIKey, &uak.ExpiresOn, &uak.UserID, &uak.User); err != nil {
-		return nil, logerror(err)
+	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/pgx.CollectOneRow: %w", err))
 	}
+	uak._exists = true
 	return &uak, nil
 }
 

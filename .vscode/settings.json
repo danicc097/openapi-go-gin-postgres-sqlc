@@ -2,8 +2,7 @@
   // --
   "go.lintTool": "golangci-lint",
   "go.lintFlags": [
-    // "-c",
-    // "./.golangci.yml",
+    "--config=${workspaceFolder}/.golangci.yml",
     "--issues-exit-code=0",
     // "--fast" // breaks some linters like errcheck, if its too slow then enable back
   ],

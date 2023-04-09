@@ -6,10 +6,12 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export interface DbActivityPublic {
-  activityID: number
+export interface DbKanbanStep {
+  color: string
   description: string
-  isProductive: boolean
+  kanbanStepID: number
   name: string
   projectID: number
+  stepOrder: number | null
+  timeTrackable: boolean
 }

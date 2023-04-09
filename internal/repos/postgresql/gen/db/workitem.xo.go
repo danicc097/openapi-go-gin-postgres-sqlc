@@ -9,57 +9,34 @@ import (
 	"time"
 
 	"github.com/jackc/pgtype"
+	"github.com/jackc/pgx/v5"
 )
 
-// WorkItemPublic represents fields that may be exposed from 'public.work_items'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type WorkItemPublic struct {
-	WorkItemID     int64        `json:"workItemID" required:"true"`     // work_item_id
-	Title          string       `json:"title" required:"true"`          // title
-	Description    string       `json:"description" required:"true"`    // description
-	WorkItemTypeID int          `json:"workItemTypeID" required:"true"` // work_item_type_id
-	Metadata       pgtype.JSONB `json:"metadata" required:"true"`       // metadata
-	TeamID         int          `json:"teamID" required:"true"`         // team_id
-	KanbanStepID   int          `json:"kanbanStepID" required:"true"`   // kanban_step_id
-	Closed         *time.Time   `json:"closed" required:"true"`         // closed
-	TargetDate     time.Time    `json:"targetDate" required:"true"`     // target_date
-	CreatedAt      time.Time    `json:"createdAt" required:"true"`      // created_at
-	UpdatedAt      time.Time    `json:"updatedAt" required:"true"`      // updated_at
-	DeletedAt      *time.Time   `json:"deletedAt" required:"true"`      // deleted_at
-}
-
 // WorkItem represents a row from 'public.work_items'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type WorkItem struct {
-	WorkItemID     int64        `json:"work_item_id" db:"work_item_id"`           // work_item_id
-	Title          string       `json:"title" db:"title"`                         // title
-	Description    string       `json:"description" db:"description"`             // description
-	WorkItemTypeID int          `json:"work_item_type_id" db:"work_item_type_id"` // work_item_type_id
-	Metadata       pgtype.JSONB `json:"metadata" db:"metadata"`                   // metadata
-	TeamID         int          `json:"team_id" db:"team_id"`                     // team_id
-	KanbanStepID   int          `json:"kanban_step_id" db:"kanban_step_id"`       // kanban_step_id
-	Closed         *time.Time   `json:"closed" db:"closed"`                       // closed
-	TargetDate     time.Time    `json:"target_date" db:"target_date"`             // target_date
-	CreatedAt      time.Time    `json:"created_at" db:"created_at"`               // created_at
-	UpdatedAt      time.Time    `json:"updated_at" db:"updated_at"`               // updated_at
-	DeletedAt      *time.Time   `json:"deleted_at" db:"deleted_at"`               // deleted_at
+	WorkItemID     int64        `json:"workItemID" db:"work_item_id" required:"true"`          // work_item_id
+	Title          string       `json:"title" db:"title" required:"true"`                      // title
+	Description    string       `json:"description" db:"description" required:"true"`          // description
+	WorkItemTypeID int          `json:"workItemTypeID" db:"work_item_type_id" required:"true"` // work_item_type_id
+	Metadata       pgtype.JSONB `json:"metadata" db:"metadata" required:"true"`                // metadata
+	TeamID         int          `json:"teamID" db:"team_id" required:"true"`                   // team_id
+	KanbanStepID   int          `json:"kanbanStepID" db:"kanban_step_id" required:"true"`      // kanban_step_id
+	Closed         *time.Time   `json:"closed" db:"closed" required:"true"`                    // closed
+	TargetDate     time.Time    `json:"targetDate" db:"target_date" required:"true"`           // target_date
+	CreatedAt      time.Time    `json:"createdAt" db:"created_at" required:"true"`             // created_at
+	UpdatedAt      time.Time    `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
+	DeletedAt      *time.Time   `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
 
-	DemoProjectWorkItem *DemoProjectWorkItem `json:"demo_project_work_item" db:"demo_project_work_item"` // O2O
-	Project2WorkItem    *Project2WorkItem    `json:"project2work_item" db:"project_2_work_item"`         // O2O
-	TimeEntries         *[]TimeEntry         `json:"time_entries" db:"time_entries"`                     // O2M
-	WorkItemComments    *[]WorkItemComment   `json:"work_item_comments" db:"work_item_comments"`         // O2M
-	Members             *[]User              `json:"members" db:"members"`                               // M2M
-	WorkItemTags        *[]WorkItemTag       `json:"work_item_tags" db:"work_item_tags"`                 // M2M
-	WorkItemType        *WorkItemType        `json:"work_item_type" db:"work_item_type"`                 // O2O
+	DemoProjectWorkItem *DemoProjectWorkItem `json:"demoProjectWorkItem" db:"demo_project_work_item"` // O2O
+	Project2WorkItem    *Project2WorkItem    `json:"project2workItem" db:"project_2_work_item"`       // O2O
+	TimeEntries         *[]TimeEntry         `json:"timeEntries" db:"time_entries"`                   // O2M
+	WorkItemComments    *[]WorkItemComment   `json:"workItemComments" db:"work_item_comments"`        // O2M
+	Members             *[]User              `json:"members" db:"members"`                            // M2M
+	WorkItemTags        *[]WorkItemTag       `json:"workItemTags" db:"work_item_tags"`                // M2M
+	WorkItemType        *WorkItemType        `json:"workItemType" db:"work_item_type"`                // O2O
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *WorkItem) ToPublic() WorkItemPublic {
-	return WorkItemPublic{
-		WorkItemID: x.WorkItemID, Title: x.Title, Description: x.Description, WorkItemTypeID: x.WorkItemTypeID, Metadata: x.Metadata, TeamID: x.TeamID, KanbanStepID: x.KanbanStepID, Closed: x.Closed, TargetDate: x.TargetDate, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt, DeletedAt: x.DeletedAt,
-	}
 }
 
 type WorkItemSelectConfig struct {
@@ -131,7 +108,7 @@ type WorkItemJoins struct {
 	WorkItemType        bool
 }
 
-// WithWorkItemJoin orders results by the given columns.
+// WithWorkItemJoin joins with the given tables.
 func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
 		s.joins = joins
@@ -150,52 +127,69 @@ func (wi *WorkItem) Deleted() bool {
 }
 
 // Insert inserts the WorkItem to the database.
-func (wi *WorkItem) Insert(ctx context.Context, db DB) error {
+
+func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	switch {
 	case wi._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case wi._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_items (` +
-		`title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at` +
+		`title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, created_at, updated_at, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
-		`) RETURNING work_item_id, created_at, updated_at `
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11` +
+		`) RETURNING * `
 	// run
-	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt).Scan(&wi.WorkItemID, &wi.CreatedAt, &wi.UpdatedAt); err != nil {
-		return logerror(err)
+	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt)
+
+	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/Insert/db.Query: %w", err))
 	}
-	// set exists
-	wi._exists = true
-	return nil
+	newwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/Insert/pgx.CollectOneRow: %w", err))
+	}
+	newwi._exists = true
+	*wi = newwi
+
+	return wi, nil
 }
 
 // Update updates a WorkItem in the database.
-func (wi *WorkItem) Update(ctx context.Context, db DB) error {
+func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	switch {
 	case !wi._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case wi._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_items SET ` +
-		`title = $1, description = $2, work_item_type_id = $3, metadata = $4, team_id = $5, kanban_step_id = $6, closed = $7, target_date = $8, deleted_at = $9 ` +
-		`WHERE work_item_id = $10 ` +
-		`RETURNING work_item_id, created_at, updated_at `
+		`title = $1, description = $2, work_item_type_id = $3, metadata = $4, team_id = $5, kanban_step_id = $6, closed = $7, target_date = $8, created_at = $9, updated_at = $10, deleted_at = $11 ` +
+		`WHERE work_item_id = $12 ` +
+		`RETURNING * `
 	// run
 	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
-	if err := db.QueryRow(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt, wi.WorkItemID).Scan(&wi.WorkItemID, &wi.CreatedAt, &wi.UpdatedAt); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/Update/db.Query: %w", err))
 	}
-	return nil
+	newwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItem/Update/pgx.CollectOneRow: %w", err))
+	}
+	newwi._exists = true
+	*wi = newwi
+
+	return wi, nil
 }
 
 // Save saves the WorkItem to the database.
-func (wi *WorkItem) Save(ctx context.Context, db DB) error {
+func (wi *WorkItem) Save(ctx context.Context, db DB) (*WorkItem, error) {
 	if wi.Exists() {
 		return wi.Update(ctx, db)
 	}
@@ -210,16 +204,16 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_items (` +
-		`work_item_id, title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at` +
+		`work_item_id, title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, created_at, updated_at, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12` +
 		`)` +
 		` ON CONFLICT (work_item_id) DO ` +
 		`UPDATE SET ` +
-		`title = EXCLUDED.title, description = EXCLUDED.description, work_item_type_id = EXCLUDED.work_item_type_id, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, closed = EXCLUDED.closed, target_date = EXCLUDED.target_date, deleted_at = EXCLUDED.deleted_at  `
+		`title = EXCLUDED.title, description = EXCLUDED.description, work_item_type_id = EXCLUDED.work_item_type_id, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, closed = EXCLUDED.closed, target_date = EXCLUDED.target_date, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, deleted_at = EXCLUDED.deleted_at  `
 	// run
-	logf(sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt); err != nil {
+	logf(sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -272,13 +266,13 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then row_to_json(demo_project_work_items.*) end)::jsonb as demo_project_work_item,
-(case when $2::boolean = true then row_to_json(project_2_work_items.*) end)::jsonb as project_2_work_item,
-(case when $3::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $4::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
-(case when $5::boolean = true then joined_users.users end)::jsonb as users,
-(case when $6::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
-(case when $7::boolean = true then row_to_json(work_item_types.*) end)::jsonb as work_item_type `+
+(case when $1::boolean = true then row(demo_project_work_items.*) end) as demo_project_work_item,
+(case when $2::boolean = true then row(project_2_work_items.*) end) as project_2_work_item,
+(case when $3::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $4::boolean = true then joined_work_item_comments.work_item_comments end) as work_item_comments,
+(case when $5::boolean = true then joined_users.users end) as users,
+(case when $6::boolean = true then joined_work_item_tags.work_item_tags end) as work_item_tags,
+(case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
 left join demo_project_work_items on demo_project_work_items.work_item_id = work_items.work_item_id
@@ -288,7 +282,7 @@ left join project_2_work_items on project_2_work_items.work_item_id = work_items
 left join (
   select
   work_item_id as time_entries_work_item_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -297,7 +291,7 @@ left join (
 left join (
   select
   work_item_id as work_item_comments_work_item_id
-    , json_agg(work_item_comments.*) as work_item_comments
+    , array_agg(work_item_comments.*) as work_item_comments
   from
     work_item_comments
    group by
@@ -305,47 +299,23 @@ left join (
 -- M2M join generated from "work_item_member_member_fkey"
 left join (
 	select
-		work_item_id as users_work_item_id
-		, json_agg(users.*) as users
-	from
-		work_item_member
-		join users using (user_id)
-	where
-		work_item_id in (
-			select
-				work_item_id
-			from
-				work_item_member
-			where
-				user_id = any (
-					select
-						user_id
-					from
-						users))
-			group by
-				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id
+		work_item_member.work_item_id as work_item_member_work_item_id
+		, array_agg(users.*) as users
+		from work_item_member
+    join users using (user_id)
+    group by work_item_member_work_item_id
+  ) as joined_users on joined_users.work_item_member_work_item_id = work_items.work_item_id
+
 -- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
 	select
-		work_item_id as work_item_tags_work_item_id
-		, json_agg(work_item_tags.*) as work_item_tags
-	from
-		work_item_work_item_tag
-		join work_item_tags using (work_item_tag_id)
-	where
-		work_item_id in (
-			select
-				work_item_id
-			from
-				work_item_work_item_tag
-			where
-				work_item_tag_id = any (
-					select
-						work_item_tag_id
-					from
-						work_item_tags))
-			group by
-				work_item_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_work_item_id = work_items.work_item_id
+		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+		, array_agg(work_item_tags.*) as work_item_tags
+		from work_item_work_item_tag
+    join work_item_tags using (work_item_tag_id)
+    group by work_item_work_item_tag_work_item_id
+  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
+
 -- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_item_types on work_item_types.work_item_type_id = work_items.work_item_type_id`+
 		` WHERE work_items.deleted_at = $8 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s `, c.deletedAt)
@@ -360,19 +330,10 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 	}
 	defer rows.Close()
 	// process
-	var res []*WorkItem
-	for rows.Next() {
-		wi := WorkItem{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&wi.WorkItemID, &wi.Title, &wi.Description, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.TargetDate, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &wi)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -401,13 +362,13 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then row_to_json(demo_project_work_items.*) end)::jsonb as demo_project_work_item,
-(case when $2::boolean = true then row_to_json(project_2_work_items.*) end)::jsonb as project_2_work_item,
-(case when $3::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $4::boolean = true then joined_work_item_comments.work_item_comments end)::jsonb as work_item_comments,
-(case when $5::boolean = true then joined_users.users end)::jsonb as users,
-(case when $6::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
-(case when $7::boolean = true then row_to_json(work_item_types.*) end)::jsonb as work_item_type `+
+(case when $1::boolean = true then row(demo_project_work_items.*) end) as demo_project_work_item,
+(case when $2::boolean = true then row(project_2_work_items.*) end) as project_2_work_item,
+(case when $3::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $4::boolean = true then joined_work_item_comments.work_item_comments end) as work_item_comments,
+(case when $5::boolean = true then joined_users.users end) as users,
+(case when $6::boolean = true then joined_work_item_tags.work_item_tags end) as work_item_tags,
+(case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
 left join demo_project_work_items on demo_project_work_items.work_item_id = work_items.work_item_id
@@ -417,7 +378,7 @@ left join project_2_work_items on project_2_work_items.work_item_id = work_items
 left join (
   select
   work_item_id as time_entries_work_item_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -426,7 +387,7 @@ left join (
 left join (
   select
   work_item_id as work_item_comments_work_item_id
-    , json_agg(work_item_comments.*) as work_item_comments
+    , array_agg(work_item_comments.*) as work_item_comments
   from
     work_item_comments
    group by
@@ -434,47 +395,23 @@ left join (
 -- M2M join generated from "work_item_member_member_fkey"
 left join (
 	select
-		work_item_id as users_work_item_id
-		, json_agg(users.*) as users
-	from
-		work_item_member
-		join users using (user_id)
-	where
-		work_item_id in (
-			select
-				work_item_id
-			from
-				work_item_member
-			where
-				user_id = any (
-					select
-						user_id
-					from
-						users))
-			group by
-				work_item_id) joined_users on joined_users.users_work_item_id = work_items.work_item_id
+		work_item_member.work_item_id as work_item_member_work_item_id
+		, array_agg(users.*) as users
+		from work_item_member
+    join users using (user_id)
+    group by work_item_member_work_item_id
+  ) as joined_users on joined_users.work_item_member_work_item_id = work_items.work_item_id
+
 -- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
 	select
-		work_item_id as work_item_tags_work_item_id
-		, json_agg(work_item_tags.*) as work_item_tags
-	from
-		work_item_work_item_tag
-		join work_item_tags using (work_item_tag_id)
-	where
-		work_item_id in (
-			select
-				work_item_id
-			from
-				work_item_work_item_tag
-			where
-				work_item_tag_id = any (
-					select
-						work_item_tag_id
-					from
-						work_item_tags))
-			group by
-				work_item_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_work_item_id = work_items.work_item_id
+		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+		, array_agg(work_item_tags.*) as work_item_tags
+		from work_item_work_item_tag
+    join work_item_tags using (work_item_tag_id)
+    group by work_item_work_item_tag_work_item_id
+  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
+
 -- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_item_types on work_item_types.work_item_type_id = work_items.work_item_type_id`+
 		` WHERE work_items.work_item_id = $8  AND work_items.deleted_at is %s `, c.deletedAt)
@@ -483,13 +420,15 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 
 	// run
 	logf(sqlstr, workItemID)
-	wi := WorkItem{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, workItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, workItemID).Scan(&wi.WorkItemID, &wi.Title, &wi.Description, &wi.WorkItemTypeID, &wi.Metadata, &wi.TeamID, &wi.KanbanStepID, &wi.Closed, &wi.TargetDate, &wi.CreatedAt, &wi.UpdatedAt, &wi.DeletedAt, &wi.DemoProjectWorkItem, &wi.Project2WorkItem, &wi.TimeEntries, &wi.WorkItemComments, &wi.Members, &wi.WorkItemTags, &wi.WorkItemType); err != nil {
-		return nil, logerror(err)
+	wi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
 	}
+	wi._exists = true
 	return &wi, nil
 }
 

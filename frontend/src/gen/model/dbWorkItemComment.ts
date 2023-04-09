@@ -7,15 +7,11 @@
  */
 import type { UuidUUID } from './uuidUUID'
 
-export interface DbUserPublic {
+export interface DbWorkItemComment {
   createdAt: Date
-  deletedAt: Date | null
-  email: string
-  firstName: string | null
-  fullName: string | null
-  hasGlobalNotifications: boolean
-  hasPersonalNotifications: boolean
-  lastName: string | null
+  message: string
+  updatedAt: Date
   userID: UuidUUID
-  username: string
+  workItemCommentID: number
+  workItemID: number
 }

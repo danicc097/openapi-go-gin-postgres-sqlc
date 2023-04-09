@@ -41,7 +41,7 @@ func (m *movie) Create(ctx context.Context, movie *db.Movie) error {
 	predictions, _ := m.PredictGenre(ctx, synopsis)
 	m.logger.Sugar().Infof("Movie predictions: %v", predictions)
 
-	if err := movie.Insert(ctx, m.d); err != nil {
+	if _, err := movie.Insert(ctx, m.d); err != nil {
 		return errors.Wrap(err, "movierepo.Create")
 	}
 

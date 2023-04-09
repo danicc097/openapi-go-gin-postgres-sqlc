@@ -5,30 +5,18 @@ package db
 import (
 	"context"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 )
 
-// WorkItemWorkItemTagPublic represents fields that may be exposed from 'public.work_item_work_item_tag'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type WorkItemWorkItemTagPublic struct {
-	WorkItemTagID int   `json:"workItemTagID" required:"true"` // work_item_tag_id
-	WorkItemID    int64 `json:"workItemID" required:"true"`    // work_item_id
-}
-
 // WorkItemWorkItemTag represents a row from 'public.work_item_work_item_tag'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type WorkItemWorkItemTag struct {
-	WorkItemTagID int   `json:"work_item_tag_id" db:"work_item_tag_id"` // work_item_tag_id
-	WorkItemID    int64 `json:"work_item_id" db:"work_item_id"`         // work_item_id
+	WorkItemTagID int   `json:"workItemTagID" db:"work_item_tag_id" required:"true"` // work_item_tag_id
+	WorkItemID    int64 `json:"workItemID" db:"work_item_id" required:"true"`        // work_item_id
 
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *WorkItemWorkItemTag) ToPublic() WorkItemWorkItemTagPublic {
-	return WorkItemWorkItemTagPublic{
-		WorkItemTagID: x.WorkItemTagID, WorkItemID: x.WorkItemID,
-	}
 }
 
 type WorkItemWorkItemTagSelectConfig struct {
@@ -47,9 +35,12 @@ func WithWorkItemWorkItemTagLimit(limit int) WorkItemWorkItemTagSelectConfigOpti
 
 type WorkItemWorkItemTagOrderBy = string
 
-type WorkItemWorkItemTagJoins struct{}
+const ()
 
-// WithWorkItemWorkItemTagJoin orders results by the given columns.
+type WorkItemWorkItemTagJoins struct {
+}
+
+// WithWorkItemWorkItemTagJoin joins with the given tables.
 func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
 	return func(s *WorkItemWorkItemTagSelectConfig) {
 		s.joins = joins
@@ -68,12 +59,13 @@ func (wiwit *WorkItemWorkItemTag) Deleted() bool {
 }
 
 // Insert inserts the WorkItemWorkItemTag to the database.
-func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) error {
+
+func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemWorkItemTag, error) {
 	switch {
 	case wiwit._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case wiwit._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.work_item_work_item_tag (` +
@@ -83,12 +75,18 @@ func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) error {
 		`) `
 	// run
 	logf(sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
-	if _, err := db.Exec(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID); err != nil {
-		return logerror(err)
+	rows, err := db.Query(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Insert/db.Query: %w", err))
 	}
-	// set exists
-	wiwit._exists = true
-	return nil
+	newwiwit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Insert/pgx.CollectOneRow: %w", err))
+	}
+	newwiwit._exists = true
+	*wiwit = newwiwit
+
+	return wiwit, nil
 }
 
 // ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
@@ -136,13 +134,15 @@ work_item_work_item_tag.work_item_id ` +
 
 	// run
 	logf(sqlstr, workItemID, workItemTagID)
-	wiwit := WorkItemWorkItemTag{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, workItemID, workItemTagID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("work_item_work_item_tag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, workItemID, workItemTagID).Scan(&wiwit.WorkItemTagID, &wiwit.WorkItemID); err != nil {
-		return nil, logerror(err)
+	wiwit, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("work_item_work_item_tag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/pgx.CollectOneRow: %w", err))
 	}
+	wiwit._exists = true
 	return &wiwit, nil
 }
 
@@ -174,19 +174,10 @@ work_item_work_item_tag.work_item_id ` +
 	}
 	defer rows.Close()
 	// process
-	var res []*WorkItemWorkItemTag
-	for rows.Next() {
-		wiwit := WorkItemWorkItemTag{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&wiwit.WorkItemTagID, &wiwit.WorkItemID); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &wiwit)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemWorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

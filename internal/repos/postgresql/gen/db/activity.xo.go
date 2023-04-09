@@ -5,37 +5,22 @@ package db
 import (
 	"context"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 )
 
-// ActivityPublic represents fields that may be exposed from 'public.activities'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type ActivityPublic struct {
-	ActivityID   int    `json:"activityID" required:"true"`   // activity_id
-	ProjectID    int    `json:"projectID" required:"true"`    // project_id
-	Name         string `json:"name" required:"true"`         // name
-	Description  string `json:"description" required:"true"`  // description
-	IsProductive bool   `json:"isProductive" required:"true"` // is_productive
-}
-
 // Activity represents a row from 'public.activities'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Activity struct {
-	ActivityID   int    `json:"activity_id" db:"activity_id"`     // activity_id
-	ProjectID    int    `json:"project_id" db:"project_id"`       // project_id
-	Name         string `json:"name" db:"name"`                   // name
-	Description  string `json:"description" db:"description"`     // description
-	IsProductive bool   `json:"is_productive" db:"is_productive"` // is_productive
+	ActivityID   int    `json:"activityID" db:"activity_id" required:"true"`     // activity_id
+	ProjectID    int    `json:"projectID" db:"project_id" required:"true"`       // project_id
+	Name         string `json:"name" db:"name" required:"true"`                  // name
+	Description  string `json:"description" db:"description" required:"true"`    // description
+	IsProductive bool   `json:"isProductive" db:"is_productive" required:"true"` // is_productive
 
-	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
+	TimeEntries *[]TimeEntry `json:"timeEntries" db:"time_entries"` // O2M
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *Activity) ToPublic() ActivityPublic {
-	return ActivityPublic{
-		ActivityID: x.ActivityID, ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, IsProductive: x.IsProductive,
-	}
 }
 
 type ActivitySelectConfig struct {
@@ -54,11 +39,13 @@ func WithActivityLimit(limit int) ActivitySelectConfigOption {
 
 type ActivityOrderBy = string
 
+const ()
+
 type ActivityJoins struct {
 	TimeEntries bool
 }
 
-// WithActivityJoin orders results by the given columns.
+// WithActivityJoin joins with the given tables.
 func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 	return func(s *ActivitySelectConfig) {
 		s.joins = joins
@@ -77,52 +64,69 @@ func (a *Activity) Deleted() bool {
 }
 
 // Insert inserts the Activity to the database.
-func (a *Activity) Insert(ctx context.Context, db DB) error {
+
+func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 	switch {
 	case a._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case a._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.activities (` +
 		`project_id, name, description, is_productive` +
 		`) VALUES (` +
 		`$1, $2, $3, $4` +
-		`) RETURNING activity_id `
+		`) RETURNING * `
 	// run
 	logf(sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive)
-	if err := db.QueryRow(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive).Scan(&a.ActivityID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Insert/db.Query: %w", err))
 	}
-	// set exists
-	a._exists = true
-	return nil
+	newa, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Activity])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Insert/pgx.CollectOneRow: %w", err))
+	}
+	newa._exists = true
+	*a = newa
+
+	return a, nil
 }
 
 // Update updates a Activity in the database.
-func (a *Activity) Update(ctx context.Context, db DB) error {
+func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 	switch {
 	case !a._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case a._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.activities SET ` +
 		`project_id = $1, name = $2, description = $3, is_productive = $4 ` +
 		`WHERE activity_id = $5 ` +
-		`RETURNING activity_id `
+		`RETURNING * `
 	// run
 	logf(sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
-	if err := db.QueryRow(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID).Scan(&a.ActivityID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, a.ProjectID, a.Name, a.Description, a.IsProductive, a.ActivityID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Update/db.Query: %w", err))
 	}
-	return nil
+	newa, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Activity])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Update/pgx.CollectOneRow: %w", err))
+	}
+	newa._exists = true
+	*a = newa
+
+	return a, nil
 }
 
 // Save saves the Activity to the database.
-func (a *Activity) Save(ctx context.Context, db DB) error {
+func (a *Activity) Save(ctx context.Context, db DB) (*Activity, error) {
 	if a.Exists() {
 		return a.Update(ctx, db)
 	}
@@ -192,13 +196,13 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -209,13 +213,15 @@ left join (
 
 	// run
 	logf(sqlstr, name, projectID)
-	a := Activity{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, name, projectID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, name, projectID).Scan(&a.ActivityID, &a.ProjectID, &a.Name, &a.Description, &a.IsProductive, &a.TimeEntries); err != nil {
-		return nil, logerror(err)
+	a, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Activity])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
+	a._exists = true
 	return &a, nil
 }
 
@@ -236,13 +242,13 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries ` +
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -253,13 +259,15 @@ left join (
 
 	// run
 	logf(sqlstr, activityID)
-	a := Activity{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, activityID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, activityID).Scan(&a.ActivityID, &a.ProjectID, &a.Name, &a.Description, &a.IsProductive, &a.TimeEntries); err != nil {
-		return nil, logerror(err)
+	a, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Activity])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/pgx.CollectOneRow: %w", err))
 	}
+	a._exists = true
 	return &a, nil
 }
 

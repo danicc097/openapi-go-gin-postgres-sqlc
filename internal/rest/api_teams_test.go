@@ -55,7 +55,7 @@ func TestCreateTeamRoute(t *testing.T) {
 
 		srv.Handler.ServeHTTP(resp, req)
 
-		ures := UserResponse{UserPublic: ufixture.User.ToPublic(), Role: role, Scopes: ufixture.User.Scopes}
+		ures := UserResponse{User: ufixture.User, Role: role, Scopes: ufixture.User.Scopes}
 
 		res, err := json.Marshal(ures)
 		if err != nil {

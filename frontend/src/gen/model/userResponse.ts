@@ -5,27 +5,16 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbUserAPIKeyPublic } from './dbUserAPIKeyPublic'
-import type { DbProjectPublic } from './dbProjectPublic'
+import type { DbUserAPIKey } from './dbUserAPIKey'
+import type { DbProject } from './dbProject'
 import type { Role } from './role'
 import type { Scopes } from './scopes'
-import type { DbTeamPublic } from './dbTeamPublic'
-import type { UuidUUID } from './uuidUUID'
+import type { DbTeam } from './dbTeam'
 
 export interface UserResponse {
-  apiKey?: DbUserAPIKeyPublic
-  createdAt: Date
-  deletedAt: Date | null
-  email: string
-  firstName: string | null
-  fullName: string | null
-  hasGlobalNotifications: boolean
-  hasPersonalNotifications: boolean
-  lastName: string | null
-  projects?: DbProjectPublic[] | null
+  apiKey?: DbUserAPIKey
+  projects?: DbProject[] | null
   role: Role
   scopes: Scopes
-  teams?: DbTeamPublic[] | null
-  userID: UuidUUID
-  username: string
+  teams?: DbTeam[] | null
 }

@@ -118,15 +118,19 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 	// run
 	logf(sqlstr, {{ params $i.Fields false }})
 {{- if $i.IsUnique }}
-	{{ short $i.Table }} := {{ $i.Table.GoName }}{
+  rows, err := {{ db "Query" $i }}
+	if err != nil {
+		return nil, logerror(fmt.Errorf("{{ $i.Table.SQLName }}/{{ $i.Func }}/db.Query: %w", err))
+	}
+	{{ short $i.Table }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$i.Table.GoName}}])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("{{ $i.Table.SQLName }}/{{ $i.Func }}/pgx.CollectOneRow: %w", err))
+	}
+
 	{{- if $i.Table.PrimaryKeys }}
-		_exists: true,
+  {{ short $i.Table }}._exists = true
 	{{ end -}}
-	}
-  {{/* (print "&" (short $i.Table) ".") --> prefix */}}
-	if err := {{ db "QueryRow" $i }}.Scan({{ names (print "&" (short $i.Table) ".") $i.Table }}); err != nil {
-		return nil, logerror(err)
-	}
+
 	return &{{ short $i.Table }}, nil
 {{- else }}
 	rows, err := {{ db "Query" $i }}
@@ -135,21 +139,10 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 	}
 	defer rows.Close()
 	// process
-	var res []*{{ $i.Table.GoName }}
-	for rows.Next() {
-		{{ short $i.Table }} := {{ $i.Table.GoName }}{
-		{{- if $i.Table.PrimaryKeys }}
-			_exists: true,
-		{{ end -}}
-		}
-		// scan
-		if err := rows.Scan({{ names_ignore (print "&" (short $i.Table) ".")  $i.Table }}); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &{{ short $i.Table }})
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+  {{/* might need to use non pointer []<st> in return if we get a NumField of non-struct type*/}}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*{{$i.Table.GoName}}])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 {{- end }}
@@ -209,22 +202,8 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{if $t.Comment -}}
 // {{ $t.Comment | eval $t.GoName }}
 {{- else -}}
-// {{ $t.GoName }}Public represents fields that may be exposed from '{{ schema $t.SQLName }}'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-//
-{{- end }}
-type {{ $t.GoName }}Public struct {
-{{ range $t.Fields -}}
-	{{ field . true }}
-{{ end }}
-}
-
-{{if $t.Comment -}}
-// {{ $t.Comment | eval $t.GoName }}
-{{- else -}}
 // {{ $t.GoName }} represents a row from '{{ schema $t.SQLName }}'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 {{- end }}
 type {{ $t.GoName }} struct {
 {{ range $t.Fields -}}
@@ -235,14 +214,6 @@ type {{ $t.GoName }} struct {
 	// xo fields
 	_exists, _deleted bool
 {{ end -}}
-}
-
-func (x *{{ $t.GoName }}) ToPublic() {{ $t.GoName }}Public {
-	return {{ $t.GoName }}Public{
-  {{ range $t.Fields -}}
-  {{ fieldmapping . "x" true }}
-  {{- end }}
-  }
 }
 
 {{ extratypes $t.GoName $t.SQLName $constraints $t }}
@@ -263,49 +234,46 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 }
 
 // {{ func_name_context "Insert" }} inserts the {{ $t.GoName }} to the database.
+{{/* TODO insert may generate rows. use Query instead of exec */}}
 {{ recv_context $t "Insert" }} {
 	switch {
 	case {{ short $t }}._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case {{ short $t }}._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 {{ if and (eq (len $t.Generated) 0) (eq (len $t.Ignored) 0) -}}
 	// insert (manual)
 	{{ sqlstr "insert_manual" $t }}
 	// run
 	{{ logf $t }}
-	if _, err := {{ db_prefix "Exec" false false $t }}; err != nil {
-		return logerror(err)
+	rows, err := {{ db_prefix "Query" false false $t }}
+	if err != nil {
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/db.Query: %w", err))
+	}
+	new{{ short $t }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/pgx.CollectOneRow: %w", err))
 	}
 {{- else -}}
 	// insert (primary key generated and returned by database)
 	{{ sqlstr "insert" $t }}
 	// run
 	{{ logf $t $t.Generated $t.Ignored }}
-{{ if (driver "postgres") -}}
-	if err := {{ db_prefix "QueryRow" false false $t }}.Scan({{ names (print "&" (short $t) ".") $t.Generated $t.Ignored }}); err != nil {
-		return logerror(err)
-	}
-{{- else -}}
-	res, err := {{ db_prefix "Exec" false false $t }}
+
+	rows, err := {{ db_prefix "Query" false false $t }}
 	if err != nil {
-		return logerror(err)
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/db.Query: %w", err))
 	}
-	// retrieve id
-	id, err := res.LastInsertId()
+	new{{ short $t }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return logerror(err)
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/pgx.CollectOneRow: %w", err))
 	}
-{{- end -}}
-{{ if not (driver "postgres") -}}
-	// set primary key
-	{{ short $t }}.{{ (index $t.PrimaryKeys 0).GoName }} = {{ (index $t.PrimaryKeys 0).Type }}(id)
 {{- end }}
-{{- end }}
-	// set exists
-	{{ short $t }}._exists = true
-	return nil
+	new{{ short $t }}._exists = true
+  *{{ short $t }} = new{{ short $t }}
+
+	return {{ short $t }}, nil
 }
 
 {{ if context_both -}}
@@ -320,21 +288,30 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 // ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
 {{- else -}}
 // {{ func_name_context "Update" }} updates a {{ $t.GoName }} in the database.
-{{ recv_context $t "Update" }} {
+{{ recv_context $t "Update" }}  {
 	switch {
 	case !{{ short $t }}._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case {{ short $t }}._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with {{ if driver "postgres" }}composite {{ end }}primary key
 	{{ sqlstr "update" $t }}
 	// run
 	{{ logf_update $t }}
-	if err := {{ db_update "QueryRow" $t }}.Scan({{ names (print "&" (short $t) ".") $t.Generated $t.Ignored }}); err != nil {
-		return logerror(err)
+
+  rows, err := {{ db_update "Query" $t }}
+	if err != nil {
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Update/db.Query: %w", err))
 	}
-	return nil
+	new{{ short $t }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Update/pgx.CollectOneRow: %w", err))
+	}
+  new{{ short $t }}._exists = true
+  *{{ short $t }} = new{{ short $t }}
+
+	return {{ short $t }}, nil
 }
 
 {{ if context_both -}}

@@ -9,29 +9,29 @@ import (
 
 // UserResponse represents an OpenAPI schema response for a User.
 type UserResponse struct {
-	Role     models.Role          `json:"role" ref:"#/components/schemas/Role" required:"true"`
-	Scopes   []string             `json:"scopes" ref:"#/components/schemas/Scopes" required:"true"`
-	APIKey   *db.UserAPIKeyPublic `json:"apiKey"`
-	Teams    *[]db.TeamPublic     `json:"teams"`
-	Projects *[]db.ProjectPublic  `json:"projects"`
+	Role     models.Role    `json:"role" ref:"#/components/schemas/Role" required:"true"`
+	Scopes   []string       `json:"scopes" ref:"#/components/schemas/Scopes" required:"true"`
+	APIKey   *db.UserAPIKey `json:"apiKey"`
+	Teams    *[]db.Team     `json:"teams"`
+	Projects *[]db.Project  `json:"projects"`
 
-	db.UserPublic
+	*db.User
 }
 
 // DemoProjectWorkItemsResponse represents an OpenAPI schema response for a ProjectBoard.
 type DemoProjectWorkItemsResponse struct {
-	db.WorkItemPublic
-	DemoProjectWorkItem db.DemoProjectWorkItemPublic `json:"demoProjectWorkItem" required:"true"`
-	TimeEntries         *[]db.TimeEntryPublic        `json:"timeEntries"`
-	WorkItemComments    *[]db.WorkItemCommentPublic  `json:"workItemComments"`
-	Members             *[]db.UserPublic             `json:"members"`
-	WorkItemTags        *[]db.WorkItemTagPublic      `json:"workItemTags"`
-	WorkItemType        *db.WorkItemTypePublic       `json:"workItemType"`
+	db.WorkItem         `required:"true"`
+	DemoProjectWorkItem db.DemoProjectWorkItem `json:"demoProjectWorkItem" required:"true"`
+	TimeEntries         *[]db.TimeEntry        `json:"timeEntries"`
+	WorkItemComments    *[]db.WorkItemComment  `json:"workItemComments"`
+	Members             *[]db.User             `json:"members"`
+	WorkItemTags        *[]db.WorkItemTag      `json:"workItemTags"`
+	WorkItemType        *db.WorkItemType       `json:"workItemType"`
 }
 
 // ProjectBoardResponse represents an OpenAPI schema response for a ProjectBoard.
 type ProjectBoardResponse struct {
-	repomodels.ProjectBoardPublic
+	repomodels.ProjectBoard
 }
 
 type ProjectBoardCreateRequest struct {
@@ -40,7 +40,7 @@ type ProjectBoardCreateRequest struct {
 
 // WorkItemResponse represents an OpenAPI schema response for a WorkItem.
 type WorkItemResponse struct {
-	db.WorkItemPublic
+	db.WorkItem
 }
 
 type TeamCreateRequest struct {

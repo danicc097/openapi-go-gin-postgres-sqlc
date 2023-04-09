@@ -20,10 +20,10 @@ import type {
 } from '@tanstack/react-query'
 import type {
   InitializeProjectRequest,
-  DbProjectPublic,
+  DbProject,
   ProjectConfig,
-  ProjectBoardResponse,
-  DemoProjectWorkItemsResponse,
+  RestProjectBoardResponse,
+  RestDemoProjectWorkItemsResponse,
   GetProjectWorkitemsParams,
 } from '.././model'
 
@@ -72,7 +72,7 @@ export const useInitializeProject = <TError = AxiosError<unknown>, TContext = un
 /**
  * @summary returns board data for a project
  */
-export const getProject = (id: number, options?: AxiosRequestConfig): Promise<AxiosResponse<DbProjectPublic>> => {
+export const getProject = (id: number, options?: AxiosRequestConfig): Promise<AxiosResponse<DbProject>> => {
   return axios.get(`/project/${id}/`, options)
 }
 
@@ -250,7 +250,7 @@ export const useUpdateProjectConfig = <TError = AxiosError<unknown>, TContext = 
 export const getProjectBoard = (
   id: number,
   options?: AxiosRequestConfig,
-): Promise<AxiosResponse<ProjectBoardResponse>> => {
+): Promise<AxiosResponse<RestProjectBoardResponse>> => {
   return axios.get(`/project/${id}/board`, options)
 }
 
@@ -322,7 +322,7 @@ export const getProjectWorkitems = (
   id: number,
   params?: GetProjectWorkitemsParams,
   options?: AxiosRequestConfig,
-): Promise<AxiosResponse<DemoProjectWorkItemsResponse>> => {
+): Promise<AxiosResponse<RestDemoProjectWorkItemsResponse>> => {
   return axios.get(`/project/${id}/workitems`, {
     ...options,
     params: { ...params, ...options?.params },

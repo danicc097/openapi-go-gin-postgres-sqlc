@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-// GetStructKeys returns a slice of json keys extracted from an initialized struct's tags.
-func GetStructKeys(s any, parent string) []string {
+// GetKeys returns a slice of json keys extracted from an initialized struct's tags.
+func GetKeys(s any, parent string) []string {
 	keys := []string{}
 
 	if s == nil {
@@ -24,7 +24,7 @@ func GetStructKeys(s any, parent string) []string {
 	if val.Kind() == reflect.Slice || val.Kind() == reflect.Array {
 		for j := 0; j < val.Len(); j++ {
 			elem := val.Index(j).Interface()
-			subkeys := GetStructKeys(elem, "")
+			subkeys := GetKeys(elem, "")
 			for _, subkey := range subkeys {
 				keys = append(keys, parent+"."+subkey)
 			}
@@ -47,14 +47,14 @@ func GetStructKeys(s any, parent string) []string {
 				}
 				for j := 0; j < val.Field(idx).Len(); j++ {
 					elem := val.Field(idx).Index(j).Interface()
-					subkeys := GetStructKeys(elem, key)
+					subkeys := GetKeys(elem, key)
 					for _, subkey := range subkeys {
 						keys = append(keys, key+"."+subkey)
 					}
 				}
 			case reflect.Struct:
 				keys = append(keys, key)
-				subkeys := GetStructKeys(val.Field(idx).Interface(), key)
+				subkeys := GetKeys(val.Field(idx).Interface(), key)
 				for _, subkey := range subkeys {
 					keys = append(keys, key+"."+subkey)
 				}
@@ -63,7 +63,7 @@ func GetStructKeys(s any, parent string) []string {
 					continue
 				}
 				keys = append(keys, key)
-				subkeys := GetStructKeys(val.Field(idx).Interface(), key)
+				subkeys := GetKeys(val.Field(idx).Interface(), key)
 				for _, subkey := range subkeys {
 					keys = append(keys, key+"."+subkey)
 				}

@@ -5,13 +5,13 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { DbWorkItem } from './dbWorkItem'
 
-export interface DbKanbanStepPublic {
+export type DbWorkItemType = {
   color: string
   description: string
-  kanbanStepID: number
   name: string
   projectID: number
-  stepOrder: number | null
-  timeTrackable: boolean
-}
+  workItem?: DbWorkItem
+  workItemTypeID: number
+} | null

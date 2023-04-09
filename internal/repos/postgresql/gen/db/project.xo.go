@@ -9,47 +9,28 @@ import (
 	"time"
 
 	"github.com/jackc/pgtype"
+	"github.com/jackc/pgx/v5"
 )
 
-// ProjectPublic represents fields that may be exposed from 'public.projects'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type ProjectPublic struct {
-	ProjectID   int    `json:"projectID" required:"true"`   // project_id
-	Name        string `json:"name" required:"true"`        // name
-	Description string `json:"description" required:"true"` // description
-
-	Initialized bool `json:"initialized" required:"true"` // initialized
-
-	CreatedAt time.Time `json:"createdAt" required:"true"` // created_at
-	UpdatedAt time.Time `json:"updatedAt" required:"true"` // updated_at
-}
-
 // Project represents a row from 'public.projects'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Project struct {
-	ProjectID          int          `json:"project_id" db:"project_id"`                       // project_id
-	Name               string       `json:"name" db:"name"`                                   // name
-	Description        string       `json:"description" db:"description"`                     // description
-	WorkItemsTableName string       `json:"work_items_table_name" db:"work_items_table_name"` // work_items_table_name
-	Initialized        bool         `json:"initialized" db:"initialized"`                     // initialized
-	BoardConfig        pgtype.JSONB `json:"board_config" db:"board_config"`                   // board_config
-	CreatedAt          time.Time    `json:"created_at" db:"created_at"`                       // created_at
-	UpdatedAt          time.Time    `json:"updated_at" db:"updated_at"`                       // updated_at
+	ProjectID          int          `json:"projectID" db:"project_id" required:"true"`    // project_id
+	Name               string       `json:"name" db:"name" required:"true"`               // name
+	Description        string       `json:"description" db:"description" required:"true"` // description
+	WorkItemsTableName string       `json:"-" db:"work_items_table_name" `                // work_items_table_name
+	Initialized        bool         `json:"initialized" db:"initialized" required:"true"` // initialized
+	BoardConfig        pgtype.JSONB `json:"-" db:"board_config" `                         // board_config
+	CreatedAt          time.Time    `json:"createdAt" db:"created_at" required:"true"`    // created_at
+	UpdatedAt          time.Time    `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
-	Activities    *[]Activity     `json:"activities" db:"activities"`           // O2M
-	KanbanSteps   *[]KanbanStep   `json:"kanban_steps" db:"kanban_steps"`       // O2M
-	Teams         *[]Team         `json:"teams" db:"teams"`                     // O2M
-	WorkItemTags  *[]WorkItemTag  `json:"work_item_tags" db:"work_item_tags"`   // O2M
-	WorkItemTypes *[]WorkItemType `json:"work_item_types" db:"work_item_types"` // O2M
+	Activities    *[]Activity     `json:"activities" db:"activities"`         // O2M
+	KanbanSteps   *[]KanbanStep   `json:"kanbanSteps" db:"kanban_steps"`      // O2M
+	Teams         *[]Team         `json:"teams" db:"teams"`                   // O2M
+	WorkItemTags  *[]WorkItemTag  `json:"workItemTags" db:"work_item_tags"`   // O2M
+	WorkItemTypes *[]WorkItemType `json:"workItemTypes" db:"work_item_types"` // O2M
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *Project) ToPublic() ProjectPublic {
-	return ProjectPublic{
-		ProjectID: x.ProjectID, Name: x.Name, Description: x.Description, Initialized: x.Initialized, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
-	}
 }
 
 type ProjectSelectConfig struct {
@@ -99,7 +80,7 @@ type ProjectJoins struct {
 	WorkItemTypes bool
 }
 
-// WithProjectJoin orders results by the given columns.
+// WithProjectJoin joins with the given tables.
 func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		s.joins = joins
@@ -118,52 +99,69 @@ func (p *Project) Deleted() bool {
 }
 
 // Insert inserts the Project to the database.
-func (p *Project) Insert(ctx context.Context, db DB) error {
+
+func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 	switch {
 	case p._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case p._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.projects (` +
-		`name, description, work_items_table_name, initialized, board_config` +
+		`name, description, work_items_table_name, initialized, board_config, created_at, updated_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
-		`) RETURNING project_id, created_at, updated_at `
+		`$1, $2, $3, $4, $5, $6, $7` +
+		`) RETURNING * `
 	// run
-	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig)
-	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig).Scan(&p.ProjectID, &p.CreatedAt, &p.UpdatedAt); err != nil {
-		return logerror(err)
+	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt)
+
+	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Project/Insert/db.Query: %w", err))
 	}
-	// set exists
-	p._exists = true
-	return nil
+	newp, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Project/Insert/pgx.CollectOneRow: %w", err))
+	}
+	newp._exists = true
+	*p = newp
+
+	return p, nil
 }
 
 // Update updates a Project in the database.
-func (p *Project) Update(ctx context.Context, db DB) error {
+func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 	switch {
 	case !p._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case p._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.projects SET ` +
-		`name = $1, description = $2, work_items_table_name = $3, initialized = $4, board_config = $5 ` +
-		`WHERE project_id = $6 ` +
-		`RETURNING project_id, created_at, updated_at `
+		`name = $1, description = $2, work_items_table_name = $3, initialized = $4, board_config = $5, created_at = $6, updated_at = $7 ` +
+		`WHERE project_id = $8 ` +
+		`RETURNING * `
 	// run
 	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt, p.ProjectID)
-	if err := db.QueryRow(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.ProjectID).Scan(&p.ProjectID, &p.CreatedAt, &p.UpdatedAt); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt, p.ProjectID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Project/Update/db.Query: %w", err))
 	}
-	return nil
+	newp, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Project/Update/pgx.CollectOneRow: %w", err))
+	}
+	newp._exists = true
+	*p = newp
+
+	return p, nil
 }
 
 // Save saves the Project to the database.
-func (p *Project) Save(ctx context.Context, db DB) error {
+func (p *Project) Save(ctx context.Context, db DB) (*Project, error) {
 	if p.Exists() {
 		return p.Update(ctx, db)
 	}
@@ -178,16 +176,16 @@ func (p *Project) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.projects (` +
-		`project_id, name, description, work_items_table_name, initialized, board_config` +
+		`project_id, name, description, work_items_table_name, initialized, board_config, created_at, updated_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6` +
+		`$1, $2, $3, $4, $5, $6, $7, $8` +
 		`)` +
 		` ON CONFLICT (project_id) DO ` +
 		`UPDATE SET ` +
-		`name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, initialized = EXCLUDED.initialized, board_config = EXCLUDED.board_config  `
+		`name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, initialized = EXCLUDED.initialized, board_config = EXCLUDED.board_config, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at  `
 	// run
-	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig)
-	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig); err != nil {
+	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt)
+	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -236,17 +234,17 @@ projects.initialized,
 projects.board_config,
 projects.created_at,
 projects.updated_at,
-(case when $1::boolean = true then joined_activities.activities end)::jsonb as activities,
-(case when $2::boolean = true then joined_kanban_steps.kanban_steps end)::jsonb as kanban_steps,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
-(case when $5::boolean = true then joined_work_item_types.work_item_types end)::jsonb as work_item_types ` +
+(case when $1::boolean = true then joined_activities.activities end) as activities,
+(case when $2::boolean = true then joined_kanban_steps.kanban_steps end) as kanban_steps,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_item_tags.work_item_tags end) as work_item_tags,
+(case when $5::boolean = true then joined_work_item_types.work_item_types end) as work_item_types ` +
 		`FROM public.projects ` +
 		`-- O2M join generated from "activities_project_id_fkey"
 left join (
   select
   project_id as activities_project_id
-    , json_agg(activities.*) as activities
+    , array_agg(activities.*) as activities
   from
     activities
    group by
@@ -255,7 +253,7 @@ left join (
 left join (
   select
   project_id as kanban_steps_project_id
-    , json_agg(kanban_steps.*) as kanban_steps
+    , array_agg(kanban_steps.*) as kanban_steps
   from
     kanban_steps
    group by
@@ -264,7 +262,7 @@ left join (
 left join (
   select
   project_id as teams_project_id
-    , json_agg(teams.*) as teams
+    , array_agg(teams.*) as teams
   from
     teams
    group by
@@ -273,7 +271,7 @@ left join (
 left join (
   select
   project_id as work_item_tags_project_id
-    , json_agg(work_item_tags.*) as work_item_tags
+    , array_agg(work_item_tags.*) as work_item_tags
   from
     work_item_tags
    group by
@@ -282,7 +280,7 @@ left join (
 left join (
   select
   project_id as work_item_types_project_id
-    , json_agg(work_item_types.*) as work_item_types
+    , array_agg(work_item_types.*) as work_item_types
   from
     work_item_types
    group by
@@ -293,13 +291,15 @@ left join (
 
 	// run
 	logf(sqlstr, name)
-	p := Project{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, name)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("projects/ProjectByName/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, name).Scan(&p.ProjectID, &p.Name, &p.Description, &p.WorkItemsTableName, &p.Initialized, &p.BoardConfig, &p.CreatedAt, &p.UpdatedAt, &p.Activities, &p.KanbanSteps, &p.Teams, &p.WorkItemTags, &p.WorkItemTypes); err != nil {
-		return nil, logerror(err)
+	p, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("projects/ProjectByName/pgx.CollectOneRow: %w", err))
 	}
+	p._exists = true
 	return &p, nil
 }
 
@@ -323,17 +323,17 @@ projects.initialized,
 projects.board_config,
 projects.created_at,
 projects.updated_at,
-(case when $1::boolean = true then joined_activities.activities end)::jsonb as activities,
-(case when $2::boolean = true then joined_kanban_steps.kanban_steps end)::jsonb as kanban_steps,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_item_tags.work_item_tags end)::jsonb as work_item_tags,
-(case when $5::boolean = true then joined_work_item_types.work_item_types end)::jsonb as work_item_types ` +
+(case when $1::boolean = true then joined_activities.activities end) as activities,
+(case when $2::boolean = true then joined_kanban_steps.kanban_steps end) as kanban_steps,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_item_tags.work_item_tags end) as work_item_tags,
+(case when $5::boolean = true then joined_work_item_types.work_item_types end) as work_item_types ` +
 		`FROM public.projects ` +
 		`-- O2M join generated from "activities_project_id_fkey"
 left join (
   select
   project_id as activities_project_id
-    , json_agg(activities.*) as activities
+    , array_agg(activities.*) as activities
   from
     activities
    group by
@@ -342,7 +342,7 @@ left join (
 left join (
   select
   project_id as kanban_steps_project_id
-    , json_agg(kanban_steps.*) as kanban_steps
+    , array_agg(kanban_steps.*) as kanban_steps
   from
     kanban_steps
    group by
@@ -351,7 +351,7 @@ left join (
 left join (
   select
   project_id as teams_project_id
-    , json_agg(teams.*) as teams
+    , array_agg(teams.*) as teams
   from
     teams
    group by
@@ -360,7 +360,7 @@ left join (
 left join (
   select
   project_id as work_item_tags_project_id
-    , json_agg(work_item_tags.*) as work_item_tags
+    , array_agg(work_item_tags.*) as work_item_tags
   from
     work_item_tags
    group by
@@ -369,7 +369,7 @@ left join (
 left join (
   select
   project_id as work_item_types_project_id
-    , json_agg(work_item_types.*) as work_item_types
+    , array_agg(work_item_types.*) as work_item_types
   from
     work_item_types
    group by
@@ -380,12 +380,14 @@ left join (
 
 	// run
 	logf(sqlstr, projectID)
-	p := Project{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID).Scan(&p.ProjectID, &p.Name, &p.Description, &p.WorkItemsTableName, &p.Initialized, &p.BoardConfig, &p.CreatedAt, &p.UpdatedAt, &p.Activities, &p.KanbanSteps, &p.Teams, &p.WorkItemTags, &p.WorkItemTypes); err != nil {
-		return nil, logerror(err)
+	p, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/pgx.CollectOneRow: %w", err))
 	}
+	p._exists = true
 	return &p, nil
 }

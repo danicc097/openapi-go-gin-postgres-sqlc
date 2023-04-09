@@ -9,38 +9,21 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
-// WorkItemCommentPublic represents fields that may be exposed from 'public.work_item_comments'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type WorkItemCommentPublic struct {
-	WorkItemCommentID int64     `json:"workItemCommentID" required:"true"` // work_item_comment_id
-	WorkItemID        int64     `json:"workItemID" required:"true"`        // work_item_id
-	UserID            uuid.UUID `json:"userID" required:"true"`            // user_id
-	Message           string    `json:"message" required:"true"`           // message
-	CreatedAt         time.Time `json:"createdAt" required:"true"`         // created_at
-	UpdatedAt         time.Time `json:"updatedAt" required:"true"`         // updated_at
-}
-
 // WorkItemComment represents a row from 'public.work_item_comments'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type WorkItemComment struct {
-	WorkItemCommentID int64     `json:"work_item_comment_id" db:"work_item_comment_id"` // work_item_comment_id
-	WorkItemID        int64     `json:"work_item_id" db:"work_item_id"`                 // work_item_id
-	UserID            uuid.UUID `json:"user_id" db:"user_id"`                           // user_id
-	Message           string    `json:"message" db:"message"`                           // message
-	CreatedAt         time.Time `json:"created_at" db:"created_at"`                     // created_at
-	UpdatedAt         time.Time `json:"updated_at" db:"updated_at"`                     // updated_at
+	WorkItemCommentID int64     `json:"workItemCommentID" db:"work_item_comment_id" required:"true"` // work_item_comment_id
+	WorkItemID        int64     `json:"workItemID" db:"work_item_id" required:"true"`                // work_item_id
+	UserID            uuid.UUID `json:"userID" db:"user_id" required:"true"`                         // user_id
+	Message           string    `json:"message" db:"message" required:"true"`                        // message
+	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true"`                   // created_at
+	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at" required:"true"`                   // updated_at
 
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *WorkItemComment) ToPublic() WorkItemCommentPublic {
-	return WorkItemCommentPublic{
-		WorkItemCommentID: x.WorkItemCommentID, WorkItemID: x.WorkItemID, UserID: x.UserID, Message: x.Message, CreatedAt: x.CreatedAt, UpdatedAt: x.UpdatedAt,
-	}
 }
 
 type WorkItemCommentSelectConfig struct {
@@ -82,9 +65,10 @@ func WithWorkItemCommentOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentS
 	}
 }
 
-type WorkItemCommentJoins struct{}
+type WorkItemCommentJoins struct {
+}
 
-// WithWorkItemCommentJoin orders results by the given columns.
+// WithWorkItemCommentJoin joins with the given tables.
 func WithWorkItemCommentJoin(joins WorkItemCommentJoins) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
 		s.joins = joins
@@ -103,52 +87,69 @@ func (wic *WorkItemComment) Deleted() bool {
 }
 
 // Insert inserts the WorkItemComment to the database.
-func (wic *WorkItemComment) Insert(ctx context.Context, db DB) error {
+
+func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment, error) {
 	switch {
 	case wic._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case wic._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_comments (` +
-		`work_item_id, user_id, message` +
+		`work_item_id, user_id, message, created_at, updated_at` +
 		`) VALUES (` +
-		`$1, $2, $3` +
-		`) RETURNING work_item_comment_id, created_at, updated_at `
+		`$1, $2, $3, $4, $5` +
+		`) RETURNING * `
 	// run
-	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message)
-	if err := db.QueryRow(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message).Scan(&wic.WorkItemCommentID, &wic.CreatedAt, &wic.UpdatedAt); err != nil {
-		return logerror(err)
+	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt)
+
+	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemComment/Insert/db.Query: %w", err))
 	}
-	// set exists
-	wic._exists = true
-	return nil
+	newwic, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemComment])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemComment/Insert/pgx.CollectOneRow: %w", err))
+	}
+	newwic._exists = true
+	*wic = newwic
+
+	return wic, nil
 }
 
 // Update updates a WorkItemComment in the database.
-func (wic *WorkItemComment) Update(ctx context.Context, db DB) error {
+func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment, error) {
 	switch {
 	case !wic._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case wic._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_comments SET ` +
-		`work_item_id = $1, user_id = $2, message = $3 ` +
-		`WHERE work_item_comment_id = $4 ` +
-		`RETURNING work_item_comment_id, created_at, updated_at `
+		`work_item_id = $1, user_id = $2, message = $3, created_at = $4, updated_at = $5 ` +
+		`WHERE work_item_comment_id = $6 ` +
+		`RETURNING * `
 	// run
 	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID)
-	if err := db.QueryRow(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.WorkItemCommentID).Scan(&wic.WorkItemCommentID, &wic.CreatedAt, &wic.UpdatedAt); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemComment/Update/db.Query: %w", err))
 	}
-	return nil
+	newwic, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemComment])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemComment/Update/pgx.CollectOneRow: %w", err))
+	}
+	newwic._exists = true
+	*wic = newwic
+
+	return wic, nil
 }
 
 // Save saves the WorkItemComment to the database.
-func (wic *WorkItemComment) Save(ctx context.Context, db DB) error {
+func (wic *WorkItemComment) Save(ctx context.Context, db DB) (*WorkItemComment, error) {
 	if wic.Exists() {
 		return wic.Update(ctx, db)
 	}
@@ -163,16 +164,16 @@ func (wic *WorkItemComment) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_item_comments (` +
-		`work_item_comment_id, work_item_id, user_id, message` +
+		`work_item_comment_id, work_item_id, user_id, message, created_at, updated_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4` +
+		`$1, $2, $3, $4, $5, $6` +
 		`)` +
 		` ON CONFLICT (work_item_comment_id) DO ` +
 		`UPDATE SET ` +
-		`work_item_id = EXCLUDED.work_item_id, user_id = EXCLUDED.user_id, message = EXCLUDED.message  `
+		`work_item_id = EXCLUDED.work_item_id, user_id = EXCLUDED.user_id, message = EXCLUDED.message, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at  `
 	// run
-	logf(sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message)
-	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message); err != nil {
+	logf(sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt)
+	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -227,13 +228,15 @@ work_item_comments.updated_at ` +
 
 	// run
 	logf(sqlstr, workItemCommentID)
-	wic := WorkItemComment{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, workItemCommentID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, workItemCommentID).Scan(&wic.WorkItemCommentID, &wic.WorkItemID, &wic.UserID, &wic.Message, &wic.CreatedAt, &wic.UpdatedAt); err != nil {
-		return nil, logerror(err)
+	wic, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItemComment])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/pgx.CollectOneRow: %w", err))
 	}
+	wic._exists = true
 	return &wic, nil
 }
 
@@ -269,19 +272,10 @@ work_item_comments.updated_at ` +
 	}
 	defer rows.Close()
 	// process
-	var res []*WorkItemComment
-	for rows.Next() {
-		wic := WorkItemComment{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&wic.WorkItemCommentID, &wic.WorkItemID, &wic.UserID, &wic.Message, &wic.CreatedAt, &wic.UpdatedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &wic)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemComment])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

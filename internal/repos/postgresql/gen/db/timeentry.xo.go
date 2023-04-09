@@ -9,42 +9,23 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
-// TimeEntryPublic represents fields that may be exposed from 'public.time_entries'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type TimeEntryPublic struct {
-	TimeEntryID     int64     `json:"timeEntryID" required:"true"`     // time_entry_id
-	WorkItemID      *int64    `json:"workItemID" required:"true"`      // work_item_id
-	ActivityID      int       `json:"activityID" required:"true"`      // activity_id
-	TeamID          *int      `json:"teamID" required:"true"`          // team_id
-	UserID          uuid.UUID `json:"userID" required:"true"`          // user_id
-	Comment         string    `json:"comment" required:"true"`         // comment
-	Start           time.Time `json:"start" required:"true"`           // start
-	DurationMinutes *int      `json:"durationMinutes" required:"true"` // duration_minutes
-}
-
 // TimeEntry represents a row from 'public.time_entries'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type TimeEntry struct {
-	TimeEntryID     int64     `json:"time_entry_id" db:"time_entry_id"`       // time_entry_id
-	WorkItemID      *int64    `json:"work_item_id" db:"work_item_id"`         // work_item_id
-	ActivityID      int       `json:"activity_id" db:"activity_id"`           // activity_id
-	TeamID          *int      `json:"team_id" db:"team_id"`                   // team_id
-	UserID          uuid.UUID `json:"user_id" db:"user_id"`                   // user_id
-	Comment         string    `json:"comment" db:"comment"`                   // comment
-	Start           time.Time `json:"start" db:"start"`                       // start
-	DurationMinutes *int      `json:"duration_minutes" db:"duration_minutes"` // duration_minutes
+	TimeEntryID     int64     `json:"timeEntryID" db:"time_entry_id" required:"true"`        // time_entry_id
+	WorkItemID      *int64    `json:"workItemID" db:"work_item_id" required:"true"`          // work_item_id
+	ActivityID      int       `json:"activityID" db:"activity_id" required:"true"`           // activity_id
+	TeamID          *int      `json:"teamID" db:"team_id" required:"true"`                   // team_id
+	UserID          uuid.UUID `json:"userID" db:"user_id" required:"true"`                   // user_id
+	Comment         string    `json:"comment" db:"comment" required:"true"`                  // comment
+	Start           time.Time `json:"start" db:"start" required:"true"`                      // start
+	DurationMinutes *int      `json:"durationMinutes" db:"duration_minutes" required:"true"` // duration_minutes
 
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *TimeEntry) ToPublic() TimeEntryPublic {
-	return TimeEntryPublic{
-		TimeEntryID: x.TimeEntryID, WorkItemID: x.WorkItemID, ActivityID: x.ActivityID, TeamID: x.TeamID, UserID: x.UserID, Comment: x.Comment, Start: x.Start, DurationMinutes: x.DurationMinutes,
-	}
 }
 
 type TimeEntrySelectConfig struct {
@@ -82,9 +63,10 @@ func WithTimeEntryOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption 
 	}
 }
 
-type TimeEntryJoins struct{}
+type TimeEntryJoins struct {
+}
 
-// WithTimeEntryJoin orders results by the given columns.
+// WithTimeEntryJoin joins with the given tables.
 func WithTimeEntryJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
 		s.joins = joins
@@ -103,52 +85,69 @@ func (te *TimeEntry) Deleted() bool {
 }
 
 // Insert inserts the TimeEntry to the database.
-func (te *TimeEntry) Insert(ctx context.Context, db DB) error {
+
+func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 	switch {
 	case te._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case te._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.time_entries (` +
 		`work_item_id, activity_id, team_id, user_id, comment, start, duration_minutes` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5, $6, $7` +
-		`) RETURNING time_entry_id `
+		`) RETURNING * `
 	// run
 	logf(sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
-	if err := db.QueryRow(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes).Scan(&te.TimeEntryID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("TimeEntry/Insert/db.Query: %w", err))
 	}
-	// set exists
-	te._exists = true
-	return nil
+	newte, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[TimeEntry])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("TimeEntry/Insert/pgx.CollectOneRow: %w", err))
+	}
+	newte._exists = true
+	*te = newte
+
+	return te, nil
 }
 
 // Update updates a TimeEntry in the database.
-func (te *TimeEntry) Update(ctx context.Context, db DB) error {
+func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 	switch {
 	case !te._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case te._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.time_entries SET ` +
 		`work_item_id = $1, activity_id = $2, team_id = $3, user_id = $4, comment = $5, start = $6, duration_minutes = $7 ` +
 		`WHERE time_entry_id = $8 ` +
-		`RETURNING time_entry_id `
+		`RETURNING * `
 	// run
 	logf(sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID)
-	if err := db.QueryRow(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID).Scan(&te.TimeEntryID); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes, te.TimeEntryID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("TimeEntry/Update/db.Query: %w", err))
 	}
-	return nil
+	newte, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[TimeEntry])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("TimeEntry/Update/pgx.CollectOneRow: %w", err))
+	}
+	newte._exists = true
+	*te = newte
+
+	return te, nil
 }
 
 // Save saves the TimeEntry to the database.
-func (te *TimeEntry) Save(ctx context.Context, db DB) error {
+func (te *TimeEntry) Save(ctx context.Context, db DB) (*TimeEntry, error) {
 	if te.Exists() {
 		return te.Update(ctx, db)
 	}
@@ -229,13 +228,15 @@ time_entries.duration_minutes ` +
 
 	// run
 	logf(sqlstr, timeEntryID)
-	te := TimeEntry{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, timeEntryID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, timeEntryID).Scan(&te.TimeEntryID, &te.WorkItemID, &te.ActivityID, &te.TeamID, &te.UserID, &te.Comment, &te.Start, &te.DurationMinutes); err != nil {
-		return nil, logerror(err)
+	te, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[TimeEntry])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/pgx.CollectOneRow: %w", err))
 	}
+	te._exists = true
 	return &te, nil
 }
 
@@ -273,19 +274,10 @@ time_entries.duration_minutes ` +
 	}
 	defer rows.Close()
 	// process
-	var res []*TimeEntry
-	for rows.Next() {
-		te := TimeEntry{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&te.TimeEntryID, &te.WorkItemID, &te.ActivityID, &te.TeamID, &te.UserID, &te.Comment, &te.Start, &te.DurationMinutes); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &te)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*TimeEntry])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -324,19 +316,10 @@ time_entries.duration_minutes ` +
 	}
 	defer rows.Close()
 	// process
-	var res []*TimeEntry
-	for rows.Next() {
-		te := TimeEntry{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&te.TimeEntryID, &te.WorkItemID, &te.ActivityID, &te.TeamID, &te.UserID, &te.Comment, &te.Start, &te.DurationMinutes); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &te)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*TimeEntry])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

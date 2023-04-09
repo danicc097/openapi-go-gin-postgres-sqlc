@@ -9,47 +9,26 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
-// NotificationPublic represents fields that may be exposed from 'public.notifications'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type NotificationPublic struct {
-	NotificationID   int              `json:"notificationID" required:"true"`   // notification_id
-	ReceiverRank     *int16           `json:"receiverRank" required:"true"`     // receiver_rank
-	Title            string           `json:"title" required:"true"`            // title
-	Body             string           `json:"body" required:"true"`             // body
-	Label            string           `json:"label" required:"true"`            // label
-	Link             *string          `json:"link" required:"true"`             // link
-	CreatedAt        time.Time        `json:"createdAt" required:"true"`        // created_at
-	Sender           uuid.UUID        `json:"sender" required:"true"`           // sender
-	Receiver         *uuid.UUID       `json:"receiver" required:"true"`         // receiver
-	NotificationType NotificationType `json:"notificationType" required:"true"` // notification_type
-}
-
 // Notification represents a row from 'public.notifications'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Notification struct {
-	NotificationID   int              `json:"notification_id" db:"notification_id"`     // notification_id
-	ReceiverRank     *int16           `json:"receiver_rank" db:"receiver_rank"`         // receiver_rank
-	Title            string           `json:"title" db:"title"`                         // title
-	Body             string           `json:"body" db:"body"`                           // body
-	Label            string           `json:"label" db:"label"`                         // label
-	Link             *string          `json:"link" db:"link"`                           // link
-	CreatedAt        time.Time        `json:"created_at" db:"created_at"`               // created_at
-	Sender           uuid.UUID        `json:"sender" db:"sender"`                       // sender
-	Receiver         *uuid.UUID       `json:"receiver" db:"receiver"`                   // receiver
-	NotificationType NotificationType `json:"notification_type" db:"notification_type"` // notification_type
+	NotificationID   int              `json:"notificationID" db:"notification_id" required:"true"`     // notification_id
+	ReceiverRank     *int16           `json:"receiverRank" db:"receiver_rank" required:"true"`         // receiver_rank
+	Title            string           `json:"title" db:"title" required:"true"`                        // title
+	Body             string           `json:"body" db:"body" required:"true"`                          // body
+	Label            string           `json:"label" db:"label" required:"true"`                        // label
+	Link             *string          `json:"link" db:"link" required:"true"`                          // link
+	CreatedAt        time.Time        `json:"createdAt" db:"created_at" required:"true"`               // created_at
+	Sender           uuid.UUID        `json:"sender" db:"sender" required:"true"`                      // sender
+	Receiver         *uuid.UUID       `json:"receiver" db:"receiver" required:"true"`                  // receiver
+	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true"` // notification_type
 
-	UserNotification *UserNotification `json:"user_notification" db:"user_notification"` // O2O
+	UserNotification *UserNotification `json:"userNotification" db:"user_notification"` // O2O
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *Notification) ToPublic() NotificationPublic {
-	return NotificationPublic{
-		NotificationID: x.NotificationID, ReceiverRank: x.ReceiverRank, Title: x.Title, Body: x.Body, Label: x.Label, Link: x.Link, CreatedAt: x.CreatedAt, Sender: x.Sender, Receiver: x.Receiver, NotificationType: x.NotificationType,
-	}
 }
 
 type NotificationSelectConfig struct {
@@ -91,7 +70,7 @@ type NotificationJoins struct {
 	UserNotification bool
 }
 
-// WithNotificationJoin orders results by the given columns.
+// WithNotificationJoin joins with the given tables.
 func WithNotificationJoin(joins NotificationJoins) NotificationSelectConfigOption {
 	return func(s *NotificationSelectConfig) {
 		s.joins = joins
@@ -110,52 +89,69 @@ func (n *Notification) Deleted() bool {
 }
 
 // Insert inserts the Notification to the database.
-func (n *Notification) Insert(ctx context.Context, db DB) error {
+
+func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error) {
 	switch {
 	case n._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case n._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.notifications (` +
-		`receiver_rank, title, body, label, link, sender, receiver, notification_type` +
+		`receiver_rank, title, body, label, link, created_at, sender, receiver, notification_type` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8` +
-		`) RETURNING notification_id, created_at `
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
+		`) RETURNING * `
 	// run
-	logf(sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType)
-	if err := db.QueryRow(ctx, sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType).Scan(&n.NotificationID, &n.CreatedAt); err != nil {
-		return logerror(err)
+	logf(sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType)
+
+	rows, err := db.Query(ctx, sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Notification/Insert/db.Query: %w", err))
 	}
-	// set exists
-	n._exists = true
-	return nil
+	newn, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Notification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Notification/Insert/pgx.CollectOneRow: %w", err))
+	}
+	newn._exists = true
+	*n = newn
+
+	return n, nil
 }
 
 // Update updates a Notification in the database.
-func (n *Notification) Update(ctx context.Context, db DB) error {
+func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error) {
 	switch {
 	case !n._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case n._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.notifications SET ` +
-		`receiver_rank = $1, title = $2, body = $3, label = $4, link = $5, sender = $6, receiver = $7, notification_type = $8 ` +
-		`WHERE notification_id = $9 ` +
-		`RETURNING notification_id, created_at `
+		`receiver_rank = $1, title = $2, body = $3, label = $4, link = $5, created_at = $6, sender = $7, receiver = $8, notification_type = $9 ` +
+		`WHERE notification_id = $10 ` +
+		`RETURNING * `
 	// run
 	logf(sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType, n.NotificationID)
-	if err := db.QueryRow(ctx, sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType, n.NotificationID).Scan(&n.NotificationID, &n.CreatedAt); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType, n.NotificationID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Notification/Update/db.Query: %w", err))
 	}
-	return nil
+	newn, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Notification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Notification/Update/pgx.CollectOneRow: %w", err))
+	}
+	newn._exists = true
+	*n = newn
+
+	return n, nil
 }
 
 // Save saves the Notification to the database.
-func (n *Notification) Save(ctx context.Context, db DB) error {
+func (n *Notification) Save(ctx context.Context, db DB) (*Notification, error) {
 	if n.Exists() {
 		return n.Update(ctx, db)
 	}
@@ -170,16 +166,16 @@ func (n *Notification) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.notifications (` +
-		`notification_id, receiver_rank, title, body, label, link, sender, receiver, notification_type` +
+		`notification_id, receiver_rank, title, body, label, link, created_at, sender, receiver, notification_type` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10` +
 		`)` +
 		` ON CONFLICT (notification_id) DO ` +
 		`UPDATE SET ` +
-		`receiver_rank = EXCLUDED.receiver_rank, title = EXCLUDED.title, body = EXCLUDED.body, label = EXCLUDED.label, link = EXCLUDED.link, sender = EXCLUDED.sender, receiver = EXCLUDED.receiver, notification_type = EXCLUDED.notification_type  `
+		`receiver_rank = EXCLUDED.receiver_rank, title = EXCLUDED.title, body = EXCLUDED.body, label = EXCLUDED.label, link = EXCLUDED.link, created_at = EXCLUDED.created_at, sender = EXCLUDED.sender, receiver = EXCLUDED.receiver, notification_type = EXCLUDED.notification_type  `
 	// run
-	logf(sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType)
-	if _, err := db.Exec(ctx, sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType); err != nil {
+	logf(sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType)
+	if _, err := db.Exec(ctx, sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -230,7 +226,7 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true then row_to_json(user_notifications.*) end)::jsonb as user_notification ` +
+(case when $1::boolean = true then row(user_notifications.*) end) as user_notification ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join user_notifications on user_notifications.notification_id = notifications.notification_id` +
@@ -240,13 +236,15 @@ left join user_notifications on user_notifications.notification_id = notificatio
 
 	// run
 	logf(sqlstr, notificationID)
-	n := Notification{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.UserNotification, notificationID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.UserNotification, notificationID).Scan(&n.NotificationID, &n.ReceiverRank, &n.Title, &n.Body, &n.Label, &n.Link, &n.CreatedAt, &n.Sender, &n.Receiver, &n.NotificationType, &n.UserNotification); err != nil {
-		return nil, logerror(err)
+	n, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Notification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/pgx.CollectOneRow: %w", err))
 	}
+	n._exists = true
 	return &n, nil
 }
 
@@ -272,7 +270,7 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true then row_to_json(user_notifications.*) end)::jsonb as user_notification ` +
+(case when $1::boolean = true then row(user_notifications.*) end) as user_notification ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join user_notifications on user_notifications.notification_id = notifications.notification_id` +
@@ -288,19 +286,10 @@ left join user_notifications on user_notifications.notification_id = notificatio
 	}
 	defer rows.Close()
 	// process
-	var res []*Notification
-	for rows.Next() {
-		n := Notification{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&n.NotificationID, &n.ReceiverRank, &n.Title, &n.Body, &n.Label, &n.Link, &n.CreatedAt, &n.Sender, &n.Receiver, &n.NotificationType); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &n)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Notification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

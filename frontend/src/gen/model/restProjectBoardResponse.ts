@@ -5,11 +5,8 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { DbProject } from './dbProject'
 
-export interface DbWorkItemTagPublic {
-  color: string
-  description: string
-  name: string
-  projectID: number
-  workItemTagID: number
+export interface RestProjectBoardResponse {
+  project?: DbProject
 }

@@ -29,7 +29,7 @@ func (u *Team) Create(ctx context.Context, d db.DBTX, params repos.TeamCreatePar
 		ProjectID:   params.ProjectID,
 	}
 
-	if err := team.Save(ctx, d); err != nil {
+	if _, err := team.Save(ctx, d); err != nil {
 		return nil, err
 	}
 
@@ -49,7 +49,7 @@ func (u *Team) Update(ctx context.Context, d db.DBTX, id int, params repos.TeamU
 		team.Name = *params.Name
 	}
 
-	err = team.Update(ctx, d)
+	_, err = team.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not update team: %w", parseErrorDetail(err))
 	}

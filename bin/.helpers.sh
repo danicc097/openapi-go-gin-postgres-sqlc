@@ -240,7 +240,7 @@ stop_db_processes() {
     -d "postgres" \
     -c "select pg_terminate_backend(pid) \
         from pg_stat_activity \
-        where datname='$db'"
+        where datname='$db'" >/dev/null
 }
 
 _pg_isready() {

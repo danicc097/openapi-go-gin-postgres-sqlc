@@ -9,57 +9,34 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
-// UserPublic represents fields that may be exposed from 'public.users'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type UserPublic struct {
-	UserID    uuid.UUID `json:"userID" required:"true"`    // user_id
-	Username  string    `json:"username" required:"true"`  // username
-	Email     string    `json:"email" required:"true"`     // email
-	FirstName *string   `json:"firstName" required:"true"` // first_name
-	LastName  *string   `json:"lastName" required:"true"`  // last_name
-	FullName  *string   `json:"fullName" required:"true"`  // full_name
-
-	HasPersonalNotifications bool      `json:"hasPersonalNotifications" required:"true"` // has_personal_notifications
-	HasGlobalNotifications   bool      `json:"hasGlobalNotifications" required:"true"`   // has_global_notifications
-	CreatedAt                time.Time `json:"createdAt" required:"true"`                // created_at
-
-	DeletedAt *time.Time `json:"deletedAt" required:"true"` // deleted_at
-}
-
 // User represents a row from 'public.users'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type User struct {
-	UserID                   uuid.UUID  `json:"user_id" db:"user_id"`                                       // user_id
-	Username                 string     `json:"username" db:"username"`                                     // username
-	Email                    string     `json:"email" db:"email"`                                           // email
-	FirstName                *string    `json:"first_name" db:"first_name"`                                 // first_name
-	LastName                 *string    `json:"last_name" db:"last_name"`                                   // last_name
-	FullName                 *string    `json:"full_name" db:"full_name"`                                   // full_name
-	ExternalID               string     `json:"external_id" db:"external_id"`                               // external_id
-	APIKeyID                 *int       `json:"api_key_id" db:"api_key_id"`                                 // api_key_id
-	Scopes                   []string   `json:"scopes" db:"scopes"`                                         // scopes
-	RoleRank                 int16      `json:"role_rank" db:"role_rank"`                                   // role_rank
-	HasPersonalNotifications bool       `json:"has_personal_notifications" db:"has_personal_notifications"` // has_personal_notifications
-	HasGlobalNotifications   bool       `json:"has_global_notifications" db:"has_global_notifications"`     // has_global_notifications
-	CreatedAt                time.Time  `json:"created_at" db:"created_at"`                                 // created_at
-	UpdatedAt                time.Time  `json:"updated_at" db:"updated_at"`                                 // updated_at
-	DeletedAt                *time.Time `json:"deleted_at" db:"deleted_at"`                                 // deleted_at
+	UserID                   uuid.UUID  `json:"userID" db:"user_id" required:"true"`                                      // user_id
+	Username                 string     `json:"username" db:"username" required:"true"`                                   // username
+	Email                    string     `json:"email" db:"email" required:"true"`                                         // email
+	FirstName                *string    `json:"firstName" db:"first_name" required:"true"`                                // first_name
+	LastName                 *string    `json:"lastName" db:"last_name" required:"true"`                                  // last_name
+	FullName                 *string    `json:"fullName" db:"full_name" required:"true"`                                  // full_name
+	ExternalID               string     `json:"-" db:"external_id" `                                                      // external_id
+	APIKeyID                 *int       `json:"-" db:"api_key_id" `                                                       // api_key_id
+	Scopes                   []string   `json:"-" db:"scopes" `                                                           // scopes
+	RoleRank                 int16      `json:"-" db:"role_rank" `                                                        // role_rank
+	HasPersonalNotifications bool       `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true"` // has_personal_notifications
+	HasGlobalNotifications   bool       `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true"`     // has_global_notifications
+	CreatedAt                time.Time  `json:"createdAt" db:"created_at" required:"true"`                                // created_at
+	UpdatedAt                time.Time  `json:"-" db:"updated_at" `                                                       // updated_at
+	DeletedAt                *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`                                // deleted_at
 
-	TimeEntries *[]TimeEntry `json:"time_entries" db:"time_entries"` // O2M
-	UserAPIKey  *UserAPIKey  `json:"user_api_key" db:"user_api_key"` // O2O
-	Teams       *[]Team      `json:"teams" db:"teams"`               // M2M
-	WorkItems   *[]WorkItem  `json:"work_items" db:"work_items"`     // M2M
+	TimeEntries *[]TimeEntry `json:"timeEntries" db:"time_entries"` // O2M
+	UserAPIKey  *UserAPIKey  `json:"userAPIKey" db:"user_api_key"`  // O2O
+	Teams       *[]Team      `json:"teams" db:"teams"`              // M2M
+	WorkItems   *[]WorkItem  `json:"workItems" db:"work_items"`     // M2M
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *User) ToPublic() UserPublic {
-	return UserPublic{
-		UserID: x.UserID, Username: x.Username, Email: x.Email, FirstName: x.FirstName, LastName: x.LastName, FullName: x.FullName, HasPersonalNotifications: x.HasPersonalNotifications, HasGlobalNotifications: x.HasGlobalNotifications, CreatedAt: x.CreatedAt, DeletedAt: x.DeletedAt,
-	}
 }
 
 type UserSelectConfig struct {
@@ -120,7 +97,7 @@ type UserJoins struct {
 	WorkItems   bool
 }
 
-// WithUserJoin orders results by the given columns.
+// WithUserJoin joins with the given tables.
 func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		s.joins = joins
@@ -139,52 +116,69 @@ func (u *User) Deleted() bool {
 }
 
 // Insert inserts the User to the database.
-func (u *User) Insert(ctx context.Context, db DB) error {
+
+func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	switch {
 	case u._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case u._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.users (` +
-		`username, email, first_name, last_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
+		`username, email, first_name, last_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, created_at, updated_at, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11` +
-		`) RETURNING user_id, full_name, created_at, updated_at `
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13` +
+		`) RETURNING * `
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
-	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt).Scan(&u.UserID, &u.FullName, &u.CreatedAt, &u.UpdatedAt); err != nil {
-		return logerror(err)
+	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt)
+
+	rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("User/Insert/db.Query: %w", err))
 	}
-	// set exists
-	u._exists = true
-	return nil
+	newu, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("User/Insert/pgx.CollectOneRow: %w", err))
+	}
+	newu._exists = true
+	*u = newu
+
+	return u, nil
 }
 
 // Update updates a User in the database.
-func (u *User) Update(ctx context.Context, db DB) error {
+func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	switch {
 	case !u._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case u._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.users SET ` +
-		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, has_personal_notifications = $9, has_global_notifications = $10, deleted_at = $11 ` +
-		`WHERE user_id = $12 ` +
-		`RETURNING user_id, full_name, created_at, updated_at `
+		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, has_personal_notifications = $9, has_global_notifications = $10, created_at = $11, updated_at = $12, deleted_at = $13 ` +
+		`WHERE user_id = $14 ` +
+		`RETURNING * `
 	// run
 	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
-	if err := db.QueryRow(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt, u.UserID).Scan(&u.UserID, &u.FullName, &u.CreatedAt, &u.UpdatedAt); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("User/Update/db.Query: %w", err))
 	}
-	return nil
+	newu, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("User/Update/pgx.CollectOneRow: %w", err))
+	}
+	newu._exists = true
+	*u = newu
+
+	return u, nil
 }
 
 // Save saves the User to the database.
-func (u *User) Save(ctx context.Context, db DB) error {
+func (u *User) Save(ctx context.Context, db DB) (*User, error) {
 	if u.Exists() {
 		return u.Update(ctx, db)
 	}
@@ -199,16 +193,16 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.users (` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, created_at, updated_at, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15` +
 		`)` +
 		` ON CONFLICT (user_id) DO ` +
 		`UPDATE SET ` +
-		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, deleted_at = EXCLUDED.deleted_at  `
+		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, deleted_at = EXCLUDED.deleted_at  `
 	// run
-	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt); err != nil {
+	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -264,16 +258,16 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
   select
   user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -283,47 +277,23 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_id as teams_user_id
-		, json_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+		user_team.user_id as user_team_user_id
+		, array_agg(teams.*) as teams
+		from user_team
+    join teams using (team_id)
+    group by user_team_user_id
+  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
+
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		work_item_member.member as work_item_member_member
+		, array_agg(work_items.*) as work_items
+		from work_item_member
+    join work_items using (work_item_id)
+    group by work_item_member_member
+  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
+`+
 		` WHERE users.created_at = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -336,19 +306,10 @@ left join (
 	}
 	defer rows.Close()
 	// process
-	var res []*User
-	for rows.Next() {
-		u := User{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &u)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -380,16 +341,16 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
   select
   user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -399,47 +360,23 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_id as teams_user_id
-		, json_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+		user_team.user_id as user_team_user_id
+		, array_agg(teams.*) as teams
+		from user_team
+    join teams using (team_id)
+    group by user_team_user_id
+  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
+
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		work_item_member.member as work_item_member_member
+		, array_agg(work_items.*) as work_items
+		from work_item_member
+    join work_items using (work_item_id)
+    group by work_item_member_member
+  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
+`+
 		` WHERE users.deleted_at = $5 AND (deleted_at IS NOT NULL)  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -452,19 +389,10 @@ left join (
 	}
 	defer rows.Close()
 	// process
-	var res []*User
-	for rows.Next() {
-		u := User{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &u)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -496,16 +424,16 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
   select
   user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -515,60 +443,38 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_id as teams_user_id
-		, json_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+		user_team.user_id as user_team_user_id
+		, array_agg(teams.*) as teams
+		from user_team
+    join teams using (team_id)
+    group by user_team_user_id
+  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
+
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		work_item_member.member as work_item_member_member
+		, array_agg(work_items.*) as work_items
+		from work_item_member
+    join work_items using (work_item_id)
+    group by work_item_member_member
+  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
+`+
 		` WHERE users.email = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	logf(sqlstr, email)
-	u := User{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, email)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("users/UserByEmail/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, email).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.UserAPIKey, &u.Teams, &u.WorkItems); err != nil {
-		return nil, logerror(err)
+	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("users/UserByEmail/pgx.CollectOneRow: %w", err))
 	}
+	u._exists = true
 	return &u, nil
 }
 
@@ -599,16 +505,16 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
   select
   user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -618,60 +524,38 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_id as teams_user_id
-		, json_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+		user_team.user_id as user_team_user_id
+		, array_agg(teams.*) as teams
+		from user_team
+    join teams using (team_id)
+    group by user_team_user_id
+  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
+
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		work_item_member.member as work_item_member_member
+		, array_agg(work_items.*) as work_items
+		from work_item_member
+    join work_items using (work_item_id)
+    group by work_item_member_member
+  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
+`+
 		` WHERE users.external_id = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	logf(sqlstr, externalID)
-	u := User{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, externalID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("users/UserByExternalID/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, externalID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.UserAPIKey, &u.Teams, &u.WorkItems); err != nil {
-		return nil, logerror(err)
+	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("users/UserByExternalID/pgx.CollectOneRow: %w", err))
 	}
+	u._exists = true
 	return &u, nil
 }
 
@@ -702,16 +586,16 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
   select
   user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -721,60 +605,38 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_id as teams_user_id
-		, json_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+		user_team.user_id as user_team_user_id
+		, array_agg(teams.*) as teams
+		from user_team
+    join teams using (team_id)
+    group by user_team_user_id
+  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
+
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		work_item_member.member as work_item_member_member
+		, array_agg(work_items.*) as work_items
+		from work_item_member
+    join work_items using (work_item_id)
+    group by work_item_member_member
+  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
+`+
 		` WHERE users.user_id = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	logf(sqlstr, userID)
-	u := User{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, userID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, userID).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.UserAPIKey, &u.Teams, &u.WorkItems); err != nil {
-		return nil, logerror(err)
+	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("users/UserByUserID/pgx.CollectOneRow: %w", err))
 	}
+	u._exists = true
 	return &u, nil
 }
 
@@ -805,16 +667,16 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
   select
   user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -824,47 +686,23 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_id as teams_user_id
-		, json_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+		user_team.user_id as user_team_user_id
+		, array_agg(teams.*) as teams
+		from user_team
+    join teams using (team_id)
+    group by user_team_user_id
+  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
+
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		work_item_member.member as work_item_member_member
+		, array_agg(work_items.*) as work_items
+		from work_item_member
+    join work_items using (work_item_id)
+    group by work_item_member_member
+  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
+`+
 		` WHERE users.updated_at = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -877,19 +715,10 @@ left join (
 	}
 	defer rows.Close()
 	// process
-	var res []*User
-	for rows.Next() {
-		u := User{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &u)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -921,16 +750,16 @@ users.has_global_notifications,
 users.created_at,
 users.updated_at,
 users.deleted_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end)::jsonb as time_entries,
-(case when $2::boolean = true then row_to_json(user_api_keys.*) end)::jsonb as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end)::jsonb as teams,
-(case when $4::boolean = true then joined_work_items.work_items end)::jsonb as work_items `+
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $3::boolean = true then joined_teams.teams end) as teams,
+(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
   select
   user_id as time_entries_user_id
-    , json_agg(time_entries.*) as time_entries
+    , array_agg(time_entries.*) as time_entries
   from
     time_entries
    group by
@@ -940,60 +769,38 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_id as teams_user_id
-		, json_agg(teams.*) as teams
-	from
-		user_team
-		join teams using (team_id)
-	where
-		user_id in (
-			select
-				user_id
-			from
-				user_team
-			where
-				team_id = any (
-					select
-						team_id
-					from
-						teams))
-			group by
-				user_id) joined_teams on joined_teams.teams_user_id = users.user_id
+		user_team.user_id as user_team_user_id
+		, array_agg(teams.*) as teams
+		from user_team
+    join teams using (team_id)
+    group by user_team_user_id
+  ) as joined_teams on joined_teams.user_team_user_id = users.user_id
+
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		member as work_items_user_id
-		, json_agg(work_items.*) as work_items
-	from
-		work_item_member
-		join work_items using (work_item_id)
-	where
-		member in (
-			select
-				member
-			from
-				work_item_member
-			where
-				work_item_id = any (
-					select
-						work_item_id
-					from
-						work_items))
-			group by
-				member) joined_work_items on joined_work_items.work_items_user_id = users.user_id`+
+		work_item_member.member as work_item_member_member
+		, array_agg(work_items.*) as work_items
+		from work_item_member
+    join work_items using (work_item_id)
+    group by work_item_member_member
+  ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
+`+
 		` WHERE users.username = $5  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	logf(sqlstr, username)
-	u := User{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, username)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("users/UserByUsername/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, username).Scan(&u.UserID, &u.Username, &u.Email, &u.FirstName, &u.LastName, &u.FullName, &u.ExternalID, &u.APIKeyID, &u.Scopes, &u.RoleRank, &u.HasPersonalNotifications, &u.HasGlobalNotifications, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt, &u.TimeEntries, &u.UserAPIKey, &u.Teams, &u.WorkItems); err != nil {
-		return nil, logerror(err)
+	u, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[User])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("users/UserByUsername/pgx.CollectOneRow: %w", err))
 	}
+	u._exists = true
 	return &u, nil
 }
 

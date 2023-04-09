@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -18,17 +19,19 @@ import (
 
 	// dot import so go code would resemble as much as native SQL
 	// dot import is not mandatory
-
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/jet/public/model"
 	. "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/jet/public/table"
 	. "github.com/go-jet/jet/v2/postgres"
+	"github.com/jackc/pgx/v5"
 )
 
 // clear && go run cmd/cli/main.go -env .env.dev
 func main() {
 	var env string
+	var init bool
 
 	flag.StringVar(&env, "env", ".env", "Environment Variables filename")
+	flag.BoolVar(&init, "init", false, "Run initial data script")
 	flag.Parse()
 
 	if err := envvar.Load(env); err != nil {
@@ -43,16 +46,20 @@ func main() {
 	)
 	cmd.Dir = "."
 	if out, err := cmd.CombinedOutput(); err != nil {
+		fmt.Print("1")
 		errAndExit(out, err)
 	}
 
-	cmd = exec.Command(
-		"bash", "-c",
-		"project db.initial-data",
-	)
-	cmd.Dir = "."
-	if out, err := cmd.CombinedOutput(); err != nil {
-		errAndExit(out, err)
+	if init {
+		cmd = exec.Command(
+			"bash", "-c",
+			"project db.initial-data",
+		)
+		cmd.Dir = "."
+		if _, err := cmd.CombinedOutput(); err != nil {
+			fmt.Print("2")
+			// errAndExit(out, err) // exit code 1 for some reason
+		}
 	}
 
 	logger, _ := zap.NewDevelopment()
@@ -66,6 +73,7 @@ func main() {
 	// username := "superadmin"
 	user, err := db.UserByUsername(context.Background(), pool, username,
 		db.WithUserJoin(db.UserJoins{
+			// TODO fix array_agg pgx collect and reenable
 			TimeEntries: true,
 			WorkItems:   true,
 			Teams:       true,
@@ -125,6 +133,81 @@ func main() {
 		log.Fatal(err.Error())
 	}
 	format.PrintJSON(nn)
+
+	rows, _ := pool.Query(context.Background(), fmt.Sprintf(`SELECT user_api_keys.user_api_key_id,
+	user_api_keys.api_key,
+	user_api_keys.expires_on,
+	user_api_keys.user_id,
+	row_to_json(users.*) as user
+	FROM public.user_api_keys
+	left join users on users.user_id = user_api_keys.user_id
+	WHERE user_api_keys.user_id = '%s'`, user.UserID)) // select api_key from user_api_keys limit 1;
+	uaks, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[db.UserAPIKey])
+	if err != nil {
+		fmt.Printf("CollectRows error: %v", err)
+		return
+	}
+	b, _ := json.Marshal(uaks[0])
+	fmt.Printf("uaks[0]: %+v\n", string(b))
+	//
+	//
+	//
+	type AnotherTable struct{}
+	type User struct {
+		UserID int    `json:"userId" db:"user_id"`
+		Name   string `json:"name" db:"name"`
+	}
+	type UserAPIKey struct {
+		UserAPIKeyID int `json:"userApiKeyId" db:"user_api_key_id"`
+		UserID       int `json:"userId" db:"user_id"`
+
+		User         *User         `json:"user" db:"user"`
+		AnotherTable *AnotherTable `json:"anotherTable" db:"another_table"`
+	}
+	rows, _ = pool.Query(context.Background(), `
+	WITH user_api_keys AS (
+		SELECT 1 AS user_id, 101 AS user_api_key_id, 'abc123' AS api_key
+	), users AS (
+		SELECT 1 AS user_id, 'John Doe' AS name
+	)
+	SELECT user_api_keys.user_api_key_id, user_api_keys.user_id, row(users.*) AS user
+	FROM user_api_keys
+	LEFT JOIN users ON users.user_id = user_api_keys.user_id
+	WHERE user_api_keys.api_key = 'abc123';
+	`)
+	uaks_test, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	fmt.Printf("err: %v\n", err)
+	bt, _ := json.Marshal(uaks_test[0])
+	fmt.Printf("uaks_test[0]: %+v\n", string(bt))
+
+	type Item struct {
+		UserItemID int    `json:"userItemID" db:"user_item_id"`
+		UserID     int    `json:"userID" db:"user_id"`
+		Item       string `json:"item" db:"item"`
+	}
+	type CustomUser struct {
+		UserID int     `json:"userID" db:"user_id"`
+		Name   string  `json:"name" db:"name"`
+		Items  []*Item `json:"items" db:"items"`
+	}
+	rows, _ = pool.Query(context.Background(), `
+	WITH user_items AS (
+		SELECT 1 AS user_id, 101 AS user_item_id, 'item 1' AS item
+		UNION ALL
+		SELECT 1 AS user_id, 102 AS user_item_id, 'item 2' AS item
+	), users AS (
+		SELECT 1 AS user_id, 'John Doe' AS name
+	)
+	SELECT users.user_id, array_agg(user_items.*) AS items
+	FROM users
+	LEFT JOIN user_items ON users.user_id = user_items.user_id
+	GROUP BY users.user_id;
+	`)
+	userItems, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[CustomUser])
+	fmt.Printf("err: %v\n", err)
+	bt, _ = json.Marshal(userItems[0])
+	fmt.Printf("userItems[0]: %+v\n", string(bt))
+	// {"userID":1,"name":"","userItems":[{"userItemID":1,"userID":101,"item":"item 1"},{"userItemID":1,"userID":102,"item":"item 2"}]}
 }
 
 func errAndExit(out []byte, err error) {

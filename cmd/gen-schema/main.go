@@ -37,7 +37,6 @@ func main() {
 
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
-	// update when adding new packages to gen structs map
 	reflector.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
 		// default name comes from package directory, not the given import alias
 		// e.g. repomodels -/-> Repomodels, its the last dir (models)
@@ -51,15 +50,36 @@ func main() {
 		if !ok {
 			log.Fatalf("struct-name %s does not exist in PublicStructs", sn)
 		}
-
+		if !hasJSONTag(st) {
+			log.Fatalf("struct %s: ensure there is at least a JSON tag set", sn)
+		}
 		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
-		// ensure json tags are set for all top level fields in the struct. Either skip "-" or set fields.
-		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-postgen-struct": sn}
 		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
-		// reflector.Spec.Paths.MapOfPathItemValues["mypath"].MapOfOperationValues["method"].
+
+		// IMPORTANT: ensure structs are public
+		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-postgen-struct": sn}
 	}
 	s, err := reflector.Spec.MarshalYAML()
 	handleError(err)
 
 	fmt.Println(string(s))
+}
+
+func hasJSONTag(input interface{}) bool {
+	t := reflect.TypeOf(input)
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		if _, ok := field.Tag.Lookup("json"); ok {
+			return true
+		}
+
+		// Check embedded structs
+		if field.Type.Kind() == reflect.Struct && field.Anonymous {
+			if hasJSONTag(reflect.New(field.Type).Elem().Interface()) {
+				return true
+			}
+		}
+	}
+
+	return false
 }

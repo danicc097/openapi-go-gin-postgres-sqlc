@@ -7,45 +7,59 @@
  */
 
 export type UuidUUID = string
-export type DbWorkItemTypePublic = {
+export type DbUserAPIKey = {
+  apiKey: string
+  expiresOn: string
+  user?: DbUser
+  userID: UuidUUID
+} & DbUserAPIKey1
+export type DbUserAPIKey1 = {
+  apiKey: string
+  expiresOn: string
+  user?: DbUser
+  userID: UuidUUID
+} | null
+export type DbDemoProjectWorkItem = {
+  lastMessageAt: string
+  line: string
+  ref: string
+  reopened: boolean
+  workItem?: DbWorkItem
+  workItemID: number
+} & DbDemoProjectWorkItem1
+export type DbDemoProjectWorkItem1 = {
+  lastMessageAt: string
+  line: string
+  ref: string
+  reopened: boolean
+  workItem?: DbWorkItem
+  workItemID: number
+} | null
+export type DbProject2WorkItem = {
+  customDateForProject2: string | null
+  workItem?: DbWorkItem
+  workItemID: number
+} & DbProject2WorkItem1
+export type DbProject2WorkItem1 = {
+  customDateForProject2: string | null
+  workItem?: DbWorkItem
+  workItemID: number
+} | null
+export type DbWorkItemType = {
   color: string
   description: string
   name: string
   projectID: number
+  workItem?: DbWorkItem
   workItemTypeID: number
-} & DbWorkItemTypePublic1
-export type DbWorkItemTypePublic1 = {
+} & DbWorkItemType1
+export type DbWorkItemType1 = {
   color: string
   description: string
   name: string
   projectID: number
+  workItem?: DbWorkItem
   workItemTypeID: number
-} | null
-export type DbProjectPublic = {
-  createdAt: string
-  description: string
-  initialized: boolean
-  name: string
-  projectID: number
-  updatedAt: string
-} & DbProjectPublic1
-export type DbProjectPublic1 = {
-  createdAt: string
-  description: string
-  initialized: boolean
-  name: string
-  projectID: number
-  updatedAt: string
-} | null
-export type DbUserAPIKeyPublic = {
-  apiKey: string
-  expiresOn: string
-  userID: UuidUUID
-} & DbUserAPIKeyPublic1
-export type DbUserAPIKeyPublic1 = {
-  apiKey: string
-  expiresOn: string
-  userID: UuidUUID
 } | null
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 export type Scope =
@@ -83,6 +97,110 @@ export type Project = 'demoProject' | 'demoProject2'
  */
 export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 
+export interface DbActivity {
+  activityID: number
+  description: string
+  isProductive: boolean
+  name: string
+  projectID: number
+  timeEntries?: DbTimeEntry[] | null
+}
+export interface DbTimeEntry {
+  activityID: number
+  comment: string
+  durationMinutes: number | null
+  start: string
+  teamID: number | null
+  timeEntryID: number
+  userID: UuidUUID
+  workItemID: number | null
+}
+export interface DbKanbanStep {
+  color: string
+  description: string
+  kanbanStepID: number
+  name: string
+  projectID: number
+  stepOrder: number | null
+  timeTrackable: boolean
+}
+export interface DbProject {
+  activities?: DbActivity[] | null
+  createdAt: string
+  description: string
+  initialized: boolean
+  kanbanSteps?: DbKanbanStep[] | null
+  name: string
+  projectID: number
+  teams?: DbTeam[] | null
+  updatedAt: string
+  workItemTags?: DbWorkItemTag[] | null
+  workItemTypes?: DbWorkItemType1[] | null
+}
+export interface DbTeam {
+  createdAt: string
+  description: string
+  name: string
+  projectID: number
+  teamID: number
+  timeEntries?: DbTimeEntry[] | null
+  updatedAt: string
+  users?: DbUser[] | null
+}
+export interface DbUser {
+  createdAt: string
+  deletedAt: string | null
+  email: string
+  firstName: string | null
+  fullName: string | null
+  hasGlobalNotifications: boolean
+  hasPersonalNotifications: boolean
+  lastName: string | null
+  teams?: DbTeam[] | null
+  timeEntries?: DbTimeEntry[] | null
+  userAPIKey?: DbUserAPIKey
+  userID: UuidUUID
+  username: string
+  workItems?: DbWorkItem[] | null
+}
+export interface DbWorkItem {
+  closed: string | null
+  createdAt: string
+  deletedAt: string | null
+  demoProjectWorkItem?: DbDemoProjectWorkItem
+  description: string
+  kanbanStepID: number
+  members?: DbUser[] | null
+  metadata: PgtypeJSONB
+  project2workItem?: DbProject2WorkItem
+  targetDate: string
+  teamID: number
+  timeEntries?: DbTimeEntry[] | null
+  title: string
+  updatedAt: string
+  workItemComments?: DbWorkItemComment[] | null
+  workItemID: number
+  workItemTags?: DbWorkItemTag[] | null
+  workItemType?: DbWorkItemType
+  workItemTypeID: number
+}
+export interface PgtypeJSONB {}
+export interface DbWorkItemComment {
+  createdAt: string
+  message: string
+  updatedAt: string
+  userID: UuidUUID
+  workItemCommentID: number
+  workItemID: number
+}
+export interface DbWorkItemTag {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTagID: number
+  workItems?: DbWorkItem[] | null
+}
 export interface ProjectConfig {
   fields: ModelsProjectConfigField[] | null
   header: string[] | null
@@ -94,70 +212,26 @@ export interface ModelsProjectConfigField {
   path: string
   showCollapsed: boolean
 }
-export interface DemoProjectWorkItemsResponse {
+export interface RestDemoProjectWorkItemsResponse {
   closed: string | null
   createdAt: string
   deletedAt: string | null
-  demoProjectWorkItem: DbDemoProjectWorkItemPublic
+  demoProjectWorkItem: DbDemoProjectWorkItem1
   description: string
   kanbanStepID: number
-  members?: DbUserPublic[] | null
+  members?: DbUser[] | null
   metadata: PgtypeJSONB
+  project2workItem?: DbProject2WorkItem1
   targetDate: string
   teamID: number
-  timeEntries?: DbTimeEntryPublic[] | null
+  timeEntries?: DbTimeEntry[] | null
   title: string
   updatedAt: string
-  workItemComments?: DbWorkItemCommentPublic[] | null
+  workItemComments?: DbWorkItemComment[] | null
   workItemID: number
-  workItemTags?: DbWorkItemTagPublic[] | null
-  workItemType?: DbWorkItemTypePublic
+  workItemTags?: DbWorkItemTag[] | null
+  workItemType?: DbWorkItemType1
   workItemTypeID: number
-}
-export interface DbDemoProjectWorkItemPublic {
-  lastMessageAt: string
-  line: string
-  ref: string
-  reopened: boolean
-  workItemID: number
-}
-export interface DbUserPublic {
-  createdAt: string
-  deletedAt: string | null
-  email: string
-  firstName: string | null
-  fullName: string | null
-  hasGlobalNotifications: boolean
-  hasPersonalNotifications: boolean
-  lastName: string | null
-  userID: UuidUUID
-  username: string
-}
-export interface PgtypeJSONB {}
-export interface DbTimeEntryPublic {
-  activityID: number
-  comment: string
-  durationMinutes: number | null
-  start: string
-  teamID: number | null
-  timeEntryID: number
-  userID: UuidUUID
-  workItemID: number | null
-}
-export interface DbWorkItemCommentPublic {
-  createdAt: string
-  message: string
-  updatedAt: string
-  userID: UuidUUID
-  workItemCommentID: number
-  workItemID: number
-}
-export interface DbWorkItemTagPublic {
-  color: string
-  description: string
-  name: string
-  projectID: number
-  workItemTagID: number
 }
 export interface InitializeProjectRequest {
   activities?: ReposActivityCreateParams[] | null
@@ -198,54 +272,15 @@ export interface ReposWorkItemTypeCreateParams {
   name?: string
   projectID?: number
 }
-export interface ProjectBoardResponse {
-  activities?: DbActivityPublic[] | null
-  kanbanSteps?: DbKanbanStepPublic[] | null
-  project?: DbProjectPublic
-  teams?: DbTeamPublic[] | null
-  workItemTags?: DbWorkItemTagPublic[] | null
-  workItemTypes?: DbWorkItemTypePublic1[] | null
-}
-export interface DbActivityPublic {
-  activityID: number
-  description: string
-  isProductive: boolean
-  name: string
-  projectID: number
-}
-export interface DbKanbanStepPublic {
-  color: string
-  description: string
-  kanbanStepID: number
-  name: string
-  projectID: number
-  stepOrder: number | null
-  timeTrackable: boolean
-}
-export interface DbTeamPublic {
-  createdAt: string
-  description: string
-  name: string
-  projectID: number
-  teamID: number
-  updatedAt: string
+export interface RestProjectBoardResponse {
+  project?: DbProject
 }
 export interface UserResponse {
-  apiKey?: DbUserAPIKeyPublic
-  createdAt: string
-  deletedAt: string | null
-  email: string
-  firstName: string | null
-  fullName: string | null
-  hasGlobalNotifications: boolean
-  hasPersonalNotifications: boolean
-  lastName: string | null
-  projects?: DbProjectPublic1[] | null
+  apiKey?: DbUserAPIKey1
+  projects?: DbProject[] | null
   role: Role
   scopes: Scopes
-  teams?: DbTeamPublic[] | null
-  userID: UuidUUID
-  username: string
+  teams?: DbTeam[] | null
 }
 export interface HTTPValidationError {
   detail?: Detail
@@ -274,18 +309,4 @@ export interface UpdateUserRequest {
 export interface UpdateUserAuthRequest {
   role?: Role
   scopes?: Scopes
-}
-export interface DbWorkItemPublic {
-  closed: string | null
-  createdAt: string
-  deletedAt: string | null
-  description: string
-  kanbanStepID: number
-  metadata: PgtypeJSONB
-  targetDate: string
-  teamID: number
-  title: string
-  updatedAt: string
-  workItemID: number
-  workItemTypeID: number
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestGetStructKeys(t *testing.T) {
+func TestGetKeys(t *testing.T) {
 	t.Parallel()
 
 	t.Run("regular keys", func(t *testing.T) {
@@ -22,8 +22,8 @@ func TestGetStructKeys(t *testing.T) {
 			"nestedStruct.nestedStruct2.nestedKey3",
 		}
 
-		if diff := cmp.Diff(want, structs.GetStructKeys(ex, "")); diff != "" {
-			t.Errorf("GetStructKeys() mismatch (-want +got):\n%s", diff)
+		if diff := cmp.Diff(want, structs.GetKeys(ex, "")); diff != "" {
+			t.Errorf("GetKeys() mismatch (-want +got):\n%s", diff)
 		}
 	})
 
@@ -51,8 +51,8 @@ func TestGetStructKeys(t *testing.T) {
 			"nestedStruct.nestedStruct2.nestedKey3",
 		}
 
-		if diff := cmp.Diff(want, structs.GetStructKeys(ex, "")); diff != "" {
-			t.Errorf("GetStructKeys() mismatch (-want +got):\n%s", diff)
+		if diff := cmp.Diff(want, structs.GetKeys(ex, "")); diff != "" {
+			t.Errorf("GetKeys() mismatch (-want +got):\n%s", diff)
 		}
 	})
 
@@ -77,8 +77,8 @@ func TestGetStructKeys(t *testing.T) {
 			"stringArray",
 		}
 
-		if diff := cmp.Diff(want, structs.GetStructKeys(ex, "")); diff != "" {
-			t.Errorf("GetStructKeys() mismatch (-want +got):\n%s", diff)
+		if diff := cmp.Diff(want, structs.GetKeys(ex, "")); diff != "" {
+			t.Errorf("GetKeys() mismatch (-want +got):\n%s", diff)
 		}
 	})
 }

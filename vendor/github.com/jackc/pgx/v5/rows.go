@@ -555,7 +555,7 @@ func RowToStructByName[T any](row CollectableRow) (T, error) {
 	return value, err
 }
 
-// RowToAddrOfStructByPos returns the address of a T scanned from row. T must be a struct. T must have the same number
+// RowToAddrOfStructByName returns the address of a T scanned from row. T must be a struct. T must have the same number
 // of named public fields as row has fields. The row and T fields will by matched by name. The match is
 // case-insensitive. The database column name can be overridden with a "db" struct tag. If the "db" struct tag is "-"
 // then the field will be ignored.
@@ -565,8 +565,28 @@ func RowToAddrOfStructByName[T any](row CollectableRow) (*T, error) {
 	return &value, err
 }
 
+// RowToStructByNameLax returns a T scanned from row. T must be a struct. T must have greater than or equal number of named public
+// fields as row has fields. The row and T fields will by matched by name. The match is case-insensitive. The database
+// column name can be overridden with a "db" struct tag. If the "db" struct tag is "-" then the field will be ignored.
+func RowToStructByNameLax[T any](row CollectableRow) (T, error) {
+	var value T
+	err := row.Scan(&namedStructRowScanner{ptrToStruct: &value, lax: true})
+	return value, err
+}
+
+// RowToAddrOfStructByNameLax returns the address of a T scanned from row. T must be a struct. T must have greater than or
+// equal number of named public fields as row has fields. The row and T fields will by matched by name. The match is
+// case-insensitive. The database column name can be overridden with a "db" struct tag. If the "db" struct tag is "-"
+// then the field will be ignored.
+func RowToAddrOfStructByNameLax[T any](row CollectableRow) (*T, error) {
+	var value T
+	err := row.Scan(&namedStructRowScanner{ptrToStruct: &value, lax: true})
+	return &value, err
+}
+
 type namedStructRowScanner struct {
 	ptrToStruct any
+	lax         bool
 }
 
 func (rs *namedStructRowScanner) ScanRow(rows Rows) error {
@@ -578,7 +598,6 @@ func (rs *namedStructRowScanner) ScanRow(rows Rows) error {
 
 	dstElemValue := dstValue.Elem()
 	scanTargets, err := rs.appendScanTargets(dstElemValue, nil, rows.FieldDescriptions())
-
 	if err != nil {
 		return err
 	}
@@ -638,7 +657,13 @@ func (rs *namedStructRowScanner) appendScanTargets(dstElemValue reflect.Value, s
 				colName = sf.Name
 			}
 			fpos := fieldPosByName(fldDescs, colName)
-			if fpos == -1 || fpos >= len(scanTargets) {
+			if fpos == -1 {
+				if rs.lax {
+					continue
+				}
+				return nil, fmt.Errorf("cannot find field %s in returned row", colName)
+			}
+			if fpos >= len(scanTargets) && !rs.lax {
 				return nil, fmt.Errorf("cannot find field %s in returned row", colName)
 			}
 			scanTargets[fpos] = dstElemValue.Field(i).Addr().Interface()

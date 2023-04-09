@@ -197,17 +197,17 @@ func ParseConfigWithOptions(connString string, options ParseConfigOptions) (*Con
 // ParseConfig creates a ConnConfig from a connection string. ParseConfig handles all options that pgconn.ParseConfig
 // does. In addition, it accepts the following options:
 //
-//	default_query_exec_mode
-//		Possible values: "cache_statement", "cache_describe", "describe_exec", "exec", and "simple_protocol". See
-//		QueryExecMode constant documentation for the meaning of these values. Default: "cache_statement".
+//   - default_query_exec_mode.
+//     Possible values: "cache_statement", "cache_describe", "describe_exec", "exec", and "simple_protocol". See
+//     QueryExecMode constant documentation for the meaning of these values. Default: "cache_statement".
 //
-//	statement_cache_capacity
-//		The maximum size of the statement cache used when executing a query with "cache_statement" query exec mode.
-//		Default: 512.
+//   - statement_cache_capacity.
+//     The maximum size of the statement cache used when executing a query with "cache_statement" query exec mode.
+//     Default: 512.
 //
-//	description_cache_capacity
-//		The maximum size of the description cache used when executing a query with "cache_describe" query exec mode.
-//		Default: 512.
+//   - description_cache_capacity.
+//     The maximum size of the description cache used when executing a query with "cache_describe" query exec mode.
+//     Default: 512.
 func ParseConfig(connString string) (*ConnConfig, error) {
 	return ParseConfigWithOptions(connString, ParseConfigOptions{})
 }
@@ -721,43 +721,10 @@ optionLoop:
 	sd, explicitPreparedStatement := c.preparedStatements[sql]
 	if sd != nil || mode == QueryExecModeCacheStatement || mode == QueryExecModeCacheDescribe || mode == QueryExecModeDescribeExec {
 		if sd == nil {
-			switch mode {
-			case QueryExecModeCacheStatement:
-				if c.statementCache == nil {
-					err = errDisabledStatementCache
-					rows.fatal(err)
-					return rows, err
-				}
-				sd = c.statementCache.Get(sql)
-				if sd == nil {
-					sd, err = c.Prepare(ctx, stmtcache.NextStatementName(), sql)
-					if err != nil {
-						rows.fatal(err)
-						return rows, err
-					}
-					c.statementCache.Put(sd)
-				}
-			case QueryExecModeCacheDescribe:
-				if c.descriptionCache == nil {
-					err = errDisabledDescriptionCache
-					rows.fatal(err)
-					return rows, err
-				}
-				sd = c.descriptionCache.Get(sql)
-				if sd == nil {
-					sd, err = c.Prepare(ctx, "", sql)
-					if err != nil {
-						rows.fatal(err)
-						return rows, err
-					}
-					c.descriptionCache.Put(sd)
-				}
-			case QueryExecModeDescribeExec:
-				sd, err = c.Prepare(ctx, "", sql)
-				if err != nil {
-					rows.fatal(err)
-					return rows, err
-				}
+			sd, err = c.getStatementDescription(ctx, mode, sql)
+			if err != nil {
+				rows.fatal(err)
+				return rows, err
 			}
 		}
 
@@ -825,6 +792,48 @@ optionLoop:
 	c.eqb.reset() // Allow c.eqb internal memory to be GC'ed as soon as possible.
 
 	return rows, rows.err
+}
+
+// getStatementDescription returns the statement description of the sql query
+// according to the given mode.
+//
+// If the mode is one that doesn't require to know the param and result OIDs
+// then nil is returned without error.
+func (c *Conn) getStatementDescription(
+	ctx context.Context,
+	mode QueryExecMode,
+	sql string,
+) (sd *pgconn.StatementDescription, err error) {
+
+	switch mode {
+	case QueryExecModeCacheStatement:
+		if c.statementCache == nil {
+			return nil, errDisabledStatementCache
+		}
+		sd = c.statementCache.Get(sql)
+		if sd == nil {
+			sd, err = c.Prepare(ctx, stmtcache.NextStatementName(), sql)
+			if err != nil {
+				return nil, err
+			}
+			c.statementCache.Put(sd)
+		}
+	case QueryExecModeCacheDescribe:
+		if c.descriptionCache == nil {
+			return nil, errDisabledDescriptionCache
+		}
+		sd = c.descriptionCache.Get(sql)
+		if sd == nil {
+			sd, err = c.Prepare(ctx, "", sql)
+			if err != nil {
+				return nil, err
+			}
+			c.descriptionCache.Put(sd)
+		}
+	case QueryExecModeDescribeExec:
+		return c.Prepare(ctx, "", sql)
+	}
+	return sd, err
 }
 
 // QueryRow is a convenience wrapper over Query. Any error that occurs while
@@ -1106,6 +1115,8 @@ func (c *Conn) sendBatchExtendedWithDescription(ctx context.Context, b *Batch, d
 	for _, bi := range b.queuedQueries {
 		err := c.eqb.Build(c.typeMap, bi.sd, bi.arguments)
 		if err != nil {
+			// we wrap the error so we the user can understand which query failed inside the batch
+			err = fmt.Errorf("error building query %s: %w", bi.query, err)
 			return &pipelineBatchResults{ctx: ctx, conn: c, err: err}
 		}
 
@@ -1196,6 +1207,30 @@ func (c *Conn) LoadType(ctx context.Context, typeName string) (*pgtype.Type, err
 		return &pgtype.Type{Name: typeName, OID: oid, Codec: dt.Codec}, nil
 	case "e": // enum
 		return &pgtype.Type{Name: typeName, OID: oid, Codec: &pgtype.EnumCodec{}}, nil
+	case "r": // range
+		elementOID, err := c.getRangeElementOID(ctx, oid)
+		if err != nil {
+			return nil, err
+		}
+
+		dt, ok := c.TypeMap().TypeForOID(elementOID)
+		if !ok {
+			return nil, errors.New("range element OID not registered")
+		}
+
+		return &pgtype.Type{Name: typeName, OID: oid, Codec: &pgtype.RangeCodec{ElementType: dt}}, nil
+	case "m": // multirange
+		elementOID, err := c.getMultiRangeElementOID(ctx, oid)
+		if err != nil {
+			return nil, err
+		}
+
+		dt, ok := c.TypeMap().TypeForOID(elementOID)
+		if !ok {
+			return nil, errors.New("multirange element OID not registered")
+		}
+
+		return &pgtype.Type{Name: typeName, OID: oid, Codec: &pgtype.MultirangeCodec{ElementType: dt}}, nil
 	default:
 		return &pgtype.Type{}, errors.New("unknown typtype")
 	}
@@ -1205,6 +1240,28 @@ func (c *Conn) getArrayElementOID(ctx context.Context, oid uint32) (uint32, erro
 	var typelem uint32
 
 	err := c.QueryRow(ctx, "select typelem from pg_type where oid=$1", oid).Scan(&typelem)
+	if err != nil {
+		return 0, err
+	}
+
+	return typelem, nil
+}
+
+func (c *Conn) getRangeElementOID(ctx context.Context, oid uint32) (uint32, error) {
+	var typelem uint32
+
+	err := c.QueryRow(ctx, "select rngsubtype from pg_range where rngtypid=$1", oid).Scan(&typelem)
+	if err != nil {
+		return 0, err
+	}
+
+	return typelem, nil
+}
+
+func (c *Conn) getMultiRangeElementOID(ctx context.Context, oid uint32) (uint32, error) {
+	var typelem uint32
+
+	err := c.QueryRow(ctx, "select rngtypid from pg_range where rngmultitypid=$1", oid).Scan(&typelem)
 	if err != nil {
 		return 0, err
 	}
@@ -1225,7 +1282,7 @@ func (c *Conn) getCompositeFields(ctx context.Context, oid uint32) ([]pgtype.Com
 	var fieldOID uint32
 	rows, _ := c.Query(ctx, `select attname, atttypid
 from pg_attribute
-where attrelid=$1
+where attrelid=$1 and not attisdropped
 order by attnum`,
 		typrelid,
 	)

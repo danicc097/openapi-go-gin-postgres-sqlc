@@ -1,5 +1,13 @@
 #!/bin/bash
 # shellcheck disable=1091,2155,2068,2086,2031
+#
+#
+# Main s̶c̶r̶i̶p̶t program to manage the entire project stack.
+#
+# For first-timers, ensure all dependencies and tools are installed with `project bootstrap`
+# and run `project gen` at least once to build required tools and also ensure your output is deterministic.
+#
+#
 
 export PROC=$$
 
@@ -12,17 +20,11 @@ set -Eeo pipefail
 trap killgroup SIGINT
 
 trap errtrap SIGUSR1
-trap cleanup 0
+trap exit-cleanup 0
 
-cleanup() {
-  if [[ $restore_cache = 1 ]]; then
-    {
-      echo "Restoring $SPEC and $PG_REPO_GEN"
-      mv "$CACHE/$SPEC" "$SPEC"
-      rm -rf "$PG_REPO_GEN"
-      mv "$CACHE_PG_REPO_GEN" "$PG_REPO"
-    }
-  fi
+exit-cleanup() {
+  [[ $restore_cache = 1 ]] && cache-gen.restore
+  exit 0
 }
 
 killgroup() {
@@ -177,6 +179,7 @@ x.pregen() {
       # don't want this to block if getting bad gen later on
       go build -o pregen cmd/pregen/main.go || echo "Could not rebuild pregen" >&2
 
+      # spec must always be valid. Schemas to generate should exist with the appropiate vendor extension
       ./pregen -env=".env.$env" --validate-spec-only
 
       x.db.drop
@@ -344,10 +347,10 @@ x.gen.xo() {
     # xo schema --help
 
     mkdir -p "$PG_REPO_GEN"/db
-    xo_schema -o "$PG_REPO_GEN"/db \
-      --schema public \
-      --ignore "*.created_at" \
-      --ignore "*.updated_at" || err "Failed xo public schema generation" &
+    xo_schema -o "$PG_REPO_GEN"/db --debug \
+      --schema public || err "Failed xo public schema generation" &
+    # --ignore "*.created_at" \
+    # --ignore "*.updated_at"
 
     mkdir -p "$PG_REPO_GEN"/db/v
     xo_schema -o "$PG_REPO_GEN"/db/v \
@@ -642,7 +645,7 @@ x.test.backend-setup() {
 # Args: [...]
 x.test() {
   { { {
-    yes y | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
+    yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
     APP_ENV="$env" go test "$@" ./...
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -1105,8 +1108,12 @@ update_spec_with_structs() {
   struct_names_list=$(join_by "," ${struct_names[*]})
   ((${#struct_names_list} == 0)) && return
 
+  # FIXME this build is not allowed to fail as of now, since new structs (internal/postgen/structs.gen.go:11)
+  # won't be available in that case. This requires a compilable state in all packages that gen-schema imports
+  # to create the map, else we are stuck forever in a bad state unless we checkout a valid version and carefully update.
+  # FIXME e.g. operation_ids.gen.go is overridden with an empty template when pregen fails and breaks gen-schema
   go build -o gen-schema cmd/gen-schema/main.go || echo "Could not rebuild gen-schema" >&2
-  echo " lsit ${struct_names_list[*]}"
+
   ./gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml
@@ -1146,11 +1153,17 @@ cache-gen() {
   restore_cache=1
 }
 
-# cleanups gen cache
 cache-gen.cleanup() {
-  rm "$CACHE/$SPEC" || true
-  rm -rf "$CACHE_PG_REPO_GEN" || true
+  rm -f "$CACHE/$SPEC" 2>/dev/null
+  rm -rf "$CACHE_PG_REPO_GEN" 2>/dev/null
   restore_cache=0
+}
+
+cache-gen.restore() {
+  echo "Restoring $SPEC and $PG_REPO_GEN"
+  mv "$CACHE/$SPEC" "$SPEC"
+  rm -rf "$PG_REPO_GEN"
+  mv "$CACHE_PG_REPO_GEN" "$PG_REPO"
 }
 
 usage() {

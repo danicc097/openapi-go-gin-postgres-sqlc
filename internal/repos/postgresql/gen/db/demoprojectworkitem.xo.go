@@ -7,37 +7,22 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
-// DemoProjectWorkItemPublic represents fields that may be exposed from 'public.demo_project_work_items'
-// and embedded in other response models.
-// Include "property:private" in a SQL column comment to exclude a field.
-// Joins may be explicitly added in the Response struct.
-type DemoProjectWorkItemPublic struct {
-	WorkItemID    int64     `json:"workItemID" required:"true"`    // work_item_id
-	Ref           string    `json:"ref" required:"true"`           // ref
-	Line          string    `json:"line" required:"true"`          // line
-	LastMessageAt time.Time `json:"lastMessageAt" required:"true"` // last_message_at
-	Reopened      bool      `json:"reopened" required:"true"`      // reopened
-}
-
 // DemoProjectWorkItem represents a row from 'public.demo_project_work_items'.
+// Include "property:private" in a SQL column comment to exclude a field from JSON.
 type DemoProjectWorkItem struct {
-	WorkItemID    int64     `json:"work_item_id" db:"work_item_id"`       // work_item_id
-	Ref           string    `json:"ref" db:"ref"`                         // ref
-	Line          string    `json:"line" db:"line"`                       // line
-	LastMessageAt time.Time `json:"last_message_at" db:"last_message_at"` // last_message_at
-	Reopened      bool      `json:"reopened" db:"reopened"`               // reopened
+	WorkItemID    int64     `json:"workItemID" db:"work_item_id" required:"true"`       // work_item_id
+	Ref           string    `json:"ref" db:"ref" required:"true"`                       // ref
+	Line          string    `json:"line" db:"line" required:"true"`                     // line
+	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at" required:"true"` // last_message_at
+	Reopened      bool      `json:"reopened" db:"reopened" required:"true"`             // reopened
 
-	WorkItem *WorkItem `json:"work_item" db:"work_item"` // O2O
+	WorkItem *WorkItem `json:"workItem" db:"work_item"` // O2O
 	// xo fields
 	_exists, _deleted bool
-}
-
-func (x *DemoProjectWorkItem) ToPublic() DemoProjectWorkItemPublic {
-	return DemoProjectWorkItemPublic{
-		WorkItemID: x.WorkItemID, Ref: x.Ref, Line: x.Line, LastMessageAt: x.LastMessageAt, Reopened: x.Reopened,
-	}
 }
 
 type DemoProjectWorkItemSelectConfig struct {
@@ -79,7 +64,7 @@ type DemoProjectWorkItemJoins struct {
 	WorkItem bool
 }
 
-// WithDemoProjectWorkItemJoin orders results by the given columns.
+// WithDemoProjectWorkItemJoin joins with the given tables.
 func WithDemoProjectWorkItemJoin(joins DemoProjectWorkItemJoins) DemoProjectWorkItemSelectConfigOption {
 	return func(s *DemoProjectWorkItemSelectConfig) {
 		s.joins = joins
@@ -98,12 +83,13 @@ func (dpwi *DemoProjectWorkItem) Deleted() bool {
 }
 
 // Insert inserts the DemoProjectWorkItem to the database.
-func (dpwi *DemoProjectWorkItem) Insert(ctx context.Context, db DB) error {
+
+func (dpwi *DemoProjectWorkItem) Insert(ctx context.Context, db DB) (*DemoProjectWorkItem, error) {
 	switch {
 	case dpwi._exists: // already exists
-		return logerror(&ErrInsertFailed{ErrAlreadyExists})
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
 	case dpwi._deleted: // deleted
-		return logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
 	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.demo_project_work_items (` +
@@ -113,37 +99,52 @@ func (dpwi *DemoProjectWorkItem) Insert(ctx context.Context, db DB) error {
 		`) `
 	// run
 	logf(sqlstr, dpwi.WorkItemID, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened)
-	if _, err := db.Exec(ctx, sqlstr, dpwi.WorkItemID, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened); err != nil {
-		return logerror(err)
+	rows, err := db.Query(ctx, sqlstr, dpwi.WorkItemID, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DemoProjectWorkItem/Insert/db.Query: %w", err))
 	}
-	// set exists
-	dpwi._exists = true
-	return nil
+	newdpwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DemoProjectWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DemoProjectWorkItem/Insert/pgx.CollectOneRow: %w", err))
+	}
+	newdpwi._exists = true
+	*dpwi = newdpwi
+
+	return dpwi, nil
 }
 
 // Update updates a DemoProjectWorkItem in the database.
-func (dpwi *DemoProjectWorkItem) Update(ctx context.Context, db DB) error {
+func (dpwi *DemoProjectWorkItem) Update(ctx context.Context, db DB) (*DemoProjectWorkItem, error) {
 	switch {
 	case !dpwi._exists: // doesn't exist
-		return logerror(&ErrUpdateFailed{ErrDoesNotExist})
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
 	case dpwi._deleted: // deleted
-		return logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.demo_project_work_items SET ` +
 		`ref = $1, line = $2, last_message_at = $3, reopened = $4 ` +
 		`WHERE work_item_id = $5 ` +
-		`RETURNING work_item_id `
+		`RETURNING * `
 	// run
 	logf(sqlstr, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened, dpwi.WorkItemID)
-	if err := db.QueryRow(ctx, sqlstr, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened, dpwi.WorkItemID).Scan(); err != nil {
-		return logerror(err)
+
+	rows, err := db.Query(ctx, sqlstr, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened, dpwi.WorkItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DemoProjectWorkItem/Update/db.Query: %w", err))
 	}
-	return nil
+	newdpwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DemoProjectWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DemoProjectWorkItem/Update/pgx.CollectOneRow: %w", err))
+	}
+	newdpwi._exists = true
+	*dpwi = newdpwi
+
+	return dpwi, nil
 }
 
 // Save saves the DemoProjectWorkItem to the database.
-func (dpwi *DemoProjectWorkItem) Save(ctx context.Context, db DB) error {
+func (dpwi *DemoProjectWorkItem) Save(ctx context.Context, db DB) (*DemoProjectWorkItem, error) {
 	if dpwi.Exists() {
 		return dpwi.Update(ctx, db)
 	}
@@ -213,7 +214,7 @@ demo_project_work_items.ref,
 demo_project_work_items.line,
 demo_project_work_items.last_message_at,
 demo_project_work_items.reopened,
-(case when $1::boolean = true then row_to_json(work_items.*) end)::jsonb as work_item ` +
+(case when $1::boolean = true then row(work_items.*) end) as work_item ` +
 		`FROM public.demo_project_work_items ` +
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = demo_project_work_items.work_item_id` +
@@ -223,20 +224,22 @@ left join work_items on work_items.work_item_id = demo_project_work_items.work_i
 
 	// run
 	logf(sqlstr, workItemID)
-	dpwi := DemoProjectWorkItem{
-		_exists: true,
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("demo_project_work_items/DemoProjectWorkItemByWorkItemID/db.Query: %w", err))
 	}
-
-	if err := db.QueryRow(ctx, sqlstr, c.joins.WorkItem, workItemID).Scan(&dpwi.WorkItemID, &dpwi.Ref, &dpwi.Line, &dpwi.LastMessageAt, &dpwi.Reopened, &dpwi.WorkItem); err != nil {
-		return nil, logerror(err)
+	dpwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DemoProjectWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("demo_project_work_items/DemoProjectWorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
 	}
+	dpwi._exists = true
 	return &dpwi, nil
 }
 
 // DemoProjectWorkItemsByRefLine retrieves a row from 'public.demo_project_work_items' as a DemoProjectWorkItem.
 //
 // Generated from index 'demo_project_work_items_ref_line_idx'.
-func DemoProjectWorkItemsByRefLine(ctx context.Context, db DB, ref, line string, opts ...DemoProjectWorkItemSelectConfigOption) ([]*DemoProjectWorkItem, error) {
+func DemoProjectWorkItemsByRefLine(ctx context.Context, db DB, ref string, line string, opts ...DemoProjectWorkItemSelectConfigOption) ([]*DemoProjectWorkItem, error) {
 	c := &DemoProjectWorkItemSelectConfig{joins: DemoProjectWorkItemJoins{}}
 
 	for _, o := range opts {
@@ -250,7 +253,7 @@ demo_project_work_items.ref,
 demo_project_work_items.line,
 demo_project_work_items.last_message_at,
 demo_project_work_items.reopened,
-(case when $1::boolean = true then row_to_json(work_items.*) end)::jsonb as work_item ` +
+(case when $1::boolean = true then row(work_items.*) end) as work_item ` +
 		`FROM public.demo_project_work_items ` +
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = demo_project_work_items.work_item_id` +
@@ -266,19 +269,10 @@ left join work_items on work_items.work_item_id = demo_project_work_items.work_i
 	}
 	defer rows.Close()
 	// process
-	var res []*DemoProjectWorkItem
-	for rows.Next() {
-		dpwi := DemoProjectWorkItem{
-			_exists: true,
-		}
-		// scan
-		if err := rows.Scan(&dpwi.WorkItemID, &dpwi.Ref, &dpwi.Line, &dpwi.LastMessageAt, &dpwi.Reopened); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &dpwi)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*DemoProjectWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

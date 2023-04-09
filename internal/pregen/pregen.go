@@ -93,17 +93,18 @@ func (o *PreGen) ValidateProjectSpec() error {
 }
 
 func (o *PreGen) Generate() error {
-	if err := o.validateSpec(); err != nil {
-		return fmt.Errorf("validate spec: %w", err)
-	}
-
-	if err := o.analyzeSpec(); err != nil {
-		return fmt.Errorf("analyze spec: %w", err)
-	}
+	// if err := o.validateSpec(); err != nil {
+	// 	return fmt.Errorf("validate spec: %w", err)
+	// }
 
 	// if err := internal.GenerateConfigTemplate(); err != nil {
 	// 	return fmt.Errorf("internal.GenerateConfigTemplate: %w", err)
 	// }
+
+	// necessary before generation
+	if err := o.analyzeSpec(); err != nil {
+		return fmt.Errorf("analyze spec: %w", err)
+	}
 
 	if err := o.generateOpIDs(); err != nil {
 		return fmt.Errorf("generateOpIDs: %w", err)
@@ -223,7 +224,6 @@ func (o *PreGen) analyzeSpec() error {
 
 			o.operations[t] = append(o.operations[t], v.OperationID)
 		}
-
 		for t, opIDs := range o.operations {
 			sort.Slice(opIDs, func(i, j int) bool {
 				return opIDs[i] < opIDs[j]

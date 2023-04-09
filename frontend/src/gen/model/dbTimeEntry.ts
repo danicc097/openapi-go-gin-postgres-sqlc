@@ -7,7 +7,7 @@
  */
 import type { UuidUUID } from './uuidUUID'
 
-export interface DbTimeEntryPublic {
+export interface DbTimeEntry {
   activityID: number
   comment: string
   durationMinutes: number | null

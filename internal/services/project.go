@@ -76,10 +76,12 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 	var workItem any
 	switch internalmodels.Project(project.Name) {
 	case internalmodels.ProjectDemoProject:
-		workItem = internalmodels.DemoProjectWorkItemsResponse{}
+		// explicitly initialize what we want to allow an admin to edit in project config ui
+		workItem = &internalmodels.RestDemoProjectWorkItemsResponse{DemoProjectWorkItem: &internalmodels.DbDemoProjectWorkItem{}}
+		workItem = createZeroStructFields(reflect.ValueOf(workItem), 1).Interface()
+		fmt.Printf("workItem: %+v\n", workItem)
 	}
-	pathKeys := structs.GetStructKeys(workItem, "")
-	fmt.Printf("pathKeys: %v\n", pathKeys)
+	pathKeys := structs.GetKeys(workItem, "")
 
 	for _, path := range pathKeys {
 		fieldsMap[path] = defaultConfigField(path)
@@ -118,7 +120,7 @@ func defaultConfigField(path string) map[string]any {
 	var jsonMap map[string]any
 
 	fj, _ := json.Marshal(f)
-	json.Unmarshal(fj, &jsonMap)
+	_ = json.Unmarshal(fj, &jsonMap)
 
 	return jsonMap
 }
@@ -129,7 +131,6 @@ func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, obj map[st
 	if !ok {
 		return
 	}
-
 	var fields []map[string]any // can't type assert map values of any when obj comes from unmarshalling
 	fBlob, err := json.Marshal(fieldsInterface)
 	if err != nil {
@@ -158,4 +159,46 @@ func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, obj map[st
 			fieldsMap[path] = newField
 		}
 	}
+}
+
+func createZeroStructFields(v reflect.Value, maxDepth int) reflect.Value {
+	if maxDepth == 0 {
+		return v
+	}
+	maxDepth--
+	switch v.Kind() {
+	case reflect.Ptr:
+		if v.IsNil() {
+			v.Set(reflect.New(v.Type().Elem()))
+		}
+		return createZeroStructFields(v.Elem(), maxDepth)
+	case reflect.Struct:
+		for i := 0; i < v.NumField(); i++ {
+			field := v.Field(i)
+			if field.CanSet() {
+				zeroValue := reflect.Zero(field.Type())
+				if field.Kind() == reflect.Ptr {
+					if field.IsNil() {
+						field.Set(reflect.New(field.Type().Elem()))
+					}
+					createZeroStructFields(field.Elem(), maxDepth)
+				} else {
+					createZeroStructFields(field.Addr(), maxDepth)
+				}
+				if field.IsZero() {
+					field.Set(zeroValue)
+				}
+			}
+		}
+	case reflect.Slice, reflect.Array:
+		for i := 0; i < v.Len(); i++ {
+			createZeroStructFields(v.Index(i), maxDepth)
+		}
+	case reflect.Map:
+		for _, key := range v.MapKeys() {
+			createZeroStructFields(v.MapIndex(key), maxDepth)
+		}
+	}
+
+	return v
 }
