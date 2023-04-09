@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
@@ -77,17 +76,12 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 	var workItem any
 	switch internalmodels.Project(project.Name) {
 	case internalmodels.ProjectDemoProject:
-		// FIXME due to structs package, its broken if all fields are pointers
-		// because they're all nil reflect.Pointer's so no keys are generated
-		// either put shared models in a literal "internalmodels" folder
-		// and let generated model types be or fix oapicodegen or
-		// initialize the below struct with zero values
-		workItem := &internalmodels.RestDemoProjectWorkItemsResponse{}
-		createZeroStructFields(reflect.ValueOf(workItem), 5)
-		format.PrintJSON(workItem)
+		// explicitly initialize what we want to allow an admin to edit in project config ui
+		workItem = &internalmodels.RestDemoProjectWorkItemsResponse{DemoProjectWorkItem: &internalmodels.DbDemoProjectWorkItem{}}
+		workItem = createZeroStructFields(reflect.ValueOf(workItem), 1).Interface()
+		fmt.Printf("workItem: %+v\n", workItem)
 	}
 	pathKeys := structs.GetKeys(workItem, "")
-	fmt.Printf("pathKeys: %v\n", pathKeys)
 
 	for _, path := range pathKeys {
 		fieldsMap[path] = defaultConfigField(path)
@@ -167,9 +161,9 @@ func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, obj map[st
 	}
 }
 
-func createZeroStructFields(v reflect.Value, maxDepth int) {
+func createZeroStructFields(v reflect.Value, maxDepth int) reflect.Value {
 	if maxDepth == 0 {
-		return
+		return v
 	}
 	maxDepth--
 	switch v.Kind() {
@@ -177,12 +171,23 @@ func createZeroStructFields(v reflect.Value, maxDepth int) {
 		if v.IsNil() {
 			v.Set(reflect.New(v.Type().Elem()))
 		}
-		createZeroStructFields(v.Elem(), maxDepth)
+		return createZeroStructFields(v.Elem(), maxDepth)
 	case reflect.Struct:
 		for i := 0; i < v.NumField(); i++ {
 			field := v.Field(i)
 			if field.CanSet() {
-				createZeroStructFields(field, maxDepth)
+				zeroValue := reflect.Zero(field.Type())
+				if field.Kind() == reflect.Ptr {
+					if field.IsNil() {
+						field.Set(reflect.New(field.Type().Elem()))
+					}
+					createZeroStructFields(field.Elem(), maxDepth)
+				} else {
+					createZeroStructFields(field.Addr(), maxDepth)
+				}
+				if field.IsZero() {
+					field.Set(zeroValue)
+				}
 			}
 		}
 	case reflect.Slice, reflect.Array:
@@ -194,4 +199,6 @@ func createZeroStructFields(v reflect.Value, maxDepth int) {
 			createZeroStructFields(v.MapIndex(key), maxDepth)
 		}
 	}
+
+	return v
 }
