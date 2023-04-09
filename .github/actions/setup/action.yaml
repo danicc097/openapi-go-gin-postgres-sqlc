@@ -52,19 +52,21 @@ runs:
     - name: Install dependencies (1)
       shell: bash
       run: |
+        source .envrc
 
         sudo apt-get install -y moreutils # sponge
         bash bin/scripts/install-pg_format.sh
         bash bin/scripts/install-mkcert.sh
         bash bin/scripts/install-proto.sh
 
-        source .envrc
 
         mv docker/.env.ci docker/.env
         
     - name: Install dependencies (2)
       shell: bash
       run: |
+        source .envrc
+        
         # project e2e.sync-deps --x-env=ci # won't use python playwright
         project install-tools --x-env=ci
         project fetch.swagger-ui --x-env=ci
