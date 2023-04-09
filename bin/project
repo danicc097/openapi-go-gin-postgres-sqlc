@@ -24,6 +24,7 @@ trap exit-cleanup 0
 
 exit-cleanup() {
   [[ $restore_cache = 1 ]] && cache-gen.restore
+  exit 0
 }
 
 killgroup() {

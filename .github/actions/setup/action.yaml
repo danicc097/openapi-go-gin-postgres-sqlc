@@ -61,15 +61,20 @@ runs:
 
 
         mv docker/.env.ci docker/.env
-        
+
     - name: Install dependencies (2)
       shell: bash
       run: |
         source .envrc
-        
+
         # project e2e.sync-deps --x-env=ci # won't use python playwright
         project install-tools --x-env=ci
         project fetch.swagger-ui --x-env=ci
+
+    - name: Install dependencies (3)
+      shell: bash
+      run: |
+        source .envrc
 
         git clone https://github.com/danicc097/traefik-bootstrap.git
         docker network create traefik-net || true
