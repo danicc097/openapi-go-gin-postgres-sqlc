@@ -336,11 +336,6 @@ export interface components {
     UuidUUID: string;
     PgtypeJSONB: Record<string, never>;
     /**
-     * @description Existing projects 
-     * @enum {string}
-     */
-    Project: "demoProject" | "demoProject2";
-    /**
      * @description Kanban columns for project demoProject 
      * @enum {string}
      */

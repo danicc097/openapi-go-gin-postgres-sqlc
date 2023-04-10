@@ -1013,15 +1013,6 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "Project": {
-      "enum": [
-        "demoProject",
-        "demoProject2"
-      ],
-      "type": "string",
-      "description": "Existing projects",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "demoProjectKanbanSteps": {
       "enum": [
         "Disabled",
@@ -1312,9 +1303,6 @@
     },
     "PgtypeJSONB": {
       "$ref": "#/definitions/PgtypeJSONB"
-    },
-    "Project": {
-      "$ref": "#/definitions/Project"
     },
     "demoProjectKanbanSteps": {
       "$ref": "#/definitions/demoProjectKanbanSteps"

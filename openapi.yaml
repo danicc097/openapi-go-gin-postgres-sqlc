@@ -1007,12 +1007,6 @@ components:
       type: string
     PgtypeJSONB: # Generated from internal structs. DO NOT EDIT.
       type: object
-    Project: # Generated from projects table. DO NOT EDIT.
-      enum:
-        - demoProject
-        - demoProject2
-      type: string
-      description: Existing projects
     demoProjectKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
       enum:
         - Disabled

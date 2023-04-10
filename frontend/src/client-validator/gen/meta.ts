@@ -38,7 +38,6 @@ import {
   ModelsRole,
   UuidUUID,
   PgtypeJSONB,
-  Project,
   demoProjectKanbanSteps,
   ModelsProjectConfigField,
   DbProject2WorkItem,
@@ -102,7 +101,6 @@ export const schemaDefinitions = {
   ModelsRole: info<ModelsRole>('ModelsRole', '#/definitions/ModelsRole'),
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
   PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
-  Project: info<Project>('Project', '#/definitions/Project'),
   demoProjectKanbanSteps: info<demoProjectKanbanSteps>(
     'demoProjectKanbanSteps',
     '#/definitions/demoProjectKanbanSteps',

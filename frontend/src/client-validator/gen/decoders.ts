@@ -42,7 +42,6 @@ import {
   ModelsRole,
   UuidUUID,
   PgtypeJSONB,
-  Project,
   demoProjectKanbanSteps,
   ModelsProjectConfigField,
   DbProject2WorkItem,
@@ -462,18 +461,6 @@ export const PgtypeJSONBDecoder: Decoder<PgtypeJSONB> = {
       throw new Error(`Schema ${PgtypeJSONBDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, PgtypeJSONBDecoder.definitionName)
-  },
-}
-export const ProjectDecoder: Decoder<Project> = {
-  definitionName: 'Project',
-  schemaRef: '#/definitions/Project',
-
-  decode(json: unknown): Project {
-    const schema = ajv.getSchema(ProjectDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ProjectDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ProjectDecoder.definitionName)
   },
 }
 export const demoProjectKanbanStepsDecoder: Decoder<demoProjectKanbanSteps> = {

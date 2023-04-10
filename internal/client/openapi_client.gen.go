@@ -27,15 +27,15 @@ const (
 
 // Defines values for ModelsProject.
 const (
-	ModelsProjectDemoProject  ModelsProject = "demoProject"
-	ModelsProjectDemoProject2 ModelsProject = "demoProject2"
+	DemoProject  ModelsProject = "demoProject"
+	DemoProject2 ModelsProject = "demoProject2"
 )
 
 // AllModelsProjectValues returns all possible values for ModelsProject.
 func AllModelsProjectValues() []ModelsProject {
 	return []ModelsProject{
-		ModelsProjectDemoProject,
-		ModelsProjectDemoProject2,
+		DemoProject,
+		DemoProject2,
 	}
 }
 
@@ -50,20 +50,6 @@ func AllNotificationTypeValues() []NotificationType {
 	return []NotificationType{
 		Global,
 		Personal,
-	}
-}
-
-// Defines values for Project.
-const (
-	ProjectDemoProject  Project = "demoProject"
-	ProjectDemoProject2 Project = "demoProject2"
-)
-
-// AllProjectValues returns all possible values for Project.
-func AllProjectValues() []Project {
-	return []Project{
-		ProjectDemoProject,
-		ProjectDemoProject2,
 	}
 }
 
@@ -350,9 +336,6 @@ type NotificationType string
 
 // PgtypeJSONB defines the model for PgtypeJSONB.
 type PgtypeJSONB = map[string]interface{}
-
-// Project Existing projects
-type Project string
 
 // ProjectConfig defines the model for ProjectConfig.
 type ProjectConfig struct {

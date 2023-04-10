@@ -93,10 +93,6 @@ export type NotificationType = 'personal' | 'global'
 export type WorkItemRole = 'preparer' | 'reviewer'
 export type ModelsRole = string
 /**
- * Existing projects
- */
-export type Project = 'demoProject' | 'demoProject2'
-/**
  * Kanban columns for project demoProject
  */
 export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'

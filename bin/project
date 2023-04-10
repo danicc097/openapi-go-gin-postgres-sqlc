@@ -1121,10 +1121,14 @@ update_spec_with_structs() {
     with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml
 
+  skip_schemas=" ModelsProject "
   # replace every schema back into the spec
+  # TODO need reusable external func to save db projects to array since we will use them in both pregen and postgen.
+  # see ``for project in ${db_projects[@]}``
+  # we will need to do the same for all schemas generated from db tables or elsewhere
   for schema in $(yq '.components.schemas[] | key' /tmp/openapi.yaml); do
     # prevent certain schemas from getting replaced by (in)direct usage in structs with clashing names
-    if [[ ! "ModelsProject" =~ " $schema " ]]; then
+    if [[ $skip_schemas =~ " $schema " ]]; then
       continue
     fi
     new_schema_key="${schemas[$schema]:-$schema}"
