@@ -1129,8 +1129,12 @@ components:
         - deletedAt
       type: object
       x-postgen-struct: DbWorkItem
-    ModelsProject: # Generated from internal structs. DO NOT EDIT.
+    ModelsProject: # Generated from projects table. DO NOT EDIT.
       type: string
+      enum:
+        - demoProject
+        - demoProject2
+      description: Existing projects
   examples:
     User:
       value:

@@ -1122,9 +1122,11 @@ update_spec_with_structs() {
     >/tmp/openapi.yaml
 
   # replace every schema back into the spec
-  # FIXME messes up explicit overrides with clashing names like ModelsProject. explicit should be overridden last or ignored
-  # maybe marking them with x-?????: true
   for schema in $(yq '.components.schemas[] | key' /tmp/openapi.yaml); do
+    # prevent certain schemas from getting replaced by (in)direct usage in structs with clashing names
+    if [[ ! "ModelsProject" =~ " $schema " ]]; then
+      continue
+    fi
     new_schema_key="${schemas[$schema]:-$schema}"
     yq eval-all "(
         select(fi == 1).components.schemas.$schema

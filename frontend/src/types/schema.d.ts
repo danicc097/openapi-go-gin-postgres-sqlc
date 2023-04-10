@@ -384,7 +384,11 @@ export interface components {
       workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
     };
-    ModelsProject: string;
+    /**
+     * @description Existing projects 
+     * @enum {string}
+     */
+    ModelsProject: "demoProject" | "demoProject2";
   };
   responses: never;
   parameters: {

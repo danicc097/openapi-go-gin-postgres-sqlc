@@ -1202,6 +1202,11 @@
     },
     "ModelsProject": {
       "type": "string",
+      "enum": [
+        "demoProject",
+        "demoProject2"
+      ],
+      "description": "Existing projects",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },

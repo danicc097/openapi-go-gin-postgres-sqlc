@@ -7,7 +7,10 @@
  */
 
 export type UuidUUID = string
-export type ModelsProject = string
+/**
+ * Existing projects
+ */
+export type ModelsProject = 'demoProject' | 'demoProject2'
 export type DbUserAPIKey = {
   apiKey: string
   expiresOn: string

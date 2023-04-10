@@ -7,6 +7,7 @@
  */
 import { rest } from 'msw'
 import { faker } from '@faker-js/faker'
+import { ModelsProject } from '.././model'
 
 export const getGetProjectMock = () => ({
   activities: faker.helpers.arrayElement([
@@ -50,7 +51,7 @@ export const getGetProjectMock = () => ({
     })),
     undefined,
   ]),
-  name: faker.random.word(),
+  name: faker.helpers.arrayElement(Object.values(ModelsProject)),
   projectID: faker.datatype.number({ min: undefined, max: undefined }),
   teams: faker.helpers.arrayElement([
     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
@@ -4023,7 +4024,7 @@ export const getGetProjectBoardMock = () => ({
         })),
         undefined,
       ]),
-      name: faker.random.word(),
+      name: faker.helpers.arrayElement(Object.values(ModelsProject)),
       projectID: faker.datatype.number({ min: undefined, max: undefined }),
       teams: faker.helpers.arrayElement([
         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({

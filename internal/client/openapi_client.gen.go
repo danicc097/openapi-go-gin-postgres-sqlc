@@ -25,6 +25,20 @@ const (
 	Bearer_authScopes = "bearer_auth.Scopes"
 )
 
+// Defines values for ModelsProject.
+const (
+	ModelsProjectDemoProject  ModelsProject = "demoProject"
+	ModelsProjectDemoProject2 ModelsProject = "demoProject2"
+)
+
+// AllModelsProjectValues returns all possible values for ModelsProject.
+func AllModelsProjectValues() []ModelsProject {
+	return []ModelsProject{
+		ModelsProjectDemoProject,
+		ModelsProjectDemoProject2,
+	}
+}
+
 // Defines values for NotificationType.
 const (
 	Global   NotificationType = "global"
@@ -41,15 +55,15 @@ func AllNotificationTypeValues() []NotificationType {
 
 // Defines values for Project.
 const (
-	DemoProject  Project = "demoProject"
-	DemoProject2 Project = "demoProject2"
+	ProjectDemoProject  Project = "demoProject"
+	ProjectDemoProject2 Project = "demoProject2"
 )
 
 // AllProjectValues returns all possible values for Project.
 func AllProjectValues() []Project {
 	return []Project{
-		DemoProject,
-		DemoProject2,
+		ProjectDemoProject,
+		ProjectDemoProject2,
 	}
 }
 
@@ -176,11 +190,13 @@ type DbKanbanStep struct {
 
 // DbProject defines the model for DbProject.
 type DbProject struct {
-	Activities    *[]DbActivity     `json:"activities"`
-	CreatedAt     time.Time         `json:"createdAt"`
-	Description   string            `json:"description"`
-	Initialized   bool              `json:"initialized"`
-	KanbanSteps   *[]DbKanbanStep   `json:"kanbanSteps"`
+	Activities  *[]DbActivity   `json:"activities"`
+	CreatedAt   time.Time       `json:"createdAt"`
+	Description string          `json:"description"`
+	Initialized bool            `json:"initialized"`
+	KanbanSteps *[]DbKanbanStep `json:"kanbanSteps"`
+
+	// Name Existing projects
 	Name          ModelsProject     `json:"name"`
 	ProjectID     int               `json:"projectID"`
 	Teams         *[]DbTeam         `json:"teams"`
@@ -314,8 +330,8 @@ type InitializeProjectRequest struct {
 	WorkItemTypes *[]ReposWorkItemTypeCreateParams `json:"workItemTypes"`
 }
 
-// ModelsProject defines the model for ModelsProject.
-type ModelsProject = string
+// ModelsProject Existing projects
+type ModelsProject string
 
 // ModelsProjectConfigField defines the model for ModelsProjectConfigField.
 type ModelsProjectConfigField struct {
