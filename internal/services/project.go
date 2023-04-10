@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/structs"
 	"go.uber.org/zap"
 )
@@ -77,8 +79,8 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 	switch internalmodels.Project(project.Name) {
 	case internalmodels.ProjectDemoProject:
 		// explicitly initialize what we want to allow an admin to edit in project config ui
-		workItem = &internalmodels.RestDemoProjectWorkItemsResponse{DemoProjectWorkItem: &internalmodels.DbDemoProjectWorkItem{}}
-		workItem = createZeroStructFields(reflect.ValueOf(workItem), 1).Interface()
+		workItem = &internalmodels.RestDemoProjectWorkItemsResponse{DemoProjectWorkItem: &internalmodels.DbDemoProjectWorkItem{}, Closed: pointers.New(time.Now())}
+		// workItem = structs.InitializeFields(reflect.ValueOf(workItem), 1).Interface() //
 		fmt.Printf("workItem: %+v\n", workItem)
 	}
 	pathKeys := structs.GetKeys(workItem, "")
@@ -159,46 +161,4 @@ func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, obj map[st
 			fieldsMap[path] = newField
 		}
 	}
-}
-
-func createZeroStructFields(v reflect.Value, maxDepth int) reflect.Value {
-	if maxDepth == 0 {
-		return v
-	}
-	maxDepth--
-	switch v.Kind() {
-	case reflect.Ptr:
-		if v.IsNil() {
-			v.Set(reflect.New(v.Type().Elem()))
-		}
-		return createZeroStructFields(v.Elem(), maxDepth)
-	case reflect.Struct:
-		for i := 0; i < v.NumField(); i++ {
-			field := v.Field(i)
-			if field.CanSet() {
-				zeroValue := reflect.Zero(field.Type())
-				if field.Kind() == reflect.Ptr {
-					if field.IsNil() {
-						field.Set(reflect.New(field.Type().Elem()))
-					}
-					createZeroStructFields(field.Elem(), maxDepth)
-				} else {
-					createZeroStructFields(field.Addr(), maxDepth)
-				}
-				if field.IsZero() {
-					field.Set(zeroValue)
-				}
-			}
-		}
-	case reflect.Slice, reflect.Array:
-		for i := 0; i < v.Len(); i++ {
-			createZeroStructFields(v.Index(i), maxDepth)
-		}
-	case reflect.Map:
-		for _, key := range v.MapKeys() {
-			createZeroStructFields(v.MapIndex(key), maxDepth)
-		}
-	}
-
-	return v
 }

@@ -75,3 +75,46 @@ func GetKeys(s any, parent string) []string {
 
 	return keys
 }
+
+// InitializeFields sets struct fields up to maxDepth
+func InitializeFields(v reflect.Value, maxDepth int) reflect.Value {
+	if maxDepth == 0 {
+		return v
+	}
+	maxDepth--
+	switch v.Kind() {
+	case reflect.Ptr:
+		if v.IsNil() {
+			v.Set(reflect.New(v.Type().Elem()))
+		}
+		return InitializeFields(v.Elem(), maxDepth)
+	case reflect.Struct:
+		for i := 0; i < v.NumField(); i++ {
+			field := v.Field(i)
+			if field.CanSet() {
+				zeroValue := reflect.Zero(field.Type())
+				if field.Kind() == reflect.Ptr {
+					if field.IsNil() {
+						field.Set(reflect.New(field.Type().Elem()))
+					}
+					InitializeFields(field.Elem(), maxDepth)
+				} else {
+					InitializeFields(field.Addr(), maxDepth)
+				}
+				if field.IsZero() {
+					field.Set(zeroValue)
+				}
+			}
+		}
+	case reflect.Slice, reflect.Array:
+		for i := 0; i < v.Len(); i++ {
+			InitializeFields(v.Index(i), maxDepth)
+		}
+	case reflect.Map:
+		for _, key := range v.MapKeys() {
+			InitializeFields(v.MapIndex(key), maxDepth)
+		}
+	}
+
+	return v
+}
