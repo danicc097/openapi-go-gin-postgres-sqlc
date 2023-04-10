@@ -46,6 +46,7 @@ import {
   ModelsProjectConfigField,
   DbProject2WorkItem,
   DbWorkItem,
+  Project,
   ModelsProject,
 } from './models'
 import jsonSchema from './schema.json'
@@ -509,6 +510,18 @@ export const DbWorkItemDecoder: Decoder<DbWorkItem> = {
       throw new Error(`Schema ${DbWorkItemDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbWorkItemDecoder.definitionName)
+  },
+}
+export const ProjectDecoder: Decoder<Project> = {
+  definitionName: 'Project',
+  schemaRef: '#/definitions/Project',
+
+  decode(json: unknown): Project {
+    const schema = ajv.getSchema(ProjectDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ProjectDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ProjectDecoder.definitionName)
   },
 }
 export const ModelsProjectDecoder: Decoder<ModelsProject> = {

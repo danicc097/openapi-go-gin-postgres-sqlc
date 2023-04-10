@@ -111,7 +111,7 @@
           ]
         },
         "name": {
-          "$ref": "#/definitions/ModelsProject"
+          "$ref": "#/definitions/Project"
         },
         "projectID": {
           "type": "integer"
@@ -1191,13 +1191,17 @@
       "x-postgen-struct": "DbWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "ModelsProject": {
-      "type": "string",
+    "Project": {
       "enum": [
         "demoProject",
         "demoProject2"
       ],
+      "type": "string",
       "description": "Existing projects",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsProject": {
+      "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
@@ -1315,6 +1319,9 @@
     },
     "DbWorkItem": {
       "$ref": "#/definitions/DbWorkItem"
+    },
+    "Project": {
+      "$ref": "#/definitions/Project"
     },
     "ModelsProject": {
       "$ref": "#/definitions/ModelsProject"

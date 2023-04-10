@@ -7,7 +7,7 @@
  */
 import { rest } from 'msw'
 import { faker } from '@faker-js/faker'
-import { ModelsProject, Role, Scope } from '.././model'
+import { Project, Role, Scope } from '.././model'
 
 export const getGetCurrentUserMock = () => ({
   apiKey: faker.helpers.arrayElement([
@@ -1512,7 +1512,7 @@ export const getGetCurrentUserMock = () => ({
         })),
         undefined,
       ]),
-      name: faker.helpers.arrayElement(Object.values(ModelsProject)),
+      name: faker.helpers.arrayElement(Object.values(Project)),
       projectID: faker.datatype.number({ min: undefined, max: undefined }),
       teams: faker.helpers.arrayElement([
         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
@@ -8348,7 +8348,7 @@ export const getUpdateUserMock = () => ({
         })),
         undefined,
       ]),
-      name: faker.helpers.arrayElement(Object.values(ModelsProject)),
+      name: faker.helpers.arrayElement(Object.values(Project)),
       projectID: faker.datatype.number({ min: undefined, max: undefined }),
       teams: faker.helpers.arrayElement([
         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({

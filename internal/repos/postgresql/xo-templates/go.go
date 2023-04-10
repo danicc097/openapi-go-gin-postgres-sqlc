@@ -845,12 +845,13 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	if err != nil {
 		return Field{}, err
 	}
-	var enumPkg string
+	var enumPkg, openAPISchema string
 	if f.Type.Enum != nil {
 		enumPkg = f.Type.Enum.EnumPkg
 	}
 	if f.TypeOverride != "" {
 		typ = f.TypeOverride
+		openAPISchema = camelExport(strings.Split(f.TypeOverride, ".")[1]) // broken camelExport with . as well
 	}
 
 	return Field{
@@ -864,7 +865,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		EnumPkg:       enumPkg,
 		IsDateOrTime:  f.IsDateOrTime,
 		TypeOverride:  f.TypeOverride,
-		OpenAPISchema: camelExport(strings.ReplaceAll(f.TypeOverride, ".", "_")), // broken camelExport
+		OpenAPISchema: openAPISchema,
 		Properties:    strings.Split(f.Properties, "|"),
 		IsGenerated:   strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
 	}, nil
@@ -2748,6 +2749,10 @@ func Imports(ctx context.Context) []string {
 	if s, _ := ctx.Value(UUIDKey).(string); s != "" {
 		imports = append(imports, s)
 	}
+
+	// internal packages
+	imports = append(imports, "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models")
+
 	return imports
 }
 

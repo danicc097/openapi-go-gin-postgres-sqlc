@@ -12,20 +12,6 @@ const (
 	Bearer_authScopes = "bearer_auth.Scopes"
 )
 
-// Defines values for ModelsProject.
-const (
-	ModelsProjectDemoProject  ModelsProject = "demoProject"
-	ModelsProjectDemoProject2 ModelsProject = "demoProject2"
-)
-
-// AllModelsProjectValues returns all possible values for ModelsProject.
-func AllModelsProjectValues() []ModelsProject {
-	return []ModelsProject{
-		ModelsProjectDemoProject,
-		ModelsProjectDemoProject2,
-	}
-}
-
 // Defines values for NotificationType.
 const (
 	NotificationTypeGlobal   NotificationType = "global"
@@ -37,6 +23,20 @@ func AllNotificationTypeValues() []NotificationType {
 	return []NotificationType{
 		NotificationTypeGlobal,
 		NotificationTypePersonal,
+	}
+}
+
+// Defines values for Project.
+const (
+	ProjectDemoProject  Project = "demoProject"
+	ProjectDemoProject2 Project = "demoProject2"
+)
+
+// AllProjectValues returns all possible values for Project.
+func AllProjectValues() []Project {
+	return []Project{
+		ProjectDemoProject,
+		ProjectDemoProject2,
 	}
 }
 
@@ -170,7 +170,7 @@ type DbProject struct {
 	KanbanSteps *[]DbKanbanStep `json:"kanbanSteps"`
 
 	// Name Existing projects
-	Name          ModelsProject     `json:"name"`
+	Name          Project           `json:"name"`
 	ProjectID     int               `json:"projectID"`
 	Teams         *[]DbTeam         `json:"teams"`
 	UpdatedAt     time.Time         `json:"updatedAt"`
@@ -303,8 +303,8 @@ type InitializeProjectRequest struct {
 	WorkItemTypes *[]ReposWorkItemTypeCreateParams `json:"workItemTypes"`
 }
 
-// ModelsProject Existing projects
-type ModelsProject string
+// ModelsProject defines the model for ModelsProject.
+type ModelsProject = string
 
 // ModelsProjectConfigField defines the model for ModelsProjectConfigField.
 type ModelsProjectConfigField struct {
@@ -323,6 +323,9 @@ type NotificationType string
 
 // PgtypeJSONB defines the model for PgtypeJSONB.
 type PgtypeJSONB = map[string]interface{}
+
+// Project Existing projects
+type Project string
 
 // ProjectConfig defines the model for ProjectConfig.
 type ProjectConfig struct {

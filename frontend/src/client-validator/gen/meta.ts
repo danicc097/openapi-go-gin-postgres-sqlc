@@ -42,6 +42,7 @@ import {
   ModelsProjectConfigField,
   DbProject2WorkItem,
   DbWorkItem,
+  Project,
   ModelsProject,
 } from './models'
 
@@ -111,6 +112,7 @@ export const schemaDefinitions = {
   ),
   DbProject2WorkItem: info<DbProject2WorkItem>('DbProject2WorkItem', '#/definitions/DbProject2WorkItem'),
   DbWorkItem: info<DbWorkItem>('DbWorkItem', '#/definitions/DbWorkItem'),
+  Project: info<Project>('Project', '#/definitions/Project'),
   ModelsProject: info<ModelsProject>('ModelsProject', '#/definitions/ModelsProject'),
 }
 

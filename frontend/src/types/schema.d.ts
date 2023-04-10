@@ -100,7 +100,7 @@ export interface components {
       description: string;
       initialized: boolean;
       kanbanSteps?: (components["schemas"]["DbKanbanStep"])[] | null;
-      name: components["schemas"]["ModelsProject"];
+      name: components["schemas"]["Project"];
       projectID: number;
       teams?: (components["schemas"]["DbTeam"])[] | null;
       /** Format: date-time */
@@ -383,7 +383,8 @@ export interface components {
      * @description Existing projects 
      * @enum {string}
      */
-    ModelsProject: "demoProject" | "demoProject2";
+    Project: "demoProject" | "demoProject2";
+    ModelsProject: string;
   };
   responses: never;
   parameters: {
