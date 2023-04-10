@@ -126,14 +126,14 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.users (` +
-		`username, email, first_name, last_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, created_at, updated_at, deleted_at` +
+		`username, email, first_name, last_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11` +
 		`) RETURNING * `
 	// run
-	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt)
+	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
 
-	rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt)
+	rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Insert/db.Query: %w", err))
 	}
@@ -157,13 +157,13 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.users SET ` +
-		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, has_personal_notifications = $9, has_global_notifications = $10, created_at = $11, updated_at = $12, deleted_at = $13 ` +
-		`WHERE user_id = $14 ` +
+		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, has_personal_notifications = $9, has_global_notifications = $10, deleted_at = $11 ` +
+		`WHERE user_id = $12 ` +
 		`RETURNING * `
 	// run
 	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
 
-	rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
+	rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt, u.UserID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Update/db.Query: %w", err))
 	}
@@ -193,16 +193,16 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.users (` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, created_at, updated_at, deleted_at` +
+		`user_id, username, email, first_name, last_name, full_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13` +
 		`)` +
 		` ON CONFLICT (user_id) DO ` +
 		`UPDATE SET ` +
-		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, deleted_at = EXCLUDED.deleted_at  `
+		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, deleted_at = EXCLUDED.deleted_at  `
 	// run
-	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt); err != nil {
+	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists

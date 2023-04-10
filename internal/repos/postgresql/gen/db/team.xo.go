@@ -100,14 +100,14 @@ func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.teams (` +
-		`project_id, name, description, created_at, updated_at` +
+		`project_id, name, description` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
+		`$1, $2, $3` +
 		`) RETURNING * `
 	// run
-	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt)
+	logf(sqlstr, t.ProjectID, t.Name, t.Description)
 
-	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt)
+	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Insert/db.Query: %w", err))
 	}
@@ -131,13 +131,13 @@ func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.teams SET ` +
-		`project_id = $1, name = $2, description = $3, created_at = $4, updated_at = $5 ` +
-		`WHERE team_id = $6 ` +
+		`project_id = $1, name = $2, description = $3 ` +
+		`WHERE team_id = $4 ` +
 		`RETURNING * `
 	// run
 	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt, t.TeamID)
 
-	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt, t.TeamID)
+	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.TeamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Update/db.Query: %w", err))
 	}
@@ -167,16 +167,16 @@ func (t *Team) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.teams (` +
-		`team_id, project_id, name, description, created_at, updated_at` +
+		`team_id, project_id, name, description` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6` +
+		`$1, $2, $3, $4` +
 		`)` +
 		` ON CONFLICT (team_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at  `
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description  `
 	// run
-	logf(sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt)
-	if _, err := db.Exec(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt); err != nil {
+	logf(sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description)
+	if _, err := db.Exec(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description); err != nil {
 		return logerror(err)
 	}
 	// set exists

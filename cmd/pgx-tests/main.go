@@ -13,8 +13,8 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"go.uber.org/zap"
 
 	"github.com/jackc/pgx/v5"

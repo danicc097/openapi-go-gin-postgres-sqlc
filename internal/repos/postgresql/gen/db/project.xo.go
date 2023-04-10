@@ -109,14 +109,14 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.projects (` +
-		`name, description, work_items_table_name, initialized, board_config, created_at, updated_at` +
+		`name, description, work_items_table_name, initialized, board_config` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7` +
+		`$1, $2, $3, $4, $5` +
 		`) RETURNING * `
 	// run
-	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt)
+	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig)
 
-	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt)
+	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Insert/db.Query: %w", err))
 	}
@@ -140,13 +140,13 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.projects SET ` +
-		`name = $1, description = $2, work_items_table_name = $3, initialized = $4, board_config = $5, created_at = $6, updated_at = $7 ` +
-		`WHERE project_id = $8 ` +
+		`name = $1, description = $2, work_items_table_name = $3, initialized = $4, board_config = $5 ` +
+		`WHERE project_id = $6 ` +
 		`RETURNING * `
 	// run
 	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt, p.ProjectID)
 
-	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt, p.ProjectID)
+	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Update/db.Query: %w", err))
 	}
@@ -176,16 +176,16 @@ func (p *Project) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.projects (` +
-		`project_id, name, description, work_items_table_name, initialized, board_config, created_at, updated_at` +
+		`project_id, name, description, work_items_table_name, initialized, board_config` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8` +
+		`$1, $2, $3, $4, $5, $6` +
 		`)` +
 		` ON CONFLICT (project_id) DO ` +
 		`UPDATE SET ` +
-		`name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, initialized = EXCLUDED.initialized, board_config = EXCLUDED.board_config, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at  `
+		`name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, initialized = EXCLUDED.initialized, board_config = EXCLUDED.board_config  `
 	// run
-	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt)
-	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt); err != nil {
+	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig)
+	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig); err != nil {
 		return logerror(err)
 	}
 	// set exists

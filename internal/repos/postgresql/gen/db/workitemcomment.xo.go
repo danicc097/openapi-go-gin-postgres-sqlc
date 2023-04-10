@@ -97,14 +97,14 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_comments (` +
-		`work_item_id, user_id, message, created_at, updated_at` +
+		`work_item_id, user_id, message` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
+		`$1, $2, $3` +
 		`) RETURNING * `
 	// run
-	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt)
+	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message)
 
-	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt)
+	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Insert/db.Query: %w", err))
 	}
@@ -128,13 +128,13 @@ func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_comments SET ` +
-		`work_item_id = $1, user_id = $2, message = $3, created_at = $4, updated_at = $5 ` +
-		`WHERE work_item_comment_id = $6 ` +
+		`work_item_id = $1, user_id = $2, message = $3 ` +
+		`WHERE work_item_comment_id = $4 ` +
 		`RETURNING * `
 	// run
 	logf(sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID)
 
-	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt, wic.WorkItemCommentID)
+	rows, err := db.Query(ctx, sqlstr, wic.WorkItemID, wic.UserID, wic.Message, wic.WorkItemCommentID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Update/db.Query: %w", err))
 	}
@@ -164,16 +164,16 @@ func (wic *WorkItemComment) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_item_comments (` +
-		`work_item_comment_id, work_item_id, user_id, message, created_at, updated_at` +
+		`work_item_comment_id, work_item_id, user_id, message` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6` +
+		`$1, $2, $3, $4` +
 		`)` +
 		` ON CONFLICT (work_item_comment_id) DO ` +
 		`UPDATE SET ` +
-		`work_item_id = EXCLUDED.work_item_id, user_id = EXCLUDED.user_id, message = EXCLUDED.message, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at  `
+		`work_item_id = EXCLUDED.work_item_id, user_id = EXCLUDED.user_id, message = EXCLUDED.message  `
 	// run
-	logf(sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt)
-	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message, wic.CreatedAt, wic.UpdatedAt); err != nil {
+	logf(sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message)
+	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message); err != nil {
 		return logerror(err)
 	}
 	// set exists

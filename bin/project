@@ -348,9 +348,9 @@ x.gen.xo() {
 
     mkdir -p "$PG_REPO_GEN"/db
     xo_schema -o "$PG_REPO_GEN"/db --debug \
-      --schema public || err "Failed xo public schema generation" &
-    # --ignore "*.created_at" \
-    # --ignore "*.updated_at"
+      --schema public \
+      --ignore "*.created_at" \
+      --ignore "*.updated_at" || err "Failed xo public schema generation" &
 
     mkdir -p "$PG_REPO_GEN"/db/v
     xo_schema -o "$PG_REPO_GEN"/db/v \

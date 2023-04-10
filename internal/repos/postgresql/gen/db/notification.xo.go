@@ -99,14 +99,14 @@ func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error)
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.notifications (` +
-		`receiver_rank, title, body, label, link, created_at, sender, receiver, notification_type` +
+		`receiver_rank, title, body, label, link, sender, receiver, notification_type` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
+		`$1, $2, $3, $4, $5, $6, $7, $8` +
 		`) RETURNING * `
 	// run
-	logf(sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType)
+	logf(sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType)
 
-	rows, err := db.Query(ctx, sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType)
+	rows, err := db.Query(ctx, sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Insert/db.Query: %w", err))
 	}
@@ -130,13 +130,13 @@ func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error)
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.notifications SET ` +
-		`receiver_rank = $1, title = $2, body = $3, label = $4, link = $5, created_at = $6, sender = $7, receiver = $8, notification_type = $9 ` +
-		`WHERE notification_id = $10 ` +
+		`receiver_rank = $1, title = $2, body = $3, label = $4, link = $5, sender = $6, receiver = $7, notification_type = $8 ` +
+		`WHERE notification_id = $9 ` +
 		`RETURNING * `
 	// run
 	logf(sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType, n.NotificationID)
 
-	rows, err := db.Query(ctx, sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType, n.NotificationID)
+	rows, err := db.Query(ctx, sqlstr, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType, n.NotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Update/db.Query: %w", err))
 	}
@@ -166,16 +166,16 @@ func (n *Notification) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.notifications (` +
-		`notification_id, receiver_rank, title, body, label, link, created_at, sender, receiver, notification_type` +
+		`notification_id, receiver_rank, title, body, label, link, sender, receiver, notification_type` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
 		`)` +
 		` ON CONFLICT (notification_id) DO ` +
 		`UPDATE SET ` +
-		`receiver_rank = EXCLUDED.receiver_rank, title = EXCLUDED.title, body = EXCLUDED.body, label = EXCLUDED.label, link = EXCLUDED.link, created_at = EXCLUDED.created_at, sender = EXCLUDED.sender, receiver = EXCLUDED.receiver, notification_type = EXCLUDED.notification_type  `
+		`receiver_rank = EXCLUDED.receiver_rank, title = EXCLUDED.title, body = EXCLUDED.body, label = EXCLUDED.label, link = EXCLUDED.link, sender = EXCLUDED.sender, receiver = EXCLUDED.receiver, notification_type = EXCLUDED.notification_type  `
 	// run
-	logf(sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType)
-	if _, err := db.Exec(ctx, sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.CreatedAt, n.Sender, n.Receiver, n.NotificationType); err != nil {
+	logf(sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType)
+	if _, err := db.Exec(ctx, sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType); err != nil {
 		return logerror(err)
 	}
 	// set exists
