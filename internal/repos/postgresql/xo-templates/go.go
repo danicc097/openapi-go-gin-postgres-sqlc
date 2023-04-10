@@ -847,6 +847,10 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	if f.Type.Enum != nil {
 		enumPkg = f.Type.Enum.EnumPkg
 	}
+	if f.TypeOverride != "" {
+		typ = f.TypeOverride
+	}
+
 	return Field{
 		Type:         typ,
 		GoName:       tf(f.Name),
@@ -1412,15 +1416,9 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	return buf.String()
 }
 
-// TODO template function to create a struct of orderby for every date column
-//   - dynamic `orderBy UserOrderBy` options struct field if index found for
-//     timestamp column (Field.IsDateOrTime). Get appended after any select if present and can be
-//     combined:
-//     order by updated_at desc, created_at desc (join with ", ") + limit $limit if len>0
-//     `type UserOrderBy = string , UserCreatedAtDesc UserOrderBy = "UserCreatedAtDesc" `
-//     with a “limit *“ struct option appended .
-//
 // TODO low prio put note if it has no index
+
+// TODO custom types based on sql comment : "type:models.Project"
 
 // func_context generates a func signature for v with context determined by the
 // context mode.

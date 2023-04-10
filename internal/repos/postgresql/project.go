@@ -28,7 +28,7 @@ func (u *Project) ProjectByID(ctx context.Context, d db.DBTX, id int) (*db.Proje
 }
 
 func (u *Project) ProjectByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (*db.Project, error) {
-	project, err := db.ProjectByName(ctx, d, string(name))
+	project, err := db.ProjectByName(ctx, d, name)
 	if err != nil {
 		return nil, fmt.Errorf("could not get project: %w", parseErrorDetail(err))
 	}

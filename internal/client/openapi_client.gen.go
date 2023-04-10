@@ -181,7 +181,7 @@ type DbProject struct {
 	Description   string            `json:"description"`
 	Initialized   bool              `json:"initialized"`
 	KanbanSteps   *[]DbKanbanStep   `json:"kanbanSteps"`
-	Name          string            `json:"name"`
+	Name          ModelsProject     `json:"name"`
 	ProjectID     int               `json:"projectID"`
 	Teams         *[]DbTeam         `json:"teams"`
 	UpdatedAt     time.Time         `json:"updatedAt"`
@@ -313,6 +313,9 @@ type InitializeProjectRequest struct {
 	WorkItemTags  *[]ReposWorkItemTagCreateParams  `json:"workItemTags"`
 	WorkItemTypes *[]ReposWorkItemTypeCreateParams `json:"workItemTypes"`
 }
+
+// ModelsProject defines the model for ModelsProject.
+type ModelsProject = string
 
 // ModelsProjectConfigField defines the model for ModelsProjectConfigField.
 type ModelsProjectConfigField struct {

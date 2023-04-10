@@ -412,7 +412,7 @@ components:
           nullable: true
           type: array
         name:
-          type: string
+          $ref: '#/components/schemas/ModelsProject'
         projectID:
           type: integer
         teams:
@@ -1129,6 +1129,8 @@ components:
         - deletedAt
       type: object
       x-postgen-struct: DbWorkItem
+    ModelsProject: # Generated from internal structs. DO NOT EDIT.
+      type: string
   examples:
     User:
       value:

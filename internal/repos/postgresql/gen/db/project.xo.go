@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v5"
 )
@@ -15,14 +16,14 @@ import (
 // Project represents a row from 'public.projects'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Project struct {
-	ProjectID          int          `json:"projectID" db:"project_id" required:"true"`    // project_id
-	Name               string       `json:"name" db:"name" required:"true"`               // name
-	Description        string       `json:"description" db:"description" required:"true"` // description
-	WorkItemsTableName string       `json:"-" db:"work_items_table_name" `                // work_items_table_name
-	Initialized        bool         `json:"initialized" db:"initialized" required:"true"` // initialized
-	BoardConfig        pgtype.JSONB `json:"-" db:"board_config" `                         // board_config
-	CreatedAt          time.Time    `json:"createdAt" db:"created_at" required:"true"`    // created_at
-	UpdatedAt          time.Time    `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
+	ProjectID          int            `json:"projectID" db:"project_id" required:"true"`    // project_id
+	Name               models.Project `json:"name" db:"name" required:"true"`               // name
+	Description        string         `json:"description" db:"description" required:"true"` // description
+	WorkItemsTableName string         `json:"-" db:"work_items_table_name" `                // work_items_table_name
+	Initialized        bool           `json:"initialized" db:"initialized" required:"true"` // initialized
+	BoardConfig        pgtype.JSONB   `json:"-" db:"board_config" `                         // board_config
+	CreatedAt          time.Time      `json:"createdAt" db:"created_at" required:"true"`    // created_at
+	UpdatedAt          time.Time      `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
 	Activities    *[]Activity     `json:"activities" db:"activities"`         // O2M
 	KanbanSteps   *[]KanbanStep   `json:"kanbanSteps" db:"kanban_steps"`      // O2M
@@ -217,7 +218,7 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 // ProjectByName retrieves a row from 'public.projects' as a Project.
 //
 // Generated from index 'projects_name_key'.
-func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelectConfigOption) (*Project, error) {
+func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...ProjectSelectConfigOption) (*Project, error) {
 	c := &ProjectSelectConfig{joins: ProjectJoins{}}
 
 	for _, o := range opts {

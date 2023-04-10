@@ -7,6 +7,7 @@
  */
 
 export type UuidUUID = string
+export type ModelsProject = string
 export type DbUserAPIKey = {
   apiKey: string
   expiresOn: string
@@ -130,7 +131,7 @@ export interface DbProject {
   description: string
   initialized: boolean
   kanbanSteps?: DbKanbanStep[] | null
-  name: string
+  name: ModelsProject
   projectID: number
   teams?: DbTeam[] | null
   updatedAt: string
