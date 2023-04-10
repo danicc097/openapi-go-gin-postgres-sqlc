@@ -206,7 +206,9 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Type:       "string",
 				Desc:       "field tag",
 				Short:      "g",
-				Default:    `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}" db:"{{ .field.SQLName }}" {{ if not .ignoreJSON }}required:"true"{{end}}`,
+				Default: `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end -}}
+" db:"{{ .field.SQLName -}}
+" {{ if not .ignoreJSON }}required:"true"{{ if .field.OpenAPISchema }} ref:"#/components/schemas/{{ .field.OpenAPISchema }}"{{end}}{{end}}`,
 				// Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
 			},
 			{
@@ -852,17 +854,19 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	}
 
 	return Field{
-		Type:         typ,
-		GoName:       tf(f.Name),
-		SQLName:      f.Name,
-		Zero:         zero,
-		IsPrimary:    f.IsPrimary,
-		IsSequence:   f.IsSequence,
-		IsIgnored:    f.IsIgnored,
-		EnumPkg:      enumPkg,
-		IsDateOrTime: f.IsDateOrTime,
-		Properties:   strings.Split(f.Properties, "|"),
-		IsGenerated:  strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
+		Type:          typ,
+		GoName:        tf(f.Name),
+		SQLName:       f.Name,
+		Zero:          zero,
+		IsPrimary:     f.IsPrimary,
+		IsSequence:    f.IsSequence,
+		IsIgnored:     f.IsIgnored,
+		EnumPkg:       enumPkg,
+		IsDateOrTime:  f.IsDateOrTime,
+		TypeOverride:  f.TypeOverride,
+		OpenAPISchema: camelExport(strings.ReplaceAll(f.TypeOverride, ".", "_")), // broken camelExport
+		Properties:    strings.Split(f.Properties, "|"),
+		IsGenerated:   strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
 	}, nil
 }
 
@@ -2937,18 +2941,20 @@ type Constraint struct {
 
 // Field is a field template.
 type Field struct {
-	GoName       string
-	SQLName      string
-	Type         string
-	Zero         string
-	IsPrimary    bool
-	IsSequence   bool
-	IsIgnored    bool
-	Comment      string
-	IsGenerated  bool
-	EnumPkg      string
-	IsDateOrTime bool
-	Properties   []string
+	GoName        string
+	SQLName       string
+	Type          string
+	Zero          string
+	IsPrimary     bool
+	IsSequence    bool
+	IsIgnored     bool
+	Comment       string
+	IsGenerated   bool
+	EnumPkg       string
+	TypeOverride  string
+	IsDateOrTime  bool
+	Properties    []string
+	OpenAPISchema string
 }
 
 // QueryParam is a custom query parameter template.

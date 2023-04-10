@@ -185,6 +185,7 @@ x.pregen() {
       x.db.drop
       x.migrate up
 
+      local enums schema_name
       ######## Sync enums from db with spec
       # example: `x-db-enum: user_role` will use the db's "user_role" enum
       local vext="x-db-enum"
@@ -194,7 +195,7 @@ x.pregen() {
         mapfile -t db_enums < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
 
         [[ ${#db_enums[@]} -gt 0 ]] || err "$vext: Enum '$enum' not found in database $POSTGRES_DB"
-        local enums=$(printf ",\"%s\"" "${db_enums[@]}")
+        enums=$(printf ",\"%s\"" "${db_enums[@]}")
         enums="[${enums:1}]"
         echo "Replacing enum '$enum' in $SPEC with: $enums"
         enums=$enums yq e ".$path.enum = env(enums) | (.$path | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
@@ -203,16 +204,18 @@ x.pregen() {
       ######## Sync projects and related project info
       mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
       [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
-      local enums=$(printf ",\"%s\"" "${db_projects[@]}")
+      enums=$(printf ",\"%s\"" "${db_projects[@]}")
       enums="[${enums:1}]"
-      echo "Replacing enum 'Project' in $SPEC with: $enums"
+      schema_name="ModelsProject"
+      echo "Replacing enum '$schema_name' in $SPEC with: $enums"
       enums=$enums yq e "
-      .components.schemas.Project.enum = env(enums) |
-      .components.schemas.Project.type = \"string\" |
-      .components.schemas.Project.description = \"Existing projects\" |
-      (.components.schemas.Project | key) line_comment=\"Generated from projects table. DO NOT EDIT.\"" -i $SPEC
+      .components.schemas.$schema_name.enum = env(enums) |
+      .components.schemas.$schema_name.type = \"string\" |
+      .components.schemas.$schema_name.description = \"Existing projects\" |
+      (.components.schemas.$schema_name | key) line_comment=\"Generated from projects table. DO NOT EDIT.\"" -i $SPEC
 
       for project in ${db_projects[@]}; do
+        schema_name="${project}KanbanSteps"
         mapfile -t kanban_steps < <(dockerdb_psql -d $POSTGRES_DB -c "
           select
             name
@@ -221,14 +224,14 @@ x.pregen() {
           where
             project_id = (select project_id from projects where name = '$project');" 2>/dev/null)
         [[ ${#kanban_steps[@]} -gt 0 ]] || { echo "${YELLOW}No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue; }
-        local enums=$(printf ",\"%s\"" "${kanban_steps[@]}")
+        enums=$(printf ",\"%s\"" "${kanban_steps[@]}")
         enums="[${enums:1}]"
-        echo "Replacing enum 'Project' in $SPEC with: $enums"
+        echo "Replacing enum '$schema_name' in $SPEC with: $enums"
         enums=$enums yq e "
-      .components.schemas.${project}KanbanSteps.enum = env(enums) |
-      .components.schemas.${project}KanbanSteps.type = \"string\" |
-      .components.schemas.${project}KanbanSteps.description = \"Kanban columns for project $project\" |
-      (.components.schemas.${project}KanbanSteps | key) line_comment=\"Generated from kanban_steps table. DO NOT EDIT.\"" -i $SPEC
+      .components.schemas.$schema_name.enum = env(enums) |
+      .components.schemas.$schema_name.type = \"string\" |
+      .components.schemas.$schema_name.description = \"Kanban columns for project $project\" |
+      (.components.schemas.$schema_name | key) line_comment=\"Generated from kanban_steps table. DO NOT EDIT.\"" -i $SPEC
       done
 
       # TODO generate ~~KanbanSteps~~, WorkItemType for every project enum generated before
@@ -1118,11 +1121,13 @@ update_spec_with_structs() {
     with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml
 
-  # replace every schema generated directly or indirectly.
+  # replace every schema back into the spec
+  # FIXME messes up explicit overrides with clashing names like ModelsProject. explicit should be overridden last or ignored
+  # maybe marking them with x-?????: true
   for schema in $(yq '.components.schemas[] | key' /tmp/openapi.yaml); do
     new_schema_key="${schemas[$schema]:-$schema}"
     yq eval-all "(
-        select(fi==1).components.schemas.$schema
+        select(fi == 1).components.schemas.$schema
         ) as \$new_schema
         | select(fi == 0)
         | .components.schemas.$new_schema_key = \$new_schema
