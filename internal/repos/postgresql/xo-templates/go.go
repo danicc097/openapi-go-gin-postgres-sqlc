@@ -680,10 +680,15 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 	return nil
 }
 
+// extractIndexIdentifier generates a unique identifier for patched index generation.
 func extractIndexIdentifier(i Index) string {
 	var fields []string
 	for _, field := range i.Fields {
 		fields = append(fields, field.GoName)
+	}
+
+	if _, after, ok := strings.Cut(i.Definition, " WHERE "); ok { // index def is normalized in db
+		fields = append(fields, after)
 	}
 
 	return strings.Join(fields, "-")
@@ -1258,12 +1263,12 @@ func (f *Funcs) func_name_context(v interface{}) string {
 			fields = append(fields, field.GoName)
 		}
 		// TODO use index fields instead. will need to differentatiate for multiple index query creation from a isngle index
-		if _, _, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
+		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
 			name := x.Table.GoName
 			if !x.IsUnique {
 				name = inflector.Pluralize(name)
 			}
-			return name + "By" + strings.Join(fields, "")
+			return name + "By" + strings.Join(fields, "") + "_" + snaker.ForceCamelIdentifier("Where "+strings.ToLower(after))
 		}
 		return x.Func
 	}
@@ -1317,23 +1322,39 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
 }
 
 // initial_opts returns base conf for select queries.
-func (f *Funcs) initial_opts(v interface{}) string {
-	var hasDeletedAt bool
+func (f *Funcs) initial_opts(v any) string {
+	var tableHasDeletedAt bool
+	var deletedAtNullIndexCond, deletedAtNotNullIndexCond bool
 	var buf strings.Builder
 
 	switch x := v.(type) {
-	case Table:
+	case Index:
 		for _, field := range x.Fields {
 			if field.SQLName == "deleted_at" {
-				hasDeletedAt = true
+				tableHasDeletedAt = true
 			}
 		}
-		buf.WriteString(fmt.Sprintf(`c := &%sSelectConfig{`, x.GoName))
-		if hasDeletedAt {
+		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
+			if strings.Contains(strings.ToLower(after), "deleted_at is not null") {
+				deletedAtNotNullIndexCond = true
+			}
+			if strings.Contains(strings.ToLower(after), "deleted_at is null") {
+				deletedAtNullIndexCond = true
+			}
+		}
+
+		buf.WriteString(fmt.Sprintf(`c := &%sSelectConfig{`, x.Table.GoName))
+
+		if deletedAtNullIndexCond {
+			buf.WriteString(`deletedAt: " null ",`)
+		} else if deletedAtNotNullIndexCond {
+			buf.WriteString(`deletedAt: " not null ",`)
+		} else if tableHasDeletedAt {
 			buf.WriteString(`deletedAt: " null ",`)
 		}
+
 		buf.WriteString(fmt.Sprintf(`joins: %sJoins{},
-  }`, x.GoName))
+  }`, x.Table.GoName))
 	default:
 		return ""
 	}
@@ -2146,6 +2167,19 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 				hasDeletedAt = true
 			}
 		}
+		// TODO filters if we are generating a subset query from multicol index
+		// e.g.
+		// 	create unique index on kanban_steps (project_id , name , step_order)
+		// 	where
+		// 		step_order is not null;
+
+		// 	create unique index on kanban_steps (project_id , name)
+		// 	where
+		// 		step_order is null;
+		//
+		//in this case, func names need to be eg KanbanStepByName_StepOrderNotNull (via first index) and KanbanStepByName_StepOrderNull (2nd) so
+		// that we dont skip generation due to `emittedIndexes`
+		// KanbanStepByName without index conditions is not generated since it will not use index scan without it.
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
 			// TODO this also needs to have table name prepended.
 			// after : (external_id IS NOT NULL)after : (external_id IS NULL)

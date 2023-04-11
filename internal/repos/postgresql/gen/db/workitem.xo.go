@@ -242,11 +242,11 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// WorkItemsByDeletedAt retrieves a row from 'public.work_items' as a WorkItem.
+// WorkItemsByDeletedAt_WhereDeletedAtIsNotNull retrieves a row from 'public.work_items' as a WorkItem.
 //
 // Generated from index 'work_items_deleted_at_idx'.
-func WorkItemsByDeletedAt(ctx context.Context, db DB, deletedAt *time.Time, opts ...WorkItemSelectConfigOption) ([]*WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...WorkItemSelectConfigOption) ([]*WorkItem, error) {
+	c := &WorkItemSelectConfig{deletedAt: " not null ", joins: WorkItemJoins{}}
 
 	for _, o := range opts {
 		o(c)
@@ -342,7 +342,7 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 //
 // Generated from index 'work_items_pkey'.
 func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{joins: WorkItemJoins{}}
 
 	for _, o := range opts {
 		o(c)

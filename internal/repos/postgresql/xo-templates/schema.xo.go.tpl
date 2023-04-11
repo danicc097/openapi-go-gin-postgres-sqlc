@@ -111,7 +111,7 @@ then to maintain the first index creation (all fields) pass -1 and handle specia
 //
 // Generated from index '{{ $i.SQLName }}'.
 {{ func_context $i }} {
-	{{ initial_opts $i.Table }}
+	{{ initial_opts $i }}
 
 	for _, o := range opts {
 		o(c)
