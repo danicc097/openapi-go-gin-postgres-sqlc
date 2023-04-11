@@ -19,6 +19,11 @@ func RandomInt(min, max int64) int64 {
 	return min + rand.Int63n(max-min+1)
 }
 
+// RandomBool generates a random boolean.
+func RandomBool() bool {
+	return []bool{true, false}[rand.Intn(2)]
+}
+
 // RandomString generates a random string of length n.
 func RandomString(n int) string {
 	var sb strings.Builder

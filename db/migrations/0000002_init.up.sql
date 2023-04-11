@@ -427,8 +427,8 @@ create table activities (
   , name text not null
   , description text not null
   , is_productive boolean default false not null
-  , unique (name , project_id)
   -- can't have multiple unrelated projects see each other's activities
+  , unique (name , project_id)
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
 

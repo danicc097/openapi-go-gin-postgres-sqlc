@@ -206,3 +206,12 @@ type WorkItemTag interface {
 	Update(ctx context.Context, d db.DBTX, id int, params WorkItemTagUpdateParams) (*db.WorkItemTag, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error)
 }
+
+// Activity defines the datastore/repository handling persisting Activity records.
+type Activity interface {
+	ActivityByID(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
+	ActivityByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error)
+	Create(ctx context.Context, d db.DBTX, params ActivityCreateParams) (*db.Activity, error)
+	Update(ctx context.Context, d db.DBTX, id int, params ActivityUpdateParams) (*db.Activity, error)
+	Delete(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
+}
