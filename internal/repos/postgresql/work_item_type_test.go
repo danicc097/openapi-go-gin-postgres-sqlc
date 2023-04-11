@@ -11,16 +11,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
+func TestWorkItemType_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
 	projectRepo := postgresql.NewProject()
 	workItemTypeRepo := postgresql.NewWorkItemType()
 
 	ctx := context.Background()
-	project, err := projectRepo.ProjectByName(ctx, testPool, internalmodels.ProjectDemoProject)
+	project, err := projectRepo.ByName(ctx, testPool, internalmodels.ProjectDemoProject)
 	if err != nil {
-		t.Fatalf("projectRepo.ProjectByName unexpected error = %v", err)
+		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
 	}
 	tcp := postgresqltestutil.RandomWorkItemTypeCreateParams(t, project.ProjectID)
 
@@ -44,7 +44,7 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 			args: argsString{
 				filter:    workItemType.Name,
 				projectID: workItemType.ProjectID,
-				fn:        (workItemTypeRepo.WorkItemTypeByName),
+				fn:        (workItemTypeRepo.ByName),
 			},
 		},
 	}
@@ -87,7 +87,7 @@ func TestWorkItemType_WorkItemTypeByIndexedQueries(t *testing.T) {
 			name: "workItemType_id",
 			args: argsInt{
 				filter: workItemType.WorkItemTypeID,
-				fn:     (workItemTypeRepo.WorkItemTypeByID),
+				fn:     (workItemTypeRepo.ByID),
 			},
 		},
 	}

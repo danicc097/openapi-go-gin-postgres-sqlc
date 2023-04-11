@@ -101,7 +101,7 @@ func TestUser_MarkAsDeleted(t *testing.T) {
 				return
 			}
 
-			_, err = u.UserByID(context.Background(), testPool, tt.args.id)
+			_, err = u.ByID(context.Background(), testPool, tt.args.id)
 			if err == nil {
 				t.Error("wanted error but got nothing", err)
 
@@ -112,7 +112,7 @@ func TestUser_MarkAsDeleted(t *testing.T) {
 	}
 }
 
-func TestUser_UserByIndexedQueries(t *testing.T) {
+func TestUser_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
 	userRepo := postgresql.NewUser()
@@ -132,21 +132,21 @@ func TestUser_UserByIndexedQueries(t *testing.T) {
 			name: "external_id",
 			args: argsString{
 				filter: user.ExternalID,
-				fn:     (userRepo.UserByExternalID),
+				fn:     (userRepo.ByExternalID),
 			},
 		},
 		{
 			name: "email",
 			args: argsString{
 				filter: user.Email,
-				fn:     (userRepo.UserByEmail),
+				fn:     (userRepo.ByEmail),
 			},
 		},
 		{
 			name: "username",
 			args: argsString{
 				filter: user.Username,
-				fn:     (userRepo.UserByUsername),
+				fn:     (userRepo.ByUsername),
 			},
 		},
 	}
@@ -190,7 +190,7 @@ func TestUser_UserByIndexedQueries(t *testing.T) {
 			name: "user_id",
 			args: argsUUID{
 				filter: user.UserID,
-				fn:     (userRepo.UserByID),
+				fn:     (userRepo.ByID),
 			},
 		},
 	}
@@ -263,7 +263,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 			t.Fatalf("unexpected error = %v", err)
 		}
 
-		user, err := userRepo.UserByAPIKey(context.Background(), testPool, uak.APIKey)
+		user, err := userRepo.ByAPIKey(context.Background(), testPool, uak.APIKey)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
@@ -277,7 +277,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		errContains := errNoRows
 
-		_, err := userRepo.UserByAPIKey(context.Background(), testPool, "missing")
+		_, err := userRepo.ByAPIKey(context.Background(), testPool, "missing")
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}

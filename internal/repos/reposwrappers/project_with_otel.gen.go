@@ -36,9 +36,9 @@ func NewProjectWithTracing(base repos.Project, instance string, spanDecorator ..
 	return d
 }
 
-// ProjectByID implements repos.Project
-func (_d ProjectWithTracing) ProjectByID(ctx context.Context, d db.DBTX, id int) (pp1 *db.Project, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Project.ProjectByID")
+// ByID implements repos.Project
+func (_d ProjectWithTracing) ByID(ctx context.Context, d db.DBTX, id int) (pp1 *db.Project, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Project.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -57,12 +57,12 @@ func (_d ProjectWithTracing) ProjectByID(ctx context.Context, d db.DBTX, id int)
 
 		_span.End()
 	}()
-	return _d.Project.ProjectByID(ctx, d, id)
+	return _d.Project.ByID(ctx, d, id)
 }
 
-// ProjectByName implements repos.Project
-func (_d ProjectWithTracing) ProjectByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (pp1 *db.Project, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Project.ProjectByName")
+// ByName implements repos.Project
+func (_d ProjectWithTracing) ByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (pp1 *db.Project, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Project.ByName")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -81,5 +81,5 @@ func (_d ProjectWithTracing) ProjectByName(ctx context.Context, d db.DBTX, name 
 
 		_span.End()
 	}()
-	return _d.Project.ProjectByName(ctx, d, name)
+	return _d.Project.ByName(ctx, d, name)
 }

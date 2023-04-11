@@ -28,6 +28,44 @@ func NewTeamWithRetry(base repos.Team, retryCount int, retryInterval time.Durati
 	}
 }
 
+// ByID implements repos.Team
+func (_d TeamWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.Team, err error) {
+	tp1, err = _d.Team.ByID(ctx, d, id)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		tp1, err = _d.Team.ByID(ctx, d, id)
+	}
+	return
+}
+
+// ByName implements repos.Team
+func (_d TeamWithRetry) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (tp1 *db.Team, err error) {
+	tp1, err = _d.Team.ByName(ctx, d, name, projectID)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		tp1, err = _d.Team.ByName(ctx, d, name, projectID)
+	}
+	return
+}
+
 // Create implements repos.Team
 func (_d TeamWithRetry) Create(ctx context.Context, d db.DBTX, params repos.TeamCreateParams) (tp1 *db.Team, err error) {
 	tp1, err = _d.Team.Create(ctx, d, params)
@@ -62,44 +100,6 @@ func (_d TeamWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (tp1 *db.
 		case <-_ticker.C:
 		}
 		tp1, err = _d.Team.Delete(ctx, d, id)
-	}
-	return
-}
-
-// TeamByID implements repos.Team
-func (_d TeamWithRetry) TeamByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.Team, err error) {
-	tp1, err = _d.Team.TeamByID(ctx, d, id)
-	if err == nil || _d._retryCount < 1 {
-		return
-	}
-	_ticker := time.NewTicker(_d._retryInterval)
-	defer _ticker.Stop()
-	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-_ticker.C:
-		}
-		tp1, err = _d.Team.TeamByID(ctx, d, id)
-	}
-	return
-}
-
-// TeamByName implements repos.Team
-func (_d TeamWithRetry) TeamByName(ctx context.Context, d db.DBTX, name string, projectID int) (tp1 *db.Team, err error) {
-	tp1, err = _d.Team.TeamByName(ctx, d, name, projectID)
-	if err == nil || _d._retryCount < 1 {
-		return
-	}
-	_ticker := time.NewTicker(_d._retryInterval)
-	defer _ticker.Stop()
-	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-_ticker.C:
-		}
-		tp1, err = _d.Team.TeamByName(ctx, d, name, projectID)
 	}
 	return
 }

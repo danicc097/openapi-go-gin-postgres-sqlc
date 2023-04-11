@@ -22,7 +22,7 @@ func NewWorkItemType() *WorkItemType {
 
 var _ repos.WorkItemType = (*WorkItemType)(nil)
 
-func (u *WorkItemType) Create(ctx context.Context, d db.DBTX, params repos.WorkItemTypeCreateParams) (*db.WorkItemType, error) {
+func (wit *WorkItemType) Create(ctx context.Context, d db.DBTX, params repos.WorkItemTypeCreateParams) (*db.WorkItemType, error) {
 	workItemType := &db.WorkItemType{
 		Name:        params.Name,
 		Description: params.Description,
@@ -37,8 +37,8 @@ func (u *WorkItemType) Create(ctx context.Context, d db.DBTX, params repos.WorkI
 	return workItemType, nil
 }
 
-func (u *WorkItemType) Update(ctx context.Context, d db.DBTX, id int, params repos.WorkItemTypeUpdateParams) (*db.WorkItemType, error) {
-	workItemType, err := u.WorkItemTypeByID(ctx, d, id)
+func (wit *WorkItemType) Update(ctx context.Context, d db.DBTX, id int, params repos.WorkItemTypeUpdateParams) (*db.WorkItemType, error) {
+	workItemType, err := wit.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemType by id %w", parseErrorDetail(err))
 	}
@@ -61,7 +61,7 @@ func (u *WorkItemType) Update(ctx context.Context, d db.DBTX, id int, params rep
 	return workItemType, err
 }
 
-func (u *WorkItemType) WorkItemTypeByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemType, error) {
+func (wit *WorkItemType) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemType, error) {
 	workItemType, err := db.WorkItemTypeByNameProjectID(ctx, d, name, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemType: %w", parseErrorDetail(err))
@@ -70,7 +70,7 @@ func (u *WorkItemType) WorkItemTypeByName(ctx context.Context, d db.DBTX, name s
 	return workItemType, nil
 }
 
-func (u *WorkItemType) WorkItemTypeByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error) {
+func (wit *WorkItemType) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error) {
 	workItemType, err := db.WorkItemTypeByWorkItemTypeID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemType: %w", parseErrorDetail(err))
@@ -79,8 +79,8 @@ func (u *WorkItemType) WorkItemTypeByID(ctx context.Context, d db.DBTX, id int) 
 	return workItemType, nil
 }
 
-func (u *WorkItemType) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error) {
-	workItemType, err := u.WorkItemTypeByID(ctx, d, id)
+func (wit *WorkItemType) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error) {
+	workItemType, err := wit.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemType by id %w", parseErrorDetail(err))
 	}

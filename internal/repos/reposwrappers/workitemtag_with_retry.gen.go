@@ -28,6 +28,44 @@ func NewWorkItemTagWithRetry(base repos.WorkItemTag, retryCount int, retryInterv
 	}
 }
 
+// ByID implements repos.WorkItemTag
+func (_d WorkItemTagWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemTag, err error) {
+	wp1, err = _d.WorkItemTag.ByID(ctx, d, id)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		wp1, err = _d.WorkItemTag.ByID(ctx, d, id)
+	}
+	return
+}
+
+// ByName implements repos.WorkItemTag
+func (_d WorkItemTagWithRetry) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemTag, err error) {
+	wp1, err = _d.WorkItemTag.ByName(ctx, d, name, projectID)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		wp1, err = _d.WorkItemTag.ByName(ctx, d, name, projectID)
+	}
+	return
+}
+
 // Create implements repos.WorkItemTag
 func (_d WorkItemTagWithRetry) Create(ctx context.Context, d db.DBTX, params repos.WorkItemTagCreateParams) (wp1 *db.WorkItemTag, err error) {
 	wp1, err = _d.WorkItemTag.Create(ctx, d, params)
@@ -81,44 +119,6 @@ func (_d WorkItemTagWithRetry) Update(ctx context.Context, d db.DBTX, id int, pa
 		case <-_ticker.C:
 		}
 		wp1, err = _d.WorkItemTag.Update(ctx, d, id, params)
-	}
-	return
-}
-
-// WorkItemTagByID implements repos.WorkItemTag
-func (_d WorkItemTagWithRetry) WorkItemTagByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemTag, err error) {
-	wp1, err = _d.WorkItemTag.WorkItemTagByID(ctx, d, id)
-	if err == nil || _d._retryCount < 1 {
-		return
-	}
-	_ticker := time.NewTicker(_d._retryInterval)
-	defer _ticker.Stop()
-	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-_ticker.C:
-		}
-		wp1, err = _d.WorkItemTag.WorkItemTagByID(ctx, d, id)
-	}
-	return
-}
-
-// WorkItemTagByName implements repos.WorkItemTag
-func (_d WorkItemTagWithRetry) WorkItemTagByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemTag, err error) {
-	wp1, err = _d.WorkItemTag.WorkItemTagByName(ctx, d, name, projectID)
-	if err == nil || _d._retryCount < 1 {
-		return
-	}
-	_ticker := time.NewTicker(_d._retryInterval)
-	defer _ticker.Stop()
-	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-_ticker.C:
-		}
-		wp1, err = _d.WorkItemTag.WorkItemTagByName(ctx, d, name, projectID)
 	}
 	return
 }

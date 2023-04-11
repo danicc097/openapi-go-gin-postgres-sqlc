@@ -19,15 +19,15 @@ type WorkItemTagWithTimeout struct {
 }
 
 type WorkItemTagWithTimeoutConfig struct {
+	ByIDTimeout time.Duration
+
+	ByNameTimeout time.Duration
+
 	CreateTimeout time.Duration
 
 	DeleteTimeout time.Duration
 
 	UpdateTimeout time.Duration
-
-	WorkItemTagByIDTimeout time.Duration
-
-	WorkItemTagByNameTimeout time.Duration
 }
 
 // NewWorkItemTagWithTimeout returns WorkItemTagWithTimeout
@@ -36,6 +36,26 @@ func NewWorkItemTagWithTimeout(base repos.WorkItemTag, config WorkItemTagWithTim
 		WorkItemTag: base,
 		config:      config,
 	}
+}
+
+// ByID implements repos.WorkItemTag
+func (_d WorkItemTagWithTimeout) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemTag, err error) {
+	var cancelFunc func()
+	if _d.config.ByIDTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
+		defer cancelFunc()
+	}
+	return _d.WorkItemTag.ByID(ctx, d, id)
+}
+
+// ByName implements repos.WorkItemTag
+func (_d WorkItemTagWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemTag, err error) {
+	var cancelFunc func()
+	if _d.config.ByNameTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByNameTimeout)
+		defer cancelFunc()
+	}
+	return _d.WorkItemTag.ByName(ctx, d, name, projectID)
 }
 
 // Create implements repos.WorkItemTag
@@ -66,24 +86,4 @@ func (_d WorkItemTagWithTimeout) Update(ctx context.Context, d db.DBTX, id int, 
 		defer cancelFunc()
 	}
 	return _d.WorkItemTag.Update(ctx, d, id, params)
-}
-
-// WorkItemTagByID implements repos.WorkItemTag
-func (_d WorkItemTagWithTimeout) WorkItemTagByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemTag, err error) {
-	var cancelFunc func()
-	if _d.config.WorkItemTagByIDTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.WorkItemTagByIDTimeout)
-		defer cancelFunc()
-	}
-	return _d.WorkItemTag.WorkItemTagByID(ctx, d, id)
-}
-
-// WorkItemTagByName implements repos.WorkItemTag
-func (_d WorkItemTagWithTimeout) WorkItemTagByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemTag, err error) {
-	var cancelFunc func()
-	if _d.config.WorkItemTagByNameTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.WorkItemTagByNameTimeout)
-		defer cancelFunc()
-	}
-	return _d.WorkItemTag.WorkItemTagByName(ctx, d, name, projectID)
 }

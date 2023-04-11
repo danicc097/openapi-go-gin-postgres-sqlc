@@ -35,6 +35,55 @@ func NewWorkItemTypeWithTracing(base repos.WorkItemType, instance string, spanDe
 	return d
 }
 
+// ByID implements repos.WorkItemType
+func (_d WorkItemTypeWithTracing) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemType, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemType.ByID")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx": ctx,
+				"d":   d,
+				"id":  id}, map[string]interface{}{
+				"wp1": wp1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.WorkItemType.ByID(ctx, d, id)
+}
+
+// ByName implements repos.WorkItemType
+func (_d WorkItemTypeWithTracing) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemType, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemType.ByName")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":       ctx,
+				"d":         d,
+				"name":      name,
+				"projectID": projectID}, map[string]interface{}{
+				"wp1": wp1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.WorkItemType.ByName(ctx, d, name, projectID)
+}
+
 // Create implements repos.WorkItemType
 func (_d WorkItemTypeWithTracing) Create(ctx context.Context, d db.DBTX, params repos.WorkItemTypeCreateParams) (wp1 *db.WorkItemType, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemType.Create")
@@ -106,53 +155,4 @@ func (_d WorkItemTypeWithTracing) Update(ctx context.Context, d db.DBTX, id int,
 		_span.End()
 	}()
 	return _d.WorkItemType.Update(ctx, d, id, params)
-}
-
-// WorkItemTypeByID implements repos.WorkItemType
-func (_d WorkItemTypeWithTracing) WorkItemTypeByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemType, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemType.WorkItemTypeByID")
-	defer func() {
-		if _d._spanDecorator != nil {
-			_d._spanDecorator(_span, map[string]interface{}{
-				"ctx": ctx,
-				"d":   d,
-				"id":  id}, map[string]interface{}{
-				"wp1": wp1,
-				"err": err})
-		} else if err != nil {
-			_span.RecordError(err)
-			_span.SetAttributes(
-				attribute.String("event", "error"),
-				attribute.String("message", err.Error()),
-			)
-		}
-
-		_span.End()
-	}()
-	return _d.WorkItemType.WorkItemTypeByID(ctx, d, id)
-}
-
-// WorkItemTypeByName implements repos.WorkItemType
-func (_d WorkItemTypeWithTracing) WorkItemTypeByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemType, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemType.WorkItemTypeByName")
-	defer func() {
-		if _d._spanDecorator != nil {
-			_d._spanDecorator(_span, map[string]interface{}{
-				"ctx":       ctx,
-				"d":         d,
-				"name":      name,
-				"projectID": projectID}, map[string]interface{}{
-				"wp1": wp1,
-				"err": err})
-		} else if err != nil {
-			_span.RecordError(err)
-			_span.SetAttributes(
-				attribute.String("event", "error"),
-				attribute.String("message", err.Error()),
-			)
-		}
-
-		_span.End()
-	}()
-	return _d.WorkItemType.WorkItemTypeByName(ctx, d, name, projectID)
 }

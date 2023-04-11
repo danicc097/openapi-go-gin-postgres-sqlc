@@ -21,7 +21,7 @@ func Test_MergeConfigFields(t *testing.T) {
 	t.Parallel()
 
 	fakeProjectRepo := &repostesting.FakeProject{}
-	fakeProjectRepo.ProjectByIDStub = func(ctx context.Context, d db.DBTX, i int) (*db.Project, error) {
+	fakeProjectRepo.ByIDStub = func(ctx context.Context, d db.DBTX, i int) (*db.Project, error) {
 		return &db.Project{
 			Name: internalmodels.ProjectDemoProject,
 			BoardConfig: pgtype.JSONB{Bytes: []byte(`

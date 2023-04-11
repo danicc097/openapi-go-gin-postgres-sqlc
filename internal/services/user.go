@@ -63,7 +63,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	var rank int16
 	role, err := u.authzsvc.RoleByName(string(params.Role))
 	if err != nil {
-		return nil, errors.Wrap(err, "authzsvc.RoleByName")
+		return nil, errors.Wrap(err, "authzsvc.ByName")
 	}
 	rank = role.Rank
 
@@ -109,14 +109,14 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		return nil, internal.NewErrorf(internal.ErrorCodeInvalidUUID, "could not parse UUID")
 	}
 
-	user, err := u.urepo.UserByID(ctx, d, uid)
+	user, err := u.urepo.ByID(ctx, d, uid)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.UserByID")
+		return nil, errors.Wrap(err, "urepo.ByID")
 	}
 
 	adminRole, err := u.authzsvc.RoleByName(string(models.RoleAdmin))
 	if err != nil {
-		return nil, errors.Wrap(err, "authzsvc.RoleByName")
+		return nil, errors.Wrap(err, "authzsvc.ByName")
 	}
 
 	if user.UserID != caller.UserID &&
@@ -150,14 +150,14 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		return nil, internal.NewErrorf(internal.ErrorCodeInvalidUUID, "could not parse UUID")
 	}
 
-	user, err := u.urepo.UserByID(ctx, d, uid)
+	user, err := u.urepo.ByID(ctx, d, uid)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.UserByID")
+		return nil, errors.Wrap(err, "urepo.ByID")
 	}
 
 	adminRole, err := u.authzsvc.RoleByName(string(models.RoleAdmin))
 	if err != nil {
-		return nil, errors.Wrap(err, "authzsvc.RoleByName")
+		return nil, errors.Wrap(err, "authzsvc.ByName")
 	}
 
 	if caller.RoleRank < adminRole.Rank {
@@ -170,7 +170,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 	if params.Role != nil {
 		role, err := u.authzsvc.RoleByName(string(*params.Role))
 		if err != nil {
-			return nil, errors.Wrap(err, "authzsvc.RoleByName")
+			return nil, errors.Wrap(err, "authzsvc.ByName")
 		}
 		if role.Rank > caller.RoleRank {
 			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set a user rank higher than self")
@@ -227,49 +227,49 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 	return uak, nil
 }
 
-// UserByExternalID gets a user by ExternalID.
-func (u *User) UserByExternalID(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
-	defer newOTELSpan(ctx, "User.UserByExternalID").End()
+// ByExternalID gets a user by ExternalID.
+func (u *User) ByExternalID(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
+	defer newOTELSpan(ctx, "User.ByExternalID").End()
 
-	user, err := u.urepo.UserByExternalID(ctx, d, id)
+	user, err := u.urepo.ByExternalID(ctx, d, id)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.UserByExternalID")
+		return nil, errors.Wrap(err, "urepo.ByExternalID")
 	}
 
 	return user, nil
 }
 
-// UserByEmail gets a user by email.
-func (u *User) UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error) {
-	defer newOTELSpan(ctx, "User.UserByEmail").End()
+// ByEmail gets a user by email.
+func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error) {
+	defer newOTELSpan(ctx, "User.ByEmail").End()
 
-	user, err := u.urepo.UserByEmail(ctx, d, email)
+	user, err := u.urepo.ByEmail(ctx, d, email)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.UserByEmail")
+		return nil, errors.Wrap(err, "urepo.ByEmail")
 	}
 
 	return user, nil
 }
 
-// UserByUsername gets a user by username.
-func (u *User) UserByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error) {
-	defer newOTELSpan(ctx, "User.UserByUsername").End()
+// ByUsername gets a user by username.
+func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error) {
+	defer newOTELSpan(ctx, "User.ByUsername").End()
 
-	user, err := u.urepo.UserByUsername(ctx, d, username)
+	user, err := u.urepo.ByUsername(ctx, d, username)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.UserByUsername")
+		return nil, errors.Wrap(err, "urepo.ByUsername")
 	}
 
 	return user, nil
 }
 
-// UserByAPIKey gets a user by apiKey.
-func (u *User) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error) {
-	defer newOTELSpan(ctx, "User.UserByAPIKey").End()
+// ByAPIKey gets a user by apiKey.
+func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error) {
+	defer newOTELSpan(ctx, "User.ByAPIKey").End()
 
-	user, err := u.urepo.UserByAPIKey(ctx, d, apiKey)
+	user, err := u.urepo.ByAPIKey(ctx, d, apiKey)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.UserByAPIKey")
+		return nil, errors.Wrap(err, "urepo.ByAPIKey")
 	}
 
 	return user, nil
@@ -280,7 +280,7 @@ func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userI
 	// this will also set user.has_new_personal_notifications to false in the same tx
 	return []db.GetUserNotificationsRow{}, nil
 
-	// defer newOTELSpan(ctx, "User.UserByAPIKey").End()
+	// defer newOTELSpan(ctx, "User.ByAPIKey").End()
 
 	// uid, err := uuid.Parse(userID)
 	// if err != nil {
@@ -289,7 +289,7 @@ func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userI
 
 	// user, err := u.notificationrepo.LatestUserNotifications(ctx, d, db.GetUserNotificationsParams{UserID: uid})
 	// if err != nil {
-	// 	return nil, errors.Wrap(err, "urepo.UserByAPIKey")
+	// 	return nil, errors.Wrap(err, "urepo.ByAPIKey")
 	// }
 
 	// return user, nil

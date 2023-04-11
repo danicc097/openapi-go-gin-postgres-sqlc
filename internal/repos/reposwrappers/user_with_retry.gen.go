@@ -29,6 +29,101 @@ func NewUserWithRetry(base repos.User, retryCount int, retryInterval time.Durati
 	}
 }
 
+// ByAPIKey implements repos.User
+func (_d UserWithRetry) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.User, err error) {
+	up1, err = _d.User.ByAPIKey(ctx, d, apiKey)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		up1, err = _d.User.ByAPIKey(ctx, d, apiKey)
+	}
+	return
+}
+
+// ByEmail implements repos.User
+func (_d UserWithRetry) ByEmail(ctx context.Context, d db.DBTX, email string) (up1 *db.User, err error) {
+	up1, err = _d.User.ByEmail(ctx, d, email)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		up1, err = _d.User.ByEmail(ctx, d, email)
+	}
+	return
+}
+
+// ByExternalID implements repos.User
+func (_d UserWithRetry) ByExternalID(ctx context.Context, d db.DBTX, extID string) (up1 *db.User, err error) {
+	up1, err = _d.User.ByExternalID(ctx, d, extID)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		up1, err = _d.User.ByExternalID(ctx, d, extID)
+	}
+	return
+}
+
+// ByID implements repos.User
+func (_d UserWithRetry) ByID(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
+	up1, err = _d.User.ByID(ctx, d, id)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		up1, err = _d.User.ByID(ctx, d, id)
+	}
+	return
+}
+
+// ByUsername implements repos.User
+func (_d UserWithRetry) ByUsername(ctx context.Context, d db.DBTX, username string) (up1 *db.User, err error) {
+	up1, err = _d.User.ByUsername(ctx, d, username)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		up1, err = _d.User.ByUsername(ctx, d, username)
+	}
+	return
+}
+
 // Create implements repos.User
 func (_d UserWithRetry) Create(ctx context.Context, d db.DBTX, params repos.UserCreateParams) (up1 *db.User, err error) {
 	up1, err = _d.User.Create(ctx, d, params)
@@ -101,101 +196,6 @@ func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, id uuid.UUID, par
 		case <-_ticker.C:
 		}
 		up1, err = _d.User.Update(ctx, d, id, params)
-	}
-	return
-}
-
-// UserByAPIKey implements repos.User
-func (_d UserWithRetry) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.User, err error) {
-	up1, err = _d.User.UserByAPIKey(ctx, d, apiKey)
-	if err == nil || _d._retryCount < 1 {
-		return
-	}
-	_ticker := time.NewTicker(_d._retryInterval)
-	defer _ticker.Stop()
-	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-_ticker.C:
-		}
-		up1, err = _d.User.UserByAPIKey(ctx, d, apiKey)
-	}
-	return
-}
-
-// UserByEmail implements repos.User
-func (_d UserWithRetry) UserByEmail(ctx context.Context, d db.DBTX, email string) (up1 *db.User, err error) {
-	up1, err = _d.User.UserByEmail(ctx, d, email)
-	if err == nil || _d._retryCount < 1 {
-		return
-	}
-	_ticker := time.NewTicker(_d._retryInterval)
-	defer _ticker.Stop()
-	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-_ticker.C:
-		}
-		up1, err = _d.User.UserByEmail(ctx, d, email)
-	}
-	return
-}
-
-// UserByExternalID implements repos.User
-func (_d UserWithRetry) UserByExternalID(ctx context.Context, d db.DBTX, extID string) (up1 *db.User, err error) {
-	up1, err = _d.User.UserByExternalID(ctx, d, extID)
-	if err == nil || _d._retryCount < 1 {
-		return
-	}
-	_ticker := time.NewTicker(_d._retryInterval)
-	defer _ticker.Stop()
-	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-_ticker.C:
-		}
-		up1, err = _d.User.UserByExternalID(ctx, d, extID)
-	}
-	return
-}
-
-// UserByID implements repos.User
-func (_d UserWithRetry) UserByID(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
-	up1, err = _d.User.UserByID(ctx, d, id)
-	if err == nil || _d._retryCount < 1 {
-		return
-	}
-	_ticker := time.NewTicker(_d._retryInterval)
-	defer _ticker.Stop()
-	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-_ticker.C:
-		}
-		up1, err = _d.User.UserByID(ctx, d, id)
-	}
-	return
-}
-
-// UserByUsername implements repos.User
-func (_d UserWithRetry) UserByUsername(ctx context.Context, d db.DBTX, username string) (up1 *db.User, err error) {
-	up1, err = _d.User.UserByUsername(ctx, d, username)
-	if err == nil || _d._retryCount < 1 {
-		return
-	}
-	_ticker := time.NewTicker(_d._retryInterval)
-	defer _ticker.Stop()
-	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-_ticker.C:
-		}
-		up1, err = _d.User.UserByUsername(ctx, d, username)
 	}
 	return
 }

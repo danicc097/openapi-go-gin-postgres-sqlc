@@ -22,7 +22,7 @@ func NewActivity() *Activity {
 
 var _ repos.Activity = (*Activity)(nil)
 
-func (u *Activity) Create(ctx context.Context, d db.DBTX, params repos.ActivityCreateParams) (*db.Activity, error) {
+func (a *Activity) Create(ctx context.Context, d db.DBTX, params repos.ActivityCreateParams) (*db.Activity, error) {
 	workItemTag := &db.Activity{
 		Name:         params.Name,
 		Description:  params.Description,
@@ -37,8 +37,8 @@ func (u *Activity) Create(ctx context.Context, d db.DBTX, params repos.ActivityC
 	return workItemTag, nil
 }
 
-func (u *Activity) Update(ctx context.Context, d db.DBTX, id int, params repos.ActivityUpdateParams) (*db.Activity, error) {
-	workItemTag, err := u.ActivityByID(ctx, d, id)
+func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params repos.ActivityUpdateParams) (*db.Activity, error) {
+	workItemTag, err := a.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemTag by id %w", parseErrorDetail(err))
 	}
@@ -61,7 +61,7 @@ func (u *Activity) Update(ctx context.Context, d db.DBTX, id int, params repos.A
 	return workItemTag, err
 }
 
-func (u *Activity) ActivityByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error) {
+func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error) {
 	workItemTag, err := db.ActivityByNameProjectID(ctx, d, name, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemTag: %w", parseErrorDetail(err))
@@ -70,7 +70,7 @@ func (u *Activity) ActivityByName(ctx context.Context, d db.DBTX, name string, p
 	return workItemTag, nil
 }
 
-func (u *Activity) ActivityByID(ctx context.Context, d db.DBTX, id int) (*db.Activity, error) {
+func (a *Activity) ByID(ctx context.Context, d db.DBTX, id int) (*db.Activity, error) {
 	workItemTag, err := db.ActivityByActivityID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemTag: %w", parseErrorDetail(err))
@@ -79,8 +79,8 @@ func (u *Activity) ActivityByID(ctx context.Context, d db.DBTX, id int) (*db.Act
 	return workItemTag, nil
 }
 
-func (u *Activity) Delete(ctx context.Context, d db.DBTX, id int) (*db.Activity, error) {
-	workItemTag, err := u.ActivityByID(ctx, d, id)
+func (a *Activity) Delete(ctx context.Context, d db.DBTX, id int) (*db.Activity, error) {
+	workItemTag, err := a.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemTag by id %w", parseErrorDetail(err))
 	}

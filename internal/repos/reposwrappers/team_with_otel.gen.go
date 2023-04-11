@@ -35,6 +35,55 @@ func NewTeamWithTracing(base repos.Team, instance string, spanDecorator ...func(
 	return d
 }
 
+// ByID implements repos.Team
+func (_d TeamWithTracing) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.Team, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Team.ByID")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx": ctx,
+				"d":   d,
+				"id":  id}, map[string]interface{}{
+				"tp1": tp1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.Team.ByID(ctx, d, id)
+}
+
+// ByName implements repos.Team
+func (_d TeamWithTracing) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (tp1 *db.Team, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Team.ByName")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":       ctx,
+				"d":         d,
+				"name":      name,
+				"projectID": projectID}, map[string]interface{}{
+				"tp1": tp1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.Team.ByName(ctx, d, name, projectID)
+}
+
 // Create implements repos.Team
 func (_d TeamWithTracing) Create(ctx context.Context, d db.DBTX, params repos.TeamCreateParams) (tp1 *db.Team, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Team.Create")
@@ -81,55 +130,6 @@ func (_d TeamWithTracing) Delete(ctx context.Context, d db.DBTX, id int) (tp1 *d
 		_span.End()
 	}()
 	return _d.Team.Delete(ctx, d, id)
-}
-
-// TeamByID implements repos.Team
-func (_d TeamWithTracing) TeamByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.Team, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Team.TeamByID")
-	defer func() {
-		if _d._spanDecorator != nil {
-			_d._spanDecorator(_span, map[string]interface{}{
-				"ctx": ctx,
-				"d":   d,
-				"id":  id}, map[string]interface{}{
-				"tp1": tp1,
-				"err": err})
-		} else if err != nil {
-			_span.RecordError(err)
-			_span.SetAttributes(
-				attribute.String("event", "error"),
-				attribute.String("message", err.Error()),
-			)
-		}
-
-		_span.End()
-	}()
-	return _d.Team.TeamByID(ctx, d, id)
-}
-
-// TeamByName implements repos.Team
-func (_d TeamWithTracing) TeamByName(ctx context.Context, d db.DBTX, name string, projectID int) (tp1 *db.Team, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Team.TeamByName")
-	defer func() {
-		if _d._spanDecorator != nil {
-			_d._spanDecorator(_span, map[string]interface{}{
-				"ctx":       ctx,
-				"d":         d,
-				"name":      name,
-				"projectID": projectID}, map[string]interface{}{
-				"tp1": tp1,
-				"err": err})
-		} else if err != nil {
-			_span.RecordError(err)
-			_span.SetAttributes(
-				attribute.String("event", "error"),
-				attribute.String("message", err.Error()),
-			)
-		}
-
-		_span.End()
-	}()
-	return _d.Team.TeamByName(ctx, d, name, projectID)
 }
 
 // Update implements repos.Team

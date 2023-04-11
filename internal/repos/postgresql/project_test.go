@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestProject_ProjectByIndexedQueries(t *testing.T) {
+func TestProject_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
 	projectRepo := postgresql.NewProject()
@@ -31,7 +31,7 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 			name: "name",
 			args: argsString{
 				filter: internalmodels.ProjectDemoProject,
-				fn:     (projectRepo.ProjectByName),
+				fn:     (projectRepo.ByName),
 			},
 		},
 	}
@@ -74,7 +74,7 @@ func TestProject_ProjectByIndexedQueries(t *testing.T) {
 			name: "project_id",
 			args: argsInt{
 				filter: projectID,
-				fn:     (projectRepo.ProjectByID),
+				fn:     (projectRepo.ByID),
 			},
 		},
 	}

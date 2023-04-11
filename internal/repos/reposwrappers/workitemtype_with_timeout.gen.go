@@ -19,15 +19,15 @@ type WorkItemTypeWithTimeout struct {
 }
 
 type WorkItemTypeWithTimeoutConfig struct {
+	ByIDTimeout time.Duration
+
+	ByNameTimeout time.Duration
+
 	CreateTimeout time.Duration
 
 	DeleteTimeout time.Duration
 
 	UpdateTimeout time.Duration
-
-	WorkItemTypeByIDTimeout time.Duration
-
-	WorkItemTypeByNameTimeout time.Duration
 }
 
 // NewWorkItemTypeWithTimeout returns WorkItemTypeWithTimeout
@@ -36,6 +36,26 @@ func NewWorkItemTypeWithTimeout(base repos.WorkItemType, config WorkItemTypeWith
 		WorkItemType: base,
 		config:       config,
 	}
+}
+
+// ByID implements repos.WorkItemType
+func (_d WorkItemTypeWithTimeout) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemType, err error) {
+	var cancelFunc func()
+	if _d.config.ByIDTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
+		defer cancelFunc()
+	}
+	return _d.WorkItemType.ByID(ctx, d, id)
+}
+
+// ByName implements repos.WorkItemType
+func (_d WorkItemTypeWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemType, err error) {
+	var cancelFunc func()
+	if _d.config.ByNameTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByNameTimeout)
+		defer cancelFunc()
+	}
+	return _d.WorkItemType.ByName(ctx, d, name, projectID)
 }
 
 // Create implements repos.WorkItemType
@@ -66,24 +86,4 @@ func (_d WorkItemTypeWithTimeout) Update(ctx context.Context, d db.DBTX, id int,
 		defer cancelFunc()
 	}
 	return _d.WorkItemType.Update(ctx, d, id, params)
-}
-
-// WorkItemTypeByID implements repos.WorkItemType
-func (_d WorkItemTypeWithTimeout) WorkItemTypeByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemType, err error) {
-	var cancelFunc func()
-	if _d.config.WorkItemTypeByIDTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.WorkItemTypeByIDTimeout)
-		defer cancelFunc()
-	}
-	return _d.WorkItemType.WorkItemTypeByID(ctx, d, id)
-}
-
-// WorkItemTypeByName implements repos.WorkItemType
-func (_d WorkItemTypeWithTimeout) WorkItemTypeByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemType, err error) {
-	var cancelFunc func()
-	if _d.config.WorkItemTypeByNameTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.WorkItemTypeByNameTimeout)
-		defer cancelFunc()
-	}
-	return _d.WorkItemType.WorkItemTypeByName(ctx, d, name, projectID)
 }

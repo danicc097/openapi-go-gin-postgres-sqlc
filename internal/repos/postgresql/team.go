@@ -22,7 +22,7 @@ func NewTeam() *Team {
 
 var _ repos.Team = (*Team)(nil)
 
-func (u *Team) Create(ctx context.Context, d db.DBTX, params repos.TeamCreateParams) (*db.Team, error) {
+func (t *Team) Create(ctx context.Context, d db.DBTX, params repos.TeamCreateParams) (*db.Team, error) {
 	team := &db.Team{
 		Name:        params.Name,
 		Description: params.Description,
@@ -36,8 +36,8 @@ func (u *Team) Create(ctx context.Context, d db.DBTX, params repos.TeamCreatePar
 	return team, nil
 }
 
-func (u *Team) Update(ctx context.Context, d db.DBTX, id int, params repos.TeamUpdateParams) (*db.Team, error) {
-	team, err := u.TeamByID(ctx, d, id)
+func (t *Team) Update(ctx context.Context, d db.DBTX, id int, params repos.TeamUpdateParams) (*db.Team, error) {
+	team, err := t.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get team by id %w", parseErrorDetail(err))
 	}
@@ -57,7 +57,7 @@ func (u *Team) Update(ctx context.Context, d db.DBTX, id int, params repos.TeamU
 	return team, err
 }
 
-func (u *Team) TeamByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Team, error) {
+func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Team, error) {
 	team, err := db.TeamByNameProjectID(ctx, d, name, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get team: %w", parseErrorDetail(err))
@@ -66,7 +66,7 @@ func (u *Team) TeamByName(ctx context.Context, d db.DBTX, name string, projectID
 	return team, nil
 }
 
-func (u *Team) TeamByID(ctx context.Context, d db.DBTX, id int) (*db.Team, error) {
+func (t *Team) ByID(ctx context.Context, d db.DBTX, id int) (*db.Team, error) {
 	team, err := db.TeamByTeamID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get team: %w", parseErrorDetail(err))
@@ -75,8 +75,8 @@ func (u *Team) TeamByID(ctx context.Context, d db.DBTX, id int) (*db.Team, error
 	return team, nil
 }
 
-func (u *Team) Delete(ctx context.Context, d db.DBTX, id int) (*db.Team, error) {
-	team, err := u.TeamByID(ctx, d, id)
+func (t *Team) Delete(ctx context.Context, d db.DBTX, id int) (*db.Team, error) {
+	team, err := t.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get team by id %w", parseErrorDetail(err))
 	}

@@ -11,29 +11,29 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestActivity_ActivityByIndexedQueries(t *testing.T) {
+func TestWorkItemTag_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
 	projectRepo := postgresql.NewProject()
-	activityRepo := postgresql.NewActivity()
+	workItemTagRepo := postgresql.NewWorkItemTag()
 
 	ctx := context.Background()
 
-	project, err := projectRepo.ProjectByName(ctx, testPool, internalmodels.ProjectDemoProject)
+	project, err := projectRepo.ByName(ctx, testPool, internalmodels.ProjectDemoProject)
 	if err != nil {
-		t.Fatalf("projectRepo.ProjectByName unexpected error = %v", err)
+		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
 	}
-	tcp := postgresqltestutil.RandomActivityCreateParams(t, project.ProjectID)
+	tcp := postgresqltestutil.RandomWorkItemTagCreateParams(t, project.ProjectID)
 
-	activity, err := activityRepo.Create(ctx, testPool, tcp)
+	workItemTag, err := workItemTagRepo.Create(ctx, testPool, tcp)
 	if err != nil {
-		t.Fatalf("activityRepo.Create unexpected error = %v", err)
+		t.Fatalf("workItemTagRepo.Create unexpected error = %v", err)
 	}
 
 	type argsString struct {
 		filter    string
 		projectID int
-		fn        func(context.Context, db.DBTX, string, int) (*db.Activity, error)
+		fn        func(context.Context, db.DBTX, string, int) (*db.WorkItemTag, error)
 	}
 
 	testString := []struct {
@@ -43,9 +43,9 @@ func TestActivity_ActivityByIndexedQueries(t *testing.T) {
 		{
 			name: "name",
 			args: argsString{
-				filter:    activity.Name,
-				projectID: activity.ProjectID,
-				fn:        (activityRepo.ActivityByName),
+				filter:    workItemTag.Name,
+				projectID: workItemTag.ProjectID,
+				fn:        (workItemTagRepo.ByName),
 			},
 		},
 	}
@@ -54,11 +54,11 @@ func TestActivity_ActivityByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundActivity, err := tc.args.fn(context.Background(), testPool, tc.args.filter, tc.args.projectID)
+			foundWorkItemTag, err := tc.args.fn(context.Background(), testPool, tc.args.filter, tc.args.projectID)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
-			assert.Equal(t, foundActivity.ActivityID, activity.ActivityID)
+			assert.Equal(t, foundWorkItemTag.WorkItemTagID, workItemTag.WorkItemTagID)
 		})
 
 		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
@@ -66,7 +66,7 @@ func TestActivity_ActivityByIndexedQueries(t *testing.T) {
 
 			errContains := errNoRows
 
-			filter := "inexistent activity"
+			filter := "inexistent workItemTag"
 
 			_, err := tc.args.fn(context.Background(), testPool, filter, tc.args.projectID)
 			if err == nil {
@@ -78,17 +78,17 @@ func TestActivity_ActivityByIndexedQueries(t *testing.T) {
 
 	type argsInt struct {
 		filter int
-		fn     func(context.Context, db.DBTX, int) (*db.Activity, error)
+		fn     func(context.Context, db.DBTX, int) (*db.WorkItemTag, error)
 	}
 	testsInt := []struct {
 		name string
 		args argsInt
 	}{
 		{
-			name: "activity_id",
+			name: "workItemTag_id",
 			args: argsInt{
-				filter: activity.ActivityID,
-				fn:     (activityRepo.ActivityByID),
+				filter: workItemTag.WorkItemTagID,
+				fn:     (workItemTagRepo.ByID),
 			},
 		},
 	}
@@ -97,11 +97,11 @@ func TestActivity_ActivityByIndexedQueries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			foundActivity, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
+			foundWorkItemTag, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
-			assert.Equal(t, foundActivity.ActivityID, activity.ActivityID)
+			assert.Equal(t, foundWorkItemTag.WorkItemTagID, workItemTag.WorkItemTagID)
 		})
 
 		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {

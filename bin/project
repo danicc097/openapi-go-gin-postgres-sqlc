@@ -176,7 +176,8 @@ x.pregen() {
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
     # don't want this to block if getting bad gen later on
-    go build -o pregen cmd/pregen/main.go || echo "Could not rebuild pregen" >&2
+    go build -o pregen cmd/pregen/main.go ||
+      echo "Could not rebuild pregen. If you made changes to it, build it with a compilable app state" >&2
 
     # spec must always be valid. Schemas to generate should exist with the appropiate vendor extension
     ./pregen -env=".env.$env" --validate-spec-only
@@ -329,7 +330,8 @@ x.postgen() {
 
     update_spec_with_structs
 
-    go build -o postgen cmd/postgen/main.go || echo "Could not rebuild postgen" >&2
+    go build -o postgen cmd/postgen/main.go ||
+      echo "Could not rebuild postgen. If you made changes to it, build it with a compilable app state" >&2
     ./postgen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1116,7 +1118,8 @@ update_spec_with_structs() {
   # won't be available in that case. This requires a compilable state in all packages that gen-schema imports
   # to create the map, else we are stuck forever in a bad state unless we checkout a valid version and carefully update.
   # FIXME e.g. operation_ids.gen.go is overridden with an empty template when pregen fails and breaks gen-schema
-  go build -o gen-schema cmd/gen-schema/main.go || echo "Could not rebuild gen-schema" >&2
+  go build -o gen-schema cmd/gen-schema/main.go ||
+    echo "Could not rebuild gen-schema. If you made changes to it, build it with a compilable app state" >&2
 
   ./gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \

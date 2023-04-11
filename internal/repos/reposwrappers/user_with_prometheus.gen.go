@@ -39,6 +39,76 @@ func NewUserWithPrometheus(base repos.User, instanceName string) UserWithPrometh
 	}
 }
 
+// ByAPIKey implements repos.User
+func (_d UserWithPrometheus) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.User, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		userDurationSummaryVec.WithLabelValues(_d.instanceName, "ByAPIKey", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.ByAPIKey(ctx, d, apiKey)
+}
+
+// ByEmail implements repos.User
+func (_d UserWithPrometheus) ByEmail(ctx context.Context, d db.DBTX, email string) (up1 *db.User, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		userDurationSummaryVec.WithLabelValues(_d.instanceName, "ByEmail", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.ByEmail(ctx, d, email)
+}
+
+// ByExternalID implements repos.User
+func (_d UserWithPrometheus) ByExternalID(ctx context.Context, d db.DBTX, extID string) (up1 *db.User, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		userDurationSummaryVec.WithLabelValues(_d.instanceName, "ByExternalID", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.ByExternalID(ctx, d, extID)
+}
+
+// ByID implements repos.User
+func (_d UserWithPrometheus) ByID(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		userDurationSummaryVec.WithLabelValues(_d.instanceName, "ByID", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.ByID(ctx, d, id)
+}
+
+// ByUsername implements repos.User
+func (_d UserWithPrometheus) ByUsername(ctx context.Context, d db.DBTX, username string) (up1 *db.User, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		userDurationSummaryVec.WithLabelValues(_d.instanceName, "ByUsername", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.ByUsername(ctx, d, username)
+}
+
 // Create implements repos.User
 func (_d UserWithPrometheus) Create(ctx context.Context, d db.DBTX, params repos.UserCreateParams) (up1 *db.User, err error) {
 	_since := time.Now()
@@ -93,74 +163,4 @@ func (_d UserWithPrometheus) Update(ctx context.Context, d db.DBTX, id uuid.UUID
 		userDurationSummaryVec.WithLabelValues(_d.instanceName, "Update", result).Observe(time.Since(_since).Seconds())
 	}()
 	return _d.base.Update(ctx, d, id, params)
-}
-
-// UserByAPIKey implements repos.User
-func (_d UserWithPrometheus) UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.User, err error) {
-	_since := time.Now()
-	defer func() {
-		result := "ok"
-		if err != nil {
-			result = "error"
-		}
-
-		userDurationSummaryVec.WithLabelValues(_d.instanceName, "UserByAPIKey", result).Observe(time.Since(_since).Seconds())
-	}()
-	return _d.base.UserByAPIKey(ctx, d, apiKey)
-}
-
-// UserByEmail implements repos.User
-func (_d UserWithPrometheus) UserByEmail(ctx context.Context, d db.DBTX, email string) (up1 *db.User, err error) {
-	_since := time.Now()
-	defer func() {
-		result := "ok"
-		if err != nil {
-			result = "error"
-		}
-
-		userDurationSummaryVec.WithLabelValues(_d.instanceName, "UserByEmail", result).Observe(time.Since(_since).Seconds())
-	}()
-	return _d.base.UserByEmail(ctx, d, email)
-}
-
-// UserByExternalID implements repos.User
-func (_d UserWithPrometheus) UserByExternalID(ctx context.Context, d db.DBTX, extID string) (up1 *db.User, err error) {
-	_since := time.Now()
-	defer func() {
-		result := "ok"
-		if err != nil {
-			result = "error"
-		}
-
-		userDurationSummaryVec.WithLabelValues(_d.instanceName, "UserByExternalID", result).Observe(time.Since(_since).Seconds())
-	}()
-	return _d.base.UserByExternalID(ctx, d, extID)
-}
-
-// UserByID implements repos.User
-func (_d UserWithPrometheus) UserByID(ctx context.Context, d db.DBTX, id uuid.UUID) (up1 *db.User, err error) {
-	_since := time.Now()
-	defer func() {
-		result := "ok"
-		if err != nil {
-			result = "error"
-		}
-
-		userDurationSummaryVec.WithLabelValues(_d.instanceName, "UserByID", result).Observe(time.Since(_since).Seconds())
-	}()
-	return _d.base.UserByID(ctx, d, id)
-}
-
-// UserByUsername implements repos.User
-func (_d UserWithPrometheus) UserByUsername(ctx context.Context, d db.DBTX, username string) (up1 *db.User, err error) {
-	_since := time.Now()
-	defer func() {
-		result := "ok"
-		if err != nil {
-			result = "error"
-		}
-
-		userDurationSummaryVec.WithLabelValues(_d.instanceName, "UserByUsername", result).Observe(time.Since(_since).Seconds())
-	}()
-	return _d.base.UserByUsername(ctx, d, username)
 }

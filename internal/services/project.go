@@ -36,11 +36,11 @@ func NewProject(logger *zap.Logger,
 	}
 }
 
-// addTeam, removeTeam, projectByID
-func (p *Project) ProjectByID(ctx context.Context, d db.DBTX, projectID int) (*db.Project, error) {
-	defer newOTELSpan(ctx, "Project.ProjectByID").End()
+// addTeam, removeTeam, ByID
+func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID int) (*db.Project, error) {
+	defer newOTELSpan(ctx, "Project.ByID").End()
 
-	project, err := p.projectRepo.ProjectByID(ctx, d, projectID)
+	project, err := p.projectRepo.ByID(ctx, d, projectID)
 	if err != nil {
 		return nil, internal.NewErrorf(internal.ErrorCodeNotFound, "project not found")
 	}
@@ -59,7 +59,7 @@ func (p *Project) ProjectByID(ctx context.Context, d db.DBTX, projectID int) (*d
 // TODO accepts projectID to get both pathKeys and obj1 every time
 // (we dont know any of those, just projectID)
 func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID int, obj2 map[string]any) (*models.ProjectConfig, error) {
-	project, err := p.projectRepo.ProjectByID(ctx, d, projectID)
+	project, err := p.projectRepo.ByID(ctx, d, projectID)
 	if err != nil {
 		return nil, internal.NewErrorf(internal.ErrorCodeNotFound, "project not found")
 	}

@@ -38,6 +38,34 @@ func NewWorkItemTagWithPrometheus(base repos.WorkItemTag, instanceName string) W
 	}
 }
 
+// ByID implements repos.WorkItemTag
+func (_d WorkItemTagWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemTag, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		workitemtagDurationSummaryVec.WithLabelValues(_d.instanceName, "ByID", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.ByID(ctx, d, id)
+}
+
+// ByName implements repos.WorkItemTag
+func (_d WorkItemTagWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemTag, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		workitemtagDurationSummaryVec.WithLabelValues(_d.instanceName, "ByName", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.ByName(ctx, d, name, projectID)
+}
+
 // Create implements repos.WorkItemTag
 func (_d WorkItemTagWithPrometheus) Create(ctx context.Context, d db.DBTX, params repos.WorkItemTagCreateParams) (wp1 *db.WorkItemTag, err error) {
 	_since := time.Now()
@@ -78,32 +106,4 @@ func (_d WorkItemTagWithPrometheus) Update(ctx context.Context, d db.DBTX, id in
 		workitemtagDurationSummaryVec.WithLabelValues(_d.instanceName, "Update", result).Observe(time.Since(_since).Seconds())
 	}()
 	return _d.base.Update(ctx, d, id, params)
-}
-
-// WorkItemTagByID implements repos.WorkItemTag
-func (_d WorkItemTagWithPrometheus) WorkItemTagByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemTag, err error) {
-	_since := time.Now()
-	defer func() {
-		result := "ok"
-		if err != nil {
-			result = "error"
-		}
-
-		workitemtagDurationSummaryVec.WithLabelValues(_d.instanceName, "WorkItemTagByID", result).Observe(time.Since(_since).Seconds())
-	}()
-	return _d.base.WorkItemTagByID(ctx, d, id)
-}
-
-// WorkItemTagByName implements repos.WorkItemTag
-func (_d WorkItemTagWithPrometheus) WorkItemTagByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemTag, err error) {
-	_since := time.Now()
-	defer func() {
-		result := "ok"
-		if err != nil {
-			result = "error"
-		}
-
-		workitemtagDurationSummaryVec.WithLabelValues(_d.instanceName, "WorkItemTagByName", result).Observe(time.Since(_since).Seconds())
-	}()
-	return _d.base.WorkItemTagByName(ctx, d, name, projectID)
 }

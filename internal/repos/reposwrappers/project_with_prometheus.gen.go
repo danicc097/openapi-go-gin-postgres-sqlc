@@ -39,8 +39,8 @@ func NewProjectWithPrometheus(base repos.Project, instanceName string) ProjectWi
 	}
 }
 
-// ProjectByID implements repos.Project
-func (_d ProjectWithPrometheus) ProjectByID(ctx context.Context, d db.DBTX, id int) (pp1 *db.Project, err error) {
+// ByID implements repos.Project
+func (_d ProjectWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (pp1 *db.Project, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -48,13 +48,13 @@ func (_d ProjectWithPrometheus) ProjectByID(ctx context.Context, d db.DBTX, id i
 			result = "error"
 		}
 
-		projectDurationSummaryVec.WithLabelValues(_d.instanceName, "ProjectByID", result).Observe(time.Since(_since).Seconds())
+		projectDurationSummaryVec.WithLabelValues(_d.instanceName, "ByID", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.ProjectByID(ctx, d, id)
+	return _d.base.ByID(ctx, d, id)
 }
 
-// ProjectByName implements repos.Project
-func (_d ProjectWithPrometheus) ProjectByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (pp1 *db.Project, err error) {
+// ByName implements repos.Project
+func (_d ProjectWithPrometheus) ByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (pp1 *db.Project, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -62,7 +62,7 @@ func (_d ProjectWithPrometheus) ProjectByName(ctx context.Context, d db.DBTX, na
 			result = "error"
 		}
 
-		projectDurationSummaryVec.WithLabelValues(_d.instanceName, "ProjectByName", result).Observe(time.Since(_since).Seconds())
+		projectDurationSummaryVec.WithLabelValues(_d.instanceName, "ByName", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.ProjectByName(ctx, d, name)
+	return _d.base.ByName(ctx, d, name)
 }

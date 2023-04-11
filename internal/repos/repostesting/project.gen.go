@@ -11,33 +11,33 @@ import (
 )
 
 type FakeProject struct {
-	ProjectByIDStub        func(context.Context, db.DBTX, int) (*db.Project, error)
-	projectByIDMutex       sync.RWMutex
-	projectByIDArgsForCall []struct {
+	ByIDStub        func(context.Context, db.DBTX, int) (*db.Project, error)
+	byIDMutex       sync.RWMutex
+	byIDArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 int
 	}
-	projectByIDReturns struct {
+	byIDReturns struct {
 		result1 *db.Project
 		result2 error
 	}
-	projectByIDReturnsOnCall map[int]struct {
+	byIDReturnsOnCall map[int]struct {
 		result1 *db.Project
 		result2 error
 	}
-	ProjectByNameStub        func(context.Context, db.DBTX, models.Project) (*db.Project, error)
-	projectByNameMutex       sync.RWMutex
-	projectByNameArgsForCall []struct {
+	ByNameStub        func(context.Context, db.DBTX, models.Project) (*db.Project, error)
+	byNameMutex       sync.RWMutex
+	byNameArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 models.Project
 	}
-	projectByNameReturns struct {
+	byNameReturns struct {
 		result1 *db.Project
 		result2 error
 	}
-	projectByNameReturnsOnCall map[int]struct {
+	byNameReturnsOnCall map[int]struct {
 		result1 *db.Project
 		result2 error
 	}
@@ -45,18 +45,18 @@ type FakeProject struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeProject) ProjectByID(arg1 context.Context, arg2 db.DBTX, arg3 int) (*db.Project, error) {
-	fake.projectByIDMutex.Lock()
-	ret, specificReturn := fake.projectByIDReturnsOnCall[len(fake.projectByIDArgsForCall)]
-	fake.projectByIDArgsForCall = append(fake.projectByIDArgsForCall, struct {
+func (fake *FakeProject) ByID(arg1 context.Context, arg2 db.DBTX, arg3 int) (*db.Project, error) {
+	fake.byIDMutex.Lock()
+	ret, specificReturn := fake.byIDReturnsOnCall[len(fake.byIDArgsForCall)]
+	fake.byIDArgsForCall = append(fake.byIDArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 int
 	}{arg1, arg2, arg3})
-	stub := fake.ProjectByIDStub
-	fakeReturns := fake.projectByIDReturns
-	fake.recordInvocation("ProjectByID", []interface{}{arg1, arg2, arg3})
-	fake.projectByIDMutex.Unlock()
+	stub := fake.ByIDStub
+	fakeReturns := fake.byIDReturns
+	fake.recordInvocation("ByID", []interface{}{arg1, arg2, arg3})
+	fake.byIDMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2, arg3)
 	}
@@ -66,63 +66,63 @@ func (fake *FakeProject) ProjectByID(arg1 context.Context, arg2 db.DBTX, arg3 in
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeProject) ProjectByIDCallCount() int {
-	fake.projectByIDMutex.RLock()
-	defer fake.projectByIDMutex.RUnlock()
-	return len(fake.projectByIDArgsForCall)
+func (fake *FakeProject) ByIDCallCount() int {
+	fake.byIDMutex.RLock()
+	defer fake.byIDMutex.RUnlock()
+	return len(fake.byIDArgsForCall)
 }
 
-func (fake *FakeProject) ProjectByIDCalls(stub func(context.Context, db.DBTX, int) (*db.Project, error)) {
-	fake.projectByIDMutex.Lock()
-	defer fake.projectByIDMutex.Unlock()
-	fake.ProjectByIDStub = stub
+func (fake *FakeProject) ByIDCalls(stub func(context.Context, db.DBTX, int) (*db.Project, error)) {
+	fake.byIDMutex.Lock()
+	defer fake.byIDMutex.Unlock()
+	fake.ByIDStub = stub
 }
 
-func (fake *FakeProject) ProjectByIDArgsForCall(i int) (context.Context, db.DBTX, int) {
-	fake.projectByIDMutex.RLock()
-	defer fake.projectByIDMutex.RUnlock()
-	argsForCall := fake.projectByIDArgsForCall[i]
+func (fake *FakeProject) ByIDArgsForCall(i int) (context.Context, db.DBTX, int) {
+	fake.byIDMutex.RLock()
+	defer fake.byIDMutex.RUnlock()
+	argsForCall := fake.byIDArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeProject) ProjectByIDReturns(result1 *db.Project, result2 error) {
-	fake.projectByIDMutex.Lock()
-	defer fake.projectByIDMutex.Unlock()
-	fake.ProjectByIDStub = nil
-	fake.projectByIDReturns = struct {
+func (fake *FakeProject) ByIDReturns(result1 *db.Project, result2 error) {
+	fake.byIDMutex.Lock()
+	defer fake.byIDMutex.Unlock()
+	fake.ByIDStub = nil
+	fake.byIDReturns = struct {
 		result1 *db.Project
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeProject) ProjectByIDReturnsOnCall(i int, result1 *db.Project, result2 error) {
-	fake.projectByIDMutex.Lock()
-	defer fake.projectByIDMutex.Unlock()
-	fake.ProjectByIDStub = nil
-	if fake.projectByIDReturnsOnCall == nil {
-		fake.projectByIDReturnsOnCall = make(map[int]struct {
+func (fake *FakeProject) ByIDReturnsOnCall(i int, result1 *db.Project, result2 error) {
+	fake.byIDMutex.Lock()
+	defer fake.byIDMutex.Unlock()
+	fake.ByIDStub = nil
+	if fake.byIDReturnsOnCall == nil {
+		fake.byIDReturnsOnCall = make(map[int]struct {
 			result1 *db.Project
 			result2 error
 		})
 	}
-	fake.projectByIDReturnsOnCall[i] = struct {
+	fake.byIDReturnsOnCall[i] = struct {
 		result1 *db.Project
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeProject) ProjectByName(arg1 context.Context, arg2 db.DBTX, arg3 models.Project) (*db.Project, error) {
-	fake.projectByNameMutex.Lock()
-	ret, specificReturn := fake.projectByNameReturnsOnCall[len(fake.projectByNameArgsForCall)]
-	fake.projectByNameArgsForCall = append(fake.projectByNameArgsForCall, struct {
+func (fake *FakeProject) ByName(arg1 context.Context, arg2 db.DBTX, arg3 models.Project) (*db.Project, error) {
+	fake.byNameMutex.Lock()
+	ret, specificReturn := fake.byNameReturnsOnCall[len(fake.byNameArgsForCall)]
+	fake.byNameArgsForCall = append(fake.byNameArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 models.Project
 	}{arg1, arg2, arg3})
-	stub := fake.ProjectByNameStub
-	fakeReturns := fake.projectByNameReturns
-	fake.recordInvocation("ProjectByName", []interface{}{arg1, arg2, arg3})
-	fake.projectByNameMutex.Unlock()
+	stub := fake.ByNameStub
+	fakeReturns := fake.byNameReturns
+	fake.recordInvocation("ByName", []interface{}{arg1, arg2, arg3})
+	fake.byNameMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2, arg3)
 	}
@@ -132,46 +132,46 @@ func (fake *FakeProject) ProjectByName(arg1 context.Context, arg2 db.DBTX, arg3 
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeProject) ProjectByNameCallCount() int {
-	fake.projectByNameMutex.RLock()
-	defer fake.projectByNameMutex.RUnlock()
-	return len(fake.projectByNameArgsForCall)
+func (fake *FakeProject) ByNameCallCount() int {
+	fake.byNameMutex.RLock()
+	defer fake.byNameMutex.RUnlock()
+	return len(fake.byNameArgsForCall)
 }
 
-func (fake *FakeProject) ProjectByNameCalls(stub func(context.Context, db.DBTX, models.Project) (*db.Project, error)) {
-	fake.projectByNameMutex.Lock()
-	defer fake.projectByNameMutex.Unlock()
-	fake.ProjectByNameStub = stub
+func (fake *FakeProject) ByNameCalls(stub func(context.Context, db.DBTX, models.Project) (*db.Project, error)) {
+	fake.byNameMutex.Lock()
+	defer fake.byNameMutex.Unlock()
+	fake.ByNameStub = stub
 }
 
-func (fake *FakeProject) ProjectByNameArgsForCall(i int) (context.Context, db.DBTX, models.Project) {
-	fake.projectByNameMutex.RLock()
-	defer fake.projectByNameMutex.RUnlock()
-	argsForCall := fake.projectByNameArgsForCall[i]
+func (fake *FakeProject) ByNameArgsForCall(i int) (context.Context, db.DBTX, models.Project) {
+	fake.byNameMutex.RLock()
+	defer fake.byNameMutex.RUnlock()
+	argsForCall := fake.byNameArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeProject) ProjectByNameReturns(result1 *db.Project, result2 error) {
-	fake.projectByNameMutex.Lock()
-	defer fake.projectByNameMutex.Unlock()
-	fake.ProjectByNameStub = nil
-	fake.projectByNameReturns = struct {
+func (fake *FakeProject) ByNameReturns(result1 *db.Project, result2 error) {
+	fake.byNameMutex.Lock()
+	defer fake.byNameMutex.Unlock()
+	fake.ByNameStub = nil
+	fake.byNameReturns = struct {
 		result1 *db.Project
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeProject) ProjectByNameReturnsOnCall(i int, result1 *db.Project, result2 error) {
-	fake.projectByNameMutex.Lock()
-	defer fake.projectByNameMutex.Unlock()
-	fake.ProjectByNameStub = nil
-	if fake.projectByNameReturnsOnCall == nil {
-		fake.projectByNameReturnsOnCall = make(map[int]struct {
+func (fake *FakeProject) ByNameReturnsOnCall(i int, result1 *db.Project, result2 error) {
+	fake.byNameMutex.Lock()
+	defer fake.byNameMutex.Unlock()
+	fake.ByNameStub = nil
+	if fake.byNameReturnsOnCall == nil {
+		fake.byNameReturnsOnCall = make(map[int]struct {
 			result1 *db.Project
 			result2 error
 		})
 	}
-	fake.projectByNameReturnsOnCall[i] = struct {
+	fake.byNameReturnsOnCall[i] = struct {
 		result1 *db.Project
 		result2 error
 	}{result1, result2}
@@ -180,10 +180,10 @@ func (fake *FakeProject) ProjectByNameReturnsOnCall(i int, result1 *db.Project, 
 func (fake *FakeProject) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.projectByIDMutex.RLock()
-	defer fake.projectByIDMutex.RUnlock()
-	fake.projectByNameMutex.RLock()
-	defer fake.projectByNameMutex.RUnlock()
+	fake.byIDMutex.RLock()
+	defer fake.byIDMutex.RUnlock()
+	fake.byNameMutex.RLock()
+	defer fake.byNameMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

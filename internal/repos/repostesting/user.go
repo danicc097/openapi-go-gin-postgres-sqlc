@@ -35,7 +35,7 @@ func (f *fakeUserStore) set(id uuid.UUID, user *db.User) {
 
 // NewFakeUser returns a mock for the User repository, initializing it with copies of
 // the passed users.
-// deprecated: use postgres repo directly
+// Deprecated: use postgres repo directly.
 func NewFakeUser(users ...*db.User) *FakeUser {
 	fks := &fakeUserStore{
 		users: make(map[uuid.UUID]db.User),
@@ -49,7 +49,7 @@ func NewFakeUser(users ...*db.User) *FakeUser {
 
 	fakeUserRepo := &FakeUser{}
 
-	fakeUserRepo.UserByIDStub = func(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error) {
+	fakeUserRepo.ByIDStub = func(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error) {
 		user, ok := fks.get(id)
 		if !ok {
 			return &db.User{}, errors.New("could not get user by ID")
@@ -59,7 +59,7 @@ func NewFakeUser(users ...*db.User) *FakeUser {
 	}
 
 	fakeUserRepo.UpdateStub = func(ctx context.Context, d db.DBTX, id uuid.UUID, params repos.UserUpdateParams) (*db.User, error) {
-		user, err := fakeUserRepo.UserByID(ctx, d, id)
+		user, err := fakeUserRepo.ByID(ctx, d, id)
 		if err != nil {
 			return &db.User{}, fmt.Errorf("UserByIDStub: %w", err)
 		}
