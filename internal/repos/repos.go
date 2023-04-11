@@ -192,6 +192,7 @@ type Team interface {
 // WorkItemType defines the datastore/repository handling persisting WorkItemType records.
 type WorkItemType interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error)
+	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.WorkItemType, error)
 	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemType, error)
 	Create(ctx context.Context, d db.DBTX, params WorkItemTypeCreateParams) (*db.WorkItemType, error)
 	Update(ctx context.Context, d db.DBTX, id int, params WorkItemTypeUpdateParams) (*db.WorkItemType, error)
@@ -201,6 +202,7 @@ type WorkItemType interface {
 // WorkItemTag defines the datastore/repository handling persisting WorkItemTag records.
 type WorkItemTag interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error)
+	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.WorkItemTag, error)
 	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemTag, error)
 	Create(ctx context.Context, d db.DBTX, params WorkItemTagCreateParams) (*db.WorkItemTag, error)
 	Update(ctx context.Context, d db.DBTX, id int, params WorkItemTagUpdateParams) (*db.WorkItemTag, error)
@@ -210,6 +212,7 @@ type WorkItemTag interface {
 // Activity defines the datastore/repository handling persisting Activity records.
 type Activity interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
+	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.Activity, error)
 	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error)
 	Create(ctx context.Context, d db.DBTX, params ActivityCreateParams) (*db.Activity, error)
 	Update(ctx context.Context, d db.DBTX, id int, params ActivityUpdateParams) (*db.Activity, error)

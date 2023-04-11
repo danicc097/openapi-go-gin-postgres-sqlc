@@ -146,6 +146,78 @@ work_item_work_item_tag.work_item_id ` +
 	return &wiwit, nil
 }
 
+// WorkItemWorkItemTagByWorkItemIDWorkItemTagID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
+//
+// Generated from index 'work_item_work_item_tag_pkey'.
+func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
+	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id ` +
+		`FROM public.work_item_work_item_tag ` +
+		`` +
+		` WHERE work_item_work_item_tag.work_item_id = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, workItemID)
+	rows, err := db.Query(ctx, sqlstr, workItemID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemWorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemWorkItemTagByWorkItemIDWorkItemTagID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
+//
+// Generated from index 'work_item_work_item_tag_pkey'.
+func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
+	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id ` +
+		`FROM public.work_item_work_item_tag ` +
+		`` +
+		` WHERE work_item_work_item_tag.work_item_tag_id = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, workItemTagID)
+	rows, err := db.Query(ctx, sqlstr, workItemTagID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemWorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // WorkItemWorkItemTagByWorkItemTagIDWorkItemID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
 //
 // Generated from index 'work_item_work_item_tag_work_item_tag_id_work_item_id_idx'.

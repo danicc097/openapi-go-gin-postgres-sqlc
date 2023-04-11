@@ -217,6 +217,46 @@ left join notifications on notifications.notification_id = user_notifications.no
 	return &un, nil
 }
 
+// UserNotificationByNotificationIDUserID retrieves a row from 'public.user_notifications' as a UserNotification.
+//
+// Generated from index 'user_notifications_notification_id_user_id_key'.
+func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]*UserNotification, error) {
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`user_notifications.user_notification_id,
+user_notifications.notification_id,
+user_notifications.read,
+user_notifications.user_id,
+(case when $1::boolean = true then row(notifications.*) end) as notification ` +
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey"
+left join notifications on notifications.notification_id = user_notifications.notification_id` +
+		` WHERE user_notifications.notification_id = $2 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, notificationID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, notificationID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserNotification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // UserNotificationByUserNotificationID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_pkey'.

@@ -226,6 +226,104 @@ left join (
 	return &wit, nil
 }
 
+// WorkItemTagByNameProjectID retrieves a row from 'public.work_item_tags' as a WorkItemTag.
+//
+// Generated from index 'work_item_tags_name_project_id_key'.
+func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, opts ...WorkItemTagSelectConfigOption) ([]*WorkItemTag, error) {
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`work_item_tags.work_item_tag_id,
+work_item_tags.project_id,
+work_item_tags.name,
+work_item_tags.description,
+work_item_tags.color,
+(case when $1::boolean = true then joined_work_items.work_items end) as work_items ` +
+		`FROM public.work_item_tags ` +
+		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+		, array_agg(work_items.*) as work_items
+		from work_item_work_item_tag
+    join work_items using (work_item_id)
+    group by work_item_work_item_tag_work_item_tag_id
+  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
+` +
+		` WHERE work_item_tags.name = $2 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, name)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemTagByNameProjectID retrieves a row from 'public.work_item_tags' as a WorkItemTag.
+//
+// Generated from index 'work_item_tags_name_project_id_key'.
+func WorkItemTagByNameProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]*WorkItemTag, error) {
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`work_item_tags.work_item_tag_id,
+work_item_tags.project_id,
+work_item_tags.name,
+work_item_tags.description,
+work_item_tags.color,
+(case when $1::boolean = true then joined_work_items.work_items end) as work_items ` +
+		`FROM public.work_item_tags ` +
+		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+		, array_agg(work_items.*) as work_items
+		from work_item_work_item_tag
+    join work_items using (work_item_id)
+    group by work_item_work_item_tag_work_item_tag_id
+  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
+` +
+		` WHERE work_item_tags.project_id = $2 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, projectID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // WorkItemTagByWorkItemTagID retrieves a row from 'public.work_item_tags' as a WorkItemTag.
 //
 // Generated from index 'work_item_tags_pkey'.

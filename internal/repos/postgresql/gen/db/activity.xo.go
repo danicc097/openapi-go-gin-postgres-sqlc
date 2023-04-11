@@ -225,6 +225,102 @@ left join (
 	return &a, nil
 }
 
+// ActivityByNameProjectID retrieves a row from 'public.activities' as a Activity.
+//
+// Generated from index 'activities_name_project_id_key'.
+func ActivityByNameProjectID(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) ([]*Activity, error) {
+	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`activities.activity_id,
+activities.project_id,
+activities.name,
+activities.description,
+activities.is_productive,
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries ` +
+		`FROM public.activities ` +
+		`-- O2M join generated from "time_entries_activity_id_fkey"
+left join (
+  select
+  activity_id as time_entries_activity_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+   group by
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
+		` WHERE activities.name = $2 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, name)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Activity])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// ActivityByNameProjectID retrieves a row from 'public.activities' as a Activity.
+//
+// Generated from index 'activities_name_project_id_key'.
+func ActivityByNameProjectID(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]*Activity, error) {
+	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`activities.activity_id,
+activities.project_id,
+activities.name,
+activities.description,
+activities.is_productive,
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries ` +
+		`FROM public.activities ` +
+		`-- O2M join generated from "time_entries_activity_id_fkey"
+left join (
+  select
+  activity_id as time_entries_activity_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+   group by
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
+		` WHERE activities.project_id = $2 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, projectID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Activity])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // ActivityByActivityID retrieves a row from 'public.activities' as a Activity.
 //
 // Generated from index 'activities_pkey'.

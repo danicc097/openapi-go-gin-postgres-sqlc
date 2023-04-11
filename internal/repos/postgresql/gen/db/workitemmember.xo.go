@@ -247,6 +247,80 @@ work_item_member.role ` +
 	return &wim, nil
 }
 
+// WorkItemMemberByWorkItemIDMember retrieves a row from 'public.work_item_member' as a WorkItemMember.
+//
+// Generated from index 'work_item_member_pkey'.
+func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
+	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`work_item_member.work_item_id,
+work_item_member.member,
+work_item_member.role ` +
+		`FROM public.work_item_member ` +
+		`` +
+		` WHERE work_item_member.work_item_id = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, workItemID)
+	rows, err := db.Query(ctx, sqlstr, workItemID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemMember])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemMemberByWorkItemIDMember retrieves a row from 'public.work_item_member' as a WorkItemMember.
+//
+// Generated from index 'work_item_member_pkey'.
+func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, member uuid.UUID, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
+	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`work_item_member.work_item_id,
+work_item_member.member,
+work_item_member.role ` +
+		`FROM public.work_item_member ` +
+		`` +
+		` WHERE work_item_member.member = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, member)
+	rows, err := db.Query(ctx, sqlstr, member)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemMember])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // FKUser_Member returns the User associated with the WorkItemMember's (Member).
 //
 // Generated from foreign key 'work_item_member_member_fkey'.

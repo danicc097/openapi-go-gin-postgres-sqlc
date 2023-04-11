@@ -604,12 +604,16 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 				Constraints interface{}
 			}{Table: table, Constraints: constraints},
 		})
+
 		// emit indexes
+		var emittedIndexes []string
 		for _, i := range t.Indexes {
 			index, err := convertIndex(ctx, table, i)
 			if err != nil {
 				return err
 			}
+
+			// emit normal index
 			emit(xo.Template{
 				Dest:     strings.ToLower(table.GoName) + ext,
 				Partial:  "index",
@@ -620,7 +624,42 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 					Constraints interface{}
 				}{Index: index, Constraints: constraints},
 			})
+			emittedIndexes = append(emittedIndexes, extractIndexIdentifier(index))
 		}
+
+		// emit additional indexes in a second run so they don't interfere with "real" ones
+		for _, i := range t.Indexes {
+			index, err := convertIndex(ctx, table, i)
+			if err != nil {
+				return err
+			}
+
+			if index.IsUnique && len(index.Fields) > 1 {
+				for _, f := range index.Fields {
+					// patch each index and constraints and emit queries with a subset of index fields
+					index.Fields = []Field{f}
+					index.IsUnique = false
+
+					if contains(emittedIndexes, extractIndexIdentifier(index)) {
+						continue // most likely a dedicated index already exists
+					}
+
+					emit(xo.Template{
+						Dest:     strings.ToLower(table.GoName) + ext,
+						Partial:  "index",
+						SortType: table.Type,
+						SortName: index.SQLName,
+						Data: struct {
+							Index       interface{}
+							Constraints interface{}
+						}{Index: index, Constraints: constraints},
+					})
+					emittedIndexes = append(emittedIndexes, extractIndexIdentifier(index))
+				}
+			}
+
+		}
+
 		// emit fkeys
 		// NOTE: do not use these for automatic join generation in replacement of o2o and o2m table comments,
 		// it will also generate joins for m2m lookup tables which pollutes everything
@@ -639,6 +678,15 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		}
 	}
 	return nil
+}
+
+func extractIndexIdentifier(i Index) string {
+	var fields []string
+	for _, field := range i.Fields {
+		fields = append(fields, field.GoName)
+	}
+
+	return strings.Join(fields, "-")
 }
 
 // convertEnum converts a xo.Enum.
@@ -1202,8 +1250,20 @@ func (f *Funcs) func_name_context(v interface{}) string {
 		return n
 	case Index:
 		// these are e.g.(external_id IS NOT NULL)
+		// if _, _, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
+		// 	return x.Func + "_" + x.SQLName
+		// }
+		var fields []string
+		for _, field := range x.Fields {
+			fields = append(fields, field.GoName)
+		}
+		// TODO use index fields instead. will need to differentatiate for multiple index query creation from a isngle index
 		if _, _, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
-			return x.Func + "_" + x.SQLName
+			name := x.Table.GoName
+			if !x.IsUnique {
+				name = inflector.Pluralize(name)
+			}
+			return name + "By" + strings.Join(fields, "")
 		}
 		return x.Func
 	}

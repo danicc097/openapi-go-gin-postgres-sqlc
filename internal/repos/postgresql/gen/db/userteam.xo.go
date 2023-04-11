@@ -147,6 +147,42 @@ user_team.user_id ` +
 	return &ut, nil
 }
 
+// UserTeamByUserIDTeamID retrieves a row from 'public.user_team' as a UserTeam.
+//
+// Generated from index 'user_team_pkey'.
+func UserTeamByUserIDTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`user_team.team_id,
+user_team.user_id ` +
+		`FROM public.user_team ` +
+		`` +
+		` WHERE user_team.team_id = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, teamID)
+	rows, err := db.Query(ctx, sqlstr, teamID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserTeam])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // UserTeamByTeamIDUserID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_team_id_user_id_idx'.

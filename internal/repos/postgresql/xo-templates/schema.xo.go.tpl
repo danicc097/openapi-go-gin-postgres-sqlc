@@ -95,7 +95,14 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- end }}
 {{ end }}
 
-{{/* generated queries from indexes */}}
+{{/*
+generated queries from indexes
+
+TODO: indexes from a unique index or constraint should generate queries for all indexed columns (which return arrays),
+since the index is still used even if not filtering on all columns.
+we should range over len fields and pass as parameter to all functions that accept the index fields.
+then to maintain the first index creation (all fields) pass -1 and handle specially
+*/}}
 
 {{ define "index" }}
 {{- $i := .Data.Index -}}

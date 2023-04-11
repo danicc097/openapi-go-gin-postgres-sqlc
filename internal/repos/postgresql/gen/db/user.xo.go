@@ -314,10 +314,10 @@ left join (
 	return res, nil
 }
 
-// UsersByDeletedAt_users_deleted_at_idx retrieves a row from 'public.users' as a User.
+// UsersByDeletedAt retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_deleted_at_idx'.
-func UsersByDeletedAt_users_deleted_at_idx(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
+func UsersByDeletedAt(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
 
 	for _, o := range opts {

@@ -218,6 +218,88 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	return &wit, nil
 }
 
+// WorkItemTypeByNameProjectID retrieves a row from 'public.work_item_types' as a WorkItemType.
+//
+// Generated from index 'work_item_types_name_project_id_key'.
+func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, opts ...WorkItemTypeSelectConfigOption) ([]*WorkItemType, error) {
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`work_item_types.work_item_type_id,
+work_item_types.project_id,
+work_item_types.name,
+work_item_types.description,
+work_item_types.color,
+(case when $1::boolean = true then row(work_items.*) end) as work_item ` +
+		`FROM public.work_item_types ` +
+		`-- O2O join generated from "work_items_work_item_type_id_fkey"
+left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
+		` WHERE work_item_types.name = $2 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, name)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemType])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemTypeByNameProjectID retrieves a row from 'public.work_item_types' as a WorkItemType.
+//
+// Generated from index 'work_item_types_name_project_id_key'.
+func WorkItemTypeByNameProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTypeSelectConfigOption) ([]*WorkItemType, error) {
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`work_item_types.work_item_type_id,
+work_item_types.project_id,
+work_item_types.name,
+work_item_types.description,
+work_item_types.color,
+(case when $1::boolean = true then row(work_items.*) end) as work_item ` +
+		`FROM public.work_item_types ` +
+		`-- O2O join generated from "work_items_work_item_type_id_fkey"
+left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
+		` WHERE work_item_types.project_id = $2 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, projectID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemType])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // WorkItemTypeByWorkItemTypeID retrieves a row from 'public.work_item_types' as a WorkItemType.
 //
 // Generated from index 'work_item_types_pkey'.
