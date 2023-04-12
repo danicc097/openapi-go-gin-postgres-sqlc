@@ -676,7 +676,7 @@
       "properties": {
         "activities": {
           "items": {
-            "$ref": "#/definitions/ReposActivityCreateParams"
+            "$ref": "#/definitions/DbActivityCreateParams"
           },
           "type": [
             "array",
@@ -685,7 +685,7 @@
         },
         "kanbanSteps": {
           "items": {
-            "$ref": "#/definitions/ReposKanbanStepCreateParams"
+            "$ref": "#/definitions/DbKanbanStepCreateParams"
           },
           "type": [
             "array",
@@ -697,7 +697,7 @@
         },
         "teams": {
           "items": {
-            "$ref": "#/definitions/ReposTeamCreateParams"
+            "$ref": "#/definitions/DbTeamCreateParams"
           },
           "type": [
             "array",
@@ -706,7 +706,7 @@
         },
         "workItemTags": {
           "items": {
-            "$ref": "#/definitions/ReposWorkItemTagCreateParams"
+            "$ref": "#/definitions/DbWorkItemTagCreateParams"
           },
           "type": [
             "array",
@@ -715,7 +715,7 @@
         },
         "workItemTypes": {
           "items": {
-            "$ref": "#/definitions/ReposWorkItemTypeCreateParams"
+            "$ref": "#/definitions/DbWorkItemTypeCreateParams"
           },
           "type": [
             "array",
@@ -906,99 +906,6 @@
           "type": "string"
         }
       },
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ReposActivityCreateParams": {
-      "properties": {
-        "description": {
-          "type": "string"
-        },
-        "isProductive": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string"
-        },
-        "projectID": {
-          "type": "integer"
-        }
-      },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ReposKanbanStepCreateParams": {
-      "properties": {
-        "color": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "stepOrder": {
-          "type": "integer"
-        },
-        "timeTrackable": {
-          "type": "boolean"
-        }
-      },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ReposTeamCreateParams": {
-      "properties": {
-        "description": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "projectID": {
-          "type": "integer"
-        }
-      },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ReposWorkItemTagCreateParams": {
-      "properties": {
-        "color": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "projectID": {
-          "type": "integer"
-        }
-      },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ReposWorkItemTypeCreateParams": {
-      "properties": {
-        "color": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "projectID": {
-          "type": "integer"
-        }
-      },
-      "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "ModelsRole": {
@@ -1203,6 +1110,102 @@
     "ModelsProject": {
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbActivityCreateParams": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbKanbanStepCreateParams": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "stepOrder": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeTrackable": {
+          "type": "boolean"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbTeamCreateParams": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemTagCreateParams": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemTypeCreateParams": {
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -1284,21 +1287,6 @@
     "ValidationError": {
       "$ref": "#/definitions/ValidationError"
     },
-    "ReposActivityCreateParams": {
-      "$ref": "#/definitions/ReposActivityCreateParams"
-    },
-    "ReposKanbanStepCreateParams": {
-      "$ref": "#/definitions/ReposKanbanStepCreateParams"
-    },
-    "ReposTeamCreateParams": {
-      "$ref": "#/definitions/ReposTeamCreateParams"
-    },
-    "ReposWorkItemTagCreateParams": {
-      "$ref": "#/definitions/ReposWorkItemTagCreateParams"
-    },
-    "ReposWorkItemTypeCreateParams": {
-      "$ref": "#/definitions/ReposWorkItemTypeCreateParams"
-    },
     "ModelsRole": {
       "$ref": "#/definitions/ModelsRole"
     },
@@ -1325,6 +1313,21 @@
     },
     "ModelsProject": {
       "$ref": "#/definitions/ModelsProject"
+    },
+    "DbActivityCreateParams": {
+      "$ref": "#/definitions/DbActivityCreateParams"
+    },
+    "DbKanbanStepCreateParams": {
+      "$ref": "#/definitions/DbKanbanStepCreateParams"
+    },
+    "DbTeamCreateParams": {
+      "$ref": "#/definitions/DbTeamCreateParams"
+    },
+    "DbWorkItemTagCreateParams": {
+      "$ref": "#/definitions/DbWorkItemTagCreateParams"
+    },
+    "DbWorkItemTypeCreateParams": {
+      "$ref": "#/definitions/DbWorkItemTypeCreateParams"
     }
   }
 }

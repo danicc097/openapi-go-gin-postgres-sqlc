@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
 // TeamWithRetry implements repos.Team interface instrumented with retries
@@ -67,7 +67,7 @@ func (_d TeamWithRetry) ByName(ctx context.Context, d db.DBTX, name string, proj
 }
 
 // Create implements repos.Team
-func (_d TeamWithRetry) Create(ctx context.Context, d db.DBTX, params repos.TeamCreateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithRetry) Create(ctx context.Context, d db.DBTX, params db.TeamCreateParams) (tp1 *db.Team, err error) {
 	tp1, err = _d.Team.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -105,7 +105,7 @@ func (_d TeamWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (tp1 *db.
 }
 
 // Update implements repos.Team
-func (_d TeamWithRetry) Update(ctx context.Context, d db.DBTX, id int, params repos.TeamUpdateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithRetry) Update(ctx context.Context, d db.DBTX, id int, params db.TeamUpdateParams) (tp1 *db.Team, err error) {
 	tp1, err = _d.Team.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
 		return

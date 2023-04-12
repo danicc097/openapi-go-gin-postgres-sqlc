@@ -19,29 +19,12 @@ type ProjectBoardCreateParams struct {
 	ProjectID int `json:"projectID"`
 	// TeamIDs   []int `json:"teamIDs"` // completely useless. the only check needed is to ensure at least one team
 	// exacts associated to projectID, else prompt the user to create at least 1 team before creating a board.
-	Activities    []ActivityCreateParams     `json:"activities"`
-	KanbanSteps   []KanbanStepCreateParams   `json:"kanbanSteps"`
-	Teams         []TeamCreateParams         `json:"teams"`
-	WorkItemTypes []WorkItemTypeCreateParams `json:"workItemTypes"`
-	WorkItemTags  []WorkItemTagCreateParams  `json:"workItemTags"`
+	Activities    []db.ActivityCreateParams     `json:"activities"`
+	KanbanSteps   []db.KanbanStepCreateParams   `json:"kanbanSteps"`
+	Teams         []db.TeamCreateParams         `json:"teams"`
+	WorkItemTypes []db.WorkItemTypeCreateParams `json:"workItemTypes"`
+	WorkItemTags  []db.WorkItemTagCreateParams  `json:"workItemTags"`
 }
-
-type (
-	GetUserNotificationsParams = db.GetUserNotificationsParams
-	NotificationCreateParams   = db.CreateNotificationParams
-	WorkItemTagCreateParams    = db.WorkItemTagCreateParams
-	WorkItemTagUpdateParams    = db.WorkItemTagUpdateParams
-	WorkItemTypeCreateParams   = db.WorkItemTypeCreateParams
-	WorkItemTypeUpdateParams   = db.WorkItemTypeUpdateParams
-	ActivityCreateParams       = db.ActivityCreateParams
-	ActivityUpdateParams       = db.ActivityUpdateParams
-	KanbanStepCreateParams     = db.KanbanStepCreateParams
-	KanbanStepUpdateParams     = db.KanbanStepUpdateParams
-	TeamCreateParams           = db.TeamCreateParams
-	TeamUpdateParams           = db.TeamUpdateParams
-	UserCreateParams           = db.UserCreateParams
-	UserUpdateParams           = db.UserUpdateParams
-)
 
 // ProjectBoard defines the datastore/repository handling persisting ProjectBoard records.
 type ProjectBoard interface {
@@ -79,9 +62,9 @@ type DemoProjectWorkItem interface {
 
 // Notification defines the datastore/repository handling persisting Notification records.
 type Notification interface {
-	LatestUserNotifications(ctx context.Context, d db.DBTX, params GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
-	Create(ctx context.Context, d db.DBTX, params NotificationCreateParams) error
-	Delete(ctx context.Context, d db.DBTX, notificationID int32) error
+	LatestUserNotifications(ctx context.Context, d db.DBTX, params db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
+	Create(ctx context.Context, d db.DBTX, params db.NotificationCreateParams) (*db.Notification, error)
+	Delete(ctx context.Context, d db.DBTX, notificationID int) (*db.Notification, error)
 }
 
 // User defines the datastore/repository handling persisting User records.
@@ -91,8 +74,8 @@ type User interface {
 	ByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error)
 	ByExternalID(ctx context.Context, d db.DBTX, extID string) (*db.User, error)
 	ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error)
-	Create(ctx context.Context, d db.DBTX, params UserCreateParams) (*db.User, error)
-	Update(ctx context.Context, d db.DBTX, id uuid.UUID, params UserUpdateParams) (*db.User, error)
+	Create(ctx context.Context, d db.DBTX, params db.UserCreateParams) (*db.User, error)
+	Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.UserUpdateParams) (*db.User, error)
 	Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error)
 	// CreateAPIKey requires an existing user.
 	CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error)
@@ -109,8 +92,8 @@ type Project interface {
 type Team interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.Team, error)
 	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Team, error)
-	Create(ctx context.Context, d db.DBTX, params TeamCreateParams) (*db.Team, error)
-	Update(ctx context.Context, d db.DBTX, id int, params TeamUpdateParams) (*db.Team, error)
+	Create(ctx context.Context, d db.DBTX, params db.TeamCreateParams) (*db.Team, error)
+	Update(ctx context.Context, d db.DBTX, id int, params db.TeamUpdateParams) (*db.Team, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.Team, error)
 }
 
@@ -119,8 +102,8 @@ type WorkItemType interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error)
 	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.WorkItemType, error)
 	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemType, error)
-	Create(ctx context.Context, d db.DBTX, params WorkItemTypeCreateParams) (*db.WorkItemType, error)
-	Update(ctx context.Context, d db.DBTX, id int, params WorkItemTypeUpdateParams) (*db.WorkItemType, error)
+	Create(ctx context.Context, d db.DBTX, params db.WorkItemTypeCreateParams) (*db.WorkItemType, error)
+	Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTypeUpdateParams) (*db.WorkItemType, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error)
 }
 
@@ -129,8 +112,8 @@ type WorkItemTag interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error)
 	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.WorkItemTag, error)
 	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemTag, error)
-	Create(ctx context.Context, d db.DBTX, params WorkItemTagCreateParams) (*db.WorkItemTag, error)
-	Update(ctx context.Context, d db.DBTX, id int, params WorkItemTagUpdateParams) (*db.WorkItemTag, error)
+	Create(ctx context.Context, d db.DBTX, params db.WorkItemTagCreateParams) (*db.WorkItemTag, error)
+	Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTagUpdateParams) (*db.WorkItemTag, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error)
 }
 
@@ -139,7 +122,7 @@ type Activity interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
 	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.Activity, error)
 	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error)
-	Create(ctx context.Context, d db.DBTX, params ActivityCreateParams) (*db.Activity, error)
-	Update(ctx context.Context, d db.DBTX, id int, params ActivityUpdateParams) (*db.Activity, error)
+	Create(ctx context.Context, d db.DBTX, params db.ActivityCreateParams) (*db.Activity, error)
+	Update(ctx context.Context, d db.DBTX, id int, params db.ActivityUpdateParams) (*db.Activity, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
 }

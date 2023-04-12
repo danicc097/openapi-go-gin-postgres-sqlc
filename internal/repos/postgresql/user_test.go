@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
@@ -20,7 +19,7 @@ func TestUser_Update(t *testing.T) {
 
 	type args struct {
 		id     uuid.UUID
-		params repos.UserUpdateParams
+		params db.UserUpdateParams
 	}
 	type params struct {
 		name    string
@@ -33,7 +32,7 @@ func TestUser_Update(t *testing.T) {
 			name: "updated",
 			args: args{
 				id: user.UserID,
-				params: repos.UserUpdateParams{
+				params: db.UserUpdateParams{
 					RoleRank: pointers.New[int16](10),
 					Scopes:   &[]string{"test", "test", "test"},
 				},
@@ -296,11 +295,11 @@ func TestUser_Create(t *testing.T) {
 
 	type want struct {
 		FullName *string
-		repos.UserCreateParams
+		db.UserCreateParams
 	}
 
 	type args struct {
-		params repos.UserCreateParams
+		params db.UserCreateParams
 	}
 
 	t.Run("correct user", func(t *testing.T) {

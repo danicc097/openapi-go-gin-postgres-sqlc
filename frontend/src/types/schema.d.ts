@@ -222,12 +222,12 @@ export interface components {
       workItemTypeID: number;
     };
     InitializeProjectRequest: {
-      activities?: (components["schemas"]["ReposActivityCreateParams"])[] | null;
-      kanbanSteps?: (components["schemas"]["ReposKanbanStepCreateParams"])[] | null;
+      activities?: (components["schemas"]["DbActivityCreateParams"])[] | null;
+      kanbanSteps?: (components["schemas"]["DbKanbanStepCreateParams"])[] | null;
       projectID?: number;
-      teams?: (components["schemas"]["ReposTeamCreateParams"])[] | null;
-      workItemTags?: (components["schemas"]["ReposWorkItemTagCreateParams"])[] | null;
-      workItemTypes?: (components["schemas"]["ReposWorkItemTypeCreateParams"])[] | null;
+      teams?: (components["schemas"]["DbTeamCreateParams"])[] | null;
+      workItemTags?: (components["schemas"]["DbWorkItemTagCreateParams"])[] | null;
+      workItemTypes?: (components["schemas"]["DbWorkItemTypeCreateParams"])[] | null;
     };
     RestProjectBoardResponse: {
       project?: components["schemas"]["DbProject"];
@@ -301,37 +301,6 @@ export interface components {
       /** Error Type */
       type: string;
     };
-    ReposActivityCreateParams: {
-      description?: string;
-      isProductive?: boolean;
-      name?: string;
-      projectID?: number;
-    };
-    ReposKanbanStepCreateParams: {
-      color?: string;
-      description?: string;
-      name?: string;
-      projectID?: number;
-      stepOrder?: number;
-      timeTrackable?: boolean;
-    };
-    ReposTeamCreateParams: {
-      description?: string;
-      name?: string;
-      projectID?: number;
-    };
-    ReposWorkItemTagCreateParams: {
-      color?: string;
-      description?: string;
-      name?: string;
-      projectID?: number;
-    };
-    ReposWorkItemTypeCreateParams: {
-      color?: string;
-      description?: string;
-      name?: string;
-      projectID?: number;
-    };
     ModelsRole: string;
     UuidUUID: string;
     PgtypeJSONB: Record<string, never>;
@@ -385,6 +354,37 @@ export interface components {
      */
     Project: "demoProject" | "demoProject2";
     ModelsProject: string;
+    DbActivityCreateParams: {
+      description?: string;
+      isProductive?: boolean;
+      name?: string;
+      projectID?: number;
+    };
+    DbKanbanStepCreateParams: {
+      color?: string;
+      description?: string;
+      name?: string;
+      projectID?: number;
+      stepOrder?: number | null;
+      timeTrackable?: boolean;
+    };
+    DbTeamCreateParams: {
+      description?: string;
+      name?: string;
+      projectID?: number;
+    };
+    DbWorkItemTagCreateParams: {
+      color?: string;
+      description?: string;
+      name?: string;
+      projectID?: number;
+    };
+    DbWorkItemTypeCreateParams: {
+      color?: string;
+      description?: string;
+      name?: string;
+      projectID?: number;
+    };
   };
   responses: never;
   parameters: {

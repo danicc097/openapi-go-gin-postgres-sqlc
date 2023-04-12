@@ -34,11 +34,6 @@ import {
   UpdateUserRequest,
   UpdateUserAuthRequest,
   ValidationError,
-  ReposActivityCreateParams,
-  ReposKanbanStepCreateParams,
-  ReposTeamCreateParams,
-  ReposWorkItemTagCreateParams,
-  ReposWorkItemTypeCreateParams,
   ModelsRole,
   UuidUUID,
   PgtypeJSONB,
@@ -48,6 +43,11 @@ import {
   DbWorkItem,
   Project,
   ModelsProject,
+  DbActivityCreateParams,
+  DbKanbanStepCreateParams,
+  DbTeamCreateParams,
+  DbWorkItemTagCreateParams,
+  DbWorkItemTypeCreateParams,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -368,66 +368,6 @@ export const ValidationErrorDecoder: Decoder<ValidationError> = {
     return validateJson(json, schema, ValidationErrorDecoder.definitionName)
   },
 }
-export const ReposActivityCreateParamsDecoder: Decoder<ReposActivityCreateParams> = {
-  definitionName: 'ReposActivityCreateParams',
-  schemaRef: '#/definitions/ReposActivityCreateParams',
-
-  decode(json: unknown): ReposActivityCreateParams {
-    const schema = ajv.getSchema(ReposActivityCreateParamsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ReposActivityCreateParamsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ReposActivityCreateParamsDecoder.definitionName)
-  },
-}
-export const ReposKanbanStepCreateParamsDecoder: Decoder<ReposKanbanStepCreateParams> = {
-  definitionName: 'ReposKanbanStepCreateParams',
-  schemaRef: '#/definitions/ReposKanbanStepCreateParams',
-
-  decode(json: unknown): ReposKanbanStepCreateParams {
-    const schema = ajv.getSchema(ReposKanbanStepCreateParamsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ReposKanbanStepCreateParamsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ReposKanbanStepCreateParamsDecoder.definitionName)
-  },
-}
-export const ReposTeamCreateParamsDecoder: Decoder<ReposTeamCreateParams> = {
-  definitionName: 'ReposTeamCreateParams',
-  schemaRef: '#/definitions/ReposTeamCreateParams',
-
-  decode(json: unknown): ReposTeamCreateParams {
-    const schema = ajv.getSchema(ReposTeamCreateParamsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ReposTeamCreateParamsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ReposTeamCreateParamsDecoder.definitionName)
-  },
-}
-export const ReposWorkItemTagCreateParamsDecoder: Decoder<ReposWorkItemTagCreateParams> = {
-  definitionName: 'ReposWorkItemTagCreateParams',
-  schemaRef: '#/definitions/ReposWorkItemTagCreateParams',
-
-  decode(json: unknown): ReposWorkItemTagCreateParams {
-    const schema = ajv.getSchema(ReposWorkItemTagCreateParamsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ReposWorkItemTagCreateParamsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ReposWorkItemTagCreateParamsDecoder.definitionName)
-  },
-}
-export const ReposWorkItemTypeCreateParamsDecoder: Decoder<ReposWorkItemTypeCreateParams> = {
-  definitionName: 'ReposWorkItemTypeCreateParams',
-  schemaRef: '#/definitions/ReposWorkItemTypeCreateParams',
-
-  decode(json: unknown): ReposWorkItemTypeCreateParams {
-    const schema = ajv.getSchema(ReposWorkItemTypeCreateParamsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ReposWorkItemTypeCreateParamsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ReposWorkItemTypeCreateParamsDecoder.definitionName)
-  },
-}
 export const ModelsRoleDecoder: Decoder<ModelsRole> = {
   definitionName: 'ModelsRole',
   schemaRef: '#/definitions/ModelsRole',
@@ -534,5 +474,65 @@ export const ModelsProjectDecoder: Decoder<ModelsProject> = {
       throw new Error(`Schema ${ModelsProjectDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ModelsProjectDecoder.definitionName)
+  },
+}
+export const DbActivityCreateParamsDecoder: Decoder<DbActivityCreateParams> = {
+  definitionName: 'DbActivityCreateParams',
+  schemaRef: '#/definitions/DbActivityCreateParams',
+
+  decode(json: unknown): DbActivityCreateParams {
+    const schema = ajv.getSchema(DbActivityCreateParamsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbActivityCreateParamsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbActivityCreateParamsDecoder.definitionName)
+  },
+}
+export const DbKanbanStepCreateParamsDecoder: Decoder<DbKanbanStepCreateParams> = {
+  definitionName: 'DbKanbanStepCreateParams',
+  schemaRef: '#/definitions/DbKanbanStepCreateParams',
+
+  decode(json: unknown): DbKanbanStepCreateParams {
+    const schema = ajv.getSchema(DbKanbanStepCreateParamsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbKanbanStepCreateParamsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbKanbanStepCreateParamsDecoder.definitionName)
+  },
+}
+export const DbTeamCreateParamsDecoder: Decoder<DbTeamCreateParams> = {
+  definitionName: 'DbTeamCreateParams',
+  schemaRef: '#/definitions/DbTeamCreateParams',
+
+  decode(json: unknown): DbTeamCreateParams {
+    const schema = ajv.getSchema(DbTeamCreateParamsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbTeamCreateParamsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbTeamCreateParamsDecoder.definitionName)
+  },
+}
+export const DbWorkItemTagCreateParamsDecoder: Decoder<DbWorkItemTagCreateParams> = {
+  definitionName: 'DbWorkItemTagCreateParams',
+  schemaRef: '#/definitions/DbWorkItemTagCreateParams',
+
+  decode(json: unknown): DbWorkItemTagCreateParams {
+    const schema = ajv.getSchema(DbWorkItemTagCreateParamsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbWorkItemTagCreateParamsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbWorkItemTagCreateParamsDecoder.definitionName)
+  },
+}
+export const DbWorkItemTypeCreateParamsDecoder: Decoder<DbWorkItemTypeCreateParams> = {
+  definitionName: 'DbWorkItemTypeCreateParams',
+  schemaRef: '#/definitions/DbWorkItemTypeCreateParams',
+
+  decode(json: unknown): DbWorkItemTypeCreateParams {
+    const schema = ajv.getSchema(DbWorkItemTypeCreateParamsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbWorkItemTypeCreateParamsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbWorkItemTypeCreateParamsDecoder.definitionName)
   },
 }

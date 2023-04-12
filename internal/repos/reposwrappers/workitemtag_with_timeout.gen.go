@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
 // WorkItemTagWithTimeout implements repos.WorkItemTag interface instrumented with timeouts
@@ -59,7 +59,7 @@ func (_d WorkItemTagWithTimeout) ByName(ctx context.Context, d db.DBTX, name str
 }
 
 // Create implements repos.WorkItemTag
-func (_d WorkItemTagWithTimeout) Create(ctx context.Context, d db.DBTX, params repos.WorkItemTagCreateParams) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithTimeout) Create(ctx context.Context, d db.DBTX, params db.WorkItemTagCreateParams) (wp1 *db.WorkItemTag, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.CreateTimeout)
@@ -79,7 +79,7 @@ func (_d WorkItemTagWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) 
 }
 
 // Update implements repos.WorkItemTag
-func (_d WorkItemTagWithTimeout) Update(ctx context.Context, d db.DBTX, id int, params repos.WorkItemTagUpdateParams) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithTimeout) Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTagUpdateParams) (wp1 *db.WorkItemTag, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)

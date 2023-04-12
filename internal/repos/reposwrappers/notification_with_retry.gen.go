@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
 // NotificationWithRetry implements repos.Notification interface instrumented with retries
@@ -29,8 +29,8 @@ func NewNotificationWithRetry(base repos.Notification, retryCount int, retryInte
 }
 
 // Create implements repos.Notification
-func (_d NotificationWithRetry) Create(ctx context.Context, d db.DBTX, params repos.NotificationCreateParams) (err error) {
-	err = _d.Notification.Create(ctx, d, params)
+func (_d NotificationWithRetry) Create(ctx context.Context, d db.DBTX, params db.NotificationCreateParams) (np1 *db.Notification, err error) {
+	np1, err = _d.Notification.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -42,14 +42,14 @@ func (_d NotificationWithRetry) Create(ctx context.Context, d db.DBTX, params re
 			return
 		case <-_ticker.C:
 		}
-		err = _d.Notification.Create(ctx, d, params)
+		np1, err = _d.Notification.Create(ctx, d, params)
 	}
 	return
 }
 
 // Delete implements repos.Notification
-func (_d NotificationWithRetry) Delete(ctx context.Context, d db.DBTX, notificationID int32) (err error) {
-	err = _d.Notification.Delete(ctx, d, notificationID)
+func (_d NotificationWithRetry) Delete(ctx context.Context, d db.DBTX, notificationID int) (np1 *db.Notification, err error) {
+	np1, err = _d.Notification.Delete(ctx, d, notificationID)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -61,13 +61,13 @@ func (_d NotificationWithRetry) Delete(ctx context.Context, d db.DBTX, notificat
 			return
 		case <-_ticker.C:
 		}
-		err = _d.Notification.Delete(ctx, d, notificationID)
+		np1, err = _d.Notification.Delete(ctx, d, notificationID)
 	}
 	return
 }
 
 // LatestUserNotifications implements repos.Notification
-func (_d NotificationWithRetry) LatestUserNotifications(ctx context.Context, d db.DBTX, params repos.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
+func (_d NotificationWithRetry) LatestUserNotifications(ctx context.Context, d db.DBTX, params db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
 	ga1, err = _d.Notification.LatestUserNotifications(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
 		return

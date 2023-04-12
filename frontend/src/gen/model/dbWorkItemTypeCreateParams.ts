@@ -6,11 +6,9 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export interface ReposKanbanStepCreateParams {
+export interface DbWorkItemTypeCreateParams {
   color?: string
   description?: string
   name?: string
   projectID?: number
-  stepOrder?: number
-  timeTrackable?: boolean
 }

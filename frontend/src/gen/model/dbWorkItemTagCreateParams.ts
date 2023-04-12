@@ -6,7 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export interface ReposWorkItemTagCreateParams {
+export interface DbWorkItemTagCreateParams {
   color?: string
   description?: string
   name?: string

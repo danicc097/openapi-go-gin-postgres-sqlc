@@ -6,7 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export interface ReposActivityCreateParams {
+export interface DbActivityCreateParams {
   description?: string
   isProductive?: boolean
   name?: string

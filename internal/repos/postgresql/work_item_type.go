@@ -22,7 +22,7 @@ func NewWorkItemType() *WorkItemType {
 
 var _ repos.WorkItemType = (*WorkItemType)(nil)
 
-func (wit *WorkItemType) Create(ctx context.Context, d db.DBTX, params repos.WorkItemTypeCreateParams) (*db.WorkItemType, error) {
+func (wit *WorkItemType) Create(ctx context.Context, d db.DBTX, params db.WorkItemTypeCreateParams) (*db.WorkItemType, error) {
 	workItemType := &db.WorkItemType{
 		Name:        params.Name,
 		Description: params.Description,
@@ -37,7 +37,7 @@ func (wit *WorkItemType) Create(ctx context.Context, d db.DBTX, params repos.Wor
 	return workItemType, nil
 }
 
-func (wit *WorkItemType) Update(ctx context.Context, d db.DBTX, id int, params repos.WorkItemTypeUpdateParams) (*db.WorkItemType, error) {
+func (wit *WorkItemType) Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTypeUpdateParams) (*db.WorkItemType, error) {
 	workItemType, err := wit.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemType by id %w", parseErrorDetail(err))

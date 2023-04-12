@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -67,7 +67,7 @@ func (_d WorkItemTagWithPrometheus) ByName(ctx context.Context, d db.DBTX, name 
 }
 
 // Create implements repos.WorkItemTag
-func (_d WorkItemTagWithPrometheus) Create(ctx context.Context, d db.DBTX, params repos.WorkItemTagCreateParams) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithPrometheus) Create(ctx context.Context, d db.DBTX, params db.WorkItemTagCreateParams) (wp1 *db.WorkItemTag, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -95,7 +95,7 @@ func (_d WorkItemTagWithPrometheus) Delete(ctx context.Context, d db.DBTX, id in
 }
 
 // Update implements repos.WorkItemTag
-func (_d WorkItemTagWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params repos.WorkItemTagUpdateParams) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTagUpdateParams) (wp1 *db.WorkItemTag, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

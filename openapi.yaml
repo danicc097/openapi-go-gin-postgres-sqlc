@@ -779,29 +779,29 @@ components:
       properties:
         activities:
           items:
-            $ref: '#/components/schemas/ReposActivityCreateParams'
+            $ref: '#/components/schemas/DbActivityCreateParams'
           nullable: true
           type: array
         kanbanSteps:
           items:
-            $ref: '#/components/schemas/ReposKanbanStepCreateParams'
+            $ref: '#/components/schemas/DbKanbanStepCreateParams'
           nullable: true
           type: array
         projectID:
           type: integer
         teams:
           items:
-            $ref: '#/components/schemas/ReposTeamCreateParams'
+            $ref: '#/components/schemas/DbTeamCreateParams'
           nullable: true
           type: array
         workItemTags:
           items:
-            $ref: '#/components/schemas/ReposWorkItemTagCreateParams'
+            $ref: '#/components/schemas/DbWorkItemTagCreateParams'
           nullable: true
           type: array
         workItemTypes:
           items:
-            $ref: '#/components/schemas/ReposWorkItemTypeCreateParams'
+            $ref: '#/components/schemas/DbWorkItemTypeCreateParams'
           nullable: true
           type: array
       type: object
@@ -944,63 +944,6 @@ components:
         type:
           title: Error Type
           type: string
-    ReposActivityCreateParams: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        description:
-          type: string
-        isProductive:
-          type: boolean
-        name:
-          type: string
-        projectID:
-          type: integer
-      type: object
-    ReposKanbanStepCreateParams: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-        stepOrder:
-          type: integer
-        timeTrackable:
-          type: boolean
-      type: object
-    ReposTeamCreateParams: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-      type: object
-    ReposWorkItemTagCreateParams: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-      type: object
-    ReposWorkItemTypeCreateParams: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-      type: object
     ModelsRole: # Generated from internal structs. DO NOT EDIT.
       type: string
     UuidUUID: # Generated from internal structs. DO NOT EDIT.
@@ -1131,6 +1074,64 @@ components:
       description: Existing projects
     ModelsProject: # Generated from internal structs. DO NOT EDIT.
       type: string
+    DbActivityCreateParams: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        description:
+          type: string
+        isProductive:
+          type: boolean
+        name:
+          type: string
+        projectID:
+          type: integer
+      type: object
+    DbKanbanStepCreateParams: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+        stepOrder:
+          nullable: true
+          type: integer
+        timeTrackable:
+          type: boolean
+      type: object
+    DbTeamCreateParams: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+      type: object
+    DbWorkItemTagCreateParams: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+      type: object
+    DbWorkItemTypeCreateParams: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        color:
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+      type: object
   examples:
     User:
       value:

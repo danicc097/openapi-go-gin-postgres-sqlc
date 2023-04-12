@@ -80,7 +80,6 @@ var PublicStructs = map[string]any{
 	"DbActivityUpdateParams":            db.ActivityUpdateParams{},
 	"DbActivitySelectConfig":            db.ActivitySelectConfig{},
 	"DbActivityJoins":                   db.ActivityJoins{},
-	"DbCreateNotificationParams":        db.CreateNotificationParams{},
 	"DbGetUserNotificationsParams":      db.GetUserNotificationsParams{},
 	"DbGetUserNotificationsRow":         db.GetUserNotificationsRow{},
 	"DbGetUserParams":                   db.GetUserParams{},

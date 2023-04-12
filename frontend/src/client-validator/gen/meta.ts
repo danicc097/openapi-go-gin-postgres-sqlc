@@ -30,11 +30,6 @@ import {
   UpdateUserRequest,
   UpdateUserAuthRequest,
   ValidationError,
-  ReposActivityCreateParams,
-  ReposKanbanStepCreateParams,
-  ReposTeamCreateParams,
-  ReposWorkItemTagCreateParams,
-  ReposWorkItemTypeCreateParams,
   ModelsRole,
   UuidUUID,
   PgtypeJSONB,
@@ -44,6 +39,11 @@ import {
   DbWorkItem,
   Project,
   ModelsProject,
+  DbActivityCreateParams,
+  DbKanbanStepCreateParams,
+  DbTeamCreateParams,
+  DbWorkItemTagCreateParams,
+  DbWorkItemTypeCreateParams,
 } from './models'
 
 export const schemaDefinitions = {
@@ -82,23 +82,6 @@ export const schemaDefinitions = {
   UpdateUserRequest: info<UpdateUserRequest>('UpdateUserRequest', '#/definitions/UpdateUserRequest'),
   UpdateUserAuthRequest: info<UpdateUserAuthRequest>('UpdateUserAuthRequest', '#/definitions/UpdateUserAuthRequest'),
   ValidationError: info<ValidationError>('ValidationError', '#/definitions/ValidationError'),
-  ReposActivityCreateParams: info<ReposActivityCreateParams>(
-    'ReposActivityCreateParams',
-    '#/definitions/ReposActivityCreateParams',
-  ),
-  ReposKanbanStepCreateParams: info<ReposKanbanStepCreateParams>(
-    'ReposKanbanStepCreateParams',
-    '#/definitions/ReposKanbanStepCreateParams',
-  ),
-  ReposTeamCreateParams: info<ReposTeamCreateParams>('ReposTeamCreateParams', '#/definitions/ReposTeamCreateParams'),
-  ReposWorkItemTagCreateParams: info<ReposWorkItemTagCreateParams>(
-    'ReposWorkItemTagCreateParams',
-    '#/definitions/ReposWorkItemTagCreateParams',
-  ),
-  ReposWorkItemTypeCreateParams: info<ReposWorkItemTypeCreateParams>(
-    'ReposWorkItemTypeCreateParams',
-    '#/definitions/ReposWorkItemTypeCreateParams',
-  ),
   ModelsRole: info<ModelsRole>('ModelsRole', '#/definitions/ModelsRole'),
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
   PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
@@ -114,6 +97,23 @@ export const schemaDefinitions = {
   DbWorkItem: info<DbWorkItem>('DbWorkItem', '#/definitions/DbWorkItem'),
   Project: info<Project>('Project', '#/definitions/Project'),
   ModelsProject: info<ModelsProject>('ModelsProject', '#/definitions/ModelsProject'),
+  DbActivityCreateParams: info<DbActivityCreateParams>(
+    'DbActivityCreateParams',
+    '#/definitions/DbActivityCreateParams',
+  ),
+  DbKanbanStepCreateParams: info<DbKanbanStepCreateParams>(
+    'DbKanbanStepCreateParams',
+    '#/definitions/DbKanbanStepCreateParams',
+  ),
+  DbTeamCreateParams: info<DbTeamCreateParams>('DbTeamCreateParams', '#/definitions/DbTeamCreateParams'),
+  DbWorkItemTagCreateParams: info<DbWorkItemTagCreateParams>(
+    'DbWorkItemTagCreateParams',
+    '#/definitions/DbWorkItemTagCreateParams',
+  ),
+  DbWorkItemTypeCreateParams: info<DbWorkItemTypeCreateParams>(
+    'DbWorkItemTypeCreateParams',
+    '#/definitions/DbWorkItemTypeCreateParams',
+  ),
 }
 
 export interface SchemaInfo<T> {

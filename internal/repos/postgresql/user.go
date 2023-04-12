@@ -26,7 +26,7 @@ func NewUser() *User {
 
 var _ repos.User = (*User)(nil)
 
-func (u *User) Create(ctx context.Context, d db.DBTX, params repos.UserCreateParams) (*db.User, error) {
+func (u *User) Create(ctx context.Context, d db.DBTX, params db.UserCreateParams) (*db.User, error) {
 	user := &db.User{
 		Username:   params.Username,
 		Email:      params.Email,
@@ -44,7 +44,7 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params repos.UserCreatePar
 	return user, nil
 }
 
-func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params repos.UserUpdateParams) (*db.User, error) {
+func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.UserUpdateParams) (*db.User, error) {
 	user, err := u.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user by id %w", parseErrorDetail(err))

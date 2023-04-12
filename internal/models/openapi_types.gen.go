@@ -140,6 +140,14 @@ type DbActivity struct {
 	TimeEntries  *[]DbTimeEntry `json:"timeEntries"`
 }
 
+// DbActivityCreateParams defines the model for DbActivityCreateParams.
+type DbActivityCreateParams struct {
+	Description  *string `json:"description,omitempty"`
+	IsProductive *bool   `json:"isProductive,omitempty"`
+	Name         *string `json:"name,omitempty"`
+	ProjectID    *int    `json:"projectID,omitempty"`
+}
+
 // DbDemoProjectWorkItem defines the model for DbDemoProjectWorkItem.
 type DbDemoProjectWorkItem struct {
 	LastMessageAt time.Time   `json:"lastMessageAt"`
@@ -159,6 +167,16 @@ type DbKanbanStep struct {
 	ProjectID     int    `json:"projectID"`
 	StepOrder     *int   `json:"stepOrder"`
 	TimeTrackable bool   `json:"timeTrackable"`
+}
+
+// DbKanbanStepCreateParams defines the model for DbKanbanStepCreateParams.
+type DbKanbanStepCreateParams struct {
+	Color         *string `json:"color,omitempty"`
+	Description   *string `json:"description,omitempty"`
+	Name          *string `json:"name,omitempty"`
+	ProjectID     *int    `json:"projectID,omitempty"`
+	StepOrder     *int    `json:"stepOrder"`
+	TimeTrackable *bool   `json:"timeTrackable,omitempty"`
 }
 
 // DbProject defines the model for DbProject.
@@ -195,6 +213,13 @@ type DbTeam struct {
 	TimeEntries *[]DbTimeEntry `json:"timeEntries"`
 	UpdatedAt   time.Time      `json:"updatedAt"`
 	Users       *[]DbUser      `json:"users"`
+}
+
+// DbTeamCreateParams defines the model for DbTeamCreateParams.
+type DbTeamCreateParams struct {
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	ProjectID   *int    `json:"projectID,omitempty"`
 }
 
 // DbTimeEntry defines the model for DbTimeEntry.
@@ -278,6 +303,14 @@ type DbWorkItemTag struct {
 	WorkItems     *[]DbWorkItem `json:"workItems"`
 }
 
+// DbWorkItemTagCreateParams defines the model for DbWorkItemTagCreateParams.
+type DbWorkItemTagCreateParams struct {
+	Color       *string `json:"color,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	ProjectID   *int    `json:"projectID,omitempty"`
+}
+
 // DbWorkItemType defines the model for DbWorkItemType.
 type DbWorkItemType struct {
 	Color          string      `json:"color"`
@@ -288,6 +321,14 @@ type DbWorkItemType struct {
 	WorkItemTypeID int         `json:"workItemTypeID"`
 }
 
+// DbWorkItemTypeCreateParams defines the model for DbWorkItemTypeCreateParams.
+type DbWorkItemTypeCreateParams struct {
+	Color       *string `json:"color,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	ProjectID   *int    `json:"projectID,omitempty"`
+}
+
 // HTTPValidationError defines the model for HTTPValidationError.
 type HTTPValidationError struct {
 	Detail *[]ValidationError `json:"detail,omitempty"`
@@ -295,12 +336,12 @@ type HTTPValidationError struct {
 
 // InitializeProjectRequest defines the model for InitializeProjectRequest.
 type InitializeProjectRequest struct {
-	Activities    *[]ReposActivityCreateParams     `json:"activities"`
-	KanbanSteps   *[]ReposKanbanStepCreateParams   `json:"kanbanSteps"`
-	ProjectID     *int                             `json:"projectID,omitempty"`
-	Teams         *[]ReposTeamCreateParams         `json:"teams"`
-	WorkItemTags  *[]ReposWorkItemTagCreateParams  `json:"workItemTags"`
-	WorkItemTypes *[]ReposWorkItemTypeCreateParams `json:"workItemTypes"`
+	Activities    *[]DbActivityCreateParams     `json:"activities"`
+	KanbanSteps   *[]DbKanbanStepCreateParams   `json:"kanbanSteps"`
+	ProjectID     *int                          `json:"projectID,omitempty"`
+	Teams         *[]DbTeamCreateParams         `json:"teams"`
+	WorkItemTags  *[]DbWorkItemTagCreateParams  `json:"workItemTags"`
+	WorkItemTypes *[]DbWorkItemTypeCreateParams `json:"workItemTypes"`
 }
 
 // ModelsProject defines the model for ModelsProject.
@@ -331,47 +372,6 @@ type Project string
 type ProjectConfig struct {
 	Fields *[]ModelsProjectConfigField `json:"fields"`
 	Header *[]string                   `json:"header"`
-}
-
-// ReposActivityCreateParams defines the model for ReposActivityCreateParams.
-type ReposActivityCreateParams struct {
-	Description  *string `json:"description,omitempty"`
-	IsProductive *bool   `json:"isProductive,omitempty"`
-	Name         *string `json:"name,omitempty"`
-	ProjectID    *int    `json:"projectID,omitempty"`
-}
-
-// ReposKanbanStepCreateParams defines the model for ReposKanbanStepCreateParams.
-type ReposKanbanStepCreateParams struct {
-	Color         *string `json:"color,omitempty"`
-	Description   *string `json:"description,omitempty"`
-	Name          *string `json:"name,omitempty"`
-	ProjectID     *int    `json:"projectID,omitempty"`
-	StepOrder     *int    `json:"stepOrder,omitempty"`
-	TimeTrackable *bool   `json:"timeTrackable,omitempty"`
-}
-
-// ReposTeamCreateParams defines the model for ReposTeamCreateParams.
-type ReposTeamCreateParams struct {
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-	ProjectID   *int    `json:"projectID,omitempty"`
-}
-
-// ReposWorkItemTagCreateParams defines the model for ReposWorkItemTagCreateParams.
-type ReposWorkItemTagCreateParams struct {
-	Color       *string `json:"color,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-	ProjectID   *int    `json:"projectID,omitempty"`
-}
-
-// ReposWorkItemTypeCreateParams defines the model for ReposWorkItemTypeCreateParams.
-type ReposWorkItemTypeCreateParams struct {
-	Color       *string `json:"color,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-	ProjectID   *int    `json:"projectID,omitempty"`
 }
 
 // RestDemoProjectWorkItemsResponse defines the model for RestDemoProjectWorkItemsResponse.

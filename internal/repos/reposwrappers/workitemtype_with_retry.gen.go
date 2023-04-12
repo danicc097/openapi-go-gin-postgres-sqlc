@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
 // WorkItemTypeWithRetry implements repos.WorkItemType interface instrumented with retries
@@ -67,7 +67,7 @@ func (_d WorkItemTypeWithRetry) ByName(ctx context.Context, d db.DBTX, name stri
 }
 
 // Create implements repos.WorkItemType
-func (_d WorkItemTypeWithRetry) Create(ctx context.Context, d db.DBTX, params repos.WorkItemTypeCreateParams) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithRetry) Create(ctx context.Context, d db.DBTX, params db.WorkItemTypeCreateParams) (wp1 *db.WorkItemType, err error) {
 	wp1, err = _d.WorkItemType.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -105,7 +105,7 @@ func (_d WorkItemTypeWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (
 }
 
 // Update implements repos.WorkItemType
-func (_d WorkItemTypeWithRetry) Update(ctx context.Context, d db.DBTX, id int, params repos.WorkItemTypeUpdateParams) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithRetry) Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTypeUpdateParams) (wp1 *db.WorkItemType, err error) {
 	wp1, err = _d.WorkItemType.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
 		return

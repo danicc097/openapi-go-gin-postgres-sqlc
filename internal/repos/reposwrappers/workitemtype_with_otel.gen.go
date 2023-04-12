@@ -8,7 +8,7 @@ import (
 	"context"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -85,7 +85,7 @@ func (_d WorkItemTypeWithTracing) ByName(ctx context.Context, d db.DBTX, name st
 }
 
 // Create implements repos.WorkItemType
-func (_d WorkItemTypeWithTracing) Create(ctx context.Context, d db.DBTX, params repos.WorkItemTypeCreateParams) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithTracing) Create(ctx context.Context, d db.DBTX, params db.WorkItemTypeCreateParams) (wp1 *db.WorkItemType, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemType.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -133,7 +133,7 @@ func (_d WorkItemTypeWithTracing) Delete(ctx context.Context, d db.DBTX, id int)
 }
 
 // Update implements repos.WorkItemType
-func (_d WorkItemTypeWithTracing) Update(ctx context.Context, d db.DBTX, id int, params repos.WorkItemTypeUpdateParams) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithTracing) Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTypeUpdateParams) (wp1 *db.WorkItemType, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemType.Update")
 	defer func() {
 		if _d._spanDecorator != nil {

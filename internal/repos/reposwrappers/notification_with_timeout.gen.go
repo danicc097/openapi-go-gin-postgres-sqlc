@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
 // NotificationWithTimeout implements repos.Notification interface instrumented with timeouts
@@ -35,7 +35,7 @@ func NewNotificationWithTimeout(base repos.Notification, config NotificationWith
 }
 
 // Create implements repos.Notification
-func (_d NotificationWithTimeout) Create(ctx context.Context, d db.DBTX, params repos.NotificationCreateParams) (err error) {
+func (_d NotificationWithTimeout) Create(ctx context.Context, d db.DBTX, params db.NotificationCreateParams) (np1 *db.Notification, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.CreateTimeout)
@@ -45,7 +45,7 @@ func (_d NotificationWithTimeout) Create(ctx context.Context, d db.DBTX, params 
 }
 
 // Delete implements repos.Notification
-func (_d NotificationWithTimeout) Delete(ctx context.Context, d db.DBTX, notificationID int32) (err error) {
+func (_d NotificationWithTimeout) Delete(ctx context.Context, d db.DBTX, notificationID int) (np1 *db.Notification, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
@@ -55,7 +55,7 @@ func (_d NotificationWithTimeout) Delete(ctx context.Context, d db.DBTX, notific
 }
 
 // LatestUserNotifications implements repos.Notification
-func (_d NotificationWithTimeout) LatestUserNotifications(ctx context.Context, d db.DBTX, params repos.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
+func (_d NotificationWithTimeout) LatestUserNotifications(ctx context.Context, d db.DBTX, params db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
 	var cancelFunc func()
 	if _d.config.LatestUserNotificationsTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.LatestUserNotificationsTimeout)

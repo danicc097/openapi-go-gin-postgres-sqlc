@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
@@ -27,10 +26,10 @@ func NewRandomUser(t *testing.T, pool *pgxpool.Pool) *db.User {
 	return user
 }
 
-func RandomUserCreateParams(t *testing.T) repos.UserCreateParams {
+func RandomUserCreateParams(t *testing.T) db.UserCreateParams {
 	t.Helper()
 
-	return repos.UserCreateParams{
+	return db.UserCreateParams{
 		Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
 		Email:      testutil.RandomEmail(),
 		FirstName:  pointers.New(testutil.RandomFirstName()),

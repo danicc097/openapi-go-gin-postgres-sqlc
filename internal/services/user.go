@@ -75,7 +75,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 		scopes = append(scopes, string(s))
 	}
 
-	repoParams := repos.UserCreateParams{
+	repoParams := db.UserCreateParams{
 		FirstName:  params.FirstName,
 		LastName:   params.LastName,
 		Username:   params.Username,
@@ -124,7 +124,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot change another user's information")
 	}
 
-	user, err = u.urepo.Update(ctx, d, uid, repos.UserUpdateParams{
+	user, err = u.urepo.Update(ctx, d, uid, db.UserUpdateParams{
 		FirstName: params.FirstName,
 		LastName:  params.LastName,
 	})
@@ -205,7 +205,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		scopes = &ss
 	}
 
-	user, err = u.urepo.Update(ctx, d, uid, repos.UserUpdateParams{
+	user, err = u.urepo.Update(ctx, d, uid, db.UserUpdateParams{
 		Scopes:   scopes,
 		RoleRank: rank,
 	})

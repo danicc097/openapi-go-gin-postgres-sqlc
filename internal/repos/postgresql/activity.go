@@ -22,7 +22,7 @@ func NewActivity() *Activity {
 
 var _ repos.Activity = (*Activity)(nil)
 
-func (a *Activity) Create(ctx context.Context, d db.DBTX, params repos.ActivityCreateParams) (*db.Activity, error) {
+func (a *Activity) Create(ctx context.Context, d db.DBTX, params db.ActivityCreateParams) (*db.Activity, error) {
 	workItemTag := &db.Activity{
 		Name:         params.Name,
 		Description:  params.Description,
@@ -37,7 +37,7 @@ func (a *Activity) Create(ctx context.Context, d db.DBTX, params repos.ActivityC
 	return workItemTag, nil
 }
 
-func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params repos.ActivityUpdateParams) (*db.Activity, error) {
+func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params db.ActivityUpdateParams) (*db.Activity, error) {
 	workItemTag, err := a.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemTag by id %w", parseErrorDetail(err))

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -110,7 +110,7 @@ func (_d UserWithPrometheus) ByUsername(ctx context.Context, d db.DBTX, username
 }
 
 // Create implements repos.User
-func (_d UserWithPrometheus) Create(ctx context.Context, d db.DBTX, params repos.UserCreateParams) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) Create(ctx context.Context, d db.DBTX, params db.UserCreateParams) (up1 *db.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -152,7 +152,7 @@ func (_d UserWithPrometheus) Delete(ctx context.Context, d db.DBTX, id uuid.UUID
 }
 
 // Update implements repos.User
-func (_d UserWithPrometheus) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params repos.UserUpdateParams) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.UserUpdateParams) (up1 *db.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

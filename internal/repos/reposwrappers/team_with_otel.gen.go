@@ -8,7 +8,7 @@ import (
 	"context"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -85,7 +85,7 @@ func (_d TeamWithTracing) ByName(ctx context.Context, d db.DBTX, name string, pr
 }
 
 // Create implements repos.Team
-func (_d TeamWithTracing) Create(ctx context.Context, d db.DBTX, params repos.TeamCreateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithTracing) Create(ctx context.Context, d db.DBTX, params db.TeamCreateParams) (tp1 *db.Team, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Team.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -133,7 +133,7 @@ func (_d TeamWithTracing) Delete(ctx context.Context, d db.DBTX, id int) (tp1 *d
 }
 
 // Update implements repos.Team
-func (_d TeamWithTracing) Update(ctx context.Context, d db.DBTX, id int, params repos.TeamUpdateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithTracing) Update(ctx context.Context, d db.DBTX, id int, params db.TeamUpdateParams) (tp1 *db.Team, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Team.Update")
 	defer func() {
 		if _d._spanDecorator != nil {

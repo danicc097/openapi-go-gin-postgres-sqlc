@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -39,7 +39,7 @@ func NewNotificationWithPrometheus(base repos.Notification, instanceName string)
 }
 
 // Create implements repos.Notification
-func (_d NotificationWithPrometheus) Create(ctx context.Context, d db.DBTX, params repos.NotificationCreateParams) (err error) {
+func (_d NotificationWithPrometheus) Create(ctx context.Context, d db.DBTX, params db.NotificationCreateParams) (np1 *db.Notification, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -53,7 +53,7 @@ func (_d NotificationWithPrometheus) Create(ctx context.Context, d db.DBTX, para
 }
 
 // Delete implements repos.Notification
-func (_d NotificationWithPrometheus) Delete(ctx context.Context, d db.DBTX, notificationID int32) (err error) {
+func (_d NotificationWithPrometheus) Delete(ctx context.Context, d db.DBTX, notificationID int) (np1 *db.Notification, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -67,7 +67,7 @@ func (_d NotificationWithPrometheus) Delete(ctx context.Context, d db.DBTX, noti
 }
 
 // LatestUserNotifications implements repos.Notification
-func (_d NotificationWithPrometheus) LatestUserNotifications(ctx context.Context, d db.DBTX, params repos.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
+func (_d NotificationWithPrometheus) LatestUserNotifications(ctx context.Context, d db.DBTX, params db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

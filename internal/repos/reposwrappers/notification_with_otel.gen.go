@@ -8,7 +8,7 @@ import (
 	"context"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -36,7 +36,7 @@ func NewNotificationWithTracing(base repos.Notification, instance string, spanDe
 }
 
 // Create implements repos.Notification
-func (_d NotificationWithTracing) Create(ctx context.Context, d db.DBTX, params repos.NotificationCreateParams) (err error) {
+func (_d NotificationWithTracing) Create(ctx context.Context, d db.DBTX, params db.NotificationCreateParams) (np1 *db.Notification, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -44,6 +44,7 @@ func (_d NotificationWithTracing) Create(ctx context.Context, d db.DBTX, params 
 				"ctx":    ctx,
 				"d":      d,
 				"params": params}, map[string]interface{}{
+				"np1": np1,
 				"err": err})
 		} else if err != nil {
 			_span.RecordError(err)
@@ -59,7 +60,7 @@ func (_d NotificationWithTracing) Create(ctx context.Context, d db.DBTX, params 
 }
 
 // Delete implements repos.Notification
-func (_d NotificationWithTracing) Delete(ctx context.Context, d db.DBTX, notificationID int32) (err error) {
+func (_d NotificationWithTracing) Delete(ctx context.Context, d db.DBTX, notificationID int) (np1 *db.Notification, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -67,6 +68,7 @@ func (_d NotificationWithTracing) Delete(ctx context.Context, d db.DBTX, notific
 				"ctx":            ctx,
 				"d":              d,
 				"notificationID": notificationID}, map[string]interface{}{
+				"np1": np1,
 				"err": err})
 		} else if err != nil {
 			_span.RecordError(err)
@@ -82,7 +84,7 @@ func (_d NotificationWithTracing) Delete(ctx context.Context, d db.DBTX, notific
 }
 
 // LatestUserNotifications implements repos.Notification
-func (_d NotificationWithTracing) LatestUserNotifications(ctx context.Context, d db.DBTX, params repos.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
+func (_d NotificationWithTracing) LatestUserNotifications(ctx context.Context, d db.DBTX, params db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.LatestUserNotifications")
 	defer func() {
 		if _d._spanDecorator != nil {

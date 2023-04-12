@@ -235,39 +235,39 @@ export interface RestDemoProjectWorkItemsResponse {
   workItemTypeID: number
 }
 export interface InitializeProjectRequest {
-  activities?: ReposActivityCreateParams[] | null
-  kanbanSteps?: ReposKanbanStepCreateParams[] | null
+  activities?: DbActivityCreateParams[] | null
+  kanbanSteps?: DbKanbanStepCreateParams[] | null
   projectID?: number
-  teams?: ReposTeamCreateParams[] | null
-  workItemTags?: ReposWorkItemTagCreateParams[] | null
-  workItemTypes?: ReposWorkItemTypeCreateParams[] | null
+  teams?: DbTeamCreateParams[] | null
+  workItemTags?: DbWorkItemTagCreateParams[] | null
+  workItemTypes?: DbWorkItemTypeCreateParams[] | null
 }
-export interface ReposActivityCreateParams {
+export interface DbActivityCreateParams {
   description?: string
   isProductive?: boolean
   name?: string
   projectID?: number
 }
-export interface ReposKanbanStepCreateParams {
+export interface DbKanbanStepCreateParams {
   color?: string
   description?: string
   name?: string
   projectID?: number
-  stepOrder?: number
+  stepOrder?: number | null
   timeTrackable?: boolean
 }
-export interface ReposTeamCreateParams {
+export interface DbTeamCreateParams {
   description?: string
   name?: string
   projectID?: number
 }
-export interface ReposWorkItemTagCreateParams {
+export interface DbWorkItemTagCreateParams {
   color?: string
   description?: string
   name?: string
   projectID?: number
 }
-export interface ReposWorkItemTypeCreateParams {
+export interface DbWorkItemTypeCreateParams {
   color?: string
   description?: string
   name?: string

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/google/uuid"
 )
@@ -58,7 +57,7 @@ func NewFakeUser(users ...*db.User) *FakeUser {
 		return &user, nil
 	}
 
-	fakeUserRepo.UpdateStub = func(ctx context.Context, d db.DBTX, id uuid.UUID, params repos.UserUpdateParams) (*db.User, error) {
+	fakeUserRepo.UpdateStub = func(ctx context.Context, d db.DBTX, id uuid.UUID, params db.UserUpdateParams) (*db.User, error) {
 		user, err := fakeUserRepo.ByID(ctx, d, id)
 		if err != nil {
 			return &db.User{}, fmt.Errorf("UserByIDStub: %w", err)

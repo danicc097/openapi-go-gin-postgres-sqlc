@@ -19,30 +19,3 @@ where
 order by
   created_at desc
 limit sqlc.narg('lim');
-
--- name: CreateNotification :exec
--- plpgsql-language-server:disable
-insert into public.notifications (
-  receiver_rank
-  , title
-  , body
-  , label
-  , link
-  , created_at
-  , sender
-  , receiver
-  , notification_type)
-values (
-  sqlc.narg('receiver_rank')
-  , @title
-  , @body
-  , @label
-  , @link
-  , current_timestamp
-  , @sender
-  , sqlc.narg('receiver')
-  , @notification_type);
-
--- name: DeleteNotification :exec
-delete from notifications
-where notification_id = @notification_id;
