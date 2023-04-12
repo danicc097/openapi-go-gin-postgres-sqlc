@@ -7,13 +7,15 @@ import (
 	"reflect"
 	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 )
 
 var (
 	lock = &sync.Mutex{}
 
-	config *AppConfig
+	// Config is the app global config initialized from environment variables
+	Config *AppConfig
 )
 
 type OIDCConfig struct {
@@ -32,6 +34,7 @@ type PostgresConfig struct {
 	Password     string `env:"POSTGRES_PASSWORD"`
 	Server       string `env:"POSTGRES_SERVER"`
 	DB           string `env:"POSTGRES_DB"`
+	TraceEnabled bool   `env:"POSTGRES_TRACE,false"`
 }
 
 type RedisConfig struct {
@@ -54,32 +57,23 @@ type AppConfig struct {
 }
 
 // NewAppConfig initializes app config from current environment variables.
-// Config can be replaced with consequent calls and accessed through Config().
+// Config can be replaced with subsequent calls.
 func NewAppConfig() error {
 	cfg := &AppConfig{}
 
 	lock.Lock()
 	defer lock.Unlock()
 
-	if err := LoadEnvToConfig(cfg); err != nil {
-		return fmt.Errorf("LoadEnvToConfig: %w", err)
+	if err := loadEnvToConfig(cfg); err != nil {
+		return fmt.Errorf("loadEnvToConfig: %w", err)
 	}
-	config = cfg
+	Config = cfg
 
 	return nil
 }
 
-// Config returns the current app config and panics if it was not initialized via NewAppConfig.
-func Config() *AppConfig {
-	if config == nil {
-		panic("app configuration has not yet been initialized")
-	}
-
-	return config
-}
-
-// LoadEnvToConfig loads env vars to a given struct based on an `env` tag.
-func LoadEnvToConfig(config any) error {
+// loadEnvToConfig loads env vars to a given struct based on an `env` tag.
+func loadEnvToConfig(config any) error {
 	cfg := reflect.ValueOf(config)
 
 	if cfg.Kind() == reflect.Pointer {
@@ -94,8 +88,8 @@ func LoadEnvToConfig(config any) error {
 			if !fld.CanInterface() { // unexported
 				continue
 			}
-			if err := LoadEnvToConfig(fld.Addr().Interface()); err != nil {
-				return fmt.Errorf("nested struct %s env loading: %w", cfg.Type().Field(idx).Name, err)
+			if err := loadEnvToConfig(fld.Addr().Interface()); err != nil {
+				return fmt.Errorf("nested struct %q env loading: %w", cfg.Type().Field(idx).Name, err)
 			}
 		}
 
@@ -114,11 +108,24 @@ func LoadEnvToConfig(config any) error {
 	return nil
 }
 
-func setEnvToField(envvar string, field reflect.Value) error {
+func splitEnvTag(s string) (string, string) {
+	x := strings.Split(s, ",")
+	if len(x) == 1 {
+		return x[0], ""
+	}
+	return x[0], x[1]
+}
+
+func setEnvToField(envTag string, field reflect.Value) error {
+	envvar, defaultVal := splitEnvTag(envTag)
 	val, present := os.LookupEnv(envvar)
 
-	if !present && field.Kind() != reflect.Pointer {
+	if !present && field.Kind() != reflect.Pointer && defaultVal == "" {
 		return fmt.Errorf("%s is not set but required", envvar)
+	}
+
+	if !present && field.Kind() != reflect.Pointer && defaultVal != "" {
+		val = defaultVal
 	}
 
 	var isPtr bool
