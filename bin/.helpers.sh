@@ -118,6 +118,15 @@ to_pascal() {
   printf '%s\n' "$s"
 }
 
+to_lower() {
+  local s="$1"
+  local re='([[:upper:]])'
+  while [[ $s =~ $re ]]; do
+    s="${s/${BASH_REMATCH[0]}/${BASH_REMATCH[0],}}"
+  done
+  printf '%s\n' "$s"
+}
+
 restart_pid() {
   # get command + args
   SAVED_COMMAND="$(while IFS= read -r -d $'\0' f; do printf '%q ' "$f"; done </proc/$1/cmdline)"

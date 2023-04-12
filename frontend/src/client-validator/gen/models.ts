@@ -91,12 +91,12 @@ export type NotificationType = 'personal' | 'global'
  * Role in work item for a member.
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
-export type ModelsRole = string
 /**
  * Kanban columns for project demoProject
  */
 export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 export type ModelsProject = string
+export type ModelsRole = string
 
 export interface DbActivity {
   activityID: number

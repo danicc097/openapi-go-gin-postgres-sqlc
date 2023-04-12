@@ -1061,6 +1061,7 @@ run_shared_services() {
 # no need for ast parsing since all code in db is generated and predictable
 generate_structs_map() {
   readarray -t structs < <(find "$PG_REPO_GEN/db" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
+  find_deleted_pkg_structs structs Db
   for struct in ${structs[@]}; do
     map_fields+=("\"Db$struct\": db.$struct{},")
   done
@@ -1068,6 +1069,7 @@ generate_structs_map() {
   //
   ")
   readarray -t structs < <(find "internal/rest" -name "models.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
+  find_deleted_pkg_structs structs Rest
   for struct in ${structs[@]}; do
     map_fields+=("\"Rest$struct\": rest.$struct{},")
   done
@@ -1075,10 +1077,11 @@ generate_structs_map() {
   //
   ")
   readarray -t structs < <(find "internal/repos/models" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
+  find_deleted_pkg_structs structs Models
   for struct in ${structs[@]}; do
     # openapi-go uses the last dir as defaultDefName regardless (models)
     # in a sense this is not too bad since a duplicated model name from different packages will not compile
-    # as the map key is duplicated.
+    # as the map key is duplicated anyway.
     map_fields+=("\"Models$struct\": repomodels.$struct{},")
   done
 
@@ -1099,6 +1102,23 @@ $(printf "%s\n" "${map_fields[@]}")
 EOF
 
   gofumpt -w $out
+}
+
+find_deleted_pkg_structs() {
+  local -n __structs="$1"
+  local pkg="$2"
+  echo "Finding deleted structs from package '$pkg'..."
+  readarray -t spec_structs < <(yq eval '.components.schemas[] | key' "$SPEC" | grep -E "^${pkg}")
+  local found=0
+  for spec_struct in ${spec_structs[*]}; do
+    for struct in ${__structs[@]}; do
+      if [[ $spec_struct == "${pkg}$struct" ]]; then
+        found=1
+      fi
+    done
+    ((found == 0)) && echo "${YELLOW}[WARNING] $SPEC schema $spec_struct no longer exists in package '$(to_lower $pkg)'. Remove if necessary.${OFF}"
+    found=0
+  done
 }
 
 update_spec_with_structs() {
