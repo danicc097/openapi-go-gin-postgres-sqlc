@@ -29,12 +29,14 @@ type Team struct {
 
 // TeamCreateParams represents insert params for 'public.teams'
 type TeamCreateParams struct {
+	ProjectID   int    `json:"projectID"`   // project_id
 	Name        string `json:"name"`        // name
 	Description string `json:"description"` // description
 }
 
 // TeamUpdateParams represents update params for 'public.teams'
 type TeamUpdateParams struct {
+	ProjectID   *int    `json:"projectID"`   // project_id
 	Name        *string `json:"name"`        // name
 	Description *string `json:"description"` // description
 }

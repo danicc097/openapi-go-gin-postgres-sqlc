@@ -25,6 +25,7 @@ type WorkItemType struct {
 
 // WorkItemTypeCreateParams represents insert params for 'public.work_item_types'
 type WorkItemTypeCreateParams struct {
+	ProjectID   int    `json:"projectID"`   // project_id
 	Name        string `json:"name"`        // name
 	Description string `json:"description"` // description
 	Color       string `json:"color"`       // color
@@ -32,6 +33,7 @@ type WorkItemTypeCreateParams struct {
 
 // WorkItemTypeUpdateParams represents update params for 'public.work_item_types'
 type WorkItemTypeUpdateParams struct {
+	ProjectID   *int    `json:"projectID"`   // project_id
 	Name        *string `json:"name"`        // name
 	Description *string `json:"description"` // description
 	Color       *string `json:"color"`       // color

@@ -25,6 +25,7 @@ type Activity struct {
 
 // ActivityCreateParams represents insert params for 'public.activities'
 type ActivityCreateParams struct {
+	ProjectID    int    `json:"projectID"`    // project_id
 	Name         string `json:"name"`         // name
 	Description  string `json:"description"`  // description
 	IsProductive bool   `json:"isProductive"` // is_productive
@@ -32,6 +33,7 @@ type ActivityCreateParams struct {
 
 // ActivityUpdateParams represents update params for 'public.activities'
 type ActivityUpdateParams struct {
+	ProjectID    *int    `json:"projectID"`    // project_id
 	Name         *string `json:"name"`         // name
 	Description  *string `json:"description"`  // description
 	IsProductive *bool   `json:"isProductive"` // is_productive

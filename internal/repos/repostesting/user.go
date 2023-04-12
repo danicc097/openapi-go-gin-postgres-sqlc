@@ -73,8 +73,8 @@ func NewFakeUser(users ...*db.User) *FakeUser {
 		if params.Scopes != nil {
 			user.Scopes = *params.Scopes
 		}
-		if params.Rank != nil {
-			user.RoleRank = *params.Rank
+		if params.RoleRank != nil {
+			user.RoleRank = *params.RoleRank
 		}
 
 		fks.set(id, user)

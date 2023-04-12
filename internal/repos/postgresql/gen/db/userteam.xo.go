@@ -22,10 +22,14 @@ type UserTeam struct {
 
 // UserTeamCreateParams represents insert params for 'public.user_team'
 type UserTeamCreateParams struct {
+	TeamID int       `json:"teamID"` // team_id
+	UserID uuid.UUID `json:"userID"` // user_id
 }
 
 // UserTeamUpdateParams represents update params for 'public.user_team'
 type UserTeamUpdateParams struct {
+	TeamID *int       `json:"teamID"` // team_id
+	UserID *uuid.UUID `json:"userID"` // user_id
 }
 
 type UserTeamSelectConfig struct {

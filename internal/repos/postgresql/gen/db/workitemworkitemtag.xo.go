@@ -21,10 +21,14 @@ type WorkItemWorkItemTag struct {
 
 // WorkItemWorkItemTagCreateParams represents insert params for 'public.work_item_work_item_tag'
 type WorkItemWorkItemTagCreateParams struct {
+	WorkItemTagID int   `json:"workItemTagID"` // work_item_tag_id
+	WorkItemID    int64 `json:"workItemID"`    // work_item_id
 }
 
 // WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'
 type WorkItemWorkItemTagUpdateParams struct {
+	WorkItemTagID *int   `json:"workItemTagID"` // work_item_tag_id
+	WorkItemID    *int64 `json:"workItemID"`    // work_item_id
 }
 
 type WorkItemWorkItemTagSelectConfig struct {

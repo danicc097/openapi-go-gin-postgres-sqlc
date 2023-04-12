@@ -2524,10 +2524,8 @@ func (f *Funcs) typefn(typ string) string {
 func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
 	var skipExtraTags bool
-	var fkeys []string
-	fkeys = append(fkeys, table.ForeignKeys...)
 	isPrivate := contains(field.Properties, privateFieldProperty)
-	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" || contains(fkeys, field.SQLName)
+	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
 
 	switch typ {
 	case "CreateParams":

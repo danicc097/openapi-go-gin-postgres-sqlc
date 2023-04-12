@@ -46,6 +46,7 @@ type UserCreateParams struct {
 	FirstName                *string  `json:"firstName"`                // first_name
 	LastName                 *string  `json:"lastName"`                 // last_name
 	ExternalID               string   `json:"-"`                        // external_id
+	APIKeyID                 *int     `json:"-"`                        // api_key_id
 	Scopes                   []string `json:"-"`                        // scopes
 	RoleRank                 int16    `json:"-"`                        // role_rank
 	HasPersonalNotifications bool     `json:"hasPersonalNotifications"` // has_personal_notifications
@@ -59,6 +60,7 @@ type UserUpdateParams struct {
 	FirstName                *string   `json:"firstName"`                // first_name
 	LastName                 *string   `json:"lastName"`                 // last_name
 	ExternalID               *string   `json:"-"`                        // external_id
+	APIKeyID                 *int      `json:"-"`                        // api_key_id
 	Scopes                   *[]string `json:"-"`                        // scopes
 	RoleRank                 *int16    `json:"-"`                        // role_rank
 	HasPersonalNotifications *bool     `json:"hasPersonalNotifications"` // has_personal_notifications

@@ -38,6 +38,8 @@ type NotificationCreateParams struct {
 	Body             string           `json:"body"`             // body
 	Label            string           `json:"label"`            // label
 	Link             *string          `json:"link"`             // link
+	Sender           uuid.UUID        `json:"sender"`           // sender
+	Receiver         *uuid.UUID       `json:"receiver"`         // receiver
 	NotificationType NotificationType `json:"notificationType"` // notification_type
 }
 
@@ -48,6 +50,8 @@ type NotificationUpdateParams struct {
 	Body             *string           `json:"body"`             // body
 	Label            *string           `json:"label"`            // label
 	Link             *string           `json:"link"`             // link
+	Sender           *uuid.UUID        `json:"sender"`           // sender
+	Receiver         *uuid.UUID        `json:"receiver"`         // receiver
 	NotificationType *NotificationType `json:"notificationType"` // notification_type
 }
 

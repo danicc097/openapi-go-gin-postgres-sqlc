@@ -26,142 +26,22 @@ type ProjectBoardCreateParams struct {
 	WorkItemTags  []WorkItemTagCreateParams  `json:"workItemTags"`
 }
 
-type WorkItemTagCreateParams struct {
-	ProjectID   int    `json:"projectID"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Color       string `json:"color"`
-}
-
-type WorkItemTagUpdateParams struct {
-	ProjectID   *int    `json:"projectID"`
-	Name        *string `json:"name"`
-	Description *string `json:"description"`
-	Color       *string `json:"color"`
-}
-
-type WorkItemTypeCreateParams struct {
-	ProjectID   int    `json:"projectID"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Color       string `json:"color"`
-}
-
-type WorkItemTypeUpdateParams struct {
-	Name        *string `json:"name"`
-	Description *string `json:"description"`
-	Color       *string `json:"color"`
-}
-
-type ActivityCreateParams struct {
-	ProjectID    int    `json:"projectID"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	IsProductive bool   `json:"isProductive"`
-}
-
-type ActivityUpdateParams struct {
-	Name         *string `json:"name"`
-	Description  *string `json:"description"`
-	IsProductive *bool   `json:"isProductive"`
-}
-
-type KanbanStepCreateParams struct {
-	ProjectID     int    `json:"projectID"`
-	StepOrder     *int16 `json:"stepOrder"`
-	Name          string `json:"name"`
-	Description   string `json:"description"`
-	Color         string `json:"color"`
-	TimeTrackable bool   `json:"timeTrackable"`
-}
-
-type KanbanStepUpdateParams struct {
-	StepOrder     *int16  `json:"stepOrder"` // if StepOrder is changed, all that happens is current workitems are swapped visually
-	Name          *string `json:"name"`
-	Description   *string `json:"description"`
-	Color         *string `json:"color"`
-	TimeTrackable *bool   `json:"timeTrackable"` // if TimeTrackable is changed, already existing items won't change
-}
-
-type TeamCreateParams struct {
-	ProjectID   int    `json:"projectID"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
-
-type TeamUpdateParams struct {
-	Name        *string
-	Description *string
-}
-
 type (
 	GetUserNotificationsParams = db.GetUserNotificationsParams
 	NotificationCreateParams   = db.CreateNotificationParams
+	WorkItemTagCreateParams    = db.WorkItemTagCreateParams
+	WorkItemTagUpdateParams    = db.WorkItemTagUpdateParams
+	WorkItemTypeCreateParams   = db.WorkItemTypeCreateParams
+	WorkItemTypeUpdateParams   = db.WorkItemTypeUpdateParams
+	ActivityCreateParams       = db.ActivityCreateParams
+	ActivityUpdateParams       = db.ActivityUpdateParams
+	KanbanStepCreateParams     = db.KanbanStepCreateParams
+	KanbanStepUpdateParams     = db.KanbanStepUpdateParams
+	TeamCreateParams           = db.TeamCreateParams
+	TeamUpdateParams           = db.TeamUpdateParams
+	UserCreateParams           = db.UserCreateParams
+	UserUpdateParams           = db.UserUpdateParams
 )
-
-type UserCreateParams struct {
-	Username   string
-	Email      string
-	FirstName  *string
-	LastName   *string
-	ExternalID string
-	Scopes     []string
-	RoleRank   int16
-
-	// what insert generates
-	// Username
-	// Email
-	// FirstName
-	// LastName
-	// ExternalID
-	// APIKeyID
-	// Scopes
-	// RoleRank
-	// HasPersonalNotifications
-	// HasGlobalNotifications
-	// DeletedAt
-
-	// Username                 string     `json:"username" db:"username" required:"true"`                                   // username
-	// Email                    string     `json:"email" db:"email" required:"true"`                                         // email
-	// FirstName                *string    `json:"firstName" db:"first_name" required:"true"`                                // first_name
-	// LastName                 *string    `json:"lastName" db:"last_name" required:"true"`                                  // last_name
-	// FullName                 *string    `json:"fullName" db:"full_name" required:"true"`                                  // full_name
-	// ExternalID               string     `json:"-" db:"external_id" `                                                      // external_id
-	// APIKeyID                 *int       `json:"-" db:"api_key_id" `                                                       // api_key_id
-	// Scopes                   []string   `json:"-" db:"scopes" `                                                           // scopes
-	// RoleRank                 int16      `json:"-" db:"role_rank" `                                                        // role_rank
-	// HasPersonalNotifications bool       `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true"` // has_personal_notifications
-	// HasGlobalNotifications   bool       `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true"`     // has_global_notifications
-	// CreatedAt                time.Time  `json:"createdAt" db:"created_at" required:"true"`                                // created_at
-	// UpdatedAt                time.Time  `json:"-" db:"updated_at" `                                                       // updated_at
-	// DeletedAt                *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`                                // deleted_at
-
-	//
-	/**
-		 *  TODO custom createParams changes to what currently gets generated by Insert():
-		 *
-		 * - skip deleted_at column always
-		 * - skip fields from foreign keys, e.g. api_key_id:
-	  			foreign key (api_key_id) references user_api_keys (user_api_key_id) on delete cascade
-		* they will be manually updated
-	*/
-
-	/**
-	 *  TODO custom updateParams:
-	 * - same as insert but all pointers
-	 */
-
-	// TODO xo MarkAsDeleted() method
-}
-
-type UserUpdateParams struct {
-	FirstName                *string
-	LastName                 *string
-	Rank                     *int16
-	Scopes                   *[]string
-	HasPersonalNotifications *bool
-	HasGlobalNotifications   *bool
-}
 
 // ProjectBoard defines the datastore/repository handling persisting ProjectBoard records.
 type ProjectBoard interface {

@@ -41,12 +41,12 @@ type FakeTeam struct {
 		result1 *db.Team
 		result2 error
 	}
-	CreateStub        func(context.Context, db.DBTX, repos.TeamCreateParams) (*db.Team, error)
+	CreateStub        func(context.Context, db.DBTX, db.TeamCreateParams) (*db.Team, error)
 	createMutex       sync.RWMutex
 	createArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 repos.TeamCreateParams
+		arg3 db.TeamCreateParams
 	}
 	createReturns struct {
 		result1 *db.Team
@@ -71,13 +71,13 @@ type FakeTeam struct {
 		result1 *db.Team
 		result2 error
 	}
-	UpdateStub        func(context.Context, db.DBTX, int, repos.TeamUpdateParams) (*db.Team, error)
+	UpdateStub        func(context.Context, db.DBTX, int, db.TeamUpdateParams) (*db.Team, error)
 	updateMutex       sync.RWMutex
 	updateArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 int
-		arg4 repos.TeamUpdateParams
+		arg4 db.TeamUpdateParams
 	}
 	updateReturns struct {
 		result1 *db.Team
@@ -224,13 +224,13 @@ func (fake *FakeTeam) ByNameReturnsOnCall(i int, result1 *db.Team, result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeTeam) Create(arg1 context.Context, arg2 db.DBTX, arg3 repos.TeamCreateParams) (*db.Team, error) {
+func (fake *FakeTeam) Create(arg1 context.Context, arg2 db.DBTX, arg3 db.TeamCreateParams) (*db.Team, error) {
 	fake.createMutex.Lock()
 	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
 	fake.createArgsForCall = append(fake.createArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 repos.TeamCreateParams
+		arg3 db.TeamCreateParams
 	}{arg1, arg2, arg3})
 	stub := fake.CreateStub
 	fakeReturns := fake.createReturns
@@ -251,13 +251,13 @@ func (fake *FakeTeam) CreateCallCount() int {
 	return len(fake.createArgsForCall)
 }
 
-func (fake *FakeTeam) CreateCalls(stub func(context.Context, db.DBTX, repos.TeamCreateParams) (*db.Team, error)) {
+func (fake *FakeTeam) CreateCalls(stub func(context.Context, db.DBTX, db.TeamCreateParams) (*db.Team, error)) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = stub
 }
 
-func (fake *FakeTeam) CreateArgsForCall(i int) (context.Context, db.DBTX, repos.TeamCreateParams) {
+func (fake *FakeTeam) CreateArgsForCall(i int) (context.Context, db.DBTX, db.TeamCreateParams) {
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
 	argsForCall := fake.createArgsForCall[i]
@@ -356,14 +356,14 @@ func (fake *FakeTeam) DeleteReturnsOnCall(i int, result1 *db.Team, result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeTeam) Update(arg1 context.Context, arg2 db.DBTX, arg3 int, arg4 repos.TeamUpdateParams) (*db.Team, error) {
+func (fake *FakeTeam) Update(arg1 context.Context, arg2 db.DBTX, arg3 int, arg4 db.TeamUpdateParams) (*db.Team, error) {
 	fake.updateMutex.Lock()
 	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
 	fake.updateArgsForCall = append(fake.updateArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 int
-		arg4 repos.TeamUpdateParams
+		arg4 db.TeamUpdateParams
 	}{arg1, arg2, arg3, arg4})
 	stub := fake.UpdateStub
 	fakeReturns := fake.updateReturns
@@ -384,13 +384,13 @@ func (fake *FakeTeam) UpdateCallCount() int {
 	return len(fake.updateArgsForCall)
 }
 
-func (fake *FakeTeam) UpdateCalls(stub func(context.Context, db.DBTX, int, repos.TeamUpdateParams) (*db.Team, error)) {
+func (fake *FakeTeam) UpdateCalls(stub func(context.Context, db.DBTX, int, db.TeamUpdateParams) (*db.Team, error)) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = stub
 }
 
-func (fake *FakeTeam) UpdateArgsForCall(i int) (context.Context, db.DBTX, int, repos.TeamUpdateParams) {
+func (fake *FakeTeam) UpdateArgsForCall(i int) (context.Context, db.DBTX, int, db.TeamUpdateParams) {
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
 	argsForCall := fake.updateArgsForCall[i]

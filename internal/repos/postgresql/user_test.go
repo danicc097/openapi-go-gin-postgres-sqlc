@@ -34,8 +34,8 @@ func TestUser_Update(t *testing.T) {
 			args: args{
 				id: user.UserID,
 				params: repos.UserUpdateParams{
-					Rank:   pointers.New[int16](10),
-					Scopes: &[]string{"test", "test", "test"},
+					RoleRank: pointers.New[int16](10),
+					Scopes:   &[]string{"test", "test", "test"},
 				},
 			},
 			want: func() *db.User {

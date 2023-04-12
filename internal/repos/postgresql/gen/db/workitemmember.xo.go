@@ -23,12 +23,16 @@ type WorkItemMember struct {
 
 // WorkItemMemberCreateParams represents insert params for 'public.work_item_member'
 type WorkItemMemberCreateParams struct {
-	Role WorkItemRole `json:"role"` // role
+	WorkItemID int64        `json:"workItemID"` // work_item_id
+	Member     uuid.UUID    `json:"member"`     // member
+	Role       WorkItemRole `json:"role"`       // role
 }
 
 // WorkItemMemberUpdateParams represents update params for 'public.work_item_member'
 type WorkItemMemberUpdateParams struct {
-	Role *WorkItemRole `json:"role"` // role
+	WorkItemID *int64        `json:"workItemID"` // work_item_id
+	Member     *uuid.UUID    `json:"member"`     // member
+	Role       *WorkItemRole `json:"role"`       // role
 }
 
 type WorkItemMemberSelectConfig struct {

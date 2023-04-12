@@ -25,6 +25,7 @@ type WorkItemTag struct {
 
 // WorkItemTagCreateParams represents insert params for 'public.work_item_tags'
 type WorkItemTagCreateParams struct {
+	ProjectID   int    `json:"projectID"`   // project_id
 	Name        string `json:"name"`        // name
 	Description string `json:"description"` // description
 	Color       string `json:"color"`       // color
@@ -32,6 +33,7 @@ type WorkItemTagCreateParams struct {
 
 // WorkItemTagUpdateParams represents update params for 'public.work_item_tags'
 type WorkItemTagUpdateParams struct {
+	ProjectID   *int    `json:"projectID"`   // project_id
 	Name        *string `json:"name"`        // name
 	Description *string `json:"description"` // description
 	Color       *string `json:"color"`       // color

@@ -60,8 +60,8 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params repos
 	if params.Scopes != nil {
 		user.Scopes = slices.Unique(*params.Scopes)
 	}
-	if params.Rank != nil {
-		user.RoleRank = *params.Rank
+	if params.RoleRank != nil {
+		user.RoleRank = *params.RoleRank
 	}
 	if params.HasGlobalNotifications != nil {
 		user.HasGlobalNotifications = *params.HasGlobalNotifications

@@ -206,8 +206,8 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 	}
 
 	user, err = u.urepo.Update(ctx, d, uid, repos.UserUpdateParams{
-		Scopes: scopes,
-		Rank:   rank,
+		Scopes:   scopes,
+		RoleRank: rank,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "urepo.Update")
