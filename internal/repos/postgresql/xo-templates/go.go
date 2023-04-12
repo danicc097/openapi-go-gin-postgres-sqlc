@@ -206,8 +206,13 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Type:       "string",
 				Desc:       "field tag",
 				Short:      "g",
-				Default:    `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}" db:"{{ if .field.IsIgnored }}-{{ else }}{{ .field.SQLName }}{{end}}" {{ if not .ignoreJSON }}required:"true"{{end}}`,
-				// Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
+				Default: `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}"
+{{- if not .skipExtraTags }} db:"{{ .field.SQLName -}}"
+{{- if not .ignoreJSON }} required:"true"
+{{- if .field.OpenAPISchema }} ref:"#/components/schemas/{{ .field.OpenAPISchema }}"
+{{- end }}
+{{- end }}
+{{- end }}`,
 			},
 			{
 				ContextKey: PublicFieldTagKey,
@@ -602,12 +607,16 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 				Constraints interface{}
 			}{Table: table, Constraints: constraints},
 		})
+
 		// emit indexes
+		var emittedIndexes []string
 		for _, i := range t.Indexes {
 			index, err := convertIndex(ctx, table, i)
 			if err != nil {
 				return err
 			}
+
+			// emit normal index
 			emit(xo.Template{
 				Dest:     strings.ToLower(table.GoName) + ext,
 				Partial:  "index",
@@ -618,7 +627,49 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 					Constraints interface{}
 				}{Index: index, Constraints: constraints},
 			})
+			emittedIndexes = append(emittedIndexes, extractIndexIdentifier(index))
 		}
+
+		// emit additional indexes in a second run so they don't interfere with "real" ones
+		for _, i := range t.Indexes {
+			index, err := convertIndex(ctx, table, i)
+			if err != nil {
+				return err
+			}
+
+			if index.IsUnique && len(index.Fields) > 1 {
+				// patch each index and constraints and emit queries with a subset of index fields
+				index.IsUnique = false
+				for _, f := range index.Fields {
+					index.Fields = []Field{f}
+
+					if _, after, ok := strings.Cut(index.Definition, " WHERE "); ok { // index def is normalized in db
+						if strings.Contains(after, f.SQLName) {
+							// log.Default().Printf("%s: index filter contains field: %s", table.GoName, f.SQLName)
+						}
+					}
+
+					idxIdentifier := extractIndexIdentifier(index)
+					if contains(emittedIndexes, idxIdentifier) {
+						continue // most likely a dedicated index already exists
+					}
+
+					emit(xo.Template{
+						Dest:     strings.ToLower(table.GoName) + ext,
+						Partial:  "index",
+						SortType: table.Type,
+						SortName: index.SQLName,
+						Data: struct {
+							Index       interface{}
+							Constraints interface{}
+						}{Index: index, Constraints: constraints},
+					})
+					emittedIndexes = append(emittedIndexes, idxIdentifier)
+				}
+			}
+
+		}
+
 		// emit fkeys
 		// NOTE: do not use these for automatic join generation in replacement of o2o and o2m table comments,
 		// it will also generate joins for m2m lookup tables which pollutes everything
@@ -637,6 +688,20 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		}
 	}
 	return nil
+}
+
+// extractIndexIdentifier generates a unique identifier for patched index generation.
+func extractIndexIdentifier(i Index) string {
+	var fields []string
+	for _, field := range i.Fields {
+		fields = append(fields, field.GoName)
+	}
+
+	if _, after, ok := strings.Cut(i.Definition, " WHERE "); ok { // index def is normalized in db
+		fields = append(fields, after)
+	}
+
+	return strings.Join(fields, "-")
 }
 
 // convertEnum converts a xo.Enum.
@@ -739,7 +804,8 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 			break
 		}
 	}
-	return Table{
+
+	table := Table{
 		GoName:      camelExport(singularize(t.Name)),
 		SQLName:     t.Name,
 		Fields:      cols,
@@ -748,7 +814,22 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 		Ignored:     ignoredCols,
 		Manual:      manual && t.Manual,
 		Type:        t.Type,
-	}, nil
+	}
+
+	// conversion requires Table
+	var fkeys []string
+	for _, fk := range t.ForeignKeys {
+		fkey, err := convertFKey(ctx, table, fk)
+		if err != nil {
+			return Table{}, fmt.Errorf("could not convert to fk: %w", err)
+		}
+		for _, fkField := range fkey.Fields {
+			fkeys = append(fkeys, fkField.SQLName)
+		}
+	}
+	table.ForeignKeys = fkeys
+
+	return table, nil
 }
 
 func convertIndex(ctx context.Context, t Table, i xo.Index) (Index, error) {
@@ -843,22 +924,29 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	if err != nil {
 		return Field{}, err
 	}
-	var enumPkg string
+	var enumPkg, openAPISchema string
 	if f.Type.Enum != nil {
 		enumPkg = f.Type.Enum.EnumPkg
 	}
+	if f.TypeOverride != "" {
+		typ = f.TypeOverride
+		openAPISchema = camelExport(strings.Split(f.TypeOverride, ".")[1])
+	}
+
 	return Field{
-		Type:         typ,
-		GoName:       tf(f.Name),
-		SQLName:      f.Name,
-		Zero:         zero,
-		IsPrimary:    f.IsPrimary,
-		IsSequence:   f.IsSequence,
-		IsIgnored:    f.IsIgnored,
-		EnumPkg:      enumPkg,
-		IsDateOrTime: f.IsDateOrTime,
-		Properties:   strings.Split(f.Properties, "|"),
-		IsGenerated:  strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
+		Type:          typ,
+		GoName:        tf(f.Name),
+		SQLName:       f.Name,
+		Zero:          zero,
+		IsPrimary:     f.IsPrimary,
+		IsSequence:    f.IsSequence,
+		IsIgnored:     f.IsIgnored,
+		EnumPkg:       enumPkg,
+		IsDateOrTime:  f.IsDateOrTime,
+		TypeOverride:  f.TypeOverride,
+		OpenAPISchema: openAPISchema,
+		Properties:    strings.Split(f.Properties, "|"),
+		IsGenerated:   strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
 	}, nil
 }
 
@@ -886,6 +974,7 @@ func camel(names ...string) string {
 	return snaker.ForceLowerCamelIdentifier(strings.Join(names, "_"))
 }
 
+// NOTE: broken func with .
 func camelExport(names ...string) string {
 	return snaker.ForceCamelIdentifier(strings.Join(names, "_"))
 }
@@ -1192,11 +1281,26 @@ func (f *Funcs) func_name_context(v interface{}) string {
 		}
 		return n
 	case Index:
-		// these are e.g.(external_id IS NOT NULL)
-		if _, _, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
-			return x.Func + "_" + x.SQLName
+		var fields []string
+		var suffix string
+		name := x.Table.GoName
+		if !x.IsUnique {
+			name = inflector.Pluralize(name)
 		}
-		return x.Func
+
+		for _, field := range x.Fields {
+			fields = append(fields, field.GoName)
+		}
+
+		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
+			suffix = "_" + snaker.ForceCamelIdentifier("Where "+strings.ToLower(after))
+		}
+
+		// need custom Func to handle additional index creation instead of Func field
+		// https://github.com/danicc097/xo/blob/main/cmd/schema.go#L629 which originally sets i.Func
+		funcName := name + "By" + strings.Join(fields, "") + suffix
+
+		return funcName
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 2: %T ]]", v)
 }
@@ -1248,23 +1352,51 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
 }
 
 // initial_opts returns base conf for select queries.
-func (f *Funcs) initial_opts(v interface{}) string {
-	var hasDeletedAt bool
+func (f *Funcs) initial_opts(v any) string {
+	var tableHasDeletedAt bool
+	var deletedAtNullIndexCond, deletedAtNotNullIndexCond bool
 	var buf strings.Builder
 
 	switch x := v.(type) {
 	case Table:
 		for _, field := range x.Fields {
 			if field.SQLName == "deleted_at" {
-				hasDeletedAt = true
+				tableHasDeletedAt = true
 			}
 		}
 		buf.WriteString(fmt.Sprintf(`c := &%sSelectConfig{`, x.GoName))
-		if hasDeletedAt {
+		if tableHasDeletedAt {
 			buf.WriteString(`deletedAt: " null ",`)
 		}
 		buf.WriteString(fmt.Sprintf(`joins: %sJoins{},
-  }`, x.GoName))
+}`, x.GoName))
+	case Index:
+		for _, field := range x.Table.Fields { // table fields, not index fields
+			if field.SQLName == "deleted_at" {
+				tableHasDeletedAt = true
+			}
+		}
+		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
+			if strings.Contains(strings.ToLower(after), "deleted_at is not null") {
+				deletedAtNotNullIndexCond = true
+			}
+			if strings.Contains(strings.ToLower(after), "deleted_at is null") {
+				deletedAtNullIndexCond = true
+			}
+		}
+
+		buf.WriteString(fmt.Sprintf(`c := &%sSelectConfig{`, x.Table.GoName))
+
+		if deletedAtNullIndexCond {
+			buf.WriteString(`deletedAt: " null ",`)
+		} else if deletedAtNotNullIndexCond {
+			buf.WriteString(`deletedAt: " not null ",`)
+		} else if tableHasDeletedAt {
+			buf.WriteString(`deletedAt: " null ",`)
+		}
+
+		buf.WriteString(fmt.Sprintf(`joins: %sJoins{},
+  }`, x.Table.GoName))
 	default:
 		return ""
 	}
@@ -1284,7 +1416,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 	default:
 		break
 	}
-	var hasDeletedAt bool
+	var tableHasDeletedAt bool
 	var orderbys []Field
 	var cc []Constraint
 	switch x := v.(type) {
@@ -1294,7 +1426,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 				orderbys = append(orderbys, z)
 			}
 			if z.SQLName == "deleted_at" {
-				hasDeletedAt = true
+				tableHasDeletedAt = true
 			}
 		}
 		if tablecc, ok := f.tableConstraints[x.SQLName]; ok {
@@ -1318,7 +1450,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 		limit       string
 		orderBy     string
 		joins  %[1]sJoins`, name))
-	if hasDeletedAt {
+	if tableHasDeletedAt {
 		buf.WriteString(`
 			deletedAt   string`)
 	}
@@ -1334,7 +1466,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 		}
 	}`, name))
 
-	if hasDeletedAt {
+	if tableHasDeletedAt {
 		buf.WriteString(fmt.Sprintf(`
 	// WithDeleted%[1]sOnly limits result to records marked as deleted.
 	func WithDeleted%[1]sOnly() %[1]sSelectConfigOption {
@@ -1412,15 +1544,9 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	return buf.String()
 }
 
-// TODO template function to create a struct of orderby for every date column
-//   - dynamic `orderBy UserOrderBy` options struct field if index found for
-//     timestamp column (Field.IsDateOrTime). Get appended after any select if present and can be
-//     combined:
-//     order by updated_at desc, created_at desc (join with ", ") + limit $limit if len>0
-//     `type UserOrderBy = string , UserCreatedAtDesc UserOrderBy = "UserCreatedAtDesc" `
-//     with a “limit *“ struct option appended .
-//
 // TODO low prio put note if it has no index
+
+// TODO custom types based on sql comment : "type:models.Project"
 
 // func_context generates a func signature for v with context determined by the
 // context mode.
@@ -1715,23 +1841,24 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 			}
 		case Index:
 			// first thing will always be boolean parameters for joins
+			pref := "c.joins."
 			for _, c := range f.tableConstraints[x.Table.SQLName] {
 				var joinName string
 				switch c.Cardinality {
 				case "M2M":
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
-					joinName = "c.joins." + camelExport(inflector.Pluralize(lookupName))
+					joinName = pref + camelExport(inflector.Pluralize(lookupName))
 				case "O2M", "M2O":
 					if c.RefTableName != x.Table.SQLName {
 						continue
 					}
-					joinName = "c.joins." + camelExport(c.TableName)
+					joinName = pref + camelExport(c.TableName)
 				case "O2O":
 					if c.TableName == x.Table.SQLName {
-						joinName = "c.joins." + camelExport(singularize(c.RefTableName))
+						joinName = pref + camelExport(singularize(c.RefTableName))
 					}
 					if c.RefTableName == x.Table.SQLName {
-						joinName = "c.joins." + camelExport(singularize(c.TableName))
+						joinName = pref + camelExport(singularize(c.TableName))
 					}
 				default:
 				}
@@ -2052,8 +2179,14 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		default:
 			break
 		}
-		var n int
-		var hasDeletedAt bool
+
+		var tableHasDeletedAt bool
+		for _, field := range x.Table.Fields {
+			if field.SQLName == "deleted_at" {
+				tableHasDeletedAt = true
+			}
+		}
+
 		// build table fieldnames
 		for _, z := range x.Table.Fields {
 			// add current table fields
@@ -2063,6 +2196,8 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		funcs := template.FuncMap{
 			"singularize": singularize,
 		}
+
+		var n int
 		for _, c := range tableConstraints {
 			joinStmts, selectStmts := createJoinStatement(c, x, funcs, f.nth, n)
 			if joinStmts.String() == "" || selectStmts.String() == "" {
@@ -2078,11 +2213,19 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			filters = append(filters, fmt.Sprintf("%s.%s = %s", x.Table.SQLName, f.colname(z), f.nth(n)))
 			n++
 		}
-		for _, field := range x.Table.Fields {
-			if field.SQLName == "deleted_at" {
-				hasDeletedAt = true
-			}
-		}
+		// TODO filters if we are generating a subset query from multicol index
+		// e.g.
+		// 	create unique index on kanban_steps (project_id , name , step_order)
+		// 	where
+		// 		step_order is not null;
+
+		// 	create unique index on kanban_steps (project_id , name)
+		// 	where
+		// 		step_order is null;
+		//
+		//in this case, func names need to be eg KanbanStepByName_StepOrderNotNull (via first index) and KanbanStepByName_StepOrderNull (2nd) so
+		// that we dont skip generation due to `emittedIndexes`
+		// KanbanStepByName without index conditions is not generated since it will not use index scan without it.
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
 			// TODO this also needs to have table name prepended.
 			// after : (external_id IS NOT NULL)after : (external_id IS NULL)
@@ -2105,7 +2248,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			" WHERE " + strings.Join(filters, " AND "),
 		}
 
-		if hasDeletedAt {
+		if tableHasDeletedAt {
 			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s `, c.deletedAt)",
 				strings.Join(lines, "` +\n\t `"),
 				fmt.Sprintf(" AND %s.deleted_at is %%s", x.Table.SQLName),
@@ -2142,7 +2285,6 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 					f.tableConstraints[table] = append(f.tableConstraints[table], c1)
 				}
 			}
-			// TODO generate join in both tables, e.g. demo work items
 		} else if c.Cardinality == "O2O" && c.TableName == table {
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
 		} else if c.Cardinality == "O2O" && c.RefTableName == table {
@@ -2289,8 +2431,6 @@ func (f *Funcs) convertTypes(fkey ForeignKey) string {
 		typ, refType := field.Type, refField.Type
 		if strings.HasPrefix(typ, "*") {
 			_typ := typ[1:]
-			// TODO nil checks generate and return err
-			// NOTE: pgx can handle By queries' scan and query row calls with pointer addresses just fine (tested with external_id *string)
 			expr = "*" + expr
 			typ = strings.ToLower(_typ)
 		}
@@ -2381,10 +2521,27 @@ func (f *Funcs) typefn(typ string) string {
 }
 
 // field generates a field definition for a struct.
-func (f *Funcs) field(field Field, public bool) (string, error) {
+func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
-	ignoreJSON := contains(field.Properties, privateFieldProperty)
-	if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, map[string]any{"field": field, "ignoreJSON": ignoreJSON}); err != nil {
+	var skipExtraTags bool
+	isPrivate := contains(field.Properties, privateFieldProperty)
+	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
+
+	switch typ {
+	case "CreateParams":
+		if skipField {
+			return "", nil
+		}
+		skipExtraTags = true
+	case "UpdateParams":
+		if skipField {
+			return "", nil
+		}
+		skipExtraTags = true
+	case "Table":
+	}
+
+	if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, map[string]any{"field": field, "ignoreJSON": isPrivate, "skipExtraTags": skipExtraTags}); err != nil {
 		return "", err
 	}
 	var tag string
@@ -2392,13 +2549,16 @@ func (f *Funcs) field(field Field, public bool) (string, error) {
 		tag = " `" + s + "`"
 	}
 	fieldType := f.typefn(field.Type)
+	if typ == "UpdateParams" {
+		fieldType = "*" + strings.TrimPrefix(fieldType, "*")
+	}
 	if field.EnumPkg != "" {
 		p := field.EnumPkg[strings.LastIndex(field.EnumPkg, "/")+1:]
-		fieldType = p + "." + fieldType
+		fieldType = p + "." + fieldType // assumes no pointers
 		fmt.Printf("enum %q using shared package %q\n", field.GoName, p)
 	}
 
-	return fmt.Sprintf("\t%s %s%s // %s", field.GoName, fieldType, tag, field.SQLName), nil
+	return fmt.Sprintf("\t%s %s%s // %s\n", field.GoName, fieldType, tag, field.SQLName), nil
 }
 
 // fieldmapping generates field mappings from a struct to another.
@@ -2746,6 +2906,10 @@ func Imports(ctx context.Context) []string {
 	if s, _ := ctx.Value(UUIDKey).(string); s != "" {
 		imports = append(imports, s)
 	}
+
+	// internal packages
+	imports = append(imports, "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models")
+
 	return imports
 }
 
@@ -2885,6 +3049,8 @@ type Proc struct {
 }
 
 // Table is a type (ie, table/view/custom query) template.
+// IMPORTANT: runtime out of memory... will need to optimize fields here
+// (investigate why changing to []*Field didn't do anything)
 type Table struct {
 	Type        string
 	GoName      string
@@ -2895,6 +3061,7 @@ type Table struct {
 	Comment     string
 	Generated   []Field
 	Ignored     []Field
+	ForeignKeys []string
 }
 
 // ForeignKey is a foreign key template.
@@ -2939,18 +3106,20 @@ type Constraint struct {
 
 // Field is a field template.
 type Field struct {
-	GoName       string
-	SQLName      string
-	Type         string
-	Zero         string
-	IsPrimary    bool
-	IsSequence   bool
-	IsIgnored    bool
-	Comment      string
-	IsGenerated  bool
-	EnumPkg      string
-	IsDateOrTime bool
-	Properties   []string
+	GoName        string
+	SQLName       string
+	Type          string
+	Zero          string
+	IsPrimary     bool
+	IsSequence    bool
+	IsIgnored     bool
+	Comment       string
+	IsGenerated   bool
+	EnumPkg       string
+	TypeOverride  string
+	IsDateOrTime  bool
+	Properties    []string
+	OpenAPISchema string
 }
 
 // QueryParam is a custom query parameter template.

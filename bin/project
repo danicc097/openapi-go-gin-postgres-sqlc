@@ -168,135 +168,138 @@ x.fetch.swagger-ui() {
 # Run pre-generation scripts in the internal package.
 x.pregen() {
   { { {
-    (
-      POSTGRES_DB="$GEN_POSTGRES_DB"
+    POSTGRES_DB="$GEN_POSTGRES_DB"
 
-      echo "Running generation"
+    echo "Running generation"
 
-      missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
-      [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
+    missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
+    [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
-      # don't want this to block if getting bad gen later on
-      go build -o pregen cmd/pregen/main.go || echo "Could not rebuild pregen" >&2
+    # don't want this to block if getting bad gen later on
+    go build -o pregen cmd/pregen/main.go ||
+      echo "Could not rebuild pregen. If you made changes to it, build it with a compilable app state" >&2
 
-      # spec must always be valid. Schemas to generate should exist with the appropiate vendor extension
-      ./pregen -env=".env.$env" --validate-spec-only
+    # spec must always be valid. Schemas to generate should exist with the appropiate vendor extension
+    ./pregen -env=".env.$env" --validate-spec-only
 
-      x.db.drop
-      x.migrate up
+    x.db.drop
+    x.migrate up
 
-      ######## Sync enums from db with spec
-      # example: `x-db-enum: user_role` will use the db's "user_role" enum
-      local vext="x-db-enum"
-      for enum in $(yq e ".. | select(has(\"$vext\")).$vext" $SPEC); do
-        local db_enums=()
-        local path="$(enum_name=$enum yq e ".. | select(has(\"$vext\") and .$vext == env(enum_name)) | (path | join(\".\"))" $SPEC)"
-        mapfile -t db_enums < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
+    local enums schema_name vext
+    ######## Sync enums from db with spec
+    # example: `x-db-enum: user_role` will use the db's "user_role" enum
+    vext="x-db-enum"
+    for enum in $(yq e ".. | select(has(\"$vext\")).$vext" $SPEC); do
+      local db_enums=()
+      local path="$(enum_name=$enum yq e ".. | select(has(\"$vext\") and .$vext == env(enum_name)) | (path | join(\".\"))" $SPEC)"
+      mapfile -t db_enums < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
 
-        [[ ${#db_enums[@]} -gt 0 ]] || err "$vext: Enum '$enum' not found in database $POSTGRES_DB"
-        local enums=$(printf ",\"%s\"" "${db_enums[@]}")
-        enums="[${enums:1}]"
-        echo "Replacing enum '$enum' in $SPEC with: $enums"
-        enums=$enums yq e ".$path.enum = env(enums) | (.$path | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
-      done
-
-      ######## Sync projects and related project info
-      mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
-      [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
-      local enums=$(printf ",\"%s\"" "${db_projects[@]}")
+      [[ ${#db_enums[@]} -gt 0 ]] || err "$vext: Enum '$enum' not found in database $POSTGRES_DB"
+      enums=$(printf ",\"%s\"" "${db_enums[@]}")
       enums="[${enums:1}]"
-      echo "Replacing enum 'Project' in $SPEC with: $enums"
-      enums=$enums yq e "
-      .components.schemas.Project.enum = env(enums) |
-      .components.schemas.Project.type = \"string\" |
-      .components.schemas.Project.description = \"Existing projects\" |
-      (.components.schemas.Project | key) line_comment=\"Generated from projects table. DO NOT EDIT.\"" -i $SPEC
+      echo "Replacing enum '$enum' in $SPEC with: $enums"
+      enums=$enums yq e ".$path.enum = env(enums) | (.$path | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
+    done
 
-      for project in ${db_projects[@]}; do
-        mapfile -t kanban_steps < <(dockerdb_psql -d $POSTGRES_DB -c "
+    ######## Sync projects and related project info
+    mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
+    [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
+    enums=$(printf ",\"%s\"" "${db_projects[@]}")
+    enums="[${enums:1}]"
+    schema_name="Project"
+    echo "Replacing enum '$schema_name' in $SPEC with: $enums"
+    enums=$enums yq e "
+      .components.schemas.$schema_name.enum = env(enums) |
+      .components.schemas.$schema_name.type = \"string\" |
+      .components.schemas.$schema_name.description = \"Existing projects\" |
+      (.components.schemas.$schema_name | key) line_comment=\"Generated from projects table. DO NOT EDIT.\"" -i $SPEC
+
+    for project in ${db_projects[@]}; do
+      project="$(to_pascal $project)"
+      schema_name="${project}KanbanSteps"
+      mapfile -t kanban_steps < <(dockerdb_psql -d $POSTGRES_DB -c "
           select
             name
           from
             kanban_steps
           where
             project_id = (select project_id from projects where name = '$project');" 2>/dev/null)
-        [[ ${#kanban_steps[@]} -gt 0 ]] || { echo "${YELLOW}No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue; }
-        local enums=$(printf ",\"%s\"" "${kanban_steps[@]}")
-        enums="[${enums:1}]"
-        echo "Replacing enum 'Project' in $SPEC with: $enums"
-        enums=$enums yq e "
-      .components.schemas.${project}KanbanSteps.enum = env(enums) |
-      .components.schemas.${project}KanbanSteps.type = \"string\" |
-      .components.schemas.${project}KanbanSteps.description = \"Kanban columns for project $project\" |
-      (.components.schemas.${project}KanbanSteps | key) line_comment=\"Generated from kanban_steps table. DO NOT EDIT.\"" -i $SPEC
-      done
+      [[ ${#kanban_steps[@]} -gt 0 ]] || { echo "${YELLOW}No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue; }
+      enums=$(printf ",\"%s\"" "${kanban_steps[@]}")
+      enums="[${enums:1}]"
+      echo "Replacing enum '$schema_name' in $SPEC with: $enums"
+      enums=$enums yq e "
+      .components.schemas.$schema_name.enum = env(enums) |
+      .components.schemas.$schema_name.type = \"string\" |
+      .components.schemas.$schema_name.description = \"Kanban columns for project $project\" |
+      (.components.schemas.$schema_name | key) line_comment=\"Generated from kanban_steps table. DO NOT EDIT.\"" -i $SPEC
+    done
 
-      # TODO generate ~~KanbanSteps~~, WorkItemType for every project enum generated before
+    # TODO generate ~~KanbanSteps~~, WorkItemType for every project enum generated before
 
-      ######## Ensure consistent style for future codegen
-      echo "Applying PascalCase to operation IDs in $SPEC"
-      for opid in $(yq e ".. | select(has(\"operationId\")).operationId" $SPEC); do
-        local new_opid="$(to_pascal $opid)"
-        local paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" $SPEC)
-        readarray -t paths <<<$paths
-        local escaped_path="$(join_yq_paths paths)"
-        new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" -i $SPEC
-      done
+    ######## Ensure consistent style for future codegen
+    echo "Applying PascalCase to operation IDs in $SPEC"
+    for opid in $(yq e ".. | select(has(\"operationId\")).operationId" $SPEC); do
+      local new_opid="$(to_pascal $opid)"
+      local paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" $SPEC)
+      readarray -t paths <<<$paths
+      local escaped_path="$(join_yq_paths paths)"
+      new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" -i $SPEC
+    done
 
-      ######## Sync enums with external sources and validate
-      ######## external json files are the source of truth
-      # frontend scopes: 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right) and show aggregated
-      # arrays can't be nested
-      declare -A enum_src_files=(
-        [Scope]="scopes.json"
-        [Role]="roles.json"
-      )
-      declare -A enum_vext=(
-        [Scope]="x-required-scopes"
-        [Role]="x-required-role"
-      )
-      for enum in ${!enum_src_files[@]}; do
-        [[ $(yq e ".components.schemas | has(\"$enum\")" $SPEC) = "false" ]] &&
-          yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC
+    ######## Sync enums with external sources and validate
+    ######## external json files are the source of truth
+    # frontend scopes: 1) replace all "-_" by " " 2) Sort 3) range over and split(":") -> map[left] = append(right) and show aggregated
+    # arrays can't be nested
+    declare -A enum_src_files=(
+      [Scope]="scopes.json"
+      [Role]="roles.json"
+    )
+    declare -A enum_vext=(
+      [Scope]="x-required-scopes"
+      [Role]="x-required-role"
+    )
+    for enum in ${!enum_src_files[@]}; do
+      [[ $(yq e ".components.schemas | has(\"$enum\")" $SPEC) = "false" ]] &&
+        yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC
 
-        local src_file="${enum_src_files[$enum]}"
-        vext="${enum_vext[$enum]}"
+      local src_file="${enum_src_files[$enum]}"
+      vext="${enum_vext[$enum]}"
 
-        enums=$(yq -P '.[] | key' $src_file)
-        readarray -t enums <<<$enums
+      enums=$(yq -P '.[] | key' $src_file)
+      readarray -t enums <<<$enums
 
-        echo "Replacing '$enum' enum in $SPEC with $src_file"
-        yq e "
+      echo "Replacing '$enum' enum in $SPEC with $src_file"
+      yq e "
         (.components.schemas.$enum | key) line_comment=\"Generated from $src_file keys. DO NOT EDIT.\"
       " -i $SPEC
-        local enums_arr=$(printf ",\"%s\"" "${enums[@]}")
-        enums_arr="[${enums_arr:1}]"
-        enums_arr=$enums_arr yq e ".components.schemas.$enum.enum = env(enums_arr)" -i $SPEC
+      local enums_arr=$(printf ",\"%s\"" "${enums[@]}")
+      enums_arr="[${enums_arr:1}]"
+      enums_arr=$enums_arr yq e ".components.schemas.$enum.enum = env(enums_arr)" -i $SPEC
 
-        readarray spec_enums < <(yq e ".paths[][].$vext | select(length > 0)" openapi.yaml)
-        spec_enums=("${spec_enums[*]//- /}")
-        mapfile -t spec_enums < <(printf "\"%s\"\n" ${spec_enums[*]})
-        mapfile -t clean_enums < <(printf "\"%s\"\n" ${enums[*]})
-        for spec_enum in "${spec_enums[@]}"; do
-          [[ ! " ${clean_enums[*]} " =~ " ${spec_enum} " ]] && err "$spec_enum is not a valid '$enum'"
-        done
+      readarray spec_enums < <(yq e ".paths[][].$vext | select(length > 0)" openapi.yaml)
+      spec_enums=("${spec_enums[*]//- /}")
+      mapfile -t spec_enums < <(printf "\"%s\"\n" ${spec_enums[*]})
+      mapfile -t clean_enums < <(printf "\"%s\"\n" ${enums[*]})
+      for spec_enum in "${spec_enums[@]}"; do
+        [[ ! " ${clean_enums[*]} " =~ " ${spec_enum} " ]] && err "$spec_enum is not a valid '$enum'"
       done
+    done
 
-      ######## Generate shared policies once the spec has been validated
-      echo "Writing shared auth policies"
-      yq -o=json e "
+    ######## Generate shared policies once the spec has been validated
+    echo "Writing shared auth policies"
+    yq -o=json e "
     .paths[][]
     | {.operationId: { \"scopes\": .x-required-scopes, \"role\": .x-required-role, \"requiresAuthentication\": has(\"security\")}}
     | select(.[]) as \$i ireduce ({}; . + \$i)
   " openapi.yaml >$OPID_AUTH
 
-      yq --prettyPrint '.. style="single"' -i $SPEC
-      # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
-      # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
-      sed -i 's/!!merge //' $SPEC
+    yq --prettyPrint '.. style="single"' -i $SPEC
+    # https://mikefarah.gitbook.io/yq/operators/anchor-and-alias-operators
+    # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
+    sed -i 's/!!merge //' $SPEC
 
-      ./pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
-    )
+    ./pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -319,13 +322,16 @@ clean_yq_array() {
 # Run post-generation scripts in the internal package.
 x.postgen() {
   { { {
+    POSTGRES_DB="$GEN_POSTGRES_DB"
+
     echo "Running generation"
 
     generate_structs_map
 
     update_spec_with_structs
 
-    go build -o postgen cmd/postgen/main.go || echo "Could not rebuild postgen" >&2
+    go build -o postgen cmd/postgen/main.go ||
+      echo "Could not rebuild postgen. If you made changes to it, build it with a compilable app state" >&2
     ./postgen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -348,9 +354,9 @@ x.gen.xo() {
 
     mkdir -p "$PG_REPO_GEN"/db
     xo_schema -o "$PG_REPO_GEN"/db --debug \
-      --schema public || err "Failed xo public schema generation" &
-    # --ignore "*.created_at" \
-    # --ignore "*.updated_at"
+      --schema public \
+      --ignore "*.created_at" \
+      --ignore "*.updated_at" || err "Failed xo public schema generation" &
 
     mkdir -p "$PG_REPO_GEN"/db/v
     xo_schema -o "$PG_REPO_GEN"/db/v \
@@ -1112,17 +1118,30 @@ update_spec_with_structs() {
   # won't be available in that case. This requires a compilable state in all packages that gen-schema imports
   # to create the map, else we are stuck forever in a bad state unless we checkout a valid version and carefully update.
   # FIXME e.g. operation_ids.gen.go is overridden with an empty template when pregen fails and breaks gen-schema
-  go build -o gen-schema cmd/gen-schema/main.go || echo "Could not rebuild gen-schema" >&2
+  go build -o gen-schema cmd/gen-schema/main.go ||
+    echo "Could not rebuild gen-schema. If you made changes to it, build it with a compilable app state" >&2
 
   ./gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml
 
-  # replace every schema generated directly or indirectly.
+  # prevent possible overriding if name clashes with generated schemas from structs
+  skip_schemas=("Project")
+  mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
+  for project in ${db_projects[@]}; do
+    project="$(to_pascal $project)"
+    skip_schemas+=("${project}KanbanSteps")
+  done
+
+  # replace every schema back into the spec
   for schema in $(yq '.components.schemas[] | key' /tmp/openapi.yaml); do
+    # prevent certain schemas from getting replaced by (in)direct usage in structs with clashing names
+    if [[ " ${skip_schemas[*]} " =~ " $schema " ]]; then
+      echo "Skipping $schema" && continue
+    fi
     new_schema_key="${schemas[$schema]:-$schema}"
     yq eval-all "(
-        select(fi==1).components.schemas.$schema
+        select(fi == 1).components.schemas.$schema
         ) as \$new_schema
         | select(fi == 0)
         | .components.schemas.$new_schema_key = \$new_schema

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
 // TeamWithTimeout implements repos.Team interface instrumented with timeouts
@@ -19,13 +19,13 @@ type TeamWithTimeout struct {
 }
 
 type TeamWithTimeoutConfig struct {
+	ByIDTimeout time.Duration
+
+	ByNameTimeout time.Duration
+
 	CreateTimeout time.Duration
 
 	DeleteTimeout time.Duration
-
-	TeamByIDTimeout time.Duration
-
-	TeamByNameTimeout time.Duration
 
 	UpdateTimeout time.Duration
 }
@@ -38,8 +38,28 @@ func NewTeamWithTimeout(base repos.Team, config TeamWithTimeoutConfig) TeamWithT
 	}
 }
 
+// ByID implements repos.Team
+func (_d TeamWithTimeout) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.Team, err error) {
+	var cancelFunc func()
+	if _d.config.ByIDTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
+		defer cancelFunc()
+	}
+	return _d.Team.ByID(ctx, d, id)
+}
+
+// ByName implements repos.Team
+func (_d TeamWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (tp1 *db.Team, err error) {
+	var cancelFunc func()
+	if _d.config.ByNameTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByNameTimeout)
+		defer cancelFunc()
+	}
+	return _d.Team.ByName(ctx, d, name, projectID)
+}
+
 // Create implements repos.Team
-func (_d TeamWithTimeout) Create(ctx context.Context, d db.DBTX, params repos.TeamCreateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithTimeout) Create(ctx context.Context, d db.DBTX, params db.TeamCreateParams) (tp1 *db.Team, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.CreateTimeout)
@@ -58,28 +78,8 @@ func (_d TeamWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (tp1 *d
 	return _d.Team.Delete(ctx, d, id)
 }
 
-// TeamByID implements repos.Team
-func (_d TeamWithTimeout) TeamByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.Team, err error) {
-	var cancelFunc func()
-	if _d.config.TeamByIDTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.TeamByIDTimeout)
-		defer cancelFunc()
-	}
-	return _d.Team.TeamByID(ctx, d, id)
-}
-
-// TeamByName implements repos.Team
-func (_d TeamWithTimeout) TeamByName(ctx context.Context, d db.DBTX, name string, projectID int) (tp1 *db.Team, err error) {
-	var cancelFunc func()
-	if _d.config.TeamByNameTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.TeamByNameTimeout)
-		defer cancelFunc()
-	}
-	return _d.Team.TeamByName(ctx, d, name, projectID)
-}
-
 // Update implements repos.Team
-func (_d TeamWithTimeout) Update(ctx context.Context, d db.DBTX, id int, params repos.TeamUpdateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithTimeout) Update(ctx context.Context, d db.DBTX, id int, params db.TeamUpdateParams) (tp1 *db.Team, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)

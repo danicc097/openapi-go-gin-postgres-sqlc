@@ -7,6 +7,10 @@
  */
 
 export type UuidUUID = string
+/**
+ * Existing projects
+ */
+export type Project = 'demoProject' | 'demoProject2'
 export type DbUserAPIKey = {
   apiKey: string
   expiresOn: string
@@ -89,13 +93,10 @@ export type NotificationType = 'personal' | 'global'
 export type WorkItemRole = 'preparer' | 'reviewer'
 export type ModelsRole = string
 /**
- * Existing projects
- */
-export type Project = 'demoProject' | 'demoProject2'
-/**
  * Kanban columns for project demoProject
  */
 export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
+export type ModelsProject = string
 
 export interface DbActivity {
   activityID: number
@@ -130,7 +131,7 @@ export interface DbProject {
   description: string
   initialized: boolean
   kanbanSteps?: DbKanbanStep[] | null
-  name: string
+  name: Project
   projectID: number
   teams?: DbTeam[] | null
   updatedAt: string
@@ -234,39 +235,39 @@ export interface RestDemoProjectWorkItemsResponse {
   workItemTypeID: number
 }
 export interface InitializeProjectRequest {
-  activities?: ReposActivityCreateParams[] | null
-  kanbanSteps?: ReposKanbanStepCreateParams[] | null
+  activities?: DbActivityCreateParams[] | null
+  kanbanSteps?: DbKanbanStepCreateParams[] | null
   projectID?: number
-  teams?: ReposTeamCreateParams[] | null
-  workItemTags?: ReposWorkItemTagCreateParams[] | null
-  workItemTypes?: ReposWorkItemTypeCreateParams[] | null
+  teams?: DbTeamCreateParams[] | null
+  workItemTags?: DbWorkItemTagCreateParams[] | null
+  workItemTypes?: DbWorkItemTypeCreateParams[] | null
 }
-export interface ReposActivityCreateParams {
+export interface DbActivityCreateParams {
   description?: string
   isProductive?: boolean
   name?: string
   projectID?: number
 }
-export interface ReposKanbanStepCreateParams {
+export interface DbKanbanStepCreateParams {
   color?: string
   description?: string
   name?: string
   projectID?: number
-  stepOrder?: number
+  stepOrder?: number | null
   timeTrackable?: boolean
 }
-export interface ReposTeamCreateParams {
+export interface DbTeamCreateParams {
   description?: string
   name?: string
   projectID?: number
 }
-export interface ReposWorkItemTagCreateParams {
+export interface DbWorkItemTagCreateParams {
   color?: string
   description?: string
   name?: string
   projectID?: number
 }
-export interface ReposWorkItemTypeCreateParams {
+export interface DbWorkItemTypeCreateParams {
   color?: string
   description?: string
   name?: string

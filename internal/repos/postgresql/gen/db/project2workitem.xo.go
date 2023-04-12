@@ -22,6 +22,18 @@ type Project2WorkItem struct {
 	_exists, _deleted bool
 }
 
+// Project2WorkItemCreateParams represents insert params for 'public.project_2_work_items'
+type Project2WorkItemCreateParams struct {
+	WorkItemID            int64      `json:"workItemID"`            // work_item_id
+	CustomDateForProject2 *time.Time `json:"customDateForProject2"` // custom_date_for_project_2
+}
+
+// Project2WorkItemUpdateParams represents update params for 'public.project_2_work_items'
+type Project2WorkItemUpdateParams struct {
+	WorkItemID            *int64     `json:"workItemID"`            // work_item_id
+	CustomDateForProject2 *time.Time `json:"customDateForProject2"` // custom_date_for_project_2
+}
+
 type Project2WorkItemSelectConfig struct {
 	limit   string
 	orderBy string
@@ -80,7 +92,6 @@ func (pi *Project2WorkItem) Deleted() bool {
 }
 
 // Insert inserts the Project2WorkItem to the database.
-
 func (pi *Project2WorkItem) Insert(ctx context.Context, db DB) (*Project2WorkItem, error) {
 	switch {
 	case pi._exists: // already exists

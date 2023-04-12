@@ -20,6 +20,18 @@ type UserTeam struct {
 	_exists, _deleted bool
 }
 
+// UserTeamCreateParams represents insert params for 'public.user_team'
+type UserTeamCreateParams struct {
+	TeamID int       `json:"teamID"` // team_id
+	UserID uuid.UUID `json:"userID"` // user_id
+}
+
+// UserTeamUpdateParams represents update params for 'public.user_team'
+type UserTeamUpdateParams struct {
+	TeamID *int       `json:"teamID"` // team_id
+	UserID *uuid.UUID `json:"userID"` // user_id
+}
+
 type UserTeamSelectConfig struct {
 	limit   string
 	orderBy string
@@ -60,7 +72,6 @@ func (ut *UserTeam) Deleted() bool {
 }
 
 // Insert inserts the UserTeam to the database.
-
 func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 	switch {
 	case ut._exists: // already exists
@@ -147,10 +158,46 @@ user_team.user_id ` +
 	return &ut, nil
 }
 
-// UserTeamByTeamIDUserID retrieves a row from 'public.user_team' as a UserTeam.
+// UserTeamsByTeamID retrieves a row from 'public.user_team' as a UserTeam.
+//
+// Generated from index 'user_team_pkey'.
+func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`user_team.team_id,
+user_team.user_id ` +
+		`FROM public.user_team ` +
+		`` +
+		` WHERE user_team.team_id = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, teamID)
+	rows, err := db.Query(ctx, sqlstr, teamID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserTeam])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// UserTeamsByTeamIDUserID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_team_id_user_id_idx'.
-func UserTeamByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+func UserTeamsByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
 
 	for _, o := range opts {
@@ -183,10 +230,10 @@ user_team.user_id ` +
 	return res, nil
 }
 
-// UserTeamByUserID retrieves a row from 'public.user_team' as a UserTeam.
+// UserTeamsByUserID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_user_id_idx'.
-func UserTeamByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+func UserTeamsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
 
 	for _, o := range opts {

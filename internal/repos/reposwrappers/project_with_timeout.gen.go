@@ -10,7 +10,7 @@ import (
 
 	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
 // ProjectWithTimeout implements repos.Project interface instrumented with timeouts
@@ -20,9 +20,9 @@ type ProjectWithTimeout struct {
 }
 
 type ProjectWithTimeoutConfig struct {
-	ProjectByIDTimeout time.Duration
+	ByIDTimeout time.Duration
 
-	ProjectByNameTimeout time.Duration
+	ByNameTimeout time.Duration
 }
 
 // NewProjectWithTimeout returns ProjectWithTimeout
@@ -33,22 +33,22 @@ func NewProjectWithTimeout(base repos.Project, config ProjectWithTimeoutConfig) 
 	}
 }
 
-// ProjectByID implements repos.Project
-func (_d ProjectWithTimeout) ProjectByID(ctx context.Context, d db.DBTX, id int) (pp1 *db.Project, err error) {
+// ByID implements repos.Project
+func (_d ProjectWithTimeout) ByID(ctx context.Context, d db.DBTX, id int) (pp1 *db.Project, err error) {
 	var cancelFunc func()
-	if _d.config.ProjectByIDTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ProjectByIDTimeout)
+	if _d.config.ByIDTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
 		defer cancelFunc()
 	}
-	return _d.Project.ProjectByID(ctx, d, id)
+	return _d.Project.ByID(ctx, d, id)
 }
 
-// ProjectByName implements repos.Project
-func (_d ProjectWithTimeout) ProjectByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (pp1 *db.Project, err error) {
+// ByName implements repos.Project
+func (_d ProjectWithTimeout) ByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (pp1 *db.Project, err error) {
 	var cancelFunc func()
-	if _d.config.ProjectByNameTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ProjectByNameTimeout)
+	if _d.config.ByNameTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByNameTimeout)
 		defer cancelFunc()
 	}
-	return _d.Project.ProjectByName(ctx, d, name)
+	return _d.Project.ByName(ctx, d, name)
 }

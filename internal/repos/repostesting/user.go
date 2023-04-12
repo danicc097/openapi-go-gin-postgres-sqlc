@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/google/uuid"
 )
@@ -35,7 +34,7 @@ func (f *fakeUserStore) set(id uuid.UUID, user *db.User) {
 
 // NewFakeUser returns a mock for the User repository, initializing it with copies of
 // the passed users.
-// deprecated: use postgres repo directly
+// Deprecated: use postgres repo directly.
 func NewFakeUser(users ...*db.User) *FakeUser {
 	fks := &fakeUserStore{
 		users: make(map[uuid.UUID]db.User),
@@ -49,7 +48,7 @@ func NewFakeUser(users ...*db.User) *FakeUser {
 
 	fakeUserRepo := &FakeUser{}
 
-	fakeUserRepo.UserByIDStub = func(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error) {
+	fakeUserRepo.ByIDStub = func(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error) {
 		user, ok := fks.get(id)
 		if !ok {
 			return &db.User{}, errors.New("could not get user by ID")
@@ -58,8 +57,8 @@ func NewFakeUser(users ...*db.User) *FakeUser {
 		return &user, nil
 	}
 
-	fakeUserRepo.UpdateStub = func(ctx context.Context, d db.DBTX, id uuid.UUID, params repos.UserUpdateParams) (*db.User, error) {
-		user, err := fakeUserRepo.UserByID(ctx, d, id)
+	fakeUserRepo.UpdateStub = func(ctx context.Context, d db.DBTX, id uuid.UUID, params db.UserUpdateParams) (*db.User, error) {
+		user, err := fakeUserRepo.ByID(ctx, d, id)
 		if err != nil {
 			return &db.User{}, fmt.Errorf("UserByIDStub: %w", err)
 		}
@@ -73,8 +72,8 @@ func NewFakeUser(users ...*db.User) *FakeUser {
 		if params.Scopes != nil {
 			user.Scopes = *params.Scopes
 		}
-		if params.Rank != nil {
-			user.RoleRank = *params.Rank
+		if params.RoleRank != nil {
+			user.RoleRank = *params.RoleRank
 		}
 
 		fks.set(id, user)

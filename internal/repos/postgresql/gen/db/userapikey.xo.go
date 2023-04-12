@@ -15,7 +15,7 @@ import (
 // UserAPIKey represents a row from 'public.user_api_keys'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type UserAPIKey struct {
-	UserAPIKeyID int       `json:"-" db:"user_api_key_id" `                   // user_api_key_id
+	UserAPIKeyID int       `json:"-" db:"user_api_key_id"`                    // user_api_key_id
 	APIKey       string    `json:"apiKey" db:"api_key" required:"true"`       // api_key
 	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on" required:"true"` // expires_on
 	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true"`       // user_id
@@ -23,6 +23,20 @@ type UserAPIKey struct {
 	User *User `json:"user" db:"user"` // O2O
 	// xo fields
 	_exists, _deleted bool
+}
+
+// UserAPIKeyCreateParams represents insert params for 'public.user_api_keys'
+type UserAPIKeyCreateParams struct {
+	APIKey    string    `json:"apiKey"`    // api_key
+	ExpiresOn time.Time `json:"expiresOn"` // expires_on
+	UserID    uuid.UUID `json:"userID"`    // user_id
+}
+
+// UserAPIKeyUpdateParams represents update params for 'public.user_api_keys'
+type UserAPIKeyUpdateParams struct {
+	APIKey    *string    `json:"apiKey"`    // api_key
+	ExpiresOn *time.Time `json:"expiresOn"` // expires_on
+	UserID    *uuid.UUID `json:"userID"`    // user_id
 }
 
 type UserAPIKeySelectConfig struct {
@@ -83,7 +97,6 @@ func (uak *UserAPIKey) Deleted() bool {
 }
 
 // Insert inserts the UserAPIKey to the database.
-
 func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 	switch {
 	case uak._exists: // already exists

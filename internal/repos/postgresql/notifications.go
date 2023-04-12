@@ -21,7 +21,7 @@ func NewNotification() *Notification {
 
 // var _ repos.Notification = (*Notification)(nil)
 
-// func (u *Notification) Create(ctx context.Context, d db.DBTX, params repos.UserCreateParams) (*db.Notification, error) {
+// func (u *Notification) Create(ctx context.Context, d db.DBTX, params db.UserCreateParams) (*db.Notification, error) {
 // 	user := &db.Notification{
 // 		Username:   params.Username,
 // 		Email:      params.Email,
@@ -109,20 +109,34 @@ func (u *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, p
 	return nn, nil
 }
 
-func (u *Notification) Create(ctx context.Context, d db.DBTX, params db.CreateNotificationParams) error {
-	err := u.q.CreateNotification(ctx, d, params)
-	if err != nil {
-		return fmt.Errorf("could not get notifications for user: %w", parseErrorDetail(err))
+func (u *Notification) Create(ctx context.Context, d db.DBTX, params db.NotificationCreateParams) (*db.Notification, error) {
+	notification := &db.Notification{
+		Title:            params.Title,
+		Body:             params.Body,
+		Label:            params.Label,
+		Link:             params.Link,
+		ReceiverRank:     params.ReceiverRank,
+		Sender:           params.Sender,
+		Receiver:         params.Receiver,
+		NotificationType: params.NotificationType,
+	}
+	if _, err := notification.Save(ctx, d); err != nil {
+		return nil, err
 	}
 
-	return nil
+	return notification, nil
 }
 
-func (u *Notification) Delete(ctx context.Context, d db.DBTX, notificationID int32) error {
-	err := u.q.DeleteNotification(ctx, d, notificationID)
+func (u *Notification) Delete(ctx context.Context, d db.DBTX, notificationID int) (*db.Notification, error) {
+	notification, err := db.NotificationByNotificationID(ctx, d, notificationID)
 	if err != nil {
-		return fmt.Errorf("could not delete notification: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get notification by id %w", parseErrorDetail(err))
 	}
 
-	return nil
+	err = notification.Delete(ctx, d)
+	if err != nil {
+		return nil, fmt.Errorf("could not delete notification: %w", parseErrorDetail(err))
+	}
+
+	return notification, err
 }

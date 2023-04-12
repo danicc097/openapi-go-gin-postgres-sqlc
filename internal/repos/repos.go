@@ -19,103 +19,11 @@ type ProjectBoardCreateParams struct {
 	ProjectID int `json:"projectID"`
 	// TeamIDs   []int `json:"teamIDs"` // completely useless. the only check needed is to ensure at least one team
 	// exacts associated to projectID, else prompt the user to create at least 1 team before creating a board.
-	Activities    []ActivityCreateParams     `json:"activities"`
-	KanbanSteps   []KanbanStepCreateParams   `json:"kanbanSteps"`
-	Teams         []TeamCreateParams         `json:"teams"`
-	WorkItemTypes []WorkItemTypeCreateParams `json:"workItemTypes"`
-	WorkItemTags  []WorkItemTagCreateParams  `json:"workItemTags"`
-}
-
-type WorkItemTagCreateParams struct {
-	ProjectID   int    `json:"projectID"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Color       string `json:"color"`
-}
-
-type WorkItemTagUpdateParams struct {
-	ProjectID   *int    `json:"projectID"`
-	Name        *string `json:"name"`
-	Description *string `json:"description"`
-	Color       *string `json:"color"`
-}
-
-type WorkItemTypeCreateParams struct {
-	ProjectID   int    `json:"projectID"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Color       string `json:"color"`
-}
-
-type WorkItemTypeUpdateParams struct {
-	Name        *string `json:"name"`
-	Description *string `json:"description"`
-	Color       *string `json:"color"`
-}
-
-type ActivityCreateParams struct {
-	ProjectID    int    `json:"projectID"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	IsProductive bool   `json:"isProductive"`
-}
-
-type ActivityUpdateParams struct {
-	Name         *string `json:"name"`
-	Description  *string `json:"description"`
-	IsProductive *bool   `json:"isProductive"`
-}
-
-type KanbanStepCreateParams struct {
-	ProjectID     int    `json:"projectID"`
-	StepOrder     int16  `json:"stepOrder"`
-	Name          string `json:"name"`
-	Description   string `json:"description"`
-	Color         string `json:"color"`
-	TimeTrackable bool   `json:"timeTrackable"`
-}
-
-type KanbanStepUpdateParams struct {
-	StepOrder     *int16  `json:"stepOrder"` // if StepOrder is changed, all that happens is current workitems are swapped visually
-	Name          *string `json:"name"`
-	Description   *string `json:"description"`
-	Color         *string `json:"color"`
-	TimeTrackable *bool   `json:"timeTrackable"` // if TimeTrackable is changed, already existing items won't change
-}
-
-type TeamCreateParams struct {
-	ProjectID   int    `json:"projectID"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
-
-type TeamUpdateParams struct {
-	Name        *string
-	Description *string
-}
-
-type (
-	GetUserNotificationsParams = db.GetUserNotificationsParams
-	NotificationCreateParams   = db.CreateNotificationParams
-)
-
-type UserCreateParams struct {
-	Username   string
-	Email      string
-	FirstName  *string
-	LastName   *string
-	ExternalID string
-	Scopes     []string
-	RoleRank   int16
-}
-
-type UserUpdateParams struct {
-	FirstName                *string
-	LastName                 *string
-	Rank                     *int16
-	Scopes                   *[]string
-	HasPersonalNotifications *bool
-	HasGlobalNotifications   *bool
+	Activities    []db.ActivityCreateParams     `json:"activities"`
+	KanbanSteps   []db.KanbanStepCreateParams   `json:"kanbanSteps"`
+	Teams         []db.TeamCreateParams         `json:"teams"`
+	WorkItemTypes []db.WorkItemTypeCreateParams `json:"workItemTypes"`
+	WorkItemTags  []db.WorkItemTagCreateParams  `json:"workItemTags"`
 }
 
 // ProjectBoard defines the datastore/repository handling persisting ProjectBoard records.
@@ -124,7 +32,7 @@ type ProjectBoard interface {
 		Create corresponds to initial info to be filled in once a project table has been manually
 		 created, before it can be used:
 		 - kanban columns and their info (order, name, can log time, etc.)
-		 - types of workitems (shared by all teams)
+		 - types of workitems (by all teams)
 		 - initial teams associated (at least 1 id initially)
 
 		  If we manually added a new project record
@@ -139,35 +47,35 @@ type ProjectBoard interface {
 
 	*/
 	Create(ctx context.Context, d db.DBTX, params ProjectBoardCreateParams) (*models.ProjectBoard, error)
-	ProjectBoardByID(ctx context.Context, d db.DBTX, projectID int) (*models.ProjectBoard, error)
+	ByID(ctx context.Context, d db.DBTX, projectID int) (*models.ProjectBoard, error)
 }
 
 // DemoProjectWorkItem defines the datastore/repository handling persisting DemoProjectWorkItem records.
 type DemoProjectWorkItem interface {
-	WorkItemByID(ctx context.Context, d db.DBTX, id int64, opts ...db.DemoProjectWorkItemSelectConfigOption) (*db.DemoProjectWorkItem, error)
+	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.DemoProjectWorkItemSelectConfigOption) (*db.DemoProjectWorkItem, error)
 	// Create,
 	// Delete,
-	// WorkItemsByTeam(closed bool, deleted bool)
+	// ByTeam(closed bool, deleted bool)
 	// Update (service has Close (Update with closed=True), Move(Update with kanban step change), ...)
-	// TBD if useful: WorkItemsByTag, WorkItemsByType (for closed workitem searches. open ones simply return everything and filter in client)
+	// TBD if useful: ByTag, ByType (for closed workitem searches. open ones simply return everything and filter in client)
 }
 
 // Notification defines the datastore/repository handling persisting Notification records.
 type Notification interface {
-	LatestUserNotifications(ctx context.Context, d db.DBTX, params GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
-	Create(ctx context.Context, d db.DBTX, params NotificationCreateParams) error
-	Delete(ctx context.Context, d db.DBTX, notificationID int32) error
+	LatestUserNotifications(ctx context.Context, d db.DBTX, params db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
+	Create(ctx context.Context, d db.DBTX, params db.NotificationCreateParams) (*db.Notification, error)
+	Delete(ctx context.Context, d db.DBTX, notificationID int) (*db.Notification, error)
 }
 
 // User defines the datastore/repository handling persisting User records.
 type User interface {
-	UserByID(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error)
-	UserByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error)
-	UserByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error)
-	UserByExternalID(ctx context.Context, d db.DBTX, extID string) (*db.User, error)
-	UserByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error)
-	Create(ctx context.Context, d db.DBTX, params UserCreateParams) (*db.User, error)
-	Update(ctx context.Context, d db.DBTX, id uuid.UUID, params UserUpdateParams) (*db.User, error)
+	ByID(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error)
+	ByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error)
+	ByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error)
+	ByExternalID(ctx context.Context, d db.DBTX, extID string) (*db.User, error)
+	ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error)
+	Create(ctx context.Context, d db.DBTX, params db.UserCreateParams) (*db.User, error)
+	Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.UserUpdateParams) (*db.User, error)
 	Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error)
 	// CreateAPIKey requires an existing user.
 	CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error)
@@ -176,33 +84,45 @@ type User interface {
 // Project defines the datastore/repository handling persisting Project records.
 // Projects are manually created on demand.
 type Project interface {
-	ProjectByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (*db.Project, error)
-	ProjectByID(ctx context.Context, d db.DBTX, id int) (*db.Project, error)
+	ByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (*db.Project, error)
+	ByID(ctx context.Context, d db.DBTX, id int) (*db.Project, error)
 }
 
 // Team defines the datastore/repository handling persisting Team records.
 type Team interface {
-	TeamByID(ctx context.Context, d db.DBTX, id int) (*db.Team, error)
-	TeamByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Team, error)
-	Create(ctx context.Context, d db.DBTX, params TeamCreateParams) (*db.Team, error)
-	Update(ctx context.Context, d db.DBTX, id int, params TeamUpdateParams) (*db.Team, error)
+	ByID(ctx context.Context, d db.DBTX, id int) (*db.Team, error)
+	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Team, error)
+	Create(ctx context.Context, d db.DBTX, params db.TeamCreateParams) (*db.Team, error)
+	Update(ctx context.Context, d db.DBTX, id int, params db.TeamUpdateParams) (*db.Team, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.Team, error)
 }
 
 // WorkItemType defines the datastore/repository handling persisting WorkItemType records.
 type WorkItemType interface {
-	WorkItemTypeByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error)
-	WorkItemTypeByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemType, error)
-	Create(ctx context.Context, d db.DBTX, params WorkItemTypeCreateParams) (*db.WorkItemType, error)
-	Update(ctx context.Context, d db.DBTX, id int, params WorkItemTypeUpdateParams) (*db.WorkItemType, error)
+	ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error)
+	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.WorkItemType, error)
+	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemType, error)
+	Create(ctx context.Context, d db.DBTX, params db.WorkItemTypeCreateParams) (*db.WorkItemType, error)
+	Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTypeUpdateParams) (*db.WorkItemType, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error)
 }
 
 // WorkItemTag defines the datastore/repository handling persisting WorkItemTag records.
 type WorkItemTag interface {
-	WorkItemTagByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error)
-	WorkItemTagByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemTag, error)
-	Create(ctx context.Context, d db.DBTX, params WorkItemTagCreateParams) (*db.WorkItemTag, error)
-	Update(ctx context.Context, d db.DBTX, id int, params WorkItemTagUpdateParams) (*db.WorkItemTag, error)
+	ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error)
+	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.WorkItemTag, error)
+	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemTag, error)
+	Create(ctx context.Context, d db.DBTX, params db.WorkItemTagCreateParams) (*db.WorkItemTag, error)
+	Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTagUpdateParams) (*db.WorkItemTag, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error)
+}
+
+// Activity defines the datastore/repository handling persisting Activity records.
+type Activity interface {
+	ByID(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
+	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.Activity, error)
+	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error)
+	Create(ctx context.Context, d db.DBTX, params db.ActivityCreateParams) (*db.Activity, error)
+	Update(ctx context.Context, d db.DBTX, id int, params db.ActivityUpdateParams) (*db.Activity, error)
+	Delete(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
 }

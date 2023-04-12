@@ -22,73 +22,73 @@ func NewWorkItemTag() *WorkItemTag {
 
 var _ repos.WorkItemTag = (*WorkItemTag)(nil)
 
-func (u *WorkItemTag) Create(ctx context.Context, d db.DBTX, params repos.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
-	workItemTag := &db.WorkItemTag{
+func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
+	activity := &db.WorkItemTag{
 		Name:        params.Name,
 		Description: params.Description,
 		ProjectID:   params.ProjectID,
 		Color:       params.Color,
 	}
 
-	if _, err := workItemTag.Save(ctx, d); err != nil {
+	if _, err := activity.Save(ctx, d); err != nil {
 		return nil, err
 	}
 
-	return workItemTag, nil
+	return activity, nil
 }
 
-func (u *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params repos.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
-	workItemTag, err := u.WorkItemTagByID(ctx, d, id)
+func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
+	activity, err := wit.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get workItemTag by id %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get activity by id %w", parseErrorDetail(err))
 	}
 
 	if params.Description != nil {
-		workItemTag.Description = *params.Description
+		activity.Description = *params.Description
 	}
 	if params.Name != nil {
-		workItemTag.Name = *params.Name
+		activity.Name = *params.Name
 	}
 	if params.Color != nil {
-		workItemTag.Color = *params.Color
+		activity.Color = *params.Color
 	}
 
-	_, err = workItemTag.Update(ctx, d)
+	_, err = activity.Update(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not update workItemTag: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not update activity: %w", parseErrorDetail(err))
 	}
 
-	return workItemTag, err
+	return activity, err
 }
 
-func (u *WorkItemTag) WorkItemTagByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemTag, error) {
-	workItemTag, err := db.WorkItemTagByNameProjectID(ctx, d, name, projectID)
+func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemTag, error) {
+	activity, err := db.WorkItemTagByNameProjectID(ctx, d, name, projectID)
 	if err != nil {
-		return nil, fmt.Errorf("could not get workItemTag: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get activity: %w", parseErrorDetail(err))
 	}
 
-	return workItemTag, nil
+	return activity, nil
 }
 
-func (u *WorkItemTag) WorkItemTagByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error) {
-	workItemTag, err := db.WorkItemTagByWorkItemTagID(ctx, d, id)
+func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error) {
+	activity, err := db.WorkItemTagByWorkItemTagID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get workItemTag: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get activity: %w", parseErrorDetail(err))
 	}
 
-	return workItemTag, nil
+	return activity, nil
 }
 
-func (u *WorkItemTag) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error) {
-	workItemTag, err := u.WorkItemTagByID(ctx, d, id)
+func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error) {
+	activity, err := wit.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get workItemTag by id %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get activity by id %w", parseErrorDetail(err))
 	}
 
-	err = workItemTag.Delete(ctx, d)
+	err = activity.Delete(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not delete workItemTag: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not delete activity: %w", parseErrorDetail(err))
 	}
 
-	return workItemTag, err
+	return activity, err
 }

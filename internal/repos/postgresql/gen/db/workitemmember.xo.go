@@ -21,6 +21,20 @@ type WorkItemMember struct {
 	_exists, _deleted bool
 }
 
+// WorkItemMemberCreateParams represents insert params for 'public.work_item_member'
+type WorkItemMemberCreateParams struct {
+	WorkItemID int64        `json:"workItemID"` // work_item_id
+	Member     uuid.UUID    `json:"member"`     // member
+	Role       WorkItemRole `json:"role"`       // role
+}
+
+// WorkItemMemberUpdateParams represents update params for 'public.work_item_member'
+type WorkItemMemberUpdateParams struct {
+	WorkItemID *int64        `json:"workItemID"` // work_item_id
+	Member     *uuid.UUID    `json:"member"`     // member
+	Role       *WorkItemRole `json:"role"`       // role
+}
+
 type WorkItemMemberSelectConfig struct {
 	limit   string
 	orderBy string
@@ -61,7 +75,6 @@ func (wim *WorkItemMember) Deleted() bool {
 }
 
 // Insert inserts the WorkItemMember to the database.
-
 func (wim *WorkItemMember) Insert(ctx context.Context, db DB) (*WorkItemMember, error) {
 	switch {
 	case wim._exists: // already exists
@@ -175,10 +188,10 @@ func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// WorkItemMemberByMemberWorkItemID retrieves a row from 'public.work_item_member' as a WorkItemMember.
+// WorkItemMembersByMemberWorkItemID retrieves a row from 'public.work_item_member' as a WorkItemMember.
 //
 // Generated from index 'work_item_member_member_work_item_id_idx'.
-func WorkItemMemberByMemberWorkItemID(ctx context.Context, db DB, member uuid.UUID, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
+func WorkItemMembersByMemberWorkItemID(ctx context.Context, db DB, member uuid.UUID, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
 	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
 
 	for _, o := range opts {
@@ -245,6 +258,80 @@ work_item_member.role ` +
 	}
 	wim._exists = true
 	return &wim, nil
+}
+
+// WorkItemMembersByWorkItemID retrieves a row from 'public.work_item_member' as a WorkItemMember.
+//
+// Generated from index 'work_item_member_pkey'.
+func WorkItemMembersByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
+	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`work_item_member.work_item_id,
+work_item_member.member,
+work_item_member.role ` +
+		`FROM public.work_item_member ` +
+		`` +
+		` WHERE work_item_member.work_item_id = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, workItemID)
+	rows, err := db.Query(ctx, sqlstr, workItemID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemMember])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemMembersByMember retrieves a row from 'public.work_item_member' as a WorkItemMember.
+//
+// Generated from index 'work_item_member_pkey'.
+func WorkItemMembersByMember(ctx context.Context, db DB, member uuid.UUID, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
+	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`work_item_member.work_item_id,
+work_item_member.member,
+work_item_member.role ` +
+		`FROM public.work_item_member ` +
+		`` +
+		` WHERE work_item_member.member = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, member)
+	rows, err := db.Query(ctx, sqlstr, member)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemMember])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
 }
 
 // FKUser_Member returns the User associated with the WorkItemMember's (Member).

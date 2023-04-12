@@ -5,17 +5,17 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { ReposActivityCreateParams } from './reposActivityCreateParams'
-import type { ReposKanbanStepCreateParams } from './reposKanbanStepCreateParams'
-import type { ReposTeamCreateParams } from './reposTeamCreateParams'
-import type { ReposWorkItemTagCreateParams } from './reposWorkItemTagCreateParams'
-import type { ReposWorkItemTypeCreateParams } from './reposWorkItemTypeCreateParams'
+import type { DbActivityCreateParams } from './dbActivityCreateParams'
+import type { DbKanbanStepCreateParams } from './dbKanbanStepCreateParams'
+import type { DbTeamCreateParams } from './dbTeamCreateParams'
+import type { DbWorkItemTagCreateParams } from './dbWorkItemTagCreateParams'
+import type { DbWorkItemTypeCreateParams } from './dbWorkItemTypeCreateParams'
 
 export interface InitializeProjectRequest {
-  activities?: ReposActivityCreateParams[] | null
-  kanbanSteps?: ReposKanbanStepCreateParams[] | null
+  activities?: DbActivityCreateParams[] | null
+  kanbanSteps?: DbKanbanStepCreateParams[] | null
   projectID?: number
-  teams?: ReposTeamCreateParams[] | null
-  workItemTags?: ReposWorkItemTagCreateParams[] | null
-  workItemTypes?: ReposWorkItemTypeCreateParams[] | null
+  teams?: DbTeamCreateParams[] | null
+  workItemTags?: DbWorkItemTagCreateParams[] | null
+  workItemTypes?: DbWorkItemTypeCreateParams[] | null
 }

@@ -16,7 +16,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	// internalformat "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
+	// internalformat "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 )

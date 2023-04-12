@@ -13,8 +13,8 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"go.uber.org/zap"
 
 	"github.com/jackc/pgx/v5"
@@ -38,7 +38,7 @@ func main() {
 		log.Fatalf("envvar.Load: %s\n", err)
 	}
 
-	format.PrintJSON(internal.Config())
+	format.PrintJSON(internal.Config)
 
 	cmd := exec.Command(
 		"bash", "-c",

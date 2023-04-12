@@ -19,6 +19,18 @@ type WorkItemWorkItemTag struct {
 	_exists, _deleted bool
 }
 
+// WorkItemWorkItemTagCreateParams represents insert params for 'public.work_item_work_item_tag'
+type WorkItemWorkItemTagCreateParams struct {
+	WorkItemTagID int   `json:"workItemTagID"` // work_item_tag_id
+	WorkItemID    int64 `json:"workItemID"`    // work_item_id
+}
+
+// WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'
+type WorkItemWorkItemTagUpdateParams struct {
+	WorkItemTagID *int   `json:"workItemTagID"` // work_item_tag_id
+	WorkItemID    *int64 `json:"workItemID"`    // work_item_id
+}
+
 type WorkItemWorkItemTagSelectConfig struct {
 	limit   string
 	orderBy string
@@ -59,7 +71,6 @@ func (wiwit *WorkItemWorkItemTag) Deleted() bool {
 }
 
 // Insert inserts the WorkItemWorkItemTag to the database.
-
 func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemWorkItemTag, error) {
 	switch {
 	case wiwit._exists: // already exists
@@ -146,10 +157,82 @@ work_item_work_item_tag.work_item_id ` +
 	return &wiwit, nil
 }
 
-// WorkItemWorkItemTagByWorkItemTagIDWorkItemID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
+// WorkItemWorkItemTagsByWorkItemID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
+//
+// Generated from index 'work_item_work_item_tag_pkey'.
+func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
+	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id ` +
+		`FROM public.work_item_work_item_tag ` +
+		`` +
+		` WHERE work_item_work_item_tag.work_item_id = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, workItemID)
+	rows, err := db.Query(ctx, sqlstr, workItemID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemWorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemWorkItemTagsByWorkItemTagID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
+//
+// Generated from index 'work_item_work_item_tag_pkey'.
+func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
+	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`work_item_work_item_tag.work_item_tag_id,
+work_item_work_item_tag.work_item_id ` +
+		`FROM public.work_item_work_item_tag ` +
+		`` +
+		` WHERE work_item_work_item_tag.work_item_tag_id = $1 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, workItemTagID)
+	rows, err := db.Query(ctx, sqlstr, workItemTagID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemWorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemWorkItemTagsByWorkItemTagIDWorkItemID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
 //
 // Generated from index 'work_item_work_item_tag_work_item_tag_id_work_item_id_idx'.
-func WorkItemWorkItemTagByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
+func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
 
 	for _, o := range opts {

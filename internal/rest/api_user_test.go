@@ -10,10 +10,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )

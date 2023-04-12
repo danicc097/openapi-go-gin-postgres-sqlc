@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -38,8 +38,36 @@ func NewWorkItemTypeWithPrometheus(base repos.WorkItemType, instanceName string)
 	}
 }
 
+// ByID implements repos.WorkItemType
+func (_d WorkItemTypeWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemType, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		workitemtypeDurationSummaryVec.WithLabelValues(_d.instanceName, "ByID", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.ByID(ctx, d, id)
+}
+
+// ByName implements repos.WorkItemType
+func (_d WorkItemTypeWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemType, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		workitemtypeDurationSummaryVec.WithLabelValues(_d.instanceName, "ByName", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.ByName(ctx, d, name, projectID)
+}
+
 // Create implements repos.WorkItemType
-func (_d WorkItemTypeWithPrometheus) Create(ctx context.Context, d db.DBTX, params repos.WorkItemTypeCreateParams) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithPrometheus) Create(ctx context.Context, d db.DBTX, params db.WorkItemTypeCreateParams) (wp1 *db.WorkItemType, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -67,7 +95,7 @@ func (_d WorkItemTypeWithPrometheus) Delete(ctx context.Context, d db.DBTX, id i
 }
 
 // Update implements repos.WorkItemType
-func (_d WorkItemTypeWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params repos.WorkItemTypeUpdateParams) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTypeUpdateParams) (wp1 *db.WorkItemType, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -78,32 +106,4 @@ func (_d WorkItemTypeWithPrometheus) Update(ctx context.Context, d db.DBTX, id i
 		workitemtypeDurationSummaryVec.WithLabelValues(_d.instanceName, "Update", result).Observe(time.Since(_since).Seconds())
 	}()
 	return _d.base.Update(ctx, d, id, params)
-}
-
-// WorkItemTypeByID implements repos.WorkItemType
-func (_d WorkItemTypeWithPrometheus) WorkItemTypeByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemType, err error) {
-	_since := time.Now()
-	defer func() {
-		result := "ok"
-		if err != nil {
-			result = "error"
-		}
-
-		workitemtypeDurationSummaryVec.WithLabelValues(_d.instanceName, "WorkItemTypeByID", result).Observe(time.Since(_since).Seconds())
-	}()
-	return _d.base.WorkItemTypeByID(ctx, d, id)
-}
-
-// WorkItemTypeByName implements repos.WorkItemType
-func (_d WorkItemTypeWithPrometheus) WorkItemTypeByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemType, err error) {
-	_since := time.Now()
-	defer func() {
-		result := "ok"
-		if err != nil {
-			result = "error"
-		}
-
-		workitemtypeDurationSummaryVec.WithLabelValues(_d.instanceName, "WorkItemTypeByName", result).Observe(time.Since(_since).Seconds())
-	}()
-	return _d.base.WorkItemTypeByName(ctx, d, name, projectID)
 }

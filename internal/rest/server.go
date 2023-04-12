@@ -106,8 +106,6 @@ var key = []byte("test1234test1234")
 
 // NewServer returns a new http server.
 func NewServer(conf Config, opts ...ServerOption) (*server, error) {
-	appCfg := internal.Config()
-
 	if err := conf.validate(); err != nil {
 		return nil, fmt.Errorf("server config validation: %w", err)
 	}
@@ -150,15 +148,15 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	}
 
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
-	vg := router.Group(appCfg.APIVersion)
+	vg := router.Group(internal.Config.APIVersion)
 	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
 
 	// oidc
-	clientID := appCfg.OIDC.ClientID
-	clientSecret := appCfg.OIDC.ClientSecret
+	clientID := internal.Config.OIDC.ClientID
+	clientSecret := internal.Config.OIDC.ClientSecret
 	keyPath := "" // not used
-	issuer := appCfg.OIDC.Issuer
-	scopes := strings.Split(appCfg.OIDC.Scopes, " ")
+	issuer := internal.Config.OIDC.Issuer
+	scopes := strings.Split(internal.Config.OIDC.Scopes, " ")
 
 	redirectURI := internal.BuildAPIURL(conf.MyProviderCallbackPath)
 	cookieHandler := httphelper.NewCookieHandler(key, key, httphelper.WithUnsecure())
@@ -206,7 +204,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	oasMw := newOpenapiMiddleware(conf.Logger, openapi)
 
 	rlMw := newRateLimitMiddleware(conf.Logger, 25, 10)
-	switch appCfg.AppEnv {
+	switch internal.Config.AppEnv {
 	case "prod":
 		vg.Use(rlMw.Limit())
 	}
@@ -269,7 +267,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 
 	var logger *zap.Logger
 	// XXX there's work being done in https://github.com/uptrace/opentelemetry-go-extra/tree/main/otelzap
-	switch internal.Config().AppEnv {
+	switch internal.Config.AppEnv {
 	case "prod":
 		logger, err = zap.NewProduction()
 	default:
@@ -369,7 +367,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		// ErrServerClosed."
 		var err error
 
-		switch internal.Config().AppEnv {
+		switch internal.Config.AppEnv {
 		case "dev", "ci":
 			// err = srv.httpsrv.ListenAndServe()
 			err = srv.httpsrv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")

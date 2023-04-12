@@ -21,9 +21,9 @@ func Test_MergeConfigFields(t *testing.T) {
 	t.Parallel()
 
 	fakeProjectRepo := &repostesting.FakeProject{}
-	fakeProjectRepo.ProjectByIDStub = func(ctx context.Context, d db.DBTX, i int) (*db.Project, error) {
+	fakeProjectRepo.ByIDStub = func(ctx context.Context, d db.DBTX, i int) (*db.Project, error) {
 		return &db.Project{
-			Name: string(internalmodels.ProjectDemoProject),
+			Name: internalmodels.ProjectDemoProject,
 			BoardConfig: pgtype.JSONB{Bytes: []byte(`
 		{
 			"header": ["demoProject.ref", "workItemType"],
@@ -87,6 +87,7 @@ func Test_MergeConfigFields(t *testing.T) {
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem.reopened", Name: "reopened"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem.lastMessageAt", Name: "lastMessageAt"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem.line", Name: "line"},
+					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "closed", Name: "closed"},
 				},
 			},
 		},

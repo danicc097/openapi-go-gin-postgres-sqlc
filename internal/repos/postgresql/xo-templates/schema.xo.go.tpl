@@ -95,7 +95,9 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- end }}
 {{ end }}
 
-{{/* generated queries from indexes */}}
+{{/*
+generated queries from indexes
+*/}}
 
 {{ define "index" }}
 {{- $i := .Data.Index -}}
@@ -104,7 +106,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 //
 // Generated from index '{{ $i.SQLName }}'.
 {{ func_context $i }} {
-	{{ initial_opts $i.Table }}
+	{{ initial_opts $i }}
 
 	for _, o := range opts {
 		o(c)
@@ -207,12 +209,28 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- end }}
 type {{ $t.GoName }} struct {
 {{ range $t.Fields -}}
-	{{ field . false }}
+	{{ field . "Table" $t -}}
 {{ end }}
 {{ join_fields $t.SQLName false $constraints }}
 {{- if $t.PrimaryKeys -}}
 	// xo fields
 	_exists, _deleted bool
+{{ end -}}
+}
+{{/* NOTE: using this notation since sqlc uses
+<query_name>{{ $t.GoName }}Params which may clash if we also were to
+call it Create or Update*/}}
+// {{ $t.GoName }}CreateParams represents insert params for '{{ schema $t.SQLName }}'
+type {{ $t.GoName }}CreateParams struct {
+{{ range $t.Fields -}}
+	{{ field . "CreateParams" $t -}}
+{{ end -}}
+}
+
+// {{ $t.GoName }}UpdateParams represents update params for '{{ schema $t.SQLName }}'
+type {{ $t.GoName }}UpdateParams struct {
+{{ range $t.Fields -}}
+	{{ field . "UpdateParams" $t -}}
 {{ end -}}
 }
 
@@ -234,7 +252,6 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 }
 
 // {{ func_name_context "Insert" }} inserts the {{ $t.GoName }} to the database.
-{{/* TODO insert may generate rows. use Query instead of exec */}}
 {{ recv_context $t "Insert" }} {
 	switch {
 	case {{ short $t }}._exists: // already exists

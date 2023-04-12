@@ -44,9 +44,9 @@ type WorkItemResponse struct {
 }
 
 type TeamCreateRequest struct {
-	repos.TeamCreateParams
+	db.TeamCreateParams
 }
 
 type TeamUpdateRequest struct {
-	repos.TeamUpdateParams
+	db.TeamUpdateParams
 }

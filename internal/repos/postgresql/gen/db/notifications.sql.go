@@ -12,65 +12,6 @@ import (
 	"github.com/google/uuid"
 )
 
-const CreateNotification = `-- name: CreateNotification :exec
-insert into public.notifications (
-  receiver_rank
-  , title
-  , body
-  , label
-  , link
-  , created_at
-  , sender
-  , receiver
-  , notification_type)
-values (
-  $1
-  , $2
-  , $3
-  , $4
-  , $5
-  , current_timestamp
-  , $6
-  , $7
-  , $8)
-`
-
-type CreateNotificationParams struct {
-	ReceiverRank     *int16           `db:"receiver_rank" json:"receiver_rank"`
-	Title            string           `db:"title" json:"title"`
-	Body             string           `db:"body" json:"body"`
-	Label            string           `db:"label" json:"label"`
-	Link             *string          `db:"link" json:"link"`
-	Sender           uuid.UUID        `db:"sender" json:"sender"`
-	Receiver         *uuid.UUID       `db:"receiver" json:"receiver"`
-	NotificationType NotificationType `db:"notification_type" json:"notification_type"`
-}
-
-// plpgsql-language-server:disable
-func (q *Queries) CreateNotification(ctx context.Context, db DBTX, arg CreateNotificationParams) error {
-	_, err := db.Exec(ctx, CreateNotification,
-		arg.ReceiverRank,
-		arg.Title,
-		arg.Body,
-		arg.Label,
-		arg.Link,
-		arg.Sender,
-		arg.Receiver,
-		arg.NotificationType,
-	)
-	return err
-}
-
-const DeleteNotification = `-- name: DeleteNotification :exec
-delete from notifications
-where notification_id = $1
-`
-
-func (q *Queries) DeleteNotification(ctx context.Context, db DBTX, notificationID int32) error {
-	_, err := db.Exec(ctx, DeleteNotification, notificationID)
-	return err
-}
-
 const GetUserNotifications = `-- name: GetUserNotifications :many
 select
   user_notifications.user_notification_id, user_notifications.notification_id, user_notifications.read, user_notifications.user_id

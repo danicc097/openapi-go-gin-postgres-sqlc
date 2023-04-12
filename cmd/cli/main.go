@@ -11,10 +11,10 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/format"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"go.uber.org/zap"
 
 	// dot import so go code would resemble as much as native SQL
@@ -38,7 +38,7 @@ func main() {
 		log.Fatalf("envvar.Load: %s\n", err)
 	}
 
-	format.PrintJSON(internal.Config())
+	format.PrintJSON(internal.Config)
 
 	cmd := exec.Command(
 		"bash", "-c",

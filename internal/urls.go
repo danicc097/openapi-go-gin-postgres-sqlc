@@ -9,7 +9,7 @@ import (
 // BuildAPIURL returns a fully-qualified URL with the given path elements
 // accounting for reverse proxy configuration.
 func BuildAPIURL(subpaths ...string) string {
-	elems := []string{config.APIPrefix, config.APIVersion}
+	elems := []string{Config.APIPrefix, Config.APIVersion}
 	elems = append(elems, subpaths...)
 
 	path, err := url.JoinPath(
@@ -23,11 +23,11 @@ func BuildAPIURL(subpaths ...string) string {
 
 	var host string
 
-	switch config.AppEnv {
+	switch Config.AppEnv {
 	case "prod":
-		host = config.Domain
+		host = Config.Domain
 	default:
-		host = config.Domain + ":" + config.APIPort
+		host = Config.Domain + ":" + Config.APIPort
 	}
 
 	dsn := url.URL{

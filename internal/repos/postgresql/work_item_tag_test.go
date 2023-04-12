@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWorkItemTag_WorkItemTagByIndexedQueries(t *testing.T) {
+func TestWorkItemTag_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
 	projectRepo := postgresql.NewProject()
@@ -19,9 +19,9 @@ func TestWorkItemTag_WorkItemTagByIndexedQueries(t *testing.T) {
 
 	ctx := context.Background()
 
-	project, err := projectRepo.ProjectByName(ctx, testPool, internalmodels.ProjectDemoProject)
+	project, err := projectRepo.ByName(ctx, testPool, internalmodels.ProjectDemoProject)
 	if err != nil {
-		t.Fatalf("projectRepo.ProjectByName unexpected error = %v", err)
+		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
 	}
 	tcp := postgresqltestutil.RandomWorkItemTagCreateParams(t, project.ProjectID)
 
@@ -45,7 +45,7 @@ func TestWorkItemTag_WorkItemTagByIndexedQueries(t *testing.T) {
 			args: argsString{
 				filter:    workItemTag.Name,
 				projectID: workItemTag.ProjectID,
-				fn:        (workItemTagRepo.WorkItemTagByName),
+				fn:        (workItemTagRepo.ByName),
 			},
 		},
 	}
@@ -88,7 +88,7 @@ func TestWorkItemTag_WorkItemTagByIndexedQueries(t *testing.T) {
 			name: "workItemTag_id",
 			args: argsInt{
 				filter: workItemTag.WorkItemTagID,
-				fn:     (workItemTagRepo.WorkItemTagByID),
+				fn:     (workItemTagRepo.ByID),
 			},
 		},
 	}

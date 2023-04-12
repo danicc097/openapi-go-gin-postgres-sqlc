@@ -7,6 +7,7 @@
  */
 import type { DbActivity } from './dbActivity'
 import type { DbKanbanStep } from './dbKanbanStep'
+import type { Project } from './project'
 import type { DbTeam } from './dbTeam'
 import type { DbWorkItemTag } from './dbWorkItemTag'
 import type { DbWorkItemType } from './dbWorkItemType'
@@ -17,7 +18,7 @@ export interface DbProject {
   description: string
   initialized: boolean
   kanbanSteps?: DbKanbanStep[] | null
-  name: string
+  name: Project
   projectID: number
   teams?: DbTeam[] | null
   updatedAt: Date

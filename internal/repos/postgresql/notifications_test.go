@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,7 +26,7 @@ func TestNotification_Create(t *testing.T) {
 
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, nil, sender.UserID, pointers.New(receiver.UserID), db.NotificationTypePersonal)
 
-		err := notificationRepo.Create(context.Background(), testPool, ncp)
+		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
@@ -55,7 +55,7 @@ func TestNotification_Create(t *testing.T) {
 
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, receiverRank, sender.UserID, nil, db.NotificationTypeGlobal)
 
-		err := notificationRepo.Create(context.Background(), testPool, ncp)
+		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
@@ -83,7 +83,7 @@ func TestNotification_Create(t *testing.T) {
 
 		errContains := errViolatesCheckConstraint
 
-		err := notificationRepo.Create(context.Background(), testPool, ncp)
+		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}
@@ -97,7 +97,7 @@ func TestNotification_Create(t *testing.T) {
 
 		errContains := errViolatesCheckConstraint
 
-		err := notificationRepo.Create(context.Background(), testPool, ncp)
+		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -38,8 +38,36 @@ func NewTeamWithPrometheus(base repos.Team, instanceName string) TeamWithPrometh
 	}
 }
 
+// ByID implements repos.Team
+func (_d TeamWithPrometheus) ByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.Team, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		teamDurationSummaryVec.WithLabelValues(_d.instanceName, "ByID", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.ByID(ctx, d, id)
+}
+
+// ByName implements repos.Team
+func (_d TeamWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (tp1 *db.Team, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		teamDurationSummaryVec.WithLabelValues(_d.instanceName, "ByName", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.ByName(ctx, d, name, projectID)
+}
+
 // Create implements repos.Team
-func (_d TeamWithPrometheus) Create(ctx context.Context, d db.DBTX, params repos.TeamCreateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithPrometheus) Create(ctx context.Context, d db.DBTX, params db.TeamCreateParams) (tp1 *db.Team, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -66,36 +94,8 @@ func (_d TeamWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) (tp1
 	return _d.base.Delete(ctx, d, id)
 }
 
-// TeamByID implements repos.Team
-func (_d TeamWithPrometheus) TeamByID(ctx context.Context, d db.DBTX, id int) (tp1 *db.Team, err error) {
-	_since := time.Now()
-	defer func() {
-		result := "ok"
-		if err != nil {
-			result = "error"
-		}
-
-		teamDurationSummaryVec.WithLabelValues(_d.instanceName, "TeamByID", result).Observe(time.Since(_since).Seconds())
-	}()
-	return _d.base.TeamByID(ctx, d, id)
-}
-
-// TeamByName implements repos.Team
-func (_d TeamWithPrometheus) TeamByName(ctx context.Context, d db.DBTX, name string, projectID int) (tp1 *db.Team, err error) {
-	_since := time.Now()
-	defer func() {
-		result := "ok"
-		if err != nil {
-			result = "error"
-		}
-
-		teamDurationSummaryVec.WithLabelValues(_d.instanceName, "TeamByName", result).Observe(time.Since(_since).Seconds())
-	}()
-	return _d.base.TeamByName(ctx, d, name, projectID)
-}
-
 // Update implements repos.Team
-func (_d TeamWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params repos.TeamUpdateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params db.TeamUpdateParams) (tp1 *db.Team, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

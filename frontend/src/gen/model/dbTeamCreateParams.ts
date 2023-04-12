@@ -6,7 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export interface ReposTeamCreateParams {
+export interface DbTeamCreateParams {
   description?: string
   name?: string
   projectID?: number

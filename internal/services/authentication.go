@@ -41,7 +41,7 @@ func (a *Authentication) GetUserFromAccessToken(ctx context.Context, token strin
 		return nil, errors.Wrap(err, "invalid token")
 	}
 
-	user, err := a.usvc.UserByEmail(ctx, a.pool, claims.Email)
+	user, err := a.usvc.ByEmail(ctx, a.pool, claims.Email)
 	if err != nil {
 		return nil, internal.WrapErrorf(err, internal.ErrorCodeNotFound, "user from token not found")
 	}
@@ -51,12 +51,12 @@ func (a *Authentication) GetUserFromAccessToken(ctx context.Context, token strin
 
 // GetUserFromAPIKey returns a user from an api key.
 func (a *Authentication) GetUserFromAPIKey(ctx context.Context, apiKey string) (*db.User, error) {
-	return a.usvc.UserByAPIKey(ctx, a.pool, apiKey)
+	return a.usvc.ByAPIKey(ctx, a.pool, apiKey)
 }
 
 // GetOrRegisterUserFromOAuth2Token returns a user from an OAuth2 token.
 func (a *Authentication) GetOrRegisterUserFromOAuth2Token(ctx context.Context, token string) (*db.User, error) {
-	// return a.usvc.UserByExternalID(ctx, a.pool, externalID)
+	// return a.usvc.ByExternalID(ctx, a.pool, externalID)
 	return nil, nil
 }
 

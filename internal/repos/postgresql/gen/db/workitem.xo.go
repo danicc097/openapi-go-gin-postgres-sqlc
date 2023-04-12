@@ -39,6 +39,30 @@ type WorkItem struct {
 	_exists, _deleted bool
 }
 
+// WorkItemCreateParams represents insert params for 'public.work_items'
+type WorkItemCreateParams struct {
+	Title          string       `json:"title"`          // title
+	Description    string       `json:"description"`    // description
+	WorkItemTypeID int          `json:"workItemTypeID"` // work_item_type_id
+	Metadata       pgtype.JSONB `json:"metadata"`       // metadata
+	TeamID         int          `json:"teamID"`         // team_id
+	KanbanStepID   int          `json:"kanbanStepID"`   // kanban_step_id
+	Closed         *time.Time   `json:"closed"`         // closed
+	TargetDate     time.Time    `json:"targetDate"`     // target_date
+}
+
+// WorkItemUpdateParams represents update params for 'public.work_items'
+type WorkItemUpdateParams struct {
+	Title          *string       `json:"title"`          // title
+	Description    *string       `json:"description"`    // description
+	WorkItemTypeID *int          `json:"workItemTypeID"` // work_item_type_id
+	Metadata       *pgtype.JSONB `json:"metadata"`       // metadata
+	TeamID         *int          `json:"teamID"`         // team_id
+	KanbanStepID   *int          `json:"kanbanStepID"`   // kanban_step_id
+	Closed         *time.Time    `json:"closed"`         // closed
+	TargetDate     *time.Time    `json:"targetDate"`     // target_date
+}
+
 type WorkItemSelectConfig struct {
 	limit     string
 	orderBy   string
@@ -127,7 +151,6 @@ func (wi *WorkItem) Deleted() bool {
 }
 
 // Insert inserts the WorkItem to the database.
-
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	switch {
 	case wi._exists: // already exists
@@ -137,14 +160,14 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_items (` +
-		`title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, created_at, updated_at, deleted_at` +
+		`title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9` +
 		`) RETURNING * `
 	// run
-	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt)
+	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
 
-	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt)
+	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Insert/db.Query: %w", err))
 	}
@@ -168,13 +191,13 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_items SET ` +
-		`title = $1, description = $2, work_item_type_id = $3, metadata = $4, team_id = $5, kanban_step_id = $6, closed = $7, target_date = $8, created_at = $9, updated_at = $10, deleted_at = $11 ` +
-		`WHERE work_item_id = $12 ` +
+		`title = $1, description = $2, work_item_type_id = $3, metadata = $4, team_id = $5, kanban_step_id = $6, closed = $7, target_date = $8, deleted_at = $9 ` +
+		`WHERE work_item_id = $10 ` +
 		`RETURNING * `
 	// run
 	logf(sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
 
-	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt, wi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt, wi.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Update/db.Query: %w", err))
 	}
@@ -204,16 +227,16 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_items (` +
-		`work_item_id, title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, created_at, updated_at, deleted_at` +
+		`work_item_id, title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12` +
+		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10` +
 		`)` +
 		` ON CONFLICT (work_item_id) DO ` +
 		`UPDATE SET ` +
-		`title = EXCLUDED.title, description = EXCLUDED.description, work_item_type_id = EXCLUDED.work_item_type_id, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, closed = EXCLUDED.closed, target_date = EXCLUDED.target_date, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, deleted_at = EXCLUDED.deleted_at  `
+		`title = EXCLUDED.title, description = EXCLUDED.description, work_item_type_id = EXCLUDED.work_item_type_id, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, closed = EXCLUDED.closed, target_date = EXCLUDED.target_date, deleted_at = EXCLUDED.deleted_at  `
 	// run
-	logf(sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt)
-	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.CreatedAt, wi.UpdatedAt, wi.DeletedAt); err != nil {
+	logf(sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
+	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -242,11 +265,11 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// WorkItemsByDeletedAt_work_items_deleted_at_idx retrieves a row from 'public.work_items' as a WorkItem.
+// WorkItemsByDeletedAt_WhereDeletedAtIsNotNull retrieves a row from 'public.work_items' as a WorkItem.
 //
 // Generated from index 'work_items_deleted_at_idx'.
-func WorkItemsByDeletedAt_work_items_deleted_at_idx(ctx context.Context, db DB, deletedAt *time.Time, opts ...WorkItemSelectConfigOption) ([]*WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...WorkItemSelectConfigOption) ([]*WorkItem, error) {
+	c := &WorkItemSelectConfig{deletedAt: " not null ", joins: WorkItemJoins{}}
 
 	for _, o := range opts {
 		o(c)

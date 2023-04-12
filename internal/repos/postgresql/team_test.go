@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTeam_TeamByIndexedQueries(t *testing.T) {
+func TestTeam_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
 	projectRepo := postgresql.NewProject()
@@ -19,9 +19,9 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 
 	ctx := context.Background()
 
-	project, err := projectRepo.ProjectByName(ctx, testPool, internalmodels.ProjectDemoProject)
+	project, err := projectRepo.ByName(ctx, testPool, internalmodels.ProjectDemoProject)
 	if err != nil {
-		t.Fatalf("projectRepo.ProjectByName unexpected error = %v", err)
+		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
 	}
 	tcp := postgresqltestutil.RandomTeamCreateParams(t, project.ProjectID)
 
@@ -45,7 +45,7 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 			args: argsString{
 				filter:    team.Name,
 				projectID: team.ProjectID,
-				fn:        (teamRepo.TeamByName),
+				fn:        (teamRepo.ByName),
 			},
 		},
 	}
@@ -88,7 +88,7 @@ func TestTeam_TeamByIndexedQueries(t *testing.T) {
 			name: "team_id",
 			args: argsInt{
 				filter: team.TeamID,
-				fn:     (teamRepo.TeamByID),
+				fn:     (teamRepo.ByID),
 			},
 		},
 	}

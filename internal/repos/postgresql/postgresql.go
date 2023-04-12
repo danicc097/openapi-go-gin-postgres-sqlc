@@ -21,8 +21,7 @@ import (
 
 // New instantiates the PostgreSQL database using configuration defined in environment variables.
 func New(logger *zap.Logger) (*pgxpool.Pool, *sql.DB, error) {
-	cfg := internal.Config()
-
+	cfg := internal.Config
 	dsn := url.URL{
 		Scheme: "postgres",
 		User:   url.UserPassword(cfg.Postgres.User, cfg.Postgres.Password),
@@ -39,9 +38,12 @@ func New(logger *zap.Logger) (*pgxpool.Pool, *sql.DB, error) {
 	if err != nil {
 		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "pgx.ParseConfig")
 	}
-	poolConfig.ConnConfig.Tracer = &tracelog.TraceLog{
-		Logger:   zapadapter.NewLogger(logger),
-		LogLevel: tracelog.LogLevelTrace,
+
+	if internal.Config.Postgres.TraceEnabled {
+		poolConfig.ConnConfig.Tracer = &tracelog.TraceLog{
+			Logger:   zapadapter.NewLogger(logger),
+			LogLevel: tracelog.LogLevelTrace,
+		}
 	}
 
 	pgxPool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)

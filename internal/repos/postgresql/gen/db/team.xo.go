@@ -27,6 +27,20 @@ type Team struct {
 	_exists, _deleted bool
 }
 
+// TeamCreateParams represents insert params for 'public.teams'
+type TeamCreateParams struct {
+	ProjectID   int    `json:"projectID"`   // project_id
+	Name        string `json:"name"`        // name
+	Description string `json:"description"` // description
+}
+
+// TeamUpdateParams represents update params for 'public.teams'
+type TeamUpdateParams struct {
+	ProjectID   *int    `json:"projectID"`   // project_id
+	Name        *string `json:"name"`        // name
+	Description *string `json:"description"` // description
+}
+
 type TeamSelectConfig struct {
 	limit   string
 	orderBy string
@@ -90,7 +104,6 @@ func (t *Team) Deleted() bool {
 }
 
 // Insert inserts the Team to the database.
-
 func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 	switch {
 	case t._exists: // already exists
@@ -100,14 +113,14 @@ func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.teams (` +
-		`project_id, name, description, created_at, updated_at` +
+		`project_id, name, description` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
+		`$1, $2, $3` +
 		`) RETURNING * `
 	// run
-	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt)
+	logf(sqlstr, t.ProjectID, t.Name, t.Description)
 
-	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt)
+	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Insert/db.Query: %w", err))
 	}
@@ -131,13 +144,13 @@ func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.teams SET ` +
-		`project_id = $1, name = $2, description = $3, created_at = $4, updated_at = $5 ` +
-		`WHERE team_id = $6 ` +
+		`project_id = $1, name = $2, description = $3 ` +
+		`WHERE team_id = $4 ` +
 		`RETURNING * `
 	// run
 	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt, t.TeamID)
 
-	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt, t.TeamID)
+	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.TeamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Update/db.Query: %w", err))
 	}
@@ -167,16 +180,16 @@ func (t *Team) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.teams (` +
-		`team_id, project_id, name, description, created_at, updated_at` +
+		`team_id, project_id, name, description` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6` +
+		`$1, $2, $3, $4` +
 		`)` +
 		` ON CONFLICT (team_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at  `
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description  `
 	// run
-	logf(sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt)
-	if _, err := db.Exec(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt); err != nil {
+	logf(sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description)
+	if _, err := db.Exec(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -261,6 +274,126 @@ left join (
 	}
 	t._exists = true
 	return &t, nil
+}
+
+// TeamsByName retrieves a row from 'public.teams' as a Team.
+//
+// Generated from index 'teams_name_project_id_key'.
+func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfigOption) ([]*Team, error) {
+	c := &TeamSelectConfig{joins: TeamJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`teams.team_id,
+teams.project_id,
+teams.name,
+teams.description,
+teams.created_at,
+teams.updated_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then joined_users.users end) as users ` +
+		`FROM public.teams ` +
+		`-- O2M join generated from "time_entries_team_id_fkey"
+left join (
+  select
+  team_id as time_entries_team_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+   group by
+        team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
+-- M2M join generated from "user_team_user_id_fkey"
+left join (
+	select
+		user_team.team_id as user_team_team_id
+		, array_agg(users.*) as users
+		from user_team
+    join users using (user_id)
+    group by user_team_team_id
+  ) as joined_users on joined_users.user_team_team_id = teams.team_id
+` +
+		` WHERE teams.name = $3 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Team])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// TeamsByProjectID retrieves a row from 'public.teams' as a Team.
+//
+// Generated from index 'teams_name_project_id_key'.
+func TeamsByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]*Team, error) {
+	c := &TeamSelectConfig{joins: TeamJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`teams.team_id,
+teams.project_id,
+teams.name,
+teams.description,
+teams.created_at,
+teams.updated_at,
+(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $2::boolean = true then joined_users.users end) as users ` +
+		`FROM public.teams ` +
+		`-- O2M join generated from "time_entries_team_id_fkey"
+left join (
+  select
+  team_id as time_entries_team_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+   group by
+        team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
+-- M2M join generated from "user_team_user_id_fkey"
+left join (
+	select
+		user_team.team_id as user_team_team_id
+		, array_agg(users.*) as users
+		from user_team
+    join users using (user_id)
+    group by user_team_team_id
+  ) as joined_users on joined_users.user_team_team_id = teams.team_id
+` +
+		` WHERE teams.project_id = $3 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	logf(sqlstr, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, projectID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Team])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
 }
 
 // TeamByTeamID retrieves a row from 'public.teams' as a Team.

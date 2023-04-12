@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v5"
 )
@@ -15,14 +16,14 @@ import (
 // Project represents a row from 'public.projects'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type Project struct {
-	ProjectID          int          `json:"projectID" db:"project_id" required:"true"`    // project_id
-	Name               string       `json:"name" db:"name" required:"true"`               // name
-	Description        string       `json:"description" db:"description" required:"true"` // description
-	WorkItemsTableName string       `json:"-" db:"work_items_table_name" `                // work_items_table_name
-	Initialized        bool         `json:"initialized" db:"initialized" required:"true"` // initialized
-	BoardConfig        pgtype.JSONB `json:"-" db:"board_config" `                         // board_config
-	CreatedAt          time.Time    `json:"createdAt" db:"created_at" required:"true"`    // created_at
-	UpdatedAt          time.Time    `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
+	ProjectID          int            `json:"projectID" db:"project_id" required:"true"`                         // project_id
+	Name               models.Project `json:"name" db:"name" required:"true" ref:"#/components/schemas/Project"` // name
+	Description        string         `json:"description" db:"description" required:"true"`                      // description
+	WorkItemsTableName string         `json:"-" db:"work_items_table_name"`                                      // work_items_table_name
+	Initialized        bool           `json:"initialized" db:"initialized" required:"true"`                      // initialized
+	BoardConfig        pgtype.JSONB   `json:"-" db:"board_config"`                                               // board_config
+	CreatedAt          time.Time      `json:"createdAt" db:"created_at" required:"true"`                         // created_at
+	UpdatedAt          time.Time      `json:"updatedAt" db:"updated_at" required:"true"`                         // updated_at
 
 	Activities    *[]Activity     `json:"activities" db:"activities"`         // O2M
 	KanbanSteps   *[]KanbanStep   `json:"kanbanSteps" db:"kanban_steps"`      // O2M
@@ -31,6 +32,24 @@ type Project struct {
 	WorkItemTypes *[]WorkItemType `json:"workItemTypes" db:"work_item_types"` // O2M
 	// xo fields
 	_exists, _deleted bool
+}
+
+// ProjectCreateParams represents insert params for 'public.projects'
+type ProjectCreateParams struct {
+	Name               models.Project `json:"name"`        // name
+	Description        string         `json:"description"` // description
+	WorkItemsTableName string         `json:"-"`           // work_items_table_name
+	Initialized        bool           `json:"initialized"` // initialized
+	BoardConfig        pgtype.JSONB   `json:"-"`           // board_config
+}
+
+// ProjectUpdateParams represents update params for 'public.projects'
+type ProjectUpdateParams struct {
+	Name               *models.Project `json:"name"`        // name
+	Description        *string         `json:"description"` // description
+	WorkItemsTableName *string         `json:"-"`           // work_items_table_name
+	Initialized        *bool           `json:"initialized"` // initialized
+	BoardConfig        *pgtype.JSONB   `json:"-"`           // board_config
 }
 
 type ProjectSelectConfig struct {
@@ -99,7 +118,6 @@ func (p *Project) Deleted() bool {
 }
 
 // Insert inserts the Project to the database.
-
 func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 	switch {
 	case p._exists: // already exists
@@ -109,14 +127,14 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.projects (` +
-		`name, description, work_items_table_name, initialized, board_config, created_at, updated_at` +
+		`name, description, work_items_table_name, initialized, board_config` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7` +
+		`$1, $2, $3, $4, $5` +
 		`) RETURNING * `
 	// run
-	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt)
+	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig)
 
-	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt)
+	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Insert/db.Query: %w", err))
 	}
@@ -140,13 +158,13 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.projects SET ` +
-		`name = $1, description = $2, work_items_table_name = $3, initialized = $4, board_config = $5, created_at = $6, updated_at = $7 ` +
-		`WHERE project_id = $8 ` +
+		`name = $1, description = $2, work_items_table_name = $3, initialized = $4, board_config = $5 ` +
+		`WHERE project_id = $6 ` +
 		`RETURNING * `
 	// run
 	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt, p.ProjectID)
 
-	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt, p.ProjectID)
+	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Update/db.Query: %w", err))
 	}
@@ -176,16 +194,16 @@ func (p *Project) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.projects (` +
-		`project_id, name, description, work_items_table_name, initialized, board_config, created_at, updated_at` +
+		`project_id, name, description, work_items_table_name, initialized, board_config` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8` +
+		`$1, $2, $3, $4, $5, $6` +
 		`)` +
 		` ON CONFLICT (project_id) DO ` +
 		`UPDATE SET ` +
-		`name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, initialized = EXCLUDED.initialized, board_config = EXCLUDED.board_config, created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at  `
+		`name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, initialized = EXCLUDED.initialized, board_config = EXCLUDED.board_config  `
 	// run
-	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt)
-	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt); err != nil {
+	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig)
+	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -217,7 +235,7 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 // ProjectByName retrieves a row from 'public.projects' as a Project.
 //
 // Generated from index 'projects_name_key'.
-func ProjectByName(ctx context.Context, db DB, name string, opts ...ProjectSelectConfigOption) (*Project, error) {
+func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...ProjectSelectConfigOption) (*Project, error) {
 	c := &ProjectSelectConfig{joins: ProjectJoins{}}
 
 	for _, o := range opts {

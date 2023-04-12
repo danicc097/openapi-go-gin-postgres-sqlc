@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
 // WorkItemTypeWithRetry implements repos.WorkItemType interface instrumented with retries
@@ -28,8 +28,46 @@ func NewWorkItemTypeWithRetry(base repos.WorkItemType, retryCount int, retryInte
 	}
 }
 
+// ByID implements repos.WorkItemType
+func (_d WorkItemTypeWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemType, err error) {
+	wp1, err = _d.WorkItemType.ByID(ctx, d, id)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		wp1, err = _d.WorkItemType.ByID(ctx, d, id)
+	}
+	return
+}
+
+// ByName implements repos.WorkItemType
+func (_d WorkItemTypeWithRetry) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemType, err error) {
+	wp1, err = _d.WorkItemType.ByName(ctx, d, name, projectID)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		wp1, err = _d.WorkItemType.ByName(ctx, d, name, projectID)
+	}
+	return
+}
+
 // Create implements repos.WorkItemType
-func (_d WorkItemTypeWithRetry) Create(ctx context.Context, d db.DBTX, params repos.WorkItemTypeCreateParams) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithRetry) Create(ctx context.Context, d db.DBTX, params db.WorkItemTypeCreateParams) (wp1 *db.WorkItemType, err error) {
 	wp1, err = _d.WorkItemType.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -67,7 +105,7 @@ func (_d WorkItemTypeWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (
 }
 
 // Update implements repos.WorkItemType
-func (_d WorkItemTypeWithRetry) Update(ctx context.Context, d db.DBTX, id int, params repos.WorkItemTypeUpdateParams) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithRetry) Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTypeUpdateParams) (wp1 *db.WorkItemType, err error) {
 	wp1, err = _d.WorkItemType.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -81,44 +119,6 @@ func (_d WorkItemTypeWithRetry) Update(ctx context.Context, d db.DBTX, id int, p
 		case <-_ticker.C:
 		}
 		wp1, err = _d.WorkItemType.Update(ctx, d, id, params)
-	}
-	return
-}
-
-// WorkItemTypeByID implements repos.WorkItemType
-func (_d WorkItemTypeWithRetry) WorkItemTypeByID(ctx context.Context, d db.DBTX, id int) (wp1 *db.WorkItemType, err error) {
-	wp1, err = _d.WorkItemType.WorkItemTypeByID(ctx, d, id)
-	if err == nil || _d._retryCount < 1 {
-		return
-	}
-	_ticker := time.NewTicker(_d._retryInterval)
-	defer _ticker.Stop()
-	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-_ticker.C:
-		}
-		wp1, err = _d.WorkItemType.WorkItemTypeByID(ctx, d, id)
-	}
-	return
-}
-
-// WorkItemTypeByName implements repos.WorkItemType
-func (_d WorkItemTypeWithRetry) WorkItemTypeByName(ctx context.Context, d db.DBTX, name string, projectID int) (wp1 *db.WorkItemType, err error) {
-	wp1, err = _d.WorkItemType.WorkItemTypeByName(ctx, d, name, projectID)
-	if err == nil || _d._retryCount < 1 {
-		return
-	}
-	_ticker := time.NewTicker(_d._retryInterval)
-	defer _ticker.Stop()
-	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-_ticker.C:
-		}
-		wp1, err = _d.WorkItemType.WorkItemTypeByName(ctx, d, name, projectID)
 	}
 	return
 }

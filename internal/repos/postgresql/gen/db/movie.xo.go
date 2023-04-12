@@ -21,6 +21,20 @@ type Movie struct {
 	_exists, _deleted bool
 }
 
+// MovieCreateParams represents insert params for 'public.movies'
+type MovieCreateParams struct {
+	Title    string `json:"title"`    // title
+	Year     int    `json:"year"`     // year
+	Synopsis string `json:"synopsis"` // synopsis
+}
+
+// MovieUpdateParams represents update params for 'public.movies'
+type MovieUpdateParams struct {
+	Title    *string `json:"title"`    // title
+	Year     *int    `json:"year"`     // year
+	Synopsis *string `json:"synopsis"` // synopsis
+}
+
 type MovieSelectConfig struct {
 	limit   string
 	orderBy string
@@ -61,7 +75,6 @@ func (m *Movie) Deleted() bool {
 }
 
 // Insert inserts the Movie to the database.
-
 func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 	switch {
 	case m._exists: // already exists
