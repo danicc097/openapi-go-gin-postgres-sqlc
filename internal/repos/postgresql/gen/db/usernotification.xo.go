@@ -217,10 +217,10 @@ left join notifications on notifications.notification_id = user_notifications.no
 	return &un, nil
 }
 
-// UserNotificationByNotificationIDUserID retrieves a row from 'public.user_notifications' as a UserNotification.
+// UserNotificationsByNotificationID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_notification_id_user_id_key'.
-func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]*UserNotification, error) {
+func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]*UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {

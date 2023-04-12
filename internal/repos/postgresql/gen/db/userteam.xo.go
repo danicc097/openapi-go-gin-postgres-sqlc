@@ -147,10 +147,10 @@ user_team.user_id ` +
 	return &ut, nil
 }
 
-// UserTeamByUserIDTeamID retrieves a row from 'public.user_team' as a UserTeam.
+// UserTeamsByTeamID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_pkey'.
-func UserTeamByUserIDTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
 
 	for _, o := range opts {
@@ -183,10 +183,10 @@ user_team.user_id ` +
 	return res, nil
 }
 
-// UserTeamByTeamIDUserID retrieves a row from 'public.user_team' as a UserTeam.
+// UserTeamsByTeamIDUserID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_team_id_user_id_idx'.
-func UserTeamByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+func UserTeamsByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
 
 	for _, o := range opts {
@@ -219,10 +219,10 @@ user_team.user_id ` +
 	return res, nil
 }
 
-// UserTeamByUserID retrieves a row from 'public.user_team' as a UserTeam.
+// UserTeamsByUserID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_user_id_idx'.
-func UserTeamByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+func UserTeamsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
 
 	for _, o := range opts {

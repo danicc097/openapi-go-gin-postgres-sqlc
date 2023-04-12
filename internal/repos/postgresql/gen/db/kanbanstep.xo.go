@@ -540,10 +540,10 @@ kanban_steps.time_trackable ` +
 	return &ks, nil
 }
 
-// KanbanStepByProjectIDStepOrder retrieves a row from 'public.kanban_steps' as a KanbanStep.
+// KanbanStepsByProjectID retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_step_order_key'.
-func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]*KanbanStep, error) {
+func KanbanStepsByProjectID(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]*KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
 
 	for _, o := range opts {
@@ -581,10 +581,10 @@ kanban_steps.time_trackable ` +
 	return res, nil
 }
 
-// KanbanStepByProjectIDStepOrder retrieves a row from 'public.kanban_steps' as a KanbanStep.
+// KanbanStepsByStepOrder retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_step_order_key'.
-func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, stepOrder *int16, opts ...KanbanStepSelectConfigOption) ([]*KanbanStep, error) {
+func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder *int16, opts ...KanbanStepSelectConfigOption) ([]*KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
 
 	for _, o := range opts {

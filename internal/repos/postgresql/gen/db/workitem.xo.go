@@ -342,7 +342,7 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 //
 // Generated from index 'work_items_pkey'.
 func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
-	c := &WorkItemSelectConfig{joins: WorkItemJoins{}}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
 
 	for _, o := range opts {
 		o(c)

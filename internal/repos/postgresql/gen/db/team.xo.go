@@ -263,10 +263,10 @@ left join (
 	return &t, nil
 }
 
-// TeamByNameProjectID retrieves a row from 'public.teams' as a Team.
+// TeamsByName retrieves a row from 'public.teams' as a Team.
 //
 // Generated from index 'teams_name_project_id_key'.
-func TeamByNameProjectID(ctx context.Context, db DB, name string, opts ...TeamSelectConfigOption) ([]*Team, error) {
+func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfigOption) ([]*Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {
@@ -323,10 +323,10 @@ left join (
 	return res, nil
 }
 
-// TeamByNameProjectID retrieves a row from 'public.teams' as a Team.
+// TeamsByProjectID retrieves a row from 'public.teams' as a Team.
 //
 // Generated from index 'teams_name_project_id_key'.
-func TeamByNameProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]*Team, error) {
+func TeamsByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]*Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {

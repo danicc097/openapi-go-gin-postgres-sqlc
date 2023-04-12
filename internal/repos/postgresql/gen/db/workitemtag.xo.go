@@ -226,10 +226,10 @@ left join (
 	return &wit, nil
 }
 
-// WorkItemTagByNameProjectID retrieves a row from 'public.work_item_tags' as a WorkItemTag.
+// WorkItemTagsByName retrieves a row from 'public.work_item_tags' as a WorkItemTag.
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
-func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, opts ...WorkItemTagSelectConfigOption) ([]*WorkItemTag, error) {
+func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkItemTagSelectConfigOption) ([]*WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
 
 	for _, o := range opts {
@@ -275,10 +275,10 @@ left join (
 	return res, nil
 }
 
-// WorkItemTagByNameProjectID retrieves a row from 'public.work_item_tags' as a WorkItemTag.
+// WorkItemTagsByProjectID retrieves a row from 'public.work_item_tags' as a WorkItemTag.
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
-func WorkItemTagByNameProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]*WorkItemTag, error) {
+func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]*WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
 
 	for _, o := range opts {

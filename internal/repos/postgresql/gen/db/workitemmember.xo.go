@@ -175,10 +175,10 @@ func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// WorkItemMemberByMemberWorkItemID retrieves a row from 'public.work_item_member' as a WorkItemMember.
+// WorkItemMembersByMemberWorkItemID retrieves a row from 'public.work_item_member' as a WorkItemMember.
 //
 // Generated from index 'work_item_member_member_work_item_id_idx'.
-func WorkItemMemberByMemberWorkItemID(ctx context.Context, db DB, member uuid.UUID, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
+func WorkItemMembersByMemberWorkItemID(ctx context.Context, db DB, member uuid.UUID, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
 	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
 
 	for _, o := range opts {
@@ -247,10 +247,10 @@ work_item_member.role ` +
 	return &wim, nil
 }
 
-// WorkItemMemberByWorkItemIDMember retrieves a row from 'public.work_item_member' as a WorkItemMember.
+// WorkItemMembersByWorkItemID retrieves a row from 'public.work_item_member' as a WorkItemMember.
 //
 // Generated from index 'work_item_member_pkey'.
-func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
+func WorkItemMembersByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
 	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
 
 	for _, o := range opts {
@@ -284,10 +284,10 @@ work_item_member.role ` +
 	return res, nil
 }
 
-// WorkItemMemberByWorkItemIDMember retrieves a row from 'public.work_item_member' as a WorkItemMember.
+// WorkItemMembersByMember retrieves a row from 'public.work_item_member' as a WorkItemMember.
 //
 // Generated from index 'work_item_member_pkey'.
-func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, member uuid.UUID, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
+func WorkItemMembersByMember(ctx context.Context, db DB, member uuid.UUID, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
 	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
 
 	for _, o := range opts {

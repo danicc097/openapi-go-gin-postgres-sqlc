@@ -11,6 +11,7 @@ import (
 	"io"
 	"io/fs"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -635,12 +636,19 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			}
 
 			if index.IsUnique && len(index.Fields) > 1 {
+				// patch each index and constraints and emit queries with a subset of index fields
+				index.IsUnique = false
 				for _, f := range index.Fields {
-					// patch each index and constraints and emit queries with a subset of index fields
 					index.Fields = []Field{f}
-					index.IsUnique = false
 
-					if contains(emittedIndexes, extractIndexIdentifier(index)) {
+					if _, after, ok := strings.Cut(index.Definition, " WHERE "); ok { // index def is normalized in db
+						if strings.Contains(after, f.SQLName) {
+							log.Default().Printf("%s: index filter contains field: %s", table.GoName, f.SQLName)
+						}
+					}
+
+					idxIdentifier := extractIndexIdentifier(index)
+					if contains(emittedIndexes, idxIdentifier) {
 						continue // most likely a dedicated index already exists
 					}
 
@@ -654,7 +662,7 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 							Constraints interface{}
 						}{Index: index, Constraints: constraints},
 					})
-					emittedIndexes = append(emittedIndexes, extractIndexIdentifier(index))
+					emittedIndexes = append(emittedIndexes, idxIdentifier)
 				}
 			}
 
@@ -1259,18 +1267,27 @@ func (f *Funcs) func_name_context(v interface{}) string {
 		// 	return x.Func + "_" + x.SQLName
 		// }
 		var fields []string
+		var suffix string
+		name := x.Table.GoName
+		if !x.IsUnique {
+			name = inflector.Pluralize(name)
+		}
+
 		for _, field := range x.Fields {
 			fields = append(fields, field.GoName)
 		}
+
 		// TODO use index fields instead. will need to differentatiate for multiple index query creation from a isngle index
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
-			name := x.Table.GoName
-			if !x.IsUnique {
-				name = inflector.Pluralize(name)
-			}
-			return name + "By" + strings.Join(fields, "") + "_" + snaker.ForceCamelIdentifier("Where "+strings.ToLower(after))
+			suffix = "_" + snaker.ForceCamelIdentifier("Where "+strings.ToLower(after))
 		}
-		return x.Func
+
+		funcName := name + "By" + strings.Join(fields, "") + suffix
+
+		// need custom Func to handle additional index creation.
+		// adapted from https://github.com/danicc097/xo/blob/main/cmd/schema.go#L629 which originally sets i.Func
+
+		return funcName
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 2: %T ]]", v)
 }
@@ -1328,8 +1345,20 @@ func (f *Funcs) initial_opts(v any) string {
 	var buf strings.Builder
 
 	switch x := v.(type) {
-	case Index:
+	case Table:
 		for _, field := range x.Fields {
+			if field.SQLName == "deleted_at" {
+				tableHasDeletedAt = true
+			}
+		}
+		buf.WriteString(fmt.Sprintf(`c := &%sSelectConfig{`, x.GoName))
+		if tableHasDeletedAt {
+			buf.WriteString(`deletedAt: " null ",`)
+		}
+		buf.WriteString(fmt.Sprintf(`joins: %sJoins{},
+}`, x.GoName))
+	case Index:
+		for _, field := range x.Table.Fields { // table fields, not index fields
 			if field.SQLName == "deleted_at" {
 				tableHasDeletedAt = true
 			}
@@ -1374,7 +1403,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 	default:
 		break
 	}
-	var hasDeletedAt bool
+	var tableHasDeletedAt bool
 	var orderbys []Field
 	var cc []Constraint
 	switch x := v.(type) {
@@ -1384,7 +1413,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 				orderbys = append(orderbys, z)
 			}
 			if z.SQLName == "deleted_at" {
-				hasDeletedAt = true
+				tableHasDeletedAt = true
 			}
 		}
 		if tablecc, ok := f.tableConstraints[x.SQLName]; ok {
@@ -1408,7 +1437,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 		limit       string
 		orderBy     string
 		joins  %[1]sJoins`, name))
-	if hasDeletedAt {
+	if tableHasDeletedAt {
 		buf.WriteString(`
 			deletedAt   string`)
 	}
@@ -1424,7 +1453,7 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints interface{},
 		}
 	}`, name))
 
-	if hasDeletedAt {
+	if tableHasDeletedAt {
 		buf.WriteString(fmt.Sprintf(`
 	// WithDeleted%[1]sOnly limits result to records marked as deleted.
 	func WithDeleted%[1]sOnly() %[1]sSelectConfigOption {
@@ -1799,23 +1828,24 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 			}
 		case Index:
 			// first thing will always be boolean parameters for joins
+			pref := "c.joins."
 			for _, c := range f.tableConstraints[x.Table.SQLName] {
 				var joinName string
 				switch c.Cardinality {
 				case "M2M":
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
-					joinName = "c.joins." + camelExport(inflector.Pluralize(lookupName))
+					joinName = pref + camelExport(inflector.Pluralize(lookupName))
 				case "O2M", "M2O":
 					if c.RefTableName != x.Table.SQLName {
 						continue
 					}
-					joinName = "c.joins." + camelExport(c.TableName)
+					joinName = pref + camelExport(c.TableName)
 				case "O2O":
 					if c.TableName == x.Table.SQLName {
-						joinName = "c.joins." + camelExport(singularize(c.RefTableName))
+						joinName = pref + camelExport(singularize(c.RefTableName))
 					}
 					if c.RefTableName == x.Table.SQLName {
-						joinName = "c.joins." + camelExport(singularize(c.TableName))
+						joinName = pref + camelExport(singularize(c.TableName))
 					}
 				default:
 				}
@@ -2136,8 +2166,14 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		default:
 			break
 		}
-		var n int
-		var hasDeletedAt bool
+
+		var tableHasDeletedAt bool
+		for _, field := range x.Table.Fields {
+			if field.SQLName == "deleted_at" {
+				tableHasDeletedAt = true
+			}
+		}
+
 		// build table fieldnames
 		for _, z := range x.Table.Fields {
 			// add current table fields
@@ -2147,6 +2183,8 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		funcs := template.FuncMap{
 			"singularize": singularize,
 		}
+
+		var n int
 		for _, c := range tableConstraints {
 			joinStmts, selectStmts := createJoinStatement(c, x, funcs, f.nth, n)
 			if joinStmts.String() == "" || selectStmts.String() == "" {
@@ -2161,11 +2199,6 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 		for _, z := range x.Fields {
 			filters = append(filters, fmt.Sprintf("%s.%s = %s", x.Table.SQLName, f.colname(z), f.nth(n)))
 			n++
-		}
-		for _, field := range x.Table.Fields {
-			if field.SQLName == "deleted_at" {
-				hasDeletedAt = true
-			}
 		}
 		// TODO filters if we are generating a subset query from multicol index
 		// e.g.
@@ -2202,7 +2235,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 			" WHERE " + strings.Join(filters, " AND "),
 		}
 
-		if hasDeletedAt {
+		if tableHasDeletedAt {
 			return fmt.Sprintf("sqlstr := fmt.Sprintf(`%s %s `, c.deletedAt)",
 				strings.Join(lines, "` +\n\t `"),
 				fmt.Sprintf(" AND %s.deleted_at is %%s", x.Table.SQLName),

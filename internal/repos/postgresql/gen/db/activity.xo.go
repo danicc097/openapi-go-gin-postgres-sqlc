@@ -225,10 +225,10 @@ left join (
 	return &a, nil
 }
 
-// ActivityByNameProjectID retrieves a row from 'public.activities' as a Activity.
+// ActivitiesByName retrieves a row from 'public.activities' as a Activity.
 //
 // Generated from index 'activities_name_project_id_key'.
-func ActivityByNameProjectID(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) ([]*Activity, error) {
+func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) ([]*Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}}
 
 	for _, o := range opts {
@@ -273,10 +273,10 @@ left join (
 	return res, nil
 }
 
-// ActivityByNameProjectID retrieves a row from 'public.activities' as a Activity.
+// ActivitiesByProjectID retrieves a row from 'public.activities' as a Activity.
 //
 // Generated from index 'activities_name_project_id_key'.
-func ActivityByNameProjectID(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]*Activity, error) {
+func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]*Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}}
 
 	for _, o := range opts {

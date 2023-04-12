@@ -146,10 +146,10 @@ work_item_work_item_tag.work_item_id ` +
 	return &wiwit, nil
 }
 
-// WorkItemWorkItemTagByWorkItemIDWorkItemTagID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
+// WorkItemWorkItemTagsByWorkItemID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
 //
 // Generated from index 'work_item_work_item_tag_pkey'.
-func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
+func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
 
 	for _, o := range opts {
@@ -182,10 +182,10 @@ work_item_work_item_tag.work_item_id ` +
 	return res, nil
 }
 
-// WorkItemWorkItemTagByWorkItemIDWorkItemTagID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
+// WorkItemWorkItemTagsByWorkItemTagID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
 //
 // Generated from index 'work_item_work_item_tag_pkey'.
-func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
+func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
 
 	for _, o := range opts {
@@ -218,10 +218,10 @@ work_item_work_item_tag.work_item_id ` +
 	return res, nil
 }
 
-// WorkItemWorkItemTagByWorkItemTagIDWorkItemID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
+// WorkItemWorkItemTagsByWorkItemTagIDWorkItemID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
 //
 // Generated from index 'work_item_work_item_tag_work_item_tag_id_work_item_id_idx'.
-func WorkItemWorkItemTagByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
+func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
 
 	for _, o := range opts {
