@@ -68,7 +68,7 @@ type ActivityUpdateParams struct {
 
 type KanbanStepCreateParams struct {
 	ProjectID     int    `json:"projectID"`
-	StepOrder     int16  `json:"stepOrder"`
+	StepOrder     *int16 `json:"stepOrder"`
 	Name          string `json:"name"`
 	Description   string `json:"description"`
 	Color         string `json:"color"`

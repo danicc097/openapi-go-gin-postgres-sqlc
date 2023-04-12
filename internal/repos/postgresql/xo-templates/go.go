@@ -1262,10 +1262,6 @@ func (f *Funcs) func_name_context(v interface{}) string {
 		}
 		return n
 	case Index:
-		// these are e.g.(external_id IS NOT NULL)
-		// if _, _, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
-		// 	return x.Func + "_" + x.SQLName
-		// }
 		var fields []string
 		var suffix string
 		name := x.Table.GoName
@@ -1277,15 +1273,13 @@ func (f *Funcs) func_name_context(v interface{}) string {
 			fields = append(fields, field.GoName)
 		}
 
-		// TODO use index fields instead. will need to differentatiate for multiple index query creation from a isngle index
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
 			suffix = "_" + snaker.ForceCamelIdentifier("Where "+strings.ToLower(after))
 		}
 
+		// need custom Func to handle additional index creation instead of Func field
+		// https://github.com/danicc097/xo/blob/main/cmd/schema.go#L629 which originally sets i.Func
 		funcName := name + "By" + strings.Join(fields, "") + suffix
-
-		// need custom Func to handle additional index creation.
-		// adapted from https://github.com/danicc097/xo/blob/main/cmd/schema.go#L629 which originally sets i.Func
 
 		return funcName
 	}
@@ -2272,7 +2266,6 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 					f.tableConstraints[table] = append(f.tableConstraints[table], c1)
 				}
 			}
-			// TODO generate join in both tables, e.g. demo work items
 		} else if c.Cardinality == "O2O" && c.TableName == table {
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
 		} else if c.Cardinality == "O2O" && c.RefTableName == table {
@@ -2419,8 +2412,6 @@ func (f *Funcs) convertTypes(fkey ForeignKey) string {
 		typ, refType := field.Type, refField.Type
 		if strings.HasPrefix(typ, "*") {
 			_typ := typ[1:]
-			// TODO nil checks generate and return err
-			// NOTE: pgx can handle By queries' scan and query row calls with pointer addresses just fine (tested with external_id *string)
 			expr = "*" + expr
 			typ = strings.ToLower(_typ)
 		}

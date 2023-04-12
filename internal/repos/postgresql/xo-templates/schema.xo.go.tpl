@@ -97,11 +97,6 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 
 {{/*
 generated queries from indexes
-
-TODO: indexes from a unique index or constraint should generate queries for all indexed columns (which return arrays),
-since the index is still used even if not filtering on all columns.
-we should range over len fields and pass as parameter to all functions that accept the index fields.
-then to maintain the first index creation (all fields) pass -1 and handle specially
 */}}
 
 {{ define "index" }}
@@ -241,7 +236,6 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 }
 
 // {{ func_name_context "Insert" }} inserts the {{ $t.GoName }} to the database.
-{{/* TODO insert may generate rows. use Query instead of exec */}}
 {{ recv_context $t "Insert" }} {
 	switch {
 	case {{ short $t }}._exists: // already exists
