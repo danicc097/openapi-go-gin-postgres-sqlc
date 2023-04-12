@@ -25,6 +25,22 @@ type DemoProjectWorkItem struct {
 	_exists, _deleted bool
 }
 
+// DemoProjectWorkItemCreateParams represents insert params for 'public.demo_project_work_items'
+type DemoProjectWorkItemCreateParams struct {
+	Ref           string    `json:"ref"`           // ref
+	Line          string    `json:"line"`          // line
+	LastMessageAt time.Time `json:"lastMessageAt"` // last_message_at
+	Reopened      bool      `json:"reopened"`      // reopened
+}
+
+// DemoProjectWorkItemUpdateParams represents update params for 'public.demo_project_work_items'
+type DemoProjectWorkItemUpdateParams struct {
+	Ref           *string    `json:"ref"`           // ref
+	Line          *string    `json:"line"`          // line
+	LastMessageAt *time.Time `json:"lastMessageAt"` // last_message_at
+	Reopened      *bool      `json:"reopened"`      // reopened
+}
+
 type DemoProjectWorkItemSelectConfig struct {
 	limit   string
 	orderBy string
@@ -83,7 +99,6 @@ func (dpwi *DemoProjectWorkItem) Deleted() bool {
 }
 
 // Insert inserts the DemoProjectWorkItem to the database.
-
 func (dpwi *DemoProjectWorkItem) Insert(ctx context.Context, db DB) (*DemoProjectWorkItem, error) {
 	switch {
 	case dpwi._exists: // already exists

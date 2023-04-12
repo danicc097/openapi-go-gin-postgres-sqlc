@@ -27,6 +27,20 @@ type Team struct {
 	_exists, _deleted bool
 }
 
+// TeamCreateParams represents insert params for 'public.teams'
+type TeamCreateParams struct {
+	Name        string `json:"name"`        // name
+	Description string `json:"description"` // description
+
+}
+
+// TeamUpdateParams represents update params for 'public.teams'
+type TeamUpdateParams struct {
+	Name        *string `json:"name"`        // name
+	Description *string `json:"description"` // description
+
+}
+
 type TeamSelectConfig struct {
 	limit   string
 	orderBy string
@@ -90,7 +104,6 @@ func (t *Team) Deleted() bool {
 }
 
 // Insert inserts the Team to the database.
-
 func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 	switch {
 	case t._exists: // already exists

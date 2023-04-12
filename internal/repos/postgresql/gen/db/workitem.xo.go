@@ -39,6 +39,30 @@ type WorkItem struct {
 	_exists, _deleted bool
 }
 
+// WorkItemCreateParams represents insert params for 'public.work_items'
+type WorkItemCreateParams struct {
+	Title       string `json:"title"`       // title
+	Description string `json:"description"` // description
+
+	Metadata pgtype.JSONB `json:"metadata"` // metadata
+
+	Closed     *time.Time `json:"closed"`     // closed
+	TargetDate time.Time  `json:"targetDate"` // target_date
+
+}
+
+// WorkItemUpdateParams represents update params for 'public.work_items'
+type WorkItemUpdateParams struct {
+	Title       *string `json:"title"`       // title
+	Description *string `json:"description"` // description
+
+	Metadata *pgtype.JSONB `json:"metadata"` // metadata
+
+	Closed     *time.Time `json:"closed"`     // closed
+	TargetDate *time.Time `json:"targetDate"` // target_date
+
+}
+
 type WorkItemSelectConfig struct {
 	limit     string
 	orderBy   string
@@ -127,7 +151,6 @@ func (wi *WorkItem) Deleted() bool {
 }
 
 // Insert inserts the WorkItem to the database.
-
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	switch {
 	case wi._exists: // already exists

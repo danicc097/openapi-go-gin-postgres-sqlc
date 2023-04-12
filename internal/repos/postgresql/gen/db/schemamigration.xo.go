@@ -19,6 +19,18 @@ type SchemaMigration struct {
 	_exists, _deleted bool
 }
 
+// SchemaMigrationCreateParams represents insert params for 'public.schema_migrations'
+type SchemaMigrationCreateParams struct {
+	Version int64 `json:"version"` // version
+	Dirty   bool  `json:"dirty"`   // dirty
+}
+
+// SchemaMigrationUpdateParams represents update params for 'public.schema_migrations'
+type SchemaMigrationUpdateParams struct {
+	Version *int64 `json:"version"` // version
+	Dirty   *bool  `json:"dirty"`   // dirty
+}
+
 type SchemaMigrationSelectConfig struct {
 	limit   string
 	orderBy string
@@ -59,7 +71,6 @@ func (sm *SchemaMigration) Deleted() bool {
 }
 
 // Insert inserts the SchemaMigration to the database.
-
 func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration, error) {
 	switch {
 	case sm._exists: // already exists

@@ -23,6 +23,18 @@ type UserNotification struct {
 	_exists, _deleted bool
 }
 
+// UserNotificationCreateParams represents insert params for 'public.user_notifications'
+type UserNotificationCreateParams struct {
+	Read bool `json:"read"` // read
+
+}
+
+// UserNotificationUpdateParams represents update params for 'public.user_notifications'
+type UserNotificationUpdateParams struct {
+	Read *bool `json:"read"` // read
+
+}
+
 type UserNotificationSelectConfig struct {
 	limit   string
 	orderBy string
@@ -64,7 +76,6 @@ func (un *UserNotification) Deleted() bool {
 }
 
 // Insert inserts the UserNotification to the database.
-
 func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotification, error) {
 	switch {
 	case un._exists: // already exists

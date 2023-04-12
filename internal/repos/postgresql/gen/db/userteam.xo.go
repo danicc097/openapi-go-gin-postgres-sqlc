@@ -20,6 +20,14 @@ type UserTeam struct {
 	_exists, _deleted bool
 }
 
+// UserTeamCreateParams represents insert params for 'public.user_team'
+type UserTeamCreateParams struct {
+}
+
+// UserTeamUpdateParams represents update params for 'public.user_team'
+type UserTeamUpdateParams struct {
+}
+
 type UserTeamSelectConfig struct {
 	limit   string
 	orderBy string
@@ -60,7 +68,6 @@ func (ut *UserTeam) Deleted() bool {
 }
 
 // Insert inserts the UserTeam to the database.
-
 func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 	switch {
 	case ut._exists: // already exists

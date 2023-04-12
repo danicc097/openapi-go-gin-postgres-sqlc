@@ -26,6 +26,18 @@ type WorkItemComment struct {
 	_exists, _deleted bool
 }
 
+// WorkItemCommentCreateParams represents insert params for 'public.work_item_comments'
+type WorkItemCommentCreateParams struct {
+	Message string `json:"message"` // message
+
+}
+
+// WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'
+type WorkItemCommentUpdateParams struct {
+	Message *string `json:"message"` // message
+
+}
+
 type WorkItemCommentSelectConfig struct {
 	limit   string
 	orderBy string
@@ -87,7 +99,6 @@ func (wic *WorkItemComment) Deleted() bool {
 }
 
 // Insert inserts the WorkItemComment to the database.
-
 func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment, error) {
 	switch {
 	case wic._exists: // already exists

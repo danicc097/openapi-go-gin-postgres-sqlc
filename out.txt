@@ -1,0 +1,254 @@
+Running generation
+[foreign_key] activities.project_id <- projects.project_id: O2M
+[foreign_key] demo_project_work_items.work_item_id <- work_items.work_item_id: O2O
+[foreign_key] kanban_steps.project_id <- projects.project_id: O2M
+[foreign_key] project_2_work_items.work_item_id <- work_items.work_item_id: O2O
+[foreign_key] teams.project_id <- projects.project_id: O2M
+[foreign_key] time_entries.activity_id <- activities.activity_id: O2M
+[foreign_key] time_entries.team_id <- teams.team_id: O2M
+[foreign_key] time_entries.user_id <- users.user_id: O2M
+[foreign_key] time_entries.work_item_id <- work_items.work_item_id: O2M
+[foreign_key] user_api_keys.user_id <- users.user_id: O2O
+[foreign_key] user_notifications.notification_id <- notifications.notification_id: O2O
+[foreign_key] user_team.team_id <- teams.team_id: M2M
+[foreign_key] user_team.user_id <- users.user_id: M2M
+[foreign_key] work_item_comments.work_item_id <- work_items.work_item_id: O2M
+[foreign_key] work_item_member.member <- users.user_id: M2M
+[foreign_key] work_item_member.work_item_id <- work_items.work_item_id: M2M
+[foreign_key] work_item_tags.project_id <- projects.project_id: O2M
+[foreign_key] work_item_types.project_id <- projects.project_id: O2M
+[foreign_key] work_item_work_item_tag.work_item_id <- work_items.work_item_id: M2M
+[foreign_key] work_item_work_item_tag.work_item_tag_id <- work_item_tags.work_item_tag_id: M2M
+[foreign_key] work_items.work_item_type_id <- work_item_types.work_item_type_id: O2O
+[primary_key] demo_project_work_items.work_item_id <- demo_project_work_items.work_item_id: O2O
+[primary_key] project_2_work_items.work_item_id <- project_2_work_items.work_item_id: O2O
+[primary_key] user_team.team_id <- user_team.user_id: M2M
+[primary_key] user_team.user_id <- user_team.team_id: M2M
+[primary_key] work_item_member.member <- work_item_member.member: M2M
+[primary_key] work_item_member.work_item_id <- work_item_member.work_item_id: M2M
+[primary_key] work_item_work_item_tag.work_item_id <- work_item_work_item_tag.work_item_tag_id: M2M
+[primary_key] work_item_work_item_tag.work_item_tag_id <- work_item_work_item_tag.work_item_id: M2M
+[primary_key] work_items.work_item_id <- work_items.work_item_id: O2O
+[unique] activities.project_id <- activities.name: O2M
+[unique] kanban_steps.project_id <- kanban_steps.project_id: O2M
+[unique] teams.project_id <- teams.name: O2M
+[unique] user_api_keys.user_id <- user_api_keys.user_id: O2O
+[unique] user_notifications.notification_id <- user_notifications.notification_id: O2O
+[unique] work_item_tags.project_id <- work_item_tags.name: O2M
+[unique] work_item_types.project_id <- work_item_types.name: O2M
+fatal error: runtime: out of memory
+
+runtime stack:
+runtime.throw({0x1044a82?, 0x20000?})
+	/usr/local/go/src/runtime/panic.go:1047 +0x5d fp=0x7f3249323ca0 sp=0x7f3249323c70 pc=0x43df7d
+runtime.sysMapOS(0xc001800000, 0xc001000000?)
+	/usr/local/go/src/runtime/mem_linux.go:187 +0x11b fp=0x7f3249323ce8 sp=0x7f3249323ca0 pc=0x41cd7b
+runtime.sysMap(0x1875580?, 0xc3ffffffff?, 0x1885718?)
+	/usr/local/go/src/runtime/mem.go:142 +0x35 fp=0x7f3249323d18 sp=0x7f3249323ce8 pc=0x41c755
+runtime.(*mheap).grow(0x1875580, 0x6000654?)
+	/usr/local/go/src/runtime/mheap.go:1522 +0x245 fp=0x7f3249323d90 sp=0x7f3249323d18 pc=0x42ea25
+runtime.(*mheap).allocSpan(0x1875580, 0x6000654, 0x0, 0x2e?)
+	/usr/local/go/src/runtime/mheap.go:1243 +0x1b7 fp=0x7f3249323e28 sp=0x7f3249323d90 pc=0x42e177
+runtime.(*mheap).alloc.func1()
+	/usr/local/go/src/runtime/mheap.go:961 +0x65 fp=0x7f3249323e70 sp=0x7f3249323e28 pc=0x42dc25
+runtime.systemstack()
+	/usr/local/go/src/runtime/asm_amd64.s:496 +0x49 fp=0x7f3249323e78 sp=0x7f3249323e70 pc=0x473fe9
+
+goroutine 1 [running]:
+runtime.systemstack_switch()
+	/usr/local/go/src/runtime/asm_amd64.s:463 fp=0xc000937118 sp=0xc000937110 pc=0x473f80
+runtime.(*mheap).alloc(0xc000ca8000?, 0x6000654?, 0x6?)
+	/usr/local/go/src/runtime/mheap.go:955 +0x65 fp=0xc000937160 sp=0xc000937118 pc=0x42db65
+runtime.(*mcache).allocLarge(0x10?, 0xc000ca8000, 0x1)
+	/usr/local/go/src/runtime/mcache.go:234 +0x85 fp=0xc0009371a8 sp=0xc000937160 pc=0x41b7e5
+runtime.mallocgc(0xc000ca8000, 0x0, 0x0)
+	/usr/local/go/src/runtime/malloc.go:1053 +0x4f7 fp=0xc000937210 sp=0xc0009371a8 pc=0x412517
+runtime.growslice(0xc000ef8b00, 0xc0007016e0?, 0xc000c87020?, 0x99?, 0xc000937760?)
+	/usr/local/go/src/runtime/slice.go:266 +0x4a8 fp=0xc000937270 sp=0xc000937210 pc=0x456628
+fmt.(*buffer).writeString(...)
+	/usr/local/go/src/fmt/print.go:108
+fmt.(*fmt).padString(0x99?, {0x1, 0xc000ca6018})
+	/usr/local/go/src/fmt/format.go:110 +0x210 fp=0xc0009372e0 sp=0xc000937270 pc=0x515370
+fmt.(*fmt).fmtS(0x2?, {0x1?, 0xc000496700?})
+	/usr/local/go/src/fmt/format.go:359 +0x3f fp=0xc000937318 sp=0xc0009372e0 pc=0x515f3f
+fmt.(*pp).fmtString(0xc000c72d20?, {0x1?, 0xc000701680?}, 0xc87000?)
+	/usr/local/go/src/fmt/print.go:494 +0x86 fp=0xc000937368 sp=0xc000937318 pc=0x519106
+fmt.(*pp).printArg(0xc000b0c000, {0xec00c0?, 0xc000c87030}, 0x76)
+	/usr/local/go/src/fmt/print.go:741 +0x21e fp=0xc000937408 sp=0xc000937368 pc=0x51abfe
+fmt.(*pp).doPrint(0xc000b0c000, {0xc000937550?, 0x1, 0xf265a0?})
+	/usr/local/go/src/fmt/print.go:1211 +0x46 fp=0xc000937490 sp=0xc000937408 pc=0x51ea66
+fmt.Fprint({0x123ad20, 0xc000c5b2d8}, {0xc000937550, 0x1, 0x1})
+	/usr/local/go/src/fmt/print.go:262 +0x4f fp=0xc0009374e0 sp=0xc000937490 pc=0x517acf
+text/template.(*state).printValue(0xc000937760, {0x1245550?, 0xc00090ecc0}, {0xec00c0?, 0xc000c87030?, 0x0?})
+	/usr/local/go/src/text/template/exec.go:1032 +0x1a5 fp=0xc000937590 sp=0xc0009374e0 pc=0x77c645
+text/template.(*state).walk(0xc000937760, {0xfc2b00?, 0xc000c72d20?, 0x30?}, {0x1245550?, 0xc00090ecc0})
+	/usr/local/go/src/text/template/exec.go:269 +0xd0 fp=0xc000937630 sp=0xc000937590 pc=0x775590
+text/template.(*state).walk(0xc000937760, {0xfc2b00?, 0xc000c72d20?, 0x6?}, {0x12458b0?, 0xc00090e8d0?})
+	/usr/local/go/src/text/template/exec.go:280 +0x2d5 fp=0xc0009376d0 sp=0xc000937630 pc=0x775795
+text/template.(*Template).execute(0xc0001c7b40, {0x123ad20?, 0xc000c5b2d8?}, {0xfc2b00?, 0xc000c72d20?})
+	/usr/local/go/src/text/template/exec.go:224 +0x2c5 fp=0xc0009377c0 sp=0xc0009376d0 pc=0x774f05
+text/template.(*Template).Execute(...)
+	/usr/local/go/src/text/template/exec.go:207
+text/template.(*Template).ExecuteTemplate(0xc000500800, {0x123ad20, 0xc000c5b2d8}, {0xc00003ae01, 0xa}, {0xfc2b00, 0xc000c72d20})
+	/usr/local/go/src/text/template/exec.go:193 +0x70 fp=0xc000937818 sp=0xc0009377c0 pc=0x774ad0
+github.com/danicc097/xo/templates.(*Set).Process(0xc0000d0000, {0x1243540, 0xc000e9b6b0}, {0xc000046690?, 0x65?}, {0x10197b8, 0x6}, 0xc000e943c0?)
+	/home/daniel/Repos/github.com/danicc097/xo/templates/templates.go:313 +0x9e7 fp=0xc000937ba0 sp=0xc000937818 pc=0xe35fa7
+github.com/danicc097/xo/cmd.Generate({0x1243540?, 0xc000e94390?}, {0x10197b8, 0x6}, 0x7fffefab8b33?, 0x6?, 0xc000e906c0)
+	/home/daniel/Repos/github.com/danicc097/xo/cmd/cmd.go:444 +0x11a fp=0xc000937c10 sp=0xc000937ba0 pc=0xe46c3a
+github.com/danicc097/xo/cmd.Exec.func1(0xc000005200?, {0xc00018e9c0, 0x1, 0xc?})
+	/home/daniel/Repos/github.com/danicc097/xo/cmd/cmd.go:427 +0x1b1 fp=0xc000937c98 sp=0xc000937c10 pc=0xe46ab1
+github.com/spf13/cobra.(*Command).execute(0xc000005200, {0xc00018e900, 0xc, 0xc})
+	/home/daniel/go/pkg/mod/github.com/spf13/cobra@v1.6.0/command.go:916 +0x862 fp=0xc000937dd0 sp=0xc000937c98 pc=0x78db82
+github.com/spf13/cobra.(*Command).ExecuteC(0xc000004c00)
+	/home/daniel/go/pkg/mod/github.com/spf13/cobra@v1.6.0/command.go:1040 +0x3bd fp=0xc000937e88 sp=0xc000937dd0 pc=0x78e3fd
+github.com/spf13/cobra.(*Command).Execute(...)
+	/home/daniel/go/pkg/mod/github.com/spf13/cobra@v1.6.0/command.go:968
+github.com/danicc097/xo/cmd.Run({0x12434d0, 0xc000120000}, {0x10146c4, 0x2}, {0x101ef6f, 0x9}, {0xc00012e010, 0xd, 0xd})
+	/home/daniel/Repos/github.com/danicc097/xo/cmd/cmd.go:171 +0x1c6 fp=0xc000937f18 sp=0xc000937e88 pc=0xe43e86
+main.main()
+	/home/daniel/Repos/github.com/danicc097/xo/main.go:23 +0x7f fp=0xc000937f80 sp=0xc000937f18 pc=0xe4ff1f
+runtime.main()
+	/usr/local/go/src/runtime/proc.go:250 +0x207 fp=0xc000937fe0 sp=0xc000937f80 pc=0x440927
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:1598 +0x1 fp=0xc000937fe8 sp=0xc000937fe0 pc=0x4761a1
+
+goroutine 2 [force gc (idle)]:
+runtime.gopark(0x0?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/usr/local/go/src/runtime/proc.go:381 +0xd6 fp=0xc000076fb0 sp=0xc000076f90 pc=0x440d56
+runtime.goparkunlock(...)
+	/usr/local/go/src/runtime/proc.go:387
+runtime.forcegchelper()
+	/usr/local/go/src/runtime/proc.go:305 +0xb0 fp=0xc000076fe0 sp=0xc000076fb0 pc=0x440b90
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:1598 +0x1 fp=0xc000076fe8 sp=0xc000076fe0 pc=0x4761a1
+created by runtime.init.6
+	/usr/local/go/src/runtime/proc.go:293 +0x25
+
+goroutine 3 [GC sweep wait]:
+runtime.gopark(0x1?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/usr/local/go/src/runtime/proc.go:381 +0xd6 fp=0xc000077780 sp=0xc000077760 pc=0x440d56
+runtime.goparkunlock(...)
+	/usr/local/go/src/runtime/proc.go:387
+runtime.bgsweep(0x0?)
+	/usr/local/go/src/runtime/mgcsweep.go:319 +0xde fp=0xc0000777c8 sp=0xc000077780 pc=0x42aa9e
+runtime.gcenable.func1()
+	/usr/local/go/src/runtime/mgc.go:178 +0x26 fp=0xc0000777e0 sp=0xc0000777c8 pc=0x41fba6
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:1598 +0x1 fp=0xc0000777e8 sp=0xc0000777e0 pc=0x4761a1
+created by runtime.gcenable
+	/usr/local/go/src/runtime/mgc.go:178 +0x6b
+
+goroutine 4 [GC scavenge wait]:
+runtime.gopark(0xc0000460e0?, 0x1232af0?, 0x0?, 0x0?, 0x0?)
+	/usr/local/go/src/runtime/proc.go:381 +0xd6 fp=0xc000077f70 sp=0xc000077f50 pc=0x440d56
+runtime.goparkunlock(...)
+	/usr/local/go/src/runtime/proc.go:387
+runtime.(*scavengerState).park(0x1850760)
+	/usr/local/go/src/runtime/mgcscavenge.go:400 +0x53 fp=0xc000077fa0 sp=0xc000077f70 pc=0x428993
+runtime.bgscavenge(0x0?)
+	/usr/local/go/src/runtime/mgcscavenge.go:633 +0x65 fp=0xc000077fc8 sp=0xc000077fa0 pc=0x428f85
+runtime.gcenable.func2()
+	/usr/local/go/src/runtime/mgc.go:179 +0x26 fp=0xc000077fe0 sp=0xc000077fc8 pc=0x41fb46
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:1598 +0x1 fp=0xc000077fe8 sp=0xc000077fe0 pc=0x4761a1
+created by runtime.gcenable
+	/usr/local/go/src/runtime/mgc.go:179 +0xaa
+
+goroutine 18 [finalizer wait]:
+runtime.gopark(0x1a0?, 0x1851980?, 0xe0?, 0x24?, 0xc000076770?)
+	/usr/local/go/src/runtime/proc.go:381 +0xd6 fp=0xc000076628 sp=0xc000076608 pc=0x440d56
+runtime.runfinq()
+	/usr/local/go/src/runtime/mfinal.go:193 +0x107 fp=0xc0000767e0 sp=0xc000076628 pc=0x41eb67
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:1598 +0x1 fp=0xc0000767e8 sp=0xc0000767e0 pc=0x4761a1
+created by runtime.createfing
+	/usr/local/go/src/runtime/mfinal.go:163 +0x45
+
+goroutine 19 [GC worker (idle)]:
+runtime.gopark(0x222002b53333?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/usr/local/go/src/runtime/proc.go:381 +0xd6 fp=0xc000072750 sp=0xc000072730 pc=0x440d56
+runtime.gcBgMarkWorker()
+	/usr/local/go/src/runtime/mgc.go:1275 +0xf1 fp=0xc0000727e0 sp=0xc000072750 pc=0x421911
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:1598 +0x1 fp=0xc0000727e8 sp=0xc0000727e0 pc=0x4761a1
+created by runtime.gcBgMarkStartWorkers
+	/usr/local/go/src/runtime/mgc.go:1199 +0x25
+
+goroutine 20 [GC worker (idle)]:
+runtime.gopark(0x2220232c2f9f?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/usr/local/go/src/runtime/proc.go:381 +0xd6 fp=0xc000072f50 sp=0xc000072f30 pc=0x440d56
+runtime.gcBgMarkWorker()
+	/usr/local/go/src/runtime/mgc.go:1275 +0xf1 fp=0xc000072fe0 sp=0xc000072f50 pc=0x421911
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:1598 +0x1 fp=0xc000072fe8 sp=0xc000072fe0 pc=0x4761a1
+created by runtime.gcBgMarkStartWorkers
+	/usr/local/go/src/runtime/mgc.go:1199 +0x25
+
+goroutine 34 [GC worker (idle)]:
+runtime.gopark(0x2220232c26c5?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/usr/local/go/src/runtime/proc.go:381 +0xd6 fp=0xc000488750 sp=0xc000488730 pc=0x440d56
+runtime.gcBgMarkWorker()
+	/usr/local/go/src/runtime/mgc.go:1275 +0xf1 fp=0xc0004887e0 sp=0xc000488750 pc=0x421911
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:1598 +0x1 fp=0xc0004887e8 sp=0xc0004887e0 pc=0x4761a1
+created by runtime.gcBgMarkStartWorkers
+	/usr/local/go/src/runtime/mgc.go:1199 +0x25
+
+goroutine 35 [GC worker (idle)]:
+runtime.gopark(0x2220232c2a4d?, 0x1?, 0xbc?, 0x43?, 0x0?)
+	/usr/local/go/src/runtime/proc.go:381 +0xd6 fp=0xc000488f50 sp=0xc000488f30 pc=0x440d56
+runtime.gcBgMarkWorker()
+	/usr/local/go/src/runtime/mgc.go:1275 +0xf1 fp=0xc000488fe0 sp=0xc000488f50 pc=0x421911
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:1598 +0x1 fp=0xc000488fe8 sp=0xc000488fe0 pc=0x4761a1
+created by runtime.gcBgMarkStartWorkers
+	/usr/local/go/src/runtime/mgc.go:1199 +0x25
+
+goroutine 5 [GC worker (idle)]:
+runtime.gopark(0x2220232c4094?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/usr/local/go/src/runtime/proc.go:381 +0xd6 fp=0xc000078750 sp=0xc000078730 pc=0x440d56
+runtime.gcBgMarkWorker()
+	/usr/local/go/src/runtime/mgc.go:1275 +0xf1 fp=0xc0000787e0 sp=0xc000078750 pc=0x421911
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:1598 +0x1 fp=0xc0000787e8 sp=0xc0000787e0 pc=0x4761a1
+created by runtime.gcBgMarkStartWorkers
+	/usr/local/go/src/runtime/mgc.go:1199 +0x25
+
+goroutine 6 [GC worker (idle)]:
+runtime.gopark(0x2220232ca96c?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/usr/local/go/src/runtime/proc.go:381 +0xd6 fp=0xc000078f50 sp=0xc000078f30 pc=0x440d56
+runtime.gcBgMarkWorker()
+	/usr/local/go/src/runtime/mgc.go:1275 +0xf1 fp=0xc000078fe0 sp=0xc000078f50 pc=0x421911
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:1598 +0x1 fp=0xc000078fe8 sp=0xc000078fe0 pc=0x4761a1
+created by runtime.gcBgMarkStartWorkers
+	/usr/local/go/src/runtime/mgc.go:1199 +0x25
+
+goroutine 7 [select]:
+runtime.gopark(0xc000079788?, 0x2?, 0x88?, 0x27?, 0xc000079784?)
+	/usr/local/go/src/runtime/proc.go:381 +0xd6 fp=0xc000079610 sp=0xc0000795f0 pc=0x440d56
+runtime.selectgo(0xc000079788, 0xc000079780, 0x0?, 0x0, 0x0?, 0x1)
+	/usr/local/go/src/runtime/select.go:327 +0x7be fp=0xc000079750 sp=0xc000079610 pc=0x45105e
+database/sql.(*DB).connectionOpener(0xc00113c270, {0x1243498, 0xc0007564b0})
+	/usr/local/go/src/database/sql/sql.go:1218 +0x8d fp=0xc0000797b8 sp=0xc000079750 pc=0x53834d
+database/sql.OpenDB.func1()
+	/usr/local/go/src/database/sql/sql.go:791 +0x2e fp=0xc0000797e0 sp=0xc0000797b8 pc=0x5366ce
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:1598 +0x1 fp=0xc0000797e8 sp=0xc0000797e0 pc=0x4761a1
+created by database/sql.OpenDB
+	/usr/local/go/src/database/sql/sql.go:791 +0x18d
+
+goroutine 21 [sleep]:
+runtime.gopark(0x22202346484d?, 0xc0001368f0?, 0x0?, 0x60?, 0xc000504000?)
+	/usr/local/go/src/runtime/proc.go:381 +0xd6 fp=0xc000088f18 sp=0xc000088ef8 pc=0x440d56
+time.Sleep(0x5f5e100)
+	/usr/local/go/src/runtime/time.go:195 +0x135 fp=0xc000088f58 sp=0xc000088f18 pc=0x4729b5
+runtime/pprof.profileWriter({0x123c680?, 0xc00148cac0?})
+	/usr/local/go/src/runtime/pprof/pprof.go:809 +0x4c fp=0xc000088fc0 sp=0xc000088f58 pc=0x7bc88c
+runtime/pprof.StartCPUProfile.func2()
+	/usr/local/go/src/runtime/pprof/pprof.go:794 +0x2a fp=0xc000088fe0 sp=0xc000088fc0 pc=0x7bc7aa
+runtime.goexit()
+	/usr/local/go/src/runtime/asm_amd64.s:1598 +0x1 fp=0xc000088fe8 sp=0xc000088fe0 pc=0x4761a1
+created by runtime/pprof.StartCPUProfile
+	/usr/local/go/src/runtime/pprof/pprof.go:794 +0x14a
+[2023-04-12T17:39:38+0000]: Failed xo public schema generation

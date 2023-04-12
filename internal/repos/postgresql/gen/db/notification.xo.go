@@ -31,6 +31,28 @@ type Notification struct {
 	_exists, _deleted bool
 }
 
+// NotificationCreateParams represents insert params for 'public.notifications'
+type NotificationCreateParams struct {
+	ReceiverRank *int16  `json:"receiverRank"` // receiver_rank
+	Title        string  `json:"title"`        // title
+	Body         string  `json:"body"`         // body
+	Label        string  `json:"label"`        // label
+	Link         *string `json:"link"`         // link
+
+	NotificationType NotificationType `json:"notificationType"` // notification_type
+}
+
+// NotificationUpdateParams represents update params for 'public.notifications'
+type NotificationUpdateParams struct {
+	ReceiverRank *int16  `json:"receiverRank"` // receiver_rank
+	Title        *string `json:"title"`        // title
+	Body         *string `json:"body"`         // body
+	Label        *string `json:"label"`        // label
+	Link         *string `json:"link"`         // link
+
+	NotificationType *NotificationType `json:"notificationType"` // notification_type
+}
+
 type NotificationSelectConfig struct {
 	limit   string
 	orderBy string
@@ -89,7 +111,6 @@ func (n *Notification) Deleted() bool {
 }
 
 // Insert inserts the Notification to the database.
-
 func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error) {
 	switch {
 	case n._exists: // already exists

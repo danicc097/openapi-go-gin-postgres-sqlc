@@ -19,6 +19,14 @@ type WorkItemWorkItemTag struct {
 	_exists, _deleted bool
 }
 
+// WorkItemWorkItemTagCreateParams represents insert params for 'public.work_item_work_item_tag'
+type WorkItemWorkItemTagCreateParams struct {
+}
+
+// WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'
+type WorkItemWorkItemTagUpdateParams struct {
+}
+
 type WorkItemWorkItemTagSelectConfig struct {
 	limit   string
 	orderBy string
@@ -59,7 +67,6 @@ func (wiwit *WorkItemWorkItemTag) Deleted() bool {
 }
 
 // Insert inserts the WorkItemWorkItemTag to the database.
-
 func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemWorkItemTag, error) {
 	switch {
 	case wiwit._exists: // already exists

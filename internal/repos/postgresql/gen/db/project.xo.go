@@ -19,9 +19,9 @@ type Project struct {
 	ProjectID          int            `json:"projectID" db:"project_id" required:"true"`                         // project_id
 	Name               models.Project `json:"name" db:"name" required:"true" ref:"#/components/schemas/Project"` // name
 	Description        string         `json:"description" db:"description" required:"true"`                      // description
-	WorkItemsTableName string         `json:"-" db:"work_items_table_name" `                                     // work_items_table_name
+	WorkItemsTableName string         `json:"-" db:"work_items_table_name"`                                      // work_items_table_name
 	Initialized        bool           `json:"initialized" db:"initialized" required:"true"`                      // initialized
-	BoardConfig        pgtype.JSONB   `json:"-" db:"board_config" `                                              // board_config
+	BoardConfig        pgtype.JSONB   `json:"-" db:"board_config"`                                               // board_config
 	CreatedAt          time.Time      `json:"createdAt" db:"created_at" required:"true"`                         // created_at
 	UpdatedAt          time.Time      `json:"updatedAt" db:"updated_at" required:"true"`                         // updated_at
 
@@ -32,6 +32,26 @@ type Project struct {
 	WorkItemTypes *[]WorkItemType `json:"workItemTypes" db:"work_item_types"` // O2M
 	// xo fields
 	_exists, _deleted bool
+}
+
+// ProjectCreateParams represents insert params for 'public.projects'
+type ProjectCreateParams struct {
+	Name               models.Project `json:"name"`        // name
+	Description        string         `json:"description"` // description
+	WorkItemsTableName string         `json:"-"`           // work_items_table_name
+	Initialized        bool           `json:"initialized"` // initialized
+	BoardConfig        pgtype.JSONB   `json:"-"`           // board_config
+
+}
+
+// ProjectUpdateParams represents update params for 'public.projects'
+type ProjectUpdateParams struct {
+	Name               *models.Project `json:"name"`        // name
+	Description        *string         `json:"description"` // description
+	WorkItemsTableName *string         `json:"-"`           // work_items_table_name
+	Initialized        *bool           `json:"initialized"` // initialized
+	BoardConfig        *pgtype.JSONB   `json:"-"`           // board_config
+
 }
 
 type ProjectSelectConfig struct {
@@ -100,7 +120,6 @@ func (p *Project) Deleted() bool {
 }
 
 // Insert inserts the Project to the database.
-
 func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 	switch {
 	case p._exists: // already exists

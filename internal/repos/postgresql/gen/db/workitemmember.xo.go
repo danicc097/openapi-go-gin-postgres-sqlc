@@ -21,6 +21,16 @@ type WorkItemMember struct {
 	_exists, _deleted bool
 }
 
+// WorkItemMemberCreateParams represents insert params for 'public.work_item_member'
+type WorkItemMemberCreateParams struct {
+	Role WorkItemRole `json:"role"` // role
+}
+
+// WorkItemMemberUpdateParams represents update params for 'public.work_item_member'
+type WorkItemMemberUpdateParams struct {
+	Role *WorkItemRole `json:"role"` // role
+}
+
 type WorkItemMemberSelectConfig struct {
 	limit   string
 	orderBy string
@@ -61,7 +71,6 @@ func (wim *WorkItemMember) Deleted() bool {
 }
 
 // Insert inserts the WorkItemMember to the database.
-
 func (wim *WorkItemMember) Insert(ctx context.Context, db DB) (*WorkItemMember, error) {
 	switch {
 	case wim._exists: // already exists

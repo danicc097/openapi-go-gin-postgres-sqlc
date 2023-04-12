@@ -23,6 +23,20 @@ type WorkItemTag struct {
 	_exists, _deleted bool
 }
 
+// WorkItemTagCreateParams represents insert params for 'public.work_item_tags'
+type WorkItemTagCreateParams struct {
+	Name        string `json:"name"`        // name
+	Description string `json:"description"` // description
+	Color       string `json:"color"`       // color
+}
+
+// WorkItemTagUpdateParams represents update params for 'public.work_item_tags'
+type WorkItemTagUpdateParams struct {
+	Name        *string `json:"name"`        // name
+	Description *string `json:"description"` // description
+	Color       *string `json:"color"`       // color
+}
+
 type WorkItemTagSelectConfig struct {
 	limit   string
 	orderBy string
@@ -64,7 +78,6 @@ func (wit *WorkItemTag) Deleted() bool {
 }
 
 // Insert inserts the WorkItemTag to the database.
-
 func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error) {
 	switch {
 	case wit._exists: // already exists

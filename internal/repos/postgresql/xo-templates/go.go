@@ -817,13 +817,15 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 	}
 
 	// conversion requires Table
-	fkeys := make([]ForeignKey, len(t.ForeignKeys))
-	for i, fk := range t.ForeignKeys {
+	var fkeys []string
+	for _, fk := range t.ForeignKeys {
 		fkey, err := convertFKey(ctx, table, fk)
 		if err != nil {
 			return Table{}, fmt.Errorf("could not convert to fk: %w", err)
 		}
-		fkeys[i] = fkey
+		for _, fkField := range fkey.Fields {
+			fkeys = append(fkeys, fkField.SQLName)
+		}
 	}
 	table.ForeignKeys = fkeys
 
@@ -2523,11 +2525,7 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
 	var skipExtraTags bool
 	var fkeys []string
-	for _, fk := range table.ForeignKeys {
-		for _, fkField := range fk.Fields {
-			fkeys = append(fkeys, fkField.SQLName)
-		}
-	}
+	fkeys = append(fkeys, table.ForeignKeys...)
 	isPrivate := contains(field.Properties, privateFieldProperty)
 	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" || contains(fkeys, field.SQLName)
 
@@ -3053,6 +3051,7 @@ type Proc struct {
 }
 
 // Table is a type (ie, table/view/custom query) template.
+// IMPORTANT: runtime out of memory... will need to optimize fields here
 type Table struct {
 	Type        string
 	GoName      string
@@ -3063,7 +3062,7 @@ type Table struct {
 	Comment     string
 	Generated   []Field
 	Ignored     []Field
-	ForeignKeys []ForeignKey
+	ForeignKeys []string
 }
 
 // ForeignKey is a foreign key template.

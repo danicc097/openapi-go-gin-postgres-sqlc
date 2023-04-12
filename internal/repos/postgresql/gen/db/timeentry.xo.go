@@ -28,6 +28,20 @@ type TimeEntry struct {
 	_exists, _deleted bool
 }
 
+// TimeEntryCreateParams represents insert params for 'public.time_entries'
+type TimeEntryCreateParams struct {
+	Comment         string    `json:"comment"`         // comment
+	Start           time.Time `json:"start"`           // start
+	DurationMinutes *int      `json:"durationMinutes"` // duration_minutes
+}
+
+// TimeEntryUpdateParams represents update params for 'public.time_entries'
+type TimeEntryUpdateParams struct {
+	Comment         *string    `json:"comment"`         // comment
+	Start           *time.Time `json:"start"`           // start
+	DurationMinutes *int       `json:"durationMinutes"` // duration_minutes
+}
+
 type TimeEntrySelectConfig struct {
 	limit   string
 	orderBy string
@@ -85,7 +99,6 @@ func (te *TimeEntry) Deleted() bool {
 }
 
 // Insert inserts the TimeEntry to the database.
-
 func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 	switch {
 	case te._exists: // already exists

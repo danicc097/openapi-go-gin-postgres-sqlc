@@ -23,6 +23,20 @@ type Activity struct {
 	_exists, _deleted bool
 }
 
+// ActivityCreateParams represents insert params for 'public.activities'
+type ActivityCreateParams struct {
+	Name         string `json:"name"`         // name
+	Description  string `json:"description"`  // description
+	IsProductive bool   `json:"isProductive"` // is_productive
+}
+
+// ActivityUpdateParams represents update params for 'public.activities'
+type ActivityUpdateParams struct {
+	Name         *string `json:"name"`         // name
+	Description  *string `json:"description"`  // description
+	IsProductive *bool   `json:"isProductive"` // is_productive
+}
+
 type ActivitySelectConfig struct {
 	limit   string
 	orderBy string
@@ -64,7 +78,6 @@ func (a *Activity) Deleted() bool {
 }
 
 // Insert inserts the Activity to the database.
-
 func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 	switch {
 	case a._exists: // already exists

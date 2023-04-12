@@ -24,6 +24,24 @@ type KanbanStep struct {
 	_exists, _deleted bool
 }
 
+// KanbanStepCreateParams represents insert params for 'public.kanban_steps'
+type KanbanStepCreateParams struct {
+	StepOrder     *int16 `json:"stepOrder"`     // step_order
+	Name          string `json:"name"`          // name
+	Description   string `json:"description"`   // description
+	Color         string `json:"color"`         // color
+	TimeTrackable bool   `json:"timeTrackable"` // time_trackable
+}
+
+// KanbanStepUpdateParams represents update params for 'public.kanban_steps'
+type KanbanStepUpdateParams struct {
+	StepOrder     *int16  `json:"stepOrder"`     // step_order
+	Name          *string `json:"name"`          // name
+	Description   *string `json:"description"`   // description
+	Color         *string `json:"color"`         // color
+	TimeTrackable *bool   `json:"timeTrackable"` // time_trackable
+}
+
 type KanbanStepSelectConfig struct {
 	limit   string
 	orderBy string
@@ -64,7 +82,6 @@ func (ks *KanbanStep) Deleted() bool {
 }
 
 // Insert inserts the KanbanStep to the database.
-
 func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 	switch {
 	case ks._exists: // already exists

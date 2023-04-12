@@ -21,14 +21,14 @@ type User struct {
 	FirstName                *string    `json:"firstName" db:"first_name" required:"true"`                                // first_name
 	LastName                 *string    `json:"lastName" db:"last_name" required:"true"`                                  // last_name
 	FullName                 *string    `json:"fullName" db:"full_name" required:"true"`                                  // full_name
-	ExternalID               string     `json:"-" db:"external_id" `                                                      // external_id
-	APIKeyID                 *int       `json:"-" db:"api_key_id" `                                                       // api_key_id
-	Scopes                   []string   `json:"-" db:"scopes" `                                                           // scopes
-	RoleRank                 int16      `json:"-" db:"role_rank" `                                                        // role_rank
+	ExternalID               string     `json:"-" db:"external_id"`                                                       // external_id
+	APIKeyID                 *int       `json:"-" db:"api_key_id"`                                                        // api_key_id
+	Scopes                   []string   `json:"-" db:"scopes"`                                                            // scopes
+	RoleRank                 int16      `json:"-" db:"role_rank"`                                                         // role_rank
 	HasPersonalNotifications bool       `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true"` // has_personal_notifications
 	HasGlobalNotifications   bool       `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true"`     // has_global_notifications
 	CreatedAt                time.Time  `json:"createdAt" db:"created_at" required:"true"`                                // created_at
-	UpdatedAt                time.Time  `json:"-" db:"updated_at" `                                                       // updated_at
+	UpdatedAt                time.Time  `json:"-" db:"updated_at"`                                                        // updated_at
 	DeletedAt                *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`                                // deleted_at
 
 	TimeEntries *[]TimeEntry `json:"timeEntries" db:"time_entries"` // O2M
@@ -37,6 +37,38 @@ type User struct {
 	WorkItems   *[]WorkItem  `json:"workItems" db:"work_items"`     // M2M
 	// xo fields
 	_exists, _deleted bool
+}
+
+// UserCreateParams represents insert params for 'public.users'
+type UserCreateParams struct {
+	Username  string  `json:"username"`  // username
+	Email     string  `json:"email"`     // email
+	FirstName *string `json:"firstName"` // first_name
+	LastName  *string `json:"lastName"`  // last_name
+
+	ExternalID string `json:"-"` // external_id
+
+	Scopes                   []string `json:"-"`                        // scopes
+	RoleRank                 int16    `json:"-"`                        // role_rank
+	HasPersonalNotifications bool     `json:"hasPersonalNotifications"` // has_personal_notifications
+	HasGlobalNotifications   bool     `json:"hasGlobalNotifications"`   // has_global_notifications
+
+}
+
+// UserUpdateParams represents update params for 'public.users'
+type UserUpdateParams struct {
+	Username  *string `json:"username"`  // username
+	Email     *string `json:"email"`     // email
+	FirstName *string `json:"firstName"` // first_name
+	LastName  *string `json:"lastName"`  // last_name
+
+	ExternalID *string `json:"-"` // external_id
+
+	Scopes                   *[]string `json:"-"`                        // scopes
+	RoleRank                 *int16    `json:"-"`                        // role_rank
+	HasPersonalNotifications *bool     `json:"hasPersonalNotifications"` // has_personal_notifications
+	HasGlobalNotifications   *bool     `json:"hasGlobalNotifications"`   // has_global_notifications
+
 }
 
 type UserSelectConfig struct {
@@ -116,7 +148,6 @@ func (u *User) Deleted() bool {
 }
 
 // Insert inserts the User to the database.
-
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	switch {
 	case u._exists: // already exists

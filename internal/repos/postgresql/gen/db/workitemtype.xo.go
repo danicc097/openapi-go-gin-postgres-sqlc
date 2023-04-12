@@ -23,6 +23,20 @@ type WorkItemType struct {
 	_exists, _deleted bool
 }
 
+// WorkItemTypeCreateParams represents insert params for 'public.work_item_types'
+type WorkItemTypeCreateParams struct {
+	Name        string `json:"name"`        // name
+	Description string `json:"description"` // description
+	Color       string `json:"color"`       // color
+}
+
+// WorkItemTypeUpdateParams represents update params for 'public.work_item_types'
+type WorkItemTypeUpdateParams struct {
+	Name        *string `json:"name"`        // name
+	Description *string `json:"description"` // description
+	Color       *string `json:"color"`       // color
+}
+
 type WorkItemTypeSelectConfig struct {
 	limit   string
 	orderBy string
@@ -64,7 +78,6 @@ func (wit *WorkItemType) Deleted() bool {
 }
 
 // Insert inserts the WorkItemType to the database.
-
 func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, error) {
 	switch {
 	case wit._exists: // already exists
