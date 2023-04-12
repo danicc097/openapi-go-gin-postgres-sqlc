@@ -41,26 +41,20 @@ type WorkItem struct {
 
 // WorkItemCreateParams represents insert params for 'public.work_items'
 type WorkItemCreateParams struct {
-	Title       string `json:"title"`       // title
-	Description string `json:"description"` // description
-
-	Metadata pgtype.JSONB `json:"metadata"` // metadata
-
-	Closed     *time.Time `json:"closed"`     // closed
-	TargetDate time.Time  `json:"targetDate"` // target_date
-
+	Title       string       `json:"title"`       // title
+	Description string       `json:"description"` // description
+	Metadata    pgtype.JSONB `json:"metadata"`    // metadata
+	Closed      *time.Time   `json:"closed"`      // closed
+	TargetDate  time.Time    `json:"targetDate"`  // target_date
 }
 
 // WorkItemUpdateParams represents update params for 'public.work_items'
 type WorkItemUpdateParams struct {
-	Title       *string `json:"title"`       // title
-	Description *string `json:"description"` // description
-
-	Metadata *pgtype.JSONB `json:"metadata"` // metadata
-
-	Closed     *time.Time `json:"closed"`     // closed
-	TargetDate *time.Time `json:"targetDate"` // target_date
-
+	Title       *string       `json:"title"`       // title
+	Description *string       `json:"description"` // description
+	Metadata    *pgtype.JSONB `json:"metadata"`    // metadata
+	Closed      *time.Time    `json:"closed"`      // closed
+	TargetDate  *time.Time    `json:"targetDate"`  // target_date
 }
 
 type WorkItemSelectConfig struct {

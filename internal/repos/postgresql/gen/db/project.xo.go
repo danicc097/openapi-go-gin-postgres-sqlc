@@ -41,7 +41,6 @@ type ProjectCreateParams struct {
 	WorkItemsTableName string         `json:"-"`           // work_items_table_name
 	Initialized        bool           `json:"initialized"` // initialized
 	BoardConfig        pgtype.JSONB   `json:"-"`           // board_config
-
 }
 
 // ProjectUpdateParams represents update params for 'public.projects'
@@ -51,7 +50,6 @@ type ProjectUpdateParams struct {
 	WorkItemsTableName *string         `json:"-"`           // work_items_table_name
 	Initialized        *bool           `json:"initialized"` // initialized
 	BoardConfig        *pgtype.JSONB   `json:"-"`           // board_config
-
 }
 
 type ProjectSelectConfig struct {

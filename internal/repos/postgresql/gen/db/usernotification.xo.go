@@ -26,13 +26,11 @@ type UserNotification struct {
 // UserNotificationCreateParams represents insert params for 'public.user_notifications'
 type UserNotificationCreateParams struct {
 	Read bool `json:"read"` // read
-
 }
 
 // UserNotificationUpdateParams represents update params for 'public.user_notifications'
 type UserNotificationUpdateParams struct {
 	Read *bool `json:"read"` // read
-
 }
 
 type UserNotificationSelectConfig struct {

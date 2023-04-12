@@ -29,14 +29,12 @@ type UserAPIKey struct {
 type UserAPIKeyCreateParams struct {
 	APIKey    string    `json:"apiKey"`    // api_key
 	ExpiresOn time.Time `json:"expiresOn"` // expires_on
-
 }
 
 // UserAPIKeyUpdateParams represents update params for 'public.user_api_keys'
 type UserAPIKeyUpdateParams struct {
 	APIKey    *string    `json:"apiKey"`    // api_key
 	ExpiresOn *time.Time `json:"expiresOn"` // expires_on
-
 }
 
 type UserAPIKeySelectConfig struct {

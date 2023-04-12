@@ -29,13 +29,11 @@ type WorkItemComment struct {
 // WorkItemCommentCreateParams represents insert params for 'public.work_item_comments'
 type WorkItemCommentCreateParams struct {
 	Message string `json:"message"` // message
-
 }
 
 // WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'
 type WorkItemCommentUpdateParams struct {
 	Message *string `json:"message"` // message
-
 }
 
 type WorkItemCommentSelectConfig struct {

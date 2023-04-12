@@ -41,34 +41,28 @@ type User struct {
 
 // UserCreateParams represents insert params for 'public.users'
 type UserCreateParams struct {
-	Username  string  `json:"username"`  // username
-	Email     string  `json:"email"`     // email
-	FirstName *string `json:"firstName"` // first_name
-	LastName  *string `json:"lastName"`  // last_name
-
-	ExternalID string `json:"-"` // external_id
-
+	Username                 string   `json:"username"`                 // username
+	Email                    string   `json:"email"`                    // email
+	FirstName                *string  `json:"firstName"`                // first_name
+	LastName                 *string  `json:"lastName"`                 // last_name
+	ExternalID               string   `json:"-"`                        // external_id
 	Scopes                   []string `json:"-"`                        // scopes
 	RoleRank                 int16    `json:"-"`                        // role_rank
 	HasPersonalNotifications bool     `json:"hasPersonalNotifications"` // has_personal_notifications
 	HasGlobalNotifications   bool     `json:"hasGlobalNotifications"`   // has_global_notifications
-
 }
 
 // UserUpdateParams represents update params for 'public.users'
 type UserUpdateParams struct {
-	Username  *string `json:"username"`  // username
-	Email     *string `json:"email"`     // email
-	FirstName *string `json:"firstName"` // first_name
-	LastName  *string `json:"lastName"`  // last_name
-
-	ExternalID *string `json:"-"` // external_id
-
+	Username                 *string   `json:"username"`                 // username
+	Email                    *string   `json:"email"`                    // email
+	FirstName                *string   `json:"firstName"`                // first_name
+	LastName                 *string   `json:"lastName"`                 // last_name
+	ExternalID               *string   `json:"-"`                        // external_id
 	Scopes                   *[]string `json:"-"`                        // scopes
 	RoleRank                 *int16    `json:"-"`                        // role_rank
 	HasPersonalNotifications *bool     `json:"hasPersonalNotifications"` // has_personal_notifications
 	HasGlobalNotifications   *bool     `json:"hasGlobalNotifications"`   // has_global_notifications
-
 }
 
 type UserSelectConfig struct {

@@ -2560,7 +2560,7 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 		fmt.Printf("enum %q using shared package %q\n", field.GoName, p)
 	}
 
-	return fmt.Sprintf("\t%s %s%s // %s", field.GoName, fieldType, tag, field.SQLName), nil
+	return fmt.Sprintf("\t%s %s%s // %s\n", field.GoName, fieldType, tag, field.SQLName), nil
 }
 
 // fieldmapping generates field mappings from a struct to another.
@@ -3052,6 +3052,7 @@ type Proc struct {
 
 // Table is a type (ie, table/view/custom query) template.
 // IMPORTANT: runtime out of memory... will need to optimize fields here
+// (investigate why changing to []*Field didn't do anything)
 type Table struct {
 	Type        string
 	GoName      string

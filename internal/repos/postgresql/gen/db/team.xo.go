@@ -31,14 +31,12 @@ type Team struct {
 type TeamCreateParams struct {
 	Name        string `json:"name"`        // name
 	Description string `json:"description"` // description
-
 }
 
 // TeamUpdateParams represents update params for 'public.teams'
 type TeamUpdateParams struct {
 	Name        *string `json:"name"`        // name
 	Description *string `json:"description"` // description
-
 }
 
 type TeamSelectConfig struct {
