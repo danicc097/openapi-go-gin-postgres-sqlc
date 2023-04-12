@@ -11,7 +11,6 @@ import (
 	"io"
 	"io/fs"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -207,10 +206,13 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Type:       "string",
 				Desc:       "field tag",
 				Short:      "g",
-				Default: `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end -}}
-" db:"{{ .field.SQLName -}}
-" {{ if not .ignoreJSON }}required:"true"{{ if .field.OpenAPISchema }} ref:"#/components/schemas/{{ .field.OpenAPISchema }}"{{end}}{{end}}`,
-				// Default: `json:"{{ .SQLName }}" db:"{{ .SQLName }}"`,
+				Default: `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}"
+{{- if not .skipExtraTags }} db:"{{ .field.SQLName -}}"
+{{- if not .ignoreJSON }} required:"true"
+{{- if .field.OpenAPISchema }} ref:"#/components/schemas/{{ .field.OpenAPISchema }}"
+{{- end }}
+{{- end }}
+{{- end }}`,
 			},
 			{
 				ContextKey: PublicFieldTagKey,
@@ -643,7 +645,7 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 
 					if _, after, ok := strings.Cut(index.Definition, " WHERE "); ok { // index def is normalized in db
 						if strings.Contains(after, f.SQLName) {
-							log.Default().Printf("%s: index filter contains field: %s", table.GoName, f.SQLName)
+							// log.Default().Printf("%s: index filter contains field: %s", table.GoName, f.SQLName)
 						}
 					}
 
@@ -802,7 +804,8 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 			break
 		}
 	}
-	return Table{
+
+	table := Table{
 		GoName:      camelExport(singularize(t.Name)),
 		SQLName:     t.Name,
 		Fields:      cols,
@@ -811,7 +814,20 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 		Ignored:     ignoredCols,
 		Manual:      manual && t.Manual,
 		Type:        t.Type,
-	}, nil
+	}
+
+	// conversion requires Table
+	fkeys := make([]ForeignKey, len(t.ForeignKeys))
+	for i, fk := range t.ForeignKeys {
+		fkey, err := convertFKey(ctx, table, fk)
+		if err != nil {
+			return Table{}, fmt.Errorf("could not convert to fk: %w", err)
+		}
+		fkeys[i] = fkey
+	}
+	table.ForeignKeys = fkeys
+
+	return table, nil
 }
 
 func convertIndex(ctx context.Context, t Table, i xo.Index) (Index, error) {
@@ -912,7 +928,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	}
 	if f.TypeOverride != "" {
 		typ = f.TypeOverride
-		openAPISchema = camelExport(strings.Split(f.TypeOverride, ".")[1]) // broken camelExport with . as well
+		openAPISchema = camelExport(strings.Split(f.TypeOverride, ".")[1])
 	}
 
 	return Field{
@@ -956,6 +972,7 @@ func camel(names ...string) string {
 	return snaker.ForceLowerCamelIdentifier(strings.Join(names, "_"))
 }
 
+// NOTE: broken func with .
 func camelExport(names ...string) string {
 	return snaker.ForceCamelIdentifier(strings.Join(names, "_"))
 }
@@ -2502,10 +2519,33 @@ func (f *Funcs) typefn(typ string) string {
 }
 
 // field generates a field definition for a struct.
-func (f *Funcs) field(field Field, public bool) (string, error) {
+func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
-	ignoreJSON := contains(field.Properties, privateFieldProperty)
-	if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, map[string]any{"field": field, "ignoreJSON": ignoreJSON}); err != nil {
+	var skipExtraTags bool
+	var fkeys []string
+	for _, fk := range table.ForeignKeys {
+		for _, fkField := range fk.Fields {
+			fkeys = append(fkeys, fkField.SQLName)
+		}
+	}
+	isPrivate := contains(field.Properties, privateFieldProperty)
+	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" || contains(fkeys, field.SQLName)
+
+	switch typ {
+	case "CreateParams":
+		if skipField {
+			return "", nil
+		}
+		skipExtraTags = true
+	case "UpdateParams":
+		if skipField {
+			return "", nil
+		}
+		skipExtraTags = true
+	case "Table":
+	}
+
+	if err := f.fieldtag.Funcs(f.FuncMap()).Execute(buf, map[string]any{"field": field, "ignoreJSON": isPrivate, "skipExtraTags": skipExtraTags}); err != nil {
 		return "", err
 	}
 	var tag string
@@ -2513,9 +2553,12 @@ func (f *Funcs) field(field Field, public bool) (string, error) {
 		tag = " `" + s + "`"
 	}
 	fieldType := f.typefn(field.Type)
+	if typ == "UpdateParams" {
+		fieldType = "*" + strings.TrimPrefix(fieldType, "*")
+	}
 	if field.EnumPkg != "" {
 		p := field.EnumPkg[strings.LastIndex(field.EnumPkg, "/")+1:]
-		fieldType = p + "." + fieldType
+		fieldType = p + "." + fieldType // assumes no pointers
 		fmt.Printf("enum %q using shared package %q\n", field.GoName, p)
 	}
 
@@ -3020,6 +3063,7 @@ type Table struct {
 	Comment     string
 	Generated   []Field
 	Ignored     []Field
+	ForeignKeys []ForeignKey
 }
 
 // ForeignKey is a foreign key template.

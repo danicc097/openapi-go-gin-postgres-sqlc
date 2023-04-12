@@ -209,12 +209,26 @@ generated queries from indexes
 {{- end }}
 type {{ $t.GoName }} struct {
 {{ range $t.Fields -}}
-	{{ field . false }}
+	{{ field . "Table" $t }}
 {{ end }}
 {{ join_fields $t.SQLName false $constraints }}
 {{- if $t.PrimaryKeys -}}
 	// xo fields
 	_exists, _deleted bool
+{{ end -}}
+}
+
+// {{ $t.GoName }}CreateParams represents insert params for '{{ schema $t.SQLName }}'
+type {{ $t.GoName }}CreateParams struct {
+{{ range $t.Fields -}}
+	{{ field . "CreateParams" $t }}
+{{ end -}}
+}
+
+// {{ $t.GoName }}UpdateParams represents update params for '{{ schema $t.SQLName }}'
+type {{ $t.GoName }}UpdateParams struct {
+{{ range $t.Fields -}}
+	{{ field . "UpdateParams" $t }}
 {{ end -}}
 }
 
