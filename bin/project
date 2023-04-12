@@ -919,7 +919,7 @@ x.db.gen.initial-data() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Seed gen database.
+# Seed database.
 x.db.initial-data() {
   # xlog eats up read -p (prompt)
   { { {
