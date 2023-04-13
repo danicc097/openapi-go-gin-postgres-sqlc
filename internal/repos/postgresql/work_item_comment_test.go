@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TODO
 func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 

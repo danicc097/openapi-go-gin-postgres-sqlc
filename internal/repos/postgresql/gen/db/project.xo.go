@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -21,7 +20,7 @@ type Project struct {
 	Description        string         `json:"description" db:"description" required:"true"`                      // description
 	WorkItemsTableName string         `json:"-" db:"work_items_table_name"`                                      // work_items_table_name
 	Initialized        bool           `json:"initialized" db:"initialized" required:"true"`                      // initialized
-	BoardConfig        pgtype.JSONB   `json:"-" db:"board_config"`                                               // board_config
+	BoardConfig        []byte         `json:"-" db:"board_config"`                                               // board_config
 	CreatedAt          time.Time      `json:"createdAt" db:"created_at" required:"true"`                         // created_at
 	UpdatedAt          time.Time      `json:"updatedAt" db:"updated_at" required:"true"`                         // updated_at
 
@@ -40,7 +39,7 @@ type ProjectCreateParams struct {
 	Description        string         `json:"description"` // description
 	WorkItemsTableName string         `json:"-"`           // work_items_table_name
 	Initialized        bool           `json:"initialized"` // initialized
-	BoardConfig        pgtype.JSONB   `json:"-"`           // board_config
+	BoardConfig        []byte         `json:"-"`           // board_config
 }
 
 // ProjectUpdateParams represents update params for 'public.projects'
@@ -49,7 +48,7 @@ type ProjectUpdateParams struct {
 	Description        *string         `json:"description"` // description
 	WorkItemsTableName *string         `json:"-"`           // work_items_table_name
 	Initialized        *bool           `json:"initialized"` // initialized
-	BoardConfig        *pgtype.JSONB   `json:"-"`           // board_config
+	BoardConfig        *[]byte         `json:"-"`           // board_config
 }
 
 type ProjectSelectConfig struct {

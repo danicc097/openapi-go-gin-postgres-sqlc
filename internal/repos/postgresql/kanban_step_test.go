@@ -97,7 +97,6 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
-			// TODO
 			found := false
 			for _, ks := range foundKanbanSteps {
 				if ks.KanbanStepID == kanbanStep.KanbanStepID {

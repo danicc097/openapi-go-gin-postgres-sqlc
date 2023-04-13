@@ -67,7 +67,7 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 	fieldsMap := make(map[string]map[string]any)
 
 	var obj1 models.ProjectConfig
-	err = json.Unmarshal(project.BoardConfig.Bytes, &obj1)
+	err = json.Unmarshal(project.BoardConfig, &obj1)
 	if err != nil {
 		return nil, internal.NewErrorf(internal.ErrorCodeUnknown, "invalid stored board config: %v", err)
 	}
