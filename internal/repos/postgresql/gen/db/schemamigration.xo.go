@@ -80,7 +80,8 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration,
 		`version, dirty` +
 		`) VALUES (` +
 		`$1, $2` +
-		`) `
+		`)` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, sm.Version, sm.Dirty)
 	rows, err := db.Query(ctx, sqlstr, sm.Version, sm.Dirty)
@@ -149,7 +150,8 @@ func (sm *SchemaMigration) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (version) DO ` +
 		`UPDATE SET ` +
-		`dirty = EXCLUDED.dirty  `
+		`dirty = EXCLUDED.dirty ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, sm.Version, sm.Dirty)
 	if _, err := db.Exec(ctx, sqlstr, sm.Version, sm.Dirty); err != nil {

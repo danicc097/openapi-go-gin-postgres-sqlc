@@ -188,7 +188,8 @@ func (te *TimeEntry) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (time_entry_id) DO ` +
 		`UPDATE SET ` +
-		`work_item_id = EXCLUDED.work_item_id, activity_id = EXCLUDED.activity_id, team_id = EXCLUDED.team_id, user_id = EXCLUDED.user_id, comment = EXCLUDED.comment, start = EXCLUDED.start, duration_minutes = EXCLUDED.duration_minutes  `
+		`work_item_id = EXCLUDED.work_item_id, activity_id = EXCLUDED.activity_id, team_id = EXCLUDED.team_id, user_id = EXCLUDED.user_id, comment = EXCLUDED.comment, start = EXCLUDED.start, duration_minutes = EXCLUDED.duration_minutes ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, te.TimeEntryID, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
 	if _, err := db.Exec(ctx, sqlstr, te.TimeEntryID, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes); err != nil {

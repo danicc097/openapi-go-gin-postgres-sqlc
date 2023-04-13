@@ -182,7 +182,8 @@ func (wic *WorkItemComment) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (work_item_comment_id) DO ` +
 		`UPDATE SET ` +
-		`work_item_id = EXCLUDED.work_item_id, user_id = EXCLUDED.user_id, message = EXCLUDED.message  `
+		`work_item_id = EXCLUDED.work_item_id, user_id = EXCLUDED.user_id, message = EXCLUDED.message ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message)
 	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message); err != nil {

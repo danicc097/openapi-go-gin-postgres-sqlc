@@ -160,7 +160,8 @@ func (wit *WorkItemType) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (work_item_type_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color  `
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color)
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color); err != nil {

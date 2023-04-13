@@ -1975,7 +1975,7 @@ func (f *Funcs) sqlstr(typ string, v interface{}) string {
 	case "update":
 		lines = f.sqlstr_update(v)
 	case "upsert":
-		lines = f.sqlstr_upsert(v)
+		lines = append(f.sqlstr_upsert(v), " RETURNING *")
 	case "delete":
 		lines = f.sqlstr_delete(v)
 	case "proc":
@@ -2014,7 +2014,7 @@ func (f *Funcs) sqlstr_insert_base(all bool, v interface{}) []string {
 
 // sqlstr_insert_manual builds an INSERT query that inserts all fields.
 func (f *Funcs) sqlstr_insert_manual(v interface{}) []string {
-	return f.sqlstr_insert_base(true, v)
+	return append(f.sqlstr_insert_base(true, v), " RETURNING *")
 }
 
 // sqlstr_insert builds an INSERT query, skipping the sequence field with

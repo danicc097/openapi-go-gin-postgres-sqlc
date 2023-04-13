@@ -158,7 +158,8 @@ func (un *UserNotification) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (user_notification_id) DO ` +
 		`UPDATE SET ` +
-		`notification_id = EXCLUDED.notification_id, read = EXCLUDED.read, user_id = EXCLUDED.user_id  `
+		`notification_id = EXCLUDED.notification_id, read = EXCLUDED.read, user_id = EXCLUDED.user_id ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID)
 	if _, err := db.Exec(ctx, sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID); err != nil {

@@ -160,7 +160,8 @@ func (a *Activity) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (activity_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, is_productive = EXCLUDED.is_productive  `
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, is_productive = EXCLUDED.is_productive ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive)
 	if _, err := db.Exec(ctx, sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive); err != nil {

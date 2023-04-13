@@ -113,7 +113,8 @@ func (dpwi *DemoProjectWorkItem) Insert(ctx context.Context, db DB) (*DemoProjec
 		`work_item_id, ref, line, last_message_at, reopened` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5` +
-		`) `
+		`)` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, dpwi.WorkItemID, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened)
 	rows, err := db.Query(ctx, sqlstr, dpwi.WorkItemID, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened)
@@ -182,7 +183,8 @@ func (dpwi *DemoProjectWorkItem) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (work_item_id) DO ` +
 		`UPDATE SET ` +
-		`ref = EXCLUDED.ref, line = EXCLUDED.line, last_message_at = EXCLUDED.last_message_at, reopened = EXCLUDED.reopened  `
+		`ref = EXCLUDED.ref, line = EXCLUDED.line, last_message_at = EXCLUDED.last_message_at, reopened = EXCLUDED.reopened ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, dpwi.WorkItemID, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened)
 	if _, err := db.Exec(ctx, sqlstr, dpwi.WorkItemID, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened); err != nil {

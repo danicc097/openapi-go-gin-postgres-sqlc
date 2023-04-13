@@ -179,7 +179,8 @@ func (uak *UserAPIKey) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (user_api_key_id) DO ` +
 		`UPDATE SET ` +
-		`api_key = EXCLUDED.api_key, expires_on = EXCLUDED.expires_on, user_id = EXCLUDED.user_id  `
+		`api_key = EXCLUDED.api_key, expires_on = EXCLUDED.expires_on, user_id = EXCLUDED.user_id ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, uak.UserAPIKeyID, uak.APIKey, uak.ExpiresOn, uak.UserID)
 	if _, err := db.Exec(ctx, sqlstr, uak.UserAPIKeyID, uak.APIKey, uak.ExpiresOn, uak.UserID); err != nil {

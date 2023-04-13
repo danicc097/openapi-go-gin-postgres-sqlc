@@ -81,7 +81,8 @@ func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 		`team_id, user_id` +
 		`) VALUES (` +
 		`$1, $2` +
-		`) `
+		`)` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, ut.TeamID, ut.UserID)
 	rows, err := db.Query(ctx, sqlstr, ut.TeamID, ut.UserID)

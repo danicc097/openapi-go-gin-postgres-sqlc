@@ -200,7 +200,8 @@ func (p *Project) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (project_id) DO ` +
 		`UPDATE SET ` +
-		`name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, initialized = EXCLUDED.initialized, board_config = EXCLUDED.board_config  `
+		`name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, initialized = EXCLUDED.initialized, board_config = EXCLUDED.board_config ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig)
 	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig); err != nil {

@@ -186,7 +186,8 @@ func (t *Team) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (team_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description  `
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description)
 	if _, err := db.Exec(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description); err != nil {

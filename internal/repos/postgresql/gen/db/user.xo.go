@@ -226,7 +226,8 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (user_id) DO ` +
 		`UPDATE SET ` +
-		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, deleted_at = EXCLUDED.deleted_at  `
+		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, deleted_at = EXCLUDED.deleted_at ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
 	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt); err != nil {

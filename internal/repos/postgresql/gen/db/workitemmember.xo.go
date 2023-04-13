@@ -84,7 +84,8 @@ func (wim *WorkItemMember) Insert(ctx context.Context, db DB) (*WorkItemMember, 
 		`work_item_id, member, role` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) `
+		`)` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, wim.WorkItemID, wim.Member, wim.Role)
 	rows, err := db.Query(ctx, sqlstr, wim.WorkItemID, wim.Member, wim.Role)
@@ -153,7 +154,8 @@ func (wim *WorkItemMember) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (work_item_id, member) DO ` +
 		`UPDATE SET ` +
-		`role = EXCLUDED.role  `
+		`role = EXCLUDED.role ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, wim.WorkItemID, wim.Member, wim.Role)
 	if _, err := db.Exec(ctx, sqlstr, wim.WorkItemID, wim.Member, wim.Role); err != nil {

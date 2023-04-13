@@ -163,7 +163,8 @@ func (ks *KanbanStep) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (kanban_step_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, step_order = EXCLUDED.step_order, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color, time_trackable = EXCLUDED.time_trackable  `
+		`project_id = EXCLUDED.project_id, step_order = EXCLUDED.step_order, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color, time_trackable = EXCLUDED.time_trackable ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
 	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable); err != nil {

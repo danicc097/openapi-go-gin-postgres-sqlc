@@ -154,7 +154,8 @@ func (m *Movie) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (movie_id) DO ` +
 		`UPDATE SET ` +
-		`title = EXCLUDED.title, year = EXCLUDED.year, synopsis = EXCLUDED.synopsis  `
+		`title = EXCLUDED.title, year = EXCLUDED.year, synopsis = EXCLUDED.synopsis ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, m.MovieID, m.Title, m.Year, m.Synopsis)
 	if _, err := db.Exec(ctx, sqlstr, m.MovieID, m.Title, m.Year, m.Synopsis); err != nil {

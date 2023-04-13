@@ -233,7 +233,8 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (work_item_id) DO ` +
 		`UPDATE SET ` +
-		`title = EXCLUDED.title, description = EXCLUDED.description, work_item_type_id = EXCLUDED.work_item_type_id, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, closed = EXCLUDED.closed, target_date = EXCLUDED.target_date, deleted_at = EXCLUDED.deleted_at  `
+		`title = EXCLUDED.title, description = EXCLUDED.description, work_item_type_id = EXCLUDED.work_item_type_id, metadata = EXCLUDED.metadata, team_id = EXCLUDED.team_id, kanban_step_id = EXCLUDED.kanban_step_id, closed = EXCLUDED.closed, target_date = EXCLUDED.target_date, deleted_at = EXCLUDED.deleted_at ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt)
 	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID, wi.Title, wi.Description, wi.WorkItemTypeID, wi.Metadata, wi.TeamID, wi.KanbanStepID, wi.Closed, wi.TargetDate, wi.DeletedAt); err != nil {

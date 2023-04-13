@@ -111,13 +111,11 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
 			t.Parallel()
 
-			errContains := errNoRows
-
 			filter := 254364 // does not exist
 
 			foundKanbanSteps, err := tc.args.fn(context.Background(), testPool, filter)
-			if err == nil {
-				t.Fatalf("expected error = '%v' but got nothing", errContains)
+			if err != nil {
+				t.Fatalf("unexpected error = '%v'", err)
 			}
 			assert.Len(t, foundKanbanSteps, 0)
 		})

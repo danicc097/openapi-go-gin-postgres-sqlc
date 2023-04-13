@@ -80,7 +80,8 @@ func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemW
 		`work_item_tag_id, work_item_id` +
 		`) VALUES (` +
 		`$1, $2` +
-		`) `
+		`)` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
 	rows, err := db.Query(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)

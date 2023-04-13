@@ -104,7 +104,8 @@ func (pi *Project2WorkItem) Insert(ctx context.Context, db DB) (*Project2WorkIte
 		`work_item_id, custom_date_for_project_2` +
 		`) VALUES (` +
 		`$1, $2` +
-		`) `
+		`)` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, pi.WorkItemID, pi.CustomDateForProject2)
 	rows, err := db.Query(ctx, sqlstr, pi.WorkItemID, pi.CustomDateForProject2)
@@ -173,7 +174,8 @@ func (pi *Project2WorkItem) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (work_item_id) DO ` +
 		`UPDATE SET ` +
-		`custom_date_for_project_2 = EXCLUDED.custom_date_for_project_2  `
+		`custom_date_for_project_2 = EXCLUDED.custom_date_for_project_2 ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, pi.WorkItemID, pi.CustomDateForProject2)
 	if _, err := db.Exec(ctx, sqlstr, pi.WorkItemID, pi.CustomDateForProject2); err != nil {

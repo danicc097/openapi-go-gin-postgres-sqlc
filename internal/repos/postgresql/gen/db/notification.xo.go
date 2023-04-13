@@ -195,7 +195,8 @@ func (n *Notification) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (notification_id) DO ` +
 		`UPDATE SET ` +
-		`receiver_rank = EXCLUDED.receiver_rank, title = EXCLUDED.title, body = EXCLUDED.body, label = EXCLUDED.label, link = EXCLUDED.link, sender = EXCLUDED.sender, receiver = EXCLUDED.receiver, notification_type = EXCLUDED.notification_type  `
+		`receiver_rank = EXCLUDED.receiver_rank, title = EXCLUDED.title, body = EXCLUDED.body, label = EXCLUDED.label, link = EXCLUDED.link, sender = EXCLUDED.sender, receiver = EXCLUDED.receiver, notification_type = EXCLUDED.notification_type ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType)
 	if _, err := db.Exec(ctx, sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType); err != nil {
