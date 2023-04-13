@@ -308,7 +308,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, name)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByName/db.Query: %w", err))
@@ -397,7 +397,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID)
+	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/db.Query: %w", err))

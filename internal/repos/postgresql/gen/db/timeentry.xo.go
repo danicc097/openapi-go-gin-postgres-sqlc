@@ -248,7 +248,7 @@ time_entries.duration_minutes ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, timeEntryID)
+	// logf(sqlstr, timeEntryID)
 	rows, err := db.Query(ctx, sqlstr, timeEntryID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/db.Query: %w", err))
@@ -288,7 +288,7 @@ time_entries.duration_minutes ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userID, teamID)
+	// logf(sqlstr, userID, teamID)
 	rows, err := db.Query(ctx, sqlstr, userID, teamID)
 	if err != nil {
 		return nil, logerror(err)
@@ -330,7 +330,7 @@ time_entries.duration_minutes ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID, teamID)
+	// logf(sqlstr, workItemID, teamID)
 	rows, err := db.Query(ctx, sqlstr, workItemID, teamID)
 	if err != nil {
 		return nil, logerror(err)

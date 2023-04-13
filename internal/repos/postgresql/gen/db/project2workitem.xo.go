@@ -228,7 +228,7 @@ left join work_items on work_items.work_item_id = project_2_work_items.work_item
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID)
+	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("project_2_work_items/Project2WorkItemByWorkItemID/db.Query: %w", err))

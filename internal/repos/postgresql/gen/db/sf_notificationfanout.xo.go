@@ -12,7 +12,7 @@ func NotificationFanOut(ctx context.Context, db DB) (Trigger, error) {
 	sqlstr := `SELECT * FROM public.notification_fan_out() `
 	// run
 	var r0 Trigger
-	logf(sqlstr)
+	// logf(sqlstr, )
 	if err := db.QueryRow(ctx, sqlstr).Scan(&r0); err != nil {
 		return Trigger{}, logerror(err)
 	}

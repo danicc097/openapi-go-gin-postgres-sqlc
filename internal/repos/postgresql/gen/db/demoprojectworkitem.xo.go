@@ -240,7 +240,7 @@ left join work_items on work_items.work_item_id = demo_project_work_items.work_i
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID)
+	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_project_work_items/DemoProjectWorkItemByWorkItemID/db.Query: %w", err))
@@ -279,7 +279,7 @@ left join work_items on work_items.work_item_id = demo_project_work_items.work_i
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, ref, line)
+	// logf(sqlstr, ref, line)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, ref, line)
 	if err != nil {
 		return nil, logerror(err)

@@ -224,7 +224,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, kanbanStepID)
+	// logf(sqlstr, kanbanStepID)
 	rows, err := db.Query(ctx, sqlstr, kanbanStepID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByKanbanStepID/db.Query: %w", err))
@@ -263,7 +263,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID)
+	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, projectID)
 	if err != nil {
 		return nil, logerror(err)
@@ -304,7 +304,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID, name)
+	// logf(sqlstr, projectID, name)
 	rows, err := db.Query(ctx, sqlstr, projectID, name)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDName/db.Query: %w", err))
@@ -343,7 +343,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, name)
 	if err != nil {
 		return nil, logerror(err)
@@ -384,7 +384,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID, name, stepOrder)
+	// logf(sqlstr, projectID, name, stepOrder)
 	rows, err := db.Query(ctx, sqlstr, projectID, name, stepOrder)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDNameStepOrder/db.Query: %w", err))
@@ -423,7 +423,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID)
+	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, projectID)
 	if err != nil {
 		return nil, logerror(err)
@@ -464,7 +464,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, name)
 	if err != nil {
 		return nil, logerror(err)
@@ -505,7 +505,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, stepOrder)
+	// logf(sqlstr, stepOrder)
 	rows, err := db.Query(ctx, sqlstr, stepOrder)
 	if err != nil {
 		return nil, logerror(err)
@@ -546,7 +546,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID, stepOrder)
+	// logf(sqlstr, projectID, stepOrder)
 	rows, err := db.Query(ctx, sqlstr, projectID, stepOrder)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDStepOrder/db.Query: %w", err))
@@ -585,7 +585,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID)
+	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, projectID)
 	if err != nil {
 		return nil, logerror(err)
@@ -626,7 +626,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, stepOrder)
+	// logf(sqlstr, stepOrder)
 	rows, err := db.Query(ctx, sqlstr, stepOrder)
 	if err != nil {
 		return nil, logerror(err)

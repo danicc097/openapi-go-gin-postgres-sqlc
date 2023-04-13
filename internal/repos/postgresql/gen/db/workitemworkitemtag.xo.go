@@ -144,7 +144,7 @@ work_item_work_item_tag.work_item_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID, workItemTagID)
+	// logf(sqlstr, workItemID, workItemTagID)
 	rows, err := db.Query(ctx, sqlstr, workItemID, workItemTagID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_work_item_tag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/db.Query: %w", err))
@@ -178,7 +178,7 @@ work_item_work_item_tag.work_item_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID)
+	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, workItemID)
 	if err != nil {
 		return nil, logerror(err)
@@ -214,7 +214,7 @@ work_item_work_item_tag.work_item_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemTagID)
+	// logf(sqlstr, workItemTagID)
 	rows, err := db.Query(ctx, sqlstr, workItemTagID)
 	if err != nil {
 		return nil, logerror(err)
@@ -250,7 +250,7 @@ work_item_work_item_tag.work_item_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemTagID, workItemID)
+	// logf(sqlstr, workItemTagID, workItemID)
 	rows, err := db.Query(ctx, sqlstr, workItemTagID, workItemID)
 	if err != nil {
 		return nil, logerror(err)

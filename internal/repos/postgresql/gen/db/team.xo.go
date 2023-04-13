@@ -263,7 +263,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name, projectID)
+	// logf(sqlstr, name, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/db.Query: %w", err))
@@ -321,7 +321,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name)
 	if err != nil {
 		return nil, logerror(err)
@@ -381,7 +381,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID)
+	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, projectID)
 	if err != nil {
 		return nil, logerror(err)
@@ -441,7 +441,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, teamID)
+	// logf(sqlstr, teamID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, teamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/db.Query: %w", err))

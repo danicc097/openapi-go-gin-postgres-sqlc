@@ -236,7 +236,7 @@ left join users on users.user_id = user_api_keys.user_id` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, apiKey)
+	// logf(sqlstr, apiKey)
 	rows, err := db.Query(ctx, sqlstr, c.joins.User, apiKey)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", err))
@@ -274,7 +274,7 @@ left join users on users.user_id = user_api_keys.user_id` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userAPIKeyID)
+	// logf(sqlstr, userAPIKeyID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.User, userAPIKeyID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", err))
@@ -312,7 +312,7 @@ left join users on users.user_id = user_api_keys.user_id` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userID)
+	// logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.User, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", err))

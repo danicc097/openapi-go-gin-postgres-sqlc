@@ -217,7 +217,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, notificationID, userID)
+	// logf(sqlstr, notificationID, userID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, notificationID, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByNotificationIDUserID/db.Query: %w", err))
@@ -255,7 +255,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, notificationID)
+	// logf(sqlstr, notificationID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, notificationID)
 	if err != nil {
 		return nil, logerror(err)
@@ -295,7 +295,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userNotificationID)
+	// logf(sqlstr, userNotificationID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, userNotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByUserNotificationID/db.Query: %w", err))
@@ -333,7 +333,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userID)
+	// logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, userID)
 	if err != nil {
 		return nil, logerror(err)

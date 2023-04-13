@@ -205,7 +205,7 @@ schema_migrations.dirty ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, version)
+	// logf(sqlstr, version)
 	rows, err := db.Query(ctx, sqlstr, version)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/db.Query: %w", err))

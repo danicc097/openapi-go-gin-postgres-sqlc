@@ -220,7 +220,7 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name, projectID)
+	// logf(sqlstr, name, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByNameProjectID/db.Query: %w", err))
@@ -259,7 +259,7 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, name)
 	if err != nil {
 		return nil, logerror(err)
@@ -300,7 +300,7 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID)
+	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, projectID)
 	if err != nil {
 		return nil, logerror(err)
@@ -341,7 +341,7 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemTypeID)
+	// logf(sqlstr, workItemTypeID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemTypeID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByWorkItemTypeID/db.Query: %w", err))

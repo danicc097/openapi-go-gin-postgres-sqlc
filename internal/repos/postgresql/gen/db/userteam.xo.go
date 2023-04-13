@@ -145,7 +145,7 @@ user_team.user_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userID, teamID)
+	// logf(sqlstr, userID, teamID)
 	rows, err := db.Query(ctx, sqlstr, userID, teamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_team/UserTeamByUserIDTeamID/db.Query: %w", err))
@@ -179,7 +179,7 @@ user_team.user_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, teamID)
+	// logf(sqlstr, teamID)
 	rows, err := db.Query(ctx, sqlstr, teamID)
 	if err != nil {
 		return nil, logerror(err)
@@ -215,7 +215,7 @@ user_team.user_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, teamID, userID)
+	// logf(sqlstr, teamID, userID)
 	rows, err := db.Query(ctx, sqlstr, teamID, userID)
 	if err != nil {
 		return nil, logerror(err)
@@ -251,7 +251,7 @@ user_team.user_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userID)
+	// logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, userID)
 	if err != nil {
 		return nil, logerror(err)

@@ -258,6 +258,39 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// SoftDelete soft deletes the User from the database via 'deleted_at'.
+func (u *User) SoftDelete(ctx context.Context, db DB) error {
+	switch {
+	case !u._exists: // doesn't exist
+		return nil
+	case u._deleted: // deleted
+		return nil
+	}
+	// delete with single primary key
+	sqlstr := `UPDATE public.users ` +
+		`SET deleted_at = NOW() ` +
+		`WHERE user_id = $1 `
+	// run
+	logf(sqlstr, u.UserID)
+	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
+		return logerror(err)
+	}
+	// set deleted
+	u._deleted = true
+
+	return nil
+}
+
+// Restore restores a soft deleted User from the database.
+func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
+	u.DeletedAt = nil
+	newu, err := u.Update(ctx, db)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	return newu, nil
+}
+
 // UsersByCreatedAt retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_created_at_idx'.
@@ -326,7 +359,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, createdAt)
+	// logf(sqlstr, createdAt)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, createdAt)
 	if err != nil {
 		return nil, logerror(err)
@@ -409,7 +442,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, deletedAt)
+	// logf(sqlstr, deletedAt)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, deletedAt)
 	if err != nil {
 		return nil, logerror(err)
@@ -492,7 +525,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, email)
+	// logf(sqlstr, email)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, email)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByEmail/db.Query: %w", err))
@@ -573,7 +606,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, externalID)
+	// logf(sqlstr, externalID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, externalID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByExternalID/db.Query: %w", err))
@@ -654,7 +687,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userID)
+	// logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
@@ -735,7 +768,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, updatedAt)
+	// logf(sqlstr, updatedAt)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, updatedAt)
 	if err != nil {
 		return nil, logerror(err)
@@ -818,7 +851,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, username)
+	// logf(sqlstr, username)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, username)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUsername/db.Query: %w", err))

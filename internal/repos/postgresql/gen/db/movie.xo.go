@@ -212,7 +212,7 @@ movies.synopsis ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, movieID)
+	// logf(sqlstr, movieID)
 	rows, err := db.Query(ctx, sqlstr, movieID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("movies/MovieByMovieID/db.Query: %w", err))

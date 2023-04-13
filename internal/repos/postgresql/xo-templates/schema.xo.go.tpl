@@ -118,7 +118,7 @@ generated queries from indexes
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, {{ params $i.Fields false }})
+	// logf(sqlstr, {{ params $i.Fields false }})
 {{- if $i.IsUnique }}
   rows, err := {{ db "Query" $i }}
 	if err != nil {
@@ -171,13 +171,13 @@ generated queries from indexes
 {{- range $p.Returns }}
 	var {{ check_name .GoName }} {{ type .Type }}
 {{- end }}
-	logf(sqlstr, {{ params $p.Params false }})
+	// logf(sqlstr, {{ params $p.Params false }})
 	if err := {{ db "QueryRow" $p }}.Scan({{ names "&" $p.Returns }}); err != nil {
 		return {{ zero $p.Returns }}, logerror(err)
 	}
 	return {{ range $p.Returns }}{{ check_name .GoName }}, {{ end }}nil
 {{- else }}
-	logf(sqlstr)
+	// logf(sqlstr)
 	if _, err := {{ db "Exec" $p }}; err != nil {
 		return logerror(err)
 	}
@@ -419,4 +419,49 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 }
 {{- end -}}
 {{- end }}
+
+{{ if (has_deleted_at $t) }}
+// {{ func_name_context "SoftDelete" }} soft deletes the {{ $t.GoName }} from the database via 'deleted_at'.
+{{ recv_context $t "SoftDelete" }} {
+	switch {
+	case !{{ short $t }}._exists: // doesn't exist
+		return nil
+	case {{ short $t }}._deleted: // deleted
+		return nil
+	}
+	{{ if eq (len $t.PrimaryKeys) 1 -}}
+	// delete with single primary key
+	{{ sqlstr "soft_delete" $t }}
+	// run
+	{{ logf_pkeys $t }}
+	if _, err := {{ db "Exec" (print (short $t) "." (index $t.PrimaryKeys 0).GoName) }}; err != nil {
+		return logerror(err)
+	}
+  {{- else -}}
+	// delete with composite primary key
+	{{ sqlstr "soft_delete" $t }}
+	// run
+	{{ logf_pkeys $t }}
+	if _, err := {{ db "Exec" (names (print (short $t) ".") $t.PrimaryKeys) }}; err != nil {
+		return logerror(err)
+	}
+  {{ end }}
+	// set deleted
+	{{ short $t }}._deleted = true
+
+	return nil
+}
+
+// {{ func_name_context "Restore" }} restores a soft deleted {{ $t.GoName }} from the database.
+{{ recv_context $t "Restore" }} {
+	{{ short $t }}.DeletedAt = nil
+	new{{ short $t }}, err:= {{ short $t }}.Update(ctx,db)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	return new{{ short $t }}, nil
+}
+
+{{ end }}
+
 {{ end }}

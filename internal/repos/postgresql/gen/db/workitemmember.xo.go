@@ -210,7 +210,7 @@ work_item_member.role ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, member, workItemID)
+	// logf(sqlstr, member, workItemID)
 	rows, err := db.Query(ctx, sqlstr, member, workItemID)
 	if err != nil {
 		return nil, logerror(err)
@@ -247,7 +247,7 @@ work_item_member.role ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID, member)
+	// logf(sqlstr, workItemID, member)
 	rows, err := db.Query(ctx, sqlstr, workItemID, member)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_member/WorkItemMemberByWorkItemIDMember/db.Query: %w", err))
@@ -282,7 +282,7 @@ work_item_member.role ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID)
+	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, workItemID)
 	if err != nil {
 		return nil, logerror(err)
@@ -319,7 +319,7 @@ work_item_member.role ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, member)
+	// logf(sqlstr, member)
 	rows, err := db.Query(ctx, sqlstr, member)
 	if err != nil {
 		return nil, logerror(err)

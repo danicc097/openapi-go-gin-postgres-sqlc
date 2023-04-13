@@ -1088,6 +1088,7 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"initial_opts": f.initial_opts,
 		// func and query
 		"func_name_context":   f.func_name_context,
+		"has_deleted_at":      f.has_deleted_at,
 		"func_name":           f.func_name_none,
 		"func_context":        f.func_context,
 		"extratypes":          f.extratypes,
@@ -1257,6 +1258,16 @@ func (f *Funcs) func_name_none(v interface{}) string {
 		return x.Func
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 1: %T ]]", v)
+}
+
+// has_deleted_at checks if a table has a deleted_at column.
+func (f *Funcs) has_deleted_at(t Table) bool {
+	for _, f := range t.Fields {
+		if f.SQLName == "deleted_at" {
+			return true
+		}
+	}
+	return false
 }
 
 // func_name_context generates a name for the func.
@@ -1572,7 +1583,7 @@ func (f *Funcs) recv(name string, context bool, t Table, v interface{}) string {
 	case ForeignKey:
 		r = append(r, "*"+x.RefTable)
 	case string:
-		if x == "Upsert" || x == "Delete" { // upsert and delete only exec
+		if x == "Upsert" || x == "Delete" || x == "SoftDelete" { // upsert and delete only exec
 			break
 		}
 		r = append(r, "*"+t.GoName)
@@ -1953,6 +1964,8 @@ var stripRE = regexp.MustCompile(`\s+\+\s+` + "``")
 func (f *Funcs) sqlstr(typ string, v interface{}) string {
 	var lines []string
 	switch typ {
+	case "soft_delete":
+		lines = f.sqlstr_soft_delete(v)
 	case "insert_manual":
 		lines = f.sqlstr_insert_manual(v)
 	case "insert":
@@ -2123,6 +2136,24 @@ func (f *Funcs) sqlstr_delete(v interface{}) []string {
 		}
 		return []string{
 			"DELETE FROM " + f.schemafn(x.SQLName) + " ",
+			"WHERE " + strings.Join(list, " AND "),
+		}
+	}
+	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 25: %T ]]", v)}
+}
+
+// sqlstr_soft_delete builds a soft DELETE query for the primary keys.
+func (f *Funcs) sqlstr_soft_delete(v interface{}) []string {
+	switch x := v.(type) {
+	case Table:
+		// names and values
+		var list []string
+		for i, z := range x.PrimaryKeys {
+			list = append(list, fmt.Sprintf("%s = %s", f.colname(z), f.nth(i)))
+		}
+		return []string{
+			"UPDATE " + f.schemafn(x.SQLName) + " ",
+			"SET deleted_at = NOW() ",
 			"WHERE " + strings.Join(list, " AND "),
 		}
 	}

@@ -240,7 +240,7 @@ work_item_comments.updated_at ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemCommentID)
+	// logf(sqlstr, workItemCommentID)
 	rows, err := db.Query(ctx, sqlstr, workItemCommentID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/db.Query: %w", err))
@@ -278,7 +278,7 @@ work_item_comments.updated_at ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID)
+	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, workItemID)
 	if err != nil {
 		return nil, logerror(err)

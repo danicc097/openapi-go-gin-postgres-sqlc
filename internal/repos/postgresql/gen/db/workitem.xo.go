@@ -265,6 +265,39 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// SoftDelete soft deletes the WorkItem from the database via 'deleted_at'.
+func (wi *WorkItem) SoftDelete(ctx context.Context, db DB) error {
+	switch {
+	case !wi._exists: // doesn't exist
+		return nil
+	case wi._deleted: // deleted
+		return nil
+	}
+	// delete with single primary key
+	sqlstr := `UPDATE public.work_items ` +
+		`SET deleted_at = NOW() ` +
+		`WHERE work_item_id = $1 `
+	// run
+	logf(sqlstr, wi.WorkItemID)
+	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID); err != nil {
+		return logerror(err)
+	}
+	// set deleted
+	wi._deleted = true
+
+	return nil
+}
+
+// Restore restores a soft deleted WorkItem from the database.
+func (wi *WorkItem) Restore(ctx context.Context, db DB) (*WorkItem, error) {
+	wi.DeletedAt = nil
+	newwi, err := wi.Update(ctx, db)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	return newwi, nil
+}
+
 // WorkItemsByDeletedAt_WhereDeletedAtIsNotNull retrieves a row from 'public.work_items' as a WorkItem.
 //
 // Generated from index 'work_items_deleted_at_idx'.
@@ -346,7 +379,7 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, deletedAt)
+	// logf(sqlstr, deletedAt)
 	rows, err := db.Query(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, deletedAt)
 	if err != nil {
 		return nil, logerror(err)
@@ -442,7 +475,7 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID)
+	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", err))

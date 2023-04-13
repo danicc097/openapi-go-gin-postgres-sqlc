@@ -228,7 +228,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name, projectID)
+	// logf(sqlstr, name, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByNameProjectID/db.Query: %w", err))
@@ -275,7 +275,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, name)
 	if err != nil {
 		return nil, logerror(err)
@@ -324,7 +324,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID)
+	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, projectID)
 	if err != nil {
 		return nil, logerror(err)
@@ -373,7 +373,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemTagID)
+	// logf(sqlstr, workItemTagID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, workItemTagID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByWorkItemTagID/db.Query: %w", err))
