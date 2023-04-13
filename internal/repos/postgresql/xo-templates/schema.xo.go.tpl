@@ -217,9 +217,7 @@ type {{ $t.GoName }} struct {
 	_exists, _deleted bool
 {{ end -}}
 }
-{{/* NOTE: using this notation since sqlc uses
-<query_name>{{ $t.GoName }}Params which may clash if we also were to
-call it Create or Update*/}}
+{{/* NOTE: ensure sqlc does not generate clashing names */}}
 // {{ $t.GoName }}CreateParams represents insert params for '{{ schema $t.SQLName }}'
 type {{ $t.GoName }}CreateParams struct {
 {{ range $t.Fields -}}
