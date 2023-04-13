@@ -231,7 +231,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 // UserNotificationsByNotificationID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_notification_id_user_id_key'.
-func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]*UserNotification, error) {
+func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
@@ -261,7 +261,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserNotification])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -309,7 +309,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 // UserNotificationsByUserID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_user_id_idx'.
-func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserNotificationSelectConfigOption) ([]*UserNotification, error) {
+func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
@@ -339,7 +339,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserNotification])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

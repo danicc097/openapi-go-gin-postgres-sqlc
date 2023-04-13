@@ -263,7 +263,7 @@ time_entries.duration_minutes ` +
 // TimeEntriesByUserIDTeamID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_user_id_team_id_idx'.
-func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID *int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
+func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID *int, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}}
 
 	for _, o := range opts {
@@ -295,7 +295,7 @@ time_entries.duration_minutes ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*TimeEntry])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -305,7 +305,7 @@ time_entries.duration_minutes ` +
 // TimeEntriesByWorkItemIDTeamID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_work_item_id_team_id_idx'.
-func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int64, teamID *int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
+func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int64, teamID *int, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}}
 
 	for _, o := range opts {
@@ -337,7 +337,7 @@ time_entries.duration_minutes ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*TimeEntry])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

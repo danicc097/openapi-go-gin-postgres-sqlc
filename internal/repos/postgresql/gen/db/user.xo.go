@@ -294,7 +294,7 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 // UsersByCreatedAt retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_created_at_idx'.
-func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
+func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
 
 	for _, o := range opts {
@@ -367,7 +367,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*User])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -377,7 +377,7 @@ left join (
 // UsersByDeletedAt_WhereDeletedAtIsNotNull retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_deleted_at_idx'.
-func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
+func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " not null ", joins: UserJoins{}}
 
 	for _, o := range opts {
@@ -450,7 +450,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*User])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -703,7 +703,7 @@ left join (
 // UsersByUpdatedAt retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_updated_at_idx'.
-func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
+func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
 
 	for _, o := range opts {
@@ -776,7 +776,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*User])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

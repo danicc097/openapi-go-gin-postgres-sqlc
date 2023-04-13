@@ -301,7 +301,7 @@ func (wi *WorkItem) Restore(ctx context.Context, db DB) (*WorkItem, error) {
 // WorkItemsByDeletedAt_WhereDeletedAtIsNotNull retrieves a row from 'public.work_items' as a WorkItem.
 //
 // Generated from index 'work_items_deleted_at_idx'.
-func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...WorkItemSelectConfigOption) ([]*WorkItem, error) {
+func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{deletedAt: " not null ", joins: WorkItemJoins{}}
 
 	for _, o := range opts {
@@ -387,7 +387,7 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItem])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -491,7 +491,7 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 // WorkItemsByTeamID retrieves a row from 'public.work_items' as a WorkItem.
 //
 // Generated from index 'work_items_team_id_idx'.
-func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemSelectConfigOption) ([]*WorkItem, error) {
+func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
 	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
 
 	for _, o := range opts {
@@ -577,7 +577,7 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItem])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

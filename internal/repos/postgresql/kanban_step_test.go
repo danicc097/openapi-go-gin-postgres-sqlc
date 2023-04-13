@@ -74,7 +74,7 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 
 	type argsIntNotUnique struct {
 		filter int
-		fn     func(context.Context, db.DBTX, int) ([]*db.KanbanStep, error)
+		fn     func(context.Context, db.DBTX, int) ([]db.KanbanStep, error)
 	}
 	testsIntNotUnique := []struct {
 		name string
@@ -83,7 +83,7 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 		{
 			name: "project_id",
 			args: argsIntNotUnique{
-				filter: kanbanStep.KanbanStepID,
+				filter: kanbanStep.ProjectID,
 				fn:     (kanbanStepRepo.ByProject),
 			},
 		},
@@ -97,7 +97,15 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
-			assert.Equal(t, foundKanbanSteps[0].KanbanStepID, kanbanStep.KanbanStepID)
+			// TODO
+			found := false
+			for _, ks := range foundKanbanSteps {
+				if ks.KanbanStepID == kanbanStep.KanbanStepID {
+					found = true
+					break
+				}
+			}
+			assert.True(t, found)
 		})
 
 		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {

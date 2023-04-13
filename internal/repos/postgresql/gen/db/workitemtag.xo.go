@@ -242,7 +242,7 @@ left join (
 // WorkItemTagsByName retrieves a row from 'public.work_item_tags' as a WorkItemTag.
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
-func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkItemTagSelectConfigOption) ([]*WorkItemTag, error) {
+func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
 
 	for _, o := range opts {
@@ -281,7 +281,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemTag])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -291,7 +291,7 @@ left join (
 // WorkItemTagsByProjectID retrieves a row from 'public.work_item_tags' as a WorkItemTag.
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
-func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]*WorkItemTag, error) {
+func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
 
 	for _, o := range opts {
@@ -330,7 +330,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemTag])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

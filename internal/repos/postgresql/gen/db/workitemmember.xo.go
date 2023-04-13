@@ -188,7 +188,7 @@ func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
 // WorkItemMembersByMemberWorkItemID retrieves a row from 'public.work_item_member' as a WorkItemMember.
 //
 // Generated from index 'work_item_member_member_work_item_id_idx'.
-func WorkItemMembersByMemberWorkItemID(ctx context.Context, db DB, member uuid.UUID, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
+func WorkItemMembersByMemberWorkItemID(ctx context.Context, db DB, member uuid.UUID, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]WorkItemMember, error) {
 	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
 
 	for _, o := range opts {
@@ -215,7 +215,7 @@ work_item_member.role ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemMember])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemMember])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -260,7 +260,7 @@ work_item_member.role ` +
 // WorkItemMembersByWorkItemID retrieves a row from 'public.work_item_member' as a WorkItemMember.
 //
 // Generated from index 'work_item_member_pkey'.
-func WorkItemMembersByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
+func WorkItemMembersByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]WorkItemMember, error) {
 	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
 
 	for _, o := range opts {
@@ -287,7 +287,7 @@ work_item_member.role ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemMember])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemMember])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -297,7 +297,7 @@ work_item_member.role ` +
 // WorkItemMembersByMember retrieves a row from 'public.work_item_member' as a WorkItemMember.
 //
 // Generated from index 'work_item_member_pkey'.
-func WorkItemMembersByMember(ctx context.Context, db DB, member uuid.UUID, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
+func WorkItemMembersByMember(ctx context.Context, db DB, member uuid.UUID, opts ...WorkItemMemberSelectConfigOption) ([]WorkItemMember, error) {
 	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
 
 	for _, o := range opts {
@@ -324,7 +324,7 @@ work_item_member.role ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemMember])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemMember])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

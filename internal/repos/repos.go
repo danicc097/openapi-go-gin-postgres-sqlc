@@ -129,7 +129,7 @@ type Team interface {
 // KanbanStep defines the datastore/repository handling persisting KanbanStep records.
 type KanbanStep interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.KanbanStep, error)
-	ByProject(ctx context.Context, d db.DBTX, projectID int) ([]*db.KanbanStep, error)
+	ByProject(ctx context.Context, d db.DBTX, projectID int) ([]db.KanbanStep, error)
 	Create(ctx context.Context, d db.DBTX, params db.KanbanStepCreateParams) (*db.KanbanStep, error)
 	Update(ctx context.Context, d db.DBTX, id int, params db.KanbanStepUpdateParams) (*db.KanbanStep, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.KanbanStep, error)

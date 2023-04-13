@@ -158,7 +158,7 @@ user_team.user_id ` +
 // UserTeamsByTeamID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_pkey'.
-func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
 
 	for _, o := range opts {
@@ -184,7 +184,7 @@ user_team.user_id ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserTeam])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -194,7 +194,7 @@ user_team.user_id ` +
 // UserTeamsByTeamIDUserID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_team_id_user_id_idx'.
-func UserTeamsByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+func UserTeamsByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
 
 	for _, o := range opts {
@@ -220,7 +220,7 @@ user_team.user_id ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserTeam])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -230,7 +230,7 @@ user_team.user_id ` +
 // UserTeamsByUserID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_user_id_idx'.
-func UserTeamsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+func UserTeamsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
 
 	for _, o := range opts {
@@ -256,7 +256,7 @@ user_team.user_id ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserTeam])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

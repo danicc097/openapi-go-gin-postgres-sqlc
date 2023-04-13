@@ -32,14 +32,14 @@ func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 	kanbanStep := postgresqltestutil.NewRandomKanbanStep(t, testPool, project.ProjectID)
 	user := postgresqltestutil.NewRandomUser(t, testPool)
 
-	wi, err := workItemRepo.Create(ctx, testPool, repos.DemoProjectWorkItemCreateParams{
+	dpwi, err := workItemRepo.Create(ctx, testPool, repos.DemoProjectWorkItemCreateParams{
 		DemoProject: postgresqltestutil.RandomDemoProjectWorkItemCreateParams(t),
 		Base:        postgresqltestutil.RandomWorkItemCreateParams(t, kanbanStep.KanbanStepID, workItemType.WorkItemTypeID, team.TeamID),
 	})
 	if err != nil {
-		t.Fatalf("workItemRepo.ByName unexpected error = %v", err)
+		t.Fatalf("workItemRepo.Create unexpected error = %v", err)
 	}
-	wiccp := postgresqltestutil.RandomWorkItemCommentCreateParams(t, wi.WorkItemID, user.UserID)
+	wiccp := postgresqltestutil.RandomWorkItemCommentCreateParams(t, dpwi.WorkItemID, user.UserID)
 
 	workItemComment, err := workItemCommentRepo.Create(ctx, testPool, wiccp)
 	if err != nil {

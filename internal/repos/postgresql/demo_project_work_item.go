@@ -40,7 +40,7 @@ func (u *DemoProjectWorkItem) Create(ctx context.Context, d db.DBTX, params repo
 
 	wi, err := wi.Save(ctx, d)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not save workItem: %w", parseErrorDetail(err))
 	}
 
 	dpwi := &db.DemoProjectWorkItem{
@@ -53,7 +53,7 @@ func (u *DemoProjectWorkItem) Create(ctx context.Context, d db.DBTX, params repo
 
 	dpwi, err = dpwi.Save(ctx, d)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not save demoProjectWorkItem: %w", parseErrorDetail(err))
 	}
 
 	return dpwi, nil

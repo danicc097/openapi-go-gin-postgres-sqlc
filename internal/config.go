@@ -34,7 +34,7 @@ type PostgresConfig struct {
 	Password     string `env:"POSTGRES_PASSWORD"`
 	Server       string `env:"POSTGRES_SERVER"`
 	DB           string `env:"POSTGRES_DB"`
-	TraceEnabled bool   `env:"POSTGRES_TRACE,false"`
+	TraceEnabled bool   `env:"POSTGRES_TRACE,true"`
 }
 
 type RedisConfig struct {

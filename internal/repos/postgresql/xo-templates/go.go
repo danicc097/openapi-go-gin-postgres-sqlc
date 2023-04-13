@@ -1350,9 +1350,11 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
 	case Index:
 		params = append(params, f.params(x.Fields, true))
 		params = append(params, "opts ..."+x.Table.GoName+"SelectConfigOption")
-		rt := "*" + x.Table.GoName
+		rt := x.Table.GoName
 		if !x.IsUnique {
 			rt = "[]" + rt
+		} else {
+			rt = "*" + rt
 		}
 		returns = append(returns, rt)
 	default:

@@ -142,7 +142,7 @@ generated queries from indexes
 	defer rows.Close()
 	// process
   {{/* might need to use non pointer []<st> in return if we get a NumField of non-struct type*/}}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*{{$i.Table.GoName}}])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[{{$i.Table.GoName}}])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

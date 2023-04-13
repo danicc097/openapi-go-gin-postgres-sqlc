@@ -241,7 +241,7 @@ left join (
 // ActivitiesByName retrieves a row from 'public.activities' as a Activity.
 //
 // Generated from index 'activities_name_project_id_key'.
-func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) ([]*Activity, error) {
+func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}}
 
 	for _, o := range opts {
@@ -279,7 +279,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Activity])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -289,7 +289,7 @@ left join (
 // ActivitiesByProjectID retrieves a row from 'public.activities' as a Activity.
 //
 // Generated from index 'activities_name_project_id_key'.
-func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]*Activity, error) {
+func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}}
 
 	for _, o := range opts {
@@ -327,7 +327,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Activity])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

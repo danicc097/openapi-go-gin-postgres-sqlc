@@ -279,7 +279,7 @@ left join (
 // TeamsByName retrieves a row from 'public.teams' as a Team.
 //
 // Generated from index 'teams_name_project_id_key'.
-func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfigOption) ([]*Team, error) {
+func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfigOption) ([]Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {
@@ -329,7 +329,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Team])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Team])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -339,7 +339,7 @@ left join (
 // TeamsByProjectID retrieves a row from 'public.teams' as a Team.
 //
 // Generated from index 'teams_name_project_id_key'.
-func TeamsByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]*Team, error) {
+func TeamsByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {
@@ -389,7 +389,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Team])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Team])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

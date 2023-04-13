@@ -67,7 +67,7 @@ func (k *KanbanStep) Update(ctx context.Context, d db.DBTX, id int, params db.Ka
 	return ks, err
 }
 
-func (k *KanbanStep) ByProject(ctx context.Context, d db.DBTX, projectID int) ([]*db.KanbanStep, error) {
+func (k *KanbanStep) ByProject(ctx context.Context, d db.DBTX, projectID int) ([]db.KanbanStep, error) {
 	kss, err := db.KanbanStepsByProjectID(ctx, d, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get kanban steps: %w", parseErrorDetail(err))
