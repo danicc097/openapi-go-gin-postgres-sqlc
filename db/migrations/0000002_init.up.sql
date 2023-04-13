@@ -241,7 +241,7 @@ create table kanban_steps (
   -- , disabled bool not null default false
   , unique (project_id , step_order)
   , foreign key (project_id) references projects (project_id) on delete cascade
-  , check (color ~* '^#[a-f0-9]{6}$')
+  , check (color ~* '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
   , check (step_order > 0)
 );
 
@@ -264,7 +264,7 @@ create table work_item_types (
   , color text not null
   , unique (name , project_id)
   , foreign key (project_id) references projects (project_id) on delete cascade
-  , check (color ~* '^#[a-f0-9]{6}$')
+  , check (color ~* '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
 );
 
 comment on column work_item_types.project_id is 'cardinality:O2M';
@@ -381,7 +381,7 @@ create table work_item_tags (
   , description text not null
   , color text not null
   , unique (name , project_id)
-  , check (color ~* '^#[a-f0-9]{6}$')
+  , check (color ~* '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
 
