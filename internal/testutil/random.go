@@ -24,6 +24,17 @@ func RandomBool() bool {
 	return []bool{true, false}[rand.Intn(2)]
 }
 
+// RandomDate generates a random date.
+func RandomDate() time.Time {
+	return time.Date(
+		int(RandomInt(1971, 2022)),
+		time.Month(RandomInt(1, 12)),
+		int(RandomInt(1, 28)),
+		0, 0, 0, 0,
+		time.UTC,
+	)
+}
+
 // RandomString generates a random string of length n.
 func RandomString(n int) string {
 	var sb strings.Builder

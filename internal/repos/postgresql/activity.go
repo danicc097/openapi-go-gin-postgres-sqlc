@@ -53,7 +53,7 @@ func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params db.Acti
 		workItemTag.IsProductive = *params.IsProductive
 	}
 
-	_, err = workItemTag.Update(ctx, d)
+	workItemTag, err = workItemTag.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not update workItemTag: %w", parseErrorDetail(err))
 	}

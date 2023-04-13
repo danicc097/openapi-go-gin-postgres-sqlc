@@ -53,7 +53,7 @@ func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params db
 		activity.Color = *params.Color
 	}
 
-	_, err = activity.Update(ctx, d)
+	activity, err = activity.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not update activity: %w", parseErrorDetail(err))
 	}

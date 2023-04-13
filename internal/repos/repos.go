@@ -50,21 +50,50 @@ type ProjectBoard interface {
 	ByID(ctx context.Context, d db.DBTX, projectID int) (*models.ProjectBoard, error)
 }
 
+type DemoProjectWorkItemUpdateParams struct {
+	DemoProject *db.DemoProjectWorkItemUpdateParams
+	Base        *db.WorkItemUpdateParams
+}
+
+type DemoProjectWorkItemCreateParams struct {
+	DemoProject db.DemoProjectWorkItemCreateParams
+	Base        db.WorkItemCreateParams
+}
+
 // DemoProjectWorkItem defines the datastore/repository handling persisting DemoProjectWorkItem records.
 type DemoProjectWorkItem interface {
 	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.DemoProjectWorkItemSelectConfigOption) (*db.DemoProjectWorkItem, error)
-	// Create,
-	// Delete,
-	// ByTeam(closed bool, deleted bool)
-	// Update (service has Close (Update with closed=True), Move(Update with kanban step change), ...)
+	// params for dedicated workItem require workItemID (FK-as-PK)
+	Create(ctx context.Context, d db.DBTX, params DemoProjectWorkItemCreateParams) (*db.DemoProjectWorkItem, error)
+	Delete(ctx context.Context, d db.DBTX, workItemID int64) (*db.DemoProjectWorkItem, error)
+	// repo has Update only, then service has Close() (Update with closed=True), Move() (Update with kanban step change), ...)
+	// params for dedicated workItem require workItemID (FK-as-PK)
+	Update(ctx context.Context, d db.DBTX, params DemoProjectWorkItemUpdateParams) (*db.DemoProjectWorkItem, error)
 	// TBD if useful: ByTag, ByType (for closed workitem searches. open ones simply return everything and filter in client)
+}
+
+// WorkItem defines the datastore/repository handling persisting WorkItem records.
+/**
+ * TODO:
+ * instead pass `, project models.Project` and do appropiate joins in workitem.xo.go depending on it.
+ * in case we need specific indexes from {project}workitem.xo.go we can do e.g. DemoProjectWorkItemsByRefLine with no workitem join
+ * and then just loop over those and filter by ID taking the performance hit. it will be rare to use those filters anyway.
+ * If not we can always go back to sqlc or use jet + reuse the xo model
+ *
+ */
+type WorkItem interface {
+	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
+	ByTeam(ctx context.Context, d db.DBTX, teamID int, closed bool, deleted bool, opts ...db.WorkItemSelectConfigOption) ([]*db.WorkItem, error)
+	// params for dedicated workItem require workItemID (FK-as-PK)
+	Create(ctx context.Context, d db.DBTX, params db.WorkItemCreateParams) (*db.WorkItem, error)
+	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItem, error)
 }
 
 // Notification defines the datastore/repository handling persisting Notification records.
 type Notification interface {
 	LatestUserNotifications(ctx context.Context, d db.DBTX, params db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
 	Create(ctx context.Context, d db.DBTX, params db.NotificationCreateParams) (*db.Notification, error)
-	Delete(ctx context.Context, d db.DBTX, notificationID int) (*db.Notification, error)
+	Delete(ctx context.Context, d db.DBTX, id int) (*db.Notification, error)
 }
 
 // User defines the datastore/repository handling persisting User records.
@@ -105,6 +134,14 @@ type WorkItemType interface {
 	Create(ctx context.Context, d db.DBTX, params db.WorkItemTypeCreateParams) (*db.WorkItemType, error)
 	Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTypeUpdateParams) (*db.WorkItemType, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error)
+}
+
+// WorkItemComment defines the datastore/repository handling persisting WorkItemComment records.
+type WorkItemComment interface {
+	ByID(ctx context.Context, d db.DBTX, id int64) (*db.WorkItemComment, error)
+	Create(ctx context.Context, d db.DBTX, params db.WorkItemCommentCreateParams) (*db.WorkItemComment, error)
+	Update(ctx context.Context, d db.DBTX, id int64, params db.WorkItemCommentUpdateParams) (*db.WorkItemComment, error)
+	Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItemComment, error)
 }
 
 // WorkItemTag defines the datastore/repository handling persisting WorkItemTag records.

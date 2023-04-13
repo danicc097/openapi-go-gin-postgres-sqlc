@@ -70,7 +70,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.Us
 		user.HasPersonalNotifications = *params.HasPersonalNotifications
 	}
 
-	_, err = user.Update(ctx, d)
+	user, err = user.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not update user: %w", parseErrorDetail(err))
 	}
@@ -86,7 +86,7 @@ func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, e
 
 	user.DeletedAt = pointers.New(time.Now())
 
-	_, err = user.Update(ctx, d)
+	user, err = user.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not mark user as deleted: %w", parseErrorDetail(err))
 	}

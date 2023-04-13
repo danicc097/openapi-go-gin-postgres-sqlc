@@ -53,8 +53,6 @@ func WithUserNotificationLimit(limit int) UserNotificationSelectConfigOption {
 
 type UserNotificationOrderBy = string
 
-const ()
-
 type UserNotificationJoins struct {
 	Notification bool
 }

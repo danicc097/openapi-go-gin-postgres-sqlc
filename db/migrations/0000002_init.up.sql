@@ -322,6 +322,8 @@ create table work_items (
 -- to get join directly instead of having to call xo's generated FK for every single one
 comment on column work_items.work_item_type_id is 'cardinality:O2O';
 
+create index on work_items (team_id);
+
 
 /*
 when a new project is required -> manual table creation with empty new fields, just

@@ -51,10 +51,7 @@ func WithWorkItemMemberLimit(limit int) WorkItemMemberSelectConfigOption {
 
 type WorkItemMemberOrderBy = string
 
-const ()
-
-type WorkItemMemberJoins struct {
-}
+type WorkItemMemberJoins struct{}
 
 // WithWorkItemMemberJoin joins with the given tables.
 func WithWorkItemMemberJoin(joins WorkItemMemberJoins) WorkItemMemberSelectConfigOption {

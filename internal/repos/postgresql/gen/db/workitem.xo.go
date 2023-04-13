@@ -488,6 +488,102 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 	return &wi, nil
 }
 
+// WorkItemsByTeamID retrieves a row from 'public.work_items' as a WorkItem.
+//
+// Generated from index 'work_items_team_id_idx'.
+func WorkItemsByTeamID(ctx context.Context, db DB, teamID int, opts ...WorkItemSelectConfigOption) ([]*WorkItem, error) {
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := fmt.Sprintf(`SELECT `+
+		`work_items.work_item_id,
+work_items.title,
+work_items.description,
+work_items.work_item_type_id,
+work_items.metadata,
+work_items.team_id,
+work_items.kanban_step_id,
+work_items.closed,
+work_items.target_date,
+work_items.created_at,
+work_items.updated_at,
+work_items.deleted_at,
+(case when $1::boolean = true then row(demo_project_work_items.*) end) as demo_project_work_item,
+(case when $2::boolean = true then row(project_2_work_items.*) end) as project_2_work_item,
+(case when $3::boolean = true then joined_time_entries.time_entries end) as time_entries,
+(case when $4::boolean = true then joined_work_item_comments.work_item_comments end) as work_item_comments,
+(case when $5::boolean = true then joined_users.users end) as users,
+(case when $6::boolean = true then joined_work_item_tags.work_item_tags end) as work_item_tags,
+(case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
+		`FROM public.work_items `+
+		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
+left join demo_project_work_items on demo_project_work_items.work_item_id = work_items.work_item_id
+-- O2O join generated from "project_2_work_items_work_item_id_fkey"
+left join project_2_work_items on project_2_work_items.work_item_id = work_items.work_item_id
+-- O2M join generated from "time_entries_work_item_id_fkey"
+left join (
+  select
+  work_item_id as time_entries_work_item_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+   group by
+        work_item_id) joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
+-- O2M join generated from "work_item_comments_work_item_id_fkey"
+left join (
+  select
+  work_item_id as work_item_comments_work_item_id
+    , array_agg(work_item_comments.*) as work_item_comments
+  from
+    work_item_comments
+   group by
+        work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
+-- M2M join generated from "work_item_member_member_fkey"
+left join (
+	select
+		work_item_member.work_item_id as work_item_member_work_item_id
+		, array_agg(users.*) as users
+		from work_item_member
+    join users using (user_id)
+    group by work_item_member_work_item_id
+  ) as joined_users on joined_users.work_item_member_work_item_id = work_items.work_item_id
+
+-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+left join (
+	select
+		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+		, array_agg(work_item_tags.*) as work_item_tags
+		from work_item_work_item_tag
+    join work_item_tags using (work_item_tag_id)
+    group by work_item_work_item_tag_work_item_id
+  ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
+
+-- O2O join generated from "work_items_work_item_type_id_fkey"
+left join work_item_types on work_item_types.work_item_type_id = work_items.work_item_type_id`+
+		` WHERE work_items.team_id = $8  AND work_items.deleted_at is %s `, c.deletedAt)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	// logf(sqlstr, teamID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, teamID)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // FKKanbanStep_KanbanStepID returns the KanbanStep associated with the WorkItem's (KanbanStepID).
 //
 // Generated from foreign key 'work_items_kanban_step_id_fkey'.

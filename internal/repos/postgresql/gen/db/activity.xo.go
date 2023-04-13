@@ -55,8 +55,6 @@ func WithActivityLimit(limit int) ActivitySelectConfigOption {
 
 type ActivityOrderBy = string
 
-const ()
-
 type ActivityJoins struct {
 	TimeEntries bool
 }

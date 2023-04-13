@@ -48,8 +48,8 @@ func (_d NotificationWithRetry) Create(ctx context.Context, d db.DBTX, params db
 }
 
 // Delete implements repos.Notification
-func (_d NotificationWithRetry) Delete(ctx context.Context, d db.DBTX, notificationID int) (np1 *db.Notification, err error) {
-	np1, err = _d.Notification.Delete(ctx, d, notificationID)
+func (_d NotificationWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (np1 *db.Notification, err error) {
+	np1, err = _d.Notification.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -61,7 +61,7 @@ func (_d NotificationWithRetry) Delete(ctx context.Context, d db.DBTX, notificat
 			return
 		case <-_ticker.C:
 		}
-		np1, err = _d.Notification.Delete(ctx, d, notificationID)
+		np1, err = _d.Notification.Delete(ctx, d, id)
 	}
 	return
 }

@@ -256,7 +256,7 @@ left join work_items on work_items.work_item_id = demo_project_work_items.work_i
 // DemoProjectWorkItemsByRefLine retrieves a row from 'public.demo_project_work_items' as a DemoProjectWorkItem.
 //
 // Generated from index 'demo_project_work_items_ref_line_idx'.
-func DemoProjectWorkItemsByRefLine(ctx context.Context, db DB, ref string, line string, opts ...DemoProjectWorkItemSelectConfigOption) ([]*DemoProjectWorkItem, error) {
+func DemoProjectWorkItemsByRefLine(ctx context.Context, db DB, ref, line string, opts ...DemoProjectWorkItemSelectConfigOption) ([]*DemoProjectWorkItem, error) {
 	c := &DemoProjectWorkItemSelectConfig{joins: DemoProjectWorkItemJoins{}}
 
 	for _, o := range opts {

@@ -127,8 +127,8 @@ func (u *Notification) Create(ctx context.Context, d db.DBTX, params db.Notifica
 	return notification, nil
 }
 
-func (u *Notification) Delete(ctx context.Context, d db.DBTX, notificationID int) (*db.Notification, error) {
-	notification, err := db.NotificationByNotificationID(ctx, d, notificationID)
+func (u *Notification) Delete(ctx context.Context, d db.DBTX, id int) (*db.Notification, error) {
+	notification, err := db.NotificationByNotificationID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get notification by id %w", parseErrorDetail(err))
 	}

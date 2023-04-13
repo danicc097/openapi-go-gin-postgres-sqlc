@@ -47,10 +47,7 @@ func WithSchemaMigrationLimit(limit int) SchemaMigrationSelectConfigOption {
 
 type SchemaMigrationOrderBy = string
 
-const ()
-
-type SchemaMigrationJoins struct {
-}
+type SchemaMigrationJoins struct{}
 
 // WithSchemaMigrationJoin joins with the given tables.
 func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectConfigOption {

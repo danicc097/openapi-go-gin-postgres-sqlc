@@ -48,10 +48,7 @@ func WithUserTeamLimit(limit int) UserTeamSelectConfigOption {
 
 type UserTeamOrderBy = string
 
-const ()
-
-type UserTeamJoins struct {
-}
+type UserTeamJoins struct{}
 
 // WithUserTeamJoin joins with the given tables.
 func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {

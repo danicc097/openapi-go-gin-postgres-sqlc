@@ -51,10 +51,7 @@ func WithMovieLimit(limit int) MovieSelectConfigOption {
 
 type MovieOrderBy = string
 
-const ()
-
-type MovieJoins struct {
-}
+type MovieJoins struct{}
 
 // WithMovieJoin joins with the given tables.
 func WithMovieJoin(joins MovieJoins) MovieSelectConfigOption {

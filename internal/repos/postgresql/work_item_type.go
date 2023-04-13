@@ -53,7 +53,7 @@ func (wit *WorkItemType) Update(ctx context.Context, d db.DBTX, id int, params d
 		workItemType.Color = *params.Color
 	}
 
-	_, err = workItemType.Update(ctx, d)
+	workItemType, err = workItemType.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not update workItemType: %w", parseErrorDetail(err))
 	}
