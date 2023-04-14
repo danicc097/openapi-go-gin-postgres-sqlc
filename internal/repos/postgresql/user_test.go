@@ -46,21 +46,21 @@ func TestUser_Update(t *testing.T) {
 			}(),
 		},
 	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
 			u := postgresql.NewUser()
-			got, err := u.Update(context.Background(), testPool, tt.args.id, tt.args.params)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("User.Update() error = %v, wantErr %v", err, tt.wantErr)
+			got, err := u.Update(context.Background(), testPool, tc.args.id, tc.args.params)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("User.Update() error = %v, wantErr %v", err, tc.wantErr)
 
 				return
 			}
 
 			got.UpdatedAt = user.UpdatedAt // ignore
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }
@@ -87,26 +87,26 @@ func TestUser_SoftDelete(t *testing.T) {
 			errorContains: errNoRows,
 		},
 	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
 			u := postgresql.NewUser()
-			_, err := u.Delete(context.Background(), testPool, tt.args.id)
+			_, err := u.Delete(context.Background(), testPool, tc.args.id)
 			if err != nil {
 				t.Errorf("User.Delete() unexpected error = %v", err)
 
 				return
 			}
 
-			_, err = u.ByID(context.Background(), testPool, tt.args.id)
+			_, err = u.ByID(context.Background(), testPool, tc.args.id)
 			if err == nil {
 				t.Error("wanted error but got nothing", err)
 
 				return
 			}
-			assert.ErrorContains(t, err, tt.errorContains)
+			assert.ErrorContains(t, err, tc.errorContains)
 		})
 	}
 }
@@ -329,7 +329,6 @@ func TestUser_Create(t *testing.T) {
 		assert.Equal(t, want.LastName, got.LastName)
 	})
 
-	// TODO replacing all names with snake case: sed -i -e 's/t\.Run\(.*\)/echo $(echo \1)/e' internal/repos/postgresql/user_test.go
 	t.Run("role rank less than zero", func(t *testing.T) {
 		t.Parallel()
 

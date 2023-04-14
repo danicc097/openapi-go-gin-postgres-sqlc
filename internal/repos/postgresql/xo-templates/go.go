@@ -590,9 +590,9 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		})
 	}
 	// emit tables
-	tt := append(schema.Tables, schema.Views...)
-	tt = append(tt, schema.MatViews...)
-	for _, t := range tt {
+	tc := append(schema.Tables, schema.Views...)
+	tc = append(tc, schema.MatViews...)
+	for _, t := range tc {
 		table, err := convertTable(ctx, t)
 		if err != nil {
 			return err
