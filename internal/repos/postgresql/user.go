@@ -50,12 +50,18 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.Us
 		return nil, fmt.Errorf("could not get user by id %w", parseErrorDetail(err))
 	}
 
+	// log.Default().Printf("%+v", params)
+	// log.Default().Printf("%+v", *params.FirstName)
+	// log.Default().Printf("%+v", *params.LastName)
+	// log.Default().Printf("%+v", **params.FirstName)
+	// log.Default().Printf("%+v", **params.LastName)
+
 	// distinguish keys not present in json body and zero valued ones
 	if params.FirstName != nil {
-		user.FirstName = params.FirstName
+		user.FirstName = *params.FirstName
 	}
 	if params.LastName != nil {
-		user.LastName = params.LastName
+		user.LastName = *params.LastName
 	}
 	if params.Scopes != nil {
 		user.Scopes = slices.Unique(*params.Scopes)

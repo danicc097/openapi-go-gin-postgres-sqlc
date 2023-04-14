@@ -14,9 +14,14 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-// RandomInt generates a random integer between min and max.
-func RandomInt(min, max int64) int64 {
+// RandomInt64 generates a random int64 between min and max.
+func RandomInt64(min, max int64) int64 {
 	return min + rand.Int63n(max-min+1)
+}
+
+// RandomInt generates a random int between min and max.
+func RandomInt(min, max int) int {
+	return min + rand.Intn(max-min+1)
 }
 
 // RandomBool generates a random boolean.
@@ -27,9 +32,9 @@ func RandomBool() bool {
 // RandomDate generates a random date.
 func RandomDate() time.Time {
 	return time.Date(
-		int(RandomInt(1971, 2022)),
-		time.Month(RandomInt(1, 12)),
-		int(RandomInt(1, 28)),
+		RandomInt(1971, 2022),
+		time.Month(RandomInt64(1, 12)),
+		RandomInt(1, 28),
 		0, 0, 0, 0,
 		time.UTC,
 	)
@@ -50,12 +55,12 @@ func RandomString(n int) string {
 
 // RandomName generates a random name.
 func RandomName() string {
-	return RandomNameIdentifier(1, "") + " " + RandomString(int(RandomInt(10, 15)))
+	return RandomNameIdentifier(1, "") + " " + RandomString(int(RandomInt64(10, 15)))
 }
 
 // RandomMoney generates a random amount of money.
 func RandomMoney() int64 {
-	return RandomInt(0, 1000)
+	return RandomInt64(0, 1000)
 }
 
 // RandomFirstName generates a random first name.
@@ -70,7 +75,7 @@ func RandomLastName() string {
 
 // RandomEmail generates a random email.
 func RandomEmail() string {
-	return fmt.Sprintf("%s-%s@email.com", RandomNameIdentifier(3, "."), RandomString(int(RandomInt(3, 5))))
+	return fmt.Sprintf("%s-%s@email.com", RandomNameIdentifier(3, "."), RandomString(int(RandomInt64(3, 5))))
 }
 
 // RandomNameIdentifier generates a random name identifier,

@@ -30,8 +30,8 @@ type Project2WorkItemCreateParams struct {
 
 // Project2WorkItemUpdateParams represents update params for 'public.project_2_work_items'
 type Project2WorkItemUpdateParams struct {
-	WorkItemID            *int64     `json:"workItemID"`            // work_item_id
-	CustomDateForProject2 *time.Time `json:"customDateForProject2"` // custom_date_for_project_2
+	WorkItemID            *int64      `json:"workItemID"`            // work_item_id
+	CustomDateForProject2 **time.Time `json:"customDateForProject2"` // custom_date_for_project_2
 }
 
 type Project2WorkItemSelectConfig struct {

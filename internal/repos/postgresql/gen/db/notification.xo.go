@@ -45,13 +45,13 @@ type NotificationCreateParams struct {
 
 // NotificationUpdateParams represents update params for 'public.notifications'
 type NotificationUpdateParams struct {
-	ReceiverRank     *int16            `json:"receiverRank"`     // receiver_rank
+	ReceiverRank     **int16           `json:"receiverRank"`     // receiver_rank
 	Title            *string           `json:"title"`            // title
 	Body             *string           `json:"body"`             // body
 	Label            *string           `json:"label"`            // label
-	Link             *string           `json:"link"`             // link
+	Link             **string          `json:"link"`             // link
 	Sender           *uuid.UUID        `json:"sender"`           // sender
-	Receiver         *uuid.UUID        `json:"receiver"`         // receiver
+	Receiver         **uuid.UUID       `json:"receiver"`         // receiver
 	NotificationType *NotificationType `json:"notificationType"` // notification_type
 }
 

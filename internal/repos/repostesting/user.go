@@ -64,10 +64,10 @@ func NewFakeUser(users ...*db.User) *FakeUser {
 		}
 
 		if params.FirstName != nil {
-			user.FirstName = params.FirstName
+			user.FirstName = *params.FirstName
 		}
 		if params.LastName != nil {
-			user.LastName = params.LastName
+			user.LastName = *params.LastName
 		}
 		if params.Scopes != nil {
 			user.Scopes = *params.Scopes

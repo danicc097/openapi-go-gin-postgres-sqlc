@@ -2583,7 +2583,7 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	}
 	fieldType := f.typefn(field.Type)
 	if typ == "UpdateParams" {
-		fieldType = "*" + strings.TrimPrefix(fieldType, "*")
+		fieldType = "*" + fieldType // we do want **<field> and *<field>
 	}
 	if field.EnumPkg != "" {
 		p := field.EnumPkg[strings.LastIndex(field.EnumPkg, "/")+1:]

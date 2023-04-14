@@ -7,6 +7,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -124,10 +125,18 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot change another user's information")
 	}
 
-	user, err = u.urepo.Update(ctx, d, uid, db.UserUpdateParams{
-		FirstName: params.FirstName,
-		LastName:  params.LastName,
-	})
+	// TODO this could be automated a function based on rest params
+	// since repo update params will all be pointers by default regardless of actual
+	// requirements (given by rest params pointer vs nonpointer)
+	repoUpdateParams := db.UserUpdateParams{}
+	if params.FirstName != nil {
+		repoUpdateParams.FirstName = pointers.New(params.FirstName)
+	}
+	if params.LastName != nil {
+		repoUpdateParams.LastName = pointers.New(params.LastName)
+	}
+
+	user, err = u.urepo.Update(ctx, d, uid, repoUpdateParams)
 	if err != nil {
 		return nil, errors.Wrap(err, "urepo.Update")
 	}

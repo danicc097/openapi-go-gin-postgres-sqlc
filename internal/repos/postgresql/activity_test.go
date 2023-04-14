@@ -45,7 +45,7 @@ func TestActivity_ByIndexedQueries(t *testing.T) {
 			args: argsString{
 				filter:    activity.Name,
 				projectID: activity.ProjectID,
-				fn:        (activityRepo.ByName),
+				fn:        (activityRepo.ByProjectID),
 			},
 		},
 	}

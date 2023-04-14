@@ -61,7 +61,7 @@ func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params db.Acti
 	return workItemTag, err
 }
 
-func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error) {
+func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error) {
 	workItemTag, err := db.ActivityByNameProjectID(ctx, d, name, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemTag: %w", parseErrorDetail(err))

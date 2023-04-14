@@ -37,7 +37,7 @@ type KanbanStepCreateParams struct {
 // KanbanStepUpdateParams represents update params for 'public.kanban_steps'
 type KanbanStepUpdateParams struct {
 	ProjectID     *int    `json:"projectID"`     // project_id
-	StepOrder     *int16  `json:"stepOrder"`     // step_order
+	StepOrder     **int16 `json:"stepOrder"`     // step_order
 	Name          *string `json:"name"`          // name
 	Description   *string `json:"description"`   // description
 	Color         *string `json:"color"`         // color

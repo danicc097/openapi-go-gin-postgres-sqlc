@@ -166,9 +166,16 @@ type WorkItemTag interface {
 // Activity defines the datastore/repository handling persisting Activity records.
 type Activity interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
-	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.Activity, error)
-	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error)
+	ByProjectID(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error)
 	Create(ctx context.Context, d db.DBTX, params db.ActivityCreateParams) (*db.Activity, error)
 	Update(ctx context.Context, d db.DBTX, id int, params db.ActivityUpdateParams) (*db.Activity, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
+}
+
+// TimeEntry defines the datastore/repository handling persisting TimeEntry records.
+type TimeEntry interface {
+	ByID(ctx context.Context, d db.DBTX, id int64) (*db.TimeEntry, error)
+	Create(ctx context.Context, d db.DBTX, params db.TimeEntryCreateParams) (*db.TimeEntry, error)
+	Update(ctx context.Context, d db.DBTX, id int64, params db.TimeEntryUpdateParams) (*db.TimeEntry, error)
+	Delete(ctx context.Context, d db.DBTX, id int64) (*db.TimeEntry, error)
 }

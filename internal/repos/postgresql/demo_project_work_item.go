@@ -70,8 +70,9 @@ func (u *DemoProjectWorkItem) Update(ctx context.Context, d db.DBTX, params repo
 	}
 
 	if params.Base != nil {
-		workItem.Closed = params.Base.Closed
-
+		if params.Base.Closed != nil {
+			workItem.Closed = *params.Base.Closed
+		}
 		if params.Base.Description != nil {
 			workItem.Description = *params.Base.Description
 		}

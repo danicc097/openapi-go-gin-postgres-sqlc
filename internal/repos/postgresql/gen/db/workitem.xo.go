@@ -52,14 +52,14 @@ type WorkItemCreateParams struct {
 
 // WorkItemUpdateParams represents update params for 'public.work_items'
 type WorkItemUpdateParams struct {
-	Title          *string    `json:"title"`          // title
-	Description    *string    `json:"description"`    // description
-	WorkItemTypeID *int       `json:"workItemTypeID"` // work_item_type_id
-	Metadata       *[]byte    `json:"metadata"`       // metadata
-	TeamID         *int       `json:"teamID"`         // team_id
-	KanbanStepID   *int       `json:"kanbanStepID"`   // kanban_step_id
-	Closed         *time.Time `json:"closed"`         // closed
-	TargetDate     *time.Time `json:"targetDate"`     // target_date
+	Title          *string     `json:"title"`          // title
+	Description    *string     `json:"description"`    // description
+	WorkItemTypeID *int        `json:"workItemTypeID"` // work_item_type_id
+	Metadata       *[]byte     `json:"metadata"`       // metadata
+	TeamID         *int        `json:"teamID"`         // team_id
+	KanbanStepID   *int        `json:"kanbanStepID"`   // kanban_step_id
+	Closed         **time.Time `json:"closed"`         // closed
+	TargetDate     *time.Time  `json:"targetDate"`     // target_date
 }
 
 type WorkItemSelectConfig struct {

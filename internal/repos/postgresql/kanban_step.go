@@ -45,7 +45,9 @@ func (k *KanbanStep) Update(ctx context.Context, d db.DBTX, id int, params db.Ka
 		return nil, fmt.Errorf("could not get kanban step by id %w", parseErrorDetail(err))
 	}
 
-	ks.StepOrder = params.StepOrder
+	if params.StepOrder != nil {
+		ks.StepOrder = *params.StepOrder
+	}
 	if params.Description != nil {
 		ks.Description = *params.Description
 	}

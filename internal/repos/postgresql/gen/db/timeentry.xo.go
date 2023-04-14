@@ -41,13 +41,13 @@ type TimeEntryCreateParams struct {
 
 // TimeEntryUpdateParams represents update params for 'public.time_entries'
 type TimeEntryUpdateParams struct {
-	WorkItemID      *int64     `json:"workItemID"`      // work_item_id
+	WorkItemID      **int64    `json:"workItemID"`      // work_item_id
 	ActivityID      *int       `json:"activityID"`      // activity_id
-	TeamID          *int       `json:"teamID"`          // team_id
+	TeamID          **int      `json:"teamID"`          // team_id
 	UserID          *uuid.UUID `json:"userID"`          // user_id
 	Comment         *string    `json:"comment"`         // comment
 	Start           *time.Time `json:"start"`           // start
-	DurationMinutes *int       `json:"durationMinutes"` // duration_minutes
+	DurationMinutes **int      `json:"durationMinutes"` // duration_minutes
 }
 
 type TimeEntrySelectConfig struct {
