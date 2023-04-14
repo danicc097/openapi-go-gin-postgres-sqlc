@@ -178,7 +178,6 @@ func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.work_item_member ` +
 		`WHERE work_item_id = $1 AND member = $2 `
 	// run
-	logf(sqlstr, wim.WorkItemID, wim.Member)
 	if _, err := db.Exec(ctx, sqlstr, wim.WorkItemID, wim.Member); err != nil {
 		return logerror(err)
 	}

@@ -187,7 +187,6 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.kanban_steps ` +
 		`WHERE kanban_step_id = $1 `
 	// run
-	logf(sqlstr, ks.KanbanStepID)
 	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID); err != nil {
 		return logerror(err)
 	}

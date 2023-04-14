@@ -210,7 +210,6 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.teams ` +
 		`WHERE team_id = $1 `
 	// run
-	logf(sqlstr, t.TeamID)
 	if _, err := db.Exec(ctx, sqlstr, t.TeamID); err != nil {
 		return logerror(err)
 	}

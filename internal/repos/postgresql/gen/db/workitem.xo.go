@@ -256,7 +256,6 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.work_items ` +
 		`WHERE work_item_id = $1 `
 	// run
-	logf(sqlstr, wi.WorkItemID)
 	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID); err != nil {
 		return logerror(err)
 	}
@@ -278,7 +277,6 @@ func (wi *WorkItem) SoftDelete(ctx context.Context, db DB) error {
 		`SET deleted_at = NOW() ` +
 		`WHERE work_item_id = $1 `
 	// run
-	logf(sqlstr, wi.WorkItemID)
 	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID); err != nil {
 		return logerror(err)
 	}

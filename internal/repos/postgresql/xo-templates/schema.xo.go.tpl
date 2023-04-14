@@ -392,7 +392,6 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	// delete with single primary key
 	{{ sqlstr "delete" $t }}
 	// run
-	{{ logf_pkeys $t }}
 	if _, err := {{ db "Exec" (print (short $t) "." (index $t.PrimaryKeys 0).GoName) }}; err != nil {
 		return logerror(err)
 	}
@@ -400,7 +399,6 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	// delete with composite primary key
 	{{ sqlstr "delete" $t }}
 	// run
-	{{ logf_pkeys $t }}
 	if _, err := {{ db "Exec" (names (print (short $t) ".") $t.PrimaryKeys) }}; err != nil {
 		return logerror(err)
 	}
@@ -431,7 +429,6 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	// delete with single primary key
 	{{ sqlstr "soft_delete" $t }}
 	// run
-	{{ logf_pkeys $t }}
 	if _, err := {{ db "Exec" (print (short $t) "." (index $t.PrimaryKeys 0).GoName) }}; err != nil {
 		return logerror(err)
 	}
@@ -439,7 +436,6 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	// delete with composite primary key
 	{{ sqlstr "soft_delete" $t }}
 	// run
-	{{ logf_pkeys $t }}
 	if _, err := {{ db "Exec" (names (print (short $t) ".") $t.PrimaryKeys) }}; err != nil {
 		return logerror(err)
 	}

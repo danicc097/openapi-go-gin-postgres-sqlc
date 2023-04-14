@@ -184,7 +184,6 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.work_item_types ` +
 		`WHERE work_item_type_id = $1 `
 	// run
-	logf(sqlstr, wit.WorkItemTypeID)
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTypeID); err != nil {
 		return logerror(err)
 	}

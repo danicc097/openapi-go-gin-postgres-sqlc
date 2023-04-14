@@ -203,7 +203,6 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.user_api_keys ` +
 		`WHERE user_api_key_id = $1 `
 	// run
-	logf(sqlstr, uak.UserAPIKeyID)
 	if _, err := db.Exec(ctx, sqlstr, uak.UserAPIKeyID); err != nil {
 		return logerror(err)
 	}

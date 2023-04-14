@@ -219,7 +219,6 @@ func (n *Notification) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.notifications ` +
 		`WHERE notification_id = $1 `
 	// run
-	logf(sqlstr, n.NotificationID)
 	if _, err := db.Exec(ctx, sqlstr, n.NotificationID); err != nil {
 		return logerror(err)
 	}

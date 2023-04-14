@@ -174,7 +174,6 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.schema_migrations ` +
 		`WHERE version = $1 `
 	// run
-	logf(sqlstr, sm.Version)
 	if _, err := db.Exec(ctx, sqlstr, sm.Version); err != nil {
 		return logerror(err)
 	}

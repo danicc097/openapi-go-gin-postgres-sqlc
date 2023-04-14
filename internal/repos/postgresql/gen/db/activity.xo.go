@@ -184,7 +184,6 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.activities ` +
 		`WHERE activity_id = $1 `
 	// run
-	logf(sqlstr, a.ActivityID)
 	if _, err := db.Exec(ctx, sqlstr, a.ActivityID); err != nil {
 		return logerror(err)
 	}

@@ -198,7 +198,6 @@ func (pi *Project2WorkItem) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.project_2_work_items ` +
 		`WHERE work_item_id = $1 `
 	// run
-	logf(sqlstr, pi.WorkItemID)
 	if _, err := db.Exec(ctx, sqlstr, pi.WorkItemID); err != nil {
 		return logerror(err)
 	}

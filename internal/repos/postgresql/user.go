@@ -84,14 +84,12 @@ func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, e
 		return nil, fmt.Errorf("could not get user by id %w", parseErrorDetail(err))
 	}
 
-	user.DeletedAt = pointers.New(time.Now())
-
-	user, err = user.Update(ctx, d)
-	if err != nil {
+	if err := user.SoftDelete(ctx, d); err != nil {
 		return nil, fmt.Errorf("could not mark user as deleted: %w", parseErrorDetail(err))
 	}
+	user.DeletedAt = pointers.New(time.Now())
 
-	return user, err
+	return user, nil
 }
 
 func (u *User) ByExternalID(ctx context.Context, d db.DBTX, extID string) (*db.User, error) {

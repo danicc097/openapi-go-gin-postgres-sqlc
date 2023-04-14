@@ -207,7 +207,6 @@ func (dpwi *DemoProjectWorkItem) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.demo_project_work_items ` +
 		`WHERE work_item_id = $1 `
 	// run
-	logf(sqlstr, dpwi.WorkItemID)
 	if _, err := db.Exec(ctx, sqlstr, dpwi.WorkItemID); err != nil {
 		return logerror(err)
 	}

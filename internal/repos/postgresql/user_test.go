@@ -65,7 +65,7 @@ func TestUser_Update(t *testing.T) {
 	}
 }
 
-func TestUser_MarkAsDeleted(t *testing.T) {
+func TestUser_SoftDelete(t *testing.T) {
 	t.Parallel()
 
 	user := postgresqltestutil.NewRandomUser(t, testPool)
@@ -285,6 +285,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 	t.Run("can delete an api key", func(t *testing.T) {
 		// TODO
+		t.Parallel()
 	})
 }
 

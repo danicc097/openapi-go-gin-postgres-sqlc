@@ -206,7 +206,6 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.work_item_comments ` +
 		`WHERE work_item_comment_id = $1 `
 	// run
-	logf(sqlstr, wic.WorkItemCommentID)
 	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID); err != nil {
 		return logerror(err)
 	}

@@ -250,7 +250,6 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.users ` +
 		`WHERE user_id = $1 `
 	// run
-	logf(sqlstr, u.UserID)
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
 		return logerror(err)
 	}
@@ -272,7 +271,6 @@ func (u *User) SoftDelete(ctx context.Context, db DB) error {
 		`SET deleted_at = NOW() ` +
 		`WHERE user_id = $1 `
 	// run
-	logf(sqlstr, u.UserID)
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
 		return logerror(err)
 	}

@@ -212,7 +212,6 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.time_entries ` +
 		`WHERE time_entry_id = $1 `
 	// run
-	logf(sqlstr, te.TimeEntryID)
 	if _, err := db.Exec(ctx, sqlstr, te.TimeEntryID); err != nil {
 		return logerror(err)
 	}

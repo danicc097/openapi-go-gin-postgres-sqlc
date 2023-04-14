@@ -178,7 +178,6 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.movies ` +
 		`WHERE movie_id = $1 `
 	// run
-	logf(sqlstr, m.MovieID)
 	if _, err := db.Exec(ctx, sqlstr, m.MovieID); err != nil {
 		return logerror(err)
 	}

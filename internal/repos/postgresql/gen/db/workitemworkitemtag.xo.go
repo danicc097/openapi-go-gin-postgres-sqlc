@@ -112,7 +112,6 @@ func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.work_item_work_item_tag ` +
 		`WHERE work_item_tag_id = $1 AND work_item_id = $2 `
 	// run
-	logf(sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
 	if _, err := db.Exec(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID); err != nil {
 		return logerror(err)
 	}

@@ -223,7 +223,6 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.projects ` +
 		`WHERE project_id = $1 `
 	// run
-	logf(sqlstr, p.ProjectID)
 	if _, err := db.Exec(ctx, sqlstr, p.ProjectID); err != nil {
 		return logerror(err)
 	}
