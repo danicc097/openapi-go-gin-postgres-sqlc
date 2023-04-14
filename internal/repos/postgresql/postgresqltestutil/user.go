@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewRandomUser(t *testing.T, pool *pgxpool.Pool) *db.User {
+func NewRandomUser(t *testing.T, pool *pgxpool.Pool) (*db.User, error) {
 	t.Helper()
 
 	userRepo := postgresql.NewUser()
@@ -20,10 +20,10 @@ func NewRandomUser(t *testing.T, pool *pgxpool.Pool) *db.User {
 
 	user, err := userRepo.Create(context.Background(), pool, ucp)
 	if err != nil {
-		t.Fatalf("unexpected error = %v", err)
+		return nil, err
 	}
 
-	return user
+	return user, nil
 }
 
 func RandomUserCreateParams(t *testing.T) db.UserCreateParams {

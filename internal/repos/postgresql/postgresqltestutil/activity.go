@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewRandomActivity(t *testing.T, pool *pgxpool.Pool, projectID int) *db.Activity {
+func NewRandomActivity(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.Activity, error) {
 	t.Helper()
 
 	activityRepo := postgresql.NewActivity()
@@ -19,10 +19,10 @@ func NewRandomActivity(t *testing.T, pool *pgxpool.Pool, projectID int) *db.Acti
 
 	activity, err := activityRepo.Create(context.Background(), pool, ucp)
 	if err != nil {
-		t.Fatalf("unexpected error = %v", err)
+		return nil, err
 	}
 
-	return activity
+	return activity, nil
 }
 
 func RandomActivityCreateParams(t *testing.T, projectID int) db.ActivityCreateParams {

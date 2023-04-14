@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewRandomTimeEntry(t *testing.T, pool *pgxpool.Pool, activityID int, userID uuid.UUID, workItemID *int64, teamID *int) *db.TimeEntry {
+func NewRandomTimeEntry(t *testing.T, pool *pgxpool.Pool, activityID int, userID uuid.UUID, workItemID *int64, teamID *int) (*db.TimeEntry, error) {
 	t.Helper()
 
 	teRepo := postgresql.NewTimeEntry()
@@ -21,10 +21,10 @@ func NewRandomTimeEntry(t *testing.T, pool *pgxpool.Pool, activityID int, userID
 
 	te, err := teRepo.Create(context.Background(), pool, ucp)
 	if err != nil {
-		t.Fatalf("unexpected error = %v", err)
+		return nil, err
 	}
 
-	return te
+	return te, nil
 }
 
 func RandomTimeEntryCreateParams(t *testing.T, activityID int, userID uuid.UUID, workItemID *int64, teamID *int) db.TimeEntryCreateParams {

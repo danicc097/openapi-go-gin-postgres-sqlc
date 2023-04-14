@@ -23,13 +23,13 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 	if err != nil {
 		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
 	}
-	user := postgresqltestutil.NewRandomUser(t, testPool)
-	team := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
-	activity := postgresqltestutil.NewRandomActivity(t, testPool, project.ProjectID)
-	workItemType := postgresqltestutil.NewRandomWorkItemType(t, testPool, project.ProjectID)
-	kanbanStep := postgresqltestutil.NewRandomKanbanStep(t, testPool, project.ProjectID)
-	workItem := postgresqltestutil.NewRandomDemoProjectWorkItem(t, testPool, project.ProjectID, kanbanStep.KanbanStepID, workItemType.WorkItemTypeID, team.TeamID)
-	timeEntry := postgresqltestutil.NewRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, &workItem.WorkItemID, nil) // time entry associated to a workItem
+	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
+	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
+	activity, _ := postgresqltestutil.NewRandomActivity(t, testPool, project.ProjectID)
+	workItemType, _ := postgresqltestutil.NewRandomWorkItemType(t, testPool, project.ProjectID)
+	kanbanStep, _ := postgresqltestutil.NewRandomKanbanStep(t, testPool, project.ProjectID)
+	workItem, _ := postgresqltestutil.NewRandomDemoProjectWorkItem(t, testPool, project.ProjectID, kanbanStep.KanbanStepID, workItemType.WorkItemTypeID, team.TeamID)
+	timeEntry, _ := postgresqltestutil.NewRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, &workItem.WorkItemID, nil) // time entry associated to a workItem
 
 	type argsInt64 struct {
 		filter int64
@@ -73,4 +73,9 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 			assert.Contains(t, err.Error(), errContains)
 		})
 	}
+
+	t.Run("bad_time_entry_creation", func(t *testing.T) {
+		_, err := postgresqltestutil.NewRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, nil, nil)
+		assert.Contains(t, err.Error(), errViolatesCheckConstraint)
+	})
 }

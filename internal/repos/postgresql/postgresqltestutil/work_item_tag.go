@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewRandomWorkItemTag(t *testing.T, pool *pgxpool.Pool, projectID int) *db.WorkItemTag {
+func NewRandomWorkItemTag(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.WorkItemTag, error) {
 	t.Helper()
 
 	witRepo := postgresql.NewWorkItemTag()
@@ -19,10 +19,10 @@ func NewRandomWorkItemTag(t *testing.T, pool *pgxpool.Pool, projectID int) *db.W
 
 	wit, err := witRepo.Create(context.Background(), pool, ucp)
 	if err != nil {
-		t.Fatalf("unexpected error = %v", err)
+		return nil, err
 	}
 
-	return wit
+	return wit, nil
 }
 
 func RandomWorkItemTagCreateParams(t *testing.T, projectID int) db.WorkItemTagCreateParams {

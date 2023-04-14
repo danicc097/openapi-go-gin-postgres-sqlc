@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewRandomWorkItemType(t *testing.T, pool *pgxpool.Pool, projectID int) *db.WorkItemType {
+func NewRandomWorkItemType(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.WorkItemType, error) {
 	t.Helper()
 
 	witRepo := postgresql.NewWorkItemType()
@@ -19,10 +19,10 @@ func NewRandomWorkItemType(t *testing.T, pool *pgxpool.Pool, projectID int) *db.
 
 	wit, err := witRepo.Create(context.Background(), pool, ucp)
 	if err != nil {
-		t.Fatalf("unexpected error = %v", err)
+		return nil, err
 	}
 
-	return wit
+	return wit, nil
 }
 
 func RandomWorkItemTypeCreateParams(t *testing.T, projectID int) db.WorkItemTypeCreateParams {

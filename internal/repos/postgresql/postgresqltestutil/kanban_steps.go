@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewRandomKanbanStep(t *testing.T, pool *pgxpool.Pool, projectID int) *db.KanbanStep {
+func NewRandomKanbanStep(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.KanbanStep, error) {
 	t.Helper()
 
 	ksRepo := postgresql.NewKanbanStep()
@@ -20,10 +20,10 @@ func NewRandomKanbanStep(t *testing.T, pool *pgxpool.Pool, projectID int) *db.Ka
 
 	ks, err := ksRepo.Create(context.Background(), pool, ucp)
 	if err != nil {
-		t.Fatalf("unexpected error = %v", err)
+		return nil, err
 	}
 
-	return ks
+	return ks, nil
 }
 
 func RandomKanbanStepCreateParams(t *testing.T, projectID int) db.KanbanStepCreateParams {

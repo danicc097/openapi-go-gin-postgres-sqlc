@@ -26,10 +26,10 @@ func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
 	}
 
-	workItemType := postgresqltestutil.NewRandomWorkItemType(t, testPool, project.ProjectID)
-	team := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
-	kanbanStep := postgresqltestutil.NewRandomKanbanStep(t, testPool, project.ProjectID)
-	user := postgresqltestutil.NewRandomUser(t, testPool)
+	workItemType, _ := postgresqltestutil.NewRandomWorkItemType(t, testPool, project.ProjectID)
+	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
+	kanbanStep, _ := postgresqltestutil.NewRandomKanbanStep(t, testPool, project.ProjectID)
+	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 	dpwi, err := workItemRepo.Create(ctx, testPool, repos.DemoProjectWorkItemCreateParams{
 		DemoProject: postgresqltestutil.RandomDemoProjectWorkItemCreateParams(t),

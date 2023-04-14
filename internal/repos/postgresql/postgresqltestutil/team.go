@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewRandomTeam(t *testing.T, pool *pgxpool.Pool, projectID int) *db.Team {
+func NewRandomTeam(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.Team, error) {
 	t.Helper()
 
 	teamRepo := postgresql.NewTeam()
@@ -19,10 +19,10 @@ func NewRandomTeam(t *testing.T, pool *pgxpool.Pool, projectID int) *db.Team {
 
 	team, err := teamRepo.Create(context.Background(), pool, ucp)
 	if err != nil {
-		t.Fatalf("unexpected error = %v", err)
+		return nil, err
 	}
 
-	return team
+	return team, nil
 }
 
 func RandomTeamCreateParams(t *testing.T, projectID int) db.TeamCreateParams {

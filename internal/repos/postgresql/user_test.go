@@ -15,7 +15,7 @@ import (
 func TestUser_Update(t *testing.T) {
 	t.Parallel()
 
-	user := postgresqltestutil.NewRandomUser(t, testPool)
+	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
 		id     uuid.UUID
@@ -68,7 +68,7 @@ func TestUser_Update(t *testing.T) {
 func TestUser_SoftDelete(t *testing.T) {
 	t.Parallel()
 
-	user := postgresqltestutil.NewRandomUser(t, testPool)
+	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
 		id uuid.UUID
@@ -127,7 +127,7 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 
 	userRepo := postgresql.NewUser()
 
-	user := postgresqltestutil.NewRandomUser(t, testPool)
+	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 	testCases := []testCase{
 		{
@@ -226,7 +226,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	t.Run("correct api key creation", func(t *testing.T) {
 		t.Parallel()
 
-		user := postgresqltestutil.NewRandomUser(t, testPool)
+		user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, user)
 		if err != nil {
@@ -252,7 +252,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	t.Run("can get user by api key", func(t *testing.T) {
 		t.Parallel()
 
-		newUser := postgresqltestutil.NewRandomUser(t, testPool)
+		newUser, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
 		if err != nil {
@@ -329,6 +329,7 @@ func TestUser_Create(t *testing.T) {
 		assert.Equal(t, want.LastName, got.LastName)
 	})
 
+	// TODO replacing all names with snake case: sed -i -e 's/t\.Run\(.*\)/echo $(echo \1)/e' internal/repos/postgresql/user_test.go
 	t.Run("role rank less than zero", func(t *testing.T) {
 		t.Parallel()
 

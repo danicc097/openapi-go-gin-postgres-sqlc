@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewRandomDemoProjectWorkItem(t *testing.T, pool *pgxpool.Pool, projectID, kanbanStepID, workItemTypeID, teamID int) *db.DemoProjectWorkItem {
+func NewRandomDemoProjectWorkItem(t *testing.T, pool *pgxpool.Pool, projectID, kanbanStepID, workItemTypeID, teamID int) (*db.DemoProjectWorkItem, error) {
 	t.Helper()
 
 	dpwiRepo := postgresql.NewDemoProjectWorkItem()
@@ -21,10 +21,10 @@ func NewRandomDemoProjectWorkItem(t *testing.T, pool *pgxpool.Pool, projectID, k
 
 	dpwi, err := dpwiRepo.Create(context.Background(), pool, repos.DemoProjectWorkItemCreateParams{DemoProject: dpwicp, Base: wicp})
 	if err != nil {
-		t.Fatalf("unexpected error = %v", err)
+		return nil, err
 	}
 
-	return dpwi
+	return dpwi, nil
 }
 
 func RandomDemoProjectWorkItemCreateParams(t *testing.T) db.DemoProjectWorkItemCreateParams {
