@@ -442,6 +442,7 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
   {{ end }}
 	// set deleted
 	{{ short $t }}._deleted = true
+  {{ short $t }}.DeletedAt = newPointer(time.Now())
 
 	return nil
 }

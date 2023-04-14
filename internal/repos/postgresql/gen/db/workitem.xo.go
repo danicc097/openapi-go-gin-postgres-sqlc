@@ -282,6 +282,7 @@ func (wi *WorkItem) SoftDelete(ctx context.Context, db DB) error {
 	}
 	// set deleted
 	wi._deleted = true
+	wi.DeletedAt = newPointer(time.Now())
 
 	return nil
 }

@@ -276,6 +276,7 @@ func (u *User) SoftDelete(ctx context.Context, db DB) error {
 	}
 	// set deleted
 	u._deleted = true
+	u.DeletedAt = newPointer(time.Now())
 
 	return nil
 }

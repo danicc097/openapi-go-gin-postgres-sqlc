@@ -93,7 +93,6 @@ func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, e
 	if err := user.SoftDelete(ctx, d); err != nil {
 		return nil, fmt.Errorf("could not mark user as deleted: %w", parseErrorDetail(err))
 	}
-	user.DeletedAt = pointers.New(time.Now())
 
 	return user, nil
 }
