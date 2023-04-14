@@ -88,3 +88,38 @@ func TestNewAppConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestBadAppConfig(t *testing.T) {
+	type nestedCfg struct {
+		Name string `env:"TEST_CFG_NAME"`
+	}
+
+	t.Run("struct_has_env_tag", func(t *testing.T) {
+		errContains := "unsupported type for env tag"
+		environ := map[string]string{"ENV_ON_STRUCT": "10", "TEST_CFG_NAME": "name"}
+		for k, v := range environ {
+			t.Setenv(k, v)
+		}
+
+		type cfg struct {
+			NestedCfg nestedCfg `env:"ENV_ON_STRUCT"`
+		}
+		c := &cfg{}
+		err := loadEnvToConfig(c)
+		if err != nil && errContains == "" {
+			t.Errorf("unexpected error: %v", err)
+
+			return
+		}
+		if errContains != "" {
+			if err == nil {
+				t.Errorf("expected error but got nothing")
+
+				return
+			}
+			assert.Contains(t, err.Error(), errContains)
+
+			return
+		}
+	})
+}
