@@ -35,6 +35,6 @@ func RandomKanbanStepCreateParams(t *testing.T, projectID int) db.KanbanStepCrea
 		ProjectID:     projectID,
 		Color:         "#aaaaaa",
 		TimeTrackable: testutil.RandomBool(),
-		StepOrder:     pointers.New(int16(testutil.RandomInt64(1, 500))),
+		StepOrder:     pointers.New(int16(testutil.RandomInt64(1, 32766))),
 	}
 }
