@@ -7,6 +7,7 @@ import (
 // updateEntityWithParams updates repo entity with params.
 // Since params are already generated from the entity, many assumptions are made.
 // This is not to be used for other kinds of structs.
+// For performance critical stuff refrain from this.
 // Example:
 //
 //	updateEntityWithParams(&User{}, &Params{Name: "Jane"})

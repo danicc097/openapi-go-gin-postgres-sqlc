@@ -217,7 +217,7 @@ left join (
 		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
 		, array_agg(work_items.*) as work_items
 		from work_item_work_item_tag
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
     group by work_item_work_item_tag_work_item_tag_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
@@ -264,7 +264,7 @@ left join (
 		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
 		, array_agg(work_items.*) as work_items
 		from work_item_work_item_tag
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
     group by work_item_work_item_tag_work_item_tag_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
@@ -313,7 +313,7 @@ left join (
 		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
 		, array_agg(work_items.*) as work_items
 		from work_item_work_item_tag
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
     group by work_item_work_item_tag_work_item_tag_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
@@ -362,7 +362,7 @@ left join (
 		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
 		, array_agg(work_items.*) as work_items
 		from work_item_work_item_tag
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
     group by work_item_work_item_tag_work_item_tag_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +

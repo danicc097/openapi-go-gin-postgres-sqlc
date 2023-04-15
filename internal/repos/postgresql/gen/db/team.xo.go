@@ -254,7 +254,7 @@ left join (
 		user_team.team_id as user_team_team_id
 		, array_agg(users.*) as users
 		from user_team
-    join users using (user_id)
+    join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
@@ -312,7 +312,7 @@ left join (
 		user_team.team_id as user_team_team_id
 		, array_agg(users.*) as users
 		from user_team
-    join users using (user_id)
+    join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
@@ -372,7 +372,7 @@ left join (
 		user_team.team_id as user_team_team_id
 		, array_agg(users.*) as users
 		from user_team
-    join users using (user_id)
+    join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
@@ -432,7 +432,7 @@ left join (
 		user_team.team_id as user_team_team_id
 		, array_agg(users.*) as users
 		from user_team
-    join users using (user_id)
+    join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +

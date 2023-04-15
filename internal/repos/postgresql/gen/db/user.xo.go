@@ -340,7 +340,7 @@ left join (
 		user_team.user_id as user_team_user_id
 		, array_agg(teams.*) as teams
 		from user_team
-    join teams using (team_id)
+    join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
@@ -350,7 +350,7 @@ left join (
 		work_item_member.member as work_item_member_member
 		, array_agg(work_items.*) as work_items
 		from work_item_member
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -423,7 +423,7 @@ left join (
 		user_team.user_id as user_team_user_id
 		, array_agg(teams.*) as teams
 		from user_team
-    join teams using (team_id)
+    join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
@@ -433,7 +433,7 @@ left join (
 		work_item_member.member as work_item_member_member
 		, array_agg(work_items.*) as work_items
 		from work_item_member
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -506,7 +506,7 @@ left join (
 		user_team.user_id as user_team_user_id
 		, array_agg(teams.*) as teams
 		from user_team
-    join teams using (team_id)
+    join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
@@ -516,7 +516,7 @@ left join (
 		work_item_member.member as work_item_member_member
 		, array_agg(work_items.*) as work_items
 		from work_item_member
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -587,7 +587,7 @@ left join (
 		user_team.user_id as user_team_user_id
 		, array_agg(teams.*) as teams
 		from user_team
-    join teams using (team_id)
+    join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
@@ -597,7 +597,7 @@ left join (
 		work_item_member.member as work_item_member_member
 		, array_agg(work_items.*) as work_items
 		from work_item_member
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -668,7 +668,7 @@ left join (
 		user_team.user_id as user_team_user_id
 		, array_agg(teams.*) as teams
 		from user_team
-    join teams using (team_id)
+    join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
@@ -678,7 +678,7 @@ left join (
 		work_item_member.member as work_item_member_member
 		, array_agg(work_items.*) as work_items
 		from work_item_member
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -749,7 +749,7 @@ left join (
 		user_team.user_id as user_team_user_id
 		, array_agg(teams.*) as teams
 		from user_team
-    join teams using (team_id)
+    join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
@@ -759,7 +759,7 @@ left join (
 		work_item_member.member as work_item_member_member
 		, array_agg(work_items.*) as work_items
 		from work_item_member
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -832,7 +832,7 @@ left join (
 		user_team.user_id as user_team_user_id
 		, array_agg(teams.*) as teams
 		from user_team
-    join teams using (team_id)
+    join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
@@ -842,7 +842,7 @@ left join (
 		work_item_member.member as work_item_member_member
 		, array_agg(work_items.*) as work_items
 		from work_item_member
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+

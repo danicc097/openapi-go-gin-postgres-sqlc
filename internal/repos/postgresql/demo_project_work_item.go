@@ -27,7 +27,7 @@ func (u *DemoProjectWorkItem) ByID(ctx context.Context, d db.DBTX, id int64, opt
 }
 
 func (u *DemoProjectWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoProjectWorkItemCreateParams) (*db.DemoProjectWorkItem, error) {
-	wi := &db.WorkItem{
+	workItem := &db.WorkItem{
 		Title:          params.Base.Title,
 		Description:    params.Base.Description,
 		WorkItemTypeID: params.Base.WorkItemTypeID,
@@ -38,25 +38,27 @@ func (u *DemoProjectWorkItem) Create(ctx context.Context, d db.DBTX, params repo
 		TargetDate:     params.Base.TargetDate,
 	}
 
-	wi, err := wi.Save(ctx, d)
+	workItem, err := workItem.Save(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not save workItem: %w", parseErrorDetail(err))
 	}
 
-	dpwi := &db.DemoProjectWorkItem{
-		WorkItemID:    wi.WorkItemID,
+	demoProjectWorkItem := &db.DemoProjectWorkItem{
+		WorkItemID:    workItem.WorkItemID,
 		Ref:           params.DemoProject.Ref,
 		Line:          params.DemoProject.Line,
 		LastMessageAt: params.DemoProject.LastMessageAt,
 		Reopened:      params.DemoProject.Reopened,
 	}
 
-	dpwi, err = dpwi.Save(ctx, d)
+	demoProjectWorkItem, err = demoProjectWorkItem.Save(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not save demoProjectWorkItem: %w", parseErrorDetail(err))
 	}
 
-	return dpwi, nil
+	demoProjectWorkItem.WorkItem = workItem
+
+	return demoProjectWorkItem, nil
 }
 
 func (u *DemoProjectWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoProjectWorkItemUpdateParams) (*db.DemoProjectWorkItem, error) {

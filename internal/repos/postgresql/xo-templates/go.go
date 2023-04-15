@@ -819,7 +819,6 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 	// conversion requires Table
 	var fkeys [][]string
 	for _, fk := range t.ForeignKeys {
-		fmt.Printf("fk: %v\n", fk.Fields)
 		fkey, err := convertFKey(ctx, table, fk)
 		if err != nil {
 			return Table{}, fmt.Errorf("could not convert to fk: %w", err)
@@ -2165,10 +2164,11 @@ func (f *Funcs) sqlstr_soft_delete(v interface{}) []string {
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 25: %T ]]", v)}
 }
 
+// M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(joined_{{.JoinTable}}.{{.JoinTable}}) filter (where joined_teams.teams is not null) end) as {{.JoinTable}}`
+
 const (
-	M2MSelect = `(case when {{.Nth}}::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end) as {{.JoinTable}}`
-	// M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(joined_{{.JoinTable}}.{{.JoinTable}}) filter (where joined_teams.teams is not null) end) as {{.JoinTable}}`
-	O2MSelect = M2MSelect
+	M2MSelect = `(case when {{.Nth}}::boolean = true then joined_{{.LookupJoinTablePKAgg}}.{{.LookupJoinTablePKAgg}} end) as {{.LookupJoinTablePKAgg}}`
+	O2MSelect = `(case when {{.Nth}}::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end) as {{.JoinTable}}`
 	O2OSelect = `(case when {{.Nth}}::boolean = true then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
 )
 
@@ -2177,11 +2177,11 @@ const (
 left join (
 	select
 		{{.LookupTable}}.{{.LookupColumn}} as {{.LookupTable}}_{{.LookupColumn}}
-		, array_agg({{.JoinTable}}.*) as {{.JoinTable}}
+		, array_agg({{.JoinTable}}.*) as {{.LookupJoinTablePKAgg}}
 		from {{.LookupTable}}
-    join {{.JoinTable}} using ({{.JoinTablePK}})
+    join {{.JoinTable}} on {{.JoinTable}}.{{.JoinTablePK}} = {{.LookupTable}}.{{.LookupJoinTablePK}}
     group by {{.LookupTable}}_{{.LookupColumn}}
-  ) as joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.LookupTable}}_{{.LookupColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}
+  ) as joined_{{.LookupJoinTablePKAgg}} on joined_{{.LookupJoinTablePKAgg}}.{{.LookupTable}}_{{.LookupColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}
 `
 	M2OJoin = `
 left join (
@@ -2352,8 +2352,17 @@ func createJoinStatement(c Constraint, x Index, funcs template.FuncMap, nth func
 		params["JoinTable"] = c.RefTableName
 		params["LookupRefColumn"] = c.LookupRefColumn
 		params["JoinTablePK"] = c.RefColumnName
+		params["LookupJoinTablePK"] = c.ColumnName // may differ from actual column, e.g. having member UUID in lookup instead of user_id
+		params["LookupJoinTablePKAgg"] = inflector.Pluralize(c.ColumnName)
 		params["CurrentTable"] = x.Table.SQLName
 		params["LookupTable"] = c.TableName
+
+		if c.ColumnName == c.RefColumnName {
+			// we are not changing lookup name, i.e. we're using the pk name, e.g. user_id instead of something like member, leader, sender...
+			// don't rename to avoid confusion:
+			params["LookupJoinTablePK"] = c.RefColumnName
+			params["LookupJoinTablePKAgg"] = c.RefTableName
+		}
 	case "O2M", "M2O":
 		// TODO properly gen in both sides like with O2O below, differentiating O2M and M2O
 		if c.RefTableName == x.Table.SQLName {
@@ -2565,6 +2574,7 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	for _, fks := range table.ForeignKeys {
 		if len(fks) == 1 && fks[0] == field.SQLName {
 			isSingleFK = true
+			break
 		}
 	}
 	var isSinglePK bool
