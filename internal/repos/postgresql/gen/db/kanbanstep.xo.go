@@ -60,7 +60,10 @@ func WithKanbanStepLimit(limit int) KanbanStepSelectConfigOption {
 
 type KanbanStepOrderBy = string
 
-type KanbanStepJoins struct{}
+const ()
+
+type KanbanStepJoins struct {
+}
 
 // WithKanbanStepJoin joins with the given tables.
 func WithKanbanStepJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {

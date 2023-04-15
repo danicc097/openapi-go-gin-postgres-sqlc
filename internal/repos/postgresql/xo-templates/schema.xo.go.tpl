@@ -101,6 +101,7 @@ generated queries from indexes
 
 {{ define "index" }}
 {{- $i := .Data.Index -}}
+{{- $tables := .Data.Tables -}}
 {{- $constraints := .Data.Constraints -}}
 // {{ func_name_context $i }} retrieves a row from '{{ schema $i.Table.SQLName }}' as a {{ $i.Table.GoName }}.
 //
@@ -113,7 +114,7 @@ generated queries from indexes
 	}
 
 	// query
-	{{ sqlstr_index $i $constraints }}
+	{{ sqlstr_index $i $constraints $tables }}
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

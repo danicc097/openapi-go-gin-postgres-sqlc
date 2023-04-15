@@ -355,6 +355,8 @@ left join (
 left join (
 	select
 		work_item_member.work_item_id as work_item_member_work_item_id
+		, work_item_member.role as role
+		
 		, array_agg(users.*) as members
 		from work_item_member
     join users on users.user_id = work_item_member.member
@@ -451,6 +453,8 @@ left join (
 left join (
 	select
 		work_item_member.work_item_id as work_item_member_work_item_id
+		, work_item_member.role as role
+		
 		, array_agg(users.*) as members
 		from work_item_member
     join users on users.user_id = work_item_member.member
@@ -545,6 +549,8 @@ left join (
 left join (
 	select
 		work_item_member.work_item_id as work_item_member_work_item_id
+		, work_item_member.role as role
+		
 		, array_agg(users.*) as members
 		from work_item_member
     join users on users.user_id = work_item_member.member

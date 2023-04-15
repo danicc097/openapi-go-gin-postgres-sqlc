@@ -55,6 +55,8 @@ func WithWorkItemTagLimit(limit int) WorkItemTagSelectConfigOption {
 
 type WorkItemTagOrderBy = string
 
+const ()
+
 type WorkItemTagJoins struct {
 	WorkItems bool
 }

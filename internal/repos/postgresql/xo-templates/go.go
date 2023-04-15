@@ -590,10 +590,26 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		})
 	}
 	// emit tables
-	tc := append(schema.Tables, schema.Views...)
-	tc = append(tc, schema.MatViews...)
-	for _, t := range tc {
-		table, err := convertTable(ctx, t)
+	tcc := append(schema.Tables, schema.Views...)
+	tcc = append(tcc, schema.MatViews...)
+
+	// will need access to all tables beforehand
+	tables := make(map[string]Table)
+	for _, tc := range tcc {
+		table, err := convertTable(ctx, tc)
+		if err != nil {
+			return err
+		}
+		tables[table.SQLName] = table
+	}
+
+	// IMPORTANT: can't use map[string]*Table - it messes up k and t for some reason
+	// for k, t := range tables {
+	// 	fmt.Printf("k: %v - table: %v\n", k, t.SQLName)
+	// }
+
+	for _, tc := range tcc {
+		table, err := convertTable(ctx, tc)
 		if err != nil {
 			return err
 		}
@@ -610,11 +626,14 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 
 		// emit indexes
 		var emittedIndexes []string
-		for _, i := range t.Indexes {
+		for _, i := range tc.Indexes {
 			index, err := convertIndex(ctx, table, i)
 			if err != nil {
 				return err
 			}
+
+			// TODO "index" template needs access to all tables so we can get
+			// lookup table `Table` while generating M2M query
 
 			// emit normal index
 			emit(xo.Template{
@@ -625,13 +644,14 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 				Data: struct {
 					Index       interface{}
 					Constraints interface{}
-				}{Index: index, Constraints: constraints},
+					Tables      interface{}
+				}{Index: index, Constraints: constraints, Tables: tables},
 			})
 			emittedIndexes = append(emittedIndexes, extractIndexIdentifier(index))
 		}
 
 		// emit additional indexes in a second run so they don't interfere with "real" ones
-		for _, i := range t.Indexes {
+		for _, i := range tc.Indexes {
 			index, err := convertIndex(ctx, table, i)
 			if err != nil {
 				return err
@@ -662,7 +682,8 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 						Data: struct {
 							Index       interface{}
 							Constraints interface{}
-						}{Index: index, Constraints: constraints},
+							Tables      interface{}
+						}{Index: index, Constraints: constraints, Tables: tables},
 					})
 					emittedIndexes = append(emittedIndexes, idxIdentifier)
 				}
@@ -673,7 +694,7 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		// emit fkeys
 		// NOTE: do not use these for automatic join generation in replacement of o2o and o2m table comments,
 		// it will also generate joins for m2m lookup tables which pollutes everything
-		for _, fk := range t.ForeignKeys {
+		for _, fk := range tc.ForeignKeys {
 			fkey, err := convertFKey(ctx, table, fk)
 			if err != nil {
 				return err
@@ -2173,10 +2194,32 @@ const (
 )
 
 const (
+	/** TODO
+		 *
+		 *
+		 * also need to get columns from join table in M2M, e.g.
+	  , role work_item_role not null ()
+		 * therefore it is not Members *[]User, we should create a struct
+
+					type Member struct {
+						User         User   `json:"user"`
+						WorkItemRole string `json:"workItemRole" db:"work_items_role"
+					}
+			and have Members *[]Member
+
+			if the lookup table contains fields that are not pk or fks
+			(if they are we just ignore, too cumbersome to also join against those).
+			this will be useful for simple extra info that is contained in the lookup table only
+
+
+	*/
 	M2MJoin = `
 left join (
 	select
 		{{.LookupTable}}.{{.LookupColumn}} as {{.LookupTable}}_{{.LookupColumn}}
+		{{- range .LookupExtraCols }}
+		, {{$.LookupTable}}.{{.}} as {{.}}
+		{{ end }}
 		, array_agg({{.JoinTable}}.*) as {{.LookupJoinTablePKAgg}}
 		from {{.LookupTable}}
     join {{.JoinTable}} on {{.JoinTable}}.{{.JoinTablePK}} = {{.LookupTable}}.{{.LookupJoinTablePK}}
@@ -2198,7 +2241,7 @@ left join {{.JoinTable}} on {{.JoinTable}}.{{.JoinColumn}} = {{.CurrentTable}}.{
 )
 
 // sqlstr_index builds a index fields.
-func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
+func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables map[string]Table) string {
 	switch x := v.(type) {
 	case Index:
 		var filters, fields, joins []string
@@ -2235,7 +2278,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 
 		var n int
 		for _, c := range tableConstraints {
-			joinStmts, selectStmts := createJoinStatement(c, x, funcs, f.nth, n)
+			joinStmts, selectStmts := createJoinStatement(tables, c, x, funcs, f.nth, n)
 			if joinStmts.String() == "" || selectStmts.String() == "" {
 				continue
 			}
@@ -2333,7 +2376,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 
 // createJoinStatement returns select queries and join statements strings
 // for a given index table.
-func createJoinStatement(c Constraint, x Index, funcs template.FuncMap, nth func(int) string, n int) (*bytes.Buffer, *bytes.Buffer) {
+func createJoinStatement(tables map[string]Table, c Constraint, x Index, funcs template.FuncMap, nth func(int) string, n int) (*bytes.Buffer, *bytes.Buffer) {
 	var joinTpl, selectTpl string
 	joins := &bytes.Buffer{}
 	selects := &bytes.Buffer{}
@@ -2352,17 +2395,23 @@ func createJoinStatement(c Constraint, x Index, funcs template.FuncMap, nth func
 		params["JoinTable"] = c.RefTableName
 		params["LookupRefColumn"] = c.LookupRefColumn
 		params["JoinTablePK"] = c.RefColumnName
-		params["LookupJoinTablePK"] = c.ColumnName // may differ from actual column, e.g. having member UUID in lookup instead of user_id
-		params["LookupJoinTablePKAgg"] = inflector.Pluralize(c.ColumnName)
+		params["LookupJoinTablePK"] = c.ColumnName                         // may differ from actual column, e.g. having member UUID in lookup instead of user_id
+		params["LookupJoinTablePKAgg"] = inflector.Pluralize(c.ColumnName) //
 		params["CurrentTable"] = x.Table.SQLName
 		params["LookupTable"] = c.TableName
+		params["LookupExtraCols"] = []string{}
 
 		if c.ColumnName == c.RefColumnName {
 			// we are not changing lookup name, i.e. we're using the pk name, e.g. user_id instead of something like member, leader, sender...
 			// don't rename to avoid confusion:
 			params["LookupJoinTablePK"] = c.RefColumnName
 			params["LookupJoinTablePKAgg"] = c.RefTableName
+		} else {
+			// FIXME need lookup table accessed by tables[c.TableName] which contains all tables and work with that
+			lookupTable := tables[c.TableName]
+			params["LookupExtraCols"] = getLookupTableRegularFields(lookupTable)
 		}
+
 	case "O2M", "M2O":
 		// TODO properly gen in both sides like with O2O below, differentiating O2M and M2O
 		if c.RefTableName == x.Table.SQLName {
@@ -2409,6 +2458,27 @@ func createJoinStatement(c Constraint, x Index, funcs template.FuncMap, nth func
 		panic(fmt.Sprintf("could not execute select template: %s", err))
 	}
 	return joins, selects
+}
+
+// getLookupTableRegularFields gets extra columns in a lookup table that are not PK or FK
+func getLookupTableRegularFields(t Table) []string {
+	ltFieldsMap := make(map[string]struct{})
+	for _, f := range t.Fields {
+		ltFieldsMap[f.SQLName] = struct{}{}
+	}
+	for _, fkk := range t.ForeignKeys {
+		for _, fk := range fkk {
+			delete(ltFieldsMap, fk)
+		}
+	}
+	for _, pk := range t.PrimaryKeys {
+		delete(ltFieldsMap, pk.SQLName)
+	}
+	ltFields := make([]string, 0, len(ltFieldsMap))
+	for k := range ltFieldsMap {
+		ltFields = append(ltFields, k)
+	}
+	return ltFields
 }
 
 // sqlstr_proc builds a stored procedure call.
