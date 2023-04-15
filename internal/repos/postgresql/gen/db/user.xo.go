@@ -320,8 +320,8 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
+(case when $3::boolean = true then joined_teams.__teams end) as teams,
+(case when $4::boolean = true then joined_work_items.__work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -338,7 +338,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) as teams
+		, array_agg(teams.*) as __teams
 		from user_team
     join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
@@ -348,7 +348,7 @@ left join (
 left join (
 	select
 		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as __work_items
 		from work_item_member
     join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
@@ -403,8 +403,8 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
+(case when $3::boolean = true then joined_teams.__teams end) as teams,
+(case when $4::boolean = true then joined_work_items.__work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -421,7 +421,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) as teams
+		, array_agg(teams.*) as __teams
 		from user_team
     join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
@@ -431,7 +431,7 @@ left join (
 left join (
 	select
 		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as __work_items
 		from work_item_member
     join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
@@ -486,8 +486,8 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
+(case when $3::boolean = true then joined_teams.__teams end) as teams,
+(case when $4::boolean = true then joined_work_items.__work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -504,7 +504,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) as teams
+		, array_agg(teams.*) as __teams
 		from user_team
     join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
@@ -514,7 +514,7 @@ left join (
 left join (
 	select
 		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as __work_items
 		from work_item_member
     join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
@@ -567,8 +567,8 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
+(case when $3::boolean = true then joined_teams.__teams end) as teams,
+(case when $4::boolean = true then joined_work_items.__work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -585,7 +585,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) as teams
+		, array_agg(teams.*) as __teams
 		from user_team
     join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
@@ -595,7 +595,7 @@ left join (
 left join (
 	select
 		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as __work_items
 		from work_item_member
     join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
@@ -648,8 +648,8 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
+(case when $3::boolean = true then joined_teams.__teams end) as teams,
+(case when $4::boolean = true then joined_work_items.__work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -666,7 +666,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) as teams
+		, array_agg(teams.*) as __teams
 		from user_team
     join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
@@ -676,7 +676,7 @@ left join (
 left join (
 	select
 		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as __work_items
 		from work_item_member
     join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
@@ -729,8 +729,8 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
+(case when $3::boolean = true then joined_teams.__teams end) as teams,
+(case when $4::boolean = true then joined_work_items.__work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -747,7 +747,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) as teams
+		, array_agg(teams.*) as __teams
 		from user_team
     join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
@@ -757,7 +757,7 @@ left join (
 left join (
 	select
 		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as __work_items
 		from work_item_member
     join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
@@ -812,8 +812,8 @@ users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_items.work_items end) as work_items `+
+(case when $3::boolean = true then joined_teams.__teams end) as teams,
+(case when $4::boolean = true then joined_work_items.__work_items end) as work_items `+
 		`FROM public.users `+
 		`-- O2M join generated from "time_entries_user_id_fkey"
 left join (
@@ -830,7 +830,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) as teams
+		, array_agg(teams.*) as __teams
 		from user_team
     join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
@@ -840,7 +840,7 @@ left join (
 left join (
 	select
 		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) as work_items
+		, array_agg(work_items.*) as __work_items
 		from work_item_member
     join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member

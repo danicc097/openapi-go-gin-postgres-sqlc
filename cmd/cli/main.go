@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
@@ -23,7 +24,13 @@ import (
 	. "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/jet/public/table"
 	. "github.com/go-jet/jet/v2/postgres"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+type Team struct {
+	TeamID int    `json:"teamID" db:"team_id"`
+	Name   string `json:"team" db:"team"`
+}
 
 // clear && go run cmd/cli/main.go -env .env.dev
 func main() {
@@ -68,21 +75,35 @@ func main() {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}
 
+	var rows pgx.Rows
+	var bt []byte
+
+	//
+	//
+	//
+	// pgxArrayAggIssueQuery(pool)
+	// //
+	// //
+
+	// os.Exit(0)
+
 	username := "user_1"
 	// username := "doesntexist" // User should be nil
 	// username := "superadmin"
 	user, err := db.UserByUsername(context.Background(), pool, username,
 		db.WithUserJoin(db.UserJoins{
 			// TODO fix array_agg pgx collect and reenable
-			TimeEntries: true,
-			WorkItems:   true,
-			Teams:       true,
+			// TimeEntries: true,
+			// WorkItems:   true,
+			Teams: true,
+			// UserAPIKey:  true,
 		}),
 		db.WithUserOrderBy(db.UserCreatedAtDescNullsLast))
 	if err != nil {
 		log.Fatalf("db.UserByUsername: %s\n", err)
 	}
 	format.PrintJSON(user)
+	os.Exit(1)
 	// test correct queries
 	key := user.UserID.String() + "-key-hashed"
 	uak, err := db.UserAPIKeyByAPIKey(context.Background(), pool, key, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
@@ -134,7 +155,7 @@ func main() {
 	}
 	format.PrintJSON(nn)
 
-	rows, _ := pool.Query(context.Background(), fmt.Sprintf(`SELECT user_api_keys.user_api_key_id,
+	rows, _ = pool.Query(context.Background(), fmt.Sprintf(`SELECT user_api_keys.user_api_key_id,
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
 	user_api_keys.user_id,
@@ -177,7 +198,7 @@ func main() {
 	`)
 	uaks_test, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserAPIKey])
 	fmt.Printf("err: %v\n", err)
-	bt, _ := json.Marshal(uaks_test[0])
+	bt, _ = json.Marshal(uaks_test[0])
 	fmt.Printf("uaks_test[0]: %+v\n", string(bt))
 
 	type Item struct {
@@ -208,6 +229,64 @@ func main() {
 	bt, _ = json.Marshal(userItems[0])
 	fmt.Printf("userItems[0]: %+v\n", string(bt))
 	// {"userID":1,"name":"","userItems":[{"userItemID":1,"userID":101,"item":"item 1"},{"userItemID":1,"userID":102,"item":"item 2"}]}
+}
+
+type Team1 struct {
+	TeamID    int       `json:"teamID" db:"team_id" required:"true"`       // team_id
+	Name      string    `json:"name" db:"name" required:"true"`            // name
+	ProjectID int       `json:"projectID" db:"project_id" required:"true"` // project_id
+	CreatedAt time.Time `json:"createdAt" db:"created_at" required:"true"` // created_at
+	// UpdatedAt time.Time `json:"updatedAt" db:"updated_at" required:"true"` // updated_at
+
+	Users *[]User1 `json:"users" db:"users"` // M2M
+
+	_exists, _deleted bool
+}
+
+type User1 struct {
+	UserID int     `json:"userID" db:"user_id"`
+	Name   string  `json:"name" db:"name"`
+	Teams  []Team1 `json:"teams" db:"teams"`
+}
+
+func pgxArrayAggIssueQuery(pool *pgxpool.Pool) {
+	query := `
+	WITH user_team AS (
+		SELECT 1 AS user_id, 1 AS team_id
+		UNION ALL
+		SELECT 1 AS user_id, 2 AS team_id
+	), users AS (
+		SELECT 1 AS user_id, 'John Doe' AS name
+	),teams AS (
+		SELECT 1 AS team_id, 'team 1' AS name, 1 as project_id, now() AS created_at
+		UNION ALL
+		SELECT 2 AS team_id, 'team 2' AS name, 2 as project_id, now() AS created_at
+	)
+	SELECT users.user_id
+	,joined_teams.teams as teams
+	FROM users
+	left join (
+		select
+			user_team.user_id as user_team_user_id
+			, array_agg(teams.*) as teams
+			from user_team
+			join teams using (team_id)
+			group by user_team_user_id
+		) as joined_teams on joined_teams.user_team_user_id = users.user_id
+		;
+	`
+	rows, err := pool.Query(context.Background(), query)
+	if err != nil {
+		fmt.Printf("error: %s\n", err)
+		os.Exit(1)
+	}
+	users, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User1])
+	if err != nil {
+		fmt.Printf("error: %s\n", err)
+		os.Exit(1)
+	}
+	bt, _ := json.Marshal(users[0])
+	fmt.Printf("users[0]: %+v\n", string(bt))
 }
 
 func errAndExit(out []byte, err error) {
