@@ -338,7 +338,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) as __teams
+		, array_agg(teams.*) filter (where teams.* is not null) as __teams
 		from user_team
     join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
@@ -348,7 +348,7 @@ left join (
 left join (
 	select
 		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) as __work_items
+		, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
 		from work_item_member
     join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
@@ -421,7 +421,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) as __teams
+		, array_agg(teams.*) filter (where teams.* is not null) as __teams
 		from user_team
     join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
@@ -431,7 +431,7 @@ left join (
 left join (
 	select
 		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) as __work_items
+		, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
 		from work_item_member
     join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
@@ -504,7 +504,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) as __teams
+		, array_agg(teams.*) filter (where teams.* is not null) as __teams
 		from user_team
     join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
@@ -514,7 +514,7 @@ left join (
 left join (
 	select
 		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) as __work_items
+		, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
 		from work_item_member
     join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
@@ -585,7 +585,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) as __teams
+		, array_agg(teams.*) filter (where teams.* is not null) as __teams
 		from user_team
     join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
@@ -595,7 +595,7 @@ left join (
 left join (
 	select
 		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) as __work_items
+		, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
 		from work_item_member
     join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
@@ -666,7 +666,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) as __teams
+		, array_agg(teams.*) filter (where teams.* is not null) as __teams
 		from user_team
     join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
@@ -676,7 +676,7 @@ left join (
 left join (
 	select
 		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) as __work_items
+		, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
 		from work_item_member
     join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
@@ -747,7 +747,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) as __teams
+		, array_agg(teams.*) filter (where teams.* is not null) as __teams
 		from user_team
     join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
@@ -757,7 +757,7 @@ left join (
 left join (
 	select
 		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) as __work_items
+		, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
 		from work_item_member
     join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
@@ -830,7 +830,7 @@ left join user_api_keys on user_api_keys.user_id = users.user_id
 left join (
 	select
 		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) as __teams
+		, array_agg(teams.*) filter (where teams.* is not null) as __teams
 		from user_team
     join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
@@ -840,7 +840,7 @@ left join (
 left join (
 	select
 		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) as __work_items
+		, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
 		from work_item_member
     join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member

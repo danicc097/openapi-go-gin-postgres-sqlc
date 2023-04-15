@@ -81,9 +81,9 @@ func main() {
 	//
 	//
 	//
-	// pgxArrayAggIssueQuery(pool)
-	// //
-	// //
+	pgxArrayAggIssueQuery(pool)
+	//
+	//
 
 	// os.Exit(0)
 
@@ -231,6 +231,12 @@ func main() {
 	// {"userID":1,"name":"","userItems":[{"userItemID":1,"userID":101,"item":"item 1"},{"userItemID":1,"userID":102,"item":"item 2"}]}
 }
 
+type Item struct {
+	UserItemID int    `json:"userItemID" db:"user_item_id"`
+	UserID     int    `json:"userID" db:"user_id"`
+	Item       string `json:"item" db:"item"`
+}
+
 type Team1 struct {
 	TeamID    int       `json:"teamID" db:"team_id" required:"true"`       // team_id
 	Name      string    `json:"name" db:"name" required:"true"`            // name
@@ -244,9 +250,10 @@ type Team1 struct {
 }
 
 type User1 struct {
-	UserID int     `json:"userID" db:"user_id"`
-	Name   string  `json:"name" db:"name"`
-	Teams  []Team1 `json:"teams" db:"teams"`
+	UserID int      `json:"userID" db:"user_id"`
+	Name   string   `json:"name" db:"name"`
+	Teams  *[]Team1 `json:"teams" db:"teams"`
+	Items  *[]Item  `json:"items" db:"items"`
 }
 
 func pgxArrayAggIssueQuery(pool *pgxpool.Pool) {
@@ -261,19 +268,25 @@ func pgxArrayAggIssueQuery(pool *pgxpool.Pool) {
 		SELECT 1 AS team_id, 'team 1' AS name, 1 as project_id, now() AS created_at
 		UNION ALL
 		SELECT 2 AS team_id, 'team 2' AS name, 2 as project_id, now() AS created_at
+	), user_items AS (
+		SELECT 1555 AS user_id, 101 AS user_item_id, 'item 1' AS item
+		UNION ALL
+		SELECT 1555 AS user_id, 102 AS user_item_id, 'item 2' AS item
 	)
 	SELECT users.user_id
-	,joined_teams.teams as teams
+	, joined_teams.__teams as teams
+	, array_agg(user_items.*) filter (where user_items.* is not null) AS items
 	FROM users
+	LEFT JOIN user_items ON users.user_id = user_items.user_id
 	left join (
 		select
 			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) as teams
+			, array_agg(teams.*) filter (where teams.* is not null) as __teams
 			from user_team
 			join teams using (team_id)
 			group by user_team_user_id
 		) as joined_teams on joined_teams.user_team_user_id = users.user_id
-		;
+		group by users.user_id, joined_teams.__teams;
 	`
 	rows, err := pool.Query(context.Background(), query)
 	if err != nil {

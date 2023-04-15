@@ -2249,7 +2249,7 @@ left join (
 		{{- range .LookupExtraCols }}
 		, {{$.LookupTable}}.{{.}} as {{.}}
 		{{ end }}
-		, array_agg({{.JoinTable}}.*) as __{{.LookupJoinTablePKAgg}}
+		, array_agg({{.JoinTable}}.*) filter (where {{.JoinTable}}.* is not null) as __{{.LookupJoinTablePKAgg}}
 		from {{.LookupTable}}
     join {{.JoinTable}} on {{.JoinTable}}.{{.JoinTablePK}} = {{.LookupTable}}.{{.LookupJoinTablePK}}
     group by {{.LookupTable}}_{{.LookupColumn}}

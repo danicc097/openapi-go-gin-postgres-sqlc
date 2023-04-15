@@ -252,7 +252,7 @@ left join (
 left join (
 	select
 		user_team.team_id as user_team_team_id
-		, array_agg(users.*) as __users
+		, array_agg(users.*) filter (where users.* is not null) as __users
 		from user_team
     join users on users.user_id = user_team.user_id
     group by user_team_team_id
@@ -310,7 +310,7 @@ left join (
 left join (
 	select
 		user_team.team_id as user_team_team_id
-		, array_agg(users.*) as __users
+		, array_agg(users.*) filter (where users.* is not null) as __users
 		from user_team
     join users on users.user_id = user_team.user_id
     group by user_team_team_id
@@ -370,7 +370,7 @@ left join (
 left join (
 	select
 		user_team.team_id as user_team_team_id
-		, array_agg(users.*) as __users
+		, array_agg(users.*) filter (where users.* is not null) as __users
 		from user_team
     join users on users.user_id = user_team.user_id
     group by user_team_team_id
@@ -430,7 +430,7 @@ left join (
 left join (
 	select
 		user_team.team_id as user_team_team_id
-		, array_agg(users.*) as __users
+		, array_agg(users.*) filter (where users.* is not null) as __users
 		from user_team
     join users on users.user_id = user_team.user_id
     group by user_team_team_id
