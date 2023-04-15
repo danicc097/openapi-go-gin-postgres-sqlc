@@ -43,17 +43,9 @@ func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params db.Acti
 		return nil, fmt.Errorf("could not get workItemTag by id %w", parseErrorDetail(err))
 	}
 
-	if params.Description != nil {
-		workItemTag.Description = *params.Description
-	}
-	if params.Name != nil {
-		workItemTag.Name = *params.Name
-	}
-	if params.IsProductive != nil {
-		workItemTag.IsProductive = *params.IsProductive
-	}
+	updateEntityWithParams(workItemTag, &params)
 
-	_, err = workItemTag.Update(ctx, d)
+	workItemTag, err = workItemTag.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not update workItemTag: %w", parseErrorDetail(err))
 	}
@@ -61,7 +53,7 @@ func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params db.Acti
 	return workItemTag, err
 }
 
-func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error) {
+func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error) {
 	workItemTag, err := db.ActivityByNameProjectID(ctx, d, name, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItemTag: %w", parseErrorDetail(err))

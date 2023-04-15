@@ -118,7 +118,7 @@ generated queries from indexes
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, {{ params $i.Fields false }})
+	// logf(sqlstr, {{ params $i.Fields false }})
 {{- if $i.IsUnique }}
   rows, err := {{ db "Query" $i }}
 	if err != nil {
@@ -142,7 +142,7 @@ generated queries from indexes
 	defer rows.Close()
 	// process
   {{/* might need to use non pointer []<st> in return if we get a NumField of non-struct type*/}}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*{{$i.Table.GoName}}])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[{{$i.Table.GoName}}])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -171,13 +171,13 @@ generated queries from indexes
 {{- range $p.Returns }}
 	var {{ check_name .GoName }} {{ type .Type }}
 {{- end }}
-	logf(sqlstr, {{ params $p.Params false }})
+	// logf(sqlstr, {{ params $p.Params false }})
 	if err := {{ db "QueryRow" $p }}.Scan({{ names "&" $p.Returns }}); err != nil {
 		return {{ zero $p.Returns }}, logerror(err)
 	}
 	return {{ range $p.Returns }}{{ check_name .GoName }}, {{ end }}nil
 {{- else }}
-	logf(sqlstr)
+	// logf(sqlstr)
 	if _, err := {{ db "Exec" $p }}; err != nil {
 		return logerror(err)
 	}
@@ -217,9 +217,7 @@ type {{ $t.GoName }} struct {
 	_exists, _deleted bool
 {{ end -}}
 }
-{{/* NOTE: using this notation since sqlc uses
-<query_name>{{ $t.GoName }}Params which may clash if we also were to
-call it Create or Update*/}}
+{{/* NOTE: ensure sqlc does not generate clashing names */}}
 // {{ $t.GoName }}CreateParams represents insert params for '{{ schema $t.SQLName }}'
 type {{ $t.GoName }}CreateParams struct {
 {{ range $t.Fields -}}
@@ -394,7 +392,6 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	// delete with single primary key
 	{{ sqlstr "delete" $t }}
 	// run
-	{{ logf_pkeys $t }}
 	if _, err := {{ db "Exec" (print (short $t) "." (index $t.PrimaryKeys 0).GoName) }}; err != nil {
 		return logerror(err)
 	}
@@ -402,7 +399,6 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 	// delete with composite primary key
 	{{ sqlstr "delete" $t }}
 	// run
-	{{ logf_pkeys $t }}
 	if _, err := {{ db "Exec" (names (print (short $t) ".") $t.PrimaryKeys) }}; err != nil {
 		return logerror(err)
 	}
@@ -419,4 +415,48 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 }
 {{- end -}}
 {{- end }}
+
+{{ if (has_deleted_at $t) }}
+// {{ func_name_context "SoftDelete" }} soft deletes the {{ $t.GoName }} from the database via 'deleted_at'.
+{{ recv_context $t "SoftDelete" }} {
+	switch {
+	case !{{ short $t }}._exists: // doesn't exist
+		return nil
+	case {{ short $t }}._deleted: // deleted
+		return nil
+	}
+	{{ if eq (len $t.PrimaryKeys) 1 -}}
+	// delete with single primary key
+	{{ sqlstr "soft_delete" $t }}
+	// run
+	if _, err := {{ db "Exec" (print (short $t) "." (index $t.PrimaryKeys 0).GoName) }}; err != nil {
+		return logerror(err)
+	}
+  {{- else -}}
+	// delete with composite primary key
+	{{ sqlstr "soft_delete" $t }}
+	// run
+	if _, err := {{ db "Exec" (names (print (short $t) ".") $t.PrimaryKeys) }}; err != nil {
+		return logerror(err)
+	}
+  {{ end }}
+	// set deleted
+	{{ short $t }}._deleted = true
+  {{ short $t }}.DeletedAt = newPointer(time.Now())
+
+	return nil
+}
+
+// {{ func_name_context "Restore" }} restores a soft deleted {{ $t.GoName }} from the database.
+{{ recv_context $t "Restore" }} {
+	{{ short $t }}.DeletedAt = nil
+	new{{ short $t }}, err:= {{ short $t }}.Update(ctx,db)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	return new{{ short $t }}, nil
+}
+
+{{ end }}
+
 {{ end }}

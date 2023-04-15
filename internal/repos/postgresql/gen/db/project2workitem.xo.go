@@ -30,8 +30,7 @@ type Project2WorkItemCreateParams struct {
 
 // Project2WorkItemUpdateParams represents update params for 'public.project_2_work_items'
 type Project2WorkItemUpdateParams struct {
-	WorkItemID            *int64     `json:"workItemID"`            // work_item_id
-	CustomDateForProject2 *time.Time `json:"customDateForProject2"` // custom_date_for_project_2
+	CustomDateForProject2 **time.Time `json:"customDateForProject2"` // custom_date_for_project_2
 }
 
 type Project2WorkItemSelectConfig struct {
@@ -104,7 +103,8 @@ func (pi *Project2WorkItem) Insert(ctx context.Context, db DB) (*Project2WorkIte
 		`work_item_id, custom_date_for_project_2` +
 		`) VALUES (` +
 		`$1, $2` +
-		`) `
+		`)` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, pi.WorkItemID, pi.CustomDateForProject2)
 	rows, err := db.Query(ctx, sqlstr, pi.WorkItemID, pi.CustomDateForProject2)
@@ -173,7 +173,8 @@ func (pi *Project2WorkItem) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (work_item_id) DO ` +
 		`UPDATE SET ` +
-		`custom_date_for_project_2 = EXCLUDED.custom_date_for_project_2  `
+		`custom_date_for_project_2 = EXCLUDED.custom_date_for_project_2 ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, pi.WorkItemID, pi.CustomDateForProject2)
 	if _, err := db.Exec(ctx, sqlstr, pi.WorkItemID, pi.CustomDateForProject2); err != nil {
@@ -196,7 +197,6 @@ func (pi *Project2WorkItem) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.project_2_work_items ` +
 		`WHERE work_item_id = $1 `
 	// run
-	logf(sqlstr, pi.WorkItemID)
 	if _, err := db.Exec(ctx, sqlstr, pi.WorkItemID); err != nil {
 		return logerror(err)
 	}
@@ -228,7 +228,7 @@ left join work_items on work_items.work_item_id = project_2_work_items.work_item
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID)
+	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("project_2_work_items/Project2WorkItemByWorkItemID/db.Query: %w", err))

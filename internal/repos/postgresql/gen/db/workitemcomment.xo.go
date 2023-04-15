@@ -79,8 +79,7 @@ func WithWorkItemCommentOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentS
 	}
 }
 
-type WorkItemCommentJoins struct {
-}
+type WorkItemCommentJoins struct{}
 
 // WithWorkItemCommentJoin joins with the given tables.
 func WithWorkItemCommentJoin(joins WorkItemCommentJoins) WorkItemCommentSelectConfigOption {
@@ -183,7 +182,8 @@ func (wic *WorkItemComment) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (work_item_comment_id) DO ` +
 		`UPDATE SET ` +
-		`work_item_id = EXCLUDED.work_item_id, user_id = EXCLUDED.user_id, message = EXCLUDED.message  `
+		`work_item_id = EXCLUDED.work_item_id, user_id = EXCLUDED.user_id, message = EXCLUDED.message ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message)
 	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID, wic.WorkItemID, wic.UserID, wic.Message); err != nil {
@@ -206,7 +206,6 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.work_item_comments ` +
 		`WHERE work_item_comment_id = $1 `
 	// run
-	logf(sqlstr, wic.WorkItemCommentID)
 	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID); err != nil {
 		return logerror(err)
 	}
@@ -240,7 +239,7 @@ work_item_comments.updated_at ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemCommentID)
+	// logf(sqlstr, workItemCommentID)
 	rows, err := db.Query(ctx, sqlstr, workItemCommentID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/db.Query: %w", err))
@@ -256,7 +255,7 @@ work_item_comments.updated_at ` +
 // WorkItemCommentsByWorkItemID retrieves a row from 'public.work_item_comments' as a WorkItemComment.
 //
 // Generated from index 'work_item_comments_work_item_id_idx'.
-func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemCommentSelectConfigOption) ([]*WorkItemComment, error) {
+func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
 	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}}
 
 	for _, o := range opts {
@@ -278,7 +277,7 @@ work_item_comments.updated_at ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID)
+	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, workItemID)
 	if err != nil {
 		return nil, logerror(err)
@@ -286,7 +285,7 @@ work_item_comments.updated_at ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemComment])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemComment])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

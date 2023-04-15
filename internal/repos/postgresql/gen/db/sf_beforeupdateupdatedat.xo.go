@@ -12,7 +12,7 @@ func BeforeUpdateUpdatedAt(ctx context.Context, db DB) (Trigger, error) {
 	sqlstr := `SELECT * FROM public.before_update_updated_at() `
 	// run
 	var r0 Trigger
-	logf(sqlstr)
+	// logf(sqlstr, )
 	if err := db.QueryRow(ctx, sqlstr).Scan(&r0); err != nil {
 		return Trigger{}, logerror(err)
 	}

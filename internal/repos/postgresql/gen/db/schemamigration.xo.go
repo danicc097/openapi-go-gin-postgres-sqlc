@@ -47,10 +47,7 @@ func WithSchemaMigrationLimit(limit int) SchemaMigrationSelectConfigOption {
 
 type SchemaMigrationOrderBy = string
 
-const ()
-
-type SchemaMigrationJoins struct {
-}
+type SchemaMigrationJoins struct{}
 
 // WithSchemaMigrationJoin joins with the given tables.
 func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectConfigOption {
@@ -83,7 +80,8 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration,
 		`version, dirty` +
 		`) VALUES (` +
 		`$1, $2` +
-		`) `
+		`)` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, sm.Version, sm.Dirty)
 	rows, err := db.Query(ctx, sqlstr, sm.Version, sm.Dirty)
@@ -152,7 +150,8 @@ func (sm *SchemaMigration) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (version) DO ` +
 		`UPDATE SET ` +
-		`dirty = EXCLUDED.dirty  `
+		`dirty = EXCLUDED.dirty ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, sm.Version, sm.Dirty)
 	if _, err := db.Exec(ctx, sqlstr, sm.Version, sm.Dirty); err != nil {
@@ -175,7 +174,6 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.schema_migrations ` +
 		`WHERE version = $1 `
 	// run
-	logf(sqlstr, sm.Version)
 	if _, err := db.Exec(ctx, sqlstr, sm.Version); err != nil {
 		return logerror(err)
 	}
@@ -205,7 +203,7 @@ schema_migrations.dirty ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, version)
+	// logf(sqlstr, version)
 	rows, err := db.Query(ctx, sqlstr, version)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/db.Query: %w", err))

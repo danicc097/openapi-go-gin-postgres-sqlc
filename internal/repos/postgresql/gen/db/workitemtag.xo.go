@@ -55,8 +55,6 @@ func WithWorkItemTagLimit(limit int) WorkItemTagSelectConfigOption {
 
 type WorkItemTagOrderBy = string
 
-const ()
-
 type WorkItemTagJoins struct {
 	WorkItems bool
 }
@@ -162,7 +160,8 @@ func (wit *WorkItemTag) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (work_item_tag_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color  `
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, wit.WorkItemTagID, wit.ProjectID, wit.Name, wit.Description, wit.Color)
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTagID, wit.ProjectID, wit.Name, wit.Description, wit.Color); err != nil {
@@ -185,7 +184,6 @@ func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.work_item_tags ` +
 		`WHERE work_item_tag_id = $1 `
 	// run
-	logf(sqlstr, wit.WorkItemTagID)
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTagID); err != nil {
 		return logerror(err)
 	}
@@ -219,7 +217,7 @@ left join (
 		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
 		, array_agg(work_items.*) as work_items
 		from work_item_work_item_tag
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
     group by work_item_work_item_tag_work_item_tag_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
@@ -228,7 +226,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name, projectID)
+	// logf(sqlstr, name, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByNameProjectID/db.Query: %w", err))
@@ -244,7 +242,7 @@ left join (
 // WorkItemTagsByName retrieves a row from 'public.work_item_tags' as a WorkItemTag.
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
-func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkItemTagSelectConfigOption) ([]*WorkItemTag, error) {
+func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
 
 	for _, o := range opts {
@@ -266,7 +264,7 @@ left join (
 		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
 		, array_agg(work_items.*) as work_items
 		from work_item_work_item_tag
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
     group by work_item_work_item_tag_work_item_tag_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
@@ -275,7 +273,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, name)
 	if err != nil {
 		return nil, logerror(err)
@@ -283,7 +281,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemTag])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -293,7 +291,7 @@ left join (
 // WorkItemTagsByProjectID retrieves a row from 'public.work_item_tags' as a WorkItemTag.
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
-func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]*WorkItemTag, error) {
+func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
 
 	for _, o := range opts {
@@ -315,7 +313,7 @@ left join (
 		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
 		, array_agg(work_items.*) as work_items
 		from work_item_work_item_tag
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
     group by work_item_work_item_tag_work_item_tag_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
@@ -324,7 +322,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID)
+	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, projectID)
 	if err != nil {
 		return nil, logerror(err)
@@ -332,7 +330,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemTag])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -364,7 +362,7 @@ left join (
 		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
 		, array_agg(work_items.*) as work_items
 		from work_item_work_item_tag
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
     group by work_item_work_item_tag_work_item_tag_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
@@ -373,7 +371,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemTagID)
+	// logf(sqlstr, workItemTagID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItems, workItemTagID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByWorkItemTagID/db.Query: %w", err))

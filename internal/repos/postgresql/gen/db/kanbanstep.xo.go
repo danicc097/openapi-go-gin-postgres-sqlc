@@ -37,7 +37,7 @@ type KanbanStepCreateParams struct {
 // KanbanStepUpdateParams represents update params for 'public.kanban_steps'
 type KanbanStepUpdateParams struct {
 	ProjectID     *int    `json:"projectID"`     // project_id
-	StepOrder     *int16  `json:"stepOrder"`     // step_order
+	StepOrder     **int16 `json:"stepOrder"`     // step_order
 	Name          *string `json:"name"`          // name
 	Description   *string `json:"description"`   // description
 	Color         *string `json:"color"`         // color
@@ -60,10 +60,7 @@ func WithKanbanStepLimit(limit int) KanbanStepSelectConfigOption {
 
 type KanbanStepOrderBy = string
 
-const ()
-
-type KanbanStepJoins struct {
-}
+type KanbanStepJoins struct{}
 
 // WithKanbanStepJoin joins with the given tables.
 func WithKanbanStepJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
@@ -166,7 +163,8 @@ func (ks *KanbanStep) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (kanban_step_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, step_order = EXCLUDED.step_order, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color, time_trackable = EXCLUDED.time_trackable  `
+		`project_id = EXCLUDED.project_id, step_order = EXCLUDED.step_order, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color, time_trackable = EXCLUDED.time_trackable ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable)
 	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID, ks.ProjectID, ks.StepOrder, ks.Name, ks.Description, ks.Color, ks.TimeTrackable); err != nil {
@@ -189,7 +187,6 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.kanban_steps ` +
 		`WHERE kanban_step_id = $1 `
 	// run
-	logf(sqlstr, ks.KanbanStepID)
 	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID); err != nil {
 		return logerror(err)
 	}
@@ -224,7 +221,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, kanbanStepID)
+	// logf(sqlstr, kanbanStepID)
 	rows, err := db.Query(ctx, sqlstr, kanbanStepID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByKanbanStepID/db.Query: %w", err))
@@ -240,7 +237,7 @@ kanban_steps.time_trackable ` +
 // KanbanStepsByProjectID_WhereStepOrderIsNull retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_name_idx'.
-func KanbanStepsByProjectID_WhereStepOrderIsNull(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]*KanbanStep, error) {
+func KanbanStepsByProjectID_WhereStepOrderIsNull(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
 
 	for _, o := range opts {
@@ -263,7 +260,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID)
+	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, projectID)
 	if err != nil {
 		return nil, logerror(err)
@@ -271,7 +268,7 @@ kanban_steps.time_trackable ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*KanbanStep])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -304,7 +301,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID, name)
+	// logf(sqlstr, projectID, name)
 	rows, err := db.Query(ctx, sqlstr, projectID, name)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDName/db.Query: %w", err))
@@ -320,7 +317,7 @@ kanban_steps.time_trackable ` +
 // KanbanStepsByName_WhereStepOrderIsNull retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_name_idx'.
-func KanbanStepsByName_WhereStepOrderIsNull(ctx context.Context, db DB, name string, opts ...KanbanStepSelectConfigOption) ([]*KanbanStep, error) {
+func KanbanStepsByName_WhereStepOrderIsNull(ctx context.Context, db DB, name string, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
 
 	for _, o := range opts {
@@ -343,7 +340,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, name)
 	if err != nil {
 		return nil, logerror(err)
@@ -351,7 +348,7 @@ kanban_steps.time_trackable ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*KanbanStep])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -384,7 +381,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID, name, stepOrder)
+	// logf(sqlstr, projectID, name, stepOrder)
 	rows, err := db.Query(ctx, sqlstr, projectID, name, stepOrder)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDNameStepOrder/db.Query: %w", err))
@@ -400,7 +397,7 @@ kanban_steps.time_trackable ` +
 // KanbanStepsByProjectID_WhereStepOrderIsNotNull retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
-func KanbanStepsByProjectID_WhereStepOrderIsNotNull(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]*KanbanStep, error) {
+func KanbanStepsByProjectID_WhereStepOrderIsNotNull(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
 
 	for _, o := range opts {
@@ -423,7 +420,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID)
+	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, projectID)
 	if err != nil {
 		return nil, logerror(err)
@@ -431,7 +428,7 @@ kanban_steps.time_trackable ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*KanbanStep])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -441,7 +438,7 @@ kanban_steps.time_trackable ` +
 // KanbanStepsByName_WhereStepOrderIsNotNull retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
-func KanbanStepsByName_WhereStepOrderIsNotNull(ctx context.Context, db DB, name string, opts ...KanbanStepSelectConfigOption) ([]*KanbanStep, error) {
+func KanbanStepsByName_WhereStepOrderIsNotNull(ctx context.Context, db DB, name string, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
 
 	for _, o := range opts {
@@ -464,7 +461,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, name)
 	if err != nil {
 		return nil, logerror(err)
@@ -472,7 +469,7 @@ kanban_steps.time_trackable ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*KanbanStep])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -482,7 +479,7 @@ kanban_steps.time_trackable ` +
 // KanbanStepsByStepOrder_WhereStepOrderIsNotNull retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
-func KanbanStepsByStepOrder_WhereStepOrderIsNotNull(ctx context.Context, db DB, stepOrder *int16, opts ...KanbanStepSelectConfigOption) ([]*KanbanStep, error) {
+func KanbanStepsByStepOrder_WhereStepOrderIsNotNull(ctx context.Context, db DB, stepOrder *int16, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
 
 	for _, o := range opts {
@@ -505,7 +502,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, stepOrder)
+	// logf(sqlstr, stepOrder)
 	rows, err := db.Query(ctx, sqlstr, stepOrder)
 	if err != nil {
 		return nil, logerror(err)
@@ -513,7 +510,7 @@ kanban_steps.time_trackable ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*KanbanStep])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -546,7 +543,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID, stepOrder)
+	// logf(sqlstr, projectID, stepOrder)
 	rows, err := db.Query(ctx, sqlstr, projectID, stepOrder)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDStepOrder/db.Query: %w", err))
@@ -562,7 +559,7 @@ kanban_steps.time_trackable ` +
 // KanbanStepsByProjectID retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_step_order_key'.
-func KanbanStepsByProjectID(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]*KanbanStep, error) {
+func KanbanStepsByProjectID(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
 
 	for _, o := range opts {
@@ -585,7 +582,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID)
+	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, projectID)
 	if err != nil {
 		return nil, logerror(err)
@@ -593,7 +590,7 @@ kanban_steps.time_trackable ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*KanbanStep])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -603,7 +600,7 @@ kanban_steps.time_trackable ` +
 // KanbanStepsByStepOrder retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_step_order_key'.
-func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder *int16, opts ...KanbanStepSelectConfigOption) ([]*KanbanStep, error) {
+func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder *int16, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
 
 	for _, o := range opts {
@@ -626,7 +623,7 @@ kanban_steps.time_trackable ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, stepOrder)
+	// logf(sqlstr, stepOrder)
 	rows, err := db.Query(ctx, sqlstr, stepOrder)
 	if err != nil {
 		return nil, logerror(err)
@@ -634,7 +631,7 @@ kanban_steps.time_trackable ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*KanbanStep])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

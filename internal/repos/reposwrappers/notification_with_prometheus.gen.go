@@ -53,7 +53,7 @@ func (_d NotificationWithPrometheus) Create(ctx context.Context, d db.DBTX, para
 }
 
 // Delete implements repos.Notification
-func (_d NotificationWithPrometheus) Delete(ctx context.Context, d db.DBTX, notificationID int) (np1 *db.Notification, err error) {
+func (_d NotificationWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) (np1 *db.Notification, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -63,7 +63,7 @@ func (_d NotificationWithPrometheus) Delete(ctx context.Context, d db.DBTX, noti
 
 		notificationDurationSummaryVec.WithLabelValues(_d.instanceName, "Delete", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.Delete(ctx, d, notificationID)
+	return _d.base.Delete(ctx, d, id)
 }
 
 // LatestUserNotifications implements repos.Notification

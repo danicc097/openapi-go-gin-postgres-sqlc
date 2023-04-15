@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
@@ -19,41 +20,7 @@ func NewNotification() *Notification {
 	}
 }
 
-// var _ repos.Notification = (*Notification)(nil)
-
-// func (u *Notification) Create(ctx context.Context, d db.DBTX, params db.UserCreateParams) (*db.Notification, error) {
-// 	user := &db.Notification{
-// 		Username:   params.Username,
-// 		Email:      params.Email,
-// 		FirstName:  params.FirstName,
-// 		LastName:   params.LastName,
-// 		ExternalID: params.ExternalID,
-// 		RoleRank:   params.RoleRank,
-// 		Scopes:     params.Scopes,
-// 	}
-
-// 	if err := user.Save(ctx, d); err != nil {
-// 		return nil, err
-// 	}
-
-// 	return user, nil
-// }
-
-// func (u *Notification) Delete(ctx context.Context, d db.DBTX, id string) (*db.Notification, error) {
-// 	user, err := u.UserByID(ctx, d, id)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not get user by id %w", parseErrorDetail(err))
-// 	}
-
-// 	user.DeletedAt = pointers.New(time.Now())
-
-// 	err = user.Update(ctx, d)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("could not mark user as deleted: %w", parseErrorDetail(err))
-// 	}
-
-// 	return user, err
-// }
+var _ repos.Notification = (*Notification)(nil)
 
 // TODO see internal/repos/postgresql/TODO.md
 // using created_at > @last_notification_created_at is all we need at the very least. add more parameters
@@ -127,8 +94,8 @@ func (u *Notification) Create(ctx context.Context, d db.DBTX, params db.Notifica
 	return notification, nil
 }
 
-func (u *Notification) Delete(ctx context.Context, d db.DBTX, notificationID int) (*db.Notification, error) {
-	notification, err := db.NotificationByNotificationID(ctx, d, notificationID)
+func (u *Notification) Delete(ctx context.Context, d db.DBTX, id int) (*db.Notification, error) {
+	notification, err := db.NotificationByNotificationID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get notification by id %w", parseErrorDetail(err))
 	}

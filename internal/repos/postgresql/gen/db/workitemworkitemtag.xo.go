@@ -47,10 +47,7 @@ func WithWorkItemWorkItemTagLimit(limit int) WorkItemWorkItemTagSelectConfigOpti
 
 type WorkItemWorkItemTagOrderBy = string
 
-const ()
-
-type WorkItemWorkItemTagJoins struct {
-}
+type WorkItemWorkItemTagJoins struct{}
 
 // WithWorkItemWorkItemTagJoin joins with the given tables.
 func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
@@ -83,7 +80,8 @@ func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemW
 		`work_item_tag_id, work_item_id` +
 		`) VALUES (` +
 		`$1, $2` +
-		`) `
+		`)` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
 	rows, err := db.Query(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
@@ -114,7 +112,6 @@ func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.work_item_work_item_tag ` +
 		`WHERE work_item_tag_id = $1 AND work_item_id = $2 `
 	// run
-	logf(sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID)
 	if _, err := db.Exec(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID); err != nil {
 		return logerror(err)
 	}
@@ -144,7 +141,7 @@ work_item_work_item_tag.work_item_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID, workItemTagID)
+	// logf(sqlstr, workItemID, workItemTagID)
 	rows, err := db.Query(ctx, sqlstr, workItemID, workItemTagID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_work_item_tag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/db.Query: %w", err))
@@ -160,7 +157,7 @@ work_item_work_item_tag.work_item_id ` +
 // WorkItemWorkItemTagsByWorkItemID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
 //
 // Generated from index 'work_item_work_item_tag_pkey'.
-func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
+func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
 
 	for _, o := range opts {
@@ -178,7 +175,7 @@ work_item_work_item_tag.work_item_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID)
+	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, workItemID)
 	if err != nil {
 		return nil, logerror(err)
@@ -186,7 +183,7 @@ work_item_work_item_tag.work_item_id ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemWorkItemTag])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -196,7 +193,7 @@ work_item_work_item_tag.work_item_id ` +
 // WorkItemWorkItemTagsByWorkItemTagID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
 //
 // Generated from index 'work_item_work_item_tag_pkey'.
-func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
+func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
 
 	for _, o := range opts {
@@ -214,7 +211,7 @@ work_item_work_item_tag.work_item_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemTagID)
+	// logf(sqlstr, workItemTagID)
 	rows, err := db.Query(ctx, sqlstr, workItemTagID)
 	if err != nil {
 		return nil, logerror(err)
@@ -222,7 +219,7 @@ work_item_work_item_tag.work_item_id ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemWorkItemTag])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -232,7 +229,7 @@ work_item_work_item_tag.work_item_id ` +
 // WorkItemWorkItemTagsByWorkItemTagIDWorkItemID retrieves a row from 'public.work_item_work_item_tag' as a WorkItemWorkItemTag.
 //
 // Generated from index 'work_item_work_item_tag_work_item_tag_id_work_item_id_idx'.
-func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]*WorkItemWorkItemTag, error) {
+func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID int, workItemID int64, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{}}
 
 	for _, o := range opts {
@@ -250,7 +247,7 @@ work_item_work_item_tag.work_item_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemTagID, workItemID)
+	// logf(sqlstr, workItemTagID, workItemID)
 	rows, err := db.Query(ctx, sqlstr, workItemTagID, workItemID)
 	if err != nil {
 		return nil, logerror(err)
@@ -258,7 +255,7 @@ work_item_work_item_tag.work_item_id ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemWorkItemTag])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemWorkItemTag])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

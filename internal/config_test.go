@@ -60,31 +60,66 @@ func TestNewAppConfig(t *testing.T) {
 			errContains: `could not set "TEST_CFG_NAME" to "Name": TEST_CFG_NAME is not set but required`,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			for k, v := range tt.environ {
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			for k, v := range tc.environ {
 				t.Setenv(k, v)
 			}
 
 			c := &cfg{}
 			err := loadEnvToConfig(c)
-			if err != nil && tt.errContains == "" {
+			if err != nil && tc.errContains == "" {
 				t.Errorf("unexpected error: %v", err)
 
 				return
 			}
-			if tt.errContains != "" {
+			if tc.errContains != "" {
 				if err == nil {
 					t.Errorf("expected error but got nothing")
 
 					return
 				}
-				assert.Contains(t, err.Error(), tt.errContains)
+				assert.Contains(t, err.Error(), tc.errContains)
 
 				return
 			}
 
-			assert.Equal(t, tt.want, c)
+			assert.Equal(t, tc.want, c)
 		})
 	}
+}
+
+func TestBadAppConfig(t *testing.T) {
+	type nestedCfg struct {
+		Name string `env:"TEST_CFG_NAME"`
+	}
+
+	t.Run("struct_has_env_tag", func(t *testing.T) {
+		errContains := "unsupported type for env tag"
+		environ := map[string]string{"ENV_ON_STRUCT": "10", "TEST_CFG_NAME": "name"}
+		for k, v := range environ {
+			t.Setenv(k, v)
+		}
+
+		type cfg struct {
+			NestedCfg nestedCfg `env:"ENV_ON_STRUCT"`
+		}
+		c := &cfg{}
+		err := loadEnvToConfig(c)
+		if err != nil && errContains == "" {
+			t.Errorf("unexpected error: %v", err)
+
+			return
+		}
+		if errContains != "" {
+			if err == nil {
+				t.Errorf("expected error but got nothing")
+
+				return
+			}
+			assert.Contains(t, err.Error(), errContains)
+
+			return
+		}
+	})
 }

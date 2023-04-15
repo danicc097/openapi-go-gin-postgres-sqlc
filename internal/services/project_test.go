@@ -11,7 +11,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/google/go-cmp/cmp"
-	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap/zaptest"
@@ -24,7 +23,7 @@ func Test_MergeConfigFields(t *testing.T) {
 	fakeProjectRepo.ByIDStub = func(ctx context.Context, d db.DBTX, i int) (*db.Project, error) {
 		return &db.Project{
 			Name: internalmodels.ProjectDemoProject,
-			BoardConfig: pgtype.JSONB{Bytes: []byte(`
+			BoardConfig: []byte(`
 		{
 			"header": ["demoProject.ref", "workItemType"],
 			"fields": [
@@ -44,7 +43,7 @@ func Test_MergeConfigFields(t *testing.T) {
 				}
 			]
 		}
-		`)},
+		`),
 		}, nil
 	}
 	fakeTeamRepo := &repostesting.FakeTeam{}

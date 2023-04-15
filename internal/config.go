@@ -34,7 +34,7 @@ type PostgresConfig struct {
 	Password     string `env:"POSTGRES_PASSWORD"`
 	Server       string `env:"POSTGRES_SERVER"`
 	DB           string `env:"POSTGRES_DB"`
-	TraceEnabled bool   `env:"POSTGRES_TRACE,false"`
+	TraceEnabled bool   `env:"POSTGRES_TRACE,true"`
 }
 
 type RedisConfig struct {
@@ -160,6 +160,8 @@ func setEnvToField(envTag string, field reflect.Value) error {
 			return fmt.Errorf("could not convert %s to bool: %w", envvar, err)
 		}
 		setVal(isPtr, field, v)
+	default:
+		return fmt.Errorf("unsupported type for env tag %q: %T", envvar, field.Interface())
 	}
 
 	return nil

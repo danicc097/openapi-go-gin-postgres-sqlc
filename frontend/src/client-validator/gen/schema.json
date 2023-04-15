@@ -908,10 +908,6 @@
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "ModelsRole": {
-      "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "UuidUUID": {
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -1107,10 +1103,6 @@
       "description": "Existing projects",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "ModelsProject": {
-      "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "DbActivityCreateParams": {
       "properties": {
         "description": {
@@ -1206,6 +1198,14 @@
       },
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsProject": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsRole": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -1287,9 +1287,6 @@
     "ValidationError": {
       "$ref": "#/definitions/ValidationError"
     },
-    "ModelsRole": {
-      "$ref": "#/definitions/ModelsRole"
-    },
     "UuidUUID": {
       "$ref": "#/definitions/UuidUUID"
     },
@@ -1311,9 +1308,6 @@
     "Project": {
       "$ref": "#/definitions/Project"
     },
-    "ModelsProject": {
-      "$ref": "#/definitions/ModelsProject"
-    },
     "DbActivityCreateParams": {
       "$ref": "#/definitions/DbActivityCreateParams"
     },
@@ -1328,6 +1322,12 @@
     },
     "DbWorkItemTypeCreateParams": {
       "$ref": "#/definitions/DbWorkItemTypeCreateParams"
+    },
+    "ModelsProject": {
+      "$ref": "#/definitions/ModelsProject"
+    },
+    "ModelsRole": {
+      "$ref": "#/definitions/ModelsRole"
     }
   }
 }

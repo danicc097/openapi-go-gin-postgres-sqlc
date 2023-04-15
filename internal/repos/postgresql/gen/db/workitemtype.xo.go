@@ -55,8 +55,6 @@ func WithWorkItemTypeLimit(limit int) WorkItemTypeSelectConfigOption {
 
 type WorkItemTypeOrderBy = string
 
-const ()
-
 type WorkItemTypeJoins struct {
 	WorkItem bool
 }
@@ -162,7 +160,8 @@ func (wit *WorkItemType) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (work_item_type_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color  `
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color)
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color); err != nil {
@@ -185,7 +184,6 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.work_item_types ` +
 		`WHERE work_item_type_id = $1 `
 	// run
-	logf(sqlstr, wit.WorkItemTypeID)
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTypeID); err != nil {
 		return logerror(err)
 	}
@@ -220,7 +218,7 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name, projectID)
+	// logf(sqlstr, name, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByNameProjectID/db.Query: %w", err))
@@ -236,7 +234,7 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 // WorkItemTypesByName retrieves a row from 'public.work_item_types' as a WorkItemType.
 //
 // Generated from index 'work_item_types_name_project_id_key'.
-func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkItemTypeSelectConfigOption) ([]*WorkItemType, error) {
+func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
 
 	for _, o := range opts {
@@ -259,7 +257,7 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, name)
 	if err != nil {
 		return nil, logerror(err)
@@ -267,7 +265,7 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemType])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemType])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -277,7 +275,7 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 // WorkItemTypesByProjectID retrieves a row from 'public.work_item_types' as a WorkItemType.
 //
 // Generated from index 'work_item_types_name_project_id_key'.
-func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTypeSelectConfigOption) ([]*WorkItemType, error) {
+func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
 
 	for _, o := range opts {
@@ -300,7 +298,7 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID)
+	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, projectID)
 	if err != nil {
 		return nil, logerror(err)
@@ -308,7 +306,7 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemType])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemType])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -341,7 +339,7 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemTypeID)
+	// logf(sqlstr, workItemTypeID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemTypeID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByWorkItemTypeID/db.Query: %w", err))

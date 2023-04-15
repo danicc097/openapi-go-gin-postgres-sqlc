@@ -53,8 +53,6 @@ func WithUserNotificationLimit(limit int) UserNotificationSelectConfigOption {
 
 type UserNotificationOrderBy = string
 
-const ()
-
 type UserNotificationJoins struct {
 	Notification bool
 }
@@ -160,7 +158,8 @@ func (un *UserNotification) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (user_notification_id) DO ` +
 		`UPDATE SET ` +
-		`notification_id = EXCLUDED.notification_id, read = EXCLUDED.read, user_id = EXCLUDED.user_id  `
+		`notification_id = EXCLUDED.notification_id, read = EXCLUDED.read, user_id = EXCLUDED.user_id ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID)
 	if _, err := db.Exec(ctx, sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID); err != nil {
@@ -183,7 +182,6 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.user_notifications ` +
 		`WHERE user_notification_id = $1 `
 	// run
-	logf(sqlstr, un.UserNotificationID)
 	if _, err := db.Exec(ctx, sqlstr, un.UserNotificationID); err != nil {
 		return logerror(err)
 	}
@@ -217,7 +215,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, notificationID, userID)
+	// logf(sqlstr, notificationID, userID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, notificationID, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByNotificationIDUserID/db.Query: %w", err))
@@ -233,7 +231,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 // UserNotificationsByNotificationID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_notification_id_user_id_key'.
-func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]*UserNotification, error) {
+func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
@@ -255,7 +253,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, notificationID)
+	// logf(sqlstr, notificationID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, notificationID)
 	if err != nil {
 		return nil, logerror(err)
@@ -263,7 +261,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserNotification])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -295,7 +293,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userNotificationID)
+	// logf(sqlstr, userNotificationID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, userNotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByUserNotificationID/db.Query: %w", err))
@@ -311,7 +309,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 // UserNotificationsByUserID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_user_id_idx'.
-func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserNotificationSelectConfigOption) ([]*UserNotification, error) {
+func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
@@ -333,7 +331,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userID)
+	// logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, userID)
 	if err != nil {
 		return nil, logerror(err)
@@ -341,7 +339,7 @@ left join notifications on notifications.notification_id = user_notifications.no
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserNotification])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

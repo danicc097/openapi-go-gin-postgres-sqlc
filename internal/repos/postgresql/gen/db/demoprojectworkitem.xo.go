@@ -36,7 +36,6 @@ type DemoProjectWorkItemCreateParams struct {
 
 // DemoProjectWorkItemUpdateParams represents update params for 'public.demo_project_work_items'
 type DemoProjectWorkItemUpdateParams struct {
-	WorkItemID    *int64     `json:"workItemID"`    // work_item_id
 	Ref           *string    `json:"ref"`           // ref
 	Line          *string    `json:"line"`          // line
 	LastMessageAt *time.Time `json:"lastMessageAt"` // last_message_at
@@ -113,7 +112,8 @@ func (dpwi *DemoProjectWorkItem) Insert(ctx context.Context, db DB) (*DemoProjec
 		`work_item_id, ref, line, last_message_at, reopened` +
 		`) VALUES (` +
 		`$1, $2, $3, $4, $5` +
-		`) `
+		`)` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, dpwi.WorkItemID, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened)
 	rows, err := db.Query(ctx, sqlstr, dpwi.WorkItemID, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened)
@@ -182,7 +182,8 @@ func (dpwi *DemoProjectWorkItem) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (work_item_id) DO ` +
 		`UPDATE SET ` +
-		`ref = EXCLUDED.ref, line = EXCLUDED.line, last_message_at = EXCLUDED.last_message_at, reopened = EXCLUDED.reopened  `
+		`ref = EXCLUDED.ref, line = EXCLUDED.line, last_message_at = EXCLUDED.last_message_at, reopened = EXCLUDED.reopened ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, dpwi.WorkItemID, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened)
 	if _, err := db.Exec(ctx, sqlstr, dpwi.WorkItemID, dpwi.Ref, dpwi.Line, dpwi.LastMessageAt, dpwi.Reopened); err != nil {
@@ -205,7 +206,6 @@ func (dpwi *DemoProjectWorkItem) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.demo_project_work_items ` +
 		`WHERE work_item_id = $1 `
 	// run
-	logf(sqlstr, dpwi.WorkItemID)
 	if _, err := db.Exec(ctx, sqlstr, dpwi.WorkItemID); err != nil {
 		return logerror(err)
 	}
@@ -240,7 +240,7 @@ left join work_items on work_items.work_item_id = demo_project_work_items.work_i
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID)
+	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_project_work_items/DemoProjectWorkItemByWorkItemID/db.Query: %w", err))
@@ -256,7 +256,7 @@ left join work_items on work_items.work_item_id = demo_project_work_items.work_i
 // DemoProjectWorkItemsByRefLine retrieves a row from 'public.demo_project_work_items' as a DemoProjectWorkItem.
 //
 // Generated from index 'demo_project_work_items_ref_line_idx'.
-func DemoProjectWorkItemsByRefLine(ctx context.Context, db DB, ref string, line string, opts ...DemoProjectWorkItemSelectConfigOption) ([]*DemoProjectWorkItem, error) {
+func DemoProjectWorkItemsByRefLine(ctx context.Context, db DB, ref, line string, opts ...DemoProjectWorkItemSelectConfigOption) ([]DemoProjectWorkItem, error) {
 	c := &DemoProjectWorkItemSelectConfig{joins: DemoProjectWorkItemJoins{}}
 
 	for _, o := range opts {
@@ -279,7 +279,7 @@ left join work_items on work_items.work_item_id = demo_project_work_items.work_i
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, ref, line)
+	// logf(sqlstr, ref, line)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, ref, line)
 	if err != nil {
 		return nil, logerror(err)
@@ -287,7 +287,7 @@ left join work_items on work_items.work_item_id = demo_project_work_items.work_i
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*DemoProjectWorkItem])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoProjectWorkItem])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

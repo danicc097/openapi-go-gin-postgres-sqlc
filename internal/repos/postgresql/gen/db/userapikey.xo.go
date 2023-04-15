@@ -179,7 +179,8 @@ func (uak *UserAPIKey) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (user_api_key_id) DO ` +
 		`UPDATE SET ` +
-		`api_key = EXCLUDED.api_key, expires_on = EXCLUDED.expires_on, user_id = EXCLUDED.user_id  `
+		`api_key = EXCLUDED.api_key, expires_on = EXCLUDED.expires_on, user_id = EXCLUDED.user_id ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, uak.UserAPIKeyID, uak.APIKey, uak.ExpiresOn, uak.UserID)
 	if _, err := db.Exec(ctx, sqlstr, uak.UserAPIKeyID, uak.APIKey, uak.ExpiresOn, uak.UserID); err != nil {
@@ -202,7 +203,6 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.user_api_keys ` +
 		`WHERE user_api_key_id = $1 `
 	// run
-	logf(sqlstr, uak.UserAPIKeyID)
 	if _, err := db.Exec(ctx, sqlstr, uak.UserAPIKeyID); err != nil {
 		return logerror(err)
 	}
@@ -236,7 +236,7 @@ left join users on users.user_id = user_api_keys.user_id` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, apiKey)
+	// logf(sqlstr, apiKey)
 	rows, err := db.Query(ctx, sqlstr, c.joins.User, apiKey)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", err))
@@ -274,7 +274,7 @@ left join users on users.user_id = user_api_keys.user_id` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userAPIKeyID)
+	// logf(sqlstr, userAPIKeyID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.User, userAPIKeyID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", err))
@@ -312,7 +312,7 @@ left join users on users.user_id = user_api_keys.user_id` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userID)
+	// logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.User, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", err))

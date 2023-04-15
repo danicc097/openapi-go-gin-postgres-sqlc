@@ -51,10 +51,7 @@ func WithWorkItemMemberLimit(limit int) WorkItemMemberSelectConfigOption {
 
 type WorkItemMemberOrderBy = string
 
-const ()
-
-type WorkItemMemberJoins struct {
-}
+type WorkItemMemberJoins struct{}
 
 // WithWorkItemMemberJoin joins with the given tables.
 func WithWorkItemMemberJoin(joins WorkItemMemberJoins) WorkItemMemberSelectConfigOption {
@@ -87,7 +84,8 @@ func (wim *WorkItemMember) Insert(ctx context.Context, db DB) (*WorkItemMember, 
 		`work_item_id, member, role` +
 		`) VALUES (` +
 		`$1, $2, $3` +
-		`) `
+		`)` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, wim.WorkItemID, wim.Member, wim.Role)
 	rows, err := db.Query(ctx, sqlstr, wim.WorkItemID, wim.Member, wim.Role)
@@ -156,7 +154,8 @@ func (wim *WorkItemMember) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (work_item_id, member) DO ` +
 		`UPDATE SET ` +
-		`role = EXCLUDED.role  `
+		`role = EXCLUDED.role ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, wim.WorkItemID, wim.Member, wim.Role)
 	if _, err := db.Exec(ctx, sqlstr, wim.WorkItemID, wim.Member, wim.Role); err != nil {
@@ -179,7 +178,6 @@ func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.work_item_member ` +
 		`WHERE work_item_id = $1 AND member = $2 `
 	// run
-	logf(sqlstr, wim.WorkItemID, wim.Member)
 	if _, err := db.Exec(ctx, sqlstr, wim.WorkItemID, wim.Member); err != nil {
 		return logerror(err)
 	}
@@ -191,7 +189,7 @@ func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
 // WorkItemMembersByMemberWorkItemID retrieves a row from 'public.work_item_member' as a WorkItemMember.
 //
 // Generated from index 'work_item_member_member_work_item_id_idx'.
-func WorkItemMembersByMemberWorkItemID(ctx context.Context, db DB, member uuid.UUID, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
+func WorkItemMembersByMemberWorkItemID(ctx context.Context, db DB, member uuid.UUID, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]WorkItemMember, error) {
 	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
 
 	for _, o := range opts {
@@ -210,7 +208,7 @@ work_item_member.role ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, member, workItemID)
+	// logf(sqlstr, member, workItemID)
 	rows, err := db.Query(ctx, sqlstr, member, workItemID)
 	if err != nil {
 		return nil, logerror(err)
@@ -218,7 +216,7 @@ work_item_member.role ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemMember])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemMember])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -247,7 +245,7 @@ work_item_member.role ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID, member)
+	// logf(sqlstr, workItemID, member)
 	rows, err := db.Query(ctx, sqlstr, workItemID, member)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_member/WorkItemMemberByWorkItemIDMember/db.Query: %w", err))
@@ -263,7 +261,7 @@ work_item_member.role ` +
 // WorkItemMembersByWorkItemID retrieves a row from 'public.work_item_member' as a WorkItemMember.
 //
 // Generated from index 'work_item_member_pkey'.
-func WorkItemMembersByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
+func WorkItemMembersByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...WorkItemMemberSelectConfigOption) ([]WorkItemMember, error) {
 	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
 
 	for _, o := range opts {
@@ -282,7 +280,7 @@ work_item_member.role ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID)
+	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, workItemID)
 	if err != nil {
 		return nil, logerror(err)
@@ -290,7 +288,7 @@ work_item_member.role ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemMember])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemMember])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -300,7 +298,7 @@ work_item_member.role ` +
 // WorkItemMembersByMember retrieves a row from 'public.work_item_member' as a WorkItemMember.
 //
 // Generated from index 'work_item_member_pkey'.
-func WorkItemMembersByMember(ctx context.Context, db DB, member uuid.UUID, opts ...WorkItemMemberSelectConfigOption) ([]*WorkItemMember, error) {
+func WorkItemMembersByMember(ctx context.Context, db DB, member uuid.UUID, opts ...WorkItemMemberSelectConfigOption) ([]WorkItemMember, error) {
 	c := &WorkItemMemberSelectConfig{joins: WorkItemMemberJoins{}}
 
 	for _, o := range opts {
@@ -319,7 +317,7 @@ work_item_member.role ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, member)
+	// logf(sqlstr, member)
 	rows, err := db.Query(ctx, sqlstr, member)
 	if err != nil {
 		return nil, logerror(err)
@@ -327,7 +325,7 @@ work_item_member.role ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*WorkItemMember])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemMember])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

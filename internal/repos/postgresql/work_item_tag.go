@@ -43,17 +43,9 @@ func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params db
 		return nil, fmt.Errorf("could not get activity by id %w", parseErrorDetail(err))
 	}
 
-	if params.Description != nil {
-		activity.Description = *params.Description
-	}
-	if params.Name != nil {
-		activity.Name = *params.Name
-	}
-	if params.Color != nil {
-		activity.Color = *params.Color
-	}
+	updateEntityWithParams(activity, &params)
 
-	_, err = activity.Update(ctx, d)
+	activity, err = activity.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not update activity: %w", parseErrorDetail(err))
 	}

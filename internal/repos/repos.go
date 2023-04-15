@@ -50,21 +50,50 @@ type ProjectBoard interface {
 	ByID(ctx context.Context, d db.DBTX, projectID int) (*models.ProjectBoard, error)
 }
 
+type DemoProjectWorkItemUpdateParams struct {
+	DemoProject *db.DemoProjectWorkItemUpdateParams
+	Base        *db.WorkItemUpdateParams
+}
+
+type DemoProjectWorkItemCreateParams struct {
+	DemoProject db.DemoProjectWorkItemCreateParams
+	Base        db.WorkItemCreateParams
+}
+
 // DemoProjectWorkItem defines the datastore/repository handling persisting DemoProjectWorkItem records.
 type DemoProjectWorkItem interface {
 	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.DemoProjectWorkItemSelectConfigOption) (*db.DemoProjectWorkItem, error)
-	// Create,
-	// Delete,
-	// ByTeam(closed bool, deleted bool)
-	// Update (service has Close (Update with closed=True), Move(Update with kanban step change), ...)
+	// params for dedicated workItem require workItemID (FK-as-PK)
+	Create(ctx context.Context, d db.DBTX, params DemoProjectWorkItemCreateParams) (*db.DemoProjectWorkItem, error)
+	Update(ctx context.Context, d db.DBTX, id int64, params DemoProjectWorkItemUpdateParams) (*db.DemoProjectWorkItem, error)
+	Delete(ctx context.Context, d db.DBTX, id int64) (*db.DemoProjectWorkItem, error)
+	// repo has Update only, then service has Close() (Update with closed=True), Move() (Update with kanban step change), ...)
+	// params for dedicated workItem require workItemID (FK-as-PK)
 	// TBD if useful: ByTag, ByType (for closed workitem searches. open ones simply return everything and filter in client)
 }
+
+// WorkItem defines the datastore/repository handling persisting WorkItem records.
+/**
+ * TODO:
+ * instead pass `, project models.Project` and do appropiate joins in workitem.xo.go depending on it.
+ * in case we need specific indexes from {project}workitem.xo.go we can do e.g. DemoProjectWorkItemsByRefLine with no workitem join
+ * and then just loop over those and filter by ID taking the performance hit. it will be rare to use those filters anyway.
+ * If not we can always go back to sqlc or use jet + reuse the xo model
+ *
+ */
+// type WorkItem interface {
+// 	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
+// 	ByTeam(ctx context.Context, d db.DBTX, teamID int, closed bool, deleted bool, opts ...db.WorkItemSelectConfigOption) ([]*db.WorkItem, error)
+// 	// params for dedicated workItem require workItemID (FK-as-PK)
+// 	Create(ctx context.Context, d db.DBTX, id int64, params db.WorkItemCreateParams) (*db.WorkItem, error)
+// 	Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error)
+// }
 
 // Notification defines the datastore/repository handling persisting Notification records.
 type Notification interface {
 	LatestUserNotifications(ctx context.Context, d db.DBTX, params db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
 	Create(ctx context.Context, d db.DBTX, params db.NotificationCreateParams) (*db.Notification, error)
-	Delete(ctx context.Context, d db.DBTX, notificationID int) (*db.Notification, error)
+	Delete(ctx context.Context, d db.DBTX, id int) (*db.Notification, error)
 }
 
 // User defines the datastore/repository handling persisting User records.
@@ -97,6 +126,15 @@ type Team interface {
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.Team, error)
 }
 
+// KanbanStep defines the datastore/repository handling persisting KanbanStep records.
+type KanbanStep interface {
+	ByID(ctx context.Context, d db.DBTX, id int) (*db.KanbanStep, error)
+	ByProject(ctx context.Context, d db.DBTX, projectID int) ([]db.KanbanStep, error)
+	Create(ctx context.Context, d db.DBTX, params db.KanbanStepCreateParams) (*db.KanbanStep, error)
+	Update(ctx context.Context, d db.DBTX, id int, params db.KanbanStepUpdateParams) (*db.KanbanStep, error)
+	Delete(ctx context.Context, d db.DBTX, id int) (*db.KanbanStep, error)
+}
+
 // WorkItemType defines the datastore/repository handling persisting WorkItemType records.
 type WorkItemType interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error)
@@ -105,6 +143,14 @@ type WorkItemType interface {
 	Create(ctx context.Context, d db.DBTX, params db.WorkItemTypeCreateParams) (*db.WorkItemType, error)
 	Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTypeUpdateParams) (*db.WorkItemType, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error)
+}
+
+// WorkItemComment defines the datastore/repository handling persisting WorkItemComment records.
+type WorkItemComment interface {
+	ByID(ctx context.Context, d db.DBTX, id int64) (*db.WorkItemComment, error)
+	Create(ctx context.Context, d db.DBTX, params db.WorkItemCommentCreateParams) (*db.WorkItemComment, error)
+	Update(ctx context.Context, d db.DBTX, id int64, params db.WorkItemCommentUpdateParams) (*db.WorkItemComment, error)
+	Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItemComment, error)
 }
 
 // WorkItemTag defines the datastore/repository handling persisting WorkItemTag records.
@@ -120,9 +166,16 @@ type WorkItemTag interface {
 // Activity defines the datastore/repository handling persisting Activity records.
 type Activity interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
-	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.Activity, error)
-	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error)
+	ByProjectID(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error)
 	Create(ctx context.Context, d db.DBTX, params db.ActivityCreateParams) (*db.Activity, error)
 	Update(ctx context.Context, d db.DBTX, id int, params db.ActivityUpdateParams) (*db.Activity, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
+}
+
+// TimeEntry defines the datastore/repository handling persisting TimeEntry records.
+type TimeEntry interface {
+	ByID(ctx context.Context, d db.DBTX, id int64) (*db.TimeEntry, error)
+	Create(ctx context.Context, d db.DBTX, params db.TimeEntryCreateParams) (*db.TimeEntry, error)
+	Update(ctx context.Context, d db.DBTX, id int64, params db.TimeEntryUpdateParams) (*db.TimeEntry, error)
+	Delete(ctx context.Context, d db.DBTX, id int64) (*db.TimeEntry, error)
 }

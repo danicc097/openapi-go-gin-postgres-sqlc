@@ -57,10 +57,10 @@ type UserCreateParams struct {
 type UserUpdateParams struct {
 	Username                 *string   `json:"username"`                 // username
 	Email                    *string   `json:"email"`                    // email
-	FirstName                *string   `json:"firstName"`                // first_name
-	LastName                 *string   `json:"lastName"`                 // last_name
+	FirstName                **string  `json:"firstName"`                // first_name
+	LastName                 **string  `json:"lastName"`                 // last_name
 	ExternalID               *string   `json:"-"`                        // external_id
-	APIKeyID                 *int      `json:"-"`                        // api_key_id
+	APIKeyID                 **int     `json:"-"`                        // api_key_id
 	Scopes                   *[]string `json:"-"`                        // scopes
 	RoleRank                 *int16    `json:"-"`                        // role_rank
 	HasPersonalNotifications *bool     `json:"hasPersonalNotifications"` // has_personal_notifications
@@ -226,7 +226,8 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (user_id) DO ` +
 		`UPDATE SET ` +
-		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, deleted_at = EXCLUDED.deleted_at  `
+		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, deleted_at = EXCLUDED.deleted_at ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
 	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt); err != nil {
@@ -249,7 +250,6 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.users ` +
 		`WHERE user_id = $1 `
 	// run
-	logf(sqlstr, u.UserID)
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
 		return logerror(err)
 	}
@@ -258,10 +258,43 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// SoftDelete soft deletes the User from the database via 'deleted_at'.
+func (u *User) SoftDelete(ctx context.Context, db DB) error {
+	switch {
+	case !u._exists: // doesn't exist
+		return nil
+	case u._deleted: // deleted
+		return nil
+	}
+	// delete with single primary key
+	sqlstr := `UPDATE public.users ` +
+		`SET deleted_at = NOW() ` +
+		`WHERE user_id = $1 `
+	// run
+	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
+		return logerror(err)
+	}
+	// set deleted
+	u._deleted = true
+	u.DeletedAt = newPointer(time.Now())
+
+	return nil
+}
+
+// Restore restores a soft deleted User from the database.
+func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
+	u.DeletedAt = nil
+	newu, err := u.Update(ctx, db)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	return newu, nil
+}
+
 // UsersByCreatedAt retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_created_at_idx'.
-func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
+func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
 
 	for _, o := range opts {
@@ -307,7 +340,7 @@ left join (
 		user_team.user_id as user_team_user_id
 		, array_agg(teams.*) as teams
 		from user_team
-    join teams using (team_id)
+    join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
@@ -317,7 +350,7 @@ left join (
 		work_item_member.member as work_item_member_member
 		, array_agg(work_items.*) as work_items
 		from work_item_member
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -326,7 +359,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, createdAt)
+	// logf(sqlstr, createdAt)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, createdAt)
 	if err != nil {
 		return nil, logerror(err)
@@ -334,7 +367,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*User])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -344,7 +377,7 @@ left join (
 // UsersByDeletedAt_WhereDeletedAtIsNotNull retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_deleted_at_idx'.
-func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
+func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " not null ", joins: UserJoins{}}
 
 	for _, o := range opts {
@@ -390,7 +423,7 @@ left join (
 		user_team.user_id as user_team_user_id
 		, array_agg(teams.*) as teams
 		from user_team
-    join teams using (team_id)
+    join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
@@ -400,7 +433,7 @@ left join (
 		work_item_member.member as work_item_member_member
 		, array_agg(work_items.*) as work_items
 		from work_item_member
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -409,7 +442,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, deletedAt)
+	// logf(sqlstr, deletedAt)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, deletedAt)
 	if err != nil {
 		return nil, logerror(err)
@@ -417,7 +450,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*User])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -473,7 +506,7 @@ left join (
 		user_team.user_id as user_team_user_id
 		, array_agg(teams.*) as teams
 		from user_team
-    join teams using (team_id)
+    join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
@@ -483,7 +516,7 @@ left join (
 		work_item_member.member as work_item_member_member
 		, array_agg(work_items.*) as work_items
 		from work_item_member
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -492,7 +525,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, email)
+	// logf(sqlstr, email)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, email)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByEmail/db.Query: %w", err))
@@ -554,7 +587,7 @@ left join (
 		user_team.user_id as user_team_user_id
 		, array_agg(teams.*) as teams
 		from user_team
-    join teams using (team_id)
+    join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
@@ -564,7 +597,7 @@ left join (
 		work_item_member.member as work_item_member_member
 		, array_agg(work_items.*) as work_items
 		from work_item_member
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -573,7 +606,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, externalID)
+	// logf(sqlstr, externalID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, externalID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByExternalID/db.Query: %w", err))
@@ -635,7 +668,7 @@ left join (
 		user_team.user_id as user_team_user_id
 		, array_agg(teams.*) as teams
 		from user_team
-    join teams using (team_id)
+    join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
@@ -645,7 +678,7 @@ left join (
 		work_item_member.member as work_item_member_member
 		, array_agg(work_items.*) as work_items
 		from work_item_member
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -654,7 +687,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userID)
+	// logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
@@ -670,7 +703,7 @@ left join (
 // UsersByUpdatedAt retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_updated_at_idx'.
-func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]*User, error) {
+func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
 
 	for _, o := range opts {
@@ -716,7 +749,7 @@ left join (
 		user_team.user_id as user_team_user_id
 		, array_agg(teams.*) as teams
 		from user_team
-    join teams using (team_id)
+    join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
@@ -726,7 +759,7 @@ left join (
 		work_item_member.member as work_item_member_member
 		, array_agg(work_items.*) as work_items
 		from work_item_member
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -735,7 +768,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, updatedAt)
+	// logf(sqlstr, updatedAt)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, updatedAt)
 	if err != nil {
 		return nil, logerror(err)
@@ -743,7 +776,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*User])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -799,7 +832,7 @@ left join (
 		user_team.user_id as user_team_user_id
 		, array_agg(teams.*) as teams
 		from user_team
-    join teams using (team_id)
+    join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
@@ -809,7 +842,7 @@ left join (
 		work_item_member.member as work_item_member_member
 		, array_agg(work_items.*) as work_items
 		from work_item_member
-    join work_items using (work_item_id)
+    join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -818,7 +851,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, username)
+	// logf(sqlstr, username)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.Teams, c.joins.WorkItems, username)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUsername/db.Query: %w", err))

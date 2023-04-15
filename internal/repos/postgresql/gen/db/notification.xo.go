@@ -45,13 +45,13 @@ type NotificationCreateParams struct {
 
 // NotificationUpdateParams represents update params for 'public.notifications'
 type NotificationUpdateParams struct {
-	ReceiverRank     *int16            `json:"receiverRank"`     // receiver_rank
+	ReceiverRank     **int16           `json:"receiverRank"`     // receiver_rank
 	Title            *string           `json:"title"`            // title
 	Body             *string           `json:"body"`             // body
 	Label            *string           `json:"label"`            // label
-	Link             *string           `json:"link"`             // link
+	Link             **string          `json:"link"`             // link
 	Sender           *uuid.UUID        `json:"sender"`           // sender
-	Receiver         *uuid.UUID        `json:"receiver"`         // receiver
+	Receiver         **uuid.UUID       `json:"receiver"`         // receiver
 	NotificationType *NotificationType `json:"notificationType"` // notification_type
 }
 
@@ -195,7 +195,8 @@ func (n *Notification) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (notification_id) DO ` +
 		`UPDATE SET ` +
-		`receiver_rank = EXCLUDED.receiver_rank, title = EXCLUDED.title, body = EXCLUDED.body, label = EXCLUDED.label, link = EXCLUDED.link, sender = EXCLUDED.sender, receiver = EXCLUDED.receiver, notification_type = EXCLUDED.notification_type  `
+		`receiver_rank = EXCLUDED.receiver_rank, title = EXCLUDED.title, body = EXCLUDED.body, label = EXCLUDED.label, link = EXCLUDED.link, sender = EXCLUDED.sender, receiver = EXCLUDED.receiver, notification_type = EXCLUDED.notification_type ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType)
 	if _, err := db.Exec(ctx, sqlstr, n.NotificationID, n.ReceiverRank, n.Title, n.Body, n.Label, n.Link, n.Sender, n.Receiver, n.NotificationType); err != nil {
@@ -218,7 +219,6 @@ func (n *Notification) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.notifications ` +
 		`WHERE notification_id = $1 `
 	// run
-	logf(sqlstr, n.NotificationID)
 	if _, err := db.Exec(ctx, sqlstr, n.NotificationID); err != nil {
 		return logerror(err)
 	}
@@ -258,7 +258,7 @@ left join user_notifications on user_notifications.notification_id = notificatio
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, notificationID)
+	// logf(sqlstr, notificationID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.UserNotification, notificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", err))
@@ -274,7 +274,7 @@ left join user_notifications on user_notifications.notification_id = notificatio
 // NotificationsByReceiverRankNotificationTypeCreatedAt retrieves a row from 'public.notifications' as a Notification.
 //
 // Generated from index 'notifications_receiver_rank_notification_type_created_at_idx'.
-func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, db DB, receiverRank *int16, notificationType NotificationType, createdAt time.Time, opts ...NotificationSelectConfigOption) ([]*Notification, error) {
+func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, db DB, receiverRank *int16, notificationType NotificationType, createdAt time.Time, opts ...NotificationSelectConfigOption) ([]Notification, error) {
 	c := &NotificationSelectConfig{joins: NotificationJoins{}}
 
 	for _, o := range opts {
@@ -302,7 +302,7 @@ left join user_notifications on user_notifications.notification_id = notificatio
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, receiverRank, notificationType, createdAt)
+	// logf(sqlstr, receiverRank, notificationType, createdAt)
 	rows, err := db.Query(ctx, sqlstr, c.joins.UserNotification, receiverRank, notificationType, createdAt)
 	if err != nil {
 		return nil, logerror(err)
@@ -310,7 +310,7 @@ left join user_notifications on user_notifications.notification_id = notificatio
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Notification])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Notification])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

@@ -45,13 +45,13 @@ func (_d NotificationWithTimeout) Create(ctx context.Context, d db.DBTX, params 
 }
 
 // Delete implements repos.Notification
-func (_d NotificationWithTimeout) Delete(ctx context.Context, d db.DBTX, notificationID int) (np1 *db.Notification, err error) {
+func (_d NotificationWithTimeout) Delete(ctx context.Context, d db.DBTX, id int) (np1 *db.Notification, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
 		defer cancelFunc()
 	}
-	return _d.Notification.Delete(ctx, d, notificationID)
+	return _d.Notification.Delete(ctx, d, id)
 }
 
 // LatestUserNotifications implements repos.Notification

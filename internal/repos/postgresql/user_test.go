@@ -15,7 +15,7 @@ import (
 func TestUser_Update(t *testing.T) {
 	t.Parallel()
 
-	user := postgresqltestutil.NewRandomUser(t, testPool)
+	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
 		id     uuid.UUID
@@ -46,29 +46,29 @@ func TestUser_Update(t *testing.T) {
 			}(),
 		},
 	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
 			u := postgresql.NewUser()
-			got, err := u.Update(context.Background(), testPool, tt.args.id, tt.args.params)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("User.Update() error = %v, wantErr %v", err, tt.wantErr)
+			got, err := u.Update(context.Background(), testPool, tc.args.id, tc.args.params)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("User.Update() error = %v, wantErr %v", err, tc.wantErr)
 
 				return
 			}
 
 			got.UpdatedAt = user.UpdatedAt // ignore
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }
 
-func TestUser_MarkAsDeleted(t *testing.T) {
+func TestUser_SoftDelete(t *testing.T) {
 	t.Parallel()
 
-	user := postgresqltestutil.NewRandomUser(t, testPool)
+	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
 		id uuid.UUID
@@ -87,28 +87,39 @@ func TestUser_MarkAsDeleted(t *testing.T) {
 			errorContains: errNoRows,
 		},
 	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
 			u := postgresql.NewUser()
-			_, err := u.Delete(context.Background(), testPool, tt.args.id)
+			_, err := u.Delete(context.Background(), testPool, tc.args.id)
 			if err != nil {
 				t.Errorf("User.Delete() unexpected error = %v", err)
 
 				return
 			}
 
-			_, err = u.ByID(context.Background(), testPool, tt.args.id)
+			_, err = u.ByID(context.Background(), testPool, tc.args.id)
 			if err == nil {
 				t.Error("wanted error but got nothing", err)
 
 				return
 			}
-			assert.ErrorContains(t, err, tt.errorContains)
+			assert.ErrorContains(t, err, tc.errorContains)
 		})
 	}
+}
+
+type testCase struct {
+	name string
+	args args
+}
+
+// no type parameter to allow direct assertion
+type args struct {
+	filter any
+	fn     any
 }
 
 func TestUser_ByIndexedQueries(t *testing.T) {
@@ -116,109 +127,95 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 
 	userRepo := postgresql.NewUser()
 
-	user := postgresqltestutil.NewRandomUser(t, testPool)
+	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
-	type argsString struct {
-		filter string
-		fn     func(context.Context, db.DBTX, string) (*db.User, error)
-	}
-
-	testsString := []struct {
-		name string
-		args argsString
-	}{
+	testCases := []testCase{
 		{
 			name: "external_id",
-			args: argsString{
+			args: args{
 				filter: user.ExternalID,
 				fn:     (userRepo.ByExternalID),
 			},
 		},
 		{
 			name: "email",
-			args: argsString{
+			args: args{
 				filter: user.Email,
 				fn:     (userRepo.ByEmail),
 			},
 		},
 		{
 			name: "username",
-			args: argsString{
+			args: args{
 				filter: user.Username,
 				fn:     (userRepo.ByUsername),
 			},
 		},
-	}
-	for _, tc := range testsString {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			foundUser, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
-			if err != nil {
-				t.Fatalf("unexpected error = %v", err)
-			}
-			assert.Equal(t, foundUser.UserID, user.UserID)
-		})
-
-		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
-			t.Parallel()
-
-			errContains := errNoRows
-
-			filter := "does not exist"
-
-			_, err := tc.args.fn(context.Background(), testPool, filter)
-			if err == nil {
-				t.Fatalf("expected error = '%v' but got nothing", errContains)
-			}
-			assert.Contains(t, err.Error(), errContains)
-		})
-	}
-
-	type argsUUID struct {
-		filter uuid.UUID
-		fn     func(context.Context, db.DBTX, uuid.UUID) (*db.User, error)
-	}
-
-	testsUUID := []struct {
-		name string
-		args argsUUID
-	}{
 		{
 			name: "user_id",
-			args: argsUUID{
+			args: args{
 				filter: user.UserID,
 				fn:     (userRepo.ByID),
 			},
 		},
 	}
-	for _, tc := range testsUUID {
+
+	for _, tc := range testCases {
 		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
-			foundUser, err := tc.args.fn(context.Background(), testPool, tc.args.filter)
-			if err != nil {
-				t.Fatalf("unexpected error = %v", err)
-			}
-			assert.Equal(t, foundUser.UserID, user.UserID)
-		})
-
-		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
-			t.Parallel()
-
-			errContains := errNoRows
-
-			filter := uuid.New() // does not exist
-
-			_, err := tc.args.fn(context.Background(), testPool, filter)
-			if err == nil {
-				t.Fatalf("expected error = '%v' but got nothing", errContains)
-			}
-			assert.Contains(t, err.Error(), errContains)
-		})
+		runGenericFilterTests(t, tc, user)
 	}
+}
+
+// runGenericFilterTests runs queries to find a unique item in db and expects no matches with an inexistent filter.
+func runGenericFilterTests(t *testing.T, tc testCase, user *db.User) {
+	t.Run(tc.name, func(t *testing.T) {
+		t.Parallel()
+
+		var foundUser *db.User
+		var err error
+
+		switch fn := tc.args.fn.(type) {
+		case func(context.Context, db.DBTX, string) (*db.User, error):
+			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(string))
+		case func(context.Context, db.DBTX, int) (*db.User, error):
+			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(int))
+		case func(context.Context, db.DBTX, int64) (*db.User, error):
+			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(int64))
+		case func(context.Context, db.DBTX, uuid.UUID) (*db.User, error):
+			foundUser, err = fn(context.Background(), testPool, tc.args.filter.(uuid.UUID))
+		}
+		if err != nil {
+			t.Fatalf("unexpected error = %v", err)
+		}
+		assert.Equal(t, foundUser.UserID, user.UserID)
+	})
+
+	t.Run(tc.name+"__no_rows_if_does_not_exist", func(t *testing.T) {
+		t.Parallel()
+
+		errContains := errNoRows
+
+		var err error
+
+		switch fn := tc.args.fn.(type) {
+		case func(context.Context, db.DBTX, string) (*db.User, error):
+			filter := "does not exist"
+			_, err = fn(context.Background(), testPool, filter)
+		case func(context.Context, db.DBTX, int) (*db.User, error):
+			filter := int(732745)
+			_, err = fn(context.Background(), testPool, filter)
+		case func(context.Context, db.DBTX, int64) (*db.User, error):
+			filter := int64(732745)
+			_, err = fn(context.Background(), testPool, filter)
+		case func(context.Context, db.DBTX, uuid.UUID) (*db.User, error):
+			filter := uuid.New()
+			_, err = fn(context.Background(), testPool, filter)
+		}
+		if err == nil {
+			t.Fatalf("expected error = '%v' but got nothing", errContains)
+		}
+		assert.Contains(t, err.Error(), errContains)
+	})
 }
 
 func TestUser_UserAPIKeys(t *testing.T) {
@@ -229,7 +226,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	t.Run("correct api key creation", func(t *testing.T) {
 		t.Parallel()
 
-		user := postgresqltestutil.NewRandomUser(t, testPool)
+		user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, user)
 		if err != nil {
@@ -255,7 +252,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	t.Run("can get user by api key", func(t *testing.T) {
 		t.Parallel()
 
-		newUser := postgresqltestutil.NewRandomUser(t, testPool)
+		newUser, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
 		if err != nil {
@@ -285,6 +282,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 	t.Run("can delete an api key", func(t *testing.T) {
 		// TODO
+		t.Parallel()
 	})
 }
 

@@ -55,8 +55,6 @@ func WithActivityLimit(limit int) ActivitySelectConfigOption {
 
 type ActivityOrderBy = string
 
-const ()
-
 type ActivityJoins struct {
 	TimeEntries bool
 }
@@ -162,7 +160,8 @@ func (a *Activity) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (activity_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, is_productive = EXCLUDED.is_productive  `
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, is_productive = EXCLUDED.is_productive ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive)
 	if _, err := db.Exec(ctx, sqlstr, a.ActivityID, a.ProjectID, a.Name, a.Description, a.IsProductive); err != nil {
@@ -185,7 +184,6 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.activities ` +
 		`WHERE activity_id = $1 `
 	// run
-	logf(sqlstr, a.ActivityID)
 	if _, err := db.Exec(ctx, sqlstr, a.ActivityID); err != nil {
 		return logerror(err)
 	}
@@ -227,7 +225,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name, projectID)
+	// logf(sqlstr, name, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/db.Query: %w", err))
@@ -243,7 +241,7 @@ left join (
 // ActivitiesByName retrieves a row from 'public.activities' as a Activity.
 //
 // Generated from index 'activities_name_project_id_key'.
-func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) ([]*Activity, error) {
+func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}}
 
 	for _, o := range opts {
@@ -273,7 +271,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, name)
 	if err != nil {
 		return nil, logerror(err)
@@ -281,7 +279,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Activity])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -291,7 +289,7 @@ left join (
 // ActivitiesByProjectID retrieves a row from 'public.activities' as a Activity.
 //
 // Generated from index 'activities_name_project_id_key'.
-func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]*Activity, error) {
+func ActivitiesByProjectID(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}}
 
 	for _, o := range opts {
@@ -321,7 +319,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID)
+	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, projectID)
 	if err != nil {
 		return nil, logerror(err)
@@ -329,7 +327,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Activity])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -369,7 +367,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, activityID)
+	// logf(sqlstr, activityID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, activityID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/db.Query: %w", err))

@@ -34,7 +34,6 @@ import {
   UpdateUserRequest,
   UpdateUserAuthRequest,
   ValidationError,
-  ModelsRole,
   UuidUUID,
   PgtypeJSONB,
   demoProjectKanbanSteps,
@@ -42,12 +41,13 @@ import {
   DbProject2WorkItem,
   DbWorkItem,
   Project,
-  ModelsProject,
   DbActivityCreateParams,
   DbKanbanStepCreateParams,
   DbTeamCreateParams,
   DbWorkItemTagCreateParams,
   DbWorkItemTypeCreateParams,
+  ModelsProject,
+  ModelsRole,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -368,18 +368,6 @@ export const ValidationErrorDecoder: Decoder<ValidationError> = {
     return validateJson(json, schema, ValidationErrorDecoder.definitionName)
   },
 }
-export const ModelsRoleDecoder: Decoder<ModelsRole> = {
-  definitionName: 'ModelsRole',
-  schemaRef: '#/definitions/ModelsRole',
-
-  decode(json: unknown): ModelsRole {
-    const schema = ajv.getSchema(ModelsRoleDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsRoleDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsRoleDecoder.definitionName)
-  },
-}
 export const UuidUUIDDecoder: Decoder<UuidUUID> = {
   definitionName: 'UuidUUID',
   schemaRef: '#/definitions/UuidUUID',
@@ -464,18 +452,6 @@ export const ProjectDecoder: Decoder<Project> = {
     return validateJson(json, schema, ProjectDecoder.definitionName)
   },
 }
-export const ModelsProjectDecoder: Decoder<ModelsProject> = {
-  definitionName: 'ModelsProject',
-  schemaRef: '#/definitions/ModelsProject',
-
-  decode(json: unknown): ModelsProject {
-    const schema = ajv.getSchema(ModelsProjectDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsProjectDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsProjectDecoder.definitionName)
-  },
-}
 export const DbActivityCreateParamsDecoder: Decoder<DbActivityCreateParams> = {
   definitionName: 'DbActivityCreateParams',
   schemaRef: '#/definitions/DbActivityCreateParams',
@@ -534,5 +510,29 @@ export const DbWorkItemTypeCreateParamsDecoder: Decoder<DbWorkItemTypeCreatePara
       throw new Error(`Schema ${DbWorkItemTypeCreateParamsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbWorkItemTypeCreateParamsDecoder.definitionName)
+  },
+}
+export const ModelsProjectDecoder: Decoder<ModelsProject> = {
+  definitionName: 'ModelsProject',
+  schemaRef: '#/definitions/ModelsProject',
+
+  decode(json: unknown): ModelsProject {
+    const schema = ajv.getSchema(ModelsProjectDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ModelsProjectDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ModelsProjectDecoder.definitionName)
+  },
+}
+export const ModelsRoleDecoder: Decoder<ModelsRole> = {
+  definitionName: 'ModelsRole',
+  schemaRef: '#/definitions/ModelsRole',
+
+  decode(json: unknown): ModelsRole {
+    const schema = ajv.getSchema(ModelsRoleDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ModelsRoleDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ModelsRoleDecoder.definitionName)
   },
 }

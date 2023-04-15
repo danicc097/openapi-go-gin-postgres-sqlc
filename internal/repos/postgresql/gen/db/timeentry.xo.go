@@ -41,13 +41,13 @@ type TimeEntryCreateParams struct {
 
 // TimeEntryUpdateParams represents update params for 'public.time_entries'
 type TimeEntryUpdateParams struct {
-	WorkItemID      *int64     `json:"workItemID"`      // work_item_id
+	WorkItemID      **int64    `json:"workItemID"`      // work_item_id
 	ActivityID      *int       `json:"activityID"`      // activity_id
-	TeamID          *int       `json:"teamID"`          // team_id
+	TeamID          **int      `json:"teamID"`          // team_id
 	UserID          *uuid.UUID `json:"userID"`          // user_id
 	Comment         *string    `json:"comment"`         // comment
 	Start           *time.Time `json:"start"`           // start
-	DurationMinutes *int       `json:"durationMinutes"` // duration_minutes
+	DurationMinutes **int      `json:"durationMinutes"` // duration_minutes
 }
 
 type TimeEntrySelectConfig struct {
@@ -85,8 +85,7 @@ func WithTimeEntryOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption 
 	}
 }
 
-type TimeEntryJoins struct {
-}
+type TimeEntryJoins struct{}
 
 // WithTimeEntryJoin joins with the given tables.
 func WithTimeEntryJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
@@ -189,7 +188,8 @@ func (te *TimeEntry) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (time_entry_id) DO ` +
 		`UPDATE SET ` +
-		`work_item_id = EXCLUDED.work_item_id, activity_id = EXCLUDED.activity_id, team_id = EXCLUDED.team_id, user_id = EXCLUDED.user_id, comment = EXCLUDED.comment, start = EXCLUDED.start, duration_minutes = EXCLUDED.duration_minutes  `
+		`work_item_id = EXCLUDED.work_item_id, activity_id = EXCLUDED.activity_id, team_id = EXCLUDED.team_id, user_id = EXCLUDED.user_id, comment = EXCLUDED.comment, start = EXCLUDED.start, duration_minutes = EXCLUDED.duration_minutes ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, te.TimeEntryID, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes)
 	if _, err := db.Exec(ctx, sqlstr, te.TimeEntryID, te.WorkItemID, te.ActivityID, te.TeamID, te.UserID, te.Comment, te.Start, te.DurationMinutes); err != nil {
@@ -212,7 +212,6 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.time_entries ` +
 		`WHERE time_entry_id = $1 `
 	// run
-	logf(sqlstr, te.TimeEntryID)
 	if _, err := db.Exec(ctx, sqlstr, te.TimeEntryID); err != nil {
 		return logerror(err)
 	}
@@ -248,7 +247,7 @@ time_entries.duration_minutes ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, timeEntryID)
+	// logf(sqlstr, timeEntryID)
 	rows, err := db.Query(ctx, sqlstr, timeEntryID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/db.Query: %w", err))
@@ -264,7 +263,7 @@ time_entries.duration_minutes ` +
 // TimeEntriesByUserIDTeamID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_user_id_team_id_idx'.
-func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID *int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
+func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID *int, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}}
 
 	for _, o := range opts {
@@ -288,7 +287,7 @@ time_entries.duration_minutes ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userID, teamID)
+	// logf(sqlstr, userID, teamID)
 	rows, err := db.Query(ctx, sqlstr, userID, teamID)
 	if err != nil {
 		return nil, logerror(err)
@@ -296,7 +295,7 @@ time_entries.duration_minutes ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*TimeEntry])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -306,7 +305,7 @@ time_entries.duration_minutes ` +
 // TimeEntriesByWorkItemIDTeamID retrieves a row from 'public.time_entries' as a TimeEntry.
 //
 // Generated from index 'time_entries_work_item_id_team_id_idx'.
-func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int64, teamID *int, opts ...TimeEntrySelectConfigOption) ([]*TimeEntry, error) {
+func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID *int64, teamID *int, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}}
 
 	for _, o := range opts {
@@ -330,7 +329,7 @@ time_entries.duration_minutes ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, workItemID, teamID)
+	// logf(sqlstr, workItemID, teamID)
 	rows, err := db.Query(ctx, sqlstr, workItemID, teamID)
 	if err != nil {
 		return nil, logerror(err)
@@ -338,7 +337,7 @@ time_entries.duration_minutes ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*TimeEntry])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}

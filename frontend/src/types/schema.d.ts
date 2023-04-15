@@ -301,7 +301,6 @@ export interface components {
       /** Error Type */
       type: string;
     };
-    ModelsRole: string;
     UuidUUID: string;
     PgtypeJSONB: Record<string, never>;
     /**
@@ -353,7 +352,6 @@ export interface components {
      * @enum {string}
      */
     Project: "demoProject" | "demoProject2";
-    ModelsProject: string;
     DbActivityCreateParams: {
       description?: string;
       isProductive?: boolean;
@@ -385,6 +383,8 @@ export interface components {
       name?: string;
       projectID?: number;
     };
+    ModelsProject: string;
+    ModelsRole: string;
   };
   responses: never;
   parameters: {

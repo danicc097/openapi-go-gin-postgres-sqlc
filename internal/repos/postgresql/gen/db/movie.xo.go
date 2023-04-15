@@ -51,10 +51,7 @@ func WithMovieLimit(limit int) MovieSelectConfigOption {
 
 type MovieOrderBy = string
 
-const ()
-
-type MovieJoins struct {
-}
+type MovieJoins struct{}
 
 // WithMovieJoin joins with the given tables.
 func WithMovieJoin(joins MovieJoins) MovieSelectConfigOption {
@@ -157,7 +154,8 @@ func (m *Movie) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (movie_id) DO ` +
 		`UPDATE SET ` +
-		`title = EXCLUDED.title, year = EXCLUDED.year, synopsis = EXCLUDED.synopsis  `
+		`title = EXCLUDED.title, year = EXCLUDED.year, synopsis = EXCLUDED.synopsis ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, m.MovieID, m.Title, m.Year, m.Synopsis)
 	if _, err := db.Exec(ctx, sqlstr, m.MovieID, m.Title, m.Year, m.Synopsis); err != nil {
@@ -180,7 +178,6 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.movies ` +
 		`WHERE movie_id = $1 `
 	// run
-	logf(sqlstr, m.MovieID)
 	if _, err := db.Exec(ctx, sqlstr, m.MovieID); err != nil {
 		return logerror(err)
 	}
@@ -212,7 +209,7 @@ movies.synopsis ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, movieID)
+	// logf(sqlstr, movieID)
 	rows, err := db.Query(ctx, sqlstr, movieID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("movies/MovieByMovieID/db.Query: %w", err))

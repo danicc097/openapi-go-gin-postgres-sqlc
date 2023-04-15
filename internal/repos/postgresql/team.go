@@ -42,14 +42,9 @@ func (t *Team) Update(ctx context.Context, d db.DBTX, id int, params db.TeamUpda
 		return nil, fmt.Errorf("could not get team by id %w", parseErrorDetail(err))
 	}
 
-	if params.Description != nil {
-		team.Description = *params.Description
-	}
-	if params.Name != nil {
-		team.Name = *params.Name
-	}
+	updateEntityWithParams(team, &params)
 
-	_, err = team.Update(ctx, d)
+	team, err = team.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not update team: %w", parseErrorDetail(err))
 	}

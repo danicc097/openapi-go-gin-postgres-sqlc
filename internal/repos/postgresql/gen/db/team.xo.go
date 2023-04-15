@@ -186,7 +186,8 @@ func (t *Team) Upsert(ctx context.Context, db DB) error {
 		`)` +
 		` ON CONFLICT (team_id) DO ` +
 		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description  `
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description)
 	if _, err := db.Exec(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description); err != nil {
@@ -209,7 +210,6 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.teams ` +
 		`WHERE team_id = $1 `
 	// run
-	logf(sqlstr, t.TeamID)
 	if _, err := db.Exec(ctx, sqlstr, t.TeamID); err != nil {
 		return logerror(err)
 	}
@@ -254,7 +254,7 @@ left join (
 		user_team.team_id as user_team_team_id
 		, array_agg(users.*) as users
 		from user_team
-    join users using (user_id)
+    join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
@@ -263,7 +263,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name, projectID)
+	// logf(sqlstr, name, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/db.Query: %w", err))
@@ -279,7 +279,7 @@ left join (
 // TeamsByName retrieves a row from 'public.teams' as a Team.
 //
 // Generated from index 'teams_name_project_id_key'.
-func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfigOption) ([]*Team, error) {
+func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfigOption) ([]Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {
@@ -312,7 +312,7 @@ left join (
 		user_team.team_id as user_team_team_id
 		, array_agg(users.*) as users
 		from user_team
-    join users using (user_id)
+    join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
@@ -321,7 +321,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, name)
+	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name)
 	if err != nil {
 		return nil, logerror(err)
@@ -329,7 +329,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Team])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Team])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -339,7 +339,7 @@ left join (
 // TeamsByProjectID retrieves a row from 'public.teams' as a Team.
 //
 // Generated from index 'teams_name_project_id_key'.
-func TeamsByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]*Team, error) {
+func TeamsByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {
@@ -372,7 +372,7 @@ left join (
 		user_team.team_id as user_team_team_id
 		, array_agg(users.*) as users
 		from user_team
-    join users using (user_id)
+    join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
@@ -381,7 +381,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, projectID)
+	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, projectID)
 	if err != nil {
 		return nil, logerror(err)
@@ -389,7 +389,7 @@ left join (
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*Team])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Team])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -432,7 +432,7 @@ left join (
 		user_team.team_id as user_team_team_id
 		, array_agg(users.*) as users
 		from user_team
-    join users using (user_id)
+    join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
@@ -441,7 +441,7 @@ left join (
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, teamID)
+	// logf(sqlstr, teamID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, teamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/db.Query: %w", err))

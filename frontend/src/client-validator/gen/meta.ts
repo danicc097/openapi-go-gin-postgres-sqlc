@@ -30,7 +30,6 @@ import {
   UpdateUserRequest,
   UpdateUserAuthRequest,
   ValidationError,
-  ModelsRole,
   UuidUUID,
   PgtypeJSONB,
   demoProjectKanbanSteps,
@@ -38,12 +37,13 @@ import {
   DbProject2WorkItem,
   DbWorkItem,
   Project,
-  ModelsProject,
   DbActivityCreateParams,
   DbKanbanStepCreateParams,
   DbTeamCreateParams,
   DbWorkItemTagCreateParams,
   DbWorkItemTypeCreateParams,
+  ModelsProject,
+  ModelsRole,
 } from './models'
 
 export const schemaDefinitions = {
@@ -82,7 +82,6 @@ export const schemaDefinitions = {
   UpdateUserRequest: info<UpdateUserRequest>('UpdateUserRequest', '#/definitions/UpdateUserRequest'),
   UpdateUserAuthRequest: info<UpdateUserAuthRequest>('UpdateUserAuthRequest', '#/definitions/UpdateUserAuthRequest'),
   ValidationError: info<ValidationError>('ValidationError', '#/definitions/ValidationError'),
-  ModelsRole: info<ModelsRole>('ModelsRole', '#/definitions/ModelsRole'),
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
   PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
   demoProjectKanbanSteps: info<demoProjectKanbanSteps>(
@@ -96,7 +95,6 @@ export const schemaDefinitions = {
   DbProject2WorkItem: info<DbProject2WorkItem>('DbProject2WorkItem', '#/definitions/DbProject2WorkItem'),
   DbWorkItem: info<DbWorkItem>('DbWorkItem', '#/definitions/DbWorkItem'),
   Project: info<Project>('Project', '#/definitions/Project'),
-  ModelsProject: info<ModelsProject>('ModelsProject', '#/definitions/ModelsProject'),
   DbActivityCreateParams: info<DbActivityCreateParams>(
     'DbActivityCreateParams',
     '#/definitions/DbActivityCreateParams',
@@ -114,6 +112,8 @@ export const schemaDefinitions = {
     'DbWorkItemTypeCreateParams',
     '#/definitions/DbWorkItemTypeCreateParams',
   ),
+  ModelsProject: info<ModelsProject>('ModelsProject', '#/definitions/ModelsProject'),
+  ModelsRole: info<ModelsRole>('ModelsRole', '#/definitions/ModelsRole'),
 }
 
 export interface SchemaInfo<T> {

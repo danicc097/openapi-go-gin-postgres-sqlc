@@ -48,10 +48,7 @@ func WithUserTeamLimit(limit int) UserTeamSelectConfigOption {
 
 type UserTeamOrderBy = string
 
-const ()
-
-type UserTeamJoins struct {
-}
+type UserTeamJoins struct{}
 
 // WithUserTeamJoin joins with the given tables.
 func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
@@ -84,7 +81,8 @@ func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 		`team_id, user_id` +
 		`) VALUES (` +
 		`$1, $2` +
-		`) `
+		`)` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, ut.TeamID, ut.UserID)
 	rows, err := db.Query(ctx, sqlstr, ut.TeamID, ut.UserID)
@@ -115,7 +113,6 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 	sqlstr := `DELETE FROM public.user_team ` +
 		`WHERE team_id = $1 AND user_id = $2 `
 	// run
-	logf(sqlstr, ut.TeamID, ut.UserID)
 	if _, err := db.Exec(ctx, sqlstr, ut.TeamID, ut.UserID); err != nil {
 		return logerror(err)
 	}
@@ -145,7 +142,7 @@ user_team.user_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userID, teamID)
+	// logf(sqlstr, userID, teamID)
 	rows, err := db.Query(ctx, sqlstr, userID, teamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_team/UserTeamByUserIDTeamID/db.Query: %w", err))
@@ -161,7 +158,7 @@ user_team.user_id ` +
 // UserTeamsByTeamID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_pkey'.
-func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
 
 	for _, o := range opts {
@@ -179,7 +176,7 @@ user_team.user_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, teamID)
+	// logf(sqlstr, teamID)
 	rows, err := db.Query(ctx, sqlstr, teamID)
 	if err != nil {
 		return nil, logerror(err)
@@ -187,7 +184,7 @@ user_team.user_id ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserTeam])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -197,7 +194,7 @@ user_team.user_id ` +
 // UserTeamsByTeamIDUserID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_team_id_user_id_idx'.
-func UserTeamsByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+func UserTeamsByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
 
 	for _, o := range opts {
@@ -215,7 +212,7 @@ user_team.user_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, teamID, userID)
+	// logf(sqlstr, teamID, userID)
 	rows, err := db.Query(ctx, sqlstr, teamID, userID)
 	if err != nil {
 		return nil, logerror(err)
@@ -223,7 +220,7 @@ user_team.user_id ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserTeam])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
@@ -233,7 +230,7 @@ user_team.user_id ` +
 // UserTeamsByUserID retrieves a row from 'public.user_team' as a UserTeam.
 //
 // Generated from index 'user_team_user_id_idx'.
-func UserTeamsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]*UserTeam, error) {
+func UserTeamsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
 	c := &UserTeamSelectConfig{joins: UserTeamJoins{}}
 
 	for _, o := range opts {
@@ -251,7 +248,7 @@ user_team.user_id ` +
 	sqlstr += c.limit
 
 	// run
-	logf(sqlstr, userID)
+	// logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, userID)
 	if err != nil {
 		return nil, logerror(err)
@@ -259,7 +256,7 @@ user_team.user_id ` +
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[*UserTeam])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserTeam])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
