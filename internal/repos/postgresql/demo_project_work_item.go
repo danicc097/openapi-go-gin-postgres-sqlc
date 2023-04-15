@@ -59,8 +59,8 @@ func (u *DemoProjectWorkItem) Create(ctx context.Context, d db.DBTX, params repo
 	return dpwi, nil
 }
 
-func (u *DemoProjectWorkItem) Update(ctx context.Context, d db.DBTX, params repos.DemoProjectWorkItemUpdateParams) (*db.DemoProjectWorkItem, error) {
-	demoProjectWorkItem, err := u.ByID(ctx, d, *params.DemoProject.WorkItemID)
+func (u *DemoProjectWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoProjectWorkItemUpdateParams) (*db.DemoProjectWorkItem, error) {
+	demoProjectWorkItem, err := u.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get demoProjectWorkItem by id: %w", parseErrorDetail(err))
 	}
@@ -70,42 +70,11 @@ func (u *DemoProjectWorkItem) Update(ctx context.Context, d db.DBTX, params repo
 	}
 
 	if params.Base != nil {
-		if params.Base.Closed != nil {
-			workItem.Closed = *params.Base.Closed
-		}
-		if params.Base.Description != nil {
-			workItem.Description = *params.Base.Description
-		}
-		if params.Base.TargetDate != nil {
-			workItem.TargetDate = *params.Base.TargetDate
-		}
-		if params.Base.KanbanStepID != nil {
-			workItem.KanbanStepID = *params.Base.KanbanStepID
-		}
-		if params.Base.Metadata != nil {
-			workItem.Metadata = *params.Base.Metadata
-		}
-		if params.Base.Title != nil {
-			workItem.Title = *params.Base.Title
-		}
-		if params.Base.WorkItemTypeID != nil {
-			workItem.WorkItemTypeID = *params.Base.WorkItemTypeID
-		}
+		updateEntityWithParams(workItem, params.Base)
 	}
 
 	if params.DemoProject != nil {
-		if params.DemoProject.LastMessageAt != nil {
-			demoProjectWorkItem.LastMessageAt = *params.DemoProject.LastMessageAt
-		}
-		if params.DemoProject.Line != nil {
-			demoProjectWorkItem.Line = *params.DemoProject.Line
-		}
-		if params.DemoProject.Ref != nil {
-			demoProjectWorkItem.Ref = *params.DemoProject.Ref
-		}
-		if params.DemoProject.Reopened != nil {
-			demoProjectWorkItem.Reopened = *params.DemoProject.Reopened
-		}
+		updateEntityWithParams(demoProjectWorkItem, params.DemoProject)
 	}
 
 	workItem, err = workItem.Update(ctx, d)
@@ -122,8 +91,8 @@ func (u *DemoProjectWorkItem) Update(ctx context.Context, d db.DBTX, params repo
 	return demoProjectWorkItem, err
 }
 
-func (u *DemoProjectWorkItem) Delete(ctx context.Context, d db.DBTX, workItemID int64) (*db.DemoProjectWorkItem, error) {
-	workItem, err := db.WorkItemByWorkItemID(ctx, d, workItemID, db.WithWorkItemJoin(db.WorkItemJoins{DemoProjectWorkItem: true}))
+func (u *DemoProjectWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.DemoProjectWorkItem, error) {
+	workItem, err := db.WorkItemByWorkItemID(ctx, d, id, db.WithWorkItemJoin(db.WorkItemJoins{DemoProjectWorkItem: true}))
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItem: %w", parseErrorDetail(err))
 	}

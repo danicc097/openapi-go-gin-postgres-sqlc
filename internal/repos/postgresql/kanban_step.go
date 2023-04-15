@@ -40,33 +40,19 @@ func (k *KanbanStep) Create(ctx context.Context, d db.DBTX, params db.KanbanStep
 }
 
 func (k *KanbanStep) Update(ctx context.Context, d db.DBTX, id int, params db.KanbanStepUpdateParams) (*db.KanbanStep, error) {
-	ks, err := k.ByID(ctx, d, id)
+	kanbanStep, err := k.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get kanban step by id %w", parseErrorDetail(err))
 	}
 
-	if params.StepOrder != nil {
-		ks.StepOrder = *params.StepOrder
-	}
-	if params.Description != nil {
-		ks.Description = *params.Description
-	}
-	if params.Name != nil {
-		ks.Name = *params.Name
-	}
-	if params.Color != nil {
-		ks.Color = *params.Color
-	}
-	if params.TimeTrackable != nil {
-		ks.TimeTrackable = *params.TimeTrackable
-	}
+	updateEntityWithParams(kanbanStep, &params)
 
-	ks, err = ks.Update(ctx, d)
+	kanbanStep, err = kanbanStep.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not update kanban step: %w", parseErrorDetail(err))
 	}
 
-	return ks, err
+	return kanbanStep, err
 }
 
 func (k *KanbanStep) ByProject(ctx context.Context, d db.DBTX, projectID int) ([]db.KanbanStep, error) {

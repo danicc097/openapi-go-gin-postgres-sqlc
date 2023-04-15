@@ -36,7 +36,6 @@ type DemoProjectWorkItemCreateParams struct {
 
 // DemoProjectWorkItemUpdateParams represents update params for 'public.demo_project_work_items'
 type DemoProjectWorkItemUpdateParams struct {
-	WorkItemID    *int64     `json:"workItemID"`    // work_item_id
 	Ref           *string    `json:"ref"`           // ref
 	Line          *string    `json:"line"`          // line
 	LastMessageAt *time.Time `json:"lastMessageAt"` // last_message_at

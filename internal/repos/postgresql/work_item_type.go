@@ -43,15 +43,7 @@ func (wit *WorkItemType) Update(ctx context.Context, d db.DBTX, id int, params d
 		return nil, fmt.Errorf("could not get workItemType by id %w", parseErrorDetail(err))
 	}
 
-	if params.Description != nil {
-		workItemType.Description = *params.Description
-	}
-	if params.Name != nil {
-		workItemType.Name = *params.Name
-	}
-	if params.Color != nil {
-		workItemType.Color = *params.Color
-	}
+	updateEntityWithParams(workItemType, &params)
 
 	workItemType, err = workItemType.Update(ctx, d)
 	if err != nil {

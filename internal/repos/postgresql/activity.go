@@ -43,15 +43,7 @@ func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params db.Acti
 		return nil, fmt.Errorf("could not get workItemTag by id %w", parseErrorDetail(err))
 	}
 
-	if params.Description != nil {
-		workItemTag.Description = *params.Description
-	}
-	if params.Name != nil {
-		workItemTag.Name = *params.Name
-	}
-	if params.IsProductive != nil {
-		workItemTag.IsProductive = *params.IsProductive
-	}
+	updateEntityWithParams(workItemTag, &params)
 
 	workItemTag, err = workItemTag.Update(ctx, d)
 	if err != nil {

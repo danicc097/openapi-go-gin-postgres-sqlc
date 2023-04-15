@@ -120,8 +120,8 @@ func TestUser_UpdateUser(t *testing.T) {
 				return
 			}
 
-			assert.Equal(t, tc.want.FirstName, got.FirstName)
-			assert.Equal(t, tc.want.LastName, got.LastName)
+			assert.Equal(t, *tc.want.FirstName, *got.FirstName)
+			assert.Equal(t, *tc.want.LastName, *got.LastName)
 		})
 	}
 }

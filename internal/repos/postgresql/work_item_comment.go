@@ -42,15 +42,7 @@ func (wit *WorkItemComment) Update(ctx context.Context, d db.DBTX, id int64, par
 		return nil, fmt.Errorf("could not get workItemComment by id %w", parseErrorDetail(err))
 	}
 
-	if params.Message != nil {
-		workItemComment.Message = *params.Message
-	}
-	if params.UserID != nil {
-		workItemComment.UserID = *params.UserID
-	}
-	if params.WorkItemID != nil {
-		workItemComment.WorkItemID = *params.WorkItemID
-	}
+	updateEntityWithParams(workItemComment, &params)
 
 	workItemComment, err = workItemComment.Update(ctx, d)
 	if err != nil {

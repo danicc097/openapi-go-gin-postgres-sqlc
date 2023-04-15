@@ -46,27 +46,8 @@ func (wit *TimeEntry) Update(ctx context.Context, d db.DBTX, id int64, params db
 		return nil, fmt.Errorf("could not get timeEntry by id %w", parseErrorDetail(err))
 	}
 
-	if params.TeamID != nil {
-		timeEntry.TeamID = *params.TeamID
-	}
-	if params.WorkItemID != nil {
-		timeEntry.WorkItemID = *params.WorkItemID
-	}
-	if params.DurationMinutes != nil {
-		timeEntry.DurationMinutes = *params.DurationMinutes
-	}
-	if params.Comment != nil {
-		timeEntry.Comment = *params.Comment
-	}
-	if params.Start != nil {
-		timeEntry.Start = *params.Start
-	}
-	if params.UserID != nil {
-		timeEntry.UserID = *params.UserID
-	}
-	if params.ActivityID != nil {
-		timeEntry.ActivityID = *params.ActivityID
-	}
+	updateEntityWithParams(timeEntry, &params)
+
 	timeEntry, err = timeEntry.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not update timeEntry: %w", parseErrorDetail(err))

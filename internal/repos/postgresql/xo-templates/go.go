@@ -817,15 +817,18 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 	}
 
 	// conversion requires Table
-	var fkeys []string
+	var fkeys [][]string
 	for _, fk := range t.ForeignKeys {
+		fmt.Printf("fk: %v\n", fk.Fields)
 		fkey, err := convertFKey(ctx, table, fk)
 		if err != nil {
 			return Table{}, fmt.Errorf("could not convert to fk: %w", err)
 		}
-		for _, fkField := range fkey.Fields {
-			fkeys = append(fkeys, fkField.SQLName)
+		ff := make([]string, len(fkey.Fields))
+		for i, fkField := range fkey.Fields {
+			ff[i] = fkField.SQLName
 		}
+		fkeys = append(fkeys, ff)
 	}
 	table.ForeignKeys = fkeys
 
@@ -2558,6 +2561,16 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
 	var skipExtraTags bool
 	isPrivate := contains(field.Properties, privateFieldProperty)
+	var isSingleFK bool
+	for _, fks := range table.ForeignKeys {
+		if len(fks) == 1 && fks[0] == field.SQLName {
+			isSingleFK = true
+		}
+	}
+	var isSinglePK bool
+	if len(table.PrimaryKeys) == 1 && table.PrimaryKeys[0].SQLName == field.SQLName {
+		isSinglePK = true
+	}
 	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
 
 	switch typ {
@@ -2568,6 +2581,10 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 		skipExtraTags = true
 	case "UpdateParams":
 		if skipField {
+			return "", nil
+		}
+		if isSingleFK && isSinglePK { // e.g. workitemid in project tables. don't ever want to update it.
+			fmt.Printf("skipping %q: single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
 			return "", nil
 		}
 		skipExtraTags = true
@@ -3094,7 +3111,7 @@ type Table struct {
 	Comment     string
 	Generated   []Field
 	Ignored     []Field
-	ForeignKeys []string
+	ForeignKeys [][]string
 }
 
 // ForeignKey is a foreign key template.
