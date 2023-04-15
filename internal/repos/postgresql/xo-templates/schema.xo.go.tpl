@@ -200,6 +200,7 @@ generated queries from indexes
 
 {{ define "typedef" }}
 {{- $t := .Data.Table -}}
+{{- $tables := .Data.Tables -}}
 {{- $constraints := .Data.Constraints -}}
 
 {{if $t.Comment -}}
@@ -212,7 +213,7 @@ type {{ $t.GoName }} struct {
 {{ range $t.Fields -}}
 	{{ field . "Table" $t -}}
 {{ end }}
-{{ join_fields $t.SQLName false $constraints }}
+{{ join_fields $t.SQLName $constraints $tables }}
 {{- if $t.PrimaryKeys -}}
 	// xo fields
 	_exists, _deleted bool
@@ -233,7 +234,7 @@ type {{ $t.GoName }}UpdateParams struct {
 {{ end -}}
 }
 
-{{ extratypes $t.GoName $t.SQLName $constraints $t }}
+{{ extratypes $t.GoName $t.SQLName $constraints $t $tables }}
 
 {{/* regular queries for a table. Ignored for mat views or views.
  */}}
