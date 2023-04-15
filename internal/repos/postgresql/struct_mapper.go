@@ -1,6 +1,7 @@
 package postgresql
 
 import (
+	"log"
 	"reflect"
 )
 
@@ -11,7 +12,7 @@ import (
 // Example:
 //
 //	updateEntityWithParams(&User{}, &Params{Name: "Jane"})
-func updateEntityWithParams[T any, U any](entity *T, params *U) {
+func updateEntityWithParams(entity any, params any) {
 	entityValue := reflect.ValueOf(entity).Elem()
 	paramsType := reflect.TypeOf(params).Elem()
 	paramsValue := reflect.ValueOf(params).Elem()
@@ -34,6 +35,10 @@ func updateEntityWithParams[T any, U any](entity *T, params *U) {
 
 		// params first interface will always be a pointer.
 		if fieldValue.CanSet() {
+			if paramValue.Kind() == reflect.Struct {
+				log.Default().Printf("WARNING: struct is not supported: %s", paramName)
+				continue
+			}
 			fieldValue.Set(paramValue.Elem())
 		}
 	}
