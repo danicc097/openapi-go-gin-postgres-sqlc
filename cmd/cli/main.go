@@ -83,6 +83,7 @@ func main() {
 	//
 	//
 	pgxArrayAggIssueQuery(pool)
+	pgxArrayAggIssueWorkingQuery(pool)
 	os.Exit(0)
 
 	username := "user_1"
@@ -326,6 +327,10 @@ VALUES (2 , '19270107-1b9c-4f52-a578-7390d5b31513');
 		) as joined_teams on joined_teams.user_team_user_id = users.user_id
 ;
 	`
+	/**
+		 * user_id │ 19270107-1b9c-4f52-a578-7390d5b31513
+	teams   │ {"(1,1,\"team 1\",\"This is team 1 from project 1\",\"2023-04-16 08:09:13.172744+00\",\"2023-04-16 08:09:13.172744+00\")","(2,1,\"team 2\",\"This is team 2 from project 1\",\"2023-04-16 08:09:13.173884+00\",\"2023-04-16 08:09:13.173884+00\")"}
+	*/
 
 	rows, err := pool.Query(context.Background(), query)
 	if err != nil {
@@ -337,6 +342,64 @@ VALUES (2 , '19270107-1b9c-4f52-a578-7390d5b31513');
 	}
 	b, _ := json.Marshal(users[0])
 	fmt.Printf("users[0]: %+v\n", string(b))
+}
+
+type Team2 struct {
+	TeamID      int       `json:"teamID" db:"team_id"`
+	Name        string    `json:"name" db:"name"`
+	ProjectID   int       `json:"projectID" db:"project_id"`
+	Description string    `json:"description" db:"description"`
+	CreatedAt   time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at"`
+
+	Users *[]User2 `json:"users" db:"users"`
+
+	_exists, _deleted bool
+}
+
+type User2 struct {
+	UserID int      `json:"userID" db:"user_id"`
+	Name   string   `json:"name" db:"name"`
+	Teams  *[]Team2 `json:"teams" db:"teams"`
+	Items  *[]Item  `json:"items" db:"items"`
+}
+
+func pgxArrayAggIssueWorkingQuery(pool *pgxpool.Pool) {
+	query := `
+	WITH user_team AS (
+		SELECT 1 AS user_id, 1 AS team_id
+		UNION ALL
+		SELECT 1 AS user_id, 2 AS team_id
+	), users AS (
+		SELECT 1 AS user_id, 'John Doe' AS name
+	),teams AS (
+		SELECT 1 AS team_id, 'team 1' AS name, 1 as project_id, 'This is team 1 from project 1' as description, now() AS created_at, now() AS updated_at
+		UNION ALL
+		SELECT 2 AS team_id, 'team 2' AS name, 2 as project_id, 'This is team 2 from project 1' as description, now() AS created_at, now() AS updated_at
+	)
+	SELECT users.user_id
+	, joined_teams.__teams as teams
+	FROM users
+	left join (
+		select
+			user_team.user_id as user_team_user_id
+			, array_agg(teams.*) as __teams
+			from user_team
+			join teams using (team_id)
+			group by user_team_user_id
+		) as joined_teams on joined_teams.user_team_user_id = users.user_id
+	`
+
+	rows, err := pool.Query(context.Background(), query)
+	if err != nil {
+		log.Fatalf("error pool.Query: %s\n", err)
+	}
+	users, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User2])
+	if err != nil {
+		log.Fatalf("error pgx.CollectRows: %s\n", err)
+	}
+	b, _ := json.Marshal(users[0])
+	fmt.Printf("users[0]: %+v\n", string(b)) // {"userID":1,"name":"","teams":[{"teamID":1,"name":"team 1","projectID":1,"description":"This is team 1 from project 1","createdAt":"2023-04-16T08:39:38.622926Z","updatedAt":"2023-04-16T08:39:38.622926Z","users":null},{"teamID":2,"name":"team 2","projectID":1,"description":"This is team 2 from project 1","createdAt":"2023-04-16T08:39:38.622926Z","updatedAt":"2023-04-16T08:39:38.622926Z","users":null}],"items":null}
 }
 
 func errAndExit(out []byte, err error) {
