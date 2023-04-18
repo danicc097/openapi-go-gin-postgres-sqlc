@@ -5,6 +5,8 @@ source "${BASH_SOURCE%/*}/.helpers.sh"
 ensure_pwd_is_top_level
 
 check.all() {
+  mkdir -p ./bin/tools/
+
   while IFS= read -r line; do
     [[ $line =~ ^declare\ -f\ check\.bin\. ]] && BIN_CHECKS+=("${line##declare -f check.bin.}")
     [[ $line =~ ^declare\ -f\ install\.bin\. ]] && BIN_INSTALLS+=("${line##declare -f install.bin.}")
@@ -27,7 +29,7 @@ check.bin.bash() {
   vers=${BASH_VERSION:0:1}
   minver=4
   { ((vers >= minver)) &&
-    printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_VERSION:0:1}"; } ||
+    printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: $minver"; } ||
     {
       echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
       echo "Current version: $vers"
@@ -216,8 +218,9 @@ check.bin.sponge() {
 }
 
 install.bin.sponge() {
-  sudo apt-get install sponge
+  sudo apt-get install moreutils
 }
+
 check.bin.mkcert() {
   local vers
   vers=$(mkcert --version)
@@ -239,7 +242,7 @@ install.bin.mkcert() {
   sudo apt-get install libnss3-tools
   wget https://github.com/FiloSottile/mkcert/releases/download/v"$VERSION"/mkcert-v"$VERSION"-linux-amd64 -O mkcert
   chmod +x mkcert
-  mv mkcert bin/tools/
+  mv mkcert ./bin/tools/
   cd certificates || exit
   echo "Setting up local certificates"
   mkcert --cert-file localhost.pem --key-file localhost-key.pem localhost "*.dev.localhost" "*.ci.localhost" "*.prod.localhost" 127.0.0.1 ::1 host.docker.internal
