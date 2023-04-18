@@ -109,20 +109,6 @@ check.bin.go() {
     }
 }
 
-check.bin.yq() {
-  local vers
-  vers=$(yq --version)
-  minver=4
-  { [[ "$vers" =~ version[\ ]+[v]?([^\ \.]+) ]] && [[ "$vers" = *mikefarah/yq* ]] &&
-    ((BASH_REMATCH[1] >= minver)) &&
-    printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
-    {
-      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
-      echo "Current version: $vers"
-      return 1
-    }
-}
-
 check.bin.docker() {
   local vers
   vers=$(docker --version)
