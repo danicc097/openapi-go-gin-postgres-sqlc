@@ -54,10 +54,10 @@ runs:
       run: |
         source .envrc
 
-        sudo apt-get install -y moreutils
-        yes y | project check-build-deps
-
         mv docker/.env.ci docker/.env
+
+        yes y | project check-build-deps --x-env=ci
+
 
     - name: Install dependencies (2)
       shell: bash

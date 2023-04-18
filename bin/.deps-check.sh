@@ -176,7 +176,7 @@ check.bin.parallel() {
     }
 }
 
-install.bin.direnv() {
+install.bin.parallel() {
   sudo apt install parallel
 }
 
@@ -197,6 +197,18 @@ install.bin.direnv() {
   sudo apt install direnv
 }
 
+check.bin.sponge() {
+  { [[ $(command -v sponge) =~ /sponge$ ]] &&
+    printf "%-40s ✅\n" "${FUNCNAME[0]##*.}"; } ||
+    {
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check."
+      return 1
+    }
+}
+
+install.bin.sponge() {
+  sudo apt install sponge
+}
 check.bin.mkcert() {
   local vers
   vers=$(mkcert --version)
