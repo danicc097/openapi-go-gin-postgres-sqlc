@@ -206,8 +206,8 @@ export interface components {
       description: string;
       kanbanStepID: number;
       members?: (components["schemas"]["DbUser"])[] | null;
-      metadata: components["schemas"]["PgtypeJSONB"];
-      project2workItem?: components["schemas"]["DbProject2WorkItem"];
+      metadata: (number)[] | null;
+      project2WorkItem?: components["schemas"]["DbProject2WorkItem"];
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -331,9 +331,9 @@ export interface components {
       demoProjectWorkItem?: components["schemas"]["DbDemoProjectWorkItem"];
       description: string;
       kanbanStepID: number;
-      members?: (components["schemas"]["DbUser"])[] | null;
-      metadata: components["schemas"]["PgtypeJSONB"];
-      project2workItem?: components["schemas"]["DbProject2WorkItem"];
+      members?: (components["schemas"]["DbMember"])[] | null;
+      metadata: (number)[] | null;
+      project2WorkItem?: components["schemas"]["DbProject2WorkItem"];
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -385,6 +385,11 @@ export interface components {
     };
     ModelsProject: string;
     ModelsRole: string;
+    DbMember: {
+      role?: components["schemas"]["DbWorkItemRole"];
+      user?: components["schemas"]["DbUser"];
+    };
+    DbWorkItemRole: string;
   };
   responses: never;
   parameters: {

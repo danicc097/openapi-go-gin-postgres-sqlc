@@ -48,6 +48,8 @@ import {
   DbWorkItemTypeCreateParams,
   ModelsProject,
   ModelsRole,
+  DbMember,
+  DbWorkItemRole,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -534,5 +536,29 @@ export const ModelsRoleDecoder: Decoder<ModelsRole> = {
       throw new Error(`Schema ${ModelsRoleDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ModelsRoleDecoder.definitionName)
+  },
+}
+export const DbMemberDecoder: Decoder<DbMember> = {
+  definitionName: 'DbMember',
+  schemaRef: '#/definitions/DbMember',
+
+  decode(json: unknown): DbMember {
+    const schema = ajv.getSchema(DbMemberDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbMemberDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbMemberDecoder.definitionName)
+  },
+}
+export const DbWorkItemRoleDecoder: Decoder<DbWorkItemRole> = {
+  definitionName: 'DbWorkItemRole',
+  schemaRef: '#/definitions/DbWorkItemRole',
+
+  decode(json: unknown): DbWorkItemRole {
+    const schema = ajv.getSchema(DbWorkItemRoleDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbWorkItemRoleDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbWorkItemRoleDecoder.definitionName)
   },
 }

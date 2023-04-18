@@ -6,8 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { DbDemoProjectWorkItem } from './dbDemoProjectWorkItem'
-import type { DbUser } from './dbUser'
-import type { PgtypeJSONB } from './pgtypeJSONB'
+import type { DbMember } from './dbMember'
 import type { DbProject2WorkItem } from './dbProject2WorkItem'
 import type { DbTimeEntry } from './dbTimeEntry'
 import type { DbWorkItemComment } from './dbWorkItemComment'
@@ -21,9 +20,9 @@ export interface DbWorkItem {
   demoProjectWorkItem?: DbDemoProjectWorkItem
   description: string
   kanbanStepID: number
-  members?: DbUser[] | null
-  metadata: PgtypeJSONB
-  project2workItem?: DbProject2WorkItem
+  members?: DbMember[] | null
+  metadata: number[] | null
+  project2WorkItem?: DbProject2WorkItem
   targetDate: Date
   teamID: number
   timeEntries?: DbTimeEntry[] | null

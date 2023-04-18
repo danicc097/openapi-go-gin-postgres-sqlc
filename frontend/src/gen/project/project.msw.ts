@@ -161,48 +161,15 @@ export const getGetProjectMock = () => ({
                               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                               members: faker.helpers.arrayElement([
                                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    timeEntries: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        comment: faker.random.word(),
-                                        durationMinutes: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        start: (() => faker.date.past())(),
-                                        teamID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        userID: faker.random.word(),
-                                        workItemID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                      })),
-                                      undefined,
-                                    ]),
-                                    userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  }),
+                                  () => ({ role: faker.helpers.arrayElement([faker.random.word(), undefined]) }),
                                 ),
                                 undefined,
                               ]),
-                              metadata: {},
-                              project2workItem: faker.helpers.arrayElement([
+                              metadata: Array.from(
+                                { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                (_, i) => i + 1,
+                              ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                              project2WorkItem: faker.helpers.arrayElement([
                                 {
                                   customDateForProject2: faker.helpers.arrayElement([
                                     (() => faker.date.past())(),
@@ -288,45 +255,14 @@ export const getGetProjectMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
+                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
                         })),
                         undefined,
                       ]),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
+                      project2WorkItem: faker.helpers.arrayElement([
                         {
                           customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                           workItem: faker.helpers.arrayElement([
@@ -348,47 +284,14 @@ export const getGetProjectMock = () => ({
                               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                               members: faker.helpers.arrayElement([
                                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    timeEntries: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        comment: faker.random.word(),
-                                        durationMinutes: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        start: (() => faker.date.past())(),
-                                        teamID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        userID: faker.random.word(),
-                                        workItemID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                      })),
-                                      undefined,
-                                    ]),
-                                    userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  }),
+                                  () => ({ role: faker.helpers.arrayElement([faker.random.word(), undefined]) }),
                                 ),
                                 undefined,
                               ]),
-                              metadata: {},
+                              metadata: Array.from(
+                                { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                (_, i) => i + 1,
+                              ).map(() => faker.datatype.number({ min: 0, max: undefined })),
                               targetDate: (() => faker.date.past())(),
                               teamID: faker.datatype.number({ min: undefined, max: undefined }),
                               timeEntries: faker.helpers.arrayElement([
@@ -534,48 +437,15 @@ export const getGetProjectMock = () => ({
                               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                               members: faker.helpers.arrayElement([
                                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    timeEntries: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        comment: faker.random.word(),
-                                        durationMinutes: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        start: (() => faker.date.past())(),
-                                        teamID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        userID: faker.random.word(),
-                                        workItemID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                      })),
-                                      undefined,
-                                    ]),
-                                    userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  }),
+                                  () => ({ role: faker.helpers.arrayElement([faker.random.word(), undefined]) }),
                                 ),
                                 undefined,
                               ]),
-                              metadata: {},
-                              project2workItem: faker.helpers.arrayElement([
+                              metadata: Array.from(
+                                { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                (_, i) => i + 1,
+                              ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                              project2WorkItem: faker.helpers.arrayElement([
                                 {
                                   customDateForProject2: faker.helpers.arrayElement([
                                     (() => faker.date.past())(),
@@ -680,93 +550,61 @@ export const getGetProjectMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userAPIKey: faker.helpers.arrayElement([
+                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          user: faker.helpers.arrayElement([
                             {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
+                              createdAt: (() => faker.date.past())(),
+                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              email: faker.random.word(),
+                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              hasGlobalNotifications: faker.datatype.boolean(),
+                              hasPersonalNotifications: faker.datatype.boolean(),
+                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              timeEntries: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
+                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    comment: faker.random.word(),
+                                    durationMinutes: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    start: (() => faker.date.past())(),
+                                    teamID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    userID: faker.random.word(),
+                                    workItemID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              userAPIKey: faker.helpers.arrayElement([
                                 {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
+                                  apiKey: faker.random.word(),
+                                  expiresOn: (() => faker.date.past())(),
                                   userID: faker.random.word(),
-                                  username: faker.random.word(),
                                 },
                                 undefined,
                               ]),
                               userID: faker.random.word(),
+                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
                         })),
                         undefined,
                       ]),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
+                      project2WorkItem: faker.helpers.arrayElement([
                         {
                           customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                           workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -843,90 +681,59 @@ export const getGetProjectMock = () => ({
               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
               members: faker.helpers.arrayElement([
                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  createdAt: (() => faker.date.past())(),
-                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                  email: faker.random.word(),
-                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  hasGlobalNotifications: faker.datatype.boolean(),
-                  hasPersonalNotifications: faker.datatype.boolean(),
-                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  timeEntries: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                      comment: faker.random.word(),
-                      durationMinutes: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                      start: (() => faker.date.past())(),
-                      teamID: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                      userID: faker.random.word(),
-                      workItemID: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                    })),
-                    undefined,
-                  ]),
-                  userAPIKey: faker.helpers.arrayElement([
+                  role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                  user: faker.helpers.arrayElement([
                     {
-                      apiKey: faker.random.word(),
-                      expiresOn: (() => faker.date.past())(),
-                      user: faker.helpers.arrayElement([
-                        {
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
+                      createdAt: (() => faker.date.past())(),
+                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                      email: faker.random.word(),
+                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      hasGlobalNotifications: faker.datatype.boolean(),
+                      hasPersonalNotifications: faker.datatype.boolean(),
+                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      timeEntries: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                          comment: faker.random.word(),
+                          durationMinutes: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
                           ]),
+                          start: (() => faker.date.past())(),
+                          teamID: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                           userID: faker.random.word(),
-                          username: faker.random.word(),
+                          workItemID: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                        })),
+                        undefined,
+                      ]),
+                      userAPIKey: faker.helpers.arrayElement([
+                        {
+                          apiKey: faker.random.word(),
+                          expiresOn: (() => faker.date.past())(),
+                          userID: faker.random.word(),
                         },
                         undefined,
                       ]),
                       userID: faker.random.word(),
+                      username: faker.random.word(),
                     },
                     undefined,
                   ]),
-                  userID: faker.random.word(),
-                  username: faker.random.word(),
                 })),
                 undefined,
               ]),
-              metadata: {},
-              project2workItem: faker.helpers.arrayElement([
+              metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+                faker.datatype.number({ min: 0, max: undefined }),
+              ),
+              project2WorkItem: faker.helpers.arrayElement([
                 {
                   customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                   workItem: faker.helpers.arrayElement([
@@ -948,92 +755,60 @@ export const getGetProjectMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userAPIKey: faker.helpers.arrayElement([
+                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          user: faker.helpers.arrayElement([
                             {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
+                              createdAt: (() => faker.date.past())(),
+                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              email: faker.random.word(),
+                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              hasGlobalNotifications: faker.datatype.boolean(),
+                              hasPersonalNotifications: faker.datatype.boolean(),
+                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              timeEntries: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
+                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    comment: faker.random.word(),
+                                    durationMinutes: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    start: (() => faker.date.past())(),
+                                    teamID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    userID: faker.random.word(),
+                                    workItemID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              userAPIKey: faker.helpers.arrayElement([
                                 {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
+                                  apiKey: faker.random.word(),
+                                  expiresOn: (() => faker.date.past())(),
                                   userID: faker.random.word(),
-                                  username: faker.random.word(),
                                 },
                                 undefined,
                               ]),
                               userID: faker.random.word(),
+                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
                         })),
                         undefined,
                       ]),
-                      metadata: {},
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
                       targetDate: (() => faker.date.past())(),
                       teamID: faker.datatype.number({ min: undefined, max: undefined }),
                       timeEntries: faker.helpers.arrayElement([
@@ -1170,93 +945,61 @@ export const getGetProjectMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userAPIKey: faker.helpers.arrayElement([
+                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          user: faker.helpers.arrayElement([
                             {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
+                              createdAt: (() => faker.date.past())(),
+                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              email: faker.random.word(),
+                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              hasGlobalNotifications: faker.datatype.boolean(),
+                              hasPersonalNotifications: faker.datatype.boolean(),
+                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              timeEntries: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
+                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    comment: faker.random.word(),
+                                    durationMinutes: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    start: (() => faker.date.past())(),
+                                    teamID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    userID: faker.random.word(),
+                                    workItemID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              userAPIKey: faker.helpers.arrayElement([
                                 {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
+                                  apiKey: faker.random.word(),
+                                  expiresOn: (() => faker.date.past())(),
                                   userID: faker.random.word(),
-                                  username: faker.random.word(),
                                 },
                                 undefined,
                               ]),
                               userID: faker.random.word(),
+                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
                         })),
                         undefined,
                       ]),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
+                      project2WorkItem: faker.helpers.arrayElement([
                         {
                           customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                           workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -1357,57 +1100,25 @@ export const getGetProjectMock = () => ({
                   kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                   members: faker.helpers.arrayElement([
                     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      createdAt: (() => faker.date.past())(),
-                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      email: faker.random.word(),
-                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      hasGlobalNotifications: faker.datatype.boolean(),
-                      hasPersonalNotifications: faker.datatype.boolean(),
-                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      teams: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                      user: faker.helpers.arrayElement([
+                        {
                           createdAt: (() => faker.date.past())(),
-                          description: faker.random.word(),
-                          name: faker.random.word(),
-                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          updatedAt: (() => faker.date.past())(),
-                          users: faker.helpers.arrayElement([
+                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                          email: faker.random.word(),
+                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          hasGlobalNotifications: faker.datatype.boolean(),
+                          hasPersonalNotifications: faker.datatype.boolean(),
+                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          teams: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
                                 createdAt: (() => faker.date.past())(),
-                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                email: faker.random.word(),
-                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                hasGlobalNotifications: faker.datatype.boolean(),
-                                hasPersonalNotifications: faker.datatype.boolean(),
-                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                description: faker.random.word(),
+                                name: faker.random.word(),
+                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                 timeEntries: faker.helpers.arrayElement([
                                   Array.from(
                                     { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -1433,107 +1144,20 @@ export const getGetProjectMock = () => ({
                                   })),
                                   undefined,
                                 ]),
-                                userAPIKey: faker.helpers.arrayElement([
-                                  {
-                                    apiKey: faker.random.word(),
-                                    expiresOn: (() => faker.date.past())(),
-                                    user: faker.helpers.arrayElement([
-                                      {
-                                        createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        email: faker.random.word(),
-                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        hasGlobalNotifications: faker.datatype.boolean(),
-                                        hasPersonalNotifications: faker.datatype.boolean(),
-                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
-                                        ]),
-                                        userID: faker.random.word(),
-                                        username: faker.random.word(),
-                                      },
-                                      undefined,
-                                    ]),
-                                    userID: faker.random.word(),
-                                  },
-                                  undefined,
-                                ]),
-                                userID: faker.random.word(),
-                                username: faker.random.word(),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      timeEntries: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                          comment: faker.random.word(),
-                          durationMinutes: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          start: (() => faker.date.past())(),
-                          teamID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                          userID: faker.random.word(),
-                          workItemID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      userAPIKey: faker.helpers.arrayElement([
-                        {
-                          apiKey: faker.random.word(),
-                          expiresOn: (() => faker.date.past())(),
-                          user: faker.helpers.arrayElement([
-                            {
-                              createdAt: (() => faker.date.past())(),
-                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                              email: faker.random.word(),
-                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              hasGlobalNotifications: faker.datatype.boolean(),
-                              hasPersonalNotifications: faker.datatype.boolean(),
-                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              teams: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
+                                updatedAt: (() => faker.date.past())(),
+                                users: faker.helpers.arrayElement([
+                                  Array.from(
+                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                    (_, i) => i + 1,
+                                  ).map(() => ({
                                     createdAt: (() => faker.date.past())(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                    email: faker.random.word(),
+                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    hasGlobalNotifications: faker.datatype.boolean(),
+                                    hasPersonalNotifications: faker.datatype.boolean(),
+                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -1559,94 +1183,67 @@ export const getGetProjectMock = () => ({
                                       })),
                                       undefined,
                                     ]),
-                                    updatedAt: (() => faker.date.past())(),
-                                    users: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        email: faker.random.word(),
-                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        hasGlobalNotifications: faker.datatype.boolean(),
-                                        hasPersonalNotifications: faker.datatype.boolean(),
-                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
-                                        ]),
+                                    userAPIKey: faker.helpers.arrayElement([
+                                      {
+                                        apiKey: faker.random.word(),
+                                        expiresOn: (() => faker.date.past())(),
                                         userID: faker.random.word(),
-                                        username: faker.random.word(),
-                                      })),
+                                      },
                                       undefined,
                                     ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
-                              timeEntries: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                     userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
+                                    username: faker.random.word(),
+                                  })),
+                                  undefined,
+                                ]),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                          timeEntries: faker.helpers.arrayElement([
+                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                              () => ({
+                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                comment: faker.random.word(),
+                                durationMinutes: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                start: (() => faker.date.past())(),
+                                teamID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                userID: faker.random.word(),
+                                workItemID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                          userAPIKey: faker.helpers.arrayElement([
+                            {
+                              apiKey: faker.random.word(),
+                              expiresOn: (() => faker.date.past())(),
                               userID: faker.random.word(),
-                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
                           userID: faker.random.word(),
+                          username: faker.random.word(),
                         },
                         undefined,
                       ]),
-                      userID: faker.random.word(),
-                      username: faker.random.word(),
                     })),
                     undefined,
                   ]),
-                  metadata: {},
-                  project2workItem: faker.helpers.arrayElement([
+                  metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                    () => faker.datatype.number({ min: 0, max: undefined }),
+                  ),
+                  project2WorkItem: faker.helpers.arrayElement([
                     {
                       customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                       workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -1713,21 +1310,97 @@ export const getGetProjectMock = () => ({
           kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
           members: faker.helpers.arrayElement([
             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-              createdAt: (() => faker.date.past())(),
-              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-              email: faker.random.word(),
-              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-              hasGlobalNotifications: faker.datatype.boolean(),
-              hasPersonalNotifications: faker.datatype.boolean(),
-              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-              teams: faker.helpers.arrayElement([
-                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+              role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+              user: faker.helpers.arrayElement([
+                {
                   createdAt: (() => faker.date.past())(),
-                  description: faker.random.word(),
-                  name: faker.random.word(),
-                  projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                  teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                  email: faker.random.word(),
+                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                  hasGlobalNotifications: faker.datatype.boolean(),
+                  hasPersonalNotifications: faker.datatype.boolean(),
+                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                  teams: faker.helpers.arrayElement([
+                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                      createdAt: (() => faker.date.past())(),
+                      description: faker.random.word(),
+                      name: faker.random.word(),
+                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                      timeEntries: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                          comment: faker.random.word(),
+                          durationMinutes: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                          start: (() => faker.date.past())(),
+                          teamID: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                          userID: faker.random.word(),
+                          workItemID: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                        })),
+                        undefined,
+                      ]),
+                      updatedAt: (() => faker.date.past())(),
+                      users: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          createdAt: (() => faker.date.past())(),
+                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                          email: faker.random.word(),
+                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          hasGlobalNotifications: faker.datatype.boolean(),
+                          hasPersonalNotifications: faker.datatype.boolean(),
+                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          timeEntries: faker.helpers.arrayElement([
+                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                              () => ({
+                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                comment: faker.random.word(),
+                                durationMinutes: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                start: (() => faker.date.past())(),
+                                teamID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                userID: faker.random.word(),
+                                workItemID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                          userAPIKey: faker.helpers.arrayElement([
+                            {
+                              apiKey: faker.random.word(),
+                              expiresOn: (() => faker.date.past())(),
+                              userID: faker.random.word(),
+                            },
+                            undefined,
+                          ]),
+                          userID: faker.random.word(),
+                          username: faker.random.word(),
+                        })),
+                        undefined,
+                      ]),
+                    })),
+                    undefined,
+                  ]),
                   timeEntries: faker.helpers.arrayElement([
                     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
                       activityID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -1750,242 +1423,26 @@ export const getGetProjectMock = () => ({
                     })),
                     undefined,
                   ]),
-                  updatedAt: (() => faker.date.past())(),
-                  users: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      createdAt: (() => faker.date.past())(),
-                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      email: faker.random.word(),
-                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      hasGlobalNotifications: faker.datatype.boolean(),
-                      hasPersonalNotifications: faker.datatype.boolean(),
-                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      timeEntries: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                          comment: faker.random.word(),
-                          durationMinutes: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          start: (() => faker.date.past())(),
-                          teamID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                          userID: faker.random.word(),
-                          workItemID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      userAPIKey: faker.helpers.arrayElement([
-                        {
-                          apiKey: faker.random.word(),
-                          expiresOn: (() => faker.date.past())(),
-                          user: faker.helpers.arrayElement([
-                            {
-                              createdAt: (() => faker.date.past())(),
-                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                              email: faker.random.word(),
-                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              hasGlobalNotifications: faker.datatype.boolean(),
-                              hasPersonalNotifications: faker.datatype.boolean(),
-                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              timeEntries: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
-                              userID: faker.random.word(),
-                              username: faker.random.word(),
-                            },
-                            undefined,
-                          ]),
-                          userID: faker.random.word(),
-                        },
-                        undefined,
-                      ]),
-                      userID: faker.random.word(),
-                      username: faker.random.word(),
-                    })),
-                    undefined,
-                  ]),
-                })),
-                undefined,
-              ]),
-              timeEntries: faker.helpers.arrayElement([
-                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                  comment: faker.random.word(),
-                  durationMinutes: faker.helpers.arrayElement([
-                    faker.datatype.number({ min: undefined, max: undefined }),
-                    null,
-                  ]),
-                  start: (() => faker.date.past())(),
-                  teamID: faker.helpers.arrayElement([faker.datatype.number({ min: undefined, max: undefined }), null]),
-                  timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                  userID: faker.random.word(),
-                  workItemID: faker.helpers.arrayElement([
-                    faker.datatype.number({ min: undefined, max: undefined }),
-                    null,
-                  ]),
-                })),
-                undefined,
-              ]),
-              userAPIKey: faker.helpers.arrayElement([
-                {
-                  apiKey: faker.random.word(),
-                  expiresOn: (() => faker.date.past())(),
-                  user: faker.helpers.arrayElement([
+                  userAPIKey: faker.helpers.arrayElement([
                     {
-                      createdAt: (() => faker.date.past())(),
-                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      email: faker.random.word(),
-                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      hasGlobalNotifications: faker.datatype.boolean(),
-                      hasPersonalNotifications: faker.datatype.boolean(),
-                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      teams: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          description: faker.random.word(),
-                          name: faker.random.word(),
-                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          updatedAt: (() => faker.date.past())(),
-                          users: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                email: faker.random.word(),
-                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                hasGlobalNotifications: faker.datatype.boolean(),
-                                hasPersonalNotifications: faker.datatype.boolean(),
-                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                userID: faker.random.word(),
-                                username: faker.random.word(),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      timeEntries: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                          comment: faker.random.word(),
-                          durationMinutes: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          start: (() => faker.date.past())(),
-                          teamID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                          userID: faker.random.word(),
-                          workItemID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
+                      apiKey: faker.random.word(),
+                      expiresOn: (() => faker.date.past())(),
                       userID: faker.random.word(),
-                      username: faker.random.word(),
                     },
                     undefined,
                   ]),
                   userID: faker.random.word(),
+                  username: faker.random.word(),
                 },
                 undefined,
               ]),
-              userID: faker.random.word(),
-              username: faker.random.word(),
             })),
             undefined,
           ]),
-          metadata: {},
-          project2workItem: faker.helpers.arrayElement([
+          metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+            faker.datatype.number({ min: 0, max: undefined }),
+          ),
+          project2WorkItem: faker.helpers.arrayElement([
             {
               customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
               workItem: faker.helpers.arrayElement([
@@ -2007,57 +1464,25 @@ export const getGetProjectMock = () => ({
                   kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                   members: faker.helpers.arrayElement([
                     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      createdAt: (() => faker.date.past())(),
-                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      email: faker.random.word(),
-                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      hasGlobalNotifications: faker.datatype.boolean(),
-                      hasPersonalNotifications: faker.datatype.boolean(),
-                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      teams: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                      user: faker.helpers.arrayElement([
+                        {
                           createdAt: (() => faker.date.past())(),
-                          description: faker.random.word(),
-                          name: faker.random.word(),
-                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          updatedAt: (() => faker.date.past())(),
-                          users: faker.helpers.arrayElement([
+                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                          email: faker.random.word(),
+                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          hasGlobalNotifications: faker.datatype.boolean(),
+                          hasPersonalNotifications: faker.datatype.boolean(),
+                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          teams: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
                                 createdAt: (() => faker.date.past())(),
-                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                email: faker.random.word(),
-                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                hasGlobalNotifications: faker.datatype.boolean(),
-                                hasPersonalNotifications: faker.datatype.boolean(),
-                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                description: faker.random.word(),
+                                name: faker.random.word(),
+                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                 timeEntries: faker.helpers.arrayElement([
                                   Array.from(
                                     { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -2083,107 +1508,20 @@ export const getGetProjectMock = () => ({
                                   })),
                                   undefined,
                                 ]),
-                                userAPIKey: faker.helpers.arrayElement([
-                                  {
-                                    apiKey: faker.random.word(),
-                                    expiresOn: (() => faker.date.past())(),
-                                    user: faker.helpers.arrayElement([
-                                      {
-                                        createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        email: faker.random.word(),
-                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        hasGlobalNotifications: faker.datatype.boolean(),
-                                        hasPersonalNotifications: faker.datatype.boolean(),
-                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
-                                        ]),
-                                        userID: faker.random.word(),
-                                        username: faker.random.word(),
-                                      },
-                                      undefined,
-                                    ]),
-                                    userID: faker.random.word(),
-                                  },
-                                  undefined,
-                                ]),
-                                userID: faker.random.word(),
-                                username: faker.random.word(),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      timeEntries: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                          comment: faker.random.word(),
-                          durationMinutes: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          start: (() => faker.date.past())(),
-                          teamID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                          userID: faker.random.word(),
-                          workItemID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      userAPIKey: faker.helpers.arrayElement([
-                        {
-                          apiKey: faker.random.word(),
-                          expiresOn: (() => faker.date.past())(),
-                          user: faker.helpers.arrayElement([
-                            {
-                              createdAt: (() => faker.date.past())(),
-                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                              email: faker.random.word(),
-                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              hasGlobalNotifications: faker.datatype.boolean(),
-                              hasPersonalNotifications: faker.datatype.boolean(),
-                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              teams: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
+                                updatedAt: (() => faker.date.past())(),
+                                users: faker.helpers.arrayElement([
+                                  Array.from(
+                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                    (_, i) => i + 1,
+                                  ).map(() => ({
                                     createdAt: (() => faker.date.past())(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                    email: faker.random.word(),
+                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    hasGlobalNotifications: faker.datatype.boolean(),
+                                    hasPersonalNotifications: faker.datatype.boolean(),
+                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -2209,93 +1547,66 @@ export const getGetProjectMock = () => ({
                                       })),
                                       undefined,
                                     ]),
-                                    updatedAt: (() => faker.date.past())(),
-                                    users: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        email: faker.random.word(),
-                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        hasGlobalNotifications: faker.datatype.boolean(),
-                                        hasPersonalNotifications: faker.datatype.boolean(),
-                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
-                                        ]),
+                                    userAPIKey: faker.helpers.arrayElement([
+                                      {
+                                        apiKey: faker.random.word(),
+                                        expiresOn: (() => faker.date.past())(),
                                         userID: faker.random.word(),
-                                        username: faker.random.word(),
-                                      })),
+                                      },
                                       undefined,
                                     ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
-                              timeEntries: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                     userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
+                                    username: faker.random.word(),
+                                  })),
+                                  undefined,
+                                ]),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                          timeEntries: faker.helpers.arrayElement([
+                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                              () => ({
+                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                comment: faker.random.word(),
+                                durationMinutes: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                start: (() => faker.date.past())(),
+                                teamID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                userID: faker.random.word(),
+                                workItemID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                          userAPIKey: faker.helpers.arrayElement([
+                            {
+                              apiKey: faker.random.word(),
+                              expiresOn: (() => faker.date.past())(),
                               userID: faker.random.word(),
-                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
                           userID: faker.random.word(),
+                          username: faker.random.word(),
                         },
                         undefined,
                       ]),
-                      userID: faker.random.word(),
-                      username: faker.random.word(),
                     })),
                     undefined,
                   ]),
-                  metadata: {},
+                  metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                    () => faker.datatype.number({ min: 0, max: undefined }),
+                  ),
                   targetDate: (() => faker.date.past())(),
                   teamID: faker.datatype.number({ min: undefined, max: undefined }),
                   timeEntries: faker.helpers.arrayElement([
@@ -2409,57 +1720,25 @@ export const getGetProjectMock = () => ({
                   kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                   members: faker.helpers.arrayElement([
                     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      createdAt: (() => faker.date.past())(),
-                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      email: faker.random.word(),
-                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      hasGlobalNotifications: faker.datatype.boolean(),
-                      hasPersonalNotifications: faker.datatype.boolean(),
-                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      teams: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                      user: faker.helpers.arrayElement([
+                        {
                           createdAt: (() => faker.date.past())(),
-                          description: faker.random.word(),
-                          name: faker.random.word(),
-                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          updatedAt: (() => faker.date.past())(),
-                          users: faker.helpers.arrayElement([
+                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                          email: faker.random.word(),
+                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          hasGlobalNotifications: faker.datatype.boolean(),
+                          hasPersonalNotifications: faker.datatype.boolean(),
+                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          teams: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
                                 createdAt: (() => faker.date.past())(),
-                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                email: faker.random.word(),
-                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                hasGlobalNotifications: faker.datatype.boolean(),
-                                hasPersonalNotifications: faker.datatype.boolean(),
-                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                description: faker.random.word(),
+                                name: faker.random.word(),
+                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                 timeEntries: faker.helpers.arrayElement([
                                   Array.from(
                                     { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -2485,107 +1764,20 @@ export const getGetProjectMock = () => ({
                                   })),
                                   undefined,
                                 ]),
-                                userAPIKey: faker.helpers.arrayElement([
-                                  {
-                                    apiKey: faker.random.word(),
-                                    expiresOn: (() => faker.date.past())(),
-                                    user: faker.helpers.arrayElement([
-                                      {
-                                        createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        email: faker.random.word(),
-                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        hasGlobalNotifications: faker.datatype.boolean(),
-                                        hasPersonalNotifications: faker.datatype.boolean(),
-                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
-                                        ]),
-                                        userID: faker.random.word(),
-                                        username: faker.random.word(),
-                                      },
-                                      undefined,
-                                    ]),
-                                    userID: faker.random.word(),
-                                  },
-                                  undefined,
-                                ]),
-                                userID: faker.random.word(),
-                                username: faker.random.word(),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      timeEntries: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                          comment: faker.random.word(),
-                          durationMinutes: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          start: (() => faker.date.past())(),
-                          teamID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                          userID: faker.random.word(),
-                          workItemID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      userAPIKey: faker.helpers.arrayElement([
-                        {
-                          apiKey: faker.random.word(),
-                          expiresOn: (() => faker.date.past())(),
-                          user: faker.helpers.arrayElement([
-                            {
-                              createdAt: (() => faker.date.past())(),
-                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                              email: faker.random.word(),
-                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              hasGlobalNotifications: faker.datatype.boolean(),
-                              hasPersonalNotifications: faker.datatype.boolean(),
-                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              teams: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
+                                updatedAt: (() => faker.date.past())(),
+                                users: faker.helpers.arrayElement([
+                                  Array.from(
+                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                    (_, i) => i + 1,
+                                  ).map(() => ({
                                     createdAt: (() => faker.date.past())(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                    email: faker.random.word(),
+                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    hasGlobalNotifications: faker.datatype.boolean(),
+                                    hasPersonalNotifications: faker.datatype.boolean(),
+                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -2611,94 +1803,67 @@ export const getGetProjectMock = () => ({
                                       })),
                                       undefined,
                                     ]),
-                                    updatedAt: (() => faker.date.past())(),
-                                    users: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        email: faker.random.word(),
-                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        hasGlobalNotifications: faker.datatype.boolean(),
-                                        hasPersonalNotifications: faker.datatype.boolean(),
-                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
-                                        ]),
+                                    userAPIKey: faker.helpers.arrayElement([
+                                      {
+                                        apiKey: faker.random.word(),
+                                        expiresOn: (() => faker.date.past())(),
                                         userID: faker.random.word(),
-                                        username: faker.random.word(),
-                                      })),
+                                      },
                                       undefined,
                                     ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
-                              timeEntries: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                     userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
+                                    username: faker.random.word(),
+                                  })),
+                                  undefined,
+                                ]),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                          timeEntries: faker.helpers.arrayElement([
+                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                              () => ({
+                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                comment: faker.random.word(),
+                                durationMinutes: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                start: (() => faker.date.past())(),
+                                teamID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                userID: faker.random.word(),
+                                workItemID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                          userAPIKey: faker.helpers.arrayElement([
+                            {
+                              apiKey: faker.random.word(),
+                              expiresOn: (() => faker.date.past())(),
                               userID: faker.random.word(),
-                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
                           userID: faker.random.word(),
+                          username: faker.random.word(),
                         },
                         undefined,
                       ]),
-                      userID: faker.random.word(),
-                      username: faker.random.word(),
                     })),
                     undefined,
                   ]),
-                  metadata: {},
-                  project2workItem: faker.helpers.arrayElement([
+                  metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                    () => faker.datatype.number({ min: 0, max: undefined }),
+                  ),
+                  project2WorkItem: faker.helpers.arrayElement([
                     {
                       customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                       workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -2783,54 +1948,24 @@ export const getGetProjectMock = () => ({
           kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
           members: faker.helpers.arrayElement([
             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-              createdAt: (() => faker.date.past())(),
-              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-              email: faker.random.word(),
-              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-              hasGlobalNotifications: faker.datatype.boolean(),
-              hasPersonalNotifications: faker.datatype.boolean(),
-              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-              teams: faker.helpers.arrayElement([
-                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+              role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+              user: faker.helpers.arrayElement([
+                {
                   createdAt: (() => faker.date.past())(),
-                  description: faker.random.word(),
-                  name: faker.random.word(),
-                  projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                  teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                  timeEntries: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                      comment: faker.random.word(),
-                      durationMinutes: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                      start: (() => faker.date.past())(),
-                      teamID: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                      userID: faker.random.word(),
-                      workItemID: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                    })),
-                    undefined,
-                  ]),
-                  updatedAt: (() => faker.date.past())(),
-                  users: faker.helpers.arrayElement([
+                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                  email: faker.random.word(),
+                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                  hasGlobalNotifications: faker.datatype.boolean(),
+                  hasPersonalNotifications: faker.datatype.boolean(),
+                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                  teams: faker.helpers.arrayElement([
                     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
                       createdAt: (() => faker.date.past())(),
-                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      email: faker.random.word(),
-                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      hasGlobalNotifications: faker.datatype.boolean(),
-                      hasPersonalNotifications: faker.datatype.boolean(),
-                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      description: faker.random.word(),
+                      name: faker.random.word(),
+                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
                       timeEntries: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
                           activityID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -2853,331 +1988,85 @@ export const getGetProjectMock = () => ({
                         })),
                         undefined,
                       ]),
-                      userAPIKey: faker.helpers.arrayElement([
-                        {
-                          apiKey: faker.random.word(),
-                          expiresOn: (() => faker.date.past())(),
-                          user: faker.helpers.arrayElement([
+                      updatedAt: (() => faker.date.past())(),
+                      users: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          createdAt: (() => faker.date.past())(),
+                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                          email: faker.random.word(),
+                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          hasGlobalNotifications: faker.datatype.boolean(),
+                          hasPersonalNotifications: faker.datatype.boolean(),
+                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          timeEntries: faker.helpers.arrayElement([
+                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                              () => ({
+                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                comment: faker.random.word(),
+                                durationMinutes: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                start: (() => faker.date.past())(),
+                                teamID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                userID: faker.random.word(),
+                                workItemID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                          userAPIKey: faker.helpers.arrayElement([
                             {
-                              createdAt: (() => faker.date.past())(),
-                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                              email: faker.random.word(),
-                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              hasGlobalNotifications: faker.datatype.boolean(),
-                              hasPersonalNotifications: faker.datatype.boolean(),
-                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              timeEntries: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
+                              apiKey: faker.random.word(),
+                              expiresOn: (() => faker.date.past())(),
                               userID: faker.random.word(),
-                              username: faker.random.word(),
-                              workItems: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    demoProjectWorkItem: faker.helpers.arrayElement([
-                                      {
-                                        lastMessageAt: (() => faker.date.past())(),
-                                        line: faker.random.word(),
-                                        ref: faker.random.word(),
-                                        reopened: faker.datatype.boolean(),
-                                        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      },
-                                      undefined,
-                                    ]),
-                                    description: faker.random.word(),
-                                    kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    metadata: {},
-                                    project2workItem: faker.helpers.arrayElement([
-                                      {
-                                        customDateForProject2: faker.helpers.arrayElement([
-                                          (() => faker.date.past())(),
-                                          null,
-                                        ]),
-                                        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      },
-                                      undefined,
-                                    ]),
-                                    targetDate: (() => faker.date.past())(),
-                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    timeEntries: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        comment: faker.random.word(),
-                                        durationMinutes: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        start: (() => faker.date.past())(),
-                                        teamID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        userID: faker.random.word(),
-                                        workItemID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                      })),
-                                      undefined,
-                                    ]),
-                                    title: faker.random.word(),
-                                    updatedAt: (() => faker.date.past())(),
-                                    workItemComments: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        createdAt: (() => faker.date.past())(),
-                                        message: faker.random.word(),
-                                        updatedAt: (() => faker.date.past())(),
-                                        userID: faker.random.word(),
-                                        workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      })),
-                                      undefined,
-                                    ]),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemTags: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        color: faker.random.word(),
-                                        description: faker.random.word(),
-                                        name: faker.random.word(),
-                                        projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      })),
-                                      undefined,
-                                    ]),
-                                    workItemType: faker.helpers.arrayElement([
-                                      {
-                                        color: faker.random.word(),
-                                        description: faker.random.word(),
-                                        name: faker.random.word(),
-                                        projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      },
-                                      undefined,
-                                    ]),
-                                    workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
                             },
                             undefined,
                           ]),
                           userID: faker.random.word(),
-                        },
-                        undefined,
-                      ]),
-                      userID: faker.random.word(),
-                      username: faker.random.word(),
-                      workItems: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          demoProjectWorkItem: faker.helpers.arrayElement([
-                            {
-                              lastMessageAt: (() => faker.date.past())(),
-                              line: faker.random.word(),
-                              ref: faker.random.word(),
-                              reopened: faker.datatype.boolean(),
-                              workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                            },
-                            undefined,
-                          ]),
-                          description: faker.random.word(),
-                          kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                          metadata: {},
-                          project2workItem: faker.helpers.arrayElement([
-                            {
-                              customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                              workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                            },
-                            undefined,
-                          ]),
-                          targetDate: (() => faker.date.past())(),
-                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                          timeEntries: faker.helpers.arrayElement([
+                          username: faker.random.word(),
+                          workItems: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          title: faker.random.word(),
-                          updatedAt: (() => faker.date.past())(),
-                          workItemComments: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                message: faker.random.word(),
-                                updatedAt: (() => faker.date.past())(),
-                                userID: faker.random.word(),
-                                workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                                workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                          workItemTags: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                color: faker.random.word(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          workItemType: faker.helpers.arrayElement([
-                            {
-                              color: faker.random.word(),
-                              description: faker.random.word(),
-                              name: faker.random.word(),
-                              projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                              workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                            },
-                            undefined,
-                          ]),
-                          workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                        })),
-                        undefined,
-                      ]),
-                    })),
-                    undefined,
-                  ]),
-                })),
-                undefined,
-              ]),
-              timeEntries: faker.helpers.arrayElement([
-                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                  comment: faker.random.word(),
-                  durationMinutes: faker.helpers.arrayElement([
-                    faker.datatype.number({ min: undefined, max: undefined }),
-                    null,
-                  ]),
-                  start: (() => faker.date.past())(),
-                  teamID: faker.helpers.arrayElement([faker.datatype.number({ min: undefined, max: undefined }), null]),
-                  timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                  userID: faker.random.word(),
-                  workItemID: faker.helpers.arrayElement([
-                    faker.datatype.number({ min: undefined, max: undefined }),
-                    null,
-                  ]),
-                })),
-                undefined,
-              ]),
-              userAPIKey: faker.helpers.arrayElement([
-                {
-                  apiKey: faker.random.word(),
-                  expiresOn: (() => faker.date.past())(),
-                  user: faker.helpers.arrayElement([
-                    {
-                      createdAt: (() => faker.date.past())(),
-                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      email: faker.random.word(),
-                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      hasGlobalNotifications: faker.datatype.boolean(),
-                      hasPersonalNotifications: faker.datatype.boolean(),
-                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      teams: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          description: faker.random.word(),
-                          name: faker.random.word(),
-                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          updatedAt: (() => faker.date.past())(),
-                          users: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
+                                closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                 createdAt: (() => faker.date.past())(),
                                 deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                email: faker.random.word(),
-                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                hasGlobalNotifications: faker.datatype.boolean(),
-                                hasPersonalNotifications: faker.datatype.boolean(),
-                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                demoProjectWorkItem: faker.helpers.arrayElement([
+                                  {
+                                    lastMessageAt: (() => faker.date.past())(),
+                                    line: faker.random.word(),
+                                    ref: faker.random.word(),
+                                    reopened: faker.datatype.boolean(),
+                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                                  },
+                                  undefined,
+                                ]),
+                                description: faker.random.word(),
+                                kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
+                                metadata: Array.from(
+                                  { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                  (_, i) => i + 1,
+                                ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                                project2WorkItem: faker.helpers.arrayElement([
+                                  {
+                                    customDateForProject2: faker.helpers.arrayElement([
+                                      (() => faker.date.past())(),
+                                      null,
+                                    ]),
+                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                                  },
+                                  undefined,
+                                ]),
+                                targetDate: (() => faker.date.past())(),
+                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                 timeEntries: faker.helpers.arrayElement([
                                   Array.from(
                                     { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -3203,270 +2092,57 @@ export const getGetProjectMock = () => ({
                                   })),
                                   undefined,
                                 ]),
-                                userID: faker.random.word(),
-                                username: faker.random.word(),
-                                workItems: faker.helpers.arrayElement([
+                                title: faker.random.word(),
+                                updatedAt: (() => faker.date.past())(),
+                                workItemComments: faker.helpers.arrayElement([
                                   Array.from(
                                     { length: faker.datatype.number({ min: 1, max: 10 }) },
                                     (_, i) => i + 1,
                                   ).map(() => ({
-                                    closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                     createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    demoProjectWorkItem: faker.helpers.arrayElement([
-                                      {
-                                        lastMessageAt: (() => faker.date.past())(),
-                                        line: faker.random.word(),
-                                        ref: faker.random.word(),
-                                        reopened: faker.datatype.boolean(),
-                                        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      },
-                                      undefined,
-                                    ]),
-                                    description: faker.random.word(),
-                                    kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    metadata: {},
-                                    project2workItem: faker.helpers.arrayElement([
-                                      {
-                                        customDateForProject2: faker.helpers.arrayElement([
-                                          (() => faker.date.past())(),
-                                          null,
-                                        ]),
-                                        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      },
-                                      undefined,
-                                    ]),
-                                    targetDate: (() => faker.date.past())(),
-                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    timeEntries: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        comment: faker.random.word(),
-                                        durationMinutes: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        start: (() => faker.date.past())(),
-                                        teamID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        userID: faker.random.word(),
-                                        workItemID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                      })),
-                                      undefined,
-                                    ]),
-                                    title: faker.random.word(),
+                                    message: faker.random.word(),
                                     updatedAt: (() => faker.date.past())(),
-                                    workItemComments: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        createdAt: (() => faker.date.past())(),
-                                        message: faker.random.word(),
-                                        updatedAt: (() => faker.date.past())(),
-                                        userID: faker.random.word(),
-                                        workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      })),
-                                      undefined,
-                                    ]),
+                                    userID: faker.random.word(),
+                                    workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
                                     workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemTags: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        color: faker.random.word(),
-                                        description: faker.random.word(),
-                                        name: faker.random.word(),
-                                        projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      })),
-                                      undefined,
-                                    ]),
-                                    workItemType: faker.helpers.arrayElement([
-                                      {
-                                        color: faker.random.word(),
-                                        description: faker.random.word(),
-                                        name: faker.random.word(),
-                                        projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      },
-                                      undefined,
-                                    ]),
-                                    workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
                                   })),
                                   undefined,
                                 ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      timeEntries: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                          comment: faker.random.word(),
-                          durationMinutes: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          start: (() => faker.date.past())(),
-                          teamID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                          userID: faker.random.word(),
-                          workItemID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      userID: faker.random.word(),
-                      username: faker.random.word(),
-                      workItems: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          demoProjectWorkItem: faker.helpers.arrayElement([
-                            {
-                              lastMessageAt: (() => faker.date.past())(),
-                              line: faker.random.word(),
-                              ref: faker.random.word(),
-                              reopened: faker.datatype.boolean(),
-                              workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                            },
-                            undefined,
-                          ]),
-                          description: faker.random.word(),
-                          kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                          metadata: {},
-                          project2workItem: faker.helpers.arrayElement([
-                            {
-                              customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                              workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                            },
-                            undefined,
-                          ]),
-                          targetDate: (() => faker.date.past())(),
-                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          title: faker.random.word(),
-                          updatedAt: (() => faker.date.past())(),
-                          workItemComments: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                message: faker.random.word(),
-                                updatedAt: (() => faker.date.past())(),
-                                userID: faker.random.word(),
-                                workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
                                 workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                                workItemTags: faker.helpers.arrayElement([
+                                  Array.from(
+                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                    (_, i) => i + 1,
+                                  ).map(() => ({
+                                    color: faker.random.word(),
+                                    description: faker.random.word(),
+                                    name: faker.random.word(),
+                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
+                                  })),
+                                  undefined,
+                                ]),
+                                workItemType: faker.helpers.arrayElement([
+                                  {
+                                    color: faker.random.word(),
+                                    description: faker.random.word(),
+                                    name: faker.random.word(),
+                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
+                                  },
+                                  undefined,
+                                ]),
+                                workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
                               }),
                             ),
                             undefined,
                           ]),
-                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                          workItemTags: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                color: faker.random.word(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          workItemType: faker.helpers.arrayElement([
-                            {
-                              color: faker.random.word(),
-                              description: faker.random.word(),
-                              name: faker.random.word(),
-                              projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                              workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                            },
-                            undefined,
-                          ]),
-                          workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
                         })),
                         undefined,
                       ]),
-                    },
+                    })),
                     undefined,
                   ]),
-                  userID: faker.random.word(),
-                },
-                undefined,
-              ]),
-              userID: faker.random.word(),
-              username: faker.random.word(),
-              workItems: faker.helpers.arrayElement([
-                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                  createdAt: (() => faker.date.past())(),
-                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                  demoProjectWorkItem: faker.helpers.arrayElement([
-                    {
-                      lastMessageAt: (() => faker.date.past())(),
-                      line: faker.random.word(),
-                      ref: faker.random.word(),
-                      reopened: faker.datatype.boolean(),
-                      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                    },
-                    undefined,
-                  ]),
-                  description: faker.random.word(),
-                  kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                  metadata: {},
-                  project2workItem: faker.helpers.arrayElement([
-                    {
-                      customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                    },
-                    undefined,
-                  ]),
-                  targetDate: (() => faker.date.past())(),
-                  teamID: faker.datatype.number({ min: undefined, max: undefined }),
                   timeEntries: faker.helpers.arrayElement([
                     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
                       activityID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -3489,49 +2165,115 @@ export const getGetProjectMock = () => ({
                     })),
                     undefined,
                   ]),
-                  title: faker.random.word(),
-                  updatedAt: (() => faker.date.past())(),
-                  workItemComments: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      createdAt: (() => faker.date.past())(),
-                      message: faker.random.word(),
-                      updatedAt: (() => faker.date.past())(),
-                      userID: faker.random.word(),
-                      workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                    })),
-                    undefined,
-                  ]),
-                  workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                  workItemTags: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      color: faker.random.word(),
-                      description: faker.random.word(),
-                      name: faker.random.word(),
-                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                      workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                    })),
-                    undefined,
-                  ]),
-                  workItemType: faker.helpers.arrayElement([
+                  userAPIKey: faker.helpers.arrayElement([
                     {
-                      color: faker.random.word(),
-                      description: faker.random.word(),
-                      name: faker.random.word(),
-                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                      workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
+                      apiKey: faker.random.word(),
+                      expiresOn: (() => faker.date.past())(),
+                      userID: faker.random.word(),
                     },
                     undefined,
                   ]),
-                  workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                })),
+                  userID: faker.random.word(),
+                  username: faker.random.word(),
+                  workItems: faker.helpers.arrayElement([
+                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                      createdAt: (() => faker.date.past())(),
+                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                      demoProjectWorkItem: faker.helpers.arrayElement([
+                        {
+                          lastMessageAt: (() => faker.date.past())(),
+                          line: faker.random.word(),
+                          ref: faker.random.word(),
+                          reopened: faker.datatype.boolean(),
+                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                        },
+                        undefined,
+                      ]),
+                      description: faker.random.word(),
+                      kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
+                      project2WorkItem: faker.helpers.arrayElement([
+                        {
+                          customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                        },
+                        undefined,
+                      ]),
+                      targetDate: (() => faker.date.past())(),
+                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                      timeEntries: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                          comment: faker.random.word(),
+                          durationMinutes: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                          start: (() => faker.date.past())(),
+                          teamID: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                          userID: faker.random.word(),
+                          workItemID: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                        })),
+                        undefined,
+                      ]),
+                      title: faker.random.word(),
+                      updatedAt: (() => faker.date.past())(),
+                      workItemComments: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          createdAt: (() => faker.date.past())(),
+                          message: faker.random.word(),
+                          updatedAt: (() => faker.date.past())(),
+                          userID: faker.random.word(),
+                          workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
+                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                        })),
+                        undefined,
+                      ]),
+                      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                      workItemTags: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          color: faker.random.word(),
+                          description: faker.random.word(),
+                          name: faker.random.word(),
+                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                          workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
+                        })),
+                        undefined,
+                      ]),
+                      workItemType: faker.helpers.arrayElement([
+                        {
+                          color: faker.random.word(),
+                          description: faker.random.word(),
+                          name: faker.random.word(),
+                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                          workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
+                        },
+                        undefined,
+                      ]),
+                      workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
+                    })),
+                    undefined,
+                  ]),
+                },
                 undefined,
               ]),
             })),
             undefined,
           ]),
-          metadata: {},
-          project2workItem: faker.helpers.arrayElement([
+          metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+            faker.datatype.number({ min: 0, max: undefined }),
+          ),
+          project2WorkItem: faker.helpers.arrayElement([
             {
               customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
               workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -3596,57 +2338,25 @@ export const getGetProjectMock = () => ({
                   kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                   members: faker.helpers.arrayElement([
                     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      createdAt: (() => faker.date.past())(),
-                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      email: faker.random.word(),
-                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      hasGlobalNotifications: faker.datatype.boolean(),
-                      hasPersonalNotifications: faker.datatype.boolean(),
-                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      teams: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                      user: faker.helpers.arrayElement([
+                        {
                           createdAt: (() => faker.date.past())(),
-                          description: faker.random.word(),
-                          name: faker.random.word(),
-                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          updatedAt: (() => faker.date.past())(),
-                          users: faker.helpers.arrayElement([
+                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                          email: faker.random.word(),
+                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          hasGlobalNotifications: faker.datatype.boolean(),
+                          hasPersonalNotifications: faker.datatype.boolean(),
+                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          teams: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
                                 createdAt: (() => faker.date.past())(),
-                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                email: faker.random.word(),
-                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                hasGlobalNotifications: faker.datatype.boolean(),
-                                hasPersonalNotifications: faker.datatype.boolean(),
-                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                description: faker.random.word(),
+                                name: faker.random.word(),
+                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                 timeEntries: faker.helpers.arrayElement([
                                   Array.from(
                                     { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -3672,107 +2382,20 @@ export const getGetProjectMock = () => ({
                                   })),
                                   undefined,
                                 ]),
-                                userAPIKey: faker.helpers.arrayElement([
-                                  {
-                                    apiKey: faker.random.word(),
-                                    expiresOn: (() => faker.date.past())(),
-                                    user: faker.helpers.arrayElement([
-                                      {
-                                        createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        email: faker.random.word(),
-                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        hasGlobalNotifications: faker.datatype.boolean(),
-                                        hasPersonalNotifications: faker.datatype.boolean(),
-                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
-                                        ]),
-                                        userID: faker.random.word(),
-                                        username: faker.random.word(),
-                                      },
-                                      undefined,
-                                    ]),
-                                    userID: faker.random.word(),
-                                  },
-                                  undefined,
-                                ]),
-                                userID: faker.random.word(),
-                                username: faker.random.word(),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      timeEntries: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                          comment: faker.random.word(),
-                          durationMinutes: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          start: (() => faker.date.past())(),
-                          teamID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                          userID: faker.random.word(),
-                          workItemID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      userAPIKey: faker.helpers.arrayElement([
-                        {
-                          apiKey: faker.random.word(),
-                          expiresOn: (() => faker.date.past())(),
-                          user: faker.helpers.arrayElement([
-                            {
-                              createdAt: (() => faker.date.past())(),
-                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                              email: faker.random.word(),
-                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              hasGlobalNotifications: faker.datatype.boolean(),
-                              hasPersonalNotifications: faker.datatype.boolean(),
-                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              teams: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
+                                updatedAt: (() => faker.date.past())(),
+                                users: faker.helpers.arrayElement([
+                                  Array.from(
+                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                    (_, i) => i + 1,
+                                  ).map(() => ({
                                     createdAt: (() => faker.date.past())(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                    email: faker.random.word(),
+                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    hasGlobalNotifications: faker.datatype.boolean(),
+                                    hasPersonalNotifications: faker.datatype.boolean(),
+                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -3798,94 +2421,67 @@ export const getGetProjectMock = () => ({
                                       })),
                                       undefined,
                                     ]),
-                                    updatedAt: (() => faker.date.past())(),
-                                    users: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        email: faker.random.word(),
-                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        hasGlobalNotifications: faker.datatype.boolean(),
-                                        hasPersonalNotifications: faker.datatype.boolean(),
-                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
-                                        ]),
+                                    userAPIKey: faker.helpers.arrayElement([
+                                      {
+                                        apiKey: faker.random.word(),
+                                        expiresOn: (() => faker.date.past())(),
                                         userID: faker.random.word(),
-                                        username: faker.random.word(),
-                                      })),
+                                      },
                                       undefined,
                                     ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
-                              timeEntries: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                     userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
+                                    username: faker.random.word(),
+                                  })),
+                                  undefined,
+                                ]),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                          timeEntries: faker.helpers.arrayElement([
+                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                              () => ({
+                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                comment: faker.random.word(),
+                                durationMinutes: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                start: (() => faker.date.past())(),
+                                teamID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                userID: faker.random.word(),
+                                workItemID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                          userAPIKey: faker.helpers.arrayElement([
+                            {
+                              apiKey: faker.random.word(),
+                              expiresOn: (() => faker.date.past())(),
                               userID: faker.random.word(),
-                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
                           userID: faker.random.word(),
+                          username: faker.random.word(),
                         },
                         undefined,
                       ]),
-                      userID: faker.random.word(),
-                      username: faker.random.word(),
                     })),
                     undefined,
                   ]),
-                  metadata: {},
-                  project2workItem: faker.helpers.arrayElement([
+                  metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                    () => faker.datatype.number({ min: 0, max: undefined }),
+                  ),
+                  project2WorkItem: faker.helpers.arrayElement([
                     {
                       customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                       workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -4140,46 +2736,15 @@ export const getGetProjectBoardMock = () => ({
                                       { length: faker.datatype.number({ min: 1, max: 10 }) },
                                       (_, i) => i + 1,
                                     ).map(() => ({
-                                      createdAt: (() => faker.date.past())(),
-                                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                      email: faker.random.word(),
-                                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                      hasGlobalNotifications: faker.datatype.boolean(),
-                                      hasPersonalNotifications: faker.datatype.boolean(),
-                                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      userID: faker.random.word(),
-                                      username: faker.random.word(),
+                                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
                                     })),
                                     undefined,
                                   ]),
-                                  metadata: {},
-                                  project2workItem: faker.helpers.arrayElement([
+                                  metadata: Array.from(
+                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                    (_, i) => i + 1,
+                                  ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                                  project2WorkItem: faker.helpers.arrayElement([
                                     {
                                       customDateForProject2: faker.helpers.arrayElement([
                                         (() => faker.date.past())(),
@@ -4268,48 +2833,15 @@ export const getGetProjectBoardMock = () => ({
                           kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                           members: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                email: faker.random.word(),
-                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                hasGlobalNotifications: faker.datatype.boolean(),
-                                hasPersonalNotifications: faker.datatype.boolean(),
-                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                userID: faker.random.word(),
-                                username: faker.random.word(),
-                              }),
+                              () => ({ role: faker.helpers.arrayElement([faker.random.word(), undefined]) }),
                             ),
                             undefined,
                           ]),
-                          metadata: {},
-                          project2workItem: faker.helpers.arrayElement([
+                          metadata: Array.from(
+                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                            (_, i) => i + 1,
+                          ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                          project2WorkItem: faker.helpers.arrayElement([
                             {
                               customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                               workItem: faker.helpers.arrayElement([
@@ -4334,45 +2866,14 @@ export const getGetProjectBoardMock = () => ({
                                       { length: faker.datatype.number({ min: 1, max: 10 }) },
                                       (_, i) => i + 1,
                                     ).map(() => ({
-                                      createdAt: (() => faker.date.past())(),
-                                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                      email: faker.random.word(),
-                                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                      hasGlobalNotifications: faker.datatype.boolean(),
-                                      hasPersonalNotifications: faker.datatype.boolean(),
-                                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      userID: faker.random.word(),
-                                      username: faker.random.word(),
+                                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
                                     })),
                                     undefined,
                                   ]),
-                                  metadata: {},
+                                  metadata: Array.from(
+                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                    (_, i) => i + 1,
+                                  ).map(() => faker.datatype.number({ min: 0, max: undefined })),
                                   targetDate: (() => faker.date.past())(),
                                   teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                   timeEntries: faker.helpers.arrayElement([
@@ -4530,46 +3031,15 @@ export const getGetProjectBoardMock = () => ({
                                       { length: faker.datatype.number({ min: 1, max: 10 }) },
                                       (_, i) => i + 1,
                                     ).map(() => ({
-                                      createdAt: (() => faker.date.past())(),
-                                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                      email: faker.random.word(),
-                                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                      hasGlobalNotifications: faker.datatype.boolean(),
-                                      hasPersonalNotifications: faker.datatype.boolean(),
-                                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      userID: faker.random.word(),
-                                      username: faker.random.word(),
+                                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
                                     })),
                                     undefined,
                                   ]),
-                                  metadata: {},
-                                  project2workItem: faker.helpers.arrayElement([
+                                  metadata: Array.from(
+                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                    (_, i) => i + 1,
+                                  ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                                  project2WorkItem: faker.helpers.arrayElement([
                                     {
                                       customDateForProject2: faker.helpers.arrayElement([
                                         (() => faker.date.past())(),
@@ -4678,95 +3148,64 @@ export const getGetProjectBoardMock = () => ({
                           members: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
-                                createdAt: (() => faker.date.past())(),
-                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                email: faker.random.word(),
-                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                hasGlobalNotifications: faker.datatype.boolean(),
-                                hasPersonalNotifications: faker.datatype.boolean(),
-                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                userAPIKey: faker.helpers.arrayElement([
+                                role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                                user: faker.helpers.arrayElement([
                                   {
-                                    apiKey: faker.random.word(),
-                                    expiresOn: (() => faker.date.past())(),
-                                    user: faker.helpers.arrayElement([
-                                      {
-                                        createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        email: faker.random.word(),
-                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        hasGlobalNotifications: faker.datatype.boolean(),
-                                        hasPersonalNotifications: faker.datatype.boolean(),
-                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
+                                    createdAt: (() => faker.date.past())(),
+                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                    email: faker.random.word(),
+                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    hasGlobalNotifications: faker.datatype.boolean(),
+                                    hasPersonalNotifications: faker.datatype.boolean(),
+                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    timeEntries: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                        comment: faker.random.word(),
+                                        durationMinutes: faker.helpers.arrayElement([
+                                          faker.datatype.number({ min: undefined, max: undefined }),
+                                          null,
                                         ]),
+                                        start: (() => faker.date.past())(),
+                                        teamID: faker.helpers.arrayElement([
+                                          faker.datatype.number({ min: undefined, max: undefined }),
+                                          null,
+                                        ]),
+                                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                         userID: faker.random.word(),
-                                        username: faker.random.word(),
+                                        workItemID: faker.helpers.arrayElement([
+                                          faker.datatype.number({ min: undefined, max: undefined }),
+                                          null,
+                                        ]),
+                                      })),
+                                      undefined,
+                                    ]),
+                                    userAPIKey: faker.helpers.arrayElement([
+                                      {
+                                        apiKey: faker.random.word(),
+                                        expiresOn: (() => faker.date.past())(),
+                                        userID: faker.random.word(),
                                       },
                                       undefined,
                                     ]),
                                     userID: faker.random.word(),
+                                    username: faker.random.word(),
                                   },
                                   undefined,
                                 ]),
-                                userID: faker.random.word(),
-                                username: faker.random.word(),
                               }),
                             ),
                             undefined,
                           ]),
-                          metadata: {},
-                          project2workItem: faker.helpers.arrayElement([
+                          metadata: Array.from(
+                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                            (_, i) => i + 1,
+                          ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                          project2WorkItem: faker.helpers.arrayElement([
                             {
                               customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                               workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -4849,90 +3288,61 @@ export const getGetProjectBoardMock = () => ({
                   kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                   members: faker.helpers.arrayElement([
                     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      createdAt: (() => faker.date.past())(),
-                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      email: faker.random.word(),
-                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      hasGlobalNotifications: faker.datatype.boolean(),
-                      hasPersonalNotifications: faker.datatype.boolean(),
-                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                      timeEntries: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                          comment: faker.random.word(),
-                          durationMinutes: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          start: (() => faker.date.past())(),
-                          teamID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                          userID: faker.random.word(),
-                          workItemID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      userAPIKey: faker.helpers.arrayElement([
+                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                      user: faker.helpers.arrayElement([
                         {
-                          apiKey: faker.random.word(),
-                          expiresOn: (() => faker.date.past())(),
-                          user: faker.helpers.arrayElement([
+                          createdAt: (() => faker.date.past())(),
+                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                          email: faker.random.word(),
+                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          hasGlobalNotifications: faker.datatype.boolean(),
+                          hasPersonalNotifications: faker.datatype.boolean(),
+                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          timeEntries: faker.helpers.arrayElement([
+                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                              () => ({
+                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                comment: faker.random.word(),
+                                durationMinutes: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                start: (() => faker.date.past())(),
+                                teamID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                userID: faker.random.word(),
+                                workItemID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                          userAPIKey: faker.helpers.arrayElement([
                             {
-                              createdAt: (() => faker.date.past())(),
-                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                              email: faker.random.word(),
-                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              hasGlobalNotifications: faker.datatype.boolean(),
-                              hasPersonalNotifications: faker.datatype.boolean(),
-                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                              timeEntries: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
+                              apiKey: faker.random.word(),
+                              expiresOn: (() => faker.date.past())(),
                               userID: faker.random.word(),
-                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
                           userID: faker.random.word(),
+                          username: faker.random.word(),
                         },
                         undefined,
                       ]),
-                      userID: faker.random.word(),
-                      username: faker.random.word(),
                     })),
                     undefined,
                   ]),
-                  metadata: {},
-                  project2workItem: faker.helpers.arrayElement([
+                  metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                    () => faker.datatype.number({ min: 0, max: undefined }),
+                  ),
+                  project2WorkItem: faker.helpers.arrayElement([
                     {
                       customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                       workItem: faker.helpers.arrayElement([
@@ -4955,94 +3365,63 @@ export const getGetProjectBoardMock = () => ({
                           members: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
-                                createdAt: (() => faker.date.past())(),
-                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                email: faker.random.word(),
-                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                hasGlobalNotifications: faker.datatype.boolean(),
-                                hasPersonalNotifications: faker.datatype.boolean(),
-                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                userAPIKey: faker.helpers.arrayElement([
+                                role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                                user: faker.helpers.arrayElement([
                                   {
-                                    apiKey: faker.random.word(),
-                                    expiresOn: (() => faker.date.past())(),
-                                    user: faker.helpers.arrayElement([
-                                      {
-                                        createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        email: faker.random.word(),
-                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        hasGlobalNotifications: faker.datatype.boolean(),
-                                        hasPersonalNotifications: faker.datatype.boolean(),
-                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
+                                    createdAt: (() => faker.date.past())(),
+                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                    email: faker.random.word(),
+                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    hasGlobalNotifications: faker.datatype.boolean(),
+                                    hasPersonalNotifications: faker.datatype.boolean(),
+                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    timeEntries: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                        comment: faker.random.word(),
+                                        durationMinutes: faker.helpers.arrayElement([
+                                          faker.datatype.number({ min: undefined, max: undefined }),
+                                          null,
                                         ]),
+                                        start: (() => faker.date.past())(),
+                                        teamID: faker.helpers.arrayElement([
+                                          faker.datatype.number({ min: undefined, max: undefined }),
+                                          null,
+                                        ]),
+                                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                         userID: faker.random.word(),
-                                        username: faker.random.word(),
+                                        workItemID: faker.helpers.arrayElement([
+                                          faker.datatype.number({ min: undefined, max: undefined }),
+                                          null,
+                                        ]),
+                                      })),
+                                      undefined,
+                                    ]),
+                                    userAPIKey: faker.helpers.arrayElement([
+                                      {
+                                        apiKey: faker.random.word(),
+                                        expiresOn: (() => faker.date.past())(),
+                                        userID: faker.random.word(),
                                       },
                                       undefined,
                                     ]),
                                     userID: faker.random.word(),
+                                    username: faker.random.word(),
                                   },
                                   undefined,
                                 ]),
-                                userID: faker.random.word(),
-                                username: faker.random.word(),
                               }),
                             ),
                             undefined,
                           ]),
-                          metadata: {},
+                          metadata: Array.from(
+                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                            (_, i) => i + 1,
+                          ).map(() => faker.datatype.number({ min: 0, max: undefined })),
                           targetDate: (() => faker.date.past())(),
                           teamID: faker.datatype.number({ min: undefined, max: undefined }),
                           timeEntries: faker.helpers.arrayElement([
@@ -5189,95 +3568,64 @@ export const getGetProjectBoardMock = () => ({
                           members: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
-                                createdAt: (() => faker.date.past())(),
-                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                email: faker.random.word(),
-                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                hasGlobalNotifications: faker.datatype.boolean(),
-                                hasPersonalNotifications: faker.datatype.boolean(),
-                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                userAPIKey: faker.helpers.arrayElement([
+                                role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                                user: faker.helpers.arrayElement([
                                   {
-                                    apiKey: faker.random.word(),
-                                    expiresOn: (() => faker.date.past())(),
-                                    user: faker.helpers.arrayElement([
-                                      {
-                                        createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        email: faker.random.word(),
-                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        hasGlobalNotifications: faker.datatype.boolean(),
-                                        hasPersonalNotifications: faker.datatype.boolean(),
-                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
+                                    createdAt: (() => faker.date.past())(),
+                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                    email: faker.random.word(),
+                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    hasGlobalNotifications: faker.datatype.boolean(),
+                                    hasPersonalNotifications: faker.datatype.boolean(),
+                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    timeEntries: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                        comment: faker.random.word(),
+                                        durationMinutes: faker.helpers.arrayElement([
+                                          faker.datatype.number({ min: undefined, max: undefined }),
+                                          null,
                                         ]),
+                                        start: (() => faker.date.past())(),
+                                        teamID: faker.helpers.arrayElement([
+                                          faker.datatype.number({ min: undefined, max: undefined }),
+                                          null,
+                                        ]),
+                                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                         userID: faker.random.word(),
-                                        username: faker.random.word(),
+                                        workItemID: faker.helpers.arrayElement([
+                                          faker.datatype.number({ min: undefined, max: undefined }),
+                                          null,
+                                        ]),
+                                      })),
+                                      undefined,
+                                    ]),
+                                    userAPIKey: faker.helpers.arrayElement([
+                                      {
+                                        apiKey: faker.random.word(),
+                                        expiresOn: (() => faker.date.past())(),
+                                        userID: faker.random.word(),
                                       },
                                       undefined,
                                     ]),
                                     userID: faker.random.word(),
+                                    username: faker.random.word(),
                                   },
                                   undefined,
                                 ]),
-                                userID: faker.random.word(),
-                                username: faker.random.word(),
                               }),
                             ),
                             undefined,
                           ]),
-                          metadata: {},
-                          project2workItem: faker.helpers.arrayElement([
+                          metadata: Array.from(
+                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                            (_, i) => i + 1,
+                          ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                          project2WorkItem: faker.helpers.arrayElement([
                             {
                               customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                               workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -5384,61 +3732,25 @@ export const getGetProjectBoardMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          teams: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                updatedAt: (() => faker.date.past())(),
-                                users: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
+                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          user: faker.helpers.arrayElement([
+                            {
+                              createdAt: (() => faker.date.past())(),
+                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              email: faker.random.word(),
+                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              hasGlobalNotifications: faker.datatype.boolean(),
+                              hasPersonalNotifications: faker.datatype.boolean(),
+                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              teams: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
                                     createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    description: faker.random.word(),
+                                    name: faker.random.word(),
+                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -5464,224 +3776,106 @@ export const getGetProjectBoardMock = () => ({
                                       })),
                                       undefined,
                                     ]),
-                                    userAPIKey: faker.helpers.arrayElement([
-                                      {
-                                        apiKey: faker.random.word(),
-                                        expiresOn: (() => faker.date.past())(),
-                                        user: faker.helpers.arrayElement([
-                                          {
-                                            createdAt: (() => faker.date.past())(),
-                                            deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                            email: faker.random.word(),
-                                            firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            hasGlobalNotifications: faker.datatype.boolean(),
-                                            hasPersonalNotifications: faker.datatype.boolean(),
-                                            lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            timeEntries: faker.helpers.arrayElement([
-                                              Array.from(
-                                                { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                                (_, i) => i + 1,
-                                              ).map(() => ({
-                                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                comment: faker.random.word(),
-                                                durationMinutes: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                start: (() => faker.date.past())(),
-                                                teamID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                userID: faker.random.word(),
-                                                workItemID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                              })),
-                                              undefined,
+                                    updatedAt: (() => faker.date.past())(),
+                                    users: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        createdAt: (() => faker.date.past())(),
+                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                        email: faker.random.word(),
+                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        hasGlobalNotifications: faker.datatype.boolean(),
+                                        hasPersonalNotifications: faker.datatype.boolean(),
+                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        timeEntries: faker.helpers.arrayElement([
+                                          Array.from(
+                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                            (_, i) => i + 1,
+                                          ).map(() => ({
+                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                            comment: faker.random.word(),
+                                            durationMinutes: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
                                             ]),
+                                            start: (() => faker.date.past())(),
+                                            teamID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                             userID: faker.random.word(),
-                                            username: faker.random.word(),
+                                            workItemID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                          })),
+                                          undefined,
+                                        ]),
+                                        userAPIKey: faker.helpers.arrayElement([
+                                          {
+                                            apiKey: faker.random.word(),
+                                            expiresOn: (() => faker.date.past())(),
+                                            userID: faker.random.word(),
                                           },
                                           undefined,
                                         ]),
                                         userID: faker.random.word(),
-                                      },
+                                        username: faker.random.word(),
+                                      })),
                                       undefined,
                                     ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              timeEntries: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
+                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    comment: faker.random.word(),
+                                    durationMinutes: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    start: (() => faker.date.past())(),
+                                    teamID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                     userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  })),
-                                  undefined,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userAPIKey: faker.helpers.arrayElement([
-                            {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
+                                    workItemID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              userAPIKey: faker.helpers.arrayElement([
                                 {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  teams: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      createdAt: (() => faker.date.past())(),
-                                      description: faker.random.word(),
-                                      name: faker.random.word(),
-                                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      updatedAt: (() => faker.date.past())(),
-                                      users: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          createdAt: (() => faker.date.past())(),
-                                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                          email: faker.random.word(),
-                                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          hasGlobalNotifications: faker.datatype.boolean(),
-                                          hasPersonalNotifications: faker.datatype.boolean(),
-                                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          timeEntries: faker.helpers.arrayElement([
-                                            Array.from(
-                                              { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                              (_, i) => i + 1,
-                                            ).map(() => ({
-                                              activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              comment: faker.random.word(),
-                                              durationMinutes: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              start: (() => faker.date.past())(),
-                                              teamID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              userID: faker.random.word(),
-                                              workItemID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                            })),
-                                            undefined,
-                                          ]),
-                                          userID: faker.random.word(),
-                                          username: faker.random.word(),
-                                        })),
-                                        undefined,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
+                                  apiKey: faker.random.word(),
+                                  expiresOn: (() => faker.date.past())(),
                                   userID: faker.random.word(),
-                                  username: faker.random.word(),
                                 },
                                 undefined,
                               ]),
                               userID: faker.random.word(),
+                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
                         })),
                         undefined,
                       ]),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
+                      project2WorkItem: faker.helpers.arrayElement([
                         {
                           customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                           workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -5748,21 +3942,102 @@ export const getGetProjectBoardMock = () => ({
               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
               members: faker.helpers.arrayElement([
                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  createdAt: (() => faker.date.past())(),
-                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                  email: faker.random.word(),
-                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  hasGlobalNotifications: faker.datatype.boolean(),
-                  hasPersonalNotifications: faker.datatype.boolean(),
-                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  teams: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                  role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                  user: faker.helpers.arrayElement([
+                    {
                       createdAt: (() => faker.date.past())(),
-                      description: faker.random.word(),
-                      name: faker.random.word(),
-                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                      email: faker.random.word(),
+                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      hasGlobalNotifications: faker.datatype.boolean(),
+                      hasPersonalNotifications: faker.datatype.boolean(),
+                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      teams: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          createdAt: (() => faker.date.past())(),
+                          description: faker.random.word(),
+                          name: faker.random.word(),
+                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                          timeEntries: faker.helpers.arrayElement([
+                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                              () => ({
+                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                comment: faker.random.word(),
+                                durationMinutes: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                start: (() => faker.date.past())(),
+                                teamID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                userID: faker.random.word(),
+                                workItemID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                          updatedAt: (() => faker.date.past())(),
+                          users: faker.helpers.arrayElement([
+                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                              () => ({
+                                createdAt: (() => faker.date.past())(),
+                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                email: faker.random.word(),
+                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                hasGlobalNotifications: faker.datatype.boolean(),
+                                hasPersonalNotifications: faker.datatype.boolean(),
+                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                timeEntries: faker.helpers.arrayElement([
+                                  Array.from(
+                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                    (_, i) => i + 1,
+                                  ).map(() => ({
+                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    comment: faker.random.word(),
+                                    durationMinutes: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    start: (() => faker.date.past())(),
+                                    teamID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    userID: faker.random.word(),
+                                    workItemID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                  })),
+                                  undefined,
+                                ]),
+                                userAPIKey: faker.helpers.arrayElement([
+                                  {
+                                    apiKey: faker.random.word(),
+                                    expiresOn: (() => faker.date.past())(),
+                                    userID: faker.random.word(),
+                                  },
+                                  undefined,
+                                ]),
+                                userID: faker.random.word(),
+                                username: faker.random.word(),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                        })),
+                        undefined,
+                      ]),
                       timeEntries: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
                           activityID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -5785,254 +4060,26 @@ export const getGetProjectBoardMock = () => ({
                         })),
                         undefined,
                       ]),
-                      updatedAt: (() => faker.date.past())(),
-                      users: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userAPIKey: faker.helpers.arrayElement([
-                            {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
-                                {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
-                                  userID: faker.random.word(),
-                                  username: faker.random.word(),
-                                },
-                                undefined,
-                              ]),
-                              userID: faker.random.word(),
-                            },
-                            undefined,
-                          ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
-                        })),
-                        undefined,
-                      ]),
-                    })),
-                    undefined,
-                  ]),
-                  timeEntries: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                      comment: faker.random.word(),
-                      durationMinutes: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                      start: (() => faker.date.past())(),
-                      teamID: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                      userID: faker.random.word(),
-                      workItemID: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                    })),
-                    undefined,
-                  ]),
-                  userAPIKey: faker.helpers.arrayElement([
-                    {
-                      apiKey: faker.random.word(),
-                      expiresOn: (() => faker.date.past())(),
-                      user: faker.helpers.arrayElement([
+                      userAPIKey: faker.helpers.arrayElement([
                         {
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          teams: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                updatedAt: (() => faker.date.past())(),
-                                users: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    timeEntries: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        comment: faker.random.word(),
-                                        durationMinutes: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        start: (() => faker.date.past())(),
-                                        teamID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        userID: faker.random.word(),
-                                        workItemID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                      })),
-                                      undefined,
-                                    ]),
-                                    userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  })),
-                                  undefined,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
+                          apiKey: faker.random.word(),
+                          expiresOn: (() => faker.date.past())(),
                           userID: faker.random.word(),
-                          username: faker.random.word(),
                         },
                         undefined,
                       ]),
                       userID: faker.random.word(),
+                      username: faker.random.word(),
                     },
                     undefined,
                   ]),
-                  userID: faker.random.word(),
-                  username: faker.random.word(),
                 })),
                 undefined,
               ]),
-              metadata: {},
-              project2workItem: faker.helpers.arrayElement([
+              metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+                faker.datatype.number({ min: 0, max: undefined }),
+              ),
+              project2WorkItem: faker.helpers.arrayElement([
                 {
                   customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                   workItem: faker.helpers.arrayElement([
@@ -6054,61 +4101,25 @@ export const getGetProjectBoardMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          teams: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                updatedAt: (() => faker.date.past())(),
-                                users: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
+                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          user: faker.helpers.arrayElement([
+                            {
+                              createdAt: (() => faker.date.past())(),
+                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              email: faker.random.word(),
+                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              hasGlobalNotifications: faker.datatype.boolean(),
+                              hasPersonalNotifications: faker.datatype.boolean(),
+                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              teams: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
                                     createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    description: faker.random.word(),
+                                    name: faker.random.word(),
+                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -6134,223 +4145,105 @@ export const getGetProjectBoardMock = () => ({
                                       })),
                                       undefined,
                                     ]),
-                                    userAPIKey: faker.helpers.arrayElement([
-                                      {
-                                        apiKey: faker.random.word(),
-                                        expiresOn: (() => faker.date.past())(),
-                                        user: faker.helpers.arrayElement([
-                                          {
-                                            createdAt: (() => faker.date.past())(),
-                                            deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                            email: faker.random.word(),
-                                            firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            hasGlobalNotifications: faker.datatype.boolean(),
-                                            hasPersonalNotifications: faker.datatype.boolean(),
-                                            lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            timeEntries: faker.helpers.arrayElement([
-                                              Array.from(
-                                                { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                                (_, i) => i + 1,
-                                              ).map(() => ({
-                                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                comment: faker.random.word(),
-                                                durationMinutes: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                start: (() => faker.date.past())(),
-                                                teamID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                userID: faker.random.word(),
-                                                workItemID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                              })),
-                                              undefined,
+                                    updatedAt: (() => faker.date.past())(),
+                                    users: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        createdAt: (() => faker.date.past())(),
+                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                        email: faker.random.word(),
+                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        hasGlobalNotifications: faker.datatype.boolean(),
+                                        hasPersonalNotifications: faker.datatype.boolean(),
+                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        timeEntries: faker.helpers.arrayElement([
+                                          Array.from(
+                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                            (_, i) => i + 1,
+                                          ).map(() => ({
+                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                            comment: faker.random.word(),
+                                            durationMinutes: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
                                             ]),
+                                            start: (() => faker.date.past())(),
+                                            teamID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                             userID: faker.random.word(),
-                                            username: faker.random.word(),
+                                            workItemID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                          })),
+                                          undefined,
+                                        ]),
+                                        userAPIKey: faker.helpers.arrayElement([
+                                          {
+                                            apiKey: faker.random.word(),
+                                            expiresOn: (() => faker.date.past())(),
+                                            userID: faker.random.word(),
                                           },
                                           undefined,
                                         ]),
                                         userID: faker.random.word(),
-                                      },
+                                        username: faker.random.word(),
+                                      })),
                                       undefined,
                                     ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              timeEntries: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
+                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    comment: faker.random.word(),
+                                    durationMinutes: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    start: (() => faker.date.past())(),
+                                    teamID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                     userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  })),
-                                  undefined,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userAPIKey: faker.helpers.arrayElement([
-                            {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
+                                    workItemID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              userAPIKey: faker.helpers.arrayElement([
                                 {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  teams: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      createdAt: (() => faker.date.past())(),
-                                      description: faker.random.word(),
-                                      name: faker.random.word(),
-                                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      updatedAt: (() => faker.date.past())(),
-                                      users: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          createdAt: (() => faker.date.past())(),
-                                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                          email: faker.random.word(),
-                                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          hasGlobalNotifications: faker.datatype.boolean(),
-                                          hasPersonalNotifications: faker.datatype.boolean(),
-                                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          timeEntries: faker.helpers.arrayElement([
-                                            Array.from(
-                                              { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                              (_, i) => i + 1,
-                                            ).map(() => ({
-                                              activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              comment: faker.random.word(),
-                                              durationMinutes: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              start: (() => faker.date.past())(),
-                                              teamID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              userID: faker.random.word(),
-                                              workItemID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                            })),
-                                            undefined,
-                                          ]),
-                                          userID: faker.random.word(),
-                                          username: faker.random.word(),
-                                        })),
-                                        undefined,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
+                                  apiKey: faker.random.word(),
+                                  expiresOn: (() => faker.date.past())(),
                                   userID: faker.random.word(),
-                                  username: faker.random.word(),
                                 },
                                 undefined,
                               ]),
                               userID: faker.random.word(),
+                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
                         })),
                         undefined,
                       ]),
-                      metadata: {},
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
                       targetDate: (() => faker.date.past())(),
                       teamID: faker.datatype.number({ min: undefined, max: undefined }),
                       timeEntries: faker.helpers.arrayElement([
@@ -6467,61 +4360,25 @@ export const getGetProjectBoardMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          teams: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                updatedAt: (() => faker.date.past())(),
-                                users: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
+                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          user: faker.helpers.arrayElement([
+                            {
+                              createdAt: (() => faker.date.past())(),
+                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              email: faker.random.word(),
+                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              hasGlobalNotifications: faker.datatype.boolean(),
+                              hasPersonalNotifications: faker.datatype.boolean(),
+                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              teams: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
                                     createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    description: faker.random.word(),
+                                    name: faker.random.word(),
+                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -6547,224 +4404,106 @@ export const getGetProjectBoardMock = () => ({
                                       })),
                                       undefined,
                                     ]),
-                                    userAPIKey: faker.helpers.arrayElement([
-                                      {
-                                        apiKey: faker.random.word(),
-                                        expiresOn: (() => faker.date.past())(),
-                                        user: faker.helpers.arrayElement([
-                                          {
-                                            createdAt: (() => faker.date.past())(),
-                                            deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                            email: faker.random.word(),
-                                            firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            hasGlobalNotifications: faker.datatype.boolean(),
-                                            hasPersonalNotifications: faker.datatype.boolean(),
-                                            lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            timeEntries: faker.helpers.arrayElement([
-                                              Array.from(
-                                                { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                                (_, i) => i + 1,
-                                              ).map(() => ({
-                                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                comment: faker.random.word(),
-                                                durationMinutes: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                start: (() => faker.date.past())(),
-                                                teamID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                userID: faker.random.word(),
-                                                workItemID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                              })),
-                                              undefined,
+                                    updatedAt: (() => faker.date.past())(),
+                                    users: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        createdAt: (() => faker.date.past())(),
+                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                        email: faker.random.word(),
+                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        hasGlobalNotifications: faker.datatype.boolean(),
+                                        hasPersonalNotifications: faker.datatype.boolean(),
+                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        timeEntries: faker.helpers.arrayElement([
+                                          Array.from(
+                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                            (_, i) => i + 1,
+                                          ).map(() => ({
+                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                            comment: faker.random.word(),
+                                            durationMinutes: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
                                             ]),
+                                            start: (() => faker.date.past())(),
+                                            teamID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                             userID: faker.random.word(),
-                                            username: faker.random.word(),
+                                            workItemID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                          })),
+                                          undefined,
+                                        ]),
+                                        userAPIKey: faker.helpers.arrayElement([
+                                          {
+                                            apiKey: faker.random.word(),
+                                            expiresOn: (() => faker.date.past())(),
+                                            userID: faker.random.word(),
                                           },
                                           undefined,
                                         ]),
                                         userID: faker.random.word(),
-                                      },
+                                        username: faker.random.word(),
+                                      })),
                                       undefined,
                                     ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              timeEntries: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
+                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    comment: faker.random.word(),
+                                    durationMinutes: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    start: (() => faker.date.past())(),
+                                    teamID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                     userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  })),
-                                  undefined,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userAPIKey: faker.helpers.arrayElement([
-                            {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
+                                    workItemID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              userAPIKey: faker.helpers.arrayElement([
                                 {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  teams: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      createdAt: (() => faker.date.past())(),
-                                      description: faker.random.word(),
-                                      name: faker.random.word(),
-                                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      updatedAt: (() => faker.date.past())(),
-                                      users: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          createdAt: (() => faker.date.past())(),
-                                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                          email: faker.random.word(),
-                                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          hasGlobalNotifications: faker.datatype.boolean(),
-                                          hasPersonalNotifications: faker.datatype.boolean(),
-                                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          timeEntries: faker.helpers.arrayElement([
-                                            Array.from(
-                                              { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                              (_, i) => i + 1,
-                                            ).map(() => ({
-                                              activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              comment: faker.random.word(),
-                                              durationMinutes: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              start: (() => faker.date.past())(),
-                                              teamID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              userID: faker.random.word(),
-                                              workItemID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                            })),
-                                            undefined,
-                                          ]),
-                                          userID: faker.random.word(),
-                                          username: faker.random.word(),
-                                        })),
-                                        undefined,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
+                                  apiKey: faker.random.word(),
+                                  expiresOn: (() => faker.date.past())(),
                                   userID: faker.random.word(),
-                                  username: faker.random.word(),
                                 },
                                 undefined,
                               ]),
                               userID: faker.random.word(),
+                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
                         })),
                         undefined,
                       ]),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
+                      project2WorkItem: faker.helpers.arrayElement([
                         {
                           customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                           workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -6849,54 +4588,24 @@ export const getGetProjectBoardMock = () => ({
               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
               members: faker.helpers.arrayElement([
                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  createdAt: (() => faker.date.past())(),
-                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                  email: faker.random.word(),
-                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  hasGlobalNotifications: faker.datatype.boolean(),
-                  hasPersonalNotifications: faker.datatype.boolean(),
-                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  teams: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                  role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                  user: faker.helpers.arrayElement([
+                    {
                       createdAt: (() => faker.date.past())(),
-                      description: faker.random.word(),
-                      name: faker.random.word(),
-                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                      timeEntries: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                          comment: faker.random.word(),
-                          durationMinutes: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          start: (() => faker.date.past())(),
-                          teamID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                          userID: faker.random.word(),
-                          workItemID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      updatedAt: (() => faker.date.past())(),
-                      users: faker.helpers.arrayElement([
+                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                      email: faker.random.word(),
+                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      hasGlobalNotifications: faker.datatype.boolean(),
+                      hasPersonalNotifications: faker.datatype.boolean(),
+                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      teams: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
                           createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          description: faker.random.word(),
+                          name: faker.random.word(),
+                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
                           timeEntries: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
@@ -6921,189 +4630,18 @@ export const getGetProjectBoardMock = () => ({
                             ),
                             undefined,
                           ]),
-                          userAPIKey: faker.helpers.arrayElement([
-                            {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
-                                {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
-                                  userID: faker.random.word(),
-                                  username: faker.random.word(),
-                                  workItems: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                      createdAt: (() => faker.date.past())(),
-                                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                      demoProjectWorkItem: faker.helpers.arrayElement([
-                                        {
-                                          lastMessageAt: (() => faker.date.past())(),
-                                          line: faker.random.word(),
-                                          ref: faker.random.word(),
-                                          reopened: faker.datatype.boolean(),
-                                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        },
-                                        undefined,
-                                      ]),
-                                      description: faker.random.word(),
-                                      kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      metadata: {},
-                                      project2workItem: faker.helpers.arrayElement([
-                                        {
-                                          customDateForProject2: faker.helpers.arrayElement([
-                                            (() => faker.date.past())(),
-                                            null,
-                                          ]),
-                                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        },
-                                        undefined,
-                                      ]),
-                                      targetDate: (() => faker.date.past())(),
-                                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      title: faker.random.word(),
-                                      updatedAt: (() => faker.date.past())(),
-                                      workItemComments: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          createdAt: (() => faker.date.past())(),
-                                          message: faker.random.word(),
-                                          updatedAt: (() => faker.date.past())(),
-                                          userID: faker.random.word(),
-                                          workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      workItemTags: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          color: faker.random.word(),
-                                          description: faker.random.word(),
-                                          name: faker.random.word(),
-                                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      workItemType: faker.helpers.arrayElement([
-                                        {
-                                          color: faker.random.word(),
-                                          description: faker.random.word(),
-                                          name: faker.random.word(),
-                                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        },
-                                        undefined,
-                                      ]),
-                                      workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    })),
-                                    undefined,
-                                  ]),
-                                },
-                                undefined,
-                              ]),
-                              userID: faker.random.word(),
-                            },
-                            undefined,
-                          ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
-                          workItems: faker.helpers.arrayElement([
+                          updatedAt: (() => faker.date.past())(),
+                          users: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
-                                closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                 createdAt: (() => faker.date.past())(),
                                 deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                demoProjectWorkItem: faker.helpers.arrayElement([
-                                  {
-                                    lastMessageAt: (() => faker.date.past())(),
-                                    line: faker.random.word(),
-                                    ref: faker.random.word(),
-                                    reopened: faker.datatype.boolean(),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  },
-                                  undefined,
-                                ]),
-                                description: faker.random.word(),
-                                kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                metadata: {},
-                                project2workItem: faker.helpers.arrayElement([
-                                  {
-                                    customDateForProject2: faker.helpers.arrayElement([
-                                      (() => faker.date.past())(),
-                                      null,
-                                    ]),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  },
-                                  undefined,
-                                ]),
-                                targetDate: (() => faker.date.past())(),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                                email: faker.random.word(),
+                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                hasGlobalNotifications: faker.datatype.boolean(),
+                                hasPersonalNotifications: faker.datatype.boolean(),
+                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
                                 timeEntries: faker.helpers.arrayElement([
                                   Array.from(
                                     { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -7129,140 +4667,52 @@ export const getGetProjectBoardMock = () => ({
                                   })),
                                   undefined,
                                 ]),
-                                title: faker.random.word(),
-                                updatedAt: (() => faker.date.past())(),
-                                workItemComments: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    message: faker.random.word(),
-                                    updatedAt: (() => faker.date.past())(),
-                                    userID: faker.random.word(),
-                                    workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  })),
-                                  undefined,
-                                ]),
-                                workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                workItemTags: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    color: faker.random.word(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  })),
-                                  undefined,
-                                ]),
-                                workItemType: faker.helpers.arrayElement([
+                                userAPIKey: faker.helpers.arrayElement([
                                   {
-                                    color: faker.random.word(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    apiKey: faker.random.word(),
+                                    expiresOn: (() => faker.date.past())(),
+                                    userID: faker.random.word(),
                                   },
                                   undefined,
                                 ]),
-                                workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                    })),
-                    undefined,
-                  ]),
-                  timeEntries: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                      comment: faker.random.word(),
-                      durationMinutes: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                      start: (() => faker.date.past())(),
-                      teamID: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                      userID: faker.random.word(),
-                      workItemID: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                    })),
-                    undefined,
-                  ]),
-                  userAPIKey: faker.helpers.arrayElement([
-                    {
-                      apiKey: faker.random.word(),
-                      expiresOn: (() => faker.date.past())(),
-                      user: faker.helpers.arrayElement([
-                        {
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          teams: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
+                                userID: faker.random.word(),
+                                username: faker.random.word(),
+                                workItems: faker.helpers.arrayElement([
                                   Array.from(
                                     { length: faker.datatype.number({ min: 1, max: 10 }) },
                                     (_, i) => i + 1,
                                   ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                updatedAt: (() => faker.date.past())(),
-                                users: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
+                                    closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                     createdAt: (() => faker.date.past())(),
                                     deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    demoProjectWorkItem: faker.helpers.arrayElement([
+                                      {
+                                        lastMessageAt: (() => faker.date.past())(),
+                                        line: faker.random.word(),
+                                        ref: faker.random.word(),
+                                        reopened: faker.datatype.boolean(),
+                                        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                                      },
+                                      undefined,
+                                    ]),
+                                    description: faker.random.word(),
+                                    kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    metadata: Array.from(
+                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                      (_, i) => i + 1,
+                                    ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                                    project2WorkItem: faker.helpers.arrayElement([
+                                      {
+                                        customDateForProject2: faker.helpers.arrayElement([
+                                          (() => faker.date.past())(),
+                                          null,
+                                        ]),
+                                        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                                      },
+                                      undefined,
+                                    ]),
+                                    targetDate: (() => faker.date.past())(),
+                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -7288,113 +4738,47 @@ export const getGetProjectBoardMock = () => ({
                                       })),
                                       undefined,
                                     ]),
-                                    userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                    workItems: faker.helpers.arrayElement([
+                                    title: faker.random.word(),
+                                    updatedAt: (() => faker.date.past())(),
+                                    workItemComments: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
                                         (_, i) => i + 1,
                                       ).map(() => ({
-                                        closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                         createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        demoProjectWorkItem: faker.helpers.arrayElement([
-                                          {
-                                            lastMessageAt: (() => faker.date.past())(),
-                                            line: faker.random.word(),
-                                            ref: faker.random.word(),
-                                            reopened: faker.datatype.boolean(),
-                                            workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          },
-                                          undefined,
-                                        ]),
-                                        description: faker.random.word(),
-                                        kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        metadata: {},
-                                        project2workItem: faker.helpers.arrayElement([
-                                          {
-                                            customDateForProject2: faker.helpers.arrayElement([
-                                              (() => faker.date.past())(),
-                                              null,
-                                            ]),
-                                            workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          },
-                                          undefined,
-                                        ]),
-                                        targetDate: (() => faker.date.past())(),
-                                        teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
-                                        ]),
-                                        title: faker.random.word(),
+                                        message: faker.random.word(),
                                         updatedAt: (() => faker.date.past())(),
-                                        workItemComments: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            createdAt: (() => faker.date.past())(),
-                                            message: faker.random.word(),
-                                            updatedAt: (() => faker.date.past())(),
-                                            userID: faker.random.word(),
-                                            workItemCommentID: faker.datatype.number({
-                                              min: undefined,
-                                              max: undefined,
-                                            }),
-                                            workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          })),
-                                          undefined,
-                                        ]),
+                                        userID: faker.random.word(),
+                                        workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
                                         workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        workItemTags: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            color: faker.random.word(),
-                                            description: faker.random.word(),
-                                            name: faker.random.word(),
-                                            projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          })),
-                                          undefined,
-                                        ]),
-                                        workItemType: faker.helpers.arrayElement([
-                                          {
-                                            color: faker.random.word(),
-                                            description: faker.random.word(),
-                                            name: faker.random.word(),
-                                            projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          },
-                                          undefined,
-                                        ]),
-                                        workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
                                       })),
                                       undefined,
                                     ]),
+                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    workItemTags: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        color: faker.random.word(),
+                                        description: faker.random.word(),
+                                        name: faker.random.word(),
+                                        projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                        workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
+                                      })),
+                                      undefined,
+                                    ]),
+                                    workItemType: faker.helpers.arrayElement([
+                                      {
+                                        color: faker.random.word(),
+                                        description: faker.random.word(),
+                                        name: faker.random.word(),
+                                        projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                        workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
+                                      },
+                                      undefined,
+                                    ]),
+                                    workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
                                   })),
                                   undefined,
                                 ]),
@@ -7402,6 +4786,71 @@ export const getGetProjectBoardMock = () => ({
                             ),
                             undefined,
                           ]),
+                        })),
+                        undefined,
+                      ]),
+                      timeEntries: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                          comment: faker.random.word(),
+                          durationMinutes: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                          start: (() => faker.date.past())(),
+                          teamID: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                          userID: faker.random.word(),
+                          workItemID: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                        })),
+                        undefined,
+                      ]),
+                      userAPIKey: faker.helpers.arrayElement([
+                        {
+                          apiKey: faker.random.word(),
+                          expiresOn: (() => faker.date.past())(),
+                          userID: faker.random.word(),
+                        },
+                        undefined,
+                      ]),
+                      userID: faker.random.word(),
+                      username: faker.random.word(),
+                      workItems: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                          createdAt: (() => faker.date.past())(),
+                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                          demoProjectWorkItem: faker.helpers.arrayElement([
+                            {
+                              lastMessageAt: (() => faker.date.past())(),
+                              line: faker.random.word(),
+                              ref: faker.random.word(),
+                              reopened: faker.datatype.boolean(),
+                              workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                            },
+                            undefined,
+                          ]),
+                          description: faker.random.word(),
+                          kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
+                          metadata: Array.from(
+                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                            (_, i) => i + 1,
+                          ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                          project2WorkItem: faker.helpers.arrayElement([
+                            {
+                              customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                            },
+                            undefined,
+                          ]),
+                          targetDate: (() => faker.date.past())(),
+                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
                           timeEntries: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
@@ -7426,210 +4875,58 @@ export const getGetProjectBoardMock = () => ({
                             ),
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
-                          workItems: faker.helpers.arrayElement([
+                          title: faker.random.word(),
+                          updatedAt: (() => faker.date.past())(),
+                          workItemComments: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
-                                closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                 createdAt: (() => faker.date.past())(),
-                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                demoProjectWorkItem: faker.helpers.arrayElement([
-                                  {
-                                    lastMessageAt: (() => faker.date.past())(),
-                                    line: faker.random.word(),
-                                    ref: faker.random.word(),
-                                    reopened: faker.datatype.boolean(),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  },
-                                  undefined,
-                                ]),
-                                description: faker.random.word(),
-                                kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                metadata: {},
-                                project2workItem: faker.helpers.arrayElement([
-                                  {
-                                    customDateForProject2: faker.helpers.arrayElement([
-                                      (() => faker.date.past())(),
-                                      null,
-                                    ]),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  },
-                                  undefined,
-                                ]),
-                                targetDate: (() => faker.date.past())(),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                title: faker.random.word(),
+                                message: faker.random.word(),
                                 updatedAt: (() => faker.date.past())(),
-                                workItemComments: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    message: faker.random.word(),
-                                    updatedAt: (() => faker.date.past())(),
-                                    userID: faker.random.word(),
-                                    workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  })),
-                                  undefined,
-                                ]),
+                                userID: faker.random.word(),
+                                workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
                                 workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                workItemTags: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    color: faker.random.word(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  })),
-                                  undefined,
-                                ]),
-                                workItemType: faker.helpers.arrayElement([
-                                  {
-                                    color: faker.random.word(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  },
-                                  undefined,
-                                ]),
-                                workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
                               }),
                             ),
                             undefined,
                           ]),
-                        },
-                        undefined,
-                      ]),
-                      userID: faker.random.word(),
-                    },
-                    undefined,
-                  ]),
-                  userID: faker.random.word(),
-                  username: faker.random.word(),
-                  workItems: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      createdAt: (() => faker.date.past())(),
-                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      demoProjectWorkItem: faker.helpers.arrayElement([
-                        {
-                          lastMessageAt: (() => faker.date.past())(),
-                          line: faker.random.word(),
-                          ref: faker.random.word(),
-                          reopened: faker.datatype.boolean(),
                           workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                        },
-                        undefined,
-                      ]),
-                      description: faker.random.word(),
-                      kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
-                        {
-                          customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                        },
-                        undefined,
-                      ]),
-                      targetDate: (() => faker.date.past())(),
-                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                      timeEntries: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                          comment: faker.random.word(),
-                          durationMinutes: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
+                          workItemTags: faker.helpers.arrayElement([
+                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                              () => ({
+                                color: faker.random.word(),
+                                description: faker.random.word(),
+                                name: faker.random.word(),
+                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
+                              }),
+                            ),
+                            undefined,
                           ]),
-                          start: (() => faker.date.past())(),
-                          teamID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
+                          workItemType: faker.helpers.arrayElement([
+                            {
+                              color: faker.random.word(),
+                              description: faker.random.word(),
+                              name: faker.random.word(),
+                              projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                              workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
+                            },
+                            undefined,
                           ]),
-                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                          userID: faker.random.word(),
-                          workItemID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      title: faker.random.word(),
-                      updatedAt: (() => faker.date.past())(),
-                      workItemComments: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          message: faker.random.word(),
-                          updatedAt: (() => faker.date.past())(),
-                          userID: faker.random.word(),
-                          workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                        })),
-                        undefined,
-                      ]),
-                      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                      workItemTags: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          color: faker.random.word(),
-                          description: faker.random.word(),
-                          name: faker.random.word(),
-                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                          workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                        })),
-                        undefined,
-                      ]),
-                      workItemType: faker.helpers.arrayElement([
-                        {
-                          color: faker.random.word(),
-                          description: faker.random.word(),
-                          name: faker.random.word(),
-                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
                           workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                        },
+                        })),
                         undefined,
                       ]),
-                      workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                    })),
+                    },
                     undefined,
                   ]),
                 })),
                 undefined,
               ]),
-              metadata: {},
-              project2workItem: faker.helpers.arrayElement([
+              metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+                faker.datatype.number({ min: 0, max: undefined }),
+              ),
+              project2WorkItem: faker.helpers.arrayElement([
                 {
                   customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                   workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -7697,61 +4994,25 @@ export const getGetProjectBoardMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          teams: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                updatedAt: (() => faker.date.past())(),
-                                users: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
+                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          user: faker.helpers.arrayElement([
+                            {
+                              createdAt: (() => faker.date.past())(),
+                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              email: faker.random.word(),
+                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              hasGlobalNotifications: faker.datatype.boolean(),
+                              hasPersonalNotifications: faker.datatype.boolean(),
+                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              teams: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
                                     createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    description: faker.random.word(),
+                                    name: faker.random.word(),
+                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -7777,224 +5038,106 @@ export const getGetProjectBoardMock = () => ({
                                       })),
                                       undefined,
                                     ]),
-                                    userAPIKey: faker.helpers.arrayElement([
-                                      {
-                                        apiKey: faker.random.word(),
-                                        expiresOn: (() => faker.date.past())(),
-                                        user: faker.helpers.arrayElement([
-                                          {
-                                            createdAt: (() => faker.date.past())(),
-                                            deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                            email: faker.random.word(),
-                                            firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            hasGlobalNotifications: faker.datatype.boolean(),
-                                            hasPersonalNotifications: faker.datatype.boolean(),
-                                            lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            timeEntries: faker.helpers.arrayElement([
-                                              Array.from(
-                                                { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                                (_, i) => i + 1,
-                                              ).map(() => ({
-                                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                comment: faker.random.word(),
-                                                durationMinutes: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                start: (() => faker.date.past())(),
-                                                teamID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                userID: faker.random.word(),
-                                                workItemID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                              })),
-                                              undefined,
+                                    updatedAt: (() => faker.date.past())(),
+                                    users: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        createdAt: (() => faker.date.past())(),
+                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                        email: faker.random.word(),
+                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        hasGlobalNotifications: faker.datatype.boolean(),
+                                        hasPersonalNotifications: faker.datatype.boolean(),
+                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        timeEntries: faker.helpers.arrayElement([
+                                          Array.from(
+                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                            (_, i) => i + 1,
+                                          ).map(() => ({
+                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                            comment: faker.random.word(),
+                                            durationMinutes: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
                                             ]),
+                                            start: (() => faker.date.past())(),
+                                            teamID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                             userID: faker.random.word(),
-                                            username: faker.random.word(),
+                                            workItemID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                          })),
+                                          undefined,
+                                        ]),
+                                        userAPIKey: faker.helpers.arrayElement([
+                                          {
+                                            apiKey: faker.random.word(),
+                                            expiresOn: (() => faker.date.past())(),
+                                            userID: faker.random.word(),
                                           },
                                           undefined,
                                         ]),
                                         userID: faker.random.word(),
-                                      },
+                                        username: faker.random.word(),
+                                      })),
                                       undefined,
                                     ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              timeEntries: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
+                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    comment: faker.random.word(),
+                                    durationMinutes: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    start: (() => faker.date.past())(),
+                                    teamID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                     userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  })),
-                                  undefined,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userAPIKey: faker.helpers.arrayElement([
-                            {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
+                                    workItemID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              userAPIKey: faker.helpers.arrayElement([
                                 {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  teams: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      createdAt: (() => faker.date.past())(),
-                                      description: faker.random.word(),
-                                      name: faker.random.word(),
-                                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      updatedAt: (() => faker.date.past())(),
-                                      users: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          createdAt: (() => faker.date.past())(),
-                                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                          email: faker.random.word(),
-                                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          hasGlobalNotifications: faker.datatype.boolean(),
-                                          hasPersonalNotifications: faker.datatype.boolean(),
-                                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          timeEntries: faker.helpers.arrayElement([
-                                            Array.from(
-                                              { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                              (_, i) => i + 1,
-                                            ).map(() => ({
-                                              activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              comment: faker.random.word(),
-                                              durationMinutes: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              start: (() => faker.date.past())(),
-                                              teamID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              userID: faker.random.word(),
-                                              workItemID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                            })),
-                                            undefined,
-                                          ]),
-                                          userID: faker.random.word(),
-                                          username: faker.random.word(),
-                                        })),
-                                        undefined,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
+                                  apiKey: faker.random.word(),
+                                  expiresOn: (() => faker.date.past())(),
                                   userID: faker.random.word(),
-                                  username: faker.random.word(),
                                 },
                                 undefined,
                               ]),
                               userID: faker.random.word(),
+                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
                         })),
                         undefined,
                       ]),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
+                      project2WorkItem: faker.helpers.arrayElement([
                         {
                           customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                           workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -8099,54 +5242,24 @@ export const getGetProjectWorkitemsMock = () =>
             kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
             members: faker.helpers.arrayElement([
               Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                createdAt: (() => faker.date.past())(),
-                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                email: faker.random.word(),
-                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                hasGlobalNotifications: faker.datatype.boolean(),
-                hasPersonalNotifications: faker.datatype.boolean(),
-                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                teams: faker.helpers.arrayElement([
-                  Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                user: faker.helpers.arrayElement([
+                  {
                     createdAt: (() => faker.date.past())(),
-                    description: faker.random.word(),
-                    name: faker.random.word(),
-                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                    timeEntries: faker.helpers.arrayElement([
-                      Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                        comment: faker.random.word(),
-                        durationMinutes: faker.helpers.arrayElement([
-                          faker.datatype.number({ min: undefined, max: undefined }),
-                          null,
-                        ]),
-                        start: (() => faker.date.past())(),
-                        teamID: faker.helpers.arrayElement([
-                          faker.datatype.number({ min: undefined, max: undefined }),
-                          null,
-                        ]),
-                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                        userID: faker.random.word(),
-                        workItemID: faker.helpers.arrayElement([
-                          faker.datatype.number({ min: undefined, max: undefined }),
-                          null,
-                        ]),
-                      })),
-                      undefined,
-                    ]),
-                    updatedAt: (() => faker.date.past())(),
-                    users: faker.helpers.arrayElement([
+                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                    email: faker.random.word(),
+                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                    hasGlobalNotifications: faker.datatype.boolean(),
+                    hasPersonalNotifications: faker.datatype.boolean(),
+                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                    teams: faker.helpers.arrayElement([
                       Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
                         createdAt: (() => faker.date.past())(),
-                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                        email: faker.random.word(),
-                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                        hasGlobalNotifications: faker.datatype.boolean(),
-                        hasPersonalNotifications: faker.datatype.boolean(),
-                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                        description: faker.random.word(),
+                        name: faker.random.word(),
+                        projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                        teamID: faker.datatype.number({ min: undefined, max: undefined }),
                         timeEntries: faker.helpers.arrayElement([
                           Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                             () => ({
@@ -8171,25 +5284,21 @@ export const getGetProjectWorkitemsMock = () =>
                           ),
                           undefined,
                         ]),
-                        userAPIKey: faker.helpers.arrayElement([
-                          {
-                            apiKey: faker.random.word(),
-                            expiresOn: (() => faker.date.past())(),
-                            user: faker.helpers.arrayElement([
-                              {
-                                createdAt: (() => faker.date.past())(),
-                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                email: faker.random.word(),
-                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                hasGlobalNotifications: faker.datatype.boolean(),
-                                hasPersonalNotifications: faker.datatype.boolean(),
-                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
+                        updatedAt: (() => faker.date.past())(),
+                        users: faker.helpers.arrayElement([
+                          Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                            () => ({
+                              createdAt: (() => faker.date.past())(),
+                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              email: faker.random.word(),
+                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              hasGlobalNotifications: faker.datatype.boolean(),
+                              hasPersonalNotifications: faker.datatype.boolean(),
+                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              timeEntries: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
                                     activityID: faker.datatype.number({ min: undefined, max: undefined }),
                                     comment: faker.random.word(),
                                     durationMinutes: faker.helpers.arrayElement([
@@ -8207,23 +5316,33 @@ export const getGetProjectWorkitemsMock = () =>
                                       faker.datatype.number({ min: undefined, max: undefined }),
                                       null,
                                     ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                userID: faker.random.word(),
-                                username: faker.random.word(),
-                                workItems: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              userAPIKey: faker.helpers.arrayElement([
+                                {
+                                  apiKey: faker.random.word(),
+                                  expiresOn: (() => faker.date.past())(),
+                                  userID: faker.random.word(),
+                                },
+                                undefined,
+                              ]),
+                              userID: faker.random.word(),
+                              username: faker.random.word(),
+                              workItems: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
                                     closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                     createdAt: (() => faker.date.past())(),
                                     deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                     description: faker.random.word(),
                                     kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    metadata: {},
-                                    project2workItem: faker.helpers.arrayElement([
+                                    metadata: Array.from(
+                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                      (_, i) => i + 1,
+                                    ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                                    project2WorkItem: faker.helpers.arrayElement([
                                       {
                                         customDateForProject2: faker.helpers.arrayElement([
                                           (() => faker.date.past())(),
@@ -8301,102 +5420,10 @@ export const getGetProjectWorkitemsMock = () =>
                                       undefined,
                                     ]),
                                     workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  })),
-                                  undefined,
-                                ]),
-                              },
-                              undefined,
-                            ]),
-                            userID: faker.random.word(),
-                          },
-                          undefined,
-                        ]),
-                        userID: faker.random.word(),
-                        username: faker.random.word(),
-                        workItems: faker.helpers.arrayElement([
-                          Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                            () => ({
-                              closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                              createdAt: (() => faker.date.past())(),
-                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                              description: faker.random.word(),
-                              kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                              metadata: {},
-                              project2workItem: faker.helpers.arrayElement([
-                                {
-                                  customDateForProject2: faker.helpers.arrayElement([
-                                    (() => faker.date.past())(),
-                                    null,
-                                  ]),
-                                  workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                },
-                                undefined,
-                              ]),
-                              targetDate: (() => faker.date.past())(),
-                              teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                              timeEntries: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
                                   }),
                                 ),
                                 undefined,
                               ]),
-                              title: faker.random.word(),
-                              updatedAt: (() => faker.date.past())(),
-                              workItemComments: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    message: faker.random.word(),
-                                    updatedAt: (() => faker.date.past())(),
-                                    userID: faker.random.word(),
-                                    workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
-                              workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                              workItemTags: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    color: faker.random.word(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
-                              workItemType: faker.helpers.arrayElement([
-                                {
-                                  color: faker.random.word(),
-                                  description: faker.random.word(),
-                                  name: faker.random.word(),
-                                  projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                },
-                                undefined,
-                              ]),
-                              workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
                             }),
                           ),
                           undefined,
@@ -8404,219 +5431,58 @@ export const getGetProjectWorkitemsMock = () =>
                       })),
                       undefined,
                     ]),
-                  })),
-                  undefined,
-                ]),
-                timeEntries: faker.helpers.arrayElement([
-                  Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                    comment: faker.random.word(),
-                    durationMinutes: faker.helpers.arrayElement([
-                      faker.datatype.number({ min: undefined, max: undefined }),
-                      null,
+                    timeEntries: faker.helpers.arrayElement([
+                      Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                        comment: faker.random.word(),
+                        durationMinutes: faker.helpers.arrayElement([
+                          faker.datatype.number({ min: undefined, max: undefined }),
+                          null,
+                        ]),
+                        start: (() => faker.date.past())(),
+                        teamID: faker.helpers.arrayElement([
+                          faker.datatype.number({ min: undefined, max: undefined }),
+                          null,
+                        ]),
+                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                        userID: faker.random.word(),
+                        workItemID: faker.helpers.arrayElement([
+                          faker.datatype.number({ min: undefined, max: undefined }),
+                          null,
+                        ]),
+                      })),
+                      undefined,
                     ]),
-                    start: (() => faker.date.past())(),
-                    teamID: faker.helpers.arrayElement([
-                      faker.datatype.number({ min: undefined, max: undefined }),
-                      null,
-                    ]),
-                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                    userID: faker.random.word(),
-                    workItemID: faker.helpers.arrayElement([
-                      faker.datatype.number({ min: undefined, max: undefined }),
-                      null,
-                    ]),
-                  })),
-                  undefined,
-                ]),
-                userAPIKey: faker.helpers.arrayElement([
-                  {
-                    apiKey: faker.random.word(),
-                    expiresOn: (() => faker.date.past())(),
-                    user: faker.helpers.arrayElement([
+                    userAPIKey: faker.helpers.arrayElement([
                       {
+                        apiKey: faker.random.word(),
+                        expiresOn: (() => faker.date.past())(),
+                        userID: faker.random.word(),
+                      },
+                      undefined,
+                    ]),
+                    userID: faker.random.word(),
+                    username: faker.random.word(),
+                    workItems: faker.helpers.arrayElement([
+                      Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                        closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                         createdAt: (() => faker.date.past())(),
                         deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                        email: faker.random.word(),
-                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                        hasGlobalNotifications: faker.datatype.boolean(),
-                        hasPersonalNotifications: faker.datatype.boolean(),
-                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                        teams: faker.helpers.arrayElement([
-                          Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                            () => ({
-                              createdAt: (() => faker.date.past())(),
-                              description: faker.random.word(),
-                              name: faker.random.word(),
-                              projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                              teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                              timeEntries: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
-                              updatedAt: (() => faker.date.past())(),
-                              users: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    timeEntries: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        comment: faker.random.word(),
-                                        durationMinutes: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        start: (() => faker.date.past())(),
-                                        teamID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        userID: faker.random.word(),
-                                        workItemID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                      })),
-                                      undefined,
-                                    ]),
-                                    userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                    workItems: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        description: faker.random.word(),
-                                        kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        metadata: {},
-                                        project2workItem: faker.helpers.arrayElement([
-                                          {
-                                            customDateForProject2: faker.helpers.arrayElement([
-                                              (() => faker.date.past())(),
-                                              null,
-                                            ]),
-                                            workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          },
-                                          undefined,
-                                        ]),
-                                        targetDate: (() => faker.date.past())(),
-                                        teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
-                                        ]),
-                                        title: faker.random.word(),
-                                        updatedAt: (() => faker.date.past())(),
-                                        workItemComments: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            createdAt: (() => faker.date.past())(),
-                                            message: faker.random.word(),
-                                            updatedAt: (() => faker.date.past())(),
-                                            userID: faker.random.word(),
-                                            workItemCommentID: faker.datatype.number({
-                                              min: undefined,
-                                              max: undefined,
-                                            }),
-                                            workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          })),
-                                          undefined,
-                                        ]),
-                                        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        workItemTags: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            color: faker.random.word(),
-                                            description: faker.random.word(),
-                                            name: faker.random.word(),
-                                            projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          })),
-                                          undefined,
-                                        ]),
-                                        workItemType: faker.helpers.arrayElement([
-                                          {
-                                            color: faker.random.word(),
-                                            description: faker.random.word(),
-                                            name: faker.random.word(),
-                                            projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          },
-                                          undefined,
-                                        ]),
-                                        workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      })),
-                                      undefined,
-                                    ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
-                            }),
-                          ),
+                        description: faker.random.word(),
+                        kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
+                        metadata: Array.from(
+                          { length: faker.datatype.number({ min: 1, max: 10 }) },
+                          (_, i) => i + 1,
+                        ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                        project2WorkItem: faker.helpers.arrayElement([
+                          {
+                            customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                            workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                          },
                           undefined,
                         ]),
+                        targetDate: (() => faker.date.past())(),
+                        teamID: faker.datatype.number({ min: undefined, max: undefined }),
                         timeEntries: faker.helpers.arrayElement([
                           Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                             () => ({
@@ -8641,187 +5507,58 @@ export const getGetProjectWorkitemsMock = () =>
                           ),
                           undefined,
                         ]),
-                        userID: faker.random.word(),
-                        username: faker.random.word(),
-                        workItems: faker.helpers.arrayElement([
+                        title: faker.random.word(),
+                        updatedAt: (() => faker.date.past())(),
+                        workItemComments: faker.helpers.arrayElement([
                           Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                             () => ({
-                              closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                               createdAt: (() => faker.date.past())(),
-                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                              description: faker.random.word(),
-                              kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                              metadata: {},
-                              project2workItem: faker.helpers.arrayElement([
-                                {
-                                  customDateForProject2: faker.helpers.arrayElement([
-                                    (() => faker.date.past())(),
-                                    null,
-                                  ]),
-                                  workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                },
-                                undefined,
-                              ]),
-                              targetDate: (() => faker.date.past())(),
-                              teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                              timeEntries: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
-                              title: faker.random.word(),
+                              message: faker.random.word(),
                               updatedAt: (() => faker.date.past())(),
-                              workItemComments: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    message: faker.random.word(),
-                                    updatedAt: (() => faker.date.past())(),
-                                    userID: faker.random.word(),
-                                    workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
+                              userID: faker.random.word(),
+                              workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
                               workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                              workItemTags: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    color: faker.random.word(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
-                              workItemType: faker.helpers.arrayElement([
-                                {
-                                  color: faker.random.word(),
-                                  description: faker.random.word(),
-                                  name: faker.random.word(),
-                                  projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                },
-                                undefined,
-                              ]),
-                              workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
                             }),
                           ),
                           undefined,
                         ]),
-                      },
-                      undefined,
-                    ]),
-                    userID: faker.random.word(),
-                  },
-                  undefined,
-                ]),
-                userID: faker.random.word(),
-                username: faker.random.word(),
-                workItems: faker.helpers.arrayElement([
-                  Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                    closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                    createdAt: (() => faker.date.past())(),
-                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                    description: faker.random.word(),
-                    kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                    metadata: {},
-                    project2workItem: faker.helpers.arrayElement([
-                      {
-                        customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                         workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                      },
-                      undefined,
-                    ]),
-                    targetDate: (() => faker.date.past())(),
-                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                    timeEntries: faker.helpers.arrayElement([
-                      Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                        comment: faker.random.word(),
-                        durationMinutes: faker.helpers.arrayElement([
-                          faker.datatype.number({ min: undefined, max: undefined }),
-                          null,
+                        workItemTags: faker.helpers.arrayElement([
+                          Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                            () => ({
+                              color: faker.random.word(),
+                              description: faker.random.word(),
+                              name: faker.random.word(),
+                              projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                              workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
+                            }),
+                          ),
+                          undefined,
                         ]),
-                        start: (() => faker.date.past())(),
-                        teamID: faker.helpers.arrayElement([
-                          faker.datatype.number({ min: undefined, max: undefined }),
-                          null,
+                        workItemType: faker.helpers.arrayElement([
+                          {
+                            color: faker.random.word(),
+                            description: faker.random.word(),
+                            name: faker.random.word(),
+                            projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                            workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
+                          },
+                          undefined,
                         ]),
-                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                        userID: faker.random.word(),
-                        workItemID: faker.helpers.arrayElement([
-                          faker.datatype.number({ min: undefined, max: undefined }),
-                          null,
-                        ]),
-                      })),
-                      undefined,
-                    ]),
-                    title: faker.random.word(),
-                    updatedAt: (() => faker.date.past())(),
-                    workItemComments: faker.helpers.arrayElement([
-                      Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                        createdAt: (() => faker.date.past())(),
-                        message: faker.random.word(),
-                        updatedAt: (() => faker.date.past())(),
-                        userID: faker.random.word(),
-                        workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                      })),
-                      undefined,
-                    ]),
-                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                    workItemTags: faker.helpers.arrayElement([
-                      Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                        color: faker.random.word(),
-                        description: faker.random.word(),
-                        name: faker.random.word(),
-                        projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                        workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                      })),
-                      undefined,
-                    ]),
-                    workItemType: faker.helpers.arrayElement([
-                      {
-                        color: faker.random.word(),
-                        description: faker.random.word(),
-                        name: faker.random.word(),
-                        projectID: faker.datatype.number({ min: undefined, max: undefined }),
                         workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                      },
+                      })),
                       undefined,
                     ]),
-                    workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                  })),
+                  },
                   undefined,
                 ]),
               })),
               undefined,
             ]),
-            metadata: {},
-            project2workItem: faker.helpers.arrayElement([
+            metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+              faker.datatype.number({ min: 0, max: undefined }),
+            ),
+            project2WorkItem: faker.helpers.arrayElement([
               {
                 customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                 workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -8879,302 +5616,150 @@ export const getGetProjectWorkitemsMock = () =>
                     kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                     members: faker.helpers.arrayElement([
                       Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                        createdAt: (() => faker.date.past())(),
-                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                        email: faker.random.word(),
-                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                        hasGlobalNotifications: faker.datatype.boolean(),
-                        hasPersonalNotifications: faker.datatype.boolean(),
-                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                        teams: faker.helpers.arrayElement([
-                          Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                            () => ({
-                              createdAt: (() => faker.date.past())(),
-                              description: faker.random.word(),
-                              name: faker.random.word(),
-                              projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                              teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                              timeEntries: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
-                              updatedAt: (() => faker.date.past())(),
-                              users: faker.helpers.arrayElement([
-                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    timeEntries: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        comment: faker.random.word(),
-                                        durationMinutes: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        start: (() => faker.date.past())(),
-                                        teamID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        userID: faker.random.word(),
-                                        workItemID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                      })),
-                                      undefined,
-                                    ]),
-                                    userAPIKey: faker.helpers.arrayElement([
-                                      {
-                                        apiKey: faker.random.word(),
-                                        expiresOn: (() => faker.date.past())(),
-                                        user: faker.helpers.arrayElement([
-                                          {
-                                            createdAt: (() => faker.date.past())(),
-                                            deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                            email: faker.random.word(),
-                                            firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            hasGlobalNotifications: faker.datatype.boolean(),
-                                            hasPersonalNotifications: faker.datatype.boolean(),
-                                            lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            timeEntries: faker.helpers.arrayElement([
-                                              Array.from(
-                                                { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                                (_, i) => i + 1,
-                                              ).map(() => ({
-                                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                comment: faker.random.word(),
-                                                durationMinutes: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                start: (() => faker.date.past())(),
-                                                teamID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                userID: faker.random.word(),
-                                                workItemID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                              })),
-                                              undefined,
-                                            ]),
-                                            userID: faker.random.word(),
-                                            username: faker.random.word(),
-                                          },
-                                          undefined,
-                                        ]),
-                                        userID: faker.random.word(),
-                                      },
-                                      undefined,
-                                    ]),
-                                    userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  }),
-                                ),
-                                undefined,
-                              ]),
-                            }),
-                          ),
-                          undefined,
-                        ]),
-                        timeEntries: faker.helpers.arrayElement([
-                          Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                            () => ({
-                              activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                              comment: faker.random.word(),
-                              durationMinutes: faker.helpers.arrayElement([
-                                faker.datatype.number({ min: undefined, max: undefined }),
-                                null,
-                              ]),
-                              start: (() => faker.date.past())(),
-                              teamID: faker.helpers.arrayElement([
-                                faker.datatype.number({ min: undefined, max: undefined }),
-                                null,
-                              ]),
-                              timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                              userID: faker.random.word(),
-                              workItemID: faker.helpers.arrayElement([
-                                faker.datatype.number({ min: undefined, max: undefined }),
-                                null,
-                              ]),
-                            }),
-                          ),
-                          undefined,
-                        ]),
-                        userAPIKey: faker.helpers.arrayElement([
+                        role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                        user: faker.helpers.arrayElement([
                           {
-                            apiKey: faker.random.word(),
-                            expiresOn: (() => faker.date.past())(),
-                            user: faker.helpers.arrayElement([
+                            createdAt: (() => faker.date.past())(),
+                            deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                            email: faker.random.word(),
+                            firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                            fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                            hasGlobalNotifications: faker.datatype.boolean(),
+                            hasPersonalNotifications: faker.datatype.boolean(),
+                            lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                            teams: faker.helpers.arrayElement([
+                              Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                () => ({
+                                  createdAt: (() => faker.date.past())(),
+                                  description: faker.random.word(),
+                                  name: faker.random.word(),
+                                  projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                  teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                                  timeEntries: faker.helpers.arrayElement([
+                                    Array.from(
+                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                      (_, i) => i + 1,
+                                    ).map(() => ({
+                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                      comment: faker.random.word(),
+                                      durationMinutes: faker.helpers.arrayElement([
+                                        faker.datatype.number({ min: undefined, max: undefined }),
+                                        null,
+                                      ]),
+                                      start: (() => faker.date.past())(),
+                                      teamID: faker.helpers.arrayElement([
+                                        faker.datatype.number({ min: undefined, max: undefined }),
+                                        null,
+                                      ]),
+                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                      userID: faker.random.word(),
+                                      workItemID: faker.helpers.arrayElement([
+                                        faker.datatype.number({ min: undefined, max: undefined }),
+                                        null,
+                                      ]),
+                                    })),
+                                    undefined,
+                                  ]),
+                                  updatedAt: (() => faker.date.past())(),
+                                  users: faker.helpers.arrayElement([
+                                    Array.from(
+                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                      (_, i) => i + 1,
+                                    ).map(() => ({
+                                      createdAt: (() => faker.date.past())(),
+                                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                      email: faker.random.word(),
+                                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                      hasGlobalNotifications: faker.datatype.boolean(),
+                                      hasPersonalNotifications: faker.datatype.boolean(),
+                                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                      timeEntries: faker.helpers.arrayElement([
+                                        Array.from(
+                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                          (_, i) => i + 1,
+                                        ).map(() => ({
+                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                          comment: faker.random.word(),
+                                          durationMinutes: faker.helpers.arrayElement([
+                                            faker.datatype.number({ min: undefined, max: undefined }),
+                                            null,
+                                          ]),
+                                          start: (() => faker.date.past())(),
+                                          teamID: faker.helpers.arrayElement([
+                                            faker.datatype.number({ min: undefined, max: undefined }),
+                                            null,
+                                          ]),
+                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                          userID: faker.random.word(),
+                                          workItemID: faker.helpers.arrayElement([
+                                            faker.datatype.number({ min: undefined, max: undefined }),
+                                            null,
+                                          ]),
+                                        })),
+                                        undefined,
+                                      ]),
+                                      userAPIKey: faker.helpers.arrayElement([
+                                        {
+                                          apiKey: faker.random.word(),
+                                          expiresOn: (() => faker.date.past())(),
+                                          userID: faker.random.word(),
+                                        },
+                                        undefined,
+                                      ]),
+                                      userID: faker.random.word(),
+                                      username: faker.random.word(),
+                                    })),
+                                    undefined,
+                                  ]),
+                                }),
+                              ),
+                              undefined,
+                            ]),
+                            timeEntries: faker.helpers.arrayElement([
+                              Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                () => ({
+                                  activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                  comment: faker.random.word(),
+                                  durationMinutes: faker.helpers.arrayElement([
+                                    faker.datatype.number({ min: undefined, max: undefined }),
+                                    null,
+                                  ]),
+                                  start: (() => faker.date.past())(),
+                                  teamID: faker.helpers.arrayElement([
+                                    faker.datatype.number({ min: undefined, max: undefined }),
+                                    null,
+                                  ]),
+                                  timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                  userID: faker.random.word(),
+                                  workItemID: faker.helpers.arrayElement([
+                                    faker.datatype.number({ min: undefined, max: undefined }),
+                                    null,
+                                  ]),
+                                }),
+                              ),
+                              undefined,
+                            ]),
+                            userAPIKey: faker.helpers.arrayElement([
                               {
-                                createdAt: (() => faker.date.past())(),
-                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                email: faker.random.word(),
-                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                hasGlobalNotifications: faker.datatype.boolean(),
-                                hasPersonalNotifications: faker.datatype.boolean(),
-                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                teams: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    timeEntries: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        comment: faker.random.word(),
-                                        durationMinutes: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        start: (() => faker.date.past())(),
-                                        teamID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        userID: faker.random.word(),
-                                        workItemID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                      })),
-                                      undefined,
-                                    ]),
-                                    updatedAt: (() => faker.date.past())(),
-                                    users: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        email: faker.random.word(),
-                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        hasGlobalNotifications: faker.datatype.boolean(),
-                                        hasPersonalNotifications: faker.datatype.boolean(),
-                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
-                                        ]),
-                                        userID: faker.random.word(),
-                                        username: faker.random.word(),
-                                      })),
-                                      undefined,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
+                                apiKey: faker.random.word(),
+                                expiresOn: (() => faker.date.past())(),
                                 userID: faker.random.word(),
-                                username: faker.random.word(),
                               },
                               undefined,
                             ]),
                             userID: faker.random.word(),
+                            username: faker.random.word(),
                           },
                           undefined,
                         ]),
-                        userID: faker.random.word(),
-                        username: faker.random.word(),
                       })),
                       undefined,
                     ]),
-                    metadata: {},
-                    project2workItem: faker.helpers.arrayElement([
+                    metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                      () => faker.datatype.number({ min: 0, max: undefined }),
+                    ),
+                    project2WorkItem: faker.helpers.arrayElement([
                       {
                         customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                         workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -9382,8 +5967,11 @@ export const getGetProjectWorkitemsMock = () =>
                                         deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                         description: faker.random.word(),
                                         kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        metadata: {},
-                                        project2workItem: faker.helpers.arrayElement([
+                                        metadata: Array.from(
+                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                          (_, i) => i + 1,
+                                        ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                                        project2WorkItem: faker.helpers.arrayElement([
                                           {
                                             customDateForProject2: faker.helpers.arrayElement([
                                               (() => faker.date.past())(),
@@ -9473,8 +6061,11 @@ export const getGetProjectWorkitemsMock = () =>
                                 ]),
                                 description: faker.random.word(),
                                 kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                metadata: {},
-                                project2workItem: faker.helpers.arrayElement([
+                                metadata: Array.from(
+                                  { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                  (_, i) => i + 1,
+                                ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                                project2WorkItem: faker.helpers.arrayElement([
                                   {
                                     customDateForProject2: faker.helpers.arrayElement([
                                       (() => faker.date.past())(),
@@ -9497,7 +6088,10 @@ export const getGetProjectWorkitemsMock = () =>
                                         ]),
                                         description: faker.random.word(),
                                         kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        metadata: {},
+                                        metadata: Array.from(
+                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                          (_, i) => i + 1,
+                                        ).map(() => faker.datatype.number({ min: 0, max: undefined })),
                                         targetDate: (() => faker.date.past())(),
                                         teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                         timeEntries: faker.helpers.arrayElement([
@@ -9656,8 +6250,11 @@ export const getGetProjectWorkitemsMock = () =>
                                         ]),
                                         description: faker.random.word(),
                                         kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        metadata: {},
-                                        project2workItem: faker.helpers.arrayElement([
+                                        metadata: Array.from(
+                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                          (_, i) => i + 1,
+                                        ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                                        project2WorkItem: faker.helpers.arrayElement([
                                           {
                                             customDateForProject2: faker.helpers.arrayElement([
                                               (() => faker.date.past())(),
@@ -9767,8 +6364,11 @@ export const getGetProjectWorkitemsMock = () =>
                               deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                               description: faker.random.word(),
                               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                              metadata: {},
-                              project2workItem: faker.helpers.arrayElement([
+                              metadata: Array.from(
+                                { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                (_, i) => i + 1,
+                              ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                              project2WorkItem: faker.helpers.arrayElement([
                                 {
                                   customDateForProject2: faker.helpers.arrayElement([
                                     (() => faker.date.past())(),
@@ -9852,8 +6452,10 @@ export const getGetProjectWorkitemsMock = () =>
                       ]),
                       description: faker.random.word(),
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
+                      project2WorkItem: faker.helpers.arrayElement([
                         {
                           customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                           workItem: faker.helpers.arrayElement([
@@ -9873,7 +6475,10 @@ export const getGetProjectWorkitemsMock = () =>
                               ]),
                               description: faker.random.word(),
                               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                              metadata: {},
+                              metadata: Array.from(
+                                { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                (_, i) => i + 1,
+                              ).map(() => faker.datatype.number({ min: 0, max: undefined })),
                               targetDate: (() => faker.date.past())(),
                               teamID: faker.datatype.number({ min: undefined, max: undefined }),
                               timeEntries: faker.helpers.arrayElement([
@@ -10017,8 +6622,11 @@ export const getGetProjectWorkitemsMock = () =>
                               ]),
                               description: faker.random.word(),
                               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                              metadata: {},
-                              project2workItem: faker.helpers.arrayElement([
+                              metadata: Array.from(
+                                { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                (_, i) => i + 1,
+                              ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                              project2WorkItem: faker.helpers.arrayElement([
                                 {
                                   customDateForProject2: faker.helpers.arrayElement([
                                     (() => faker.date.past())(),
@@ -10215,8 +6823,11 @@ export const getGetProjectWorkitemsMock = () =>
                                         deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                         description: faker.random.word(),
                                         kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        metadata: {},
-                                        project2workItem: faker.helpers.arrayElement([
+                                        metadata: Array.from(
+                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                          (_, i) => i + 1,
+                                        ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                                        project2WorkItem: faker.helpers.arrayElement([
                                           {
                                             customDateForProject2: faker.helpers.arrayElement([
                                               (() => faker.date.past())(),
@@ -10306,8 +6917,11 @@ export const getGetProjectWorkitemsMock = () =>
                                 ]),
                                 description: faker.random.word(),
                                 kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                metadata: {},
-                                project2workItem: faker.helpers.arrayElement([
+                                metadata: Array.from(
+                                  { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                  (_, i) => i + 1,
+                                ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                                project2WorkItem: faker.helpers.arrayElement([
                                   {
                                     customDateForProject2: faker.helpers.arrayElement([
                                       (() => faker.date.past())(),
@@ -10330,7 +6944,10 @@ export const getGetProjectWorkitemsMock = () =>
                                         ]),
                                         description: faker.random.word(),
                                         kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        metadata: {},
+                                        metadata: Array.from(
+                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                          (_, i) => i + 1,
+                                        ).map(() => faker.datatype.number({ min: 0, max: undefined })),
                                         targetDate: (() => faker.date.past())(),
                                         teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                         timeEntries: faker.helpers.arrayElement([
@@ -10489,8 +7106,11 @@ export const getGetProjectWorkitemsMock = () =>
                                         ]),
                                         description: faker.random.word(),
                                         kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        metadata: {},
-                                        project2workItem: faker.helpers.arrayElement([
+                                        metadata: Array.from(
+                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                          (_, i) => i + 1,
+                                        ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                                        project2WorkItem: faker.helpers.arrayElement([
                                           {
                                             customDateForProject2: faker.helpers.arrayElement([
                                               (() => faker.date.past())(),
@@ -10621,8 +7241,11 @@ export const getGetProjectWorkitemsMock = () =>
                               deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                               description: faker.random.word(),
                               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                              metadata: {},
-                              project2workItem: faker.helpers.arrayElement([
+                              metadata: Array.from(
+                                { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                (_, i) => i + 1,
+                              ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                              project2WorkItem: faker.helpers.arrayElement([
                                 {
                                   customDateForProject2: faker.helpers.arrayElement([
                                     (() => faker.date.past())(),
@@ -10706,8 +7329,10 @@ export const getGetProjectWorkitemsMock = () =>
                       ]),
                       description: faker.random.word(),
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
+                      project2WorkItem: faker.helpers.arrayElement([
                         {
                           customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                           workItem: faker.helpers.arrayElement([
@@ -10727,7 +7352,10 @@ export const getGetProjectWorkitemsMock = () =>
                               ]),
                               description: faker.random.word(),
                               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                              metadata: {},
+                              metadata: Array.from(
+                                { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                (_, i) => i + 1,
+                              ).map(() => faker.datatype.number({ min: 0, max: undefined })),
                               targetDate: (() => faker.date.past())(),
                               teamID: faker.datatype.number({ min: undefined, max: undefined }),
                               timeEntries: faker.helpers.arrayElement([
@@ -10871,8 +7499,11 @@ export const getGetProjectWorkitemsMock = () =>
                               ]),
                               description: faker.random.word(),
                               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                              metadata: {},
-                              project2workItem: faker.helpers.arrayElement([
+                              metadata: Array.from(
+                                { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                (_, i) => i + 1,
+                              ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                              project2WorkItem: faker.helpers.arrayElement([
                                 {
                                   customDateForProject2: faker.helpers.arrayElement([
                                     (() => faker.date.past())(),
@@ -10975,8 +7606,10 @@ export const getGetProjectWorkitemsMock = () =>
                       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                       description: faker.random.word(),
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
+                      project2WorkItem: faker.helpers.arrayElement([
                         {
                           customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                           workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -11051,8 +7684,10 @@ export const getGetProjectWorkitemsMock = () =>
               ]),
               description: faker.random.word(),
               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-              metadata: {},
-              project2workItem: faker.helpers.arrayElement([
+              metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+                faker.datatype.number({ min: 0, max: undefined }),
+              ),
+              project2WorkItem: faker.helpers.arrayElement([
                 {
                   customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                   workItem: faker.helpers.arrayElement([
@@ -11072,7 +7707,9 @@ export const getGetProjectWorkitemsMock = () =>
                       ]),
                       description: faker.random.word(),
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                      metadata: {},
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
                       targetDate: (() => faker.date.past())(),
                       teamID: faker.datatype.number({ min: undefined, max: undefined }),
                       timeEntries: faker.helpers.arrayElement([
@@ -11207,8 +7844,10 @@ export const getGetProjectWorkitemsMock = () =>
                       ]),
                       description: faker.random.word(),
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
+                      project2WorkItem: faker.helpers.arrayElement([
                         {
                           customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                           workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -11278,8 +7917,10 @@ export const getGetProjectWorkitemsMock = () =>
         })),
         undefined,
       ]),
-      metadata: {},
-      project2workItem: faker.helpers.arrayElement([
+      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+        faker.datatype.number({ min: 0, max: undefined }),
+      ),
+      project2WorkItem: faker.helpers.arrayElement([
         {
           customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
           workItem: faker.helpers.arrayElement([
@@ -11301,54 +7942,24 @@ export const getGetProjectWorkitemsMock = () =>
               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
               members: faker.helpers.arrayElement([
                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  createdAt: (() => faker.date.past())(),
-                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                  email: faker.random.word(),
-                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  hasGlobalNotifications: faker.datatype.boolean(),
-                  hasPersonalNotifications: faker.datatype.boolean(),
-                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  teams: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                  role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                  user: faker.helpers.arrayElement([
+                    {
                       createdAt: (() => faker.date.past())(),
-                      description: faker.random.word(),
-                      name: faker.random.word(),
-                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                      timeEntries: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                          comment: faker.random.word(),
-                          durationMinutes: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          start: (() => faker.date.past())(),
-                          teamID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                          userID: faker.random.word(),
-                          workItemID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      updatedAt: (() => faker.date.past())(),
-                      users: faker.helpers.arrayElement([
+                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                      email: faker.random.word(),
+                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      hasGlobalNotifications: faker.datatype.boolean(),
+                      hasPersonalNotifications: faker.datatype.boolean(),
+                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      teams: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
                           createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          description: faker.random.word(),
+                          name: faker.random.word(),
+                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
                           timeEntries: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
@@ -11373,169 +7984,18 @@ export const getGetProjectWorkitemsMock = () =>
                             ),
                             undefined,
                           ]),
-                          userAPIKey: faker.helpers.arrayElement([
-                            {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
-                                {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
-                                  userID: faker.random.word(),
-                                  username: faker.random.word(),
-                                  workItems: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                      createdAt: (() => faker.date.past())(),
-                                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                      demoProjectWorkItem: faker.helpers.arrayElement([
-                                        {
-                                          lastMessageAt: (() => faker.date.past())(),
-                                          line: faker.random.word(),
-                                          ref: faker.random.word(),
-                                          reopened: faker.datatype.boolean(),
-                                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        },
-                                        undefined,
-                                      ]),
-                                      description: faker.random.word(),
-                                      kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      metadata: {},
-                                      targetDate: (() => faker.date.past())(),
-                                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      title: faker.random.word(),
-                                      updatedAt: (() => faker.date.past())(),
-                                      workItemComments: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          createdAt: (() => faker.date.past())(),
-                                          message: faker.random.word(),
-                                          updatedAt: (() => faker.date.past())(),
-                                          userID: faker.random.word(),
-                                          workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      workItemTags: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          color: faker.random.word(),
-                                          description: faker.random.word(),
-                                          name: faker.random.word(),
-                                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      workItemType: faker.helpers.arrayElement([
-                                        {
-                                          color: faker.random.word(),
-                                          description: faker.random.word(),
-                                          name: faker.random.word(),
-                                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        },
-                                        undefined,
-                                      ]),
-                                      workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    })),
-                                    undefined,
-                                  ]),
-                                },
-                                undefined,
-                              ]),
-                              userID: faker.random.word(),
-                            },
-                            undefined,
-                          ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
-                          workItems: faker.helpers.arrayElement([
+                          updatedAt: (() => faker.date.past())(),
+                          users: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
-                                closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                 createdAt: (() => faker.date.past())(),
                                 deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                demoProjectWorkItem: faker.helpers.arrayElement([
-                                  {
-                                    lastMessageAt: (() => faker.date.past())(),
-                                    line: faker.random.word(),
-                                    ref: faker.random.word(),
-                                    reopened: faker.datatype.boolean(),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  },
-                                  undefined,
-                                ]),
-                                description: faker.random.word(),
-                                kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                metadata: {},
-                                targetDate: (() => faker.date.past())(),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                                email: faker.random.word(),
+                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                hasGlobalNotifications: faker.datatype.boolean(),
+                                hasPersonalNotifications: faker.datatype.boolean(),
+                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
                                 timeEntries: faker.helpers.arrayElement([
                                   Array.from(
                                     { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -11561,140 +8021,42 @@ export const getGetProjectWorkitemsMock = () =>
                                   })),
                                   undefined,
                                 ]),
-                                title: faker.random.word(),
-                                updatedAt: (() => faker.date.past())(),
-                                workItemComments: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    message: faker.random.word(),
-                                    updatedAt: (() => faker.date.past())(),
-                                    userID: faker.random.word(),
-                                    workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  })),
-                                  undefined,
-                                ]),
-                                workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                workItemTags: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    color: faker.random.word(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  })),
-                                  undefined,
-                                ]),
-                                workItemType: faker.helpers.arrayElement([
+                                userAPIKey: faker.helpers.arrayElement([
                                   {
-                                    color: faker.random.word(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    apiKey: faker.random.word(),
+                                    expiresOn: (() => faker.date.past())(),
+                                    userID: faker.random.word(),
                                   },
                                   undefined,
                                 ]),
-                                workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                    })),
-                    undefined,
-                  ]),
-                  timeEntries: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                      comment: faker.random.word(),
-                      durationMinutes: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                      start: (() => faker.date.past())(),
-                      teamID: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                      userID: faker.random.word(),
-                      workItemID: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                    })),
-                    undefined,
-                  ]),
-                  userAPIKey: faker.helpers.arrayElement([
-                    {
-                      apiKey: faker.random.word(),
-                      expiresOn: (() => faker.date.past())(),
-                      user: faker.helpers.arrayElement([
-                        {
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          teams: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
+                                userID: faker.random.word(),
+                                username: faker.random.word(),
+                                workItems: faker.helpers.arrayElement([
                                   Array.from(
                                     { length: faker.datatype.number({ min: 1, max: 10 }) },
                                     (_, i) => i + 1,
                                   ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                updatedAt: (() => faker.date.past())(),
-                                users: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
+                                    closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                     createdAt: (() => faker.date.past())(),
                                     deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    demoProjectWorkItem: faker.helpers.arrayElement([
+                                      {
+                                        lastMessageAt: (() => faker.date.past())(),
+                                        line: faker.random.word(),
+                                        ref: faker.random.word(),
+                                        reopened: faker.datatype.boolean(),
+                                        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                                      },
+                                      undefined,
+                                    ]),
+                                    description: faker.random.word(),
+                                    kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    metadata: Array.from(
+                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                      (_, i) => i + 1,
+                                    ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                                    targetDate: (() => faker.date.past())(),
+                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -11720,103 +8082,47 @@ export const getGetProjectWorkitemsMock = () =>
                                       })),
                                       undefined,
                                     ]),
-                                    userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                    workItems: faker.helpers.arrayElement([
+                                    title: faker.random.word(),
+                                    updatedAt: (() => faker.date.past())(),
+                                    workItemComments: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
                                         (_, i) => i + 1,
                                       ).map(() => ({
-                                        closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                         createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        demoProjectWorkItem: faker.helpers.arrayElement([
-                                          {
-                                            lastMessageAt: (() => faker.date.past())(),
-                                            line: faker.random.word(),
-                                            ref: faker.random.word(),
-                                            reopened: faker.datatype.boolean(),
-                                            workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          },
-                                          undefined,
-                                        ]),
-                                        description: faker.random.word(),
-                                        kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        metadata: {},
-                                        targetDate: (() => faker.date.past())(),
-                                        teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
-                                        ]),
-                                        title: faker.random.word(),
+                                        message: faker.random.word(),
                                         updatedAt: (() => faker.date.past())(),
-                                        workItemComments: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            createdAt: (() => faker.date.past())(),
-                                            message: faker.random.word(),
-                                            updatedAt: (() => faker.date.past())(),
-                                            userID: faker.random.word(),
-                                            workItemCommentID: faker.datatype.number({
-                                              min: undefined,
-                                              max: undefined,
-                                            }),
-                                            workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          })),
-                                          undefined,
-                                        ]),
+                                        userID: faker.random.word(),
+                                        workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
                                         workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        workItemTags: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            color: faker.random.word(),
-                                            description: faker.random.word(),
-                                            name: faker.random.word(),
-                                            projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          })),
-                                          undefined,
-                                        ]),
-                                        workItemType: faker.helpers.arrayElement([
-                                          {
-                                            color: faker.random.word(),
-                                            description: faker.random.word(),
-                                            name: faker.random.word(),
-                                            projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          },
-                                          undefined,
-                                        ]),
-                                        workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
                                       })),
                                       undefined,
                                     ]),
+                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    workItemTags: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        color: faker.random.word(),
+                                        description: faker.random.word(),
+                                        name: faker.random.word(),
+                                        projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                        workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
+                                      })),
+                                      undefined,
+                                    ]),
+                                    workItemType: faker.helpers.arrayElement([
+                                      {
+                                        color: faker.random.word(),
+                                        description: faker.random.word(),
+                                        name: faker.random.word(),
+                                        projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                        workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
+                                      },
+                                      undefined,
+                                    ]),
+                                    workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
                                   })),
                                   undefined,
                                 ]),
@@ -11824,6 +8130,64 @@ export const getGetProjectWorkitemsMock = () =>
                             ),
                             undefined,
                           ]),
+                        })),
+                        undefined,
+                      ]),
+                      timeEntries: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                          comment: faker.random.word(),
+                          durationMinutes: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                          start: (() => faker.date.past())(),
+                          teamID: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                          userID: faker.random.word(),
+                          workItemID: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                        })),
+                        undefined,
+                      ]),
+                      userAPIKey: faker.helpers.arrayElement([
+                        {
+                          apiKey: faker.random.word(),
+                          expiresOn: (() => faker.date.past())(),
+                          userID: faker.random.word(),
+                        },
+                        undefined,
+                      ]),
+                      userID: faker.random.word(),
+                      username: faker.random.word(),
+                      workItems: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                          createdAt: (() => faker.date.past())(),
+                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                          demoProjectWorkItem: faker.helpers.arrayElement([
+                            {
+                              lastMessageAt: (() => faker.date.past())(),
+                              line: faker.random.word(),
+                              ref: faker.random.word(),
+                              reopened: faker.datatype.boolean(),
+                              workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                            },
+                            undefined,
+                          ]),
+                          description: faker.random.word(),
+                          kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
+                          metadata: Array.from(
+                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                            (_, i) => i + 1,
+                          ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                          targetDate: (() => faker.date.past())(),
+                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
                           timeEntries: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
@@ -11848,192 +8212,57 @@ export const getGetProjectWorkitemsMock = () =>
                             ),
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
-                          workItems: faker.helpers.arrayElement([
+                          title: faker.random.word(),
+                          updatedAt: (() => faker.date.past())(),
+                          workItemComments: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
-                                closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                 createdAt: (() => faker.date.past())(),
-                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                demoProjectWorkItem: faker.helpers.arrayElement([
-                                  {
-                                    lastMessageAt: (() => faker.date.past())(),
-                                    line: faker.random.word(),
-                                    ref: faker.random.word(),
-                                    reopened: faker.datatype.boolean(),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  },
-                                  undefined,
-                                ]),
-                                description: faker.random.word(),
-                                kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                metadata: {},
-                                targetDate: (() => faker.date.past())(),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                title: faker.random.word(),
+                                message: faker.random.word(),
                                 updatedAt: (() => faker.date.past())(),
-                                workItemComments: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    message: faker.random.word(),
-                                    updatedAt: (() => faker.date.past())(),
-                                    userID: faker.random.word(),
-                                    workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  })),
-                                  undefined,
-                                ]),
+                                userID: faker.random.word(),
+                                workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
                                 workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                workItemTags: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    color: faker.random.word(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  })),
-                                  undefined,
-                                ]),
-                                workItemType: faker.helpers.arrayElement([
-                                  {
-                                    color: faker.random.word(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  },
-                                  undefined,
-                                ]),
-                                workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
                               }),
                             ),
                             undefined,
                           ]),
-                        },
-                        undefined,
-                      ]),
-                      userID: faker.random.word(),
-                    },
-                    undefined,
-                  ]),
-                  userID: faker.random.word(),
-                  username: faker.random.word(),
-                  workItems: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      createdAt: (() => faker.date.past())(),
-                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      demoProjectWorkItem: faker.helpers.arrayElement([
-                        {
-                          lastMessageAt: (() => faker.date.past())(),
-                          line: faker.random.word(),
-                          ref: faker.random.word(),
-                          reopened: faker.datatype.boolean(),
                           workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                        },
-                        undefined,
-                      ]),
-                      description: faker.random.word(),
-                      kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                      metadata: {},
-                      targetDate: (() => faker.date.past())(),
-                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                      timeEntries: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                          comment: faker.random.word(),
-                          durationMinutes: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
+                          workItemTags: faker.helpers.arrayElement([
+                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                              () => ({
+                                color: faker.random.word(),
+                                description: faker.random.word(),
+                                name: faker.random.word(),
+                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
+                              }),
+                            ),
+                            undefined,
                           ]),
-                          start: (() => faker.date.past())(),
-                          teamID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
+                          workItemType: faker.helpers.arrayElement([
+                            {
+                              color: faker.random.word(),
+                              description: faker.random.word(),
+                              name: faker.random.word(),
+                              projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                              workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
+                            },
+                            undefined,
                           ]),
-                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                          userID: faker.random.word(),
-                          workItemID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      title: faker.random.word(),
-                      updatedAt: (() => faker.date.past())(),
-                      workItemComments: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          message: faker.random.word(),
-                          updatedAt: (() => faker.date.past())(),
-                          userID: faker.random.word(),
-                          workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                        })),
-                        undefined,
-                      ]),
-                      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                      workItemTags: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          color: faker.random.word(),
-                          description: faker.random.word(),
-                          name: faker.random.word(),
-                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                          workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                        })),
-                        undefined,
-                      ]),
-                      workItemType: faker.helpers.arrayElement([
-                        {
-                          color: faker.random.word(),
-                          description: faker.random.word(),
-                          name: faker.random.word(),
-                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
                           workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                        },
+                        })),
                         undefined,
                       ]),
-                      workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                    })),
+                    },
                     undefined,
                   ]),
                 })),
                 undefined,
               ]),
-              metadata: {},
+              metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+                faker.datatype.number({ min: 0, max: undefined }),
+              ),
               targetDate: (() => faker.date.past())(),
               teamID: faker.datatype.number({ min: undefined, max: undefined }),
               timeEntries: faker.helpers.arrayElement([
@@ -12095,61 +8324,25 @@ export const getGetProjectWorkitemsMock = () =>
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          teams: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                updatedAt: (() => faker.date.past())(),
-                                users: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
+                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          user: faker.helpers.arrayElement([
+                            {
+                              createdAt: (() => faker.date.past())(),
+                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              email: faker.random.word(),
+                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              hasGlobalNotifications: faker.datatype.boolean(),
+                              hasPersonalNotifications: faker.datatype.boolean(),
+                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              teams: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
                                     createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    description: faker.random.word(),
+                                    name: faker.random.word(),
+                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -12175,223 +8368,105 @@ export const getGetProjectWorkitemsMock = () =>
                                       })),
                                       undefined,
                                     ]),
-                                    userAPIKey: faker.helpers.arrayElement([
-                                      {
-                                        apiKey: faker.random.word(),
-                                        expiresOn: (() => faker.date.past())(),
-                                        user: faker.helpers.arrayElement([
-                                          {
-                                            createdAt: (() => faker.date.past())(),
-                                            deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                            email: faker.random.word(),
-                                            firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            hasGlobalNotifications: faker.datatype.boolean(),
-                                            hasPersonalNotifications: faker.datatype.boolean(),
-                                            lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            timeEntries: faker.helpers.arrayElement([
-                                              Array.from(
-                                                { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                                (_, i) => i + 1,
-                                              ).map(() => ({
-                                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                comment: faker.random.word(),
-                                                durationMinutes: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                start: (() => faker.date.past())(),
-                                                teamID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                userID: faker.random.word(),
-                                                workItemID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                              })),
-                                              undefined,
+                                    updatedAt: (() => faker.date.past())(),
+                                    users: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        createdAt: (() => faker.date.past())(),
+                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                        email: faker.random.word(),
+                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        hasGlobalNotifications: faker.datatype.boolean(),
+                                        hasPersonalNotifications: faker.datatype.boolean(),
+                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        timeEntries: faker.helpers.arrayElement([
+                                          Array.from(
+                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                            (_, i) => i + 1,
+                                          ).map(() => ({
+                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                            comment: faker.random.word(),
+                                            durationMinutes: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
                                             ]),
+                                            start: (() => faker.date.past())(),
+                                            teamID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                             userID: faker.random.word(),
-                                            username: faker.random.word(),
+                                            workItemID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                          })),
+                                          undefined,
+                                        ]),
+                                        userAPIKey: faker.helpers.arrayElement([
+                                          {
+                                            apiKey: faker.random.word(),
+                                            expiresOn: (() => faker.date.past())(),
+                                            userID: faker.random.word(),
                                           },
                                           undefined,
                                         ]),
                                         userID: faker.random.word(),
-                                      },
+                                        username: faker.random.word(),
+                                      })),
                                       undefined,
                                     ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              timeEntries: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
+                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    comment: faker.random.word(),
+                                    durationMinutes: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    start: (() => faker.date.past())(),
+                                    teamID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                     userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  })),
-                                  undefined,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userAPIKey: faker.helpers.arrayElement([
-                            {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
+                                    workItemID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              userAPIKey: faker.helpers.arrayElement([
                                 {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  teams: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      createdAt: (() => faker.date.past())(),
-                                      description: faker.random.word(),
-                                      name: faker.random.word(),
-                                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      updatedAt: (() => faker.date.past())(),
-                                      users: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          createdAt: (() => faker.date.past())(),
-                                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                          email: faker.random.word(),
-                                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          hasGlobalNotifications: faker.datatype.boolean(),
-                                          hasPersonalNotifications: faker.datatype.boolean(),
-                                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          timeEntries: faker.helpers.arrayElement([
-                                            Array.from(
-                                              { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                              (_, i) => i + 1,
-                                            ).map(() => ({
-                                              activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              comment: faker.random.word(),
-                                              durationMinutes: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              start: (() => faker.date.past())(),
-                                              teamID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              userID: faker.random.word(),
-                                              workItemID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                            })),
-                                            undefined,
-                                          ]),
-                                          userID: faker.random.word(),
-                                          username: faker.random.word(),
-                                        })),
-                                        undefined,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
+                                  apiKey: faker.random.word(),
+                                  expiresOn: (() => faker.date.past())(),
                                   userID: faker.random.word(),
-                                  username: faker.random.word(),
                                 },
                                 undefined,
                               ]),
                               userID: faker.random.word(),
+                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
                         })),
                         undefined,
                       ]),
-                      metadata: {},
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
                       targetDate: (() => faker.date.past())(),
                       teamID: faker.datatype.number({ min: undefined, max: undefined }),
                       timeEntries: faker.helpers.arrayElement([
@@ -12524,61 +8599,25 @@ export const getGetProjectWorkitemsMock = () =>
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          teams: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                updatedAt: (() => faker.date.past())(),
-                                users: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
+                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          user: faker.helpers.arrayElement([
+                            {
+                              createdAt: (() => faker.date.past())(),
+                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              email: faker.random.word(),
+                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              hasGlobalNotifications: faker.datatype.boolean(),
+                              hasPersonalNotifications: faker.datatype.boolean(),
+                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              teams: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
                                     createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    description: faker.random.word(),
+                                    name: faker.random.word(),
+                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -12604,224 +8643,106 @@ export const getGetProjectWorkitemsMock = () =>
                                       })),
                                       undefined,
                                     ]),
-                                    userAPIKey: faker.helpers.arrayElement([
-                                      {
-                                        apiKey: faker.random.word(),
-                                        expiresOn: (() => faker.date.past())(),
-                                        user: faker.helpers.arrayElement([
-                                          {
-                                            createdAt: (() => faker.date.past())(),
-                                            deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                            email: faker.random.word(),
-                                            firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            hasGlobalNotifications: faker.datatype.boolean(),
-                                            hasPersonalNotifications: faker.datatype.boolean(),
-                                            lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            timeEntries: faker.helpers.arrayElement([
-                                              Array.from(
-                                                { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                                (_, i) => i + 1,
-                                              ).map(() => ({
-                                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                comment: faker.random.word(),
-                                                durationMinutes: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                start: (() => faker.date.past())(),
-                                                teamID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                userID: faker.random.word(),
-                                                workItemID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                              })),
-                                              undefined,
+                                    updatedAt: (() => faker.date.past())(),
+                                    users: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        createdAt: (() => faker.date.past())(),
+                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                        email: faker.random.word(),
+                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        hasGlobalNotifications: faker.datatype.boolean(),
+                                        hasPersonalNotifications: faker.datatype.boolean(),
+                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        timeEntries: faker.helpers.arrayElement([
+                                          Array.from(
+                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                            (_, i) => i + 1,
+                                          ).map(() => ({
+                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                            comment: faker.random.word(),
+                                            durationMinutes: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
                                             ]),
+                                            start: (() => faker.date.past())(),
+                                            teamID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                             userID: faker.random.word(),
-                                            username: faker.random.word(),
+                                            workItemID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                          })),
+                                          undefined,
+                                        ]),
+                                        userAPIKey: faker.helpers.arrayElement([
+                                          {
+                                            apiKey: faker.random.word(),
+                                            expiresOn: (() => faker.date.past())(),
+                                            userID: faker.random.word(),
                                           },
                                           undefined,
                                         ]),
                                         userID: faker.random.word(),
-                                      },
+                                        username: faker.random.word(),
+                                      })),
                                       undefined,
                                     ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              timeEntries: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
+                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    comment: faker.random.word(),
+                                    durationMinutes: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    start: (() => faker.date.past())(),
+                                    teamID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                     userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  })),
-                                  undefined,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userAPIKey: faker.helpers.arrayElement([
-                            {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
+                                    workItemID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              userAPIKey: faker.helpers.arrayElement([
                                 {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  teams: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      createdAt: (() => faker.date.past())(),
-                                      description: faker.random.word(),
-                                      name: faker.random.word(),
-                                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      updatedAt: (() => faker.date.past())(),
-                                      users: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          createdAt: (() => faker.date.past())(),
-                                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                          email: faker.random.word(),
-                                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          hasGlobalNotifications: faker.datatype.boolean(),
-                                          hasPersonalNotifications: faker.datatype.boolean(),
-                                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          timeEntries: faker.helpers.arrayElement([
-                                            Array.from(
-                                              { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                              (_, i) => i + 1,
-                                            ).map(() => ({
-                                              activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              comment: faker.random.word(),
-                                              durationMinutes: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              start: (() => faker.date.past())(),
-                                              teamID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              userID: faker.random.word(),
-                                              workItemID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                            })),
-                                            undefined,
-                                          ]),
-                                          userID: faker.random.word(),
-                                          username: faker.random.word(),
-                                        })),
-                                        undefined,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
+                                  apiKey: faker.random.word(),
+                                  expiresOn: (() => faker.date.past())(),
                                   userID: faker.random.word(),
-                                  username: faker.random.word(),
                                 },
                                 undefined,
                               ]),
                               userID: faker.random.word(),
+                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
                         })),
                         undefined,
                       ]),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
+                      project2WorkItem: faker.helpers.arrayElement([
                         {
                           customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                           workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -12888,21 +8809,102 @@ export const getGetProjectWorkitemsMock = () =>
               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
               members: faker.helpers.arrayElement([
                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  createdAt: (() => faker.date.past())(),
-                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                  email: faker.random.word(),
-                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  hasGlobalNotifications: faker.datatype.boolean(),
-                  hasPersonalNotifications: faker.datatype.boolean(),
-                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  teams: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                  role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                  user: faker.helpers.arrayElement([
+                    {
                       createdAt: (() => faker.date.past())(),
-                      description: faker.random.word(),
-                      name: faker.random.word(),
-                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                      email: faker.random.word(),
+                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      hasGlobalNotifications: faker.datatype.boolean(),
+                      hasPersonalNotifications: faker.datatype.boolean(),
+                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      teams: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          createdAt: (() => faker.date.past())(),
+                          description: faker.random.word(),
+                          name: faker.random.word(),
+                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                          timeEntries: faker.helpers.arrayElement([
+                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                              () => ({
+                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                comment: faker.random.word(),
+                                durationMinutes: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                start: (() => faker.date.past())(),
+                                teamID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                userID: faker.random.word(),
+                                workItemID: faker.helpers.arrayElement([
+                                  faker.datatype.number({ min: undefined, max: undefined }),
+                                  null,
+                                ]),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                          updatedAt: (() => faker.date.past())(),
+                          users: faker.helpers.arrayElement([
+                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                              () => ({
+                                createdAt: (() => faker.date.past())(),
+                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                email: faker.random.word(),
+                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                hasGlobalNotifications: faker.datatype.boolean(),
+                                hasPersonalNotifications: faker.datatype.boolean(),
+                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                timeEntries: faker.helpers.arrayElement([
+                                  Array.from(
+                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                    (_, i) => i + 1,
+                                  ).map(() => ({
+                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    comment: faker.random.word(),
+                                    durationMinutes: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    start: (() => faker.date.past())(),
+                                    teamID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    userID: faker.random.word(),
+                                    workItemID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                  })),
+                                  undefined,
+                                ]),
+                                userAPIKey: faker.helpers.arrayElement([
+                                  {
+                                    apiKey: faker.random.word(),
+                                    expiresOn: (() => faker.date.past())(),
+                                    userID: faker.random.word(),
+                                  },
+                                  undefined,
+                                ]),
+                                userID: faker.random.word(),
+                                username: faker.random.word(),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                        })),
+                        undefined,
+                      ]),
                       timeEntries: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
                           activityID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -12925,254 +8927,26 @@ export const getGetProjectWorkitemsMock = () =>
                         })),
                         undefined,
                       ]),
-                      updatedAt: (() => faker.date.past())(),
-                      users: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userAPIKey: faker.helpers.arrayElement([
-                            {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
-                                {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
-                                  userID: faker.random.word(),
-                                  username: faker.random.word(),
-                                },
-                                undefined,
-                              ]),
-                              userID: faker.random.word(),
-                            },
-                            undefined,
-                          ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
-                        })),
-                        undefined,
-                      ]),
-                    })),
-                    undefined,
-                  ]),
-                  timeEntries: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                      comment: faker.random.word(),
-                      durationMinutes: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                      start: (() => faker.date.past())(),
-                      teamID: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                      userID: faker.random.word(),
-                      workItemID: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                    })),
-                    undefined,
-                  ]),
-                  userAPIKey: faker.helpers.arrayElement([
-                    {
-                      apiKey: faker.random.word(),
-                      expiresOn: (() => faker.date.past())(),
-                      user: faker.helpers.arrayElement([
+                      userAPIKey: faker.helpers.arrayElement([
                         {
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          teams: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                updatedAt: (() => faker.date.past())(),
-                                users: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    timeEntries: faker.helpers.arrayElement([
-                                      Array.from(
-                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                        (_, i) => i + 1,
-                                      ).map(() => ({
-                                        activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        comment: faker.random.word(),
-                                        durationMinutes: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        start: (() => faker.date.past())(),
-                                        teamID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                        timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        userID: faker.random.word(),
-                                        workItemID: faker.helpers.arrayElement([
-                                          faker.datatype.number({ min: undefined, max: undefined }),
-                                          null,
-                                        ]),
-                                      })),
-                                      undefined,
-                                    ]),
-                                    userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  })),
-                                  undefined,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
+                          apiKey: faker.random.word(),
+                          expiresOn: (() => faker.date.past())(),
                           userID: faker.random.word(),
-                          username: faker.random.word(),
                         },
                         undefined,
                       ]),
                       userID: faker.random.word(),
+                      username: faker.random.word(),
                     },
                     undefined,
                   ]),
-                  userID: faker.random.word(),
-                  username: faker.random.word(),
                 })),
                 undefined,
               ]),
-              metadata: {},
-              project2workItem: faker.helpers.arrayElement([
+              metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+                faker.datatype.number({ min: 0, max: undefined }),
+              ),
+              project2WorkItem: faker.helpers.arrayElement([
                 {
                   customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                   workItem: faker.helpers.arrayElement([
@@ -13194,61 +8968,25 @@ export const getGetProjectWorkitemsMock = () =>
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          teams: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                updatedAt: (() => faker.date.past())(),
-                                users: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
+                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          user: faker.helpers.arrayElement([
+                            {
+                              createdAt: (() => faker.date.past())(),
+                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              email: faker.random.word(),
+                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              hasGlobalNotifications: faker.datatype.boolean(),
+                              hasPersonalNotifications: faker.datatype.boolean(),
+                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              teams: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
                                     createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    description: faker.random.word(),
+                                    name: faker.random.word(),
+                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -13274,223 +9012,105 @@ export const getGetProjectWorkitemsMock = () =>
                                       })),
                                       undefined,
                                     ]),
-                                    userAPIKey: faker.helpers.arrayElement([
-                                      {
-                                        apiKey: faker.random.word(),
-                                        expiresOn: (() => faker.date.past())(),
-                                        user: faker.helpers.arrayElement([
-                                          {
-                                            createdAt: (() => faker.date.past())(),
-                                            deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                            email: faker.random.word(),
-                                            firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            hasGlobalNotifications: faker.datatype.boolean(),
-                                            hasPersonalNotifications: faker.datatype.boolean(),
-                                            lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            timeEntries: faker.helpers.arrayElement([
-                                              Array.from(
-                                                { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                                (_, i) => i + 1,
-                                              ).map(() => ({
-                                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                comment: faker.random.word(),
-                                                durationMinutes: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                start: (() => faker.date.past())(),
-                                                teamID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                userID: faker.random.word(),
-                                                workItemID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                              })),
-                                              undefined,
+                                    updatedAt: (() => faker.date.past())(),
+                                    users: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        createdAt: (() => faker.date.past())(),
+                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                        email: faker.random.word(),
+                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        hasGlobalNotifications: faker.datatype.boolean(),
+                                        hasPersonalNotifications: faker.datatype.boolean(),
+                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        timeEntries: faker.helpers.arrayElement([
+                                          Array.from(
+                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                            (_, i) => i + 1,
+                                          ).map(() => ({
+                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                            comment: faker.random.word(),
+                                            durationMinutes: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
                                             ]),
+                                            start: (() => faker.date.past())(),
+                                            teamID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                             userID: faker.random.word(),
-                                            username: faker.random.word(),
+                                            workItemID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                          })),
+                                          undefined,
+                                        ]),
+                                        userAPIKey: faker.helpers.arrayElement([
+                                          {
+                                            apiKey: faker.random.word(),
+                                            expiresOn: (() => faker.date.past())(),
+                                            userID: faker.random.word(),
                                           },
                                           undefined,
                                         ]),
                                         userID: faker.random.word(),
-                                      },
+                                        username: faker.random.word(),
+                                      })),
                                       undefined,
                                     ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              timeEntries: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
+                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    comment: faker.random.word(),
+                                    durationMinutes: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    start: (() => faker.date.past())(),
+                                    teamID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                     userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  })),
-                                  undefined,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userAPIKey: faker.helpers.arrayElement([
-                            {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
+                                    workItemID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              userAPIKey: faker.helpers.arrayElement([
                                 {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  teams: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      createdAt: (() => faker.date.past())(),
-                                      description: faker.random.word(),
-                                      name: faker.random.word(),
-                                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      updatedAt: (() => faker.date.past())(),
-                                      users: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          createdAt: (() => faker.date.past())(),
-                                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                          email: faker.random.word(),
-                                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          hasGlobalNotifications: faker.datatype.boolean(),
-                                          hasPersonalNotifications: faker.datatype.boolean(),
-                                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          timeEntries: faker.helpers.arrayElement([
-                                            Array.from(
-                                              { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                              (_, i) => i + 1,
-                                            ).map(() => ({
-                                              activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              comment: faker.random.word(),
-                                              durationMinutes: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              start: (() => faker.date.past())(),
-                                              teamID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              userID: faker.random.word(),
-                                              workItemID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                            })),
-                                            undefined,
-                                          ]),
-                                          userID: faker.random.word(),
-                                          username: faker.random.word(),
-                                        })),
-                                        undefined,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
+                                  apiKey: faker.random.word(),
+                                  expiresOn: (() => faker.date.past())(),
                                   userID: faker.random.word(),
-                                  username: faker.random.word(),
                                 },
                                 undefined,
                               ]),
                               userID: faker.random.word(),
+                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
                         })),
                         undefined,
                       ]),
-                      metadata: {},
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
                       targetDate: (() => faker.date.past())(),
                       teamID: faker.datatype.number({ min: undefined, max: undefined }),
                       timeEntries: faker.helpers.arrayElement([
@@ -13607,61 +9227,25 @@ export const getGetProjectWorkitemsMock = () =>
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          teams: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                updatedAt: (() => faker.date.past())(),
-                                users: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
+                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          user: faker.helpers.arrayElement([
+                            {
+                              createdAt: (() => faker.date.past())(),
+                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              email: faker.random.word(),
+                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              hasGlobalNotifications: faker.datatype.boolean(),
+                              hasPersonalNotifications: faker.datatype.boolean(),
+                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              teams: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
                                     createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    description: faker.random.word(),
+                                    name: faker.random.word(),
+                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -13687,224 +9271,106 @@ export const getGetProjectWorkitemsMock = () =>
                                       })),
                                       undefined,
                                     ]),
-                                    userAPIKey: faker.helpers.arrayElement([
-                                      {
-                                        apiKey: faker.random.word(),
-                                        expiresOn: (() => faker.date.past())(),
-                                        user: faker.helpers.arrayElement([
-                                          {
-                                            createdAt: (() => faker.date.past())(),
-                                            deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                            email: faker.random.word(),
-                                            firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            hasGlobalNotifications: faker.datatype.boolean(),
-                                            hasPersonalNotifications: faker.datatype.boolean(),
-                                            lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            timeEntries: faker.helpers.arrayElement([
-                                              Array.from(
-                                                { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                                (_, i) => i + 1,
-                                              ).map(() => ({
-                                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                comment: faker.random.word(),
-                                                durationMinutes: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                start: (() => faker.date.past())(),
-                                                teamID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                userID: faker.random.word(),
-                                                workItemID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                              })),
-                                              undefined,
+                                    updatedAt: (() => faker.date.past())(),
+                                    users: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        createdAt: (() => faker.date.past())(),
+                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                        email: faker.random.word(),
+                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        hasGlobalNotifications: faker.datatype.boolean(),
+                                        hasPersonalNotifications: faker.datatype.boolean(),
+                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        timeEntries: faker.helpers.arrayElement([
+                                          Array.from(
+                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                            (_, i) => i + 1,
+                                          ).map(() => ({
+                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                            comment: faker.random.word(),
+                                            durationMinutes: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
                                             ]),
+                                            start: (() => faker.date.past())(),
+                                            teamID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                             userID: faker.random.word(),
-                                            username: faker.random.word(),
+                                            workItemID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                          })),
+                                          undefined,
+                                        ]),
+                                        userAPIKey: faker.helpers.arrayElement([
+                                          {
+                                            apiKey: faker.random.word(),
+                                            expiresOn: (() => faker.date.past())(),
+                                            userID: faker.random.word(),
                                           },
                                           undefined,
                                         ]),
                                         userID: faker.random.word(),
-                                      },
+                                        username: faker.random.word(),
+                                      })),
                                       undefined,
                                     ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              timeEntries: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
+                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    comment: faker.random.word(),
+                                    durationMinutes: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    start: (() => faker.date.past())(),
+                                    teamID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                     userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  })),
-                                  undefined,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userAPIKey: faker.helpers.arrayElement([
-                            {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
+                                    workItemID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              userAPIKey: faker.helpers.arrayElement([
                                 {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  teams: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      createdAt: (() => faker.date.past())(),
-                                      description: faker.random.word(),
-                                      name: faker.random.word(),
-                                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      updatedAt: (() => faker.date.past())(),
-                                      users: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          createdAt: (() => faker.date.past())(),
-                                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                          email: faker.random.word(),
-                                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          hasGlobalNotifications: faker.datatype.boolean(),
-                                          hasPersonalNotifications: faker.datatype.boolean(),
-                                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          timeEntries: faker.helpers.arrayElement([
-                                            Array.from(
-                                              { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                              (_, i) => i + 1,
-                                            ).map(() => ({
-                                              activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              comment: faker.random.word(),
-                                              durationMinutes: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              start: (() => faker.date.past())(),
-                                              teamID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              userID: faker.random.word(),
-                                              workItemID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                            })),
-                                            undefined,
-                                          ]),
-                                          userID: faker.random.word(),
-                                          username: faker.random.word(),
-                                        })),
-                                        undefined,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
+                                  apiKey: faker.random.word(),
+                                  expiresOn: (() => faker.date.past())(),
                                   userID: faker.random.word(),
-                                  username: faker.random.word(),
                                 },
                                 undefined,
                               ]),
                               userID: faker.random.word(),
+                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
                         })),
                         undefined,
                       ]),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
+                      project2WorkItem: faker.helpers.arrayElement([
                         {
                           customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                           workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -13989,54 +9455,24 @@ export const getGetProjectWorkitemsMock = () =>
               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
               members: faker.helpers.arrayElement([
                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  createdAt: (() => faker.date.past())(),
-                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                  email: faker.random.word(),
-                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  hasGlobalNotifications: faker.datatype.boolean(),
-                  hasPersonalNotifications: faker.datatype.boolean(),
-                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                  teams: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                  role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                  user: faker.helpers.arrayElement([
+                    {
                       createdAt: (() => faker.date.past())(),
-                      description: faker.random.word(),
-                      name: faker.random.word(),
-                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                      timeEntries: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                          comment: faker.random.word(),
-                          durationMinutes: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          start: (() => faker.date.past())(),
-                          teamID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                          userID: faker.random.word(),
-                          workItemID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      updatedAt: (() => faker.date.past())(),
-                      users: faker.helpers.arrayElement([
+                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                      email: faker.random.word(),
+                      firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      hasGlobalNotifications: faker.datatype.boolean(),
+                      hasPersonalNotifications: faker.datatype.boolean(),
+                      lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                      teams: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
                           createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                          description: faker.random.word(),
+                          name: faker.random.word(),
+                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
                           timeEntries: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
@@ -14061,179 +9497,18 @@ export const getGetProjectWorkitemsMock = () =>
                             ),
                             undefined,
                           ]),
-                          userAPIKey: faker.helpers.arrayElement([
-                            {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
-                                {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
-                                  userID: faker.random.word(),
-                                  username: faker.random.word(),
-                                  workItems: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                      createdAt: (() => faker.date.past())(),
-                                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                      demoProjectWorkItem: faker.helpers.arrayElement([
-                                        {
-                                          lastMessageAt: (() => faker.date.past())(),
-                                          line: faker.random.word(),
-                                          ref: faker.random.word(),
-                                          reopened: faker.datatype.boolean(),
-                                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        },
-                                        undefined,
-                                      ]),
-                                      description: faker.random.word(),
-                                      kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      metadata: {},
-                                      project2workItem: faker.helpers.arrayElement([
-                                        {
-                                          customDateForProject2: faker.helpers.arrayElement([
-                                            (() => faker.date.past())(),
-                                            null,
-                                          ]),
-                                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        },
-                                        undefined,
-                                      ]),
-                                      targetDate: (() => faker.date.past())(),
-                                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      title: faker.random.word(),
-                                      updatedAt: (() => faker.date.past())(),
-                                      workItemComments: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          createdAt: (() => faker.date.past())(),
-                                          message: faker.random.word(),
-                                          updatedAt: (() => faker.date.past())(),
-                                          userID: faker.random.word(),
-                                          workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      workItemTags: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          color: faker.random.word(),
-                                          description: faker.random.word(),
-                                          name: faker.random.word(),
-                                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    })),
-                                    undefined,
-                                  ]),
-                                },
-                                undefined,
-                              ]),
-                              userID: faker.random.word(),
-                            },
-                            undefined,
-                          ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
-                          workItems: faker.helpers.arrayElement([
+                          updatedAt: (() => faker.date.past())(),
+                          users: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
-                                closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                 createdAt: (() => faker.date.past())(),
                                 deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                demoProjectWorkItem: faker.helpers.arrayElement([
-                                  {
-                                    lastMessageAt: (() => faker.date.past())(),
-                                    line: faker.random.word(),
-                                    ref: faker.random.word(),
-                                    reopened: faker.datatype.boolean(),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  },
-                                  undefined,
-                                ]),
-                                description: faker.random.word(),
-                                kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                metadata: {},
-                                project2workItem: faker.helpers.arrayElement([
-                                  {
-                                    customDateForProject2: faker.helpers.arrayElement([
-                                      (() => faker.date.past())(),
-                                      null,
-                                    ]),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  },
-                                  undefined,
-                                ]),
-                                targetDate: (() => faker.date.past())(),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
+                                email: faker.random.word(),
+                                firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                hasGlobalNotifications: faker.datatype.boolean(),
+                                hasPersonalNotifications: faker.datatype.boolean(),
+                                lastName: faker.helpers.arrayElement([faker.random.word(), null]),
                                 timeEntries: faker.helpers.arrayElement([
                                   Array.from(
                                     { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -14259,130 +9534,52 @@ export const getGetProjectWorkitemsMock = () =>
                                   })),
                                   undefined,
                                 ]),
-                                title: faker.random.word(),
-                                updatedAt: (() => faker.date.past())(),
-                                workItemComments: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    message: faker.random.word(),
-                                    updatedAt: (() => faker.date.past())(),
+                                userAPIKey: faker.helpers.arrayElement([
+                                  {
+                                    apiKey: faker.random.word(),
+                                    expiresOn: (() => faker.date.past())(),
                                     userID: faker.random.word(),
-                                    workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  })),
+                                  },
                                   undefined,
                                 ]),
-                                workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                workItemTags: faker.helpers.arrayElement([
+                                userID: faker.random.word(),
+                                username: faker.random.word(),
+                                workItems: faker.helpers.arrayElement([
                                   Array.from(
                                     { length: faker.datatype.number({ min: 1, max: 10 }) },
                                     (_, i) => i + 1,
                                   ).map(() => ({
-                                    color: faker.random.word(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  })),
-                                  undefined,
-                                ]),
-                                workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                    })),
-                    undefined,
-                  ]),
-                  timeEntries: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                      comment: faker.random.word(),
-                      durationMinutes: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                      start: (() => faker.date.past())(),
-                      teamID: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                      userID: faker.random.word(),
-                      workItemID: faker.helpers.arrayElement([
-                        faker.datatype.number({ min: undefined, max: undefined }),
-                        null,
-                      ]),
-                    })),
-                    undefined,
-                  ]),
-                  userAPIKey: faker.helpers.arrayElement([
-                    {
-                      apiKey: faker.random.word(),
-                      expiresOn: (() => faker.date.past())(),
-                      user: faker.helpers.arrayElement([
-                        {
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          teams: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                updatedAt: (() => faker.date.past())(),
-                                users: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
+                                    closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                     createdAt: (() => faker.date.past())(),
                                     deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    demoProjectWorkItem: faker.helpers.arrayElement([
+                                      {
+                                        lastMessageAt: (() => faker.date.past())(),
+                                        line: faker.random.word(),
+                                        ref: faker.random.word(),
+                                        reopened: faker.datatype.boolean(),
+                                        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                                      },
+                                      undefined,
+                                    ]),
+                                    description: faker.random.word(),
+                                    kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    metadata: Array.from(
+                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                      (_, i) => i + 1,
+                                    ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                                    project2WorkItem: faker.helpers.arrayElement([
+                                      {
+                                        customDateForProject2: faker.helpers.arrayElement([
+                                          (() => faker.date.past())(),
+                                          null,
+                                        ]),
+                                        workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                                      },
+                                      undefined,
+                                    ]),
+                                    targetDate: (() => faker.date.past())(),
+                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -14408,103 +9605,37 @@ export const getGetProjectWorkitemsMock = () =>
                                       })),
                                       undefined,
                                     ]),
-                                    userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                    workItems: faker.helpers.arrayElement([
+                                    title: faker.random.word(),
+                                    updatedAt: (() => faker.date.past())(),
+                                    workItemComments: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
                                         (_, i) => i + 1,
                                       ).map(() => ({
-                                        closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                         createdAt: (() => faker.date.past())(),
-                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                        demoProjectWorkItem: faker.helpers.arrayElement([
-                                          {
-                                            lastMessageAt: (() => faker.date.past())(),
-                                            line: faker.random.word(),
-                                            ref: faker.random.word(),
-                                            reopened: faker.datatype.boolean(),
-                                            workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          },
-                                          undefined,
-                                        ]),
-                                        description: faker.random.word(),
-                                        kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        metadata: {},
-                                        project2workItem: faker.helpers.arrayElement([
-                                          {
-                                            customDateForProject2: faker.helpers.arrayElement([
-                                              (() => faker.date.past())(),
-                                              null,
-                                            ]),
-                                            workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          },
-                                          undefined,
-                                        ]),
-                                        targetDate: (() => faker.date.past())(),
-                                        teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        timeEntries: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            comment: faker.random.word(),
-                                            durationMinutes: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            start: (() => faker.date.past())(),
-                                            teamID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            userID: faker.random.word(),
-                                            workItemID: faker.helpers.arrayElement([
-                                              faker.datatype.number({ min: undefined, max: undefined }),
-                                              null,
-                                            ]),
-                                          })),
-                                          undefined,
-                                        ]),
-                                        title: faker.random.word(),
+                                        message: faker.random.word(),
                                         updatedAt: (() => faker.date.past())(),
-                                        workItemComments: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            createdAt: (() => faker.date.past())(),
-                                            message: faker.random.word(),
-                                            updatedAt: (() => faker.date.past())(),
-                                            userID: faker.random.word(),
-                                            workItemCommentID: faker.datatype.number({
-                                              min: undefined,
-                                              max: undefined,
-                                            }),
-                                            workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          })),
-                                          undefined,
-                                        ]),
+                                        userID: faker.random.word(),
+                                        workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
                                         workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                        workItemTags: faker.helpers.arrayElement([
-                                          Array.from(
-                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                            (_, i) => i + 1,
-                                          ).map(() => ({
-                                            color: faker.random.word(),
-                                            description: faker.random.word(),
-                                            name: faker.random.word(),
-                                            projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                            workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          })),
-                                          undefined,
-                                        ]),
-                                        workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
                                       })),
                                       undefined,
                                     ]),
+                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    workItemTags: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        color: faker.random.word(),
+                                        description: faker.random.word(),
+                                        name: faker.random.word(),
+                                        projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                        workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
+                                      })),
+                                      undefined,
+                                    ]),
+                                    workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
                                   })),
                                   undefined,
                                 ]),
@@ -14512,6 +9643,71 @@ export const getGetProjectWorkitemsMock = () =>
                             ),
                             undefined,
                           ]),
+                        })),
+                        undefined,
+                      ]),
+                      timeEntries: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                          comment: faker.random.word(),
+                          durationMinutes: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                          start: (() => faker.date.past())(),
+                          teamID: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
+                          userID: faker.random.word(),
+                          workItemID: faker.helpers.arrayElement([
+                            faker.datatype.number({ min: undefined, max: undefined }),
+                            null,
+                          ]),
+                        })),
+                        undefined,
+                      ]),
+                      userAPIKey: faker.helpers.arrayElement([
+                        {
+                          apiKey: faker.random.word(),
+                          expiresOn: (() => faker.date.past())(),
+                          userID: faker.random.word(),
+                        },
+                        undefined,
+                      ]),
+                      userID: faker.random.word(),
+                      username: faker.random.word(),
+                      workItems: faker.helpers.arrayElement([
+                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+                          closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                          createdAt: (() => faker.date.past())(),
+                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                          demoProjectWorkItem: faker.helpers.arrayElement([
+                            {
+                              lastMessageAt: (() => faker.date.past())(),
+                              line: faker.random.word(),
+                              ref: faker.random.word(),
+                              reopened: faker.datatype.boolean(),
+                              workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                            },
+                            undefined,
+                          ]),
+                          description: faker.random.word(),
+                          kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
+                          metadata: Array.from(
+                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                            (_, i) => i + 1,
+                          ).map(() => faker.datatype.number({ min: 0, max: undefined })),
+                          project2WorkItem: faker.helpers.arrayElement([
+                            {
+                              customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                            },
+                            undefined,
+                          ]),
+                          targetDate: (() => faker.date.past())(),
+                          teamID: faker.datatype.number({ min: undefined, max: undefined }),
                           timeEntries: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
@@ -14536,190 +9732,48 @@ export const getGetProjectWorkitemsMock = () =>
                             ),
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
-                          workItems: faker.helpers.arrayElement([
+                          title: faker.random.word(),
+                          updatedAt: (() => faker.date.past())(),
+                          workItemComments: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
-                                closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                                 createdAt: (() => faker.date.past())(),
-                                deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                demoProjectWorkItem: faker.helpers.arrayElement([
-                                  {
-                                    lastMessageAt: (() => faker.date.past())(),
-                                    line: faker.random.word(),
-                                    ref: faker.random.word(),
-                                    reopened: faker.datatype.boolean(),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  },
-                                  undefined,
-                                ]),
-                                description: faker.random.word(),
-                                kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                                metadata: {},
-                                project2workItem: faker.helpers.arrayElement([
-                                  {
-                                    customDateForProject2: faker.helpers.arrayElement([
-                                      (() => faker.date.past())(),
-                                      null,
-                                    ]),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  },
-                                  undefined,
-                                ]),
-                                targetDate: (() => faker.date.past())(),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                title: faker.random.word(),
+                                message: faker.random.word(),
                                 updatedAt: (() => faker.date.past())(),
-                                workItemComments: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    createdAt: (() => faker.date.past())(),
-                                    message: faker.random.word(),
-                                    updatedAt: (() => faker.date.past())(),
-                                    userID: faker.random.word(),
-                                    workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  })),
-                                  undefined,
-                                ]),
+                                userID: faker.random.word(),
+                                workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
                                 workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                                workItemTags: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    color: faker.random.word(),
-                                    description: faker.random.word(),
-                                    name: faker.random.word(),
-                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                                  })),
-                                  undefined,
-                                ]),
-                                workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
                               }),
                             ),
                             undefined,
                           ]),
-                        },
+                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
+                          workItemTags: faker.helpers.arrayElement([
+                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                              () => ({
+                                color: faker.random.word(),
+                                description: faker.random.word(),
+                                name: faker.random.word(),
+                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
+                              }),
+                            ),
+                            undefined,
+                          ]),
+                          workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
+                        })),
                         undefined,
                       ]),
-                      userID: faker.random.word(),
                     },
-                    undefined,
-                  ]),
-                  userID: faker.random.word(),
-                  username: faker.random.word(),
-                  workItems: faker.helpers.arrayElement([
-                    Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      createdAt: (() => faker.date.past())(),
-                      deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                      demoProjectWorkItem: faker.helpers.arrayElement([
-                        {
-                          lastMessageAt: (() => faker.date.past())(),
-                          line: faker.random.word(),
-                          ref: faker.random.word(),
-                          reopened: faker.datatype.boolean(),
-                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                        },
-                        undefined,
-                      ]),
-                      description: faker.random.word(),
-                      kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
-                        {
-                          customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                        },
-                        undefined,
-                      ]),
-                      targetDate: (() => faker.date.past())(),
-                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                      timeEntries: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                          comment: faker.random.word(),
-                          durationMinutes: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          start: (() => faker.date.past())(),
-                          teamID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                          userID: faker.random.word(),
-                          workItemID: faker.helpers.arrayElement([
-                            faker.datatype.number({ min: undefined, max: undefined }),
-                            null,
-                          ]),
-                        })),
-                        undefined,
-                      ]),
-                      title: faker.random.word(),
-                      updatedAt: (() => faker.date.past())(),
-                      workItemComments: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          message: faker.random.word(),
-                          updatedAt: (() => faker.date.past())(),
-                          userID: faker.random.word(),
-                          workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
-                          workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                        })),
-                        undefined,
-                      ]),
-                      workItemID: faker.datatype.number({ min: undefined, max: undefined }),
-                      workItemTags: faker.helpers.arrayElement([
-                        Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          color: faker.random.word(),
-                          description: faker.random.word(),
-                          name: faker.random.word(),
-                          projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                          workItemTagID: faker.datatype.number({ min: undefined, max: undefined }),
-                        })),
-                        undefined,
-                      ]),
-                      workItemTypeID: faker.datatype.number({ min: undefined, max: undefined }),
-                    })),
                     undefined,
                   ]),
                 })),
                 undefined,
               ]),
-              metadata: {},
-              project2workItem: faker.helpers.arrayElement([
+              metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+                faker.datatype.number({ min: 0, max: undefined }),
+              ),
+              project2WorkItem: faker.helpers.arrayElement([
                 {
                   customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                   workItemID: faker.datatype.number({ min: undefined, max: undefined }),
@@ -14787,61 +9841,25 @@ export const getGetProjectWorkitemsMock = () =>
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          createdAt: (() => faker.date.past())(),
-                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                          email: faker.random.word(),
-                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          hasGlobalNotifications: faker.datatype.boolean(),
-                          hasPersonalNotifications: faker.datatype.boolean(),
-                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                          teams: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                createdAt: (() => faker.date.past())(),
-                                description: faker.random.word(),
-                                name: faker.random.word(),
-                                projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                timeEntries: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
-                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    comment: faker.random.word(),
-                                    durationMinutes: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    start: (() => faker.date.past())(),
-                                    teamID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                    userID: faker.random.word(),
-                                    workItemID: faker.helpers.arrayElement([
-                                      faker.datatype.number({ min: undefined, max: undefined }),
-                                      null,
-                                    ]),
-                                  })),
-                                  undefined,
-                                ]),
-                                updatedAt: (() => faker.date.past())(),
-                                users: faker.helpers.arrayElement([
-                                  Array.from(
-                                    { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                    (_, i) => i + 1,
-                                  ).map(() => ({
+                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          user: faker.helpers.arrayElement([
+                            {
+                              createdAt: (() => faker.date.past())(),
+                              deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                              email: faker.random.word(),
+                              firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              hasGlobalNotifications: faker.datatype.boolean(),
+                              hasPersonalNotifications: faker.datatype.boolean(),
+                              lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                              teams: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
                                     createdAt: (() => faker.date.past())(),
-                                    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                    email: faker.random.word(),
-                                    firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                    hasGlobalNotifications: faker.datatype.boolean(),
-                                    hasPersonalNotifications: faker.datatype.boolean(),
-                                    lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                    description: faker.random.word(),
+                                    name: faker.random.word(),
+                                    projectID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    teamID: faker.datatype.number({ min: undefined, max: undefined }),
                                     timeEntries: faker.helpers.arrayElement([
                                       Array.from(
                                         { length: faker.datatype.number({ min: 1, max: 10 }) },
@@ -14867,224 +9885,106 @@ export const getGetProjectWorkitemsMock = () =>
                                       })),
                                       undefined,
                                     ]),
-                                    userAPIKey: faker.helpers.arrayElement([
-                                      {
-                                        apiKey: faker.random.word(),
-                                        expiresOn: (() => faker.date.past())(),
-                                        user: faker.helpers.arrayElement([
-                                          {
-                                            createdAt: (() => faker.date.past())(),
-                                            deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                            email: faker.random.word(),
-                                            firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            hasGlobalNotifications: faker.datatype.boolean(),
-                                            hasPersonalNotifications: faker.datatype.boolean(),
-                                            lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                            timeEntries: faker.helpers.arrayElement([
-                                              Array.from(
-                                                { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                                (_, i) => i + 1,
-                                              ).map(() => ({
-                                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                comment: faker.random.word(),
-                                                durationMinutes: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                start: (() => faker.date.past())(),
-                                                teamID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                                userID: faker.random.word(),
-                                                workItemID: faker.helpers.arrayElement([
-                                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                                  null,
-                                                ]),
-                                              })),
-                                              undefined,
+                                    updatedAt: (() => faker.date.past())(),
+                                    users: faker.helpers.arrayElement([
+                                      Array.from(
+                                        { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                        (_, i) => i + 1,
+                                      ).map(() => ({
+                                        createdAt: (() => faker.date.past())(),
+                                        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+                                        email: faker.random.word(),
+                                        firstName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        fullName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        hasGlobalNotifications: faker.datatype.boolean(),
+                                        hasPersonalNotifications: faker.datatype.boolean(),
+                                        lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+                                        timeEntries: faker.helpers.arrayElement([
+                                          Array.from(
+                                            { length: faker.datatype.number({ min: 1, max: 10 }) },
+                                            (_, i) => i + 1,
+                                          ).map(() => ({
+                                            activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                            comment: faker.random.word(),
+                                            durationMinutes: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
                                             ]),
+                                            start: (() => faker.date.past())(),
+                                            teamID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                            timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                             userID: faker.random.word(),
-                                            username: faker.random.word(),
+                                            workItemID: faker.helpers.arrayElement([
+                                              faker.datatype.number({ min: undefined, max: undefined }),
+                                              null,
+                                            ]),
+                                          })),
+                                          undefined,
+                                        ]),
+                                        userAPIKey: faker.helpers.arrayElement([
+                                          {
+                                            apiKey: faker.random.word(),
+                                            expiresOn: (() => faker.date.past())(),
+                                            userID: faker.random.word(),
                                           },
                                           undefined,
                                         ]),
                                         userID: faker.random.word(),
-                                      },
+                                        username: faker.random.word(),
+                                      })),
                                       undefined,
                                     ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              timeEntries: faker.helpers.arrayElement([
+                                Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                                  () => ({
+                                    activityID: faker.datatype.number({ min: undefined, max: undefined }),
+                                    comment: faker.random.word(),
+                                    durationMinutes: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    start: (() => faker.date.past())(),
+                                    teamID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                    timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
                                     userID: faker.random.word(),
-                                    username: faker.random.word(),
-                                  })),
-                                  undefined,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          timeEntries: faker.helpers.arrayElement([
-                            Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({
-                                activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                comment: faker.random.word(),
-                                durationMinutes: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                start: (() => faker.date.past())(),
-                                teamID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                                timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                userID: faker.random.word(),
-                                workItemID: faker.helpers.arrayElement([
-                                  faker.datatype.number({ min: undefined, max: undefined }),
-                                  null,
-                                ]),
-                              }),
-                            ),
-                            undefined,
-                          ]),
-                          userAPIKey: faker.helpers.arrayElement([
-                            {
-                              apiKey: faker.random.word(),
-                              expiresOn: (() => faker.date.past())(),
-                              user: faker.helpers.arrayElement([
+                                    workItemID: faker.helpers.arrayElement([
+                                      faker.datatype.number({ min: undefined, max: undefined }),
+                                      null,
+                                    ]),
+                                  }),
+                                ),
+                                undefined,
+                              ]),
+                              userAPIKey: faker.helpers.arrayElement([
                                 {
-                                  createdAt: (() => faker.date.past())(),
-                                  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                  email: faker.random.word(),
-                                  firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  hasGlobalNotifications: faker.datatype.boolean(),
-                                  hasPersonalNotifications: faker.datatype.boolean(),
-                                  lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                  teams: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      createdAt: (() => faker.date.past())(),
-                                      description: faker.random.word(),
-                                      name: faker.random.word(),
-                                      projectID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      teamID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      timeEntries: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          comment: faker.random.word(),
-                                          durationMinutes: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          start: (() => faker.date.past())(),
-                                          teamID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                          timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                          userID: faker.random.word(),
-                                          workItemID: faker.helpers.arrayElement([
-                                            faker.datatype.number({ min: undefined, max: undefined }),
-                                            null,
-                                          ]),
-                                        })),
-                                        undefined,
-                                      ]),
-                                      updatedAt: (() => faker.date.past())(),
-                                      users: faker.helpers.arrayElement([
-                                        Array.from(
-                                          { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                          (_, i) => i + 1,
-                                        ).map(() => ({
-                                          createdAt: (() => faker.date.past())(),
-                                          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-                                          email: faker.random.word(),
-                                          firstName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          fullName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          hasGlobalNotifications: faker.datatype.boolean(),
-                                          hasPersonalNotifications: faker.datatype.boolean(),
-                                          lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-                                          timeEntries: faker.helpers.arrayElement([
-                                            Array.from(
-                                              { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                              (_, i) => i + 1,
-                                            ).map(() => ({
-                                              activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              comment: faker.random.word(),
-                                              durationMinutes: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              start: (() => faker.date.past())(),
-                                              teamID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                              timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                              userID: faker.random.word(),
-                                              workItemID: faker.helpers.arrayElement([
-                                                faker.datatype.number({ min: undefined, max: undefined }),
-                                                null,
-                                              ]),
-                                            })),
-                                            undefined,
-                                          ]),
-                                          userID: faker.random.word(),
-                                          username: faker.random.word(),
-                                        })),
-                                        undefined,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
-                                  timeEntries: faker.helpers.arrayElement([
-                                    Array.from(
-                                      { length: faker.datatype.number({ min: 1, max: 10 }) },
-                                      (_, i) => i + 1,
-                                    ).map(() => ({
-                                      activityID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      comment: faker.random.word(),
-                                      durationMinutes: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      start: (() => faker.date.past())(),
-                                      teamID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                      timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-                                      userID: faker.random.word(),
-                                      workItemID: faker.helpers.arrayElement([
-                                        faker.datatype.number({ min: undefined, max: undefined }),
-                                        null,
-                                      ]),
-                                    })),
-                                    undefined,
-                                  ]),
+                                  apiKey: faker.random.word(),
+                                  expiresOn: (() => faker.date.past())(),
                                   userID: faker.random.word(),
-                                  username: faker.random.word(),
                                 },
                                 undefined,
                               ]),
                               userID: faker.random.word(),
+                              username: faker.random.word(),
                             },
                             undefined,
                           ]),
-                          userID: faker.random.word(),
-                          username: faker.random.word(),
                         })),
                         undefined,
                       ]),
-                      metadata: {},
-                      project2workItem: faker.helpers.arrayElement([
+                      metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
+                        () => faker.datatype.number({ min: 0, max: undefined }),
+                      ),
+                      project2WorkItem: faker.helpers.arrayElement([
                         {
                           customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
                           workItemID: faker.datatype.number({ min: undefined, max: undefined }),

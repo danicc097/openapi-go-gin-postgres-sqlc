@@ -21,6 +21,7 @@ check.all() {
 
     confirm "Do you want to install $bin now?" || exit 1
 
+    echo "Installing $bin..."
     "install.bin.$bin" || err "$bin installation failed"
   done
 }

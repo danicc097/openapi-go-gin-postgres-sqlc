@@ -179,6 +179,12 @@ type DbKanbanStepCreateParams struct {
 	TimeTrackable *bool   `json:"timeTrackable,omitempty"`
 }
 
+// DbMember defines the model for DbMember.
+type DbMember struct {
+	Role *DbWorkItemRole `json:"role,omitempty"`
+	User *DbUser         `json:"user,omitempty"`
+}
+
 // DbProject defines the model for DbProject.
 type DbProject struct {
 	Activities  *[]DbActivity   `json:"activities"`
@@ -268,9 +274,9 @@ type DbWorkItem struct {
 	DemoProjectWorkItem *DbDemoProjectWorkItem `json:"demoProjectWorkItem"`
 	Description         string                 `json:"description"`
 	KanbanStepID        int                    `json:"kanbanStepID"`
-	Members             *[]DbUser              `json:"members"`
-	Metadata            PgtypeJSONB            `json:"metadata"`
-	Project2workItem    *DbProject2WorkItem    `json:"project2workItem"`
+	Members             *[]DbMember            `json:"members"`
+	Metadata            *[]int                 `json:"metadata"`
+	Project2WorkItem    *DbProject2WorkItem    `json:"project2WorkItem"`
 	TargetDate          time.Time              `json:"targetDate"`
 	TeamID              int                    `json:"teamID"`
 	TimeEntries         *[]DbTimeEntry         `json:"timeEntries"`
@@ -292,6 +298,9 @@ type DbWorkItemComment struct {
 	WorkItemCommentID int       `json:"workItemCommentID"`
 	WorkItemID        int       `json:"workItemID"`
 }
+
+// DbWorkItemRole defines the model for DbWorkItemRole.
+type DbWorkItemRole = string
 
 // DbWorkItemTag defines the model for DbWorkItemTag.
 type DbWorkItemTag struct {
@@ -383,8 +392,8 @@ type RestDemoProjectWorkItemsResponse struct {
 	Description         string                 `json:"description"`
 	KanbanStepID        int                    `json:"kanbanStepID"`
 	Members             *[]DbUser              `json:"members"`
-	Metadata            PgtypeJSONB            `json:"metadata"`
-	Project2workItem    *DbProject2WorkItem    `json:"project2workItem"`
+	Metadata            *[]int                 `json:"metadata"`
+	Project2WorkItem    *DbProject2WorkItem    `json:"project2WorkItem"`
 	TargetDate          time.Time              `json:"targetDate"`
 	TeamID              int                    `json:"teamID"`
 	TimeEntries         *[]DbTimeEntry         `json:"timeEntries"`
