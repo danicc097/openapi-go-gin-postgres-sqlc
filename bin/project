@@ -12,11 +12,11 @@
 export PROC=$$
 
 source "${BASH_SOURCE%/*}/.helpers.sh"
-source "${BASH_SOURCE%/*}/scripts/deps-check.sh"
+source "${BASH_SOURCE%/*}/.deps-check.sh"
 
 # FIXME m flag will prevent background process killing with ctrl-c
 set -Eeo pipefail
-set -o errtrace
+set -o errtrace # TODO https://mywiki.wooledge.org/BashFAQ/105
 
 trap 'echo "ERR trap called in ${FUNCNAME-main context}."' ERR
 
@@ -102,24 +102,9 @@ kill_descendants() {
   pids=""
 }
 
-# Check build dependencies are met.
+# Check build dependencies are met and prompt to install if missing.
 x.check-build-deps() {
-  { { {
-    local -i fails
-    check.column || { ((fails++)) && true; }
-    check.protoc || { ((fails++)) && true; }
-    check.bash || { ((fails++)) && true; }
-    check.go || { ((fails++)) && true; }
-    check.curl || { ((fails++)) && true; }
-    check.docker || { ((fails++)) && true; }
-    check.docker-compose || { ((fails++)) && true; }
-    check.direnv || { ((fails++)) && true; }
-    check.yq || { ((fails++)) && true; }
-    check.pg_format || { ((fails++)) && true; }
-    check.parallel || { ((fails++)) && true; }
-    ((fails == 0)) && echo "${GREEN}🎉 All build dependencies met.${OFF}"
-    { ((fails != 0)) && err "${RED}❌ Missing dependencies.${OFF}"; } || true
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  check.all
 }
 
 # Check dependencies and fetch required tools.
@@ -1473,7 +1458,7 @@ if [[ -n "$1" ]]; then
     declare cmd=$(command -v "x.$c")
     if [[ $c == "$CMD" && -n "$cmd" ]]; then
       "x.$CMD" "$@"
-      echo "err code at xfunction end: $?"
+      # echo "err code at xfunction end: $?" # FIXME
       exit $?
     fi
   done
