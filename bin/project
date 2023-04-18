@@ -353,7 +353,7 @@ x.gen.xo() {
     # xo schema --help
 
     mkdir -p "$PG_REPO_GEN"/db
-    xo_schema -o "$PG_REPO_GEN"/db \
+    xo_schema -o "$PG_REPO_GEN"/db --debug \
       --schema public \
       --ignore "*.created_at" \
       --ignore "*.updated_at" || err "Failed xo public schema generation" &
@@ -655,6 +655,7 @@ x.test() {
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
     APP_ENV="$env" go test "$@" ./...
+    exit 1 # FIXME errcode getting swallowed somewhere
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -759,7 +760,6 @@ x.backend.sync-deps() {
 x.run-prod() {
   env="prod"
 
-  docker network create traefik-net 2>/dev/null || true
   run_shared_services up -d --build --remove-orphans
   x.db.recreate
 
@@ -1048,6 +1048,8 @@ run_hot_reload() {
 }
 
 run_shared_services() {
+  docker network create traefik-net 2>/dev/null || true
+
   cd docker
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
     -p "$PROJECT_PREFIX" \
@@ -1461,13 +1463,16 @@ source ".env.$env"
 # handle executing x functions
 if [[ -n "$1" ]]; then
   shift
+  set +o pipefail
   for c in "${COMMANDS[@]}"; do
     declare cmd=$(command -v "x.$c")
     if [[ $c == "$CMD" && -n "$cmd" ]]; then
       "x.$CMD" "$@"
+      echo "err code at xfunction end: $?"
       exit $?
     fi
   done
+  set -o pipefail
 fi
 
 # default to show usage if its a noop

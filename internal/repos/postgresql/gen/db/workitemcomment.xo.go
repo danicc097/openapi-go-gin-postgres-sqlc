@@ -79,7 +79,8 @@ func WithWorkItemCommentOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentS
 	}
 }
 
-type WorkItemCommentJoins struct{}
+type WorkItemCommentJoins struct {
+}
 
 // WithWorkItemCommentJoin joins with the given tables.
 func WithWorkItemCommentJoin(joins WorkItemCommentJoins) WorkItemCommentSelectConfigOption {

@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC1091,SC2155,SC2086
 
-set -Eeo pipefail
+# set -Eeo pipefail
 
 if [ -t 1 ]; then
   RED="$(tput setaf 1)"

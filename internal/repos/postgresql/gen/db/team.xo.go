@@ -237,7 +237,7 @@ teams.description,
 teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
-(case when $2::boolean = true then joined_users.users end) as users ` +
+(case when $2::boolean = true then joined_users.__users end) as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -252,7 +252,7 @@ left join (
 left join (
 	select
 		user_team.team_id as user_team_team_id
-		, array_agg(users.*) as users
+		, array_agg(users.*) filter (where users.* is not null) as __users
 		from user_team
     join users on users.user_id = user_team.user_id
     group by user_team_team_id
@@ -295,7 +295,7 @@ teams.description,
 teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
-(case when $2::boolean = true then joined_users.users end) as users ` +
+(case when $2::boolean = true then joined_users.__users end) as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -310,7 +310,7 @@ left join (
 left join (
 	select
 		user_team.team_id as user_team_team_id
-		, array_agg(users.*) as users
+		, array_agg(users.*) filter (where users.* is not null) as __users
 		from user_team
     join users on users.user_id = user_team.user_id
     group by user_team_team_id
@@ -355,7 +355,7 @@ teams.description,
 teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
-(case when $2::boolean = true then joined_users.users end) as users ` +
+(case when $2::boolean = true then joined_users.__users end) as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -370,7 +370,7 @@ left join (
 left join (
 	select
 		user_team.team_id as user_team_team_id
-		, array_agg(users.*) as users
+		, array_agg(users.*) filter (where users.* is not null) as __users
 		from user_team
     join users on users.user_id = user_team.user_id
     group by user_team_team_id
@@ -415,7 +415,7 @@ teams.description,
 teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
-(case when $2::boolean = true then joined_users.users end) as users ` +
+(case when $2::boolean = true then joined_users.__users end) as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -430,7 +430,7 @@ left join (
 left join (
 	select
 		user_team.team_id as user_team_team_id
-		, array_agg(users.*) as users
+		, array_agg(users.*) filter (where users.* is not null) as __users
 		from user_team
     join users on users.user_id = user_team.user_id
     group by user_team_team_id

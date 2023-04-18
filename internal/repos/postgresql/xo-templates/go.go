@@ -544,6 +544,9 @@ func buildQueryName(query xo.Query) string {
 	return name
 }
 
+// Tables contains Table indexed by SQLName
+type Tables map[string]Table
+
 // emitSchema emits the xo schema for the template set.
 func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) error {
 	constraints := convertConstraints(ctx, schema.Constraints)
@@ -590,10 +593,27 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		})
 	}
 	// emit tables
-	tc := append(schema.Tables, schema.Views...)
-	tc = append(tc, schema.MatViews...)
-	for _, t := range tc {
-		table, err := convertTable(ctx, t)
+	tcc := append(schema.Tables, schema.Views...)
+	tcc = append(tcc, schema.MatViews...)
+
+	// will need access to all tables beforehand for indexes, struct generation...
+
+	tables := make(Tables)
+	for _, tc := range tcc {
+		table, err := convertTable(ctx, tc)
+		if err != nil {
+			return err
+		}
+		tables[table.SQLName] = table
+	}
+
+	// IMPORTANT: can't use map[string]*Table - it messes up k and t for some reason
+	// for k, t := range tables {
+	// 	fmt.Printf("k: %v - table: %v\n", k, t.SQLName)
+	// }
+
+	for _, tc := range tcc {
+		table, err := convertTable(ctx, tc)
 		if err != nil {
 			return err
 		}
@@ -605,12 +625,13 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			Data: struct {
 				Table       interface{}
 				Constraints interface{}
-			}{Table: table, Constraints: constraints},
+				Tables      interface{}
+			}{Table: table, Constraints: constraints, Tables: tables},
 		})
 
 		// emit indexes
 		var emittedIndexes []string
-		for _, i := range t.Indexes {
+		for _, i := range tc.Indexes {
 			index, err := convertIndex(ctx, table, i)
 			if err != nil {
 				return err
@@ -625,13 +646,14 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 				Data: struct {
 					Index       interface{}
 					Constraints interface{}
-				}{Index: index, Constraints: constraints},
+					Tables      interface{}
+				}{Index: index, Constraints: constraints, Tables: tables},
 			})
 			emittedIndexes = append(emittedIndexes, extractIndexIdentifier(index))
 		}
 
 		// emit additional indexes in a second run so they don't interfere with "real" ones
-		for _, i := range t.Indexes {
+		for _, i := range tc.Indexes {
 			index, err := convertIndex(ctx, table, i)
 			if err != nil {
 				return err
@@ -662,7 +684,8 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 						Data: struct {
 							Index       interface{}
 							Constraints interface{}
-						}{Index: index, Constraints: constraints},
+							Tables      interface{}
+						}{Index: index, Constraints: constraints, Tables: tables},
 					})
 					emittedIndexes = append(emittedIndexes, idxIdentifier)
 				}
@@ -673,7 +696,7 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		// emit fkeys
 		// NOTE: do not use these for automatic join generation in replacement of o2o and o2m table comments,
 		// it will also generate joins for m2m lookup tables which pollutes everything
-		for _, fk := range t.ForeignKeys {
+		for _, fk := range tc.ForeignKeys {
 			fkey, err := convertFKey(ctx, table, fk)
 			if err != nil {
 				return err
@@ -1420,35 +1443,28 @@ func (f *Funcs) initial_opts(v any) string {
 }
 
 // funcfn builds a type definition.
-func (f *Funcs) extratypes(name string, sqlname string, constraints interface{}, v interface{}) string {
-	// -- emit ORDER BY opts
-	switch cc := constraints.(type) {
-	case []Constraint:
-		if len(cc) > 0 {
-			// always run
-			f.loadConstraints(cc, sqlname)
-		}
-	default:
-		break
+func (f *Funcs) extratypes(name string, sqlname string, constraints []Constraint, t Table, tables Tables) string {
+	if len(constraints) > 0 {
+		// always run
+		f.loadConstraints(constraints, sqlname)
 	}
+
+	// -- emit ORDER BY opts
+
 	var tableHasDeletedAt bool
 	var orderbys []Field
 	var cc []Constraint
-	switch x := v.(type) {
-	case Table:
-		for _, z := range x.Fields {
-			if z.IsDateOrTime {
-				orderbys = append(orderbys, z)
-			}
-			if z.SQLName == "deleted_at" {
-				tableHasDeletedAt = true
-			}
+
+	for _, z := range t.Fields {
+		if z.IsDateOrTime {
+			orderbys = append(orderbys, z)
 		}
-		if tablecc, ok := f.tableConstraints[x.SQLName]; ok {
-			cc = tablecc
+		if z.SQLName == "deleted_at" {
+			tableHasDeletedAt = true
 		}
-	default:
-		return fmt.Sprintf("[[ UNSUPPORTED TYPE 3: %T ]]", v)
+	}
+	if tablecc, ok := f.tableConstraints[t.SQLName]; ok {
+		cc = tablecc
 	}
 
 	orderByOpts := [][]string{
@@ -1521,13 +1537,43 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	`, name))
 	}
 
+	var extraStructs []string
+
 	buf.WriteString(fmt.Sprintf("type %sJoins struct {\n", name))
 	for _, c := range cc {
 		var joinName string
 		switch c.Cardinality {
 		case "M2M":
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
+
+			lookupTable := tables[c.TableName]
+			extraCols := getLookupTableRegularFields(lookupTable)
+			fmt.Printf("M2M join: %s extraCols: %v\n", lookupTable.SQLName, extraCols)
+
+			if c.ColumnName != c.RefColumnName {
+				// differs from actual column, e.g. having member UUID in lookup instead of user_id
+				lookupName = c.ColumnName
+
+				originalStruct := camelExport(inflector.Singularize(strings.TrimSuffix(c.RefColumnName, "_id")))
+				tag := fmt.Sprintf("`json:\"%s\" db:\"%s\"`", camel(originalStruct), inflector.Pluralize(strings.TrimSuffix(c.RefColumnName, "_id")))
+
+				// create custom struct for each join with lookup table that has extra fields
+				var lookupFields []string
+				for _, col := range extraCols {
+					tag := fmt.Sprintf("`json:\"%s\" db:\"%s\"`", camel(col.GoName), col.SQLName)
+					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), f.typefn(col.Type), tag))
+				}
+				extraStructs = append(extraStructs, (fmt.Sprintf(`
+type %s struct {
+	%s %s %s
+	%s
+
+}
+	`, camelExport(lookupName), originalStruct, originalStruct, tag, strings.Join(lookupFields, "\n"))))
+			}
+
 			joinName = camelExport(inflector.Pluralize(lookupName))
+
 		case "O2M", "M2O":
 			if c.RefTableName != sqlname {
 				continue
@@ -1555,6 +1601,10 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	}
 }
 	`, name))
+
+	for _, stt := range extraStructs {
+		buf.WriteString(stt)
+	}
 
 	return buf.String()
 }
@@ -2167,21 +2217,46 @@ func (f *Funcs) sqlstr_soft_delete(v interface{}) []string {
 // M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(joined_{{.JoinTable}}.{{.JoinTable}}) filter (where joined_teams.teams is not null) end) as {{.JoinTable}}`
 
 const (
-	M2MSelect = `(case when {{.Nth}}::boolean = true then joined_{{.LookupJoinTablePKAgg}}.{{.LookupJoinTablePKAgg}} end) as {{.LookupJoinTablePKAgg}}`
+	M2MSelect = `(case when {{.Nth}}::boolean = true then joined_{{.LookupJoinTablePKSuffix}}.__{{.LookupJoinTablePKAgg}} end) as {{.LookupJoinTablePKSuffix}}`
 	O2MSelect = `(case when {{.Nth}}::boolean = true then joined_{{.JoinTable}}.{{.JoinTable}} end) as {{.JoinTable}}`
 	O2OSelect = `(case when {{.Nth}}::boolean = true then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
 )
 
 const (
+	/** TODO
+		 *
+		 *
+		 * also need to get columns from join table in M2M, e.g.
+	  , role work_item_role not null ()
+		 * therefore it is not Members *[]User, we should create a struct
+
+					type Member struct {
+						User         User   `json:"user"`
+						WorkItemRole string `json:"workItemRole" db:"work_items_role"
+					}
+			and have Members *[]Member
+
+			if the lookup table contains fields that are not pk or fks
+			(if they are we just ignore, too cumbersome to also join against those).
+			this will be useful for simple extra info that is contained in the lookup table only
+
+
+	*/
 	M2MJoin = `
 left join (
 	select
 		{{.LookupTable}}.{{.LookupColumn}} as {{.LookupTable}}_{{.LookupColumn}}
-		, array_agg({{.JoinTable}}.*) as {{.LookupJoinTablePKAgg}}
+		{{- range .LookupExtraCols }}
+		, {{$.LookupTable}}.{{.}} as {{.}}
+		{{ end }}
+		, array_agg({{.JoinTable}}.*) filter (where {{.JoinTable}}.* is not null) as __{{.LookupJoinTablePKAgg}}
 		from {{.LookupTable}}
     join {{.JoinTable}} on {{.JoinTable}}.{{.JoinTablePK}} = {{.LookupTable}}.{{.LookupJoinTablePK}}
     group by {{.LookupTable}}_{{.LookupColumn}}
-  ) as joined_{{.LookupJoinTablePKAgg}} on joined_{{.LookupJoinTablePKAgg}}.{{.LookupTable}}_{{.LookupColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}
+		{{- range .LookupExtraCols }}
+		, {{.}}
+		{{ end }}
+  ) as joined_{{.LookupJoinTablePKSuffix}} on joined_{{.LookupJoinTablePKSuffix}}.{{.LookupTable}}_{{.LookupColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}
 `
 	M2OJoin = `
 left join (
@@ -2198,7 +2273,7 @@ left join {{.JoinTable}} on {{.JoinTable}}.{{.JoinColumn}} = {{.CurrentTable}}.{
 )
 
 // sqlstr_index builds a index fields.
-func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
+func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tables) string {
 	switch x := v.(type) {
 	case Index:
 		var filters, fields, joins []string
@@ -2235,7 +2310,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}) string {
 
 		var n int
 		for _, c := range tableConstraints {
-			joinStmts, selectStmts := createJoinStatement(c, x, funcs, f.nth, n)
+			joinStmts, selectStmts := createJoinStatement(tables, c, x, funcs, f.nth, n)
 			if joinStmts.String() == "" || selectStmts.String() == "" {
 				continue
 			}
@@ -2333,7 +2408,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 
 // createJoinStatement returns select queries and join statements strings
 // for a given index table.
-func createJoinStatement(c Constraint, x Index, funcs template.FuncMap, nth func(int) string, n int) (*bytes.Buffer, *bytes.Buffer) {
+func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.FuncMap, nth func(int) string, n int) (*bytes.Buffer, *bytes.Buffer) {
 	var joinTpl, selectTpl string
 	joins := &bytes.Buffer{}
 	selects := &bytes.Buffer{}
@@ -2352,17 +2427,38 @@ func createJoinStatement(c Constraint, x Index, funcs template.FuncMap, nth func
 		params["JoinTable"] = c.RefTableName
 		params["LookupRefColumn"] = c.LookupRefColumn
 		params["JoinTablePK"] = c.RefColumnName
-		params["LookupJoinTablePK"] = c.ColumnName // may differ from actual column, e.g. having member UUID in lookup instead of user_id
-		params["LookupJoinTablePKAgg"] = inflector.Pluralize(c.ColumnName)
+		params["LookupJoinTablePK"] = c.RefColumnName
+		params["LookupJoinTablePKAgg"] = c.RefTableName
+		params["LookupJoinTablePKSuffix"] = c.RefTableName
 		params["CurrentTable"] = x.Table.SQLName
 		params["LookupTable"] = c.TableName
+		params["LookupExtraCols"] = []string{}
 
-		if c.ColumnName == c.RefColumnName {
+		if c.ColumnName != c.RefColumnName {
+			// differs from actual column, e.g. having member UUID in lookup instead of user_id
 			// we are not changing lookup name, i.e. we're using the pk name, e.g. user_id instead of something like member, leader, sender...
 			// don't rename to avoid confusion:
-			params["LookupJoinTablePK"] = c.RefColumnName
-			params["LookupJoinTablePKAgg"] = c.RefTableName
+			params["LookupJoinTablePK"] = c.ColumnName
+			params["LookupJoinTablePKAgg"] = inflector.Pluralize(c.ColumnName)
+			params["LookupJoinTablePKSuffix"] = inflector.Pluralize(c.ColumnName)
+
+			lookupTable := tables[c.TableName]
+			extraCols := getLookupTableRegularFields(lookupTable)
+
+			colNames := make([]string, len(extraCols))
+			for i, col := range extraCols {
+				colNames[i] = col.SQLName
+			}
+			params["LookupExtraCols"] = colNames
+
+			if len(extraCols) > 0 {
+				// in this case we will create an extra struct that holds the joined table + these extra fields.
+				// need to change agg name to avoid confusion
+				params["LookupJoinTablePKAgg"] = params["JoinTable"]
+			}
+
 		}
+
 	case "O2M", "M2O":
 		// TODO properly gen in both sides like with O2O below, differentiating O2M and M2O
 		if c.RefTableName == x.Table.SQLName {
@@ -2409,6 +2505,28 @@ func createJoinStatement(c Constraint, x Index, funcs template.FuncMap, nth func
 		panic(fmt.Sprintf("could not execute select template: %s", err))
 	}
 	return joins, selects
+}
+
+// getLookupTableRegularFields gets extra columns in a lookup table that are not PK or FK
+func getLookupTableRegularFields(t Table) []Field {
+	ltFieldsMap := make(map[string]Field)
+	for _, f := range t.Fields {
+		ltFieldsMap[f.SQLName] = f
+	}
+	for _, fkk := range t.ForeignKeys {
+		for _, fk := range fkk {
+			delete(ltFieldsMap, fk)
+		}
+	}
+	for _, pk := range t.PrimaryKeys {
+		delete(ltFieldsMap, pk.SQLName)
+	}
+	extraCols := make([]Field, 0, len(ltFieldsMap))
+	for _, v := range ltFieldsMap {
+		extraCols = append(extraCols, v)
+	}
+
+	return extraCols
 }
 
 // sqlstr_proc builds a stored procedure call.
@@ -2632,14 +2750,9 @@ func (f *Funcs) fieldmapping(field Field, recv string, public bool) (string, err
 }
 
 // join_fields generates a struct field definition from join constraints
-func (f *Funcs) join_fields(sqlname string, public bool, constraints interface{}) (string, error) {
-	switch x := constraints.(type) {
-	case []Constraint:
-		if len(x) > 0 {
-			f.loadConstraints(x, sqlname)
-		}
-	default:
-		break
+func (f *Funcs) join_fields(sqlname string, constraints []Constraint, tables Tables) (string, error) {
+	if len(constraints) > 0 {
+		f.loadConstraints(constraints, sqlname)
 	}
 
 	cc, ok := f.tableConstraints[sqlname]
@@ -2653,15 +2766,23 @@ func (f *Funcs) join_fields(sqlname string, public bool, constraints interface{}
 		// sync with extratypes
 		switch c.Cardinality {
 		case "M2M":
+
+			_ = tables[c.TableName]
+			// extraCols := getLookupTableRegularFields(lookupTable)
+			// fmt.Printf("M2M join: %s extraCols: %v\n", lookupTable.SQLName, extraCols)
+
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 			goName = camelExport(singularize(lookupName))
 			typ = camelExport(singularize(c.RefTableName))
-			if public {
-				typ = typ + "Public"
-				tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(camel(goName)))
-			} else {
-				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(camel(lookupName)), inflector.Pluralize(lookupName))
+
+			if c.ColumnName != c.RefColumnName {
+				// differs from actual column, e.g. having member UUID in lookup instead of user_id
+				lookupName = c.ColumnName
+				goName = camelExport(singularize(lookupName))
+				typ = camelExport(singularize(lookupName))
 			}
+
+			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(camel(lookupName)), inflector.Pluralize(lookupName))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
 			// TODO revisit. O2M and M2O from different viewpoints.
 		case "O2M", "M2O":
@@ -2670,34 +2791,19 @@ func (f *Funcs) join_fields(sqlname string, public bool, constraints interface{}
 			}
 			goName = camelExport(singularize(c.TableName))
 			typ = goName
-			if public {
-				typ = typ + "Public"
-				tag = fmt.Sprintf("`json:\"%s\"`", inflector.Pluralize(camel(goName)))
-			} else {
-				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(camel(c.TableName)), inflector.Pluralize(c.TableName))
-			}
+			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(camel(c.TableName)), inflector.Pluralize(c.TableName))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
 		case "O2O":
 			if c.TableName == sqlname {
 				goName = camelExport(singularize(c.RefTableName))
 				typ = goName
-				if public {
-					typ = typ + "Public"
-					tag = fmt.Sprintf("`json:\"%s\"`", inflector.Singularize(camel(goName)))
-				} else {
-					tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", camel(goName), inflector.Singularize(c.RefTableName))
-				}
+				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", camel(inflector.Singularize(c.RefTableName)), inflector.Singularize(c.RefTableName))
 				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, c.Cardinality))
 			}
 			if c.RefTableName == sqlname {
 				goName = camelExport(singularize(c.TableName))
 				typ = goName
-				if public {
-					typ = typ + "Public"
-					tag = fmt.Sprintf("`json:\"%s\"`", inflector.Singularize(camel(goName)))
-				} else {
-					tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", camel(goName), inflector.Singularize(c.TableName))
-				}
+				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", camel(inflector.Singularize(c.TableName)), inflector.Singularize(c.TableName))
 				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, c.Cardinality))
 			}
 		default:

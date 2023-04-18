@@ -85,7 +85,8 @@ func WithTimeEntryOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption 
 	}
 }
 
-type TimeEntryJoins struct{}
+type TimeEntryJoins struct {
+}
 
 // WithTimeEntryJoin joins with the given tables.
 func WithTimeEntryJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {

@@ -28,10 +28,10 @@ type WorkItem struct {
 	DeletedAt      *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
 
 	DemoProjectWorkItem *DemoProjectWorkItem `json:"demoProjectWorkItem" db:"demo_project_work_item"` // O2O
-	Project2WorkItem    *Project2WorkItem    `json:"project2workItem" db:"project_2_work_item"`       // O2O
+	Project2WorkItem    *Project2WorkItem    `json:"project2WorkItem" db:"project_2_work_item"`       // O2O
 	TimeEntries         *[]TimeEntry         `json:"timeEntries" db:"time_entries"`                   // O2M
 	WorkItemComments    *[]WorkItemComment   `json:"workItemComments" db:"work_item_comments"`        // O2M
-	Members             *[]User              `json:"members" db:"members"`                            // M2M
+	Members             *[]Member            `json:"members" db:"members"`                            // M2M
 	WorkItemTags        *[]WorkItemTag       `json:"workItemTags" db:"work_item_tags"`                // M2M
 	WorkItemType        *WorkItemType        `json:"workItemType" db:"work_item_type"`                // O2O
 	// xo fields
@@ -136,6 +136,11 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
 		s.joins = joins
 	}
+}
+
+type Member struct {
+	User User         `json:"user" db:"users"`
+	Role WorkItemRole `json:"role" db:"role"`
 }
 
 // Exists returns true when the WorkItem exists in the database.
@@ -325,8 +330,8 @@ work_items.deleted_at,
 (case when $2::boolean = true then row(project_2_work_items.*) end) as project_2_work_item,
 (case when $3::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $4::boolean = true then joined_work_item_comments.work_item_comments end) as work_item_comments,
-(case when $5::boolean = true then joined_members.members end) as members,
-(case when $6::boolean = true then joined_work_item_tags.work_item_tags end) as work_item_tags,
+(case when $5::boolean = true then joined_members.__users end) as members,
+(case when $6::boolean = true then joined_work_item_tags.__work_item_tags end) as work_item_tags,
 (case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
@@ -355,17 +360,21 @@ left join (
 left join (
 	select
 		work_item_member.work_item_id as work_item_member_work_item_id
-		, array_agg(users.*) as members
+		, work_item_member.role as role
+		
+		, array_agg(users.*) filter (where users.* is not null) as __users
 		from work_item_member
     join users on users.user_id = work_item_member.member
     group by work_item_member_work_item_id
+		, role
+		
   ) as joined_members on joined_members.work_item_member_work_item_id = work_items.work_item_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
 	select
 		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-		, array_agg(work_item_tags.*) as work_item_tags
+		, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
 		from work_item_work_item_tag
     join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
     group by work_item_work_item_tag_work_item_id
@@ -421,8 +430,8 @@ work_items.deleted_at,
 (case when $2::boolean = true then row(project_2_work_items.*) end) as project_2_work_item,
 (case when $3::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $4::boolean = true then joined_work_item_comments.work_item_comments end) as work_item_comments,
-(case when $5::boolean = true then joined_members.members end) as members,
-(case when $6::boolean = true then joined_work_item_tags.work_item_tags end) as work_item_tags,
+(case when $5::boolean = true then joined_members.__users end) as members,
+(case when $6::boolean = true then joined_work_item_tags.__work_item_tags end) as work_item_tags,
 (case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
@@ -451,17 +460,21 @@ left join (
 left join (
 	select
 		work_item_member.work_item_id as work_item_member_work_item_id
-		, array_agg(users.*) as members
+		, work_item_member.role as role
+		
+		, array_agg(users.*) filter (where users.* is not null) as __users
 		from work_item_member
     join users on users.user_id = work_item_member.member
     group by work_item_member_work_item_id
+		, role
+		
   ) as joined_members on joined_members.work_item_member_work_item_id = work_items.work_item_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
 	select
 		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-		, array_agg(work_item_tags.*) as work_item_tags
+		, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
 		from work_item_work_item_tag
     join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
     group by work_item_work_item_tag_work_item_id
@@ -515,8 +528,8 @@ work_items.deleted_at,
 (case when $2::boolean = true then row(project_2_work_items.*) end) as project_2_work_item,
 (case when $3::boolean = true then joined_time_entries.time_entries end) as time_entries,
 (case when $4::boolean = true then joined_work_item_comments.work_item_comments end) as work_item_comments,
-(case when $5::boolean = true then joined_members.members end) as members,
-(case when $6::boolean = true then joined_work_item_tags.work_item_tags end) as work_item_tags,
+(case when $5::boolean = true then joined_members.__users end) as members,
+(case when $6::boolean = true then joined_work_item_tags.__work_item_tags end) as work_item_tags,
 (case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
@@ -545,17 +558,21 @@ left join (
 left join (
 	select
 		work_item_member.work_item_id as work_item_member_work_item_id
-		, array_agg(users.*) as members
+		, work_item_member.role as role
+		
+		, array_agg(users.*) filter (where users.* is not null) as __users
 		from work_item_member
     join users on users.user_id = work_item_member.member
     group by work_item_member_work_item_id
+		, role
+		
   ) as joined_members on joined_members.work_item_member_work_item_id = work_items.work_item_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
 	select
 		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-		, array_agg(work_item_tags.*) as work_item_tags
+		, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
 		from work_item_work_item_tag
     join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
     group by work_item_work_item_tag_work_item_id

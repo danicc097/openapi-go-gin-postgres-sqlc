@@ -1,3 +1,5 @@
+.direnv
+.envrc.local
 __debug_bin
 test-bash.sh
 openapi-go-gin-postgres-sqlc*

@@ -47,7 +47,10 @@ func WithWorkItemWorkItemTagLimit(limit int) WorkItemWorkItemTagSelectConfigOpti
 
 type WorkItemWorkItemTagOrderBy = string
 
-type WorkItemWorkItemTagJoins struct{}
+const ()
+
+type WorkItemWorkItemTagJoins struct {
+}
 
 // WithWorkItemWorkItemTagJoin joins with the given tables.
 func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
