@@ -21,11 +21,11 @@ const alias: Record<string, string> = {
   assets: r('./assets'),
   public: r('./public'),
   'public/': r('./public/'),
-  '@': path.resolve(__dirname, './src'),
-  '@roles': path.resolve(__dirname, './roles.json'),
-  '@scopes': path.resolve(__dirname, './scopes.json'),
-  '@config': path.resolve(__dirname, './config.json'),
-  '@operationAuth': path.resolve(__dirname, './operationAuth.gen.json'),
+  '@': r('./src'),
+  '@roles': r('./roles.json'),
+  '@scopes': r('./scopes.json'),
+  '@config': r('./config.json'),
+  '@operationAuth': r('./operationAuth.gen.json'),
 }
 
 export default mergeConfig(

@@ -263,18 +263,6 @@ func pgxArrayAggIssueQuery(pool *pgxpool.Pool) {
 	if err != nil {
 		log.Fatalf("error pool.Acquire: %s\n", err)
 	}
-	_, _ = conn.Exec(context.Background(), `
-create type teams_type as (
-	team_id int
-	, project_id int
-	, name text
-	, description text
-	, created_at timestamp with time zone
-	, updated_at timestamp with time zone
-);
-
-CREATE DOMAIN teams_types AS teams_type[];
-	`)
 
 	_, err = conn.Exec(context.Background(), `
 create temporary table projects (
@@ -333,7 +321,7 @@ VALUES (2 , '19270107-1b9c-4f52-a578-7390d5b31513');
 
 	query := `
 	SELECT users.user_id
-	, joined_teams.__teams::teams_type[] as teams
+	, joined_teams.__teams as teams
 	FROM users
 	left join (
 		select
@@ -365,7 +353,7 @@ VALUES (2 , '19270107-1b9c-4f52-a578-7390d5b31513');
 }
 
 func OIDCheck(conn *pgxpool.Conn) {
-	rows, err := conn.Query(context.Background(), "SELECT * FROM pg_class WHERE relname = 'teams';")
+	rows, err := conn.Query(context.Background(), "SELECT * FROM pg_class")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -377,19 +365,27 @@ func OIDCheck(conn *pgxpool.Conn) {
 	}
 
 	for rows.Next() {
-		rowValues := make([]interface{}, len(fields))
+		rowValues := make([]any, len(fields))
 		for i := range fields {
-			rowValues[i] = new(interface{})
+			rowValues[i] = new(any)
 		}
 		if err := rows.Scan(rowValues...); err != nil {
 			log.Fatal(err)
 		}
 
-		fmt.Println("---------------")
 		for i, col := range rowValues {
-			fmt.Printf("%s: %v\n", columnNames[i], *col.(*interface{}))
+			if columnNames[i] != "oid" {
+				continue
+			}
+			if *col.(*any) != 26 {
+				continue
+			}
+			fmt.Println("---------------")
+			for i, col := range rowValues {
+				fmt.Printf("%s: %v\n", columnNames[i], *col.(*any))
+			}
+			fmt.Println()
 		}
-		fmt.Println()
 	}
 	if err := rows.Err(); err != nil {
 		log.Fatal(err)
@@ -444,8 +440,7 @@ func errAndExit(out []byte, err error) {
 func RegisterDataTypes(ctx context.Context, conn *pgx.Conn) error {
 	dataTypeNames := []string{
 		"teams",
-		"teams_type",
-		// "teams_types",
+		"_teams",
 		"user_team",
 		"users",
 	}
