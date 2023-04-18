@@ -24,11 +24,13 @@ check.all() {
 }
 
 check.bin.bash() {
+  vers=${BASH_VERSION:0:1}
   minver=4
-  { ((${BASH_VERSION:0:1} >= minver)) &&
+  { ((vers >= minver)) &&
     printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_VERSION:0:1}"; } ||
     {
-      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver${OFF})"
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
+      echo "Current version: $vers"
       return 1
     }
 }
@@ -64,7 +66,8 @@ check.bin.protoc() {
   { [[ "$vers" = *$minver* ]] &&
     printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: $minver"; } ||
     {
-      echo "${RED}Failed ${FUNCNAME[0]##*.} check.${OFF}"
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
+      echo "Current version: $vers"
       return 1
     }
 }
@@ -85,7 +88,7 @@ check.bin.curl() {
   { [[ "${versa[0]}" =~ ^.*(libcurl).* ]] &&
     printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
     {
-      echo "${RED}Failed ${FUNCNAME[0]##*.} check."
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check. libcurl Required"
       return 1
     }
 }
@@ -98,7 +101,8 @@ check.bin.go() {
     ((BASH_REMATCH[1] >= minver)) &&
     printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
     {
-      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver${OFF})"
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
+      echo "Current version: $vers"
       return 1
     }
 }
@@ -111,7 +115,8 @@ check.bin.yq() {
     ((BASH_REMATCH[1] >= minver)) &&
     printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
     {
-      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver of https://github.com/mikefarah/yq/)${OFF}"
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
+      echo "Current version: $vers"
       return 1
     }
 }
@@ -124,7 +129,8 @@ check.bin.docker() {
     ((BASH_REMATCH[1] >= minver)) &&
     printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
     {
-      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver${OFF})"
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
+      echo "Current version: $vers"
       return 1
     }
 }
@@ -139,7 +145,8 @@ check.bin.docker-compose() {
       printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"
   } ||
     {
-      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver${OFF})"
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
+      echo "Current version: $vers"
       return 1
     }
 }
@@ -154,13 +161,14 @@ check.bin.pg_format() {
       printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"
   } ||
     {
-      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver${OFF})"
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
+      echo "Current version: $vers"
       return 1
     }
 }
 
 install.bin.pg_format() {
-  sudo apt install pgformatter
+  sudo apt-get install pgformatter
 }
 
 check.bin.parallel() {
@@ -177,7 +185,7 @@ check.bin.parallel() {
 }
 
 install.bin.parallel() {
-  sudo apt install parallel
+  sudo apt-get install parallel
 }
 
 check.bin.direnv() {
@@ -188,13 +196,14 @@ check.bin.direnv() {
     ((BASH_REMATCH[1] >= minver)) &&
     printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
     {
-      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver${OFF})"
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
+      echo "Current version: $vers"
       return 1
     }
 }
 
 install.bin.direnv() {
-  sudo apt install direnv
+  sudo apt-get install direnv
 }
 
 check.bin.sponge() {
@@ -207,7 +216,7 @@ check.bin.sponge() {
 }
 
 install.bin.sponge() {
-  sudo apt install sponge
+  sudo apt-get install sponge
 }
 check.bin.mkcert() {
   local vers
@@ -219,7 +228,8 @@ check.bin.mkcert() {
       printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"
   } ||
     {
-      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver${OFF})"
+      echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
+      echo "Current version: $vers"
       return 1
     }
 }
