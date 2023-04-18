@@ -27,4 +27,7 @@ jobs:
           go mod download
 
           project test.backend-setup --x-env=ci
+
+          git diff --exit-code
+
           project test -race --x-env=ci
