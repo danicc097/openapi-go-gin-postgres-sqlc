@@ -82,8 +82,8 @@ func main() {
 	//
 	//
 	//
+	// pgxArrayAggIssueWorkingQuery(pool)
 	pgxArrayAggIssueQuery(pool)
-	pgxArrayAggIssueWorkingQuery(pool)
 	os.Exit(0)
 
 	username := "user_1"
@@ -237,23 +237,23 @@ type Item struct {
 }
 
 type Team1 struct {
-	TeamID      int       `json:"teamID" db:"team_id" required:"true"`          // team_id
-	ProjectID   int       `json:"projectID" db:"project_id" required:"true"`    // project_id
-	Name        string    `json:"name" db:"name" required:"true"`               // name
-	Description string    `json:"description" db:"description" required:"true"` // description
-	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
-	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
+	TeamID      int       `json:"teamID" db:"team_id"`
+	ProjectID   int       `json:"projectID" db:"project_id"`
+	Name        string    `json:"name" db:"name"`
+	Description string    `json:"description" db:"description"`
+	CreatedAt   time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at"`
 
-	Users *[]User1 `json:"users" db:"users"` // M2M
+	Users *[]User1 `json:"users" db:"users"`
 	// xo fields
 	_exists, _deleted bool
 }
 
 type User1 struct {
-	UserID   uuid.UUID `json:"userID" db:"user_id" required:"true"`    // user_id
-	Username string    `json:"username" db:"username" required:"true"` // username
+	UserID   uuid.UUID `json:"userID" db:"user_id"`
+	Username string    `json:"username" db:"username"`
 
-	Teams *[]Team1 `json:"teams" db:"teams"` // M2M
+	Teams *[]Team1 `json:"teams" db:"teams"`
 	// xo fields
 	_exists, _deleted bool
 }
@@ -263,6 +263,19 @@ func pgxArrayAggIssueQuery(pool *pgxpool.Pool) {
 	if err != nil {
 		log.Fatalf("error pool.Acquire: %s\n", err)
 	}
+	_, _ = conn.Exec(context.Background(), `
+create type teams_type as (
+	team_id int
+	, project_id int
+	, name text
+	, description text
+	, created_at timestamp with time zone
+	, updated_at timestamp with time zone
+);
+
+CREATE DOMAIN teams_types AS teams_type[];
+	`)
+
 	_, err = conn.Exec(context.Background(), `
 create temporary table projects (
 	project_id serial primary key
@@ -271,7 +284,7 @@ create temporary table projects (
 
 create temporary table teams (
 	team_id serial primary key
-	, project_id int not null --limited to a project only
+	, project_id int not null
 	, name text not null
 	, description text not null
 	, created_at timestamp with time zone default current_timestamp not null
@@ -313,9 +326,14 @@ VALUES (2 , '19270107-1b9c-4f52-a578-7390d5b31513');
 		log.Fatalf("error conn.Exec: %s\n", err)
 	}
 
+	err = RegisterDataTypes(context.Background(), conn.Conn())
+	if err != nil {
+		log.Fatalf("error RegisterDataTypes: %s\n", err)
+	}
+
 	query := `
 	SELECT users.user_id
-	, joined_teams.__teams as teams
+	, joined_teams.__teams::teams_type[] as teams
 	FROM users
 	left join (
 		select
@@ -332,50 +350,64 @@ VALUES (2 , '19270107-1b9c-4f52-a578-7390d5b31513');
 	teams   │ {"(1,1,\"team 1\",\"This is team 1 from project 1\",\"2023-04-16 08:09:13.172744+00\",\"2023-04-16 08:09:13.172744+00\")","(2,1,\"team 2\",\"This is team 2 from project 1\",\"2023-04-16 08:09:13.173884+00\",\"2023-04-16 08:09:13.173884+00\")"}
 	*/
 
-	rows, err := pool.Query(context.Background(), query)
+	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
-		log.Fatalf("error pool.Query: %s\n", err)
+		log.Fatalf("error conn.Query: %s\n", err)
 	}
+
 	users, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User1])
 	if err != nil {
+		OIDCheck(conn)
 		log.Fatalf("error pgx.CollectRows: %s\n", err)
 	}
 	b, _ := json.Marshal(users[0])
 	fmt.Printf("users[0]: %+v\n", string(b))
 }
 
-type Team2 struct {
-	TeamID      int       `json:"teamID" db:"team_id"`
-	Name        string    `json:"name" db:"name"`
-	ProjectID   int       `json:"projectID" db:"project_id"`
-	Description string    `json:"description" db:"description"`
-	CreatedAt   time.Time `json:"createdAt" db:"created_at"`
-	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at"`
+func OIDCheck(conn *pgxpool.Conn) {
+	rows, err := conn.Query(context.Background(), "SELECT * FROM pg_class WHERE relname = 'teams';")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	Users *[]User2 `json:"users" db:"users"`
+	fields := rows.FieldDescriptions()
+	columnNames := make([]string, len(fields))
+	for i, fd := range fields {
+		columnNames[i] = fd.Name
+	}
 
-	_exists, _deleted bool
-}
+	for rows.Next() {
+		rowValues := make([]interface{}, len(fields))
+		for i := range fields {
+			rowValues[i] = new(interface{})
+		}
+		if err := rows.Scan(rowValues...); err != nil {
+			log.Fatal(err)
+		}
 
-type User2 struct {
-	UserID int      `json:"userID" db:"user_id"`
-	Name   string   `json:"name" db:"name"`
-	Teams  *[]Team2 `json:"teams" db:"teams"`
-	Items  *[]Item  `json:"items" db:"items"`
+		fmt.Println("---------------")
+		for i, col := range rowValues {
+			fmt.Printf("%s: %v\n", columnNames[i], *col.(*interface{}))
+		}
+		fmt.Println()
+	}
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func pgxArrayAggIssueWorkingQuery(pool *pgxpool.Pool) {
 	query := `
 	WITH user_team AS (
-		SELECT 1 AS user_id, 1 AS team_id
+		SELECT '19270107-1b9c-4f52-a578-7390d5b31513'::uuid AS user_id, 1 AS team_id
 		UNION ALL
-		SELECT 1 AS user_id, 2 AS team_id
+		SELECT '19270107-1b9c-4f52-a578-7390d5b31513'::uuid AS user_id, 2 AS team_id
 	), users AS (
-		SELECT 1 AS user_id, 'John Doe' AS name
+		SELECT '19270107-1b9c-4f52-a578-7390d5b31513'::uuid AS user_id, 'John Doe' AS name
 	),teams AS (
-		SELECT 1 AS team_id, 'team 1' AS name, 1 as project_id, 'This is team 1 from project 1' as description, now() AS created_at, now() AS updated_at
+		SELECT 1 AS team_id, 1 as project_id, 'team 1' AS name, 'This is team 1 from project 1' as description, now() AS created_at, now() AS updated_at
 		UNION ALL
-		SELECT 2 AS team_id, 'team 2' AS name, 2 as project_id, 'This is team 2 from project 1' as description, now() AS created_at, now() AS updated_at
+		SELECT 2 AS team_id, 2 as project_id, 'team 2' AS name, 'This is team 2 from project 1' as description, now() AS created_at, now() AS updated_at
 	)
 	SELECT users.user_id
 	, joined_teams.__teams as teams
@@ -394,16 +426,39 @@ func pgxArrayAggIssueWorkingQuery(pool *pgxpool.Pool) {
 	if err != nil {
 		log.Fatalf("error pool.Query: %s\n", err)
 	}
-	users, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User2])
+
+	users, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User1])
 	if err != nil {
 		log.Fatalf("error pgx.CollectRows: %s\n", err)
 	}
 	b, _ := json.Marshal(users[0])
-	fmt.Printf("users[0]: %+v\n", string(b)) // {"userID":1,"name":"","teams":[{"teamID":1,"name":"team 1","projectID":1,"description":"This is team 1 from project 1","createdAt":"2023-04-16T08:39:38.622926Z","updatedAt":"2023-04-16T08:39:38.622926Z","users":null},{"teamID":2,"name":"team 2","projectID":1,"description":"This is team 2 from project 1","createdAt":"2023-04-16T08:39:38.622926Z","updatedAt":"2023-04-16T08:39:38.622926Z","users":null}],"items":null}
+	fmt.Printf("users[0]: %+v\n", string(b)) //{"userID":"19270107-1b9c-4f52-a578-7390d5b31513","username":"","teams":[{"teamID":1,"projectID":1,"name":"team 1","description":"This is team 1 from project 1","createdAt":"2023-04-16T08:51:29.108119Z","updatedAt":"2023-04-16T08:51:29.108119Z","users":null},{"teamID":2,"projectID":2,"name":"team 2","description":"This is team 2 from project 1","createdAt":"2023-04-16T08:51:29.108119Z","updatedAt":"2023-04-16T08:51:29.108119Z","users":null}]}
 }
 
 func errAndExit(out []byte, err error) {
 	fmt.Fprintf(os.Stderr, "combined out:\n%s\n", string(out))
 	fmt.Fprintf(os.Stderr, "cmd.Run() failed with %s\n", err)
 	os.Exit(1)
+}
+
+func RegisterDataTypes(ctx context.Context, conn *pgx.Conn) error {
+	dataTypeNames := []string{
+		"teams",
+		"teams_type",
+		// "teams_types",
+		"user_team",
+		"users",
+	}
+
+	for _, typeName := range dataTypeNames {
+		fmt.Printf("typeName: %v\n", typeName)
+		dataType, err := conn.LoadType(ctx, typeName)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("dataType: %+v\n", dataType)
+		conn.TypeMap().RegisterType(dataType)
+	}
+
+	return nil
 }

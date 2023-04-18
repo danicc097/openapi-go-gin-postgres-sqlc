@@ -64,7 +64,7 @@ check.yq() {
   local vers
   vers=$(yq --version)
   minver=4
-  { [[ "$vers" =~ version[\ ]+([^\ \.]+) ]] && [[ "$vers" = *mikefarah/yq* ]] &&
+  { [[ "$vers" =~ version[\ ]+[v]?([^\ \.]+) ]] && [[ "$vers" = *mikefarah/yq* ]] &&
     ((BASH_REMATCH[1] >= minver)) &&
     printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
     {

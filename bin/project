@@ -759,7 +759,6 @@ x.backend.sync-deps() {
 x.run-prod() {
   env="prod"
 
-  docker network create traefik-net 2>/dev/null || true
   run_shared_services up -d --build --remove-orphans
   x.db.recreate
 
@@ -1048,6 +1047,8 @@ run_hot_reload() {
 }
 
 run_shared_services() {
+  docker network create traefik-net 2>/dev/null || true
+
   cd docker
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
     -p "$PROJECT_PREFIX" \

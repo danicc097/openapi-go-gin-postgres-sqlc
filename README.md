@@ -43,6 +43,16 @@ with `--x-help`:
 
 ![](.github/help-x-function.png)
 
+## Setup
+
+Assuming a recent Ubuntu release:
+
+```bash
+
+sudo apt install pgformatter direnv
+
+```
+
 ## Code generation
 
 Docs WIP:
@@ -101,10 +111,6 @@ Simplified:
   - ~~ts client (openapitools)~~ keep away from this project
   - react-query components (fabien0102/openapi-codegen)
   - React Query hooks, Axios requests and Typescript types (rametta/rapini) generation
-  - Redux toolkit has its [own
-    generator](https://github.com/reduxjs/redux-toolkit/tree/master/packages/rtk-query-codegen-openapi)
-    and can generate hooks. Uses rtk-query, in essenceequivalent to react-query.
-    Creators don't use openapi so that's a red flag for the generator itself.
   - orval react-query looks promising: https://github.com/anymaniax/orval/tree/master/samples/react-query
 
   1. state management:
