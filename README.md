@@ -48,8 +48,10 @@ with `--x-help`:
 Assuming a recent Ubuntu release:
 
 ```bash
+sudo apt install moreutils pgformatter direnv
 
-sudo apt install pgformatter direnv
+direnv allow
+project bootstrap
 
 ```
 
