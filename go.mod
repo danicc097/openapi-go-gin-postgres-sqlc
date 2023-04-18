@@ -17,7 +17,6 @@ require (
 	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgerrcode v0.0.0-20201024163028-a0d42d470451
-	github.com/jackc/pgtype v1.11.0
 	github.com/jackc/pgx-zap v0.0.0-20220909013905-c08a18c611dd
 	github.com/jackc/pgx/v5 v5.3.2-0.20230408193948-847f888631e7
 	github.com/joho/godotenv v1.4.0

@@ -16,7 +16,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	// dot import so go code would resemble as much as native SQL

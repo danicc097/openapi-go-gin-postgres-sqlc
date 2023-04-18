@@ -16,6 +16,9 @@ source "${BASH_SOURCE%/*}/scripts/deps-check.sh"
 
 # FIXME m flag will prevent background process killing with ctrl-c
 set -Eeo pipefail
+set -o errtrace
+
+trap 'echo "ERR trap called in ${FUNCNAME-main context}."' ERR
 
 trap killgroup SIGINT
 
@@ -655,8 +658,10 @@ x.test() {
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
     APP_ENV="$env" go test "$@" ./...
-    exit 1 # FIXME errcode getting swallowed somewhere
+    exit 1 # FIXME
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+
+  echo exit code: $? # FIXME trap subshell err
 }
 
 # Test the entire project on file changes. Accepts `go test` parameters.
