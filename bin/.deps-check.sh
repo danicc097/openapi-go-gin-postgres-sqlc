@@ -140,7 +140,7 @@ check.bin.docker-compose() {
   vers=$(docker compose version)
   minver=2
   {
-    [[ "$vers" =~ [\ ]+v([0-9]+)[\.]{1} ]] &&
+    [[ "$vers" =~ [\ ]+[v]?([0-9]+)[\.]{1} ]] &&
       ((BASH_REMATCH[1] >= minver)) &&
       printf "%-40s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"
   } ||
