@@ -128,6 +128,7 @@ x.check-build-deps() {
       "check.bin.$bin" && continue
 
       if ! element_in_array "$bin" "${BIN_INSTALLS[@]}"; then
+        echo "Please install $bin manually and retry"
         exit 1
       fi
 
@@ -1082,7 +1083,7 @@ check.bin.column() {
     { [[ "$vers" = *$minver* ]] &&
       printf "%s ✅\n" "${FUNCNAME[0]##*.}: $minver"; } ||
       {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check.${OFF}"
+        echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
         return 1
       }
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
