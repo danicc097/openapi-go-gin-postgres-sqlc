@@ -88,7 +88,7 @@ xlog() {
     color="$MAGENTA"
   fi
 
-  if [[ "${FUNCNAME[1]%%.*}" == "check" ]]; then
+  if [[ "${FUNCNAME[1]}" =~ ^.*(check\.bin|install\.bin).* ]]; then
     max_len=100
   fi
 
@@ -96,7 +96,7 @@ xlog() {
     fname="${fname:0:$max_len}…"
   fi
 
-  local fn=$(printf "%*s |\n" $((max_fname_log_len + 1)) "$fname")
+  local fn=$(printf "%*s |\n" $((max_len + 1)) "$fname")
   sed -ue "s/^/${color}$fname >${OFF} /"
 
   # return ${PIPESTATUS[0]}
@@ -107,12 +107,14 @@ xlog() {
 # > >(one) 2> >(two) are background processes so it will break our parallel code.
 xerr() {
   local fname="${FUNCNAME[1]#*.}"
+  local max_len=$MAX_FNAME_LOG_LEN
+
   [[ "$CMD" = "$fname" ]] && cat && return
-  if [[ ${#fname} -gt $max_fname_log_len ]]; then
-    fname="${fname:0:$max_fname_log_len}…"
+  if [[ ${#fname} -gt $max_len ]]; then
+    fname="${fname:0:$max_len}…"
   fi
 
-  local fn=$(printf "%*s |\n" $((max_fname_log_len + 1)) "$fname")
+  local fn=$(printf "%*s |\n" $((max_len + 1)) "$fname")
   sed -ue "s/^/${RED}$fname >${OFF} /" >&2
 
   # return ${PIPESTATUS[0]}
