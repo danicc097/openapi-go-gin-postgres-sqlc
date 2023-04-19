@@ -56,6 +56,7 @@ source ".envrc"
 readonly SPEC="openapi.yaml"
 readonly PROTO_DIR="internal/pb"
 readonly MIGRATIONS_DIR="db/migrations"
+readonly CERTIFICATES_DIR="certificates"
 readonly REPOS="internal/repos"
 readonly PG_REPO="$REPOS/postgresql"
 readonly PG_REPO_GEN="$PG_REPO/gen"
@@ -134,7 +135,8 @@ x.bootstrap() {
     x.check-build-deps
     x.install-tools
     x.setup.swagger-ui
-    confirm "Do you want to setup traefik and mkcert certificates?" && x.setup.traefik
+    traefik_dir="$HOME/traefik-bootstrap"
+    confirm "Do you want to setup and run traefik (install dir: $traefik_dir)?" && x.setup.traefik "$traefik_dir"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -837,11 +839,13 @@ x.search-stopship() {
 
 # Runs a traefik container with predefined configuration.
 x.setup.traefik() {
-  git clone https://github.com/danicc097/traefik-bootstrap.git
+  git clone --depth=1 https://github.com/danicc097/traefik-bootstrap.git "$1"
   docker network create traefik-net || true
-  cd traefik-bootstrap
-  # ./mkcert-certificates # via install.bin.mkcert
+  mkdir -p "$1"/traefik/certificates
+  cp $CERTIFICATES_DIR/* "$1"/traefik/certificates
+  cd "$1"
   ./compose-up
+  cd - >/dev/null
 }
 
 ########################## migrations ##########################
@@ -1376,7 +1380,7 @@ install.bin.mkcert() {
     wget https://github.com/FiloSottile/mkcert/releases/download/v"$VERSION"/mkcert-v"$VERSION"-linux-amd64 -O mkcert
     chmod +x mkcert
     mv mkcert ./bin/tools/
-    cd certificates || exit
+    cd $CERTIFICATES_DIR || exit
     echo "Setting up local certificates"
     mkcert --cert-file localhost.pem --key-file localhost-key.pem localhost "*.dev.localhost" "*.ci.localhost" "*.prod.localhost" 127.0.0.1 ::1 host.docker.internal
     cd ..
