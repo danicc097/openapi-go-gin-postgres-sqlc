@@ -97,6 +97,8 @@ xlog() {
 
   local fn=$(printf "%*s |\n" $((max_fname_log_len + 1)) "$fname")
   sed -ue "s/^/${color}$fname >${OFF} /"
+
+  # return ${PIPESTATUS[0]}
 }
 
 # log stderr for any function output.
@@ -111,6 +113,8 @@ xerr() {
 
   local fn=$(printf "%*s |\n" $((max_fname_log_len + 1)) "$fname")
   sed -ue "s/^/${RED}$fname >${OFF} /" >&2
+
+  # return ${PIPESTATUS[0]}
 }
 
 kill_descendants() {
@@ -656,10 +660,11 @@ x.test() {
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
     APP_ENV="$env" go test "$@" ./...
-    exit 1 # FIXME
+    exit 1 # FIXME trap subshell err
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 
-  echo exit code: $? # FIXME trap subshell err
+  echo exit code: $?                  # FIXME trap subshell err
+  echo pipestatus: "${PIPESTATUS[*]}" # FIXME trap subshell err
 }
 
 # Test the entire project on file changes. Accepts `go test` parameters.
@@ -1053,10 +1058,9 @@ x.check-build-deps() {
 
     echo "Checking dependencies..."
     for bin in "${BIN_CHECKS[@]}"; do
-      local r
-      r="$(check.bin.$bin | tee /dev/tty)" # redirect to var while also streaming unbuffered output
-
-      if [[ ! "$r" =~ "Failed $bin check." ]]; then
+      # local r
+      # r="$(...)" # redirect to var while also streaming unbuffered output with | tee /dev/tty
+      if "check.bin.$bin"; then
         continue
       fi
 
@@ -1068,13 +1072,15 @@ x.check-build-deps() {
       confirm "Do you want to install $bin now?" || exit 1
 
       echo "Installing $bin..."
-      "install.bin.$bin" || err "$bin installation failed"
+      if ! "install.bin.$bin"; then
+        err "$bin installation failed"
+      fi
+      echo "Installed $bin..."
     done
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 check.bin.bash() {
-  # echo "pipestatus: ${PIPESTATUS[*]}"
   { { {
     vers=${BASH_VERSION:0:1}
     minver=4
@@ -1086,7 +1092,6 @@ check.bin.bash() {
         exit 1
       }
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  # echo "pipestatus exit: ${PIPESTATUS[*]}"
 }
 
 check.bin.column() {
@@ -1751,7 +1756,6 @@ source ".env.$env"
 # handle executing x functions
 if [[ -n "$1" ]]; then
   shift
-  set +o pipefail
   for c in "${COMMANDS[@]}"; do
     declare cmd=$(command -v "x.$c")
     if [[ $c == "$CMD" && -n "$cmd" ]]; then
@@ -1760,7 +1764,6 @@ if [[ -n "$1" ]]; then
       exit $?
     fi
   done
-  set -o pipefail
 fi
 
 # default to show usage if its a noop
