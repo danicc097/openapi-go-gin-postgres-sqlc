@@ -1279,6 +1279,50 @@ install.bin.direnv() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
+check.bin.pnpm() {
+  { { {
+    local vers
+    vers=$(pnpm --version)
+    minver=7
+    { [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] &&
+      ((BASH_REMATCH[1] >= minver)) &&
+      printf "%s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
+      {
+        echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
+        echo "Current version: $vers"
+        return 1
+      }
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+install.bin.pnpm() {
+  { { {
+    sudo npm i -g pnpm@7.6.0
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+check.bin.node() {
+  { { {
+    local vers
+    vers=$(node --version)
+    minver=16
+    { [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] &&
+      ((BASH_REMATCH[1] >= minver)) &&
+      printf "%s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
+      {
+        echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
+        echo "Current version: $vers"
+        return 1
+      }
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+install.bin.node() {
+  { { {
+    sudo npm i -g node@7.6.0
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
 check.bin.sponge() {
   { { {
     { [[ $(command -v sponge) =~ /sponge$ ]] &&
