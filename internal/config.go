@@ -53,8 +53,6 @@ type AppConfig struct {
 	APIPrefix  string `env:"API_PREFIX"`
 	AppEnv     string `env:"APP_ENV"`
 	SigningKey string `env:"SIGNING_KEY"`
-
-	mu sync.RWMutex
 }
 
 // NewAppConfig initializes app config from current environment variables.
@@ -75,11 +73,11 @@ func NewAppConfig() error {
 }
 
 // Config returns the app global config initialized from environment variables
-func Config() *AppConfig {
-	config.mu.RLock()
-	defer config.mu.RUnlock()
+func Config() AppConfig {
+	lock.Lock()
+	defer lock.Unlock()
 
-	return config
+	return *config
 }
 
 // loadEnvToConfig loads env vars to a given struct based on an `env` tag.
