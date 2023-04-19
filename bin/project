@@ -1055,6 +1055,7 @@ x.check-build-deps() {
 
     echo "Checking dependencies..."
     for bin in "${BIN_CHECKS[@]}"; do
+      echo "Checking $bin..."
       # local r
       # r="$(...)" # redirect to var while also streaming unbuffered output with | tee /dev/tty
       if "check.bin.$bin"; then
