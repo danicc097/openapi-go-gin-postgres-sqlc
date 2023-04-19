@@ -597,9 +597,16 @@
           ]
         },
         "metadata": {
-          "$ref": "#/definitions/PgtypeJSONB"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
         },
-        "project2workItem": {
+        "project2WorkItem": {
           "$ref": "#/definitions/DbProject2WorkItem"
         },
         "targetDate": {
@@ -1012,7 +1019,7 @@
         },
         "members": {
           "items": {
-            "$ref": "#/definitions/DbUser"
+            "$ref": "#/definitions/DbMember"
           },
           "type": [
             "array",
@@ -1020,9 +1027,16 @@
           ]
         },
         "metadata": {
-          "$ref": "#/definitions/PgtypeJSONB"
+          "items": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
         },
-        "project2workItem": {
+        "project2WorkItem": {
           "$ref": "#/definitions/DbProject2WorkItem"
         },
         "targetDate": {
@@ -1206,6 +1220,22 @@
     "ModelsRole": {
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbMember": {
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/DbWorkItemRole"
+        },
+        "user": {
+          "$ref": "#/definitions/DbUser"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItemRole": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -1328,6 +1358,12 @@
     },
     "ModelsRole": {
       "$ref": "#/definitions/ModelsRole"
+    },
+    "DbMember": {
+      "$ref": "#/definitions/DbMember"
+    },
+    "DbWorkItemRole": {
+      "$ref": "#/definitions/DbWorkItemRole"
     }
   }
 }

@@ -54,23 +54,15 @@ runs:
       run: |
         source .envrc
 
-        sudo apt-get install -y moreutils pgformatter direnv
-        bash bin/scripts/install-mkcert.sh
-        bash bin/scripts/install-proto.sh
-
-
         mv docker/.env.ci docker/.env
 
-    - name: Install dependencies (2)
-      shell: bash
-      run: |
-        source .envrc
+        yes y 2>/dev/null | project check-build-deps --x-env=ci
 
         # project e2e.sync-deps --x-env=ci # won't use python playwright
         project install-tools --x-env=ci
         project fetch.swagger-ui --x-env=ci
 
-    - name: Install dependencies (3)
+    - name: Install dependencies (2)
       shell: bash
       run: |
         source .envrc

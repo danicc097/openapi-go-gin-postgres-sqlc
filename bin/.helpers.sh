@@ -127,6 +127,19 @@ to_lower() {
   printf '%s\n' "$s"
 }
 
+# returns 0 if an element has been found
+element_in_array() {
+  local element=$1
+  shift
+  local arr=("$@")
+  for item in "${arr[@]}"; do
+    if [[ "$item" == "$element" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 restart_pid() {
   # get command + args
   SAVED_COMMAND="$(while IFS= read -r -d $'\0' f; do printf '%q ' "$f"; done </proc/$1/cmdline)"

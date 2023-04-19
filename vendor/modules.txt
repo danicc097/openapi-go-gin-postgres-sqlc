@@ -207,9 +207,6 @@ github.com/jackc/pgproto3/v2
 # github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a
 ## explicit; go 1.14
 github.com/jackc/pgservicefile
-# github.com/jackc/pgtype v1.11.0
-## explicit; go 1.13
-github.com/jackc/pgtype
 # github.com/jackc/pgx-zap v0.0.0-20220909013905-c08a18c611dd
 ## explicit; go 1.17
 github.com/jackc/pgx-zap

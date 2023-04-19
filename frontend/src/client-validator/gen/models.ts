@@ -39,6 +39,7 @@ export type DbDemoProjectWorkItem1 = {
   workItem?: DbWorkItem
   workItemID: number
 } | null
+export type DbWorkItemRole = string
 export type DbProject2WorkItem = {
   customDateForProject2: string | null
   workItem?: DbWorkItem
@@ -171,9 +172,9 @@ export interface DbWorkItem {
   demoProjectWorkItem?: DbDemoProjectWorkItem
   description: string
   kanbanStepID: number
-  members?: DbUser[] | null
-  metadata: PgtypeJSONB
-  project2workItem?: DbProject2WorkItem
+  members?: DbMember[] | null
+  metadata: number[] | null
+  project2WorkItem?: DbProject2WorkItem
   targetDate: string
   teamID: number
   timeEntries?: DbTimeEntry[] | null
@@ -185,7 +186,10 @@ export interface DbWorkItem {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
-export interface PgtypeJSONB {}
+export interface DbMember {
+  role?: DbWorkItemRole
+  user?: DbUser
+}
 export interface DbWorkItemComment {
   createdAt: string
   message: string
@@ -221,8 +225,8 @@ export interface RestDemoProjectWorkItemsResponse {
   description: string
   kanbanStepID: number
   members?: DbUser[] | null
-  metadata: PgtypeJSONB
-  project2workItem?: DbProject2WorkItem1
+  metadata: number[] | null
+  project2WorkItem?: DbProject2WorkItem1
   targetDate: string
   teamID: number
   timeEntries?: DbTimeEntry[] | null
@@ -311,3 +315,4 @@ export interface UpdateUserAuthRequest {
   role?: Role
   scopes?: Scopes
 }
+export interface PgtypeJSONB {}

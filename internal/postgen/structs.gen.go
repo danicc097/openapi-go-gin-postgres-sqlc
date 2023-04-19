@@ -55,6 +55,7 @@ var PublicStructs = map[string]any{
 	"DbWorkItemUpdateParams":            db.WorkItemUpdateParams{},
 	"DbWorkItemSelectConfig":            db.WorkItemSelectConfig{},
 	"DbWorkItemJoins":                   db.WorkItemJoins{},
+	"DbMember":                          db.Member{},
 	"DbWorkItemType":                    db.WorkItemType{},
 	"DbWorkItemTypeCreateParams":        db.WorkItemTypeCreateParams{},
 	"DbWorkItemTypeUpdateParams":        db.WorkItemTypeUpdateParams{},

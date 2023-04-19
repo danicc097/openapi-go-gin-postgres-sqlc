@@ -1,11 +1,11 @@
 # Certificates
 
-Create with `mkcert`, see `bin/scripts/install-mkcert.sh`.
+Create with `mkcert`, setup with ``project check-build-deps``.
 
-```powershell
-mkcert.exe -install
+```bash
+mkcert -install
 # replace root store in host with guest's,
 # also located in "$(mkcert -CAROOT)/rootCA.pem"
-code "$(mkcert.exe -CAROOT)/rootCA.pem"
-mkcert.exe -install
+code "$(mkcert -CAROOT)/rootCA.pem"
+mkcert -install
 ```

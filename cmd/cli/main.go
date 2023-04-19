@@ -16,7 +16,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/gofrs/uuid"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	// dot import so go code would resemble as much as native SQL
@@ -258,100 +258,6 @@ type User1 struct {
 	_exists, _deleted bool
 }
 
-func pgxArrayAggIssueQuery(pool *pgxpool.Pool) {
-	conn, err := pool.Acquire(context.Background())
-	if err != nil {
-		log.Fatalf("error pool.Acquire: %s\n", err)
-	}
-
-	_, err = conn.Exec(context.Background(), `
-create temporary table projects (
-	project_id serial primary key
-	, name text not null unique
-);
-
-create temporary table teams (
-	team_id serial primary key
-	, project_id int not null
-	, name text not null
-	, description text not null
-	, created_at timestamp with time zone default current_timestamp not null
-	, updated_at timestamp with time zone default current_timestamp not null
-	, foreign key (project_id) references projects (project_id) on delete cascade
-	, unique (name , project_id)
-);
-
-create temporary table users (
-  user_id uuid primary key
-  , username text not null unique
-);
-
-create temporary table user_team (
-  team_id int not null
-  , user_id uuid not null
-  , primary key (user_id , team_id)
-  , foreign key (user_id) references users (user_id) on delete cascade
-  , foreign key (team_id) references teams (team_id) on delete cascade
-);
-
-INSERT INTO users (user_id , username)
-VALUES ('19270107-1b9c-4f52-a578-7390d5b31513' , 'user_1');
-
-INSERT INTO projects ("name" , project_id)
-VALUES ('project 1' , 1);
-
-INSERT INTO teams ("name" , project_id , description)
-VALUES ('team 1' , 1 , 'This is team 1 from project 1');
-INSERT INTO teams ("name" , project_id , description)
-VALUES ('team 2' , 1 , 'This is team 2 from project 1');
-
-INSERT INTO user_team (team_id , user_id)
-VALUES (1 , '19270107-1b9c-4f52-a578-7390d5b31513');
-INSERT INTO user_team (team_id , user_id)
-VALUES (2 , '19270107-1b9c-4f52-a578-7390d5b31513');
-	`)
-	if err != nil {
-		log.Fatalf("error conn.Exec: %s\n", err)
-	}
-
-	err = RegisterDataTypes(context.Background(), conn.Conn())
-	if err != nil {
-		log.Fatalf("error RegisterDataTypes: %s\n", err)
-	}
-
-	query := `
-	SELECT users.user_id
-	, joined_teams.__teams as teams
-	FROM users
-	left join (
-		select
-			user_team.user_id as user_team_user_id
-			, array_agg(teams.*) filter (where teams.* is not null) as __teams
-			from user_team
-			join teams on teams.team_id = user_team.team_id
-			group by user_team_user_id
-		) as joined_teams on joined_teams.user_team_user_id = users.user_id
-;
-	`
-	/**
-		 * user_id │ 19270107-1b9c-4f52-a578-7390d5b31513
-	teams   │ {"(1,1,\"team 1\",\"This is team 1 from project 1\",\"2023-04-16 08:09:13.172744+00\",\"2023-04-16 08:09:13.172744+00\")","(2,1,\"team 2\",\"This is team 2 from project 1\",\"2023-04-16 08:09:13.173884+00\",\"2023-04-16 08:09:13.173884+00\")"}
-	*/
-
-	rows, err := conn.Query(context.Background(), query)
-	if err != nil {
-		log.Fatalf("error conn.Query: %s\n", err)
-	}
-
-	users, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User1])
-	if err != nil {
-		OIDCheck(conn)
-		log.Fatalf("error pgx.CollectRows: %s\n", err)
-	}
-	b, _ := json.Marshal(users[0])
-	fmt.Printf("users[0]: %+v\n", string(b))
-}
-
 func OIDCheck(conn *pgxpool.Conn) {
 	rows, err := conn.Query(context.Background(), "SELECT * FROM pg_class")
 	if err != nil {
@@ -442,7 +348,9 @@ func RegisterDataTypes(ctx context.Context, conn *pgx.Conn) error {
 		"teams",
 		"_teams",
 		"user_team",
+		"_user_team",
 		"users",
+		"_users",
 	}
 
 	for _, typeName := range dataTypeNames {
@@ -456,4 +364,96 @@ func RegisterDataTypes(ctx context.Context, conn *pgx.Conn) error {
 	}
 
 	return nil
+}
+
+func pgxArrayAggIssueQuery(pool *pgxpool.Pool) {
+	conn, err := pool.Acquire(context.Background())
+	if err != nil {
+		log.Fatalf("error pool.Acquire: %s\n", err)
+	}
+	_, err = conn.Exec(context.Background(), `
+create temporary table projects (
+	project_id serial primary key
+	, name text not null unique
+);
+
+create temporary table teams (
+	team_id serial primary key
+	, project_id int not null --limited to a project only
+	, name text not null
+	, description text not null
+	, created_at timestamp with time zone default current_timestamp not null
+	, updated_at timestamp with time zone default current_timestamp not null
+	, foreign key (project_id) references projects (project_id) on delete cascade
+	, unique (name , project_id)
+);
+
+create temporary table users (
+  user_id uuid primary key
+  , username text not null unique
+);
+
+create temporary table user_team (
+  team_id int not null
+  , user_id uuid not null
+  , primary key (user_id , team_id)
+  , foreign key (user_id) references users (user_id) on delete cascade
+  , foreign key (team_id) references teams (team_id) on delete cascade
+);
+
+INSERT INTO users (user_id , username)
+VALUES ('19270107-1b9c-4f52-a578-7390d5b31513' , 'user_1');
+
+INSERT INTO projects ("name" , project_id)
+VALUES ('project 1' , 1);
+
+INSERT INTO teams ("name" , project_id , description)
+VALUES ('team 1' , 1 , 'This is team 1 from project 1');
+INSERT INTO teams ("name" , project_id , description)
+VALUES ('team 2' , 1 , 'This is team 2 from project 1');
+
+INSERT INTO user_team (team_id , user_id)
+VALUES (1 , '19270107-1b9c-4f52-a578-7390d5b31513');
+INSERT INTO user_team (team_id , user_id)
+VALUES (2 , '19270107-1b9c-4f52-a578-7390d5b31513');
+	`)
+	if err != nil {
+		log.Fatalf("error conn.Exec: %s\n", err)
+	}
+
+	err = RegisterDataTypes(context.Background(), conn.Conn())
+	if err != nil {
+		log.Fatalf("error RegisterDataTypes: %s\n", err)
+	}
+
+	query := `
+	SELECT users.user_id
+	, joined_teams.__teams as teams
+	FROM users
+	left join (
+		select
+			user_team.user_id as user_team_user_id
+			, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			from user_team
+			join teams on teams.team_id = user_team.team_id
+			group by user_team_user_id
+		) as joined_teams on joined_teams.user_team_user_id = users.user_id
+;
+	`
+	/**
+		 * user_id │ 19270107-1b9c-4f52-a578-7390d5b31513
+	teams   │ {"(1,1,\"team 1\",\"This is team 1 from project 1\",\"2023-04-16 08:09:13.172744+00\",\"2023-04-16 08:09:13.172744+00\")","(2,1,\"team 2\",\"This is team 2 from project 1\",\"2023-04-16 08:09:13.173884+00\",\"2023-04-16 08:09:13.173884+00\")"}
+	*/
+
+	rows, err := conn.Query(context.Background(), query)
+	if err != nil {
+		log.Fatalf("error conn.Query: %s\n", err)
+	}
+	users, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User1])
+	if err != nil {
+		OIDCheck(conn)
+		log.Fatalf("error pgx.CollectRows: %s\n", err)
+	}
+	b, _ := json.Marshal(users[0])
+	fmt.Printf("users[0]: %+v\n", string(b))
 }

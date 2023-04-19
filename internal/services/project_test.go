@@ -72,7 +72,6 @@ func Test_MergeConfigFields(t *testing.T) {
 				Fields: []models.ProjectConfigField{
 					{IsEditable: false, ShowCollapsed: true, IsVisible: true, Path: "workItemTypeID", Name: "Updated"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "description", Name: "description"},
-					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "metadata", Name: "metadata"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "teamID", Name: "teamID"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "updatedAt", Name: "updatedAt"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "kanbanStepID", Name: "kanbanStepID"},

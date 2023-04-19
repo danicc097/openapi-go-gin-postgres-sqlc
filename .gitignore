@@ -2,6 +2,7 @@
 .envrc.local
 __debug_bin
 test-bash.sh
+subshell_pipeline_errors_test.sh
 openapi-go-gin-postgres-sqlc*
 /bin/tools/*
 openapi-generator-cli.jar

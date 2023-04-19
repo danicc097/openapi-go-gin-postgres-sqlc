@@ -725,8 +725,12 @@ components:
           nullable: true
           type: array
         metadata:
-          $ref: '#/components/schemas/PgtypeJSONB'
-        project2workItem:
+          items:
+            minimum: 0
+            type: integer
+          nullable: true
+          type: array
+        project2WorkItem:
           $ref: '#/components/schemas/DbProject2WorkItem'
         targetDate:
           format: date-time
@@ -1011,12 +1015,16 @@ components:
           type: integer
         members:
           items:
-            $ref: '#/components/schemas/DbUser'
+            $ref: '#/components/schemas/DbMember'
           nullable: true
           type: array
         metadata:
-          $ref: '#/components/schemas/PgtypeJSONB'
-        project2workItem:
+          items:
+            minimum: 0
+            type: integer
+          nullable: true
+          type: array
+        project2WorkItem:
           $ref: '#/components/schemas/DbProject2WorkItem'
         targetDate:
           format: date-time
@@ -1131,6 +1139,15 @@ components:
     ModelsProject: # Generated from internal structs. DO NOT EDIT.
       type: string
     ModelsRole: # Generated from internal structs. DO NOT EDIT.
+      type: string
+    DbMember: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        role:
+          $ref: '#/components/schemas/DbWorkItemRole'
+        user:
+          $ref: '#/components/schemas/DbUser'
+      type: object
+    DbWorkItemRole: # Generated from internal structs. DO NOT EDIT.
       type: string
   examples:
     User:
