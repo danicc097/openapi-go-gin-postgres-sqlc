@@ -381,6 +381,11 @@ x.postgen() {
 
     update_spec_with_structs
 
+    # TODO fix Db<...> in xo fields not using generated x-db-enum schemas. 2 options:
+    # - xo adds ref:"#/components/schemas/..." to fields. Cannot do this since that gen depends on spec
+    # - `project postgen` analyzes at the last step all generated x-db-enum keys,
+    # and replaces all found Db<...> that match its pascal case. This is error proof.
+
     go build -o postgen cmd/postgen/main.go ||
       echo "Could not rebuild postgen. If you made changes to it, build it with a compilable app state" >&2
     ./postgen -env=".env.$env"
