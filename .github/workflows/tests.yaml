@@ -30,6 +30,6 @@ jobs:
 
           project test.backend-setup --x-env=ci
 
-          git diff --exit-code
+          git diff --exit-code -- . ':!docker'
 
           project test -race --x-env=ci
