@@ -2,31 +2,40 @@
 
 source "${BASH_SOURCE%/*}/.helpers.sh"
 
+report_failure() {
+  echo "
+${RED}Failed ${FUNCNAME[1]##*.} check.${OFF}
+Minimum version: $minver
+Current version: $vers"
+  exit 1
+}
+
+report_success() {
+  printf "%s ✅\n" "${FUNCNAME[1]##*.}: $minver"
+  exit 0
+}
+
 check.bin.bash() {
   { { {
     vers=${BASH_VERSION:0:1}
     minver=4
-    { ((vers >= minver)) &&
-      printf "%s ✅\n" "${FUNCNAME[0]##*.}: $minver"; } ||
-      {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
-        echo "Current version: $vers"
-        exit 1
-      }
+    if ((vers >= minver)); then
+      report_success
+    else
+      report_failure
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 check.bin.column() {
   { { {
-    local vers
     vers=$(column --version)
     minver="util-linux"
-    { [[ "$vers" = *$minver* ]] &&
-      printf "%s ✅\n" "${FUNCNAME[0]##*.}: $minver"; } ||
-      {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
-        return 1
-      }
+    if [[ "$vers" = *$minver* ]]; then
+      report_success
+    else
+      report_failure
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -46,16 +55,13 @@ install.bin.column() {
 
 check.bin.protoc() {
   { { {
-    local vers
     vers=$(protoc --version)
     minver="libprotoc 3"
-    { [[ "$vers" = *$minver* ]] &&
-      printf "%s ✅\n" "${FUNCNAME[0]##*.}: $minver"; } ||
-      {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
-        echo "Current version: $vers"
-        return 1
-      }
+    if [[ "$vers" = *$minver* ]]; then
+      report_success
+    else
+      report_failure
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -73,82 +79,63 @@ install.bin.protoc() {
 
 check.bin.curl() {
   { { {
-    local -a versa
-    mapfile versa < <(curl -V 2>&1)
-    { [[ "${versa[0]}" =~ ^.*(libcurl).* ]] &&
-      printf "%s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
-      {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check. libcurl Required"
-        return 1
-      }
+    local -a vers_arr
+    mapfile vers_arr < <(curl -V 2>&1)
+    minver="libcurl"
+    vers="${vers_arr[0]}"
+    if [[ $vers = *$minver* ]]; then
+      report_success
+    else
+      report_failure
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 check.bin.go() {
   { { {
-    local vers
     vers=$(go version)
     minver=18
-    { [[ "$vers" =~ ^[^\ ]+\ [^\ ]+\ go1\.([^\ \.]+) ]] &&
-      ((BASH_REMATCH[1] >= minver)) &&
-      printf "%s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
-      {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
-        echo "Current version: $vers"
-        return 1
-      }
+    if [[ "$vers" =~ ^[^\ ]+\ [^\ ]+\ go1\.([^\ \.]+) ]] && ((BASH_REMATCH[1] >= minver)); then
+      report_success
+    else
+      report_failure
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 check.bin.docker() {
   { { {
-    local vers
     vers=$(docker --version)
     minver=2
-    { [[ "$vers" =~ version[\ ]+([^\ \.]+) ]] &&
-      ((BASH_REMATCH[1] >= minver)) &&
-      printf "%s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
-      {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
-        echo "Current version: $vers"
-        return 1
-      }
+    if [[ "$vers" =~ version[\ ]+([^\ \.]+) ]] && ((BASH_REMATCH[1] >= minver)); then
+      report_success
+    else
+      report_failure
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 check.bin.docker-compose() {
   { { {
-    local vers
     vers=$(docker compose version)
     minver=2
-    {
-      [[ "$vers" =~ [\ ]+[v]?([0-9]+)[\.]{1} ]] &&
-        ((BASH_REMATCH[1] >= minver)) &&
-        printf "%s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"
-    } ||
-      {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
-        echo "Current version: $vers"
-        return 1
-      }
+    if [[ "$vers" =~ [\ ]+[v]?([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
+      report_success
+    else
+      report_failure
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 check.bin.pg_format() {
   { { {
-    local vers
     vers=$(pg_format --version)
     minver=5
-    {
-      [[ "$vers" =~ [\ ]+([0-9]+)[\.]{1} ]] &&
-        ((BASH_REMATCH[1] >= minver)) &&
-        printf "%s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"
-    } ||
-      {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
-        echo "Current version: $vers"
-        return 1
-      }
+    if [[ "$vers" =~ [\ ]+([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
+      report_success
+    else
+      report_failure
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -160,16 +147,12 @@ install.bin.pg_format() {
 
 check.bin.parallel() {
   { { {
-    local vers
     vers=$(parallel --version)
-    {
-      [[ "$vers" =~ (GNU parallel )([0-9]+) ]] &&
-        printf "%s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[2]}"
-    } ||
-      {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check. Check install-parallel.sh"
-        return 1
-      }
+    if [[ "$vers" =~ (GNU parallel )([0-9]+) ]]; then
+      report_success
+    else
+      report_failure
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -181,17 +164,13 @@ install.bin.parallel() {
 
 check.bin.direnv() {
   { { {
-    local vers
     vers=$(direnv --version)
     minver=2
-    { [[ "$vers" =~ ([0-9]+)[\.]{1} ]] &&
-      ((BASH_REMATCH[1] >= minver)) &&
-      printf "%s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
-      {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
-        echo "Current version: $vers"
-        return 1
-      }
+    if [[ "$vers" =~ ([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
+      report_success
+    else
+      report_failure
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -203,17 +182,13 @@ install.bin.direnv() {
 
 check.bin.pnpm() {
   { { {
-    local vers
     vers=$(pnpm --version)
     minver=7
-    { [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] &&
-      ((BASH_REMATCH[1] >= minver)) &&
-      printf "%s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
-      {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
-        echo "Current version: $vers"
-        return 1
-      }
+    if [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
+      report_success
+    else
+      report_failure
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -225,17 +200,13 @@ install.bin.pnpm() {
 
 check.bin.node() {
   { { {
-    local vers
     vers=$(node --version)
     minver=16
-    { [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] &&
-      ((BASH_REMATCH[1] >= minver)) &&
-      printf "%s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"; } ||
-      {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
-        echo "Current version: $vers"
-        return 1
-      }
+    if [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
+      report_success
+    else
+      report_failure
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -247,12 +218,13 @@ install.bin.node() {
 
 check.bin.sponge() {
   { { {
-    { [[ $(command -v sponge) =~ /sponge$ ]] &&
-      printf "%s ✅\n" "${FUNCNAME[0]##*.}"; } ||
-      {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check."
-        return 1
-      }
+    vers=$(command -v sponge)
+    minver="-"
+    if [[ $vers = */sponge* ]]; then
+      report_success
+    else
+      report_failure
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -264,19 +236,13 @@ install.bin.sponge() {
 
 check.bin.mkcert() {
   { { {
-    local vers
     vers=$(mkcert --version)
     minver=1
-    {
-      [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] &&
-        ((BASH_REMATCH[1] >= minver)) &&
-        printf "%s ✅\n" "${FUNCNAME[0]##*.}: ${BASH_REMATCH[1]}"
-    } ||
-      {
-        echo "${RED}Failed ${FUNCNAME[0]##*.} check. (minimum version: $minver)${OFF}"
-        echo "Current version: $vers"
-        return 1
-      }
+    if [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
+      report_success
+    else
+      report_failure
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
