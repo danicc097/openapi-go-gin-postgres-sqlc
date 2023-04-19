@@ -24,7 +24,9 @@ jobs:
       - name: Run project
         run: |
           source .envrc
+
           go mod download
+          cd frontend && pnpm i && cd -
 
           project test.backend-setup --x-env=ci
 
