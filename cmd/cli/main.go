@@ -46,7 +46,7 @@ func main() {
 		log.Fatalf("envvar.Load: %s\n", err)
 	}
 
-	format.PrintJSON(internal.Config)
+	format.PrintJSON(internal.Config())
 
 	cmd := exec.Command(
 		"bash", "-c",

@@ -5,7 +5,7 @@ source "${BASH_SOURCE%/*}/.helpers.sh"
 ensure_pwd_is_top_level
 
 cd docker || exit
-docker-compose \
+docker compose \
   -p full-text-search \
   -f docker-compose.fts.yml \
   --env-file .env \

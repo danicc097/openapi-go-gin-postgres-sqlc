@@ -38,11 +38,12 @@ func main() {
 		log.Fatalf("envvar.Load: %s\n", err)
 	}
 
+	cfg := internal.Config()
 	dbConnection := postgres.DBConnection{
-		Host:       internal.Config.Postgres.Server,
-		Port:       internal.Config.Postgres.Port,
-		User:       internal.Config.Postgres.User,
-		Password:   internal.Config.Postgres.Password,
+		Host:       cfg.Postgres.Server,
+		Port:       cfg.Postgres.Port,
+		User:       cfg.Postgres.User,
+		Password:   cfg.Postgres.Password,
 		DBName:     dbname,
 		SchemaName: schema,
 		SslMode:    "disable",

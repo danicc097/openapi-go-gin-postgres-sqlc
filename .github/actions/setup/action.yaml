@@ -49,27 +49,16 @@ runs:
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
 
-    - name: Install dependencies (1)
+    - name: Install dependencies
       shell: bash
       run: |
         source .envrc
 
         mv docker/.env.ci docker/.env
 
-        { yes || :; } | project bootstrap --x-env=ci # https://stackoverflow.com/questions/49430554/gitlab-runner-in-docker-yes-true-returns-with-exit-1
+        { yes || :; } | project bootstrap --x-env=ci
 
         # project e2e.sync-deps --x-env=ci # won't use python playwright
-
-    - name: Install dependencies (2)
-      shell: bash
-      run: |
-        source .envrc
-
-        git clone https://github.com/danicc097/traefik-bootstrap.git
-        docker network create traefik-net || true
-        cd traefik-bootstrap
-        ./mkcert-certificates
-        ./compose-up
 
         echo "$HOME/.local/bin" >> $GITHUB_PATH
         echo "$HOME/bin" >> $GITHUB_PATH

@@ -14,8 +14,7 @@ import (
 var (
 	lock = &sync.Mutex{}
 
-	// Config is the app global config initialized from environment variables
-	Config *AppConfig
+	config *AppConfig
 )
 
 type OIDCConfig struct {
@@ -54,22 +53,33 @@ type AppConfig struct {
 	APIPrefix  string `env:"API_PREFIX"`
 	AppEnv     string `env:"APP_ENV"`
 	SigningKey string `env:"SIGNING_KEY"`
+
+	mu sync.RWMutex
 }
 
 // NewAppConfig initializes app config from current environment variables.
-// Config can be replaced with subsequent calls.
+// config can be replaced with subsequent calls.
 func NewAppConfig() error {
-	cfg := &AppConfig{}
-
 	lock.Lock()
 	defer lock.Unlock()
+
+	cfg := &AppConfig{}
 
 	if err := loadEnvToConfig(cfg); err != nil {
 		return fmt.Errorf("loadEnvToConfig: %w", err)
 	}
-	Config = cfg
+
+	config = cfg
 
 	return nil
+}
+
+// Config returns the app global config initialized from environment variables
+func Config() *AppConfig {
+	config.mu.RLock()
+	defer config.mu.RUnlock()
+
+	return config
 }
 
 // loadEnvToConfig loads env vars to a given struct based on an `env` tag.

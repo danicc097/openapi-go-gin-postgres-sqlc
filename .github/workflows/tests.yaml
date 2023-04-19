@@ -25,7 +25,9 @@ jobs:
         run: |
           source .envrc
 
-          go mod download
+          # go mod download # use vendor
+          go mod verify
+
           cd frontend && pnpm i && cd -
 
           project test.backend-setup --x-env=ci
