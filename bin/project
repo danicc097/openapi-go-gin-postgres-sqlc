@@ -31,8 +31,9 @@ trap errtrap SIGUSR1
 trap exit-cleanup 0
 
 exit-cleanup() {
-  [[ $restore_cache = 1 ]] && cache-gen.restore
-  exit 0
+  if [[ $restore_cache = 1 ]]; then
+    cache-gen.restore
+  fi
 }
 
 killgroup() {
@@ -660,11 +661,7 @@ x.test() {
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
     APP_ENV="$env" go test "$@" ./...
-    exit 1 # FIXME trap subshell err
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-
-  echo exit code: $?                  # FIXME trap subshell err
-  echo pipestatus: "${PIPESTATUS[*]}" # FIXME trap subshell err
 }
 
 # Test the entire project on file changes. Accepts `go test` parameters.
@@ -1760,7 +1757,6 @@ if [[ -n "$1" ]]; then
     declare cmd=$(command -v "x.$c")
     if [[ $c == "$CMD" && -n "$cmd" ]]; then
       "x.$CMD" "$@"
-      # echo "err code at xfunction end: $?" # FIXME
       exit $?
     fi
   done
