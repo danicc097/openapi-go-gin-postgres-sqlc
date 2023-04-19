@@ -143,20 +143,21 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	// pprof.Register(router, "dev/pprof")
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
+	cfg := internal.Config()
+
 	for _, mw := range srv.middlewares {
 		router.Use(mw)
 	}
-
 	fsys, _ := fs.Sub(static.SwaggerUI, "swagger-ui")
-	vg := router.Group(internal.Config.APIVersion)
+	vg := router.Group(cfg.APIVersion)
 	vg.StaticFS("/docs", http.FS(fsys)) // can't validate if not in spec
 
 	// oidc
-	clientID := internal.Config.OIDC.ClientID
-	clientSecret := internal.Config.OIDC.ClientSecret
+	clientID := cfg.OIDC.ClientID
+	clientSecret := cfg.OIDC.ClientSecret
 	keyPath := "" // not used
-	issuer := internal.Config.OIDC.Issuer
-	scopes := strings.Split(internal.Config.OIDC.Scopes, " ")
+	issuer := cfg.OIDC.Issuer
+	scopes := strings.Split(cfg.OIDC.Scopes, " ")
 
 	redirectURI := internal.BuildAPIURL(conf.MyProviderCallbackPath)
 	cookieHandler := httphelper.NewCookieHandler(key, key, httphelper.WithUnsecure())
@@ -204,7 +205,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	oasMw := newOpenapiMiddleware(conf.Logger, openapi)
 
 	rlMw := newRateLimitMiddleware(conf.Logger, 25, 10)
-	switch internal.Config.AppEnv {
+	switch cfg.AppEnv {
 	case "prod":
 		vg.Use(rlMw.Limit())
 	}
@@ -265,9 +266,11 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 
 	conf := envvar.New()
 
+	cfg := internal.Config()
+
 	var logger *zap.Logger
 	// XXX there's work being done in https://github.com/uptrace/opentelemetry-go-extra/tree/main/otelzap
-	switch internal.Config.AppEnv {
+	switch cfg.AppEnv {
 	case "prod":
 		logger, err = zap.NewProduction()
 	default:
@@ -367,7 +370,7 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 		// ErrServerClosed."
 		var err error
 
-		switch internal.Config.AppEnv {
+		switch cfg.AppEnv {
 		case "dev", "ci":
 			// err = srv.httpsrv.ListenAndServe()
 			err = srv.httpsrv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")
