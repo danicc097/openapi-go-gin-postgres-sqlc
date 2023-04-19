@@ -56,11 +56,9 @@ runs:
 
         mv docker/.env.ci docker/.env
 
-        yes y 2>/dev/null | project check-build-deps --x-env=ci
+        { yes || :; } | project bootstrap --x-env=ci # https://stackoverflow.com/questions/49430554/gitlab-runner-in-docker-yes-true-returns-with-exit-1
 
         # project e2e.sync-deps --x-env=ci # won't use python playwright
-        project install-tools --x-env=ci
-        project fetch.swagger-ui --x-env=ci
 
     - name: Install dependencies (2)
       shell: bash

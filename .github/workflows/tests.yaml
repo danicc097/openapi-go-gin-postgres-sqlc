@@ -24,10 +24,12 @@ jobs:
       - name: Run project
         run: |
           source .envrc
+
           go mod download
+          cd frontend && pnpm i && cd -
 
           project test.backend-setup --x-env=ci
 
-          git diff --exit-code
+          git diff --exit-code -- . ':!docker'
 
           project test -race --x-env=ci
