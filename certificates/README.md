@@ -1,11 +1,10 @@
 # Certificates
 
-Create with `mkcert`, setup with ``project check-build-deps``.
+Create with `mkcert` manually or setup with ``project check-build-deps``.
 
 ```bash
 mkcert -install
-# replace root store in host with guest's,
-# also located in "$(mkcert -CAROOT)/rootCA.pem"
-code "$(mkcert -CAROOT)/rootCA.pem"
-mkcert -install
+# if using a VM, replace rootCA.pem in host with guest's,
+# both located in "$(mkcert -CAROOT)/rootCA.pem"
+# and then mkcert -install in host again
 ```
