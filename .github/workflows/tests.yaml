@@ -32,6 +32,6 @@ jobs:
 
           project test.backend-setup --x-env=ci
 
-          git diff --exit-code -- . ':!docker'
+          git diff --exit-code # -- . ':!dir_to_skip'
 
           project test -race --x-env=ci

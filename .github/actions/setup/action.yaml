@@ -54,7 +54,7 @@ runs:
       run: |
         source .envrc
 
-        mv docker/.env.ci docker/.env
+        cp docker/.env.ci docker/.env
 
         { yes || :; } | project bootstrap --x-env=ci
 
