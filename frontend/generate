@@ -15,9 +15,9 @@ mkdir -p src/types
 
 # TODO cache and trap exit, restoring if necessary as in `project`
 rm -rf ./src/gen
-node_modules/.bin/orval --config ./orval.config.ts &
+orval --config ./orval.config.ts &
 node generate-client-validator.js &
-node_modules/.bin/openapi-typescript ../openapi.yaml --output "$SCHEMA_OUT" --path-params-as-types --prettier-config .prettierrc &
+openapi-typescript ../openapi.yaml --output "$SCHEMA_OUT" --path-params-as-types --prettier-config .prettierrc &
 wait
 
 echo "/* eslint-disable @typescript-eslint/ban-ts-comment */

@@ -130,9 +130,11 @@ kill_descendants() {
 # Check dependencies and fetch required tools.
 x.bootstrap() {
   { { {
+    git submodule update --init --recursive
     x.check-build-deps
     x.install-tools
-    x.fetch.swagger-ui
+    x.setup.swagger-ui
+    confirm "Do you want to setup traefik and mkcert certificates?" && x.setup.traefik
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -161,7 +163,7 @@ x.install-tools() {
 }
 
 # Fetch latest Swagger UI bundle.
-x.fetch.swagger-ui() {
+x.setup.swagger-ui() {
   { { {
     local name="$(curl --silent "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
     curl -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
@@ -773,7 +775,7 @@ x.run-prod() {
   cd frontend && pnpm run generate && cd - >/dev/null
   x.gen
 
-  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
+  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker compose \
     --project-name "$PROJECT_PREFIX"_"$env" \
     -f docker-compose."$env".yml \
     --env-file ".env.$env" \
@@ -831,6 +833,15 @@ x.search-stopship() {
       exit 1
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Runs a traefik container with predefined configuration.
+x.setup.traefik() {
+  git clone https://github.com/danicc097/traefik-bootstrap.git
+  docker network create traefik-net || true
+  cd traefik-bootstrap
+  # ./mkcert-certificates # via install.bin.mkcert
+  ./compose-up
 }
 
 ########################## migrations ##########################
@@ -1388,7 +1399,7 @@ run_shared_services() {
   docker network create traefik-net 2>/dev/null || true
 
   cd docker
-  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker-compose \
+  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker compose \
     -p "$PROJECT_PREFIX" \
     -f docker-compose.shared.yml \
     -f docker-compose.oidc.yml \

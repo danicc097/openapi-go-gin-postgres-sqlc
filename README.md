@@ -48,11 +48,31 @@ with `--x-help`:
 Assuming a recent Ubuntu release:
 
 ```bash
-sudo apt install moreutils pgformatter direnv
 
-direnv allow
-project bootstrap
+sudo apt install direnv
+direnv allow # you can also customize direnv with .envrc.local as you would a regular .envrc, see example
 
+cp openapi-go.code-workspace.example openapi-go.code-workspace # edit as desired
+
+project bootstrap # dependency and tools interactive installation
+
+```
+
+### Configuration
+
+- Fill in `.env.templates`:
+
+  ```bash
+  find . -name ".env*.template"
+  ```
+
+- Fill in `frontend/config.template.json`.
+
+
+### Tracing, monitoring...
+
+```bash
+bin/deploy-instrumentation
 ```
 
 ## Code generation
