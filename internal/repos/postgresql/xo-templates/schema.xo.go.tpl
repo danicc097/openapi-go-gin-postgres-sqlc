@@ -240,16 +240,6 @@ type {{ $t.GoName }}UpdateParams struct {
  */}}
 
 {{ if $t.PrimaryKeys -}}
-// Exists returns true when the {{ $t.GoName }} exists in the database.
-func ({{ short $t }} *{{ $t.GoName }}) Exists() bool {
-	return {{ short $t }}._exists
-}
-
-// Deleted returns true when the {{ $t.GoName }} has been marked for deletion from
-// the database.
-func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
-	return {{ short $t }}._deleted
-}
 
 // {{ func_name_context "Insert" }} inserts the {{ $t.GoName }} to the database.
 {{ recv_context $t "Insert" }} {
@@ -340,7 +330,7 @@ func ({{ short $t }} *{{ $t.GoName }}) Deleted() bool {
 
 // {{ func_name_context "Save" }} saves the {{ $t.GoName }} to the database.
 {{ recv_context $t "Save" }} {
-	if {{ short $t }}.Exists() {
+	if {{ short $t }}._exists {
 		return {{ short $t }}.{{ func_name_context "Update" }}({{ if context }}ctx, {{ end }}db)
 	}
 	return {{ short $t }}.{{ func_name_context "Insert" }}({{ if context }}ctx, {{ end }}db)

@@ -143,17 +143,6 @@ type Member struct {
 	Role WorkItemRole `json:"role" db:"role"`
 }
 
-// Exists returns true when the WorkItem exists in the database.
-func (wi *WorkItem) Exists() bool {
-	return wi._exists
-}
-
-// Deleted returns true when the WorkItem has been marked for deletion from
-// the database.
-func (wi *WorkItem) Deleted() bool {
-	return wi._deleted
-}
-
 // Insert inserts the WorkItem to the database.
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	switch {
@@ -217,7 +206,7 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 
 // Save saves the WorkItem to the database.
 func (wi *WorkItem) Save(ctx context.Context, db DB) (*WorkItem, error) {
-	if wi.Exists() {
+	if wi._exists {
 		return wi.Update(ctx, db)
 	}
 	return wi.Insert(ctx, db)

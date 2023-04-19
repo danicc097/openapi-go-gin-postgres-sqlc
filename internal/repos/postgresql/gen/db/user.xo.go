@@ -132,17 +132,6 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	}
 }
 
-// Exists returns true when the User exists in the database.
-func (u *User) Exists() bool {
-	return u._exists
-}
-
-// Deleted returns true when the User has been marked for deletion from
-// the database.
-func (u *User) Deleted() bool {
-	return u._deleted
-}
-
 // Insert inserts the User to the database.
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	switch {
@@ -206,7 +195,7 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 
 // Save saves the User to the database.
 func (u *User) Save(ctx context.Context, db DB) (*User, error) {
-	if u.Exists() {
+	if u._exists {
 		return u.Update(ctx, db)
 	}
 	return u.Insert(ctx, db)

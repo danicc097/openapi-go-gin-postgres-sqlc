@@ -95,17 +95,6 @@ func WithTimeEntryJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
 	}
 }
 
-// Exists returns true when the TimeEntry exists in the database.
-func (te *TimeEntry) Exists() bool {
-	return te._exists
-}
-
-// Deleted returns true when the TimeEntry has been marked for deletion from
-// the database.
-func (te *TimeEntry) Deleted() bool {
-	return te._deleted
-}
-
 // Insert inserts the TimeEntry to the database.
 func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 	switch {
@@ -169,7 +158,7 @@ func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 
 // Save saves the TimeEntry to the database.
 func (te *TimeEntry) Save(ctx context.Context, db DB) (*TimeEntry, error) {
-	if te.Exists() {
+	if te._exists {
 		return te.Update(ctx, db)
 	}
 	return te.Insert(ctx, db)

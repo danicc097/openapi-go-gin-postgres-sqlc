@@ -88,17 +88,6 @@ func WithDemoProjectWorkItemJoin(joins DemoProjectWorkItemJoins) DemoProjectWork
 	}
 }
 
-// Exists returns true when the DemoProjectWorkItem exists in the database.
-func (dpwi *DemoProjectWorkItem) Exists() bool {
-	return dpwi._exists
-}
-
-// Deleted returns true when the DemoProjectWorkItem has been marked for deletion from
-// the database.
-func (dpwi *DemoProjectWorkItem) Deleted() bool {
-	return dpwi._deleted
-}
-
 // Insert inserts the DemoProjectWorkItem to the database.
 func (dpwi *DemoProjectWorkItem) Insert(ctx context.Context, db DB) (*DemoProjectWorkItem, error) {
 	switch {
@@ -162,7 +151,7 @@ func (dpwi *DemoProjectWorkItem) Update(ctx context.Context, db DB) (*DemoProjec
 
 // Save saves the DemoProjectWorkItem to the database.
 func (dpwi *DemoProjectWorkItem) Save(ctx context.Context, db DB) (*DemoProjectWorkItem, error) {
-	if dpwi.Exists() {
+	if dpwi._exists {
 		return dpwi.Update(ctx, db)
 	}
 	return dpwi.Insert(ctx, db)

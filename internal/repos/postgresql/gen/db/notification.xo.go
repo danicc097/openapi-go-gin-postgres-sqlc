@@ -101,17 +101,6 @@ func WithNotificationJoin(joins NotificationJoins) NotificationSelectConfigOptio
 	}
 }
 
-// Exists returns true when the Notification exists in the database.
-func (n *Notification) Exists() bool {
-	return n._exists
-}
-
-// Deleted returns true when the Notification has been marked for deletion from
-// the database.
-func (n *Notification) Deleted() bool {
-	return n._deleted
-}
-
 // Insert inserts the Notification to the database.
 func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error) {
 	switch {
@@ -175,7 +164,7 @@ func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error)
 
 // Save saves the Notification to the database.
 func (n *Notification) Save(ctx context.Context, db DB) (*Notification, error) {
-	if n.Exists() {
+	if n._exists {
 		return n.Update(ctx, db)
 	}
 	return n.Insert(ctx, db)

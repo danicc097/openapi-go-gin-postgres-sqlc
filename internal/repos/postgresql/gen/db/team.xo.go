@@ -92,17 +92,6 @@ func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 	}
 }
 
-// Exists returns true when the Team exists in the database.
-func (t *Team) Exists() bool {
-	return t._exists
-}
-
-// Deleted returns true when the Team has been marked for deletion from
-// the database.
-func (t *Team) Deleted() bool {
-	return t._deleted
-}
-
 // Insert inserts the Team to the database.
 func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 	switch {
@@ -166,7 +155,7 @@ func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 
 // Save saves the Team to the database.
 func (t *Team) Save(ctx context.Context, db DB) (*Team, error) {
-	if t.Exists() {
+	if t._exists {
 		return t.Update(ctx, db)
 	}
 	return t.Insert(ctx, db)

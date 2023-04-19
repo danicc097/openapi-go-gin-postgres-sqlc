@@ -72,17 +72,6 @@ func WithKanbanStepJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
 	}
 }
 
-// Exists returns true when the KanbanStep exists in the database.
-func (ks *KanbanStep) Exists() bool {
-	return ks._exists
-}
-
-// Deleted returns true when the KanbanStep has been marked for deletion from
-// the database.
-func (ks *KanbanStep) Deleted() bool {
-	return ks._deleted
-}
-
 // Insert inserts the KanbanStep to the database.
 func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 	switch {
@@ -146,7 +135,7 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) (*KanbanStep, error) {
 
 // Save saves the KanbanStep to the database.
 func (ks *KanbanStep) Save(ctx context.Context, db DB) (*KanbanStep, error) {
-	if ks.Exists() {
+	if ks._exists {
 		return ks.Update(ctx, db)
 	}
 	return ks.Insert(ctx, db)

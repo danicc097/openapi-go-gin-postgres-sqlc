@@ -59,17 +59,6 @@ func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectCo
 	}
 }
 
-// Exists returns true when the SchemaMigration exists in the database.
-func (sm *SchemaMigration) Exists() bool {
-	return sm._exists
-}
-
-// Deleted returns true when the SchemaMigration has been marked for deletion from
-// the database.
-func (sm *SchemaMigration) Deleted() bool {
-	return sm._deleted
-}
-
 // Insert inserts the SchemaMigration to the database.
 func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration, error) {
 	switch {
@@ -133,7 +122,7 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration,
 
 // Save saves the SchemaMigration to the database.
 func (sm *SchemaMigration) Save(ctx context.Context, db DB) (*SchemaMigration, error) {
-	if sm.Exists() {
+	if sm._exists {
 		return sm.Update(ctx, db)
 	}
 	return sm.Insert(ctx, db)

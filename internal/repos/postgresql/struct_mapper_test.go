@@ -26,7 +26,7 @@ type UpdateStStruct struct {
 }
 
 func TestUpdateEntityWithParams(t *testing.T) {
-	st := StStruct{
+	oldSt := StStruct{
 		Field1: pointers.New("st"),
 		Field2: 42,
 		Field3: true,
@@ -36,19 +36,19 @@ func TestUpdateEntityWithParams(t *testing.T) {
 		},
 	}
 
-	stCopy := st
+	st := oldSt
 
 	stUpdateParams := UpdateStStruct{
 		Field1: pointers.New(pointers.New("new string")),
 		Field3: pointers.New(false),
 	}
 
-	updateEntityWithParams(&stCopy, &stUpdateParams)
+	updateEntityWithParams(&st, &stUpdateParams)
 
-	assert.Equal(t, stCopy.Field1, *stUpdateParams.Field1)
-	assert.Equal(t, stCopy.Field3, *stUpdateParams.Field3)
+	assert.Equal(t, st.Field1, *stUpdateParams.Field1)
+	assert.Equal(t, st.Field3, *stUpdateParams.Field3)
 
 	// ensure that the original is not modified for some reason
-	assert.Equal(t, stCopy.Field2, st.Field2)
-	assert.Equal(t, stCopy.Field4, st.Field4)
+	assert.Equal(t, st.Field2, oldSt.Field2)
+	assert.Equal(t, st.Field4, oldSt.Field4)
 }
