@@ -80,8 +80,9 @@ readonly MAX_FNAME_LOG_LEN=13
 
 # determines if gen cache should be restore at program exit. 0|1
 restore_cache=0
-# tracks if caching gen is already running, to allow for nested cache-gen and cache-cleanup inside multiple functions. 0|1
-is_caching=0
+# stores the first executing function to track if caching gen is already running,
+# to allow for nested cache-gen and cache-cleanup inside multiple functions.
+restore_cache_caller=""
 
 pids=""
 env="dev"
@@ -231,6 +232,7 @@ x.setup.swagger-ui() {
 
 # Run pre-generation scripts in the internal package.
 x.pregen() {
+  cache-gen
   { { {
     POSTGRES_DB="$GEN_POSTGRES_DB"
 
@@ -383,6 +385,7 @@ WHERE t.typtype = 'e' AND n.nspname IN (%s);"
 
     ./pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  cache-gen.cleanup
 }
 
 # outputs safe double-quoted paths for yq
@@ -403,6 +406,7 @@ clean_yq_array() {
 
 # Run post-generation scripts in the internal package.
 x.postgen() {
+  cache-gen
   { { {
     POSTGRES_DB="$GEN_POSTGRES_DB"
 
@@ -414,20 +418,23 @@ x.postgen() {
 
     ./postgen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  cache-gen.cleanup
 }
 
 # Generate type-safe Go code from SQL.
 x.gen.sqlc() {
+  cache-gen
   { { {
     echo "Running generation"
     sqlc generate --experimental -f "$PG_REPO"/sqlc.yaml || err "Failed sqlc generation"
     rm "$PG_REPO_GEN"/db/models.go # sqlc enums
-
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  cache-gen.cleanup
 }
 
 # Automatically generate CRUD and index queries with joins based on existing indexes from a Postgres schema.
 x.gen.xo() {
+  cache-gen
   { { {
     echo "Running generation"
     # xo schema --help
@@ -456,6 +463,7 @@ x.gen.xo() {
       -name "*.go")
     goimports -w $files
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  cache-gen.cleanup
 }
 
 # Generate a type-safe SQL builder.
@@ -1322,8 +1330,10 @@ xo_schema() {
 
 # saves the current gen state to allow restoring in the event of early exit
 cache-gen() {
-  # ((is_caching = 1)) && return
-  # is_caching=1
+  test -n "$restore_cache_caller" && return
+
+  restore_cache_caller="${FUNCNAME[1]}"
+
   mkdir -p "$CACHE_FRONTEND_GEN"
   mkdir -p "$CACHE_PG_REPO_GEN"
 
@@ -1335,8 +1345,9 @@ cache-gen() {
 }
 
 cache-gen.cleanup() {
-  # ((is_nested = 1)) && return
-  restore_cache=0
+  if [[ "$restore_cache_caller" = "${FUNCNAME[1]}" ]]; then
+    restore_cache=0
+  fi
 }
 
 cache-gen.restore() {
