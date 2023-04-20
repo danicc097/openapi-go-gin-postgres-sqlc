@@ -183,24 +183,26 @@ x.install-tools() {
   { { {
     echo "Installing go tooling..."
 
-    go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
-    # go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.16.0
-    go install github.com/danicc097/sqlc/cmd/sqlc@custom
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
-    go install github.com/joho/godotenv/cmd/godotenv@latest
-    go install github.com/tufin/oasdiff@latest
-    go install golang.org/x/tools/cmd/goimports@latest
-    go install mvdan.cc/gofumpt@latest
-    go install github.com/danicc097/air@latest
-    go install github.com/danicc097/xo@latest
-    go install github.com/mikefarah/yq/v4@v4.27.2
-    go install github.com/hexdigest/gowrap/cmd/gowrap@latest
+    go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 &
+    # go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.16.0 &
+    go install github.com/danicc097/sqlc/cmd/sqlc@custom &
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2 &
+    go install github.com/joho/godotenv/cmd/godotenv@latest &
+    go install github.com/tufin/oasdiff@latest &
+    go install golang.org/x/tools/cmd/goimports@latest &
+    go install mvdan.cc/gofumpt@latest &
+    go install github.com/danicc097/air@latest &
+    go install github.com/danicc097/xo@latest &
+    go install github.com/mikefarah/yq/v4@v4.27.2 &
+    go install github.com/hexdigest/gowrap/cmd/gowrap@latest &
 
-    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
-    go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@v0.2.0
-    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1 &
+    go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@v0.2.0 &
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2 &
 
-    GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
+    GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter &
+
+    wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
