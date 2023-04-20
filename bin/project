@@ -41,7 +41,7 @@ killgroup() {
   printf "\nkilling spawned processes...\n"
   # kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
   kill_descendants 2>/dev/null || true
-  pgrep -P $PROC | xargs kill
+  pgrep -P $PROC | xargs kill || true
   exit 1
 }
 
@@ -60,7 +60,6 @@ readonly MIGRATIONS_DIR="db/migrations"
 readonly CERTIFICATES_DIR="certificates"
 readonly REPOS="internal/repos"
 readonly PG_REPO="$REPOS/postgresql"
-readonly PG_REPO_GEN="$PG_REPO/gen"
 readonly POSTGRES_TEST_DB="postgres_test"
 readonly MAX_COMMENT_LEN=88
 readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
@@ -68,8 +67,15 @@ readonly GEN_POSTGRES_DB="gen_db"
 pkg="$(head -1 go.mod)"
 readonly GOMOD_PKG="${pkg#module *}"
 readonly OPID_AUTH="operationAuth.gen.json"
+
+readonly PG_REPO_GEN="$PG_REPO/gen"
+readonly FRONTEND_SRC="frontend/src"
+readonly FRONTEND_GEN="$FRONTEND_SRC/gen"
+
 readonly CACHE=".generate.cache"
-readonly CACHE_PG_REPO_GEN="$CACHE/gen"
+readonly CACHE_PG_REPO_GEN="$CACHE/pgrepo/gen"
+readonly CACHE_FRONTEND_GEN="$CACHE/frontend/gen"
+
 readonly MAX_FNAME_LOG_LEN=13
 
 restore_cache=0
@@ -1291,16 +1297,17 @@ xo_schema() {
 
 # saves the current gen state to allow restoring in the event of early exit
 cache-gen() {
-  cache-gen.cleanup
-  mkdir -p "$CACHE"
+  mkdir -p "$CACHE_FRONTEND_GEN"
+  mkdir -p "$CACHE_PG_REPO_GEN"
+
   cp "$SPEC" "$CACHE"
-  cp -r "$PG_REPO_GEN" "$CACHE_PG_REPO_GEN"
+  rsync -a --delete "$FRONTEND_GEN/" "$CACHE_FRONTEND_GEN"
+  rsync -a --delete "$PG_REPO_GEN/" "$CACHE_PG_REPO_GEN"
+
   restore_cache=1
 }
 
 cache-gen.cleanup() {
-  rm -f "$CACHE/$SPEC" 2>/dev/null
-  rm -rf "$CACHE_PG_REPO_GEN" 2>/dev/null
   restore_cache=0
 }
 
@@ -1309,6 +1316,8 @@ cache-gen.restore() {
   mv "$CACHE/$SPEC" "$SPEC"
   rm -rf "$PG_REPO_GEN"
   mv "$CACHE_PG_REPO_GEN" "$PG_REPO"
+  rm -rf "$FRONTEND_GEN"
+  mv "$CACHE_FRONTEND_GEN" "$FRONTEND_SRC"
 }
 
 usage() {
