@@ -890,6 +890,7 @@ components:
       description: User notification type.
       type: string
       x-db-enum: notification_type
+      x-generated: "-"
       enum:
         - personal
         - global
@@ -898,6 +899,7 @@ components:
       description: Role in work item for a member.
       type: string
       x-db-enum: work_item_role
+      x-generated: "-"
       enum:
         - preparer
         - reviewer
