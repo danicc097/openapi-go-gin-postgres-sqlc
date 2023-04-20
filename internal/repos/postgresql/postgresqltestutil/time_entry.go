@@ -21,6 +21,7 @@ func NewRandomTimeEntry(t *testing.T, pool *pgxpool.Pool, activityID int, userID
 
 	te, err := teRepo.Create(context.Background(), pool, ucp)
 	if err != nil {
+		t.Logf("%s", err)
 		return nil, err
 	}
 

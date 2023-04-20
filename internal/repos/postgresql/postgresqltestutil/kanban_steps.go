@@ -20,6 +20,7 @@ func NewRandomKanbanStep(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.K
 
 	ks, err := ksRepo.Create(context.Background(), pool, ucp)
 	if err != nil {
+		t.Logf("%s", err)
 		return nil, err
 	}
 

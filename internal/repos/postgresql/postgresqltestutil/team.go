@@ -19,6 +19,7 @@ func NewRandomTeam(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.Team, e
 
 	team, err := teamRepo.Create(context.Background(), pool, ucp)
 	if err != nil {
+		t.Logf("%s", err)
 		return nil, err
 	}
 
