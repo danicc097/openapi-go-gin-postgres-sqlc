@@ -172,6 +172,7 @@ x.bootstrap() {
     x.check-build-deps
     x.install-tools
     x.setup.swagger-ui
+    x.gen.build-tools
     traefik_dir="$HOME/traefik-bootstrap"
     confirm "Do you want to setup and run traefik (install dir: $traefik_dir)?" && x.setup.traefik "$traefik_dir"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -182,24 +183,26 @@ x.install-tools() {
   { { {
     echo "Installing go tooling..."
 
-    go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
-    # go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.16.0
-    go install github.com/danicc097/sqlc/cmd/sqlc@custom
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2
-    go install github.com/joho/godotenv/cmd/godotenv@latest
-    go install github.com/tufin/oasdiff@latest
-    go install golang.org/x/tools/cmd/goimports@latest
-    go install mvdan.cc/gofumpt@latest
-    go install github.com/danicc097/air@latest
-    go install github.com/danicc097/xo@latest
-    go install github.com/mikefarah/yq/v4@v4.27.2
-    go install github.com/hexdigest/gowrap/cmd/gowrap@latest
+    go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 &
+    # go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.16.0 &
+    go install github.com/danicc097/sqlc/cmd/sqlc@custom &
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.47.2 &
+    go install github.com/joho/godotenv/cmd/godotenv@latest &
+    go install github.com/tufin/oasdiff@latest &
+    go install golang.org/x/tools/cmd/goimports@latest &
+    go install mvdan.cc/gofumpt@latest &
+    go install github.com/danicc097/air@latest &
+    go install github.com/danicc097/xo@latest &
+    go install github.com/mikefarah/yq/v4@v4.27.2 &
+    go install github.com/hexdigest/gowrap/cmd/gowrap@latest &
 
-    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
-    go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@v0.2.0
-    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1 &
+    go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@v0.2.0 &
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2 &
 
-    GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
+    GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter &
+
+    wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -225,10 +228,6 @@ x.pregen() {
 
     missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
-
-    # don't want this to block if getting bad gen later on
-    go build -o pregen cmd/pregen/main.go ||
-      echo "Could not rebuild pregen. If you made changes to it, build it with a compilable app state" >&2
 
     # spec must always be valid. Schemas to generate should exist with the appropiate vendor extension
     ./pregen -env=".env.$env" --validate-spec-only
@@ -386,8 +385,6 @@ x.postgen() {
     # - `project postgen` analyzes at the last step all generated x-db-enum keys,
     # and replaces all found Db<...> that match its pascal case. This is error proof.
 
-    go build -o postgen cmd/postgen/main.go ||
-      echo "Could not rebuild postgen. If you made changes to it, build it with a compilable app state" >&2
     ./postgen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -584,6 +581,10 @@ x.gen() {
     echo "Running code generation"
 
     POSTGRES_DB="$GEN_POSTGRES_DB" x.db.recreate
+
+    # don't want this to block. It will fail compilation when generating/deleting elements at some steps.
+    x.gen.build-tools || true
+
     x.pregen
     rm -rf "$PG_REPO_GEN"
 
@@ -634,6 +635,15 @@ x.gen() {
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   cache-gen.cleanup
+}
+
+# Build code generation custom tools.
+x.gen.build-tools() {
+  for cmd in pregen postgen gen-schema; do
+    { go build -o $cmd cmd/$cmd/main.go ||
+      err "Could not rebuild $cmd. If you made changes to it, build it with a compilable app state"; } &
+  done
+  wait
 }
 
 # Lint the entire project.
@@ -888,9 +898,9 @@ x.setup.traefik() {
   docker network create traefik-net || true
   mkdir -p "$1"/traefik/certificates
   cp $CERTIFICATES_DIR/* "$1"/traefik/certificates
-  cd "$1"
+  cd "$1" || exit
   ./compose-up
-  cd - >/dev/null
+  cd - >/dev/null || exit
 }
 
 ########################## migrations ##########################
@@ -1213,8 +1223,6 @@ update_spec_with_structs() {
   # won't be available in that case. This requires a compilable state in all packages that gen-schema imports
   # to create the map, else we are stuck forever in a bad state unless we checkout a valid version and carefully update.
   # FIXME e.g. operation_ids.gen.go is overridden with an empty template when pregen fails and breaks gen-schema
-  go build -o gen-schema cmd/gen-schema/main.go ||
-    echo "Could not rebuild gen-schema. If you made changes to it, build it with a compilable app state" >&2
 
   ./gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \

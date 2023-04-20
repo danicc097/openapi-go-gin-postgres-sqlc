@@ -69,6 +69,13 @@ project bootstrap # dependency and tools interactive installation
 - Fill in `frontend/config.template.json`.
 
 
+### Code generation
+
+```
+project gen
+```
+
+
 ### Tracing, monitoring...
 
 ```bash
