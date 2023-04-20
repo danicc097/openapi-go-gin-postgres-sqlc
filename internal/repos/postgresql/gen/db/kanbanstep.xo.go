@@ -14,7 +14,7 @@ import (
 type KanbanStep struct {
 	KanbanStepID  int    `json:"kanbanStepID" db:"kanban_step_id" required:"true"`  // kanban_step_id
 	ProjectID     int    `json:"projectID" db:"project_id" required:"true"`         // project_id
-	StepOrder     *int16 `json:"stepOrder" db:"step_order" required:"true"`         // step_order
+	StepOrder     *int   `json:"stepOrder" db:"step_order" required:"true"`         // step_order
 	Name          string `json:"name" db:"name" required:"true"`                    // name
 	Description   string `json:"description" db:"description" required:"true"`      // description
 	Color         string `json:"color" db:"color" required:"true"`                  // color
@@ -27,7 +27,7 @@ type KanbanStep struct {
 // KanbanStepCreateParams represents insert params for 'public.kanban_steps'
 type KanbanStepCreateParams struct {
 	ProjectID     int    `json:"projectID"`     // project_id
-	StepOrder     *int16 `json:"stepOrder"`     // step_order
+	StepOrder     *int   `json:"stepOrder"`     // step_order
 	Name          string `json:"name"`          // name
 	Description   string `json:"description"`   // description
 	Color         string `json:"color"`         // color
@@ -37,7 +37,7 @@ type KanbanStepCreateParams struct {
 // KanbanStepUpdateParams represents update params for 'public.kanban_steps'
 type KanbanStepUpdateParams struct {
 	ProjectID     *int    `json:"projectID"`     // project_id
-	StepOrder     **int16 `json:"stepOrder"`     // step_order
+	StepOrder     **int   `json:"stepOrder"`     // step_order
 	Name          *string `json:"name"`          // name
 	Description   *string `json:"description"`   // description
 	Color         *string `json:"color"`         // color
@@ -350,7 +350,7 @@ kanban_steps.time_trackable ` +
 // KanbanStepByProjectIDNameStepOrder_WhereStepOrderIsNotNull retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
-func KanbanStepByProjectIDNameStepOrder_WhereStepOrderIsNotNull(ctx context.Context, db DB, projectID int, name string, stepOrder *int16, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
+func KanbanStepByProjectIDNameStepOrder_WhereStepOrderIsNotNull(ctx context.Context, db DB, projectID int, name string, stepOrder *int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
 
 	for _, o := range opts {
@@ -471,7 +471,7 @@ kanban_steps.time_trackable ` +
 // KanbanStepsByStepOrder_WhereStepOrderIsNotNull retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
-func KanbanStepsByStepOrder_WhereStepOrderIsNotNull(ctx context.Context, db DB, stepOrder *int16, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+func KanbanStepsByStepOrder_WhereStepOrderIsNotNull(ctx context.Context, db DB, stepOrder *int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
 
 	for _, o := range opts {
@@ -512,7 +512,7 @@ kanban_steps.time_trackable ` +
 // KanbanStepByProjectIDStepOrder retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_step_order_key'.
-func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID int, stepOrder *int16, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
+func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID int, stepOrder *int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
 
 	for _, o := range opts {
@@ -592,7 +592,7 @@ kanban_steps.time_trackable ` +
 // KanbanStepsByStepOrder retrieves a row from 'public.kanban_steps' as a KanbanStep.
 //
 // Generated from index 'kanban_steps_project_id_step_order_key'.
-func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder *int16, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder *int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
 
 	for _, o := range opts {

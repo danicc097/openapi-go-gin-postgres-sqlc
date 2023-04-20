@@ -10,7 +10,7 @@ package model
 type KanbanSteps struct {
 	KanbanStepID  int32  `sql:"primary_key" db:"kanban_step_id"`
 	ProjectID     int32  `db:"project_id"`
-	StepOrder     *int16 `db:"step_order"`
+	StepOrder     *int32 `db:"step_order"`
 	Name          string `db:"name"`
 	Description   string `db:"description"`
 	Color         string `db:"color"`

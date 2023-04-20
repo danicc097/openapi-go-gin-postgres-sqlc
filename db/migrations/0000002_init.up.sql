@@ -233,7 +233,7 @@ comment on column user_team.team_id is 'cardinality:M2M';
 create table kanban_steps (
   kanban_step_id serial primary key
   , project_id int not null
-  , step_order smallint -- null -> disabled
+  , step_order int -- null -> disabled
   , name text not null
   , description text not null
   , color text not null

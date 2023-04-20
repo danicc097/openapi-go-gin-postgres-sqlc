@@ -79,7 +79,8 @@ func RandomEmail() string {
 }
 
 // RandomNameIdentifier generates a random name identifier,
-// such as eminently-sincere-mollusk.
+// such as eminently-sincere-mollusk-aksticpemgicjrtb.
+// Prefix count is configurable via n.
 func RandomNameIdentifier(n int, sep string) string {
 	adv := adverbs[rand.Intn(len(adverbs))]
 	adj := adjectives[rand.Intn(len(adjectives))]
@@ -94,5 +95,7 @@ func RandomNameIdentifier(n int, sep string) string {
 	default:
 		ss = append(ss, adv, adj, nam)
 	}
+	ss = append(ss, RandomString(16))
+
 	return strings.Join(ss, sep)
 }

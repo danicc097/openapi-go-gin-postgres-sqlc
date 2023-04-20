@@ -19,6 +19,7 @@ func NewRandomWorkItemType(t *testing.T, pool *pgxpool.Pool, projectID int) (*db
 
 	wit, err := witRepo.Create(context.Background(), pool, ucp)
 	if err != nil {
+		t.Logf("%s", err)
 		return nil, err
 	}
 

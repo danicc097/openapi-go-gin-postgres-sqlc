@@ -21,6 +21,7 @@ func NewRandomDemoProjectWorkItem(t *testing.T, pool *pgxpool.Pool, projectID, k
 
 	dpwi, err := dpwiRepo.Create(context.Background(), pool, repos.DemoProjectWorkItemCreateParams{DemoProject: dpwicp, Base: wicp})
 	if err != nil {
+		t.Logf("%s", err)
 		return nil, err
 	}
 

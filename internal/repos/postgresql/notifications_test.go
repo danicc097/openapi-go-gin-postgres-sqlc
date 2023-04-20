@@ -9,6 +9,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,13 +27,17 @@ func TestNotification_Create(t *testing.T) {
 
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, nil, sender.UserID, pointers.New(receiver.UserID), db.NotificationTypePersonal)
 
-		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
+		ctx := context.Background()
+		tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{}) // prevent fan out trigger from affecting other tests
+		defer tx.Rollback(ctx)
+
+		_, err := notificationRepo.Create(context.Background(), tx, ncp)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
 
 		params := db.GetUserNotificationsParams{UserID: receiver.UserID, NotificationType: db.NotificationTypePersonal}
-		nn, err := notificationRepo.LatestUserNotifications(context.Background(), testPool, params)
+		nn, err := notificationRepo.LatestUserNotifications(context.Background(), tx, params)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
@@ -55,7 +60,11 @@ func TestNotification_Create(t *testing.T) {
 
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, receiverRank, sender.UserID, nil, db.NotificationTypeGlobal)
 
-		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
+		ctx := context.Background()
+		tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{}) // prevent fan out trigger from affecting other tests
+		defer tx.Rollback(ctx)
+
+		_, err := notificationRepo.Create(context.Background(), tx, ncp)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
@@ -67,7 +76,7 @@ func TestNotification_Create(t *testing.T) {
 
 		for userID, count := range notificationCount {
 			params := db.GetUserNotificationsParams{UserID: userID, NotificationType: db.NotificationTypeGlobal}
-			nn, err := notificationRepo.LatestUserNotifications(context.Background(), testPool, params)
+			nn, err := notificationRepo.LatestUserNotifications(context.Background(), tx, params)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}

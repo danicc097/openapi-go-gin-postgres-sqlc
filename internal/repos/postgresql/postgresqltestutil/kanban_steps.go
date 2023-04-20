@@ -2,6 +2,7 @@ package postgresqltestutil
 
 import (
 	"context"
+	"math"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
@@ -20,6 +21,7 @@ func NewRandomKanbanStep(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.K
 
 	ks, err := ksRepo.Create(context.Background(), pool, ucp)
 	if err != nil {
+		t.Logf("%s", err)
 		return nil, err
 	}
 
@@ -35,6 +37,6 @@ func RandomKanbanStepCreateParams(t *testing.T, projectID int) db.KanbanStepCrea
 		ProjectID:     projectID,
 		Color:         "#aaaaaa",
 		TimeTrackable: testutil.RandomBool(),
-		StepOrder:     pointers.New(int16(testutil.RandomInt64(1, 32766))),
+		StepOrder:     pointers.New(testutil.RandomInt(1, math.MaxInt32)),
 	}
 }

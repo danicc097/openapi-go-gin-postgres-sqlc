@@ -20,6 +20,7 @@ func NewRandomUser(t *testing.T, pool *pgxpool.Pool) (*db.User, error) {
 
 	user, err := userRepo.Create(context.Background(), pool, ucp)
 	if err != nil {
+		t.Logf("%s", err)
 		return nil, err
 	}
 

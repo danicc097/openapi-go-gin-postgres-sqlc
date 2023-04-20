@@ -19,6 +19,7 @@ func NewRandomActivity(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.Act
 
 	activity, err := activityRepo.Create(context.Background(), pool, ucp)
 	if err != nil {
+		t.Logf("%s", err)
 		return nil, err
 	}
 
