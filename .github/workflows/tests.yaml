@@ -34,4 +34,4 @@ jobs:
 
           git diff --exit-code # -- . ':!dir_to_skip'
 
-          project test -race -count=1 --x-env=ci
+          project test -race -count=20 --x-env=ci
