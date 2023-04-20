@@ -347,7 +347,7 @@ type DbWorkItemTypeCreateParams struct {
 
 // DbWorkItemMember defines the model for DbWorkItem_Member.
 type DbWorkItemMember struct {
-	// Role Role in work item for a member.
+	// Role represents a database 'work_item_role'
 	Role WorkItemRole `json:"role"`
 	User *DbUser      `json:"user,omitempty"`
 }
@@ -382,7 +382,7 @@ type ModelsProjectConfigField struct {
 // ModelsRole defines the model for ModelsRole.
 type ModelsRole = string
 
-// NotificationType User notification type.
+// NotificationType represents a database 'notification_type'
 type NotificationType string
 
 // PgtypeJSONB defines the model for PgtypeJSONB.
@@ -471,7 +471,7 @@ type ValidationError struct {
 	Type string   `json:"type"`
 }
 
-// WorkItemRole Role in work item for a member.
+// WorkItemRole represents a database 'work_item_role'
 type WorkItemRole string
 
 // DemoProjectKanbanSteps Kanban columns for project demoProject

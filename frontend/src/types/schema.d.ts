@@ -255,14 +255,8 @@ export interface components {
     /** @enum {string} */
     Role: "guest" | "user" | "advancedUser" | "manager" | "admin" | "superAdmin";
     /**
-     * Notification type 
-     * @description User notification type. 
-     * @enum {string}
-     */
-    NotificationType: "personal" | "global";
-    /**
      * WorkItem role 
-     * @description Role in work item for a member. 
+     * @description represents a database 'work_item_role' 
      * @enum {string}
      */
     WorkItemRole: "preparer" | "reviewer";
@@ -390,6 +384,11 @@ export interface components {
       role: components["schemas"]["WorkItemRole"];
       user?: components["schemas"]["DbUser"];
     };
+    /**
+     * @description represents a database 'notification_type' 
+     * @enum {string}
+     */
+    NotificationType: "personal" | "global";
   };
   responses: never;
   parameters: {

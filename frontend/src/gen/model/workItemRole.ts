@@ -7,7 +7,7 @@
  */
 
 /**
- * Role in work item for a member.
+ * represents a database 'work_item_role'
  */
 export type WorkItemRole = typeof WorkItemRole[keyof typeof WorkItemRole]
 

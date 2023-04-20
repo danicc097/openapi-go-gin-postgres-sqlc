@@ -40,7 +40,7 @@ export type DbDemoProjectWorkItem1 = {
   workItemID: number
 } | null
 /**
- * Role in work item for a member.
+ * represents a database 'work_item_role'
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
 export type DbProject2WorkItem = {
@@ -88,16 +88,16 @@ export type Detail = ValidationError[]
  */
 export type Topics = 'GlobalAlerts'
 /**
- * User notification type.
- */
-export type NotificationType = 'personal' | 'global'
-/**
  * Kanban columns for project demoProject
  */
 export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 export type ModelsProject = string
 export type ModelsRole = string
 export type DbWorkItemRole = string
+/**
+ * represents a database 'notification_type'
+ */
+export type NotificationType = 'personal' | 'global'
 
 export interface DbActivity {
   activityID: number

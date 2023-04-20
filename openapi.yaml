@@ -3,7 +3,6 @@
 # -----------------
 #
 # Component schemas:
-#   - `x-db-enum` generates and syncs a Postgres enum type.
 #   - `x-postgen-struct` generates and creates/replaces a component schema from a struct,
 #      which can be tagged with OpenAPI fields.
 #      Possible structs to generate from are listed in the postgen package.
@@ -885,24 +884,14 @@ components:
         - manager
         - admin
         - superAdmin
-    NotificationType: # Generated from database enum. DO NOT EDIT.
-      title: Notification type
-      description: User notification type.
-      type: string
-      x-db-enum: notification_type
-      x-generated: "-"
-      enum:
-        - personal
-        - global
     WorkItemRole: # Generated from database enum. DO NOT EDIT.
       title: WorkItem role
-      description: Role in work item for a member.
       type: string
-      x-db-enum: work_item_role
-      x-generated: "-"
+      x-generated: '-'
       enum:
         - preparer
         - reviewer
+      description: represents a database 'work_item_role'
     UpdateUserRequest:
       description: represents User data to update
       example:
@@ -1153,6 +1142,13 @@ components:
       required:
         - role
       type: object
+    NotificationType: # Generated from database enum. DO NOT EDIT.
+      description: represents a database 'notification_type'
+      type: string
+      x-generated: '-'
+      enum:
+        - personal
+        - global
   examples:
     User:
       value:

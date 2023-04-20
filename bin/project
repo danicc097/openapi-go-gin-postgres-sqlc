@@ -78,7 +78,11 @@ readonly CACHE_FRONTEND_GEN="$CACHE/frontend/gen"
 
 readonly MAX_FNAME_LOG_LEN=13
 
+# determines if gen cache should be restore at program exit. 0|1
 restore_cache=0
+# tracks if caching gen is already running, to allow for nested cache-gen and cache-cleanup inside multiple functions. 0|1
+is_caching=0
+
 pids=""
 env="dev"
 dump_prefix="dump_${env}_"
@@ -243,19 +247,40 @@ x.pregen() {
 
     local enums schema_name vext
     ######## Sync enums from db with spec
-    # example: `x-db-enum: user_role` will use the db's "user_role" enum
-    vext="x-db-enum"
-    # TODO see gkeep
-    for enum in $(yq e ".. | select(has(\"$vext\")).$vext" $SPEC); do
-      local db_enums=()
-      local path="$(enum_name=$enum yq e ".. | select(has(\"$vext\") and .$vext == env(enum_name)) | (path | join(\".\"))" $SPEC)"
-      mapfile -t db_enums < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
 
-      [[ ${#db_enums[@]} -gt 0 ]] || err "$vext: Enum '$enum' not found in database $POSTGRES_DB"
-      enums=$(printf ",\"%s\"" "${db_enums[@]}")
+    local db_search_paths=("public" "other_schema")
+
+    enum_query_tpl="SELECT t.typname AS enum_name
+FROM pg_type t
+INNER JOIN pg_namespace n ON n.oid = t.typnamespace
+WHERE t.typtype = 'e' AND n.nspname IN (%s);"
+    search_path_str=$(printf "'%s'," "${db_search_paths[@]}")
+    search_path_str=${search_path_str%,}
+    enum_query=$(printf "$enum_query_tpl" "$search_path_str")
+
+    mapfile -t db_enum_names < <(dockerdb_psql -d $POSTGRES_DB -c "$enum_query" 2>/dev/null)
+    for db_enum_name in "${db_enum_names[@]}"; do
+      schema_enum="$(to_pascal $db_enum_name)"
+      local enum_values=()
+      mapfile -t enum_values < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$db_enum_name\"));" 2>/dev/null)
+      echo "Including database enum '$db_enum_name' in $SPEC with values: [${enum_values[*]}]"
+
+      enums=$(printf ",\"%s\"" "${enum_values[@]}")
       enums="[${enums:1}]"
-      echo "Replacing enum '$enum' in $SPEC with: $enums"
-      enums=$enums yq e ".$path.enum = env(enums) | (.$path | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
+
+      local schema_path=".components.schemas.$schema_enum"
+      if yq -e "$schema_path" $SPEC &>/dev/null; then # -e exits 1 if no match
+        if ! yq -e "$schema_path | has(\"x-generated\")" $SPEC &>/dev/null; then
+          err "Clashing schema name '$schema_enum'. Please remove it before continuing."
+        fi
+      fi
+
+      enums=$enums yq e "
+          $schema_path.description = \"represents a database '$db_enum_name'\" |
+          $schema_path.type = \"string\" |
+          $schema_path.enum = env(enums) |
+          $schema_path.x-generated = \"-\" |
+          ($schema_path | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
     done
 
     ######## Sync projects and related project info
@@ -281,7 +306,7 @@ x.pregen() {
             kanban_steps
           where
             project_id = (select project_id from projects where name = '$project');" 2>/dev/null)
-      [[ ${#kanban_steps[@]} -gt 0 ]] || { echo "${YELLOW}No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue; }
+      [[ ${#kanban_steps[@]} -gt 0 ]] || { echo "${YELLOW}[WARNING] No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue; }
       enums=$(printf ",\"%s\"" "${kanban_steps[@]}")
       enums="[${enums:1}]"
       echo "Replacing enum '$schema_name' in $SPEC with: $enums"
@@ -1297,6 +1322,8 @@ xo_schema() {
 
 # saves the current gen state to allow restoring in the event of early exit
 cache-gen() {
+  # ((is_caching = 1)) && return
+  # is_caching=1
   mkdir -p "$CACHE_FRONTEND_GEN"
   mkdir -p "$CACHE_PG_REPO_GEN"
 
@@ -1308,6 +1335,7 @@ cache-gen() {
 }
 
 cache-gen.cleanup() {
+  # ((is_nested = 1)) && return
   restore_cache=0
 }
 

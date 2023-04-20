@@ -836,26 +836,15 @@
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "NotificationType": {
-      "title": "Notification type",
-      "description": "User notification type.",
-      "type": "string",
-      "x-db-enum": "notification_type",
-      "enum": [
-        "personal",
-        "global"
-      ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "WorkItemRole": {
       "title": "WorkItem role",
-      "description": "Role in work item for a member.",
       "type": "string",
-      "x-db-enum": "work_item_role",
+      "x-generated": "-",
       "enum": [
         "preparer",
         "reviewer"
       ],
+      "description": "represents a database 'work_item_role'",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "UpdateUserRequest": {
@@ -1239,6 +1228,16 @@
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "NotificationType": {
+      "description": "represents a database 'notification_type'",
+      "type": "string",
+      "x-generated": "-",
+      "enum": [
+        "personal",
+        "global"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -1305,9 +1304,6 @@
     "Role": {
       "$ref": "#/definitions/Role"
     },
-    "NotificationType": {
-      "$ref": "#/definitions/NotificationType"
-    },
     "WorkItemRole": {
       "$ref": "#/definitions/WorkItemRole"
     },
@@ -1367,6 +1363,9 @@
     },
     "DbWorkItem_Member": {
       "$ref": "#/definitions/DbWorkItem_Member"
+    },
+    "NotificationType": {
+      "$ref": "#/definitions/NotificationType"
     }
   }
 }
