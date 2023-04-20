@@ -1569,7 +1569,7 @@ type %s struct {
 	%s
 
 }
-	`, camelExport(lookupName), originalStruct, originalStruct, tag, strings.Join(lookupFields, "\n"))))
+	`, name+"_"+camelExport(lookupName), originalStruct, originalStruct, tag, strings.Join(lookupFields, "\n")))) // prevent name clashing
 			}
 
 			joinName = camelExport(inflector.Pluralize(lookupName))
@@ -2779,7 +2779,8 @@ func (f *Funcs) join_fields(sqlname string, constraints []Constraint, tables Tab
 				// differs from actual column, e.g. having member UUID in lookup instead of user_id
 				lookupName = c.ColumnName
 				goName = camelExport(singularize(lookupName))
-				typ = camelExport(singularize(lookupName))
+				// prevent name clashing
+				typ = camelExport(singularize(sqlname)) + "_" + camelExport(singularize(lookupName))
 			}
 
 			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(camel(lookupName)), inflector.Pluralize(lookupName))

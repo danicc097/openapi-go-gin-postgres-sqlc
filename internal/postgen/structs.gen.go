@@ -31,7 +31,6 @@ var PublicStructs = map[string]any{
 	"DbKanbanStepJoins":                 db.KanbanStepJoins{},
 	"DbKanbanStepSelectConfig":          db.KanbanStepSelectConfig{},
 	"DbKanbanStepUpdateParams":          db.KanbanStepUpdateParams{},
-	"DbMember":                          db.Member{},
 	"DbMovie":                           db.Movie{},
 	"DbMovieCreateParams":               db.MovieCreateParams{},
 	"DbMovieJoins":                      db.MovieJoins{},
@@ -124,6 +123,7 @@ var PublicStructs = map[string]any{
 	"DbWorkItemWorkItemTagJoins":        db.WorkItemWorkItemTagJoins{},
 	"DbWorkItemWorkItemTagSelectConfig": db.WorkItemWorkItemTagSelectConfig{},
 	"DbWorkItemWorkItemTagUpdateParams": db.WorkItemWorkItemTagUpdateParams{},
+	"DbWorkItem_Member":                 db.WorkItem_Member{},
 
 	//
 
