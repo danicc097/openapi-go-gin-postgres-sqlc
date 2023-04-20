@@ -20,7 +20,7 @@ set -o errtrace # TODO https://mywiki.wooledge.org/BashFAQ/105
 
 SCRIPT="$(basename $0)"
 
-# trap 'err_handler $LINENO' ERR
+trap 'err_handler $LINENO' ERR
 
 err_handler() {
   echo "ERR trap called in ${FUNCNAME-main context} from ${RED}$SCRIPT:$1${OFF}"
@@ -29,7 +29,7 @@ err_handler() {
 trap killgroup SIGINT
 
 trap errtrap SIGUSR1
-trap exit-cleanup 0
+trap 'exit-cleanup $LINENO' 0
 
 exit-cleanup() {
   if [[ $restore_cache = 1 ]]; then
@@ -41,7 +41,7 @@ killgroup() {
   printf "\nkilling spawned processes...\n"
   # kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
   kill_descendants 2>/dev/null || true
-  pgrep -P $PROC | xargs kill
+  pgrep -P $PROC | xargs kill || true
   exit 1
 }
 
@@ -60,7 +60,6 @@ readonly MIGRATIONS_DIR="db/migrations"
 readonly CERTIFICATES_DIR="certificates"
 readonly REPOS="internal/repos"
 readonly PG_REPO="$REPOS/postgresql"
-readonly PG_REPO_GEN="$PG_REPO/gen"
 readonly POSTGRES_TEST_DB="postgres_test"
 readonly MAX_COMMENT_LEN=88
 readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
@@ -68,11 +67,22 @@ readonly GEN_POSTGRES_DB="gen_db"
 pkg="$(head -1 go.mod)"
 readonly GOMOD_PKG="${pkg#module *}"
 readonly OPID_AUTH="operationAuth.gen.json"
+
+readonly PG_REPO_GEN="$PG_REPO/gen"
+readonly FRONTEND_SRC="frontend/src"
+readonly FRONTEND_GEN="$FRONTEND_SRC/gen"
+
 readonly CACHE=".generate.cache"
-readonly CACHE_PG_REPO_GEN="$CACHE/gen"
+readonly CACHE_PG_REPO_GEN="$CACHE/pgrepo/gen"
+readonly CACHE_FRONTEND_GEN="$CACHE/frontend/gen"
+
 readonly MAX_FNAME_LOG_LEN=13
 
+# determines if gen cache should be restore at program exit. 0|1
 restore_cache=0
+# tracks if caching gen is already running, to allow for nested cache-gen and cache-cleanup inside multiple functions. 0|1
+is_caching=0
+
 pids=""
 env="dev"
 dump_prefix="dump_${env}_"
@@ -237,18 +247,40 @@ x.pregen() {
 
     local enums schema_name vext
     ######## Sync enums from db with spec
-    # example: `x-db-enum: user_role` will use the db's "user_role" enum
-    vext="x-db-enum"
-    for enum in $(yq e ".. | select(has(\"$vext\")).$vext" $SPEC); do
-      local db_enums=()
-      local path="$(enum_name=$enum yq e ".. | select(has(\"$vext\") and .$vext == env(enum_name)) | (path | join(\".\"))" $SPEC)"
-      mapfile -t db_enums < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$enum\"));" 2>/dev/null)
 
-      [[ ${#db_enums[@]} -gt 0 ]] || err "$vext: Enum '$enum' not found in database $POSTGRES_DB"
-      enums=$(printf ",\"%s\"" "${db_enums[@]}")
+    local db_search_paths=("public" "other_schema")
+
+    enum_query_tpl="SELECT t.typname AS enum_name
+FROM pg_type t
+INNER JOIN pg_namespace n ON n.oid = t.typnamespace
+WHERE t.typtype = 'e' AND n.nspname IN (%s);"
+    search_path_str=$(printf "'%s'," "${db_search_paths[@]}")
+    search_path_str=${search_path_str%,}
+    enum_query=$(printf "$enum_query_tpl" "$search_path_str")
+
+    mapfile -t db_enum_names < <(dockerdb_psql -d $POSTGRES_DB -c "$enum_query" 2>/dev/null)
+    for db_enum_name in "${db_enum_names[@]}"; do
+      schema_enum="$(to_pascal $db_enum_name)"
+      local enum_values=()
+      mapfile -t enum_values < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$db_enum_name\"));" 2>/dev/null)
+      echo "Including database enum '$db_enum_name' in $SPEC with values: [${enum_values[*]}]"
+
+      enums=$(printf ",\"%s\"" "${enum_values[@]}")
       enums="[${enums:1}]"
-      echo "Replacing enum '$enum' in $SPEC with: $enums"
-      enums=$enums yq e ".$path.enum = env(enums) | (.$path | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
+
+      local schema_path=".components.schemas.$schema_enum"
+      if yq -e "$schema_path" $SPEC &>/dev/null; then # -e exits 1 if no match
+        if ! yq -e "$schema_path | has(\"x-generated\")" $SPEC &>/dev/null; then
+          err "Clashing schema name '$schema_enum'. Please remove it before continuing."
+        fi
+      fi
+
+      enums=$enums yq e "
+          $schema_path.description = \"represents a database '$db_enum_name'\" |
+          $schema_path.type = \"string\" |
+          $schema_path.enum = env(enums) |
+          $schema_path.x-generated = \"-\" |
+          ($schema_path | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
     done
 
     ######## Sync projects and related project info
@@ -274,7 +306,7 @@ x.pregen() {
             kanban_steps
           where
             project_id = (select project_id from projects where name = '$project');" 2>/dev/null)
-      [[ ${#kanban_steps[@]} -gt 0 ]] || { echo "${YELLOW}No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue; }
+      [[ ${#kanban_steps[@]} -gt 0 ]] || { echo "${YELLOW}[WARNING] No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue; }
       enums=$(printf ",\"%s\"" "${kanban_steps[@]}")
       enums="[${enums:1}]"
       echo "Replacing enum '$schema_name' in $SPEC with: $enums"
@@ -292,7 +324,7 @@ x.pregen() {
     for opid in $(yq e ".. | select(has(\"operationId\")).operationId" $SPEC); do
       local new_opid="$(to_pascal $opid)"
       local paths=$(opid=$opid yq e ".. | select(has(\"operationId\") and .operationId == env(opid)) | (path)" $SPEC)
-      readarray -t paths <<<$paths
+      mapfile -t paths <<<$paths
       local escaped_path="$(join_yq_paths paths)"
       new_opid=$new_opid yq e ".$escaped_path.operationId = env(new_opid)" -i $SPEC
     done
@@ -317,7 +349,7 @@ x.pregen() {
       vext="${enum_vext[$enum]}"
 
       enums=$(yq -P '.[] | key' $src_file)
-      readarray -t enums <<<$enums
+      mapfile -t enums <<<$enums
 
       echo "Replacing '$enum' enum in $SPEC with $src_file"
       yq e "
@@ -327,7 +359,7 @@ x.pregen() {
       enums_arr="[${enums_arr:1}]"
       enums_arr=$enums_arr yq e ".components.schemas.$enum.enum = env(enums_arr)" -i $SPEC
 
-      readarray spec_enums < <(yq e ".paths[][].$vext | select(length > 0)" openapi.yaml)
+      mapfile spec_enums < <(yq e ".paths[][].$vext | select(length > 0)" openapi.yaml)
       spec_enums=("${spec_enums[*]//- /}")
       mapfile -t spec_enums < <(printf "\"%s\"\n" ${spec_enums[*]})
       mapfile -t clean_enums < <(printf "\"%s\"\n" ${enums[*]})
@@ -379,11 +411,6 @@ x.postgen() {
     generate_structs_map
 
     update_spec_with_structs
-
-    # TODO fix Db<...> in xo fields not using generated x-db-enum schemas. 2 options:
-    # - xo adds ref:"#/components/schemas/..." to fields. Cannot do this since that gen depends on spec
-    # - `project postgen` analyzes at the last step all generated x-db-enum keys,
-    # and replaces all found Db<...> that match its pascal case. This is error proof.
 
     ./postgen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -639,11 +666,13 @@ x.gen() {
 
 # Build code generation custom tools.
 x.gen.build-tools() {
-  for cmd in pregen postgen gen-schema; do
-    { go build -o $cmd cmd/$cmd/main.go ||
-      err "Could not rebuild $cmd. If you made changes to it, build it with a compilable app state"; } &
-  done
-  wait
+  { { {
+    for cmd in pregen postgen gen-schema; do
+      { go build -o $cmd cmd/$cmd/main.go ||
+        echo "Could not rebuild $cmd. If you made changes to it, build it with a compilable app state" >&2; } &
+    done
+    wait
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 # Lint the entire project.
@@ -1140,33 +1169,37 @@ run_shared_services() {
 # generate db structs for use with swaggest/openapi-go.
 # no need for ast parsing since all code in db is generated and predictable
 generate_structs_map() {
-  # FIXME ModelsRole and ModelsProject still getting generated by themselves. they dont exist in structs.gen.go
-  # and haven references
-  readarray -t structs < <(find "$PG_REPO_GEN/db" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
-  mapfile -t structs < <(LC_COLLATE=C sort < <(printf "%s\n" "${structs[@]}"))
-  find_deleted_pkg_structs structs Db
+  # TODO extract to find_structs "$pkg" and find_enums "$pkg"
+  local structs=()
+  local enums=()
+  find_structs structs "$PG_REPO_GEN/db"
+  find_enums enums "$PG_REPO_GEN/db"
+  find_deleted_pkg_schemas structs enums Db
   for struct in ${structs[@]}; do
     map_fields+=("\"Db$struct\": db.$struct{},")
   done
   map_fields+=("
   //
   ")
-  readarray -t structs < <(find "internal/rest" -name "models.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
-  mapfile -t structs < <(LC_COLLATE=C sort < <(printf "%s\n" "${structs[@]}"))
-  find_deleted_pkg_structs structs Rest
+
+  structs=()
+  enums=()
+  find_structs structs "internal/rest/models.go"
+  find_enums enums "internal/rest/models.go"
+  find_deleted_pkg_schemas structs enums Rest
   for struct in ${structs[@]}; do
     map_fields+=("\"Rest$struct\": rest.$struct{},")
   done
   map_fields+=("
   //
   ")
-  readarray -t structs < <(find "internal/repos/models" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
-  find_deleted_pkg_structs structs Models
-  mapfile -t structs < <(LC_COLLATE=C sort < <(printf "%s\n" "${structs[@]}"))
+
+  structs=()
+  enums=()
+  find_structs structs "internal/repos/models"
+  find_enums enums "internal/repos/models"
+  find_deleted_pkg_schemas structs enums Models
   for struct in ${structs[@]}; do
-    # openapi-go uses the last dir as defaultDefName regardless (models)
-    # in a sense this is not too bad since a duplicated model name from different packages will not compile
-    # as the map key is duplicated anyway.
     map_fields+=("\"Models$struct\": repomodels.$struct{},")
   done
 
@@ -1189,19 +1222,40 @@ EOF
   gofumpt -w $out
 }
 
-find_deleted_pkg_structs() {
-  local -n __structs="$1"
+find_structs() {
+  local -n arr="$1"
   local pkg="$2"
-  echo "Finding deleted structs from package '$pkg'..."
-  readarray -t spec_structs < <(yq eval '.components.schemas[] | key' "$SPEC" | grep -E "^${pkg}")
+  mapfile -t arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
+  mapfile -t arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${arr[@]}"))
+}
+
+find_enums() {
+  local -n arr="$1"
+  local pkg="$2"
+  mapfile -t arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec sed -n 's/.*type[[:space:]]\+\([^=[:space:]]\+\)[[:space:]]\+string.*/\1/p' {} \;)
+  mapfile -t arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${arr[@]}"))
+}
+
+find_deleted_pkg_schemas() {
+  local -n __structs="$1"
+  local -n __enums="$2"
+  local pkg="$3"
+  echo "Finding deleted structs or enums from package '$pkg'..."
+  mapfile -t spec_schema < <(yq eval '.components.schemas[] | key' "$SPEC" | grep -E "^${pkg}")
+
   local found=0
-  for spec_struct in ${spec_structs[*]}; do
+  for spec_schema in ${spec_schema[*]}; do
     for struct in ${__structs[@]}; do
-      if [[ $spec_struct == "${pkg}$struct" ]]; then
+      if [[ $spec_schema == "${pkg}$struct" ]]; then
         found=1
       fi
     done
-    ((found == 0)) && echo "${YELLOW}[WARNING] $SPEC schema $spec_struct no longer exists in package '$(to_lower $pkg)'. Remove if necessary.${OFF}"
+    for enum in ${__enums[@]}; do
+      if [[ $spec_schema == "${pkg}$enum" ]]; then
+        found=1
+      fi
+    done
+    ((found == 0)) && echo "${YELLOW}[WARNING] $SPEC schema $spec_schema no longer exists in package '$(to_lower $pkg)'. Remove if necessary.${OFF}"
     found=0
   done
 }
@@ -1210,8 +1264,8 @@ update_spec_with_structs() {
   vext="x-postgen-struct"
   struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC)
   schema_names=$(yq e ".components.schemas[] | select(has(\"$vext\")) | key" $SPEC)
-  readarray -t struct_names <<<$struct_names
-  readarray -t schema_names <<<$schema_names
+  mapfile -t struct_names <<<$struct_names
+  mapfile -t schema_names <<<$schema_names
   declare -A schemas
   for i in ${!struct_names[@]}; do
     schemas["${struct_names[$i]}"]="${schema_names[$i]}" # keep track of custom structs per schema name
@@ -1268,16 +1322,20 @@ xo_schema() {
 
 # saves the current gen state to allow restoring in the event of early exit
 cache-gen() {
-  cache-gen.cleanup
-  mkdir -p "$CACHE"
+  # ((is_caching = 1)) && return
+  # is_caching=1
+  mkdir -p "$CACHE_FRONTEND_GEN"
+  mkdir -p "$CACHE_PG_REPO_GEN"
+
   cp "$SPEC" "$CACHE"
-  cp -r "$PG_REPO_GEN" "$CACHE_PG_REPO_GEN"
+  rsync -a --delete "$FRONTEND_GEN/" "$CACHE_FRONTEND_GEN"
+  rsync -a --delete "$PG_REPO_GEN/" "$CACHE_PG_REPO_GEN"
+
   restore_cache=1
 }
 
 cache-gen.cleanup() {
-  rm -f "$CACHE/$SPEC" 2>/dev/null
-  rm -rf "$CACHE_PG_REPO_GEN" 2>/dev/null
+  # ((is_nested = 1)) && return
   restore_cache=0
 }
 
@@ -1286,6 +1344,8 @@ cache-gen.restore() {
   mv "$CACHE/$SPEC" "$SPEC"
   rm -rf "$PG_REPO_GEN"
   mv "$CACHE_PG_REPO_GEN" "$PG_REPO"
+  rm -rf "$FRONTEND_GEN"
+  mv "$CACHE_FRONTEND_GEN" "$FRONTEND_SRC"
 }
 
 usage() {

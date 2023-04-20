@@ -6,7 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { DbDemoProjectWorkItem } from './dbDemoProjectWorkItem'
-import type { DbMember } from './dbMember'
+import type { DbWorkItemMember } from './dbWorkItemMember'
 import type { DbProject2WorkItem } from './dbProject2WorkItem'
 import type { DbTimeEntry } from './dbTimeEntry'
 import type { DbWorkItemComment } from './dbWorkItemComment'
@@ -20,7 +20,7 @@ export interface DbWorkItem {
   demoProjectWorkItem?: DbDemoProjectWorkItem
   description: string
   kanbanStepID: number
-  members?: DbMember[] | null
+  members?: DbWorkItemMember[] | null
   metadata: number[] | null
   project2WorkItem?: DbProject2WorkItem
   targetDate: Date

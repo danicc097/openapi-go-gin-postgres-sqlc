@@ -25,7 +25,6 @@ import {
   Scope,
   Scopes,
   Role,
-  NotificationType,
   WorkItemRole,
   UpdateUserRequest,
   UpdateUserAuthRequest,
@@ -44,8 +43,9 @@ import {
   DbWorkItemTypeCreateParams,
   ModelsProject,
   ModelsRole,
-  DbMember,
   DbWorkItemRole,
+  DbWorkItem_Member,
+  NotificationType,
 } from './models'
 
 export const schemaDefinitions = {
@@ -79,7 +79,6 @@ export const schemaDefinitions = {
   Scope: info<Scope>('Scope', '#/definitions/Scope'),
   Scopes: info<Scopes>('Scopes', '#/definitions/Scopes'),
   Role: info<Role>('Role', '#/definitions/Role'),
-  NotificationType: info<NotificationType>('NotificationType', '#/definitions/NotificationType'),
   WorkItemRole: info<WorkItemRole>('WorkItemRole', '#/definitions/WorkItemRole'),
   UpdateUserRequest: info<UpdateUserRequest>('UpdateUserRequest', '#/definitions/UpdateUserRequest'),
   UpdateUserAuthRequest: info<UpdateUserAuthRequest>('UpdateUserAuthRequest', '#/definitions/UpdateUserAuthRequest'),
@@ -116,8 +115,9 @@ export const schemaDefinitions = {
   ),
   ModelsProject: info<ModelsProject>('ModelsProject', '#/definitions/ModelsProject'),
   ModelsRole: info<ModelsRole>('ModelsRole', '#/definitions/ModelsRole'),
-  DbMember: info<DbMember>('DbMember', '#/definitions/DbMember'),
   DbWorkItemRole: info<DbWorkItemRole>('DbWorkItemRole', '#/definitions/DbWorkItemRole'),
+  DbWorkItem_Member: info<DbWorkItem_Member>('DbWorkItem_Member', '#/definitions/DbWorkItem_Member'),
+  NotificationType: info<NotificationType>('NotificationType', '#/definitions/NotificationType'),
 }
 
 export interface SchemaInfo<T> {

@@ -31,7 +31,7 @@ type WorkItem struct {
 	Project2WorkItem    *Project2WorkItem    `json:"project2WorkItem" db:"project_2_work_item"`       // O2O
 	TimeEntries         *[]TimeEntry         `json:"timeEntries" db:"time_entries"`                   // O2M
 	WorkItemComments    *[]WorkItemComment   `json:"workItemComments" db:"work_item_comments"`        // O2M
-	Members             *[]Member            `json:"members" db:"members"`                            // M2M
+	Members             *[]WorkItem_Member   `json:"members" db:"members"`                            // M2M
 	WorkItemTags        *[]WorkItemTag       `json:"workItemTags" db:"work_item_tags"`                // M2M
 	WorkItemType        *WorkItemType        `json:"workItemType" db:"work_item_type"`                // O2O
 	// xo fields
@@ -138,9 +138,9 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 	}
 }
 
-type Member struct {
+type WorkItem_Member struct {
 	User User         `json:"user" db:"users"`
-	Role WorkItemRole `json:"role" db:"role"`
+	Role WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }
 
 // Insert inserts the WorkItem to the database.

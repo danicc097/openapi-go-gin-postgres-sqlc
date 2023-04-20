@@ -39,7 +39,10 @@ export type DbDemoProjectWorkItem1 = {
   workItem?: DbWorkItem
   workItemID: number
 } | null
-export type DbWorkItemRole = string
+/**
+ * represents a database 'work_item_role'
+ */
+export type WorkItemRole = 'preparer' | 'reviewer'
 export type DbProject2WorkItem = {
   customDateForProject2: string | null
   workItem?: DbWorkItem
@@ -85,19 +88,16 @@ export type Detail = ValidationError[]
  */
 export type Topics = 'GlobalAlerts'
 /**
- * User notification type.
- */
-export type NotificationType = 'personal' | 'global'
-/**
- * Role in work item for a member.
- */
-export type WorkItemRole = 'preparer' | 'reviewer'
-/**
  * Kanban columns for project demoProject
  */
 export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 export type ModelsProject = string
 export type ModelsRole = string
+export type DbWorkItemRole = string
+/**
+ * represents a database 'notification_type'
+ */
+export type NotificationType = 'personal' | 'global'
 
 export interface DbActivity {
   activityID: number
@@ -172,7 +172,7 @@ export interface DbWorkItem {
   demoProjectWorkItem?: DbDemoProjectWorkItem
   description: string
   kanbanStepID: number
-  members?: DbMember[] | null
+  members?: DbWorkItem_Member[] | null
   metadata: number[] | null
   project2WorkItem?: DbProject2WorkItem
   targetDate: string
@@ -186,8 +186,8 @@ export interface DbWorkItem {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
-export interface DbMember {
-  role?: DbWorkItemRole
+export interface DbWorkItem_Member {
+  role: WorkItemRole
   user?: DbUser
 }
 export interface DbWorkItemComment {

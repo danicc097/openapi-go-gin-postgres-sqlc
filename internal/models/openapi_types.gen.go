@@ -179,12 +179,6 @@ type DbKanbanStepCreateParams struct {
 	TimeTrackable *bool   `json:"timeTrackable,omitempty"`
 }
 
-// DbMember defines the model for DbMember.
-type DbMember struct {
-	Role *DbWorkItemRole `json:"role,omitempty"`
-	User *DbUser         `json:"user,omitempty"`
-}
-
 // DbProject defines the model for DbProject.
 type DbProject struct {
 	Activities  *[]DbActivity   `json:"activities"`
@@ -274,7 +268,7 @@ type DbWorkItem struct {
 	DemoProjectWorkItem *DbDemoProjectWorkItem `json:"demoProjectWorkItem"`
 	Description         string                 `json:"description"`
 	KanbanStepID        int                    `json:"kanbanStepID"`
-	Members             *[]DbMember            `json:"members"`
+	Members             *[]DbWorkItemMember    `json:"members"`
 	Metadata            *[]int                 `json:"metadata"`
 	Project2WorkItem    *DbProject2WorkItem    `json:"project2WorkItem"`
 	TargetDate          time.Time              `json:"targetDate"`
@@ -338,6 +332,13 @@ type DbWorkItemTypeCreateParams struct {
 	ProjectID   *int    `json:"projectID,omitempty"`
 }
 
+// DbWorkItemMember defines the model for DbWorkItem_Member.
+type DbWorkItemMember struct {
+	// Role represents a database 'work_item_role'
+	Role WorkItemRole `json:"role"`
+	User *DbUser      `json:"user,omitempty"`
+}
+
 // HTTPValidationError defines the model for HTTPValidationError.
 type HTTPValidationError struct {
 	Detail *[]ValidationError `json:"detail,omitempty"`
@@ -368,7 +369,7 @@ type ModelsProjectConfigField struct {
 // ModelsRole defines the model for ModelsRole.
 type ModelsRole = string
 
-// NotificationType User notification type.
+// NotificationType represents a database 'notification_type'
 type NotificationType string
 
 // PgtypeJSONB defines the model for PgtypeJSONB.
@@ -457,7 +458,7 @@ type ValidationError struct {
 	Type string   `json:"type"`
 }
 
-// WorkItemRole Role in work item for a member.
+// WorkItemRole represents a database 'work_item_role'
 type WorkItemRole string
 
 // DemoProjectKanbanSteps Kanban columns for project demoProject

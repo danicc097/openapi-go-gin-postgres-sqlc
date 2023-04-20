@@ -7,7 +7,7 @@
  */
 
 /**
- * User notification type.
+ * represents a database 'notification_type'
  */
 export type NotificationType = typeof NotificationType[keyof typeof NotificationType]
 

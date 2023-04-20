@@ -255,14 +255,8 @@ export interface components {
     /** @enum {string} */
     Role: "guest" | "user" | "advancedUser" | "manager" | "admin" | "superAdmin";
     /**
-     * Notification type 
-     * @description User notification type. 
-     * @enum {string}
-     */
-    NotificationType: "personal" | "global";
-    /**
      * WorkItem role 
-     * @description Role in work item for a member. 
+     * @description represents a database 'work_item_role' 
      * @enum {string}
      */
     WorkItemRole: "preparer" | "reviewer";
@@ -331,7 +325,7 @@ export interface components {
       demoProjectWorkItem?: components["schemas"]["DbDemoProjectWorkItem"];
       description: string;
       kanbanStepID: number;
-      members?: (components["schemas"]["DbMember"])[] | null;
+      members?: (components["schemas"]["DbWorkItem_Member"])[] | null;
       metadata: (number)[] | null;
       project2WorkItem?: components["schemas"]["DbProject2WorkItem"];
       /** Format: date-time */
@@ -385,11 +379,16 @@ export interface components {
     };
     ModelsProject: string;
     ModelsRole: string;
-    DbMember: {
-      role?: components["schemas"]["DbWorkItemRole"];
+    DbWorkItemRole: string;
+    DbWorkItem_Member: {
+      role: components["schemas"]["WorkItemRole"];
       user?: components["schemas"]["DbUser"];
     };
-    DbWorkItemRole: string;
+    /**
+     * @description represents a database 'notification_type' 
+     * @enum {string}
+     */
+    NotificationType: "personal" | "global";
   };
   responses: never;
   parameters: {

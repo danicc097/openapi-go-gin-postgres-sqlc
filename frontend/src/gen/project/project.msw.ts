@@ -7,7 +7,7 @@
  */
 import { rest } from 'msw'
 import { faker } from '@faker-js/faker'
-import { Project } from '.././model'
+import { Project, WorkItemRole } from '.././model'
 
 export const getGetProjectMock = () => ({
   activities: faker.helpers.arrayElement([
@@ -161,7 +161,7 @@ export const getGetProjectMock = () => ({
                               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                               members: faker.helpers.arrayElement([
                                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({ role: faker.helpers.arrayElement([faker.random.word(), undefined]) }),
+                                  () => ({ role: faker.helpers.arrayElement(Object.values(WorkItemRole)) }),
                                 ),
                                 undefined,
                               ]),
@@ -255,7 +255,7 @@ export const getGetProjectMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                         })),
                         undefined,
                       ]),
@@ -284,7 +284,7 @@ export const getGetProjectMock = () => ({
                               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                               members: faker.helpers.arrayElement([
                                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({ role: faker.helpers.arrayElement([faker.random.word(), undefined]) }),
+                                  () => ({ role: faker.helpers.arrayElement(Object.values(WorkItemRole)) }),
                                 ),
                                 undefined,
                               ]),
@@ -437,7 +437,7 @@ export const getGetProjectMock = () => ({
                               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                               members: faker.helpers.arrayElement([
                                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                                  () => ({ role: faker.helpers.arrayElement([faker.random.word(), undefined]) }),
+                                  () => ({ role: faker.helpers.arrayElement(Object.values(WorkItemRole)) }),
                                 ),
                                 undefined,
                               ]),
@@ -550,7 +550,7 @@ export const getGetProjectMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                           user: faker.helpers.arrayElement([
                             {
                               createdAt: (() => faker.date.past())(),
@@ -681,7 +681,7 @@ export const getGetProjectMock = () => ({
               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
               members: faker.helpers.arrayElement([
                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                  role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                   user: faker.helpers.arrayElement([
                     {
                       createdAt: (() => faker.date.past())(),
@@ -755,7 +755,7 @@ export const getGetProjectMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                           user: faker.helpers.arrayElement([
                             {
                               createdAt: (() => faker.date.past())(),
@@ -945,7 +945,7 @@ export const getGetProjectMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                           user: faker.helpers.arrayElement([
                             {
                               createdAt: (() => faker.date.past())(),
@@ -1100,7 +1100,7 @@ export const getGetProjectMock = () => ({
                   kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                   members: faker.helpers.arrayElement([
                     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                      role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                       user: faker.helpers.arrayElement([
                         {
                           createdAt: (() => faker.date.past())(),
@@ -1310,7 +1310,7 @@ export const getGetProjectMock = () => ({
           kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
           members: faker.helpers.arrayElement([
             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-              role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+              role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
               user: faker.helpers.arrayElement([
                 {
                   createdAt: (() => faker.date.past())(),
@@ -1464,7 +1464,7 @@ export const getGetProjectMock = () => ({
                   kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                   members: faker.helpers.arrayElement([
                     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                      role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                       user: faker.helpers.arrayElement([
                         {
                           createdAt: (() => faker.date.past())(),
@@ -1720,7 +1720,7 @@ export const getGetProjectMock = () => ({
                   kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                   members: faker.helpers.arrayElement([
                     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                      role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                       user: faker.helpers.arrayElement([
                         {
                           createdAt: (() => faker.date.past())(),
@@ -1948,7 +1948,7 @@ export const getGetProjectMock = () => ({
           kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
           members: faker.helpers.arrayElement([
             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-              role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+              role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
               user: faker.helpers.arrayElement([
                 {
                   createdAt: (() => faker.date.past())(),
@@ -2338,7 +2338,7 @@ export const getGetProjectMock = () => ({
                   kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                   members: faker.helpers.arrayElement([
                     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                      role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                       user: faker.helpers.arrayElement([
                         {
                           createdAt: (() => faker.date.past())(),
@@ -2735,9 +2735,7 @@ export const getGetProjectBoardMock = () => ({
                                     Array.from(
                                       { length: faker.datatype.number({ min: 1, max: 10 }) },
                                       (_, i) => i + 1,
-                                    ).map(() => ({
-                                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
-                                    })),
+                                    ).map(() => ({ role: faker.helpers.arrayElement(Object.values(WorkItemRole)) })),
                                     undefined,
                                   ]),
                                   metadata: Array.from(
@@ -2833,7 +2831,7 @@ export const getGetProjectBoardMock = () => ({
                           kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                           members: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
-                              () => ({ role: faker.helpers.arrayElement([faker.random.word(), undefined]) }),
+                              () => ({ role: faker.helpers.arrayElement(Object.values(WorkItemRole)) }),
                             ),
                             undefined,
                           ]),
@@ -2865,9 +2863,7 @@ export const getGetProjectBoardMock = () => ({
                                     Array.from(
                                       { length: faker.datatype.number({ min: 1, max: 10 }) },
                                       (_, i) => i + 1,
-                                    ).map(() => ({
-                                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
-                                    })),
+                                    ).map(() => ({ role: faker.helpers.arrayElement(Object.values(WorkItemRole)) })),
                                     undefined,
                                   ]),
                                   metadata: Array.from(
@@ -3030,9 +3026,7 @@ export const getGetProjectBoardMock = () => ({
                                     Array.from(
                                       { length: faker.datatype.number({ min: 1, max: 10 }) },
                                       (_, i) => i + 1,
-                                    ).map(() => ({
-                                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
-                                    })),
+                                    ).map(() => ({ role: faker.helpers.arrayElement(Object.values(WorkItemRole)) })),
                                     undefined,
                                   ]),
                                   metadata: Array.from(
@@ -3148,7 +3142,7 @@ export const getGetProjectBoardMock = () => ({
                           members: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
-                                role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                                role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                                 user: faker.helpers.arrayElement([
                                   {
                                     createdAt: (() => faker.date.past())(),
@@ -3288,7 +3282,7 @@ export const getGetProjectBoardMock = () => ({
                   kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                   members: faker.helpers.arrayElement([
                     Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                      role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                      role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                       user: faker.helpers.arrayElement([
                         {
                           createdAt: (() => faker.date.past())(),
@@ -3365,7 +3359,7 @@ export const getGetProjectBoardMock = () => ({
                           members: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
-                                role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                                role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                                 user: faker.helpers.arrayElement([
                                   {
                                     createdAt: (() => faker.date.past())(),
@@ -3568,7 +3562,7 @@ export const getGetProjectBoardMock = () => ({
                           members: faker.helpers.arrayElement([
                             Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(
                               () => ({
-                                role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                                role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                                 user: faker.helpers.arrayElement([
                                   {
                                     createdAt: (() => faker.date.past())(),
@@ -3732,7 +3726,7 @@ export const getGetProjectBoardMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                           user: faker.helpers.arrayElement([
                             {
                               createdAt: (() => faker.date.past())(),
@@ -3942,7 +3936,7 @@ export const getGetProjectBoardMock = () => ({
               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
               members: faker.helpers.arrayElement([
                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                  role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                   user: faker.helpers.arrayElement([
                     {
                       createdAt: (() => faker.date.past())(),
@@ -4101,7 +4095,7 @@ export const getGetProjectBoardMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                           user: faker.helpers.arrayElement([
                             {
                               createdAt: (() => faker.date.past())(),
@@ -4360,7 +4354,7 @@ export const getGetProjectBoardMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                           user: faker.helpers.arrayElement([
                             {
                               createdAt: (() => faker.date.past())(),
@@ -4588,7 +4582,7 @@ export const getGetProjectBoardMock = () => ({
               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
               members: faker.helpers.arrayElement([
                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                  role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                   user: faker.helpers.arrayElement([
                     {
                       createdAt: (() => faker.date.past())(),
@@ -4994,7 +4988,7 @@ export const getGetProjectBoardMock = () => ({
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                           user: faker.helpers.arrayElement([
                             {
                               createdAt: (() => faker.date.past())(),
@@ -5242,7 +5236,7 @@ export const getGetProjectWorkitemsMock = () =>
             kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
             members: faker.helpers.arrayElement([
               Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                 user: faker.helpers.arrayElement([
                   {
                     createdAt: (() => faker.date.past())(),
@@ -5616,7 +5610,7 @@ export const getGetProjectWorkitemsMock = () =>
                     kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                     members: faker.helpers.arrayElement([
                       Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                        role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                        role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                         user: faker.helpers.arrayElement([
                           {
                             createdAt: (() => faker.date.past())(),
@@ -7942,7 +7936,7 @@ export const getGetProjectWorkitemsMock = () =>
               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
               members: faker.helpers.arrayElement([
                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                  role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                   user: faker.helpers.arrayElement([
                     {
                       createdAt: (() => faker.date.past())(),
@@ -8324,7 +8318,7 @@ export const getGetProjectWorkitemsMock = () =>
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                           user: faker.helpers.arrayElement([
                             {
                               createdAt: (() => faker.date.past())(),
@@ -8599,7 +8593,7 @@ export const getGetProjectWorkitemsMock = () =>
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                           user: faker.helpers.arrayElement([
                             {
                               createdAt: (() => faker.date.past())(),
@@ -8809,7 +8803,7 @@ export const getGetProjectWorkitemsMock = () =>
               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
               members: faker.helpers.arrayElement([
                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                  role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                   user: faker.helpers.arrayElement([
                     {
                       createdAt: (() => faker.date.past())(),
@@ -8968,7 +8962,7 @@ export const getGetProjectWorkitemsMock = () =>
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                           user: faker.helpers.arrayElement([
                             {
                               createdAt: (() => faker.date.past())(),
@@ -9227,7 +9221,7 @@ export const getGetProjectWorkitemsMock = () =>
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                           user: faker.helpers.arrayElement([
                             {
                               createdAt: (() => faker.date.past())(),
@@ -9455,7 +9449,7 @@ export const getGetProjectWorkitemsMock = () =>
               kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
               members: faker.helpers.arrayElement([
                 Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                  role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                  role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                   user: faker.helpers.arrayElement([
                     {
                       createdAt: (() => faker.date.past())(),
@@ -9841,7 +9835,7 @@ export const getGetProjectWorkitemsMock = () =>
                       kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
                       members: faker.helpers.arrayElement([
                         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-                          role: faker.helpers.arrayElement([faker.random.word(), undefined]),
+                          role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
                           user: faker.helpers.arrayElement([
                             {
                               createdAt: (() => faker.date.past())(),

@@ -29,7 +29,6 @@ import {
   Scope,
   Scopes,
   Role,
-  NotificationType,
   WorkItemRole,
   UpdateUserRequest,
   UpdateUserAuthRequest,
@@ -48,8 +47,9 @@ import {
   DbWorkItemTypeCreateParams,
   ModelsProject,
   ModelsRole,
-  DbMember,
   DbWorkItemRole,
+  DbWorkItem_Member,
+  NotificationType,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -310,18 +310,6 @@ export const RoleDecoder: Decoder<Role> = {
     return validateJson(json, schema, RoleDecoder.definitionName)
   },
 }
-export const NotificationTypeDecoder: Decoder<NotificationType> = {
-  definitionName: 'NotificationType',
-  schemaRef: '#/definitions/NotificationType',
-
-  decode(json: unknown): NotificationType {
-    const schema = ajv.getSchema(NotificationTypeDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${NotificationTypeDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, NotificationTypeDecoder.definitionName)
-  },
-}
 export const WorkItemRoleDecoder: Decoder<WorkItemRole> = {
   definitionName: 'WorkItemRole',
   schemaRef: '#/definitions/WorkItemRole',
@@ -538,18 +526,6 @@ export const ModelsRoleDecoder: Decoder<ModelsRole> = {
     return validateJson(json, schema, ModelsRoleDecoder.definitionName)
   },
 }
-export const DbMemberDecoder: Decoder<DbMember> = {
-  definitionName: 'DbMember',
-  schemaRef: '#/definitions/DbMember',
-
-  decode(json: unknown): DbMember {
-    const schema = ajv.getSchema(DbMemberDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${DbMemberDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, DbMemberDecoder.definitionName)
-  },
-}
 export const DbWorkItemRoleDecoder: Decoder<DbWorkItemRole> = {
   definitionName: 'DbWorkItemRole',
   schemaRef: '#/definitions/DbWorkItemRole',
@@ -560,5 +536,29 @@ export const DbWorkItemRoleDecoder: Decoder<DbWorkItemRole> = {
       throw new Error(`Schema ${DbWorkItemRoleDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbWorkItemRoleDecoder.definitionName)
+  },
+}
+export const DbWorkItem_MemberDecoder: Decoder<DbWorkItem_Member> = {
+  definitionName: 'DbWorkItem_Member',
+  schemaRef: '#/definitions/DbWorkItem_Member',
+
+  decode(json: unknown): DbWorkItem_Member {
+    const schema = ajv.getSchema(DbWorkItem_MemberDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbWorkItem_MemberDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbWorkItem_MemberDecoder.definitionName)
+  },
+}
+export const NotificationTypeDecoder: Decoder<NotificationType> = {
+  definitionName: 'NotificationType',
+  schemaRef: '#/definitions/NotificationType',
+
+  decode(json: unknown): NotificationType {
+    const schema = ajv.getSchema(NotificationTypeDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${NotificationTypeDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, NotificationTypeDecoder.definitionName)
   },
 }

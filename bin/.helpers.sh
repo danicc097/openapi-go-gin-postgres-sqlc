@@ -109,13 +109,18 @@ join_by() {
 }
 
 to_pascal() {
-  local s=${1^}
-  local re='(.*_-+)([[:lower:]].*)'
-  while [[ $s =~ $re ]]; do
-    s=${BASH_REMATCH[1]}${BASH_REMATCH[2]^}
+  local string=$1
+  local pascal_case=""
+
+  # Replace underscores and hyphens with spaces
+  string=${string//[_-]/ }
+
+  # Split the string into words and capitalize the first letter of each word
+  for word in $string; do
+    pascal_case+="${word^}"
   done
-  s=${s//[^[:alnum:]]/}
-  printf '%s\n' "$s"
+
+  echo "$pascal_case"
 }
 
 to_lower() {
