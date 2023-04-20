@@ -60,6 +60,11 @@ func TestUser_Update(t *testing.T) {
 			}
 
 			got.UpdatedAt = user.UpdatedAt // ignore
+
+			// since we run tests in parallel, notification fan out effects changes on all users
+			got.HasGlobalNotifications = user.HasGlobalNotifications     // ignore
+			got.HasPersonalNotifications = user.HasPersonalNotifications // ignore
+
 			assert.Equal(t, tc.want, got)
 		})
 	}

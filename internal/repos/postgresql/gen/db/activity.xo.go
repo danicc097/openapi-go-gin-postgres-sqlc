@@ -68,17 +68,6 @@ func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 	}
 }
 
-// Exists returns true when the Activity exists in the database.
-func (a *Activity) Exists() bool {
-	return a._exists
-}
-
-// Deleted returns true when the Activity has been marked for deletion from
-// the database.
-func (a *Activity) Deleted() bool {
-	return a._deleted
-}
-
 // Insert inserts the Activity to the database.
 func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 	switch {
@@ -142,7 +131,7 @@ func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 
 // Save saves the Activity to the database.
 func (a *Activity) Save(ctx context.Context, db DB) (*Activity, error) {
-	if a.Exists() {
+	if a._exists {
 		return a.Update(ctx, db)
 	}
 	return a.Insert(ctx, db)

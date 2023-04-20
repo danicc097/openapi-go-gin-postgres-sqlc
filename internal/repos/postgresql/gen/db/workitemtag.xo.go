@@ -68,17 +68,6 @@ func WithWorkItemTagJoin(joins WorkItemTagJoins) WorkItemTagSelectConfigOption {
 	}
 }
 
-// Exists returns true when the WorkItemTag exists in the database.
-func (wit *WorkItemTag) Exists() bool {
-	return wit._exists
-}
-
-// Deleted returns true when the WorkItemTag has been marked for deletion from
-// the database.
-func (wit *WorkItemTag) Deleted() bool {
-	return wit._deleted
-}
-
 // Insert inserts the WorkItemTag to the database.
 func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error) {
 	switch {
@@ -142,7 +131,7 @@ func (wit *WorkItemTag) Update(ctx context.Context, db DB) (*WorkItemTag, error)
 
 // Save saves the WorkItemTag to the database.
 func (wit *WorkItemTag) Save(ctx context.Context, db DB) (*WorkItemTag, error) {
-	if wit.Exists() {
+	if wit._exists {
 		return wit.Update(ctx, db)
 	}
 	return wit.Insert(ctx, db)

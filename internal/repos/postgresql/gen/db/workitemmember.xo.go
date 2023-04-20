@@ -63,17 +63,6 @@ func WithWorkItemMemberJoin(joins WorkItemMemberJoins) WorkItemMemberSelectConfi
 	}
 }
 
-// Exists returns true when the WorkItemMember exists in the database.
-func (wim *WorkItemMember) Exists() bool {
-	return wim._exists
-}
-
-// Deleted returns true when the WorkItemMember has been marked for deletion from
-// the database.
-func (wim *WorkItemMember) Deleted() bool {
-	return wim._deleted
-}
-
 // Insert inserts the WorkItemMember to the database.
 func (wim *WorkItemMember) Insert(ctx context.Context, db DB) (*WorkItemMember, error) {
 	switch {
@@ -137,7 +126,7 @@ func (wim *WorkItemMember) Update(ctx context.Context, db DB) (*WorkItemMember, 
 
 // Save saves the WorkItemMember to the database.
 func (wim *WorkItemMember) Save(ctx context.Context, db DB) (*WorkItemMember, error) {
-	if wim.Exists() {
+	if wim._exists {
 		return wim.Update(ctx, db)
 	}
 	return wim.Insert(ctx, db)

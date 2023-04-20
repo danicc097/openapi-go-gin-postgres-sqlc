@@ -105,17 +105,6 @@ func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 	}
 }
 
-// Exists returns true when the Project exists in the database.
-func (p *Project) Exists() bool {
-	return p._exists
-}
-
-// Deleted returns true when the Project has been marked for deletion from
-// the database.
-func (p *Project) Deleted() bool {
-	return p._deleted
-}
-
 // Insert inserts the Project to the database.
 func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 	switch {
@@ -179,7 +168,7 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 
 // Save saves the Project to the database.
 func (p *Project) Save(ctx context.Context, db DB) (*Project, error) {
-	if p.Exists() {
+	if p._exists {
 		return p.Update(ctx, db)
 	}
 	return p.Insert(ctx, db)

@@ -89,17 +89,6 @@ func WithWorkItemCommentJoin(joins WorkItemCommentJoins) WorkItemCommentSelectCo
 	}
 }
 
-// Exists returns true when the WorkItemComment exists in the database.
-func (wic *WorkItemComment) Exists() bool {
-	return wic._exists
-}
-
-// Deleted returns true when the WorkItemComment has been marked for deletion from
-// the database.
-func (wic *WorkItemComment) Deleted() bool {
-	return wic._deleted
-}
-
 // Insert inserts the WorkItemComment to the database.
 func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment, error) {
 	switch {
@@ -163,7 +152,7 @@ func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment
 
 // Save saves the WorkItemComment to the database.
 func (wic *WorkItemComment) Save(ctx context.Context, db DB) (*WorkItemComment, error) {
-	if wic.Exists() {
+	if wic._exists {
 		return wic.Update(ctx, db)
 	}
 	return wic.Insert(ctx, db)

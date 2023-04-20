@@ -63,17 +63,6 @@ func WithMovieJoin(joins MovieJoins) MovieSelectConfigOption {
 	}
 }
 
-// Exists returns true when the Movie exists in the database.
-func (m *Movie) Exists() bool {
-	return m._exists
-}
-
-// Deleted returns true when the Movie has been marked for deletion from
-// the database.
-func (m *Movie) Deleted() bool {
-	return m._deleted
-}
-
 // Insert inserts the Movie to the database.
 func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 	switch {
@@ -137,7 +126,7 @@ func (m *Movie) Update(ctx context.Context, db DB) (*Movie, error) {
 
 // Save saves the Movie to the database.
 func (m *Movie) Save(ctx context.Context, db DB) (*Movie, error) {
-	if m.Exists() {
+	if m._exists {
 		return m.Update(ctx, db)
 	}
 	return m.Insert(ctx, db)

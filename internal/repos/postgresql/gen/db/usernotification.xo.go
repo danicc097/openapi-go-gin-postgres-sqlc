@@ -66,17 +66,6 @@ func WithUserNotificationJoin(joins UserNotificationJoins) UserNotificationSelec
 	}
 }
 
-// Exists returns true when the UserNotification exists in the database.
-func (un *UserNotification) Exists() bool {
-	return un._exists
-}
-
-// Deleted returns true when the UserNotification has been marked for deletion from
-// the database.
-func (un *UserNotification) Deleted() bool {
-	return un._deleted
-}
-
 // Insert inserts the UserNotification to the database.
 func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotification, error) {
 	switch {
@@ -140,7 +129,7 @@ func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotificatio
 
 // Save saves the UserNotification to the database.
 func (un *UserNotification) Save(ctx context.Context, db DB) (*UserNotification, error) {
-	if un.Exists() {
+	if un._exists {
 		return un.Update(ctx, db)
 	}
 	return un.Insert(ctx, db)

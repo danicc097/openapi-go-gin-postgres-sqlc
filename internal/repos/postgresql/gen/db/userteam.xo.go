@@ -60,17 +60,6 @@ func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 	}
 }
 
-// Exists returns true when the UserTeam exists in the database.
-func (ut *UserTeam) Exists() bool {
-	return ut._exists
-}
-
-// Deleted returns true when the UserTeam has been marked for deletion from
-// the database.
-func (ut *UserTeam) Deleted() bool {
-	return ut._deleted
-}
-
 // Insert inserts the UserTeam to the database.
 func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 	switch {

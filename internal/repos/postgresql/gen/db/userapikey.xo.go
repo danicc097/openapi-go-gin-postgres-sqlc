@@ -85,17 +85,6 @@ func WithUserAPIKeyJoin(joins UserAPIKeyJoins) UserAPIKeySelectConfigOption {
 	}
 }
 
-// Exists returns true when the UserAPIKey exists in the database.
-func (uak *UserAPIKey) Exists() bool {
-	return uak._exists
-}
-
-// Deleted returns true when the UserAPIKey has been marked for deletion from
-// the database.
-func (uak *UserAPIKey) Deleted() bool {
-	return uak._deleted
-}
-
 // Insert inserts the UserAPIKey to the database.
 func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 	switch {
@@ -159,7 +148,7 @@ func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
 
 // Save saves the UserAPIKey to the database.
 func (uak *UserAPIKey) Save(ctx context.Context, db DB) (*UserAPIKey, error) {
-	if uak.Exists() {
+	if uak._exists {
 		return uak.Update(ctx, db)
 	}
 	return uak.Insert(ctx, db)

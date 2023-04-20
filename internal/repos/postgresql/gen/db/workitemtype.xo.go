@@ -68,17 +68,6 @@ func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOptio
 	}
 }
 
-// Exists returns true when the WorkItemType exists in the database.
-func (wit *WorkItemType) Exists() bool {
-	return wit._exists
-}
-
-// Deleted returns true when the WorkItemType has been marked for deletion from
-// the database.
-func (wit *WorkItemType) Deleted() bool {
-	return wit._deleted
-}
-
 // Insert inserts the WorkItemType to the database.
 func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, error) {
 	switch {
@@ -142,7 +131,7 @@ func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, erro
 
 // Save saves the WorkItemType to the database.
 func (wit *WorkItemType) Save(ctx context.Context, db DB) (*WorkItemType, error) {
-	if wit.Exists() {
+	if wit._exists {
 		return wit.Update(ctx, db)
 	}
 	return wit.Insert(ctx, db)

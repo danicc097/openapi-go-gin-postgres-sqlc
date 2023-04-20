@@ -79,17 +79,6 @@ func WithProject2WorkItemJoin(joins Project2WorkItemJoins) Project2WorkItemSelec
 	}
 }
 
-// Exists returns true when the Project2WorkItem exists in the database.
-func (pi *Project2WorkItem) Exists() bool {
-	return pi._exists
-}
-
-// Deleted returns true when the Project2WorkItem has been marked for deletion from
-// the database.
-func (pi *Project2WorkItem) Deleted() bool {
-	return pi._deleted
-}
-
 // Insert inserts the Project2WorkItem to the database.
 func (pi *Project2WorkItem) Insert(ctx context.Context, db DB) (*Project2WorkItem, error) {
 	switch {
@@ -153,7 +142,7 @@ func (pi *Project2WorkItem) Update(ctx context.Context, db DB) (*Project2WorkIte
 
 // Save saves the Project2WorkItem to the database.
 func (pi *Project2WorkItem) Save(ctx context.Context, db DB) (*Project2WorkItem, error) {
-	if pi.Exists() {
+	if pi._exists {
 		return pi.Update(ctx, db)
 	}
 	return pi.Insert(ctx, db)

@@ -59,17 +59,6 @@ func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkIte
 	}
 }
 
-// Exists returns true when the WorkItemWorkItemTag exists in the database.
-func (wiwit *WorkItemWorkItemTag) Exists() bool {
-	return wiwit._exists
-}
-
-// Deleted returns true when the WorkItemWorkItemTag has been marked for deletion from
-// the database.
-func (wiwit *WorkItemWorkItemTag) Deleted() bool {
-	return wiwit._deleted
-}
-
 // Insert inserts the WorkItemWorkItemTag to the database.
 func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemWorkItemTag, error) {
 	switch {
