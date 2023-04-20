@@ -209,8 +209,8 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Default: `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}"
 {{- if not .skipExtraTags }} db:"{{ .field.SQLName -}}"
 {{- if not .ignoreJSON }} required:"true"
-{{- if .field.OpenAPISchema }} ref:"#/components/schemas/{{ .field.OpenAPISchema }}"
 {{- end }}
+{{- if .field.OpenAPISchema }} ref:"#/components/schemas/{{ .field.OpenAPISchema }}"
 {{- end }}
 {{- end }}`,
 			},
@@ -952,6 +952,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	var enumPkg, openAPISchema string
 	if f.Type.Enum != nil {
 		enumPkg = f.Type.Enum.EnumPkg
+		openAPISchema = camelExport(f.Type.Enum.Name)
 	}
 	if f.TypeOverride != "" {
 		typ = f.TypeOverride
@@ -1560,7 +1561,16 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 				// create custom struct for each join with lookup table that has extra fields
 				var lookupFields []string
 				for _, col := range extraCols {
-					tag := fmt.Sprintf("`json:\"%s\" db:\"%s\"`", camel(col.GoName), col.SQLName)
+					tag := fmt.Sprintf("`json:\"%s\" db:\"%s\"", camel(col.GoName), col.SQLName)
+					isPrivate := contains(col.Properties, privateFieldProperty)
+					if !isPrivate {
+						tag = tag + ` required:"true"`
+					}
+					if col.OpenAPISchema != "" {
+						tag = tag + ` ref:"#/components/schemas/` + col.OpenAPISchema + `"`
+					}
+					tag = tag + "`"
+					fmt.Printf("tagsssssss: %v\n", tag)
 					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), f.typefn(col.Type), tag))
 				}
 				extraStructs = append(extraStructs, (fmt.Sprintf(`

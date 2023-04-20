@@ -192,12 +192,6 @@ type DbKanbanStepCreateParams struct {
 	TimeTrackable *bool   `json:"timeTrackable,omitempty"`
 }
 
-// DbMember defines the model for DbMember.
-type DbMember struct {
-	Role *DbWorkItemRole `json:"role,omitempty"`
-	User *DbUser         `json:"user,omitempty"`
-}
-
 // DbProject defines the model for DbProject.
 type DbProject struct {
 	Activities  *[]DbActivity   `json:"activities"`
@@ -287,7 +281,7 @@ type DbWorkItem struct {
 	DemoProjectWorkItem *DbDemoProjectWorkItem `json:"demoProjectWorkItem"`
 	Description         string                 `json:"description"`
 	KanbanStepID        int                    `json:"kanbanStepID"`
-	Members             *[]DbMember            `json:"members"`
+	Members             *[]DbWorkItemMember    `json:"members"`
 	Metadata            *[]int                 `json:"metadata"`
 	Project2WorkItem    *DbProject2WorkItem    `json:"project2WorkItem"`
 	TargetDate          time.Time              `json:"targetDate"`
@@ -349,6 +343,13 @@ type DbWorkItemTypeCreateParams struct {
 	Description *string `json:"description,omitempty"`
 	Name        *string `json:"name,omitempty"`
 	ProjectID   *int    `json:"projectID,omitempty"`
+}
+
+// DbWorkItemMember defines the model for DbWorkItem_Member.
+type DbWorkItemMember struct {
+	// Role Role in work item for a member.
+	Role WorkItemRole `json:"role"`
+	User *DbUser      `json:"user,omitempty"`
 }
 
 // HTTPValidationError defines the model for HTTPValidationError.

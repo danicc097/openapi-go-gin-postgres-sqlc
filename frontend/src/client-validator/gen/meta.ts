@@ -44,8 +44,8 @@ import {
   DbWorkItemTypeCreateParams,
   ModelsProject,
   ModelsRole,
-  DbMember,
   DbWorkItemRole,
+  DbWorkItem_Member,
 } from './models'
 
 export const schemaDefinitions = {
@@ -116,8 +116,8 @@ export const schemaDefinitions = {
   ),
   ModelsProject: info<ModelsProject>('ModelsProject', '#/definitions/ModelsProject'),
   ModelsRole: info<ModelsRole>('ModelsRole', '#/definitions/ModelsRole'),
-  DbMember: info<DbMember>('DbMember', '#/definitions/DbMember'),
   DbWorkItemRole: info<DbWorkItemRole>('DbWorkItemRole', '#/definitions/DbWorkItemRole'),
+  DbWorkItem_Member: info<DbWorkItem_Member>('DbWorkItem_Member', '#/definitions/DbWorkItem_Member'),
 }
 
 export interface SchemaInfo<T> {

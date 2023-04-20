@@ -140,7 +140,7 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 
 type WorkItem_Member struct {
 	User User         `json:"user" db:"users"`
-	Role WorkItemRole `json:"role" db:"role"`
+	Role WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }
 
 // Insert inserts the WorkItem to the database.

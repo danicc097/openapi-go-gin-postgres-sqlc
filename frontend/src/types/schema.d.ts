@@ -331,7 +331,7 @@ export interface components {
       demoProjectWorkItem?: components["schemas"]["DbDemoProjectWorkItem"];
       description: string;
       kanbanStepID: number;
-      members?: (components["schemas"]["DbMember"])[] | null;
+      members?: (components["schemas"]["DbWorkItem_Member"])[] | null;
       metadata: (number)[] | null;
       project2WorkItem?: components["schemas"]["DbProject2WorkItem"];
       /** Format: date-time */
@@ -385,11 +385,11 @@ export interface components {
     };
     ModelsProject: string;
     ModelsRole: string;
-    DbMember: {
-      role?: components["schemas"]["DbWorkItemRole"];
+    DbWorkItemRole: string;
+    DbWorkItem_Member: {
+      role: components["schemas"]["WorkItemRole"];
       user?: components["schemas"]["DbUser"];
     };
-    DbWorkItemRole: string;
   };
   responses: never;
   parameters: {

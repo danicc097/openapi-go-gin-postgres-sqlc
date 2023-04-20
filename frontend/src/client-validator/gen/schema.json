@@ -1019,7 +1019,7 @@
         },
         "members": {
           "items": {
-            "$ref": "#/definitions/DbMember"
+            "$ref": "#/definitions/DbWorkItem_Member"
           },
           "type": [
             "array",
@@ -1221,20 +1221,23 @@
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "DbMember": {
+    "DbWorkItemRole": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbWorkItem_Member": {
       "properties": {
         "role": {
-          "$ref": "#/definitions/DbWorkItemRole"
+          "$ref": "#/definitions/WorkItemRole"
         },
         "user": {
           "$ref": "#/definitions/DbUser"
         }
       },
+      "required": [
+        "role"
+      ],
       "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DbWorkItemRole": {
-      "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
@@ -1359,11 +1362,11 @@
     "ModelsRole": {
       "$ref": "#/definitions/ModelsRole"
     },
-    "DbMember": {
-      "$ref": "#/definitions/DbMember"
-    },
     "DbWorkItemRole": {
       "$ref": "#/definitions/DbWorkItemRole"
+    },
+    "DbWorkItem_Member": {
+      "$ref": "#/definitions/DbWorkItem_Member"
     }
   }
 }

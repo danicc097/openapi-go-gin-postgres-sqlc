@@ -5,10 +5,10 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbWorkItemRole } from './dbWorkItemRole'
+import type { WorkItemRole } from './workItemRole'
 import type { DbUser } from './dbUser'
 
-export interface DbMember {
-  role?: DbWorkItemRole
+export interface DbWorkItemMember {
+  role: WorkItemRole
   user?: DbUser
 }
