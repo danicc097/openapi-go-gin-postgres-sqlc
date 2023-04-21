@@ -23,7 +23,7 @@ SCRIPT="$(basename $0)"
 trap 'err_handler $LINENO' ERR
 
 err_handler() {
-  echo "ERR trap called in ${FUNCNAME-main context} from ${RED}$SCRIPT:$1${OFF}"
+  echo "Error catched in ${MAGENTA}$SCRIPT:$1${OFF}"
 }
 
 trap killgroup SIGINT
@@ -38,7 +38,7 @@ exit-cleanup() {
 }
 
 killgroup() {
-  printf "\nkilling spawned processes...\n"
+  printf "\nKilling spawned processes...\n\n"
   # kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
   kill_descendants 2>/dev/null || true
   pgrep -P $PROC | xargs kill || true
@@ -593,40 +593,27 @@ x.gen() {
     # TODO try use gnu parallel and exit when anyone fails
     # (with current setup the whole x.gen is executed and only then
     # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
-    set -e
+    # shopt -s inherit_errexit
     go generate ./... &
     x.gen.gowrap &
     x.gen.sqlc &
     x.gen.proto &
 
-    wait
+    wait_without_error
 
     x.gen.xo &
     x.gen.jet &
 
-    set -e
-    declare -i err=0 werr=0
-    while
-      wait -fn || werr=$?
-      ((werr != 127))
-    do
-      err=$werr
-      ((err == 0)) || break # handle error as soon as it happens
-    done
-    #trap 'wait || :' EXIT # wait for all jobs before exiting (regardless of handling above)
-    if ((err != 0)); then
-      echo "Job failed"
-      kill -s SIGUSR1 $PROC
-      return
-    fi
+    wait_without_error
 
     x.postgen &
     x.gen.counterfeiter & # delay since it depends on generated output too
 
-    wait
+    wait_without_error
 
     x.gen.client-server # depends on schemas generated in postgen
 
+    # restart is not robust
     # vscode will randomly lose connection when restarting
     # for pid in $(pidof gopls); do
     #   restart_pid $pid &
@@ -1356,7 +1343,7 @@ cache-gen.cleanup() {
 }
 
 cache-gen.restore() {
-  echo "Restoring $SPEC and $PG_REPO_GEN"
+  echo "Restoring previous generated code"
   mv "$CACHE/$SPEC" "$SPEC"
   rm -rf "$PG_REPO_GEN"
   mv "$CACHE_PG_REPO_GEN" "$PG_REPO"
