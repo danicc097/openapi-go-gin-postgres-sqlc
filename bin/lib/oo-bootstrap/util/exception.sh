@@ -6,10 +6,10 @@ import String/GetSpaces String/SlashReplacement UI/Color UI/Console
 #########################
 
 trap "__EXCEPTION_TYPE__=\"\$_\" command_not_found_handle \$? \$BASH_COMMAND" ERR
-set -o errtrace  # trace ERR through 'time command' and other functions
+set -o errtrace # trace ERR through 'time command' and other functions
 
 # unalias throw 2> /dev/null || true
-unset -f throw 2> /dev/null || true
+unset -f throw 2>/dev/null || true
 alias throw="__EXCEPTION_TYPE__=\${e:-Manually invoked} command_not_found_handle"
 
 Exception::CustomCommandHandler() {
@@ -19,9 +19,8 @@ Exception::CustomCommandHandler() {
 
 Exception::FillExceptionWithTraceElements() {
   local IFS=$'\n'
-  for traceElement in $(Exception::DumpBacktrace ${skipBacktraceCount:-3})
-  do
-    exception+=( "$traceElement" )
+  for traceElement in $(Exception::DumpBacktrace ${skipBacktraceCount:-3}); do
+    exception+=("$traceElement")
   done
 }
 
@@ -30,8 +29,7 @@ command_not_found_handle() {
   local IFS=$' \t\n'
 
   # ignore the error from the catch subshell itself
-  if [[ "$*" = '( set -'*'; true'* ]] ## TODO: refine with a regex and test
-  then
+  if [[ "$*" = '( set -'*'; true'* ]]; then ## TODO: refine with a regex and test
     return 0
   fi
 
@@ -44,43 +42,39 @@ command_not_found_handle() {
   local undefinedObject="$*"
   local type="${__EXCEPTION_TYPE__:-"Undefined command"}"
 
-  if [[ "$undefinedObject" == "("*")" ]]
-  then
+  if [[ "$undefinedObject" == "("*")" ]]; then
     type="Subshell returned a non-zero value"
   fi
 
-  if [[ -z "$undefinedObject" ]]
-  then
+  if [[ -z "$undefinedObject" ]]; then
     undefinedObject="$type"
   fi
 
-  if [[ $__oo__insideTryCatch -gt 0 ]]
-  then
+  if [[ $__oo__insideTryCatch -gt 0 ]]; then
     subject=level3 Log "inside Try No.: $__oo__insideTryCatch"
 
     if [[ ! -s $__oo__storedExceptionLineFile ]]; then
-      echo "$lineNo" > $__oo__storedExceptionLineFile
+      echo "$lineNo" >$__oo__storedExceptionLineFile
     fi
     if [[ ! -s $__oo__storedExceptionFile ]]; then
-      echo "$undefinedObject" > $__oo__storedExceptionFile
+      echo "$undefinedObject" >$__oo__storedExceptionFile
     fi
     if [[ ! -s $__oo__storedExceptionSourceFile ]]; then
-      echo "$script" > $__oo__storedExceptionSourceFile
+      echo "$script" >$__oo__storedExceptionSourceFile
     fi
     if [[ ! -s $__oo__storedExceptionBacktraceFile ]]; then
-      Exception::DumpBacktrace 2 > $__oo__storedExceptionBacktraceFile
+      Exception::DumpBacktrace 2 >$__oo__storedExceptionBacktraceFile
     fi
 
     return 1 # needs to be return 1
   fi
 
-  if [[ $BASH_SUBSHELL -ge 25 ]] ## TODO: configurable
-  then
+  if [[ $BASH_SUBSHELL -ge 25 ]]; then ## TODO: configurable
     echo "ERROR: Call stack exceeded (25)."
     Exception::ContinueOrBreak || exit 1
   fi
 
-  local -a exception=( "$lineNo" "$undefinedObject" "$script" )
+  local -a exception=("$lineNo" "$undefinedObject" "$script")
 
   Exception::FillExceptionWithTraceElements
 
@@ -105,8 +99,7 @@ Exception::PrintException() {
   local -a backtraceFile
 
   #for traceElement in Exception::GetLastException
-  while [[ $counter -lt ${#exception[@]} ]]
-  do
+  while [[ $counter -lt ${#exception[@]} ]]; do
     backtraceLine[$backtraceNo]="${exception[$counter]}"
     counter+=1
     backtraceCommand[$backtraceNo]="${exception[$counter]}"
@@ -119,9 +112,8 @@ Exception::PrintException() {
 
   local -i index=1
 
-  while [[ $index -lt $backtraceNo ]]
-  do
-    Console::WriteStdErr "$(Exception::FormatExceptionSegment "${backtraceFile[$index]}" "${backtraceLine[$index]}" "${backtraceCommand[($index - 1)]}" $(( $index + $backtraceIndentationLevel )) )"
+  while [[ $index -lt $backtraceNo ]]; do
+    Console::WriteStdErr "$(Exception::FormatExceptionSegment "${backtraceFile[$index]}" "${backtraceLine[$index]}" "${backtraceCommand[($index - 1)]}" $(($index + $backtraceIndentationLevel)))"
     index+=1
   done
 }
@@ -135,8 +127,7 @@ Exception::CanHighlight() {
   local stringToMarkWithoutSlash="$(String::ReplaceSlashes "$stringToMark")"
   errLine="$(String::ReplaceSlashes "$errLine")"
 
-  if [[ "$errLine" == *"$stringToMarkWithoutSlash"* ]]
-  then
+  if [[ "$errLine" == *"$stringToMarkWithoutSlash"* ]]; then
     return 0
   else
     return 1
@@ -190,8 +181,7 @@ Exception::FormatExceptionSegment() {
   ## TODO: when line ends with slash \ it is a multiline statement
   ## TODO: when eval or alias
   # In case it's a multiline eval, sometimes bash gives a line that's offset by a few
-  while [[ $linesTried -lt 5 && $lineNo -gt 0 ]] && ! Exception::CanHighlight "$errLine" "$stringToMark"
-  do
+  while [[ $linesTried -lt 5 && $lineNo -gt 0 ]] && ! Exception::CanHighlight "$errLine" "$stringToMark"; do
     linesTried+=1
     lineNo+=-1
     errLine="$(sed "${lineNo}q;d" "$script")"
@@ -202,8 +192,7 @@ Exception::FormatExceptionSegment() {
 
   local prefix="   $(UI.Powerline.Branch)$(String::GetSpaces $(($callPosition * 3 - 3)) || true) "
 
-  if [[ $linesTried -ge 5 ]]
-  then
+  if [[ $linesTried -ge 5 ]]; then
     # PRINT THE ORGINAL OBJECT AND ORIGINAL LINE #
     #local underlinedObject="$(Exception::HighlightPart "$errLine" "$stringToMark")"
     local underlinedObject="$(Exception::GetUnderlinedPart "$stringToMark")"
@@ -223,14 +212,13 @@ Exception::ContinueOrBreak() (
   ## probably it's enough to -pipefail, check for a pipe in command_not_found - and if yes - return 1
 
   # if in a terminal
-  if [ -t 0 ]
-  then
+  if [ -t 0 ]; then
     trap "stty sane; exit 1" INT
     Console::WriteStdErr
     Console::WriteStdErr " $(UI.Color.Yellow)$(UI.Powerline.Lightning)$(UI.Color.White) Press $(UI.Color.Bold)[CTRL+C]$(UI.Color.White) to exit or $(UI.Color.Bold)[Return]$(UI.Color.White) to continue execution."
     read -s
     Console::WriteStdErr "$(UI.Color.Blue)$(UI.Powerline.Cog)$(UI.Color.White)  Continuing...$(UI.Color.Default)"
-    return 0
+    exit 0
   else
     Console::WriteStdErr
     exit 1
@@ -247,11 +235,9 @@ Exception::DumpBacktrace() {
 
   local -i i=0
 
-  while caller $i > /dev/null
-  do
-    if (( $i + 1 >= $startFrom ))
-    then
-      local -a trace=( $(caller $i) )
+  while caller $i >/dev/null; do
+    if (($i + 1 >= $startFrom)); then
+      local -a trace=($(caller $i))
 
       echo "${trace[0]}"
       echo "${trace[1]}"
