@@ -77,6 +77,24 @@ list_descendants() {
   echo "$desc_pids"
 }
 
+# waits for parallel processes to finish sucessfully, signalling SIGUSR1 otherwise.
+wait_without_error() {
+  declare -i err=0 werr=0
+  while
+    wait -fn || werr=$?
+    ((werr != 127)) # 127: not found
+  do
+    err=$werr
+    ((err == 0)) || break # handle error as soon as it happens
+  done
+  #trap 'wait || :' EXIT # wait for all jobs before exiting (regardless of handling above)
+  if ((err != 0)); then
+    echo "A job failed"
+    kill -s SIGUSR1 $PROC
+    exit 1
+  fi
+}
+
 # Retrieve environment variable `var` from `env_file`
 get_envvar() {
   local env_file="$1"

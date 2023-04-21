@@ -77,7 +77,8 @@ func main() {
 	}
 
 	var rows pgx.Rows
-	var bt []byte
+	var b []byte
+	println(b)
 
 	//
 	//
@@ -99,9 +100,24 @@ func main() {
 	if err != nil {
 		log.Fatalf("db.UserByUsername: %s\n", err)
 	}
-	fmt.Printf("user: %+v\n", user)
+
+	// for i := 0; i < 10; i++ {
+	// 	fmt.Println("\n-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-\n")
+	// 	_, err = db.UserByUsername(context.Background(), pool, username,
+	// 		db.WithUserJoin(db.UserJoins{
+	// 			TimeEntries: true,
+	// 			WorkItems:   true,
+	// 			Teams:       true,
+	// 			UserAPIKey:  false,
+	// 		}),
+	// 		db.WithUserOrderBy(db.UserCreatedAtDescNullsLast))
+	// 	if err != nil {
+	// 		log.Fatalf("db.UserByUsername: %s\n", err)
+	// 	}
+	// }
+
 	format.PrintJSON(user)
-	os.Exit(1)
+
 	// test correct queries
 	key := user.UserID.String() + "-key-hashed"
 	uak, err := db.UserAPIKeyByAPIKey(context.Background(), pool, key, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
@@ -166,67 +182,7 @@ func main() {
 		fmt.Printf("CollectRows error: %v", err)
 		return
 	}
-	b, _ := json.Marshal(uaks[0])
-	fmt.Printf("uaks[0]: %+v\n", string(b))
-	//
-	//
-	//
-	type AnotherTable struct{}
-	type User struct {
-		UserID int    `json:"userId" db:"user_id"`
-		Name   string `json:"name" db:"name"`
-	}
-	type UserAPIKey struct {
-		UserAPIKeyID int `json:"userApiKeyId" db:"user_api_key_id"`
-		UserID       int `json:"userId" db:"user_id"`
-
-		User         *User         `json:"user" db:"user"`
-		AnotherTable *AnotherTable `json:"anotherTable" db:"another_table"`
-	}
-	rows, _ = pool.Query(context.Background(), `
-	WITH user_api_keys AS (
-		SELECT 1 AS user_id, 101 AS user_api_key_id, 'abc123' AS api_key
-	), users AS (
-		SELECT 1 AS user_id, 'John Doe' AS name
-	)
-	SELECT user_api_keys.user_api_key_id, user_api_keys.user_id, row(users.*) AS user
-	FROM user_api_keys
-	LEFT JOIN users ON users.user_id = user_api_keys.user_id
-	WHERE user_api_keys.api_key = 'abc123';
-	`)
-	uaks_test, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserAPIKey])
-	fmt.Printf("err: %v\n", err)
-	bt, _ = json.Marshal(uaks_test[0])
-	fmt.Printf("uaks_test[0]: %+v\n", string(bt))
-
-	type Item struct {
-		UserItemID int    `json:"userItemID" db:"user_item_id"`
-		UserID     int    `json:"userID" db:"user_id"`
-		Item       string `json:"item" db:"item"`
-	}
-	type CustomUser struct {
-		UserID int     `json:"userID" db:"user_id"`
-		Name   string  `json:"name" db:"name"`
-		Items  []*Item `json:"items" db:"items"`
-	}
-	rows, _ = pool.Query(context.Background(), `
-	WITH user_items AS (
-		SELECT 1 AS user_id, 101 AS user_item_id, 'item 1' AS item
-		UNION ALL
-		SELECT 1 AS user_id, 102 AS user_item_id, 'item 2' AS item
-	), users AS (
-		SELECT 1 AS user_id, 'John Doe' AS name
-	)
-	SELECT users.user_id, array_agg(user_items.*) AS items
-	FROM users
-	LEFT JOIN user_items ON users.user_id = user_items.user_id
-	GROUP BY users.user_id;
-	`)
-	userItems, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[CustomUser])
-	fmt.Printf("err: %v\n", err)
-	bt, _ = json.Marshal(userItems[0])
-	fmt.Printf("userItems[0]: %+v\n", string(bt))
-	// {"userID":1,"name":"","userItems":[{"userItemID":1,"userID":101,"item":"item 1"},{"userItemID":1,"userID":102,"item":"item 2"}]}
+	format.PrintJSON(uaks[0])
 }
 
 type Item struct {

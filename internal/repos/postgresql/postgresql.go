@@ -48,14 +48,17 @@ func New(logger *zap.Logger) (*pgxpool.Pool, *sql.DB, error) {
 		}
 	}
 
-	poolConfig.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
-		searchPaths := []string{"public"}
-		typeNames, err := QueryDatabaseTypeNames(context.Background(), c, searchPaths...)
-		if err != nil {
-			return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not query database types")
-		}
+	searchPaths := []string{"public"}
+	conn, err := pgx.Connect(context.Background(), dsn.String())
+	typeNames, err := queryDatabaseTypeNames(context.Background(), conn, searchPaths...)
+	if err != nil {
+		return nil, nil, internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not query database types")
+	}
 
-		err = RegisterDataTypes(context.Background(), c, typeNames)
+	// called after a connection is established, but before it is added to the pool.
+	// Will run once.
+	poolConfig.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
+		err = registerDataTypes(context.Background(), c, typeNames)
 		if err != nil {
 			return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not register data types")
 		}
@@ -80,11 +83,12 @@ func New(logger *zap.Logger) (*pgxpool.Pool, *sql.DB, error) {
 	return pgxPool, sqlPool, nil
 }
 
-// RegisterDataTypes automatically registers all enums and tables types
+// registerDataTypes automatically registers all enums and tables types
 // for proper encoding/decoding in pgx.
 // See https://pkg.go.dev/github.com/jackc/pgx/v5@v5.3.1/pgtype#hdr-New_PostgreSQL_Type_Support
-func RegisterDataTypes(ctx context.Context, conn *pgx.Conn, typeNames []string) error {
+func registerDataTypes(ctx context.Context, conn *pgx.Conn, typeNames []string) error {
 	for _, typeName := range typeNames {
+		fmt.Printf("registering %v\n", typeName)
 		dataType, err := conn.LoadType(ctx, typeName)
 		if err != nil {
 			return err
@@ -95,7 +99,7 @@ func RegisterDataTypes(ctx context.Context, conn *pgx.Conn, typeNames []string) 
 	return nil
 }
 
-func QueryDatabaseTypeNames(ctx context.Context, conn *pgx.Conn, searchPaths ...string) ([]string, error) {
+func queryDatabaseTypeNames(ctx context.Context, conn *pgx.Conn, searchPaths ...string) ([]string, error) {
 	query := fmt.Sprintf(`SELECT table_name
 	FROM information_schema.tables
 	WHERE table_schema IN ('%s')`, strings.Join(searchPaths, "', '"))
