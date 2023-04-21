@@ -90,16 +90,16 @@ func main() {
 	// username := "superadmin"
 	user, err := db.UserByUsername(context.Background(), pool, username,
 		db.WithUserJoin(db.UserJoins{
-			// TODO fix array_agg pgx collect and reenable
-			// TimeEntries: true,
-			// WorkItems:   true,
-			Teams: true,
-			// UserAPIKey:  true,
+			TimeEntries: true,
+			WorkItems:   true,
+			Teams:       true,
+			UserAPIKey:  true,
 		}),
 		db.WithUserOrderBy(db.UserCreatedAtDescNullsLast))
 	if err != nil {
 		log.Fatalf("db.UserByUsername: %s\n", err)
 	}
+	fmt.Printf("user: %+v\n", user)
 	format.PrintJSON(user)
 	os.Exit(1)
 	// test correct queries

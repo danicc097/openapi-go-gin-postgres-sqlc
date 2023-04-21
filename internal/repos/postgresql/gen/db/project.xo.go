@@ -240,11 +240,11 @@ projects.initialized,
 projects.board_config,
 projects.created_at,
 projects.updated_at,
-(case when $1::boolean = true then joined_activities.activities end) as activities,
-(case when $2::boolean = true then joined_kanban_steps.kanban_steps end) as kanban_steps,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_item_tags.work_item_tags end) as work_item_tags,
-(case when $5::boolean = true then joined_work_item_types.work_item_types end) as work_item_types ` +
+(case when $1::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities,
+(case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
+(case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
+(case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
+(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
 		`FROM public.projects ` +
 		`-- O2M join generated from "activities_project_id_fkey"
 left join (
@@ -329,11 +329,11 @@ projects.initialized,
 projects.board_config,
 projects.created_at,
 projects.updated_at,
-(case when $1::boolean = true then joined_activities.activities end) as activities,
-(case when $2::boolean = true then joined_kanban_steps.kanban_steps end) as kanban_steps,
-(case when $3::boolean = true then joined_teams.teams end) as teams,
-(case when $4::boolean = true then joined_work_item_tags.work_item_tags end) as work_item_tags,
-(case when $5::boolean = true then joined_work_item_types.work_item_types end) as work_item_types ` +
+(case when $1::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities,
+(case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
+(case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
+(case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
+(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
 		`FROM public.projects ` +
 		`-- O2M join generated from "activities_project_id_fkey"
 left join (
