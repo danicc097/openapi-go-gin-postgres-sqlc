@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -79,12 +80,18 @@ func main() {
 	var rows pgx.Rows
 	var bt []byte
 
+	searchPaths := []string{"public"}
+	typeNames := QueryDatabaseTypeNames(context.Background(), pool, searchPaths...)
+
+	err = RegisterDataTypes(context.Background(), pool, typeNames)
+	if err != nil {
+		log.Fatalf("error RegisterDataTypes: %s\n", err)
+	}
 	//
 	//
 	//
 	// pgxArrayAggIssueWorkingQuery(pool)
-	pgxArrayAggIssueQuery(pool)
-	os.Exit(0)
+	// pgxArrayAggIssueQuery(pool)
 
 	username := "user_1"
 	// username := "doesntexist" // User should be nil
@@ -343,17 +350,19 @@ func errAndExit(out []byte, err error) {
 	os.Exit(1)
 }
 
-func RegisterDataTypes(ctx context.Context, conn *pgx.Conn) error {
-	dataTypeNames := []string{
-		"teams",
-		"_teams",
-		"user_team",
-		"_user_team",
-		"users",
-		"_users",
+// RegisterDataTypes automatically registers all enums and tables types
+// for proper encoding/decoding in pgx.
+// See https://pkg.go.dev/github.com/jackc/pgx/v5@v5.3.1/pgtype#hdr-New_PostgreSQL_Type_Support
+// TODO see if there's a pool workaround instead of calling on each conn manually.
+// note this does work if replacing with an existing conn
+func RegisterDataTypes(ctx context.Context, pool *pgxpool.Pool, typeNames []string) error {
+	poolConn, err := pool.Acquire(ctx)
+	if err != nil {
+		log.Fatalf("error pool.Acquire: %s\n", err)
 	}
+	conn := poolConn.Conn()
 
-	for _, typeName := range dataTypeNames {
+	for _, typeName := range typeNames {
 		fmt.Printf("typeName: %v\n", typeName)
 		dataType, err := conn.LoadType(ctx, typeName)
 		if err != nil {
@@ -364,6 +373,60 @@ func RegisterDataTypes(ctx context.Context, conn *pgx.Conn) error {
 	}
 
 	return nil
+}
+
+func QueryDatabaseTypeNames(ctx context.Context, pool *pgxpool.Pool, searchPaths ...string) (tableTypes []string) {
+	query := fmt.Sprintf(`SELECT table_name
+	FROM information_schema.tables
+	WHERE table_schema IN ('%s')`, strings.Join(searchPaths, "', '"))
+
+	rows, err := pool.Query(context.Background(), query)
+	if err != nil {
+		log.Fatal("Error querying tables:", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var tableName string
+		err = rows.Scan(&tableName)
+		if err != nil {
+			log.Fatal("Error scanning table name:", err)
+		}
+		tableTypes = append(tableTypes, tableName)
+		tableTypes = append(tableTypes, "_"+tableName) // postgres internal array type names
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal("Error iterating over table rows:", err)
+	}
+
+	query = fmt.Sprintf(`SELECT t.typname AS enum_name
+	FROM pg_type t
+	INNER JOIN pg_namespace n ON n.oid = t.typnamespace
+	WHERE t.typtype = 'e' AND n.nspname IN ('%s');`, strings.Join(searchPaths, "', '"))
+	enums := []string{}
+	rows, err = pool.Query(context.Background(), query)
+	if err != nil {
+		log.Fatal("Error querying tables:", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var enumName string
+		err = rows.Scan(&enumName)
+		if err != nil {
+			log.Fatal("Error scanning table name:", err)
+		}
+		enums = append(enums, enumName)
+		enums = append(enums, "_"+enumName) // internal array types for tables
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal("Error iterating over table rows:", err)
+	}
+
+	// register enums first, in case they're used in tables
+	typeNames := append(enums, tableTypes...)
+
+	return typeNames
 }
 
 func pgxArrayAggIssueQuery(pool *pgxpool.Pool) {
@@ -419,11 +482,6 @@ VALUES (2 , '19270107-1b9c-4f52-a578-7390d5b31513');
 	`)
 	if err != nil {
 		log.Fatalf("error conn.Exec: %s\n", err)
-	}
-
-	err = RegisterDataTypes(context.Background(), conn.Conn())
-	if err != nil {
-		log.Fatalf("error RegisterDataTypes: %s\n", err)
 	}
 
 	query := `
