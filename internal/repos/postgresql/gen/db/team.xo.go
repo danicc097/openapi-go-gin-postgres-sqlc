@@ -225,8 +225,8 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
-(case when $2::boolean = true then joined_users.__users end) as users ` +
+(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -283,8 +283,8 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
-(case when $2::boolean = true then joined_users.__users end) as users ` +
+(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -343,8 +343,8 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
-(case when $2::boolean = true then joined_users.__users end) as users ` +
+(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -403,8 +403,8 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries,
-(case when $2::boolean = true then joined_users.__users end) as users ` +
+(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (

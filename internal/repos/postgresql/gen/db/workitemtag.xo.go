@@ -200,7 +200,7 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true then joined_work_items.__work_items end) as work_items ` +
+(case when $1::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -247,7 +247,7 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true then joined_work_items.__work_items end) as work_items ` +
+(case when $1::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -296,7 +296,7 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true then joined_work_items.__work_items end) as work_items ` +
+(case when $1::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -345,7 +345,7 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true then joined_work_items.__work_items end) as work_items ` +
+(case when $1::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
 		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (

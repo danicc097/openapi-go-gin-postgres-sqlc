@@ -83,24 +83,47 @@ func main() {
 	//
 	//
 	// pgxArrayAggIssueWorkingQuery(pool)
-	pgxArrayAggIssueQuery(pool)
-	os.Exit(0)
+	// pgxArrayAggIssueQuery(pool)
 
 	username := "user_1"
 	// username := "doesntexist" // User should be nil
 	// username := "superadmin"
 	user, err := db.UserByUsername(context.Background(), pool, username,
 		db.WithUserJoin(db.UserJoins{
-			// TODO fix array_agg pgx collect and reenable
-			// TimeEntries: true,
-			// WorkItems:   true,
-			Teams: true,
-			// UserAPIKey:  true,
+			TimeEntries: true,
+			WorkItems:   true,
+			Teams:       true,
+			UserAPIKey:  true,
 		}),
 		db.WithUserOrderBy(db.UserCreatedAtDescNullsLast))
 	if err != nil {
 		log.Fatalf("db.UserByUsername: %s\n", err)
 	}
+	fmt.Println("-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.")
+	_, err = db.UserByUsername(context.Background(), pool, username,
+		db.WithUserJoin(db.UserJoins{
+			TimeEntries: true,
+			WorkItems:   true,
+			Teams:       true,
+			UserAPIKey:  true,
+		}),
+		db.WithUserOrderBy(db.UserCreatedAtDescNullsLast))
+	fmt.Println("-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.")
+	if err != nil {
+		log.Fatalf("db.UserByUsername: %s\n", err)
+	}
+	_, err = db.UserByUsername(context.Background(), pool, username,
+		db.WithUserJoin(db.UserJoins{
+			TimeEntries: true,
+			WorkItems:   true,
+			Teams:       true,
+			UserAPIKey:  false,
+		}),
+		db.WithUserOrderBy(db.UserCreatedAtDescNullsLast))
+	if err != nil {
+		log.Fatalf("db.UserByUsername: %s\n", err)
+	}
+	fmt.Printf("user: %+v\n", user)
 	format.PrintJSON(user)
 	os.Exit(1)
 	// test correct queries
@@ -343,29 +366,6 @@ func errAndExit(out []byte, err error) {
 	os.Exit(1)
 }
 
-func RegisterDataTypes(ctx context.Context, conn *pgx.Conn) error {
-	dataTypeNames := []string{
-		"teams",
-		"_teams",
-		"user_team",
-		"_user_team",
-		"users",
-		"_users",
-	}
-
-	for _, typeName := range dataTypeNames {
-		fmt.Printf("typeName: %v\n", typeName)
-		dataType, err := conn.LoadType(ctx, typeName)
-		if err != nil {
-			return err
-		}
-		fmt.Printf("dataType: %+v\n", dataType)
-		conn.TypeMap().RegisterType(dataType)
-	}
-
-	return nil
-}
-
 func pgxArrayAggIssueQuery(pool *pgxpool.Pool) {
 	conn, err := pool.Acquire(context.Background())
 	if err != nil {
@@ -419,11 +419,6 @@ VALUES (2 , '19270107-1b9c-4f52-a578-7390d5b31513');
 	`)
 	if err != nil {
 		log.Fatalf("error conn.Exec: %s\n", err)
-	}
-
-	err = RegisterDataTypes(context.Background(), conn.Conn())
-	if err != nil {
-		log.Fatalf("error RegisterDataTypes: %s\n", err)
 	}
 
 	query := `

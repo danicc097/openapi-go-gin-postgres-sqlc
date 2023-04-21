@@ -200,7 +200,7 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries ` +
+(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
@@ -246,7 +246,7 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries ` +
+(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
@@ -294,7 +294,7 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries ` +
+(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
@@ -342,7 +342,7 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then joined_time_entries.time_entries end) as time_entries ` +
+(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
 		`-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
