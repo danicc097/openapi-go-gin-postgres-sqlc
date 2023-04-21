@@ -241,51 +241,18 @@ x.pregen() {
     missing_opids="$(yq e "(.paths[][] | select(has(\"operationId\") | not) | path) | join(\".\")" $SPEC)"
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
-    # spec must always be valid. Schemas to generate should exist with the appropiate vendor extension
+    # spec must always be valid before generating. Schemas to generate must already exist with the appropiate vendor extension
     ./pregen -env=".env.$env" --validate-spec-only
 
     x.db.drop
     x.migrate up
 
-    local enums schema_name vext
-    ######## Sync enums from db with spec
+    local schema_name vext
 
-    local db_search_paths=("public" "other_schema")
-
-    enum_query_tpl="SELECT t.typname AS enum_name
-FROM pg_type t
-INNER JOIN pg_namespace n ON n.oid = t.typnamespace
-WHERE t.typtype = 'e' AND n.nspname IN (%s);"
-    search_path_str=$(printf "'%s'," "${db_search_paths[@]}")
-    search_path_str=${search_path_str%,}
-    enum_query=$(printf "$enum_query_tpl" "$search_path_str")
-
-    mapfile -t db_enum_names < <(dockerdb_psql -d $POSTGRES_DB -c "$enum_query" 2>/dev/null)
-    for db_enum_name in "${db_enum_names[@]}"; do
-      schema_enum="$(to_pascal $db_enum_name)"
-      local enum_values=()
-      mapfile -t enum_values < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$db_enum_name\"));" 2>/dev/null)
-      echo "Including database enum '$db_enum_name' in $SPEC with values: [${enum_values[*]}]"
-
-      enums=$(printf ",\"%s\"" "${enum_values[@]}")
-      enums="[${enums:1}]"
-
-      local schema_path=".components.schemas.$schema_enum"
-      if yq -e "$schema_path" $SPEC &>/dev/null; then # -e exits 1 if no match
-        if ! yq -e "$schema_path | has(\"x-generated\")" $SPEC &>/dev/null; then
-          err "Clashing schema name '$schema_enum'. Please remove it before continuing."
-        fi
-      fi
-
-      enums=$enums yq e "
-          $schema_path.description = \"represents a database '$db_enum_name'\" |
-          $schema_path.type = \"string\" |
-          $schema_path.enum = env(enums) |
-          $schema_path.x-generated = \"-\" |
-          ($schema_path | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
-    done
+    sync_db_enums_with_spec
 
     ######## Sync projects and related project info
+
     mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
     [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
     enums=$(printf ",\"%s\"" "${db_projects[@]}")
@@ -1230,6 +1197,44 @@ EOF
   gofumpt -w $out
 }
 
+sync_db_enums_with_spec() {
+  db_search_paths=("public" "other_schema")
+
+  search_path_str=$(printf "'%s'," "${db_search_paths[@]}")
+  search_path_str=${search_path_str%,}
+  enum_query=$(printf "
+    SELECT t.typname AS enum_name
+    FROM pg_type t
+    INNER JOIN pg_namespace n ON n.oid = t.typnamespace
+    WHERE t.typtype = 'e' AND n.nspname IN (%s);" "$search_path_str")
+
+  mapfile -t db_enum_names < <(dockerdb_psql -d $POSTGRES_DB -c "$enum_query" 2>/dev/null)
+  for db_enum_name in "${db_enum_names[@]}"; do
+    schema_enum="$(to_pascal $db_enum_name)"
+    local enum_values=()
+    mapfile -t enum_values < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$db_enum_name\"));" 2>/dev/null)
+    echo "Including database enum '$db_enum_name' in $SPEC with values: [${enum_values[*]}]"
+
+    enums=$(printf ",\"%s\"" "${enum_values[@]}")
+    enums="[${enums:1}]"
+
+    local schema_path=".components.schemas.$schema_enum"
+    if yq -e "$schema_path" $SPEC &>/dev/null; then # -e exits 1 if no match
+      if ! yq -e "$schema_path | has(\"x-generated\")" $SPEC &>/dev/null; then
+        err "Clashing schema name '$schema_enum'. Please remove it before continuing."
+      fi
+    fi
+
+    enums=$enums yq e "
+          $schema_path.description = \"represents a database '$db_enum_name'\" |
+          $schema_path.type = \"string\" |
+          $schema_path.enum = env(enums) |
+          $schema_path.x-generated = \"-\" |
+          ($schema_path | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
+  done
+
+}
+
 find_structs() {
   local -n arr="$1"
   local pkg="$2"
@@ -1471,12 +1476,12 @@ EOF
 
 # gets all --x-options values
 parse_x_options() {
-  declare -n list="$1" # pass ref by name
+  declare -n arr="$1" # pass ref by name
   while IFS= read -r line; do
-    list+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
+    arr+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
   done < <(sed -nr '/.*(--x-[=*[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
-  mapfile -t list < \
-    <(LC_COLLATE=C sort < <(printf "%s\n" "${list[@]}"))
+  mapfile -t arr < \
+    <(LC_COLLATE=C sort < <(printf "%s\n" "${arr[@]}"))
 }
 
 clean_comment() {
