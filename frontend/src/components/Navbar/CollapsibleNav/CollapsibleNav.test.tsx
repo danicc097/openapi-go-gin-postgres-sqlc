@@ -3,7 +3,7 @@ import { BrowserRouter } from 'react-router-dom'
 
 import CollapsibleNav from './CollapsibleNav'
 import { test } from 'vitest'
-import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
+// import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import type { UserResponse } from 'src/gen/model'
 
 test('Renders content', async () => {

@@ -39,7 +39,7 @@ import { newFrontendSpan } from 'src/TraceProvider'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { createLabel, renderSuperSelect } from 'src/utils/forms'
-import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
+// import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import UserAvatar from 'src/components/UserAvatar/UserAvatar'
 import type { RequiredKeys } from 'src/types/utils'
 

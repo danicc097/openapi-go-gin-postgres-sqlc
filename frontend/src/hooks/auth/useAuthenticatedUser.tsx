@@ -4,7 +4,7 @@ import { COLOR_BLIND_PALETTE, generateColor } from 'src/utils/colors'
 import roles from '@roles'
 import scopes from '@scopes'
 import type { UserResponse } from 'src/gen/model'
-import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
+// import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 
 export const useAuthenticatedUser = () => {
   // TODO for app_env dev, remove Authorization header and comes from backend via x-api-key header
