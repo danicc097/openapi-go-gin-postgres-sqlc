@@ -19,7 +19,6 @@ type Project struct {
 	Name               models.Project `json:"name" db:"name" required:"true" ref:"#/components/schemas/Project"` // name
 	Description        string         `json:"description" db:"description" required:"true"`                      // description
 	WorkItemsTableName string         `json:"-" db:"work_items_table_name"`                                      // work_items_table_name
-	Initialized        bool           `json:"initialized" db:"initialized" required:"true"`                      // initialized
 	BoardConfig        []byte         `json:"-" db:"board_config"`                                               // board_config
 	CreatedAt          time.Time      `json:"createdAt" db:"created_at" required:"true"`                         // created_at
 	UpdatedAt          time.Time      `json:"updatedAt" db:"updated_at" required:"true"`                         // updated_at
@@ -38,7 +37,6 @@ type ProjectCreateParams struct {
 	Name               models.Project `json:"name"`        // name
 	Description        string         `json:"description"` // description
 	WorkItemsTableName string         `json:"-"`           // work_items_table_name
-	Initialized        bool           `json:"initialized"` // initialized
 	BoardConfig        []byte         `json:"-"`           // board_config
 }
 
@@ -47,7 +45,6 @@ type ProjectUpdateParams struct {
 	Name               *models.Project `json:"name"`        // name
 	Description        *string         `json:"description"` // description
 	WorkItemsTableName *string         `json:"-"`           // work_items_table_name
-	Initialized        *bool           `json:"initialized"` // initialized
 	BoardConfig        *[]byte         `json:"-"`           // board_config
 }
 
@@ -115,14 +112,14 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.projects (` +
-		`name, description, work_items_table_name, initialized, board_config` +
+		`name, description, work_items_table_name, board_config` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
+		`$1, $2, $3, $4` +
 		`) RETURNING * `
 	// run
-	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig)
+	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig)
 
-	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig)
+	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Insert/db.Query: %w", err))
 	}
@@ -146,13 +143,13 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.projects SET ` +
-		`name = $1, description = $2, work_items_table_name = $3, initialized = $4, board_config = $5 ` +
-		`WHERE project_id = $6 ` +
+		`name = $1, description = $2, work_items_table_name = $3, board_config = $4 ` +
+		`WHERE project_id = $5 ` +
 		`RETURNING * `
 	// run
-	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.CreatedAt, p.UpdatedAt, p.ProjectID)
+	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig, p.CreatedAt, p.UpdatedAt, p.ProjectID)
 
-	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig, p.ProjectID)
+	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig, p.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Update/db.Query: %w", err))
 	}
@@ -182,17 +179,17 @@ func (p *Project) Upsert(ctx context.Context, db DB) error {
 	}
 	// upsert
 	sqlstr := `INSERT INTO public.projects (` +
-		`project_id, name, description, work_items_table_name, initialized, board_config` +
+		`project_id, name, description, work_items_table_name, board_config` +
 		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6` +
+		`$1, $2, $3, $4, $5` +
 		`)` +
 		` ON CONFLICT (project_id) DO ` +
 		`UPDATE SET ` +
-		`name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, initialized = EXCLUDED.initialized, board_config = EXCLUDED.board_config ` +
+		`name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, board_config = EXCLUDED.board_config ` +
 		` RETURNING * `
 	// run
-	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig)
-	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.Initialized, p.BoardConfig); err != nil {
+	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig)
+	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig); err != nil {
 		return logerror(err)
 	}
 	// set exists
@@ -236,7 +233,6 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 projects.name,
 projects.description,
 projects.work_items_table_name,
-projects.initialized,
 projects.board_config,
 projects.created_at,
 projects.updated_at,
@@ -325,7 +321,6 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...Proje
 projects.name,
 projects.description,
 projects.work_items_table_name,
-projects.initialized,
 projects.board_config,
 projects.created_at,
 projects.updated_at,

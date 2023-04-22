@@ -98,7 +98,6 @@ export interface components {
       /** Format: date-time */
       createdAt: string;
       description: string;
-      initialized: boolean;
       kanbanSteps?: (components["schemas"]["DbKanbanStep"])[] | null;
       name: components["schemas"]["Project"];
       projectID: number;

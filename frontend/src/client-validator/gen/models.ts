@@ -130,7 +130,6 @@ export interface DbProject {
   activities?: DbActivity[] | null
   createdAt: string
   description: string
-  initialized: boolean
   kanbanSteps?: DbKanbanStep[] | null
   name: Project
   projectID: number

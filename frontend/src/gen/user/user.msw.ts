@@ -884,7 +884,6 @@ export const getGetCurrentUserMock = () => ({
       ]),
       createdAt: (() => faker.date.past())(),
       description: faker.random.word(),
-      initialized: faker.datatype.boolean(),
       kanbanSteps: faker.helpers.arrayElement([
         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
           color: faker.random.word(),
@@ -5389,7 +5388,6 @@ export const getUpdateUserMock = () => ({
       ]),
       createdAt: (() => faker.date.past())(),
       description: faker.random.word(),
-      initialized: faker.datatype.boolean(),
       kanbanSteps: faker.helpers.arrayElement([
         Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
           color: faker.random.word(),

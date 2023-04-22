@@ -15,15 +15,19 @@ source "${BASH_SOURCE%/*}/.helpers.sh"
 source "${BASH_SOURCE%/*}/.project.dependencies.sh"
 source "${BASH_SOURCE%/*}/lib/oo-bootstrap/oo-bootstrap.sh"
 
-import util/log util/exception util/tryCatch util/namedParameters
+ensure_pwd_is_top_level
 
-# FIXME m flag will prevent background process killing with ctrl-c
+# breaks ci when there's an error
+# import util/log util/exception util/tryCatch util/namedParameters
+# if [[ $env = "dev" ]]; then
+# fi
+
 set -Eeo pipefail
-set -o errtrace # TODO https://mywiki.wooledge.org/BashFAQ/105
+set -o errtrace
 
 SCRIPT="$(basename $0)"
 
-# trap 'err_handler $LINENO' ERR
+trap 'err_handler $LINENO' ERR
 
 err_handler() {
   echo "Error catched in ${MAGENTA}$SCRIPT:$1${OFF}"
@@ -52,8 +56,6 @@ errtrap() {
   printf "\nExiting due to propagated error...\n"
   killgroup
 }
-
-ensure_pwd_is_top_level
 
 source ".envrc"
 
@@ -112,7 +114,7 @@ xlog() {
     fname="${fname:0:$max_len}…"
   fi
 
-  local fn=$(printf "%*s |\n" $((max_len + 1)) "$fname")
+  local _=$(printf "%*s |\n" $((max_len + 1)) "$fname")
   sed -ue "s/^/${color}$fname >${OFF} /"
 
   # return ${PIPESTATUS[0]}
@@ -454,15 +456,15 @@ x.gen.gowrap() {
     for iface in ${repo_interfaces[@]}; do
       for suffix in ${suffixes[@]}; do
         {
-          IFS=":" read -r -a __arr <<<${suffix}
-          local tmpl="${__arr[0]}"
-          local suffix="${__arr[1]}"
+          IFS=":" read -r -a arr <<<${suffix}
+          local tmpl="${arr[0]}"
+          local suffix="${arr[1]}"
           gowrap gen \
             -g \
-            -p $GOMOD_PKG/internal/repos \
+            -p $GOMOD_PKG/$REPOS \
             -i $iface \
             -t "internal/gowrap-templates/$tmpl.tmpl" \
-            -o "internal/repos/reposwrappers/${iface,,}_$suffix.gen.go"
+            -o "$REPOS/reposwrappers/${iface,,}_$suffix.gen.go"
         } &
       done
     done
@@ -498,7 +500,7 @@ x.gen.counterfeiter() {
   # This shouldn't pose any problems, the interface is the only input to counterfeiter.
   { { {
     envvar="internal/envvar/envvar.go"
-    repos="internal/repos/repos.go"
+    repos="$REPOS/repos.go"
     tfidfpb="internal/pb/python-ml-app-protos/tfidf/v1/service_grpc.pb.go"
 
     echo "Running generation"
@@ -507,10 +509,10 @@ x.gen.counterfeiter() {
       echo "Recreating mocks"
       {
         counterfeiter -o internal/envvar/envvartesting/provider.gen.go $envvar Provider &
-        counterfeiter -o internal/repos/repostesting/user.gen.go $repos User &
-        counterfeiter -o internal/repos/repostesting/notification.gen.go $repos Notification &
-        counterfeiter -o internal/repos/repostesting/project.gen.go $repos Project &
-        counterfeiter -o internal/repos/repostesting/team.gen.go $repos Team &
+        counterfeiter -o $REPOS/repostesting/user.gen.go $repos User &
+        counterfeiter -o $REPOS/repostesting/notification.gen.go $repos Notification &
+        counterfeiter -o $REPOS/repostesting/project.gen.go $repos Project &
+        counterfeiter -o $REPOS/repostesting/team.gen.go $repos Team &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_client.gen.go $tfidfpb MovieGenreClient &
         counterfeiter -o internal/pb/python-ml-app-protos/tfidf/v1/v1testing/movie_genre_server.gen.go $tfidfpb MovieGenreServer &
         md5sum $envvar $repos $tfidfpb >"$CACHE/counterfeiter.md5" &
@@ -1141,8 +1143,8 @@ generate_structs_map() {
 
   structs=()
   enums=()
-  find_go_structs structs "internal/repos/models"
-  find_go_enums enums "internal/repos/models"
+  find_go_structs structs "$REPOS/models"
+  find_go_enums enums "$REPOS/models"
   find_deleted_pkg_schemas structs enums Models
   for struct in ${structs[@]}; do
     map_fields+=("\"Models$struct\": repomodels.$struct{},")
@@ -1157,7 +1159,7 @@ package postgen
 import (
   db "$GOMOD_PKG/$PG_REPO_GEN/db"
 	rest "$GOMOD_PKG/internal/rest"
-	repomodels "$GOMOD_PKG/internal/repos/models"
+	repomodels "$GOMOD_PKG/$REPOS/models"
   )
     var PublicStructs = map[string]any{
 $(printf "%s\n" "${map_fields[@]}")
@@ -1588,6 +1590,7 @@ while [[ "$#" -gt 0 ]]; do
   shift
 done
 
+set -e # was temporarily removed for arg parsing
 for arg in ${args[@]}; do
   set -- "$@" "$arg"
 done

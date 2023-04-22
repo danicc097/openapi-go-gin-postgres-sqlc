@@ -98,9 +98,6 @@
         "description": {
           "type": "string"
         },
-        "initialized": {
-          "type": "boolean"
-        },
         "kanbanSteps": {
           "items": {
             "$ref": "#/definitions/DbKanbanStep"
@@ -152,7 +149,6 @@
         "projectID",
         "name",
         "description",
-        "initialized",
         "createdAt",
         "updatedAt"
       ],

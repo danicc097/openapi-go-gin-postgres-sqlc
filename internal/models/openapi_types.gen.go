@@ -184,7 +184,6 @@ type DbProject struct {
 	Activities  *[]DbActivity   `json:"activities"`
 	CreatedAt   time.Time       `json:"createdAt"`
 	Description string          `json:"description"`
-	Initialized bool            `json:"initialized"`
 	KanbanSteps *[]DbKanbanStep `json:"kanbanSteps"`
 
 	// Name Existing projects

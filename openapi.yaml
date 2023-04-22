@@ -403,8 +403,6 @@ components:
           type: string
         description:
           type: string
-        initialized:
-          type: boolean
         kanbanSteps:
           items:
             $ref: '#/components/schemas/DbKanbanStep'
@@ -436,7 +434,6 @@ components:
         - projectID
         - name
         - description
-        - initialized
         - createdAt
         - updatedAt
       type: object

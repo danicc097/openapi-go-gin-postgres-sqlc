@@ -16,7 +16,6 @@ type Projects struct {
 	Name               string    `db:"name"`
 	Description        string    `db:"description"`
 	WorkItemsTableName string    `db:"work_items_table_name"`
-	Initialized        bool      `db:"initialized"`
 	BoardConfig        string    `db:"board_config"`
 	CreatedAt          time.Time `db:"created_at"`
 	UpdatedAt          time.Time `db:"updated_at"`
