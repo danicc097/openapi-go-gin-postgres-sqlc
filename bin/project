@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=1091,2155,2068,2086,2031
+# shellcheck disable=1091,2155,2068,2086,2031,2048
 #
 #
 # Main s̶c̶r̶i̶p̶t program to manage the entire project stack.
@@ -130,7 +130,7 @@ xerr() {
     fname="${fname:0:$max_len}…"
   fi
 
-  local fn=$(printf "%*s |\n" $((max_len + 1)) "$fname")
+  local _=$(printf "%*s |\n" $((max_len + 1)) "$fname")
   sed -ue "s/^/${RED}$fname >${OFF} /" >&2
 
   # return ${PIPESTATUS[0]}
@@ -499,10 +499,10 @@ x.gen.client-server() {
     local paths=".openapi.paths.yaml"
     local types=".openapi.types.yaml"
 
+    # hack to get separate types generation
     sed "s/\$ref: '\#\//\$ref: '$types\#\//g" $SPEC >$paths
     yq e 'del(.components)' -i $paths
     cp $SPEC $types
-    # yq e 'with_entries(select(.key == "components"))' $SPEC >$types # must use spec itself else not all types gen'ed
 
     ./oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC" || err "Failed types generation"
     ./oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
@@ -587,8 +587,7 @@ x.gen() {
 
     POSTGRES_DB="$GEN_POSTGRES_DB" x.db.recreate
 
-    # don't want this to block. It will fail compilation when generating/deleting elements at some steps.
-    x.gen.build-tools || true
+    x.gen.build-tools # || true (this should not fail compilation anymore, the whole app should be compilable at this point)
 
     x.pregen
     rm -rf "$PG_REPO_GEN"
