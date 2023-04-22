@@ -187,14 +187,14 @@ err() {
 # Retrieve all environment variables from `env_file` and
 # set the key-value pairs in the given associative array
 get_envvars() {
-  declare -n arr="$1" # pass ref by name
+  local -n __arr="$1" # pass ref by name
   local env_file="$2"
   if [[ -f "$env_file" ]]; then
     while read -r line; do
       if [[ $line =~ ^[\#]?([A-Za-z0-9_]+)[[:space:]]*=[[:space:]]*(.*?)$ ]]; then
         key="$(trim_string ${BASH_REMATCH[1]})"
         val="$(trim_string ${BASH_REMATCH[2]})"
-        arr[$key]=$val
+        __arr[$key]=$val
       fi
     done <"$env_file"
   else

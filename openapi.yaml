@@ -871,6 +871,7 @@ components:
         - team-settings:write
         - project-settings:write
         - work-item:review
+      x-generated: '-'
     Scopes: # workaround for openapi-go gen
       type: array
       items:
@@ -884,7 +885,8 @@ components:
         - manager
         - admin
         - superAdmin
-    WorkItemRole: # Generated from database enum. DO NOT EDIT.
+      x-generated: '-'
+    WorkItemRole: # Generated from database enum 'work_item_role'. DO NOT EDIT.
       title: WorkItem role
       type: string
       x-generated: '-'
@@ -1069,6 +1071,7 @@ components:
         - demoProject2
       type: string
       description: Existing projects
+      x-generated: '-'
     DbActivityCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
         description:
@@ -1142,7 +1145,7 @@ components:
       required:
         - role
       type: object
-    NotificationType: # Generated from database enum. DO NOT EDIT.
+    NotificationType: # Generated from database enum 'notification_type'. DO NOT EDIT.
       description: represents a database 'notification_type'
       type: string
       x-generated: '-'

@@ -1,5 +1,5 @@
 #!/bin/bash
-# shellcheck disable=1091,2155,2068,2086,2031,2048
+# shellcheck disable=1091,2155,2068,2086,2031,2048,2178
 #
 #
 # Main s̶c̶r̶i̶p̶t program to manage the entire project stack.
@@ -250,46 +250,31 @@ x.pregen() {
     x.db.drop
     x.migrate up
 
-    local schema_name vext
-
     sync_db_enums_with_spec
 
     ######## Sync projects and related project info
 
     mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
     [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
-    enums=$(printf ",\"%s\"" "${db_projects[@]}")
-    enums="[${enums:1}]"
-    schema_name="Project"
-    echo "Replacing enum '$schema_name' in $SPEC with: $enums"
-    enums=$enums yq e "
-      .components.schemas.$schema_name.enum = env(enums) |
-      .components.schemas.$schema_name.type = \"string\" |
-      .components.schemas.$schema_name.description = \"Existing projects\" |
-      (.components.schemas.$schema_name | key) line_comment=\"Generated from projects table. DO NOT EDIT.\"" -i $SPEC
+
+    src_comment="projects table"
+    replace_enum_in_spec "Project" db_projects "$src_comment"
 
     for project in ${db_projects[@]}; do
       project="$(to_pascal $project)"
-      schema_name="${project}KanbanSteps"
       mapfile -t kanban_steps < <(dockerdb_psql -d $POSTGRES_DB -c "
-          select
-            name
-          from
-            kanban_steps
-          where
-            project_id = (select project_id from projects where name = '$project');" 2>/dev/null)
-      [[ ${#kanban_steps[@]} -gt 0 ]] || { echo "${YELLOW}[WARNING] No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue; }
-      enums=$(printf ",\"%s\"" "${kanban_steps[@]}")
-      enums="[${enums:1}]"
-      echo "Replacing enum '$schema_name' in $SPEC with: $enums"
-      enums=$enums yq e "
-      .components.schemas.$schema_name.enum = env(enums) |
-      .components.schemas.$schema_name.type = \"string\" |
-      .components.schemas.$schema_name.description = \"Kanban columns for project $project\" |
-      (.components.schemas.$schema_name | key) line_comment=\"Generated from kanban_steps table. DO NOT EDIT.\"" -i $SPEC
+          select name from kanban_steps where project_id = (
+            select project_id from projects where name = '$project'
+            );" 2>/dev/null)
+      [[ ${#kanban_steps[@]} -gt 0 ]] || {
+        echo "${YELLOW}[WARNING] No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue
+      }
+      schema_name="${project}KanbanSteps"
+      src_comment="kanban_steps table"
+      replace_enum_in_spec "$schema_name" kanban_steps "$src_comment"
     done
 
-    # TODO generate ~~KanbanSteps~~, WorkItemType for every project enum generated before
+    # TODO generate ~~KanbanSteps~~, WorkItemType (but not tags, those are dynamic) for every project enum generated before
 
     ######## Ensure consistent style for future codegen
     echo "Applying PascalCase to operation IDs in $SPEC"
@@ -318,23 +303,19 @@ x.pregen() {
         yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC
 
       local src_file="${enum_src_files[$enum]}"
-      vext="${enum_vext[$enum]}"
+      vendor_ext="${enum_vext[$enum]}"
 
       enums=$(yq -P '.[] | key' $src_file)
       mapfile -t enums <<<$enums
 
-      echo "Replacing '$enum' enum in $SPEC with $src_file"
-      yq e "
-        (.components.schemas.$enum | key) line_comment=\"Generated from $src_file keys. DO NOT EDIT.\"
-      " -i $SPEC
-      local enums_arr=$(printf ",\"%s\"" "${enums[@]}")
-      enums_arr="[${enums_arr:1}]"
-      enums_arr=$enums_arr yq e ".components.schemas.$enum.enum = env(enums_arr)" -i $SPEC
+      src_comment="$src_file keys"
+      replace_enum_in_spec "$enum" enums "$src_comment"
 
-      mapfile spec_enums < <(yq e ".paths[][].$vext | select(length > 0)" openapi.yaml)
+      mapfile spec_enums < <(yq e ".paths[][].$vendor_ext | select(length > 0)" $SPEC)
       spec_enums=("${spec_enums[*]//- /}")
       mapfile -t spec_enums < <(printf "\"%s\"\n" ${spec_enums[*]})
       mapfile -t clean_enums < <(printf "\"%s\"\n" ${enums[*]})
+      # ensure only existing enums from src_file are used
       for spec_enum in "${spec_enums[@]}"; do
         [[ ! " ${clean_enums[*]} " =~ " ${spec_enum} " ]] && err "$spec_enum is not a valid '$enum'"
       done
@@ -358,20 +339,20 @@ x.pregen() {
   cache-gen.cleanup
 }
 
-# outputs safe double-quoted paths for yq
+# outputs safe double-quoted paths for yq and
 # fixes paths where a dot is present
 join_yq_paths() {
-  declare -n arr="$1"
-  arr=("${arr[*]//- /}")
-  mapfile -t arr < <(printf "\"%s\"\n" ${arr[*]})
-  join_by "." ${arr[*]}
+  local -n __arr="$1"
+  __arr=("${__arr[*]//- /}")
+  mapfile -t __arr < <(printf "\"%s\"\n" ${__arr[*]})
+  join_by "." ${__arr[*]}
 }
 
 clean_yq_array() {
-  declare -n arr="$1"
-  arr=("${arr[*]//- /}")
-  mapfile -t arr < <(printf "\"%s\"\n" ${arr[*]})
-  echo ${arr[@]}
+  local -n __arr="$1"
+  __arr=("${__arr[*]//- /}")
+  mapfile -t __arr < <(printf "\"%s\"\n" ${__arr[*]})
+  echo ${__arr[@]}
 }
 
 # Run post-generation scripts in the internal package.
@@ -473,9 +454,9 @@ x.gen.gowrap() {
     for iface in ${repo_interfaces[@]}; do
       for suffix in ${suffixes[@]}; do
         {
-          IFS=":" read -r -a arr <<<${suffix}
-          local tmpl="${arr[0]}"
-          local suffix="${arr[1]}"
+          IFS=":" read -r -a __arr <<<${suffix}
+          local tmpl="${__arr[0]}"
+          local suffix="${__arr[1]}"
           gowrap gen \
             -g \
             -p $GOMOD_PKG/internal/repos \
@@ -1131,13 +1112,13 @@ run_shared_services() {
 }
 
 # generate db structs for use with swaggest/openapi-go.
-# no need for ast parsing since all code in db is generated and predictable
+# no need for ast parsing since all code is predictable
+# type grouping not supported
 generate_structs_map() {
-  # TODO extract to find_structs "$pkg" and find_enums "$pkg"
   local structs=()
   local enums=()
-  find_structs structs "$PG_REPO_GEN/db"
-  find_enums enums "$PG_REPO_GEN/db"
+  find_go_structs structs "$PG_REPO_GEN/db"
+  find_go_enums enums "$PG_REPO_GEN/db"
   find_deleted_pkg_schemas structs enums Db
   for struct in ${structs[@]}; do
     map_fields+=("\"Db$struct\": db.$struct{},")
@@ -1148,8 +1129,8 @@ generate_structs_map() {
 
   structs=()
   enums=()
-  find_structs structs "internal/rest/models.go"
-  find_enums enums "internal/rest/models.go"
+  find_go_structs structs "internal/rest/models.go"
+  find_go_enums enums "internal/rest/models.go"
   find_deleted_pkg_schemas structs enums Rest
   for struct in ${structs[@]}; do
     map_fields+=("\"Rest$struct\": rest.$struct{},")
@@ -1160,8 +1141,8 @@ generate_structs_map() {
 
   structs=()
   enums=()
-  find_structs structs "internal/repos/models"
-  find_enums enums "internal/repos/models"
+  find_go_structs structs "internal/repos/models"
+  find_go_enums enums "internal/repos/models"
   find_deleted_pkg_schemas structs enums Models
   for struct in ${structs[@]}; do
     map_fields+=("\"Models$struct\": repomodels.$struct{},")
@@ -1199,43 +1180,56 @@ sync_db_enums_with_spec() {
 
   mapfile -t db_enum_names < <(dockerdb_psql -d $POSTGRES_DB -c "$enum_query" 2>/dev/null)
   for db_enum_name in "${db_enum_names[@]}"; do
-    schema_enum="$(to_pascal $db_enum_name)"
+    local schema_name="$(to_pascal $db_enum_name)"
     local enum_values=()
     mapfile -t enum_values < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$db_enum_name\"));" 2>/dev/null)
-    echo "Including database enum '$db_enum_name' in $SPEC with values: [${enum_values[*]}]"
+    echo "Including  in $SPEC with values: [${enum_values[*]}]"
 
-    enums=$(printf ",\"%s\"" "${enum_values[@]}")
-    enums="[${enums:1}]"
-
-    local schema_path=".components.schemas.$schema_enum"
+    local schema_path=".components.schemas.$schema_name"
     if yq -e "$schema_path" $SPEC &>/dev/null; then # -e exits 1 if no match
       if ! yq -e "$schema_path | has(\"x-generated\")" $SPEC &>/dev/null; then
-        err "Clashing schema name '$schema_enum'. Please remove it before continuing."
+        err "Clashing schema name '$schema_name'. Please remove it before continuing."
       fi
     fi
 
-    enums=$enums yq e "
-          $schema_path.description = \"represents a database '$db_enum_name'\" |
-          $schema_path.type = \"string\" |
-          $schema_path.enum = env(enums) |
-          $schema_path.x-generated = \"-\" |
-          ($schema_path | key) line_comment=\"Generated from database enum. DO NOT EDIT.\"" -i $SPEC
+    src_comment="database enum '$db_enum_name'"
+    replace_enum_in_spec "$schema_name" enum_values "$src_comment"
+
   done
 
 }
 
-find_structs() {
-  local -n arr="$1"
-  local pkg="$2"
-  mapfile -t arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
-  mapfile -t arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${arr[@]}"))
+replace_enum_in_spec() {
+  local enum="$1"
+  local -n __arr="$2"
+  local src_comment="$3"
+
+  local schema_path=".components.schemas.$enum"
+
+  local __enums
+  __enums=$(printf ",\"%s\"" "${__arr[@]}")
+  __enums="[${__enums:1}]"
+
+  echo "Replacing '$enum' enum in $SPEC with values from $src_comment"
+  __enums=$__enums yq e "
+    $schema_path.type = \"string\" |
+    $schema_path.enum = env(__enums) |
+    $schema_path.x-generated = \"-\" |
+    ($schema_path | key) line_comment=\"Generated from $src_comment. DO NOT EDIT.\"" -i $SPEC
 }
 
-find_enums() {
-  local -n arr="$1"
+find_go_structs() {
+  local -n __arr="$1"
   local pkg="$2"
-  mapfile -t arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec sed -n 's/.*type[[:space:]]\+\([^=[:space:]]\+\)[[:space:]]\+string.*/\1/p' {} \;)
-  mapfile -t arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${arr[@]}"))
+  mapfile -t __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+}
+
+find_go_enums() {
+  local -n __arr="$1"
+  local pkg="$2"
+  mapfile -t __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec sed -n 's/.*type[[:space:]]\+\([^=[:space:]]\+\)[[:space:]]\+string.*/\1/p' {} \;)
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
 }
 
 find_deleted_pkg_schemas() {
@@ -1465,12 +1459,12 @@ EOF
 
 # gets all --x-options values
 parse_x_options() {
-  declare -n arr="$1" # pass ref by name
+  local -n __arr="$1" # pass ref by name
   while IFS= read -r line; do
-    arr+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
+    __arr+=("$(awk '{$1=$1;print $1 $NF}' <<<"$line")")
   done < <(sed -nr '/.*(--x-[=*[:alnum:]_-]+[)]+).*/{p;=}' $0 | sed '{N;s/\n/ /}')
-  mapfile -t arr < \
-    <(LC_COLLATE=C sort < <(printf "%s\n" "${arr[@]}"))
+  mapfile -t __arr < \
+    <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
 }
 
 clean_comment() {

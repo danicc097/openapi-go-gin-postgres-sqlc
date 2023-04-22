@@ -815,6 +815,7 @@
         "project-settings:write",
         "work-item:review"
       ],
+      "x-generated": "-",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Scopes": {
@@ -834,6 +835,7 @@
         "admin",
         "superAdmin"
       ],
+      "x-generated": "-",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "WorkItemRole": {
@@ -1104,6 +1106,7 @@
       ],
       "type": "string",
       "description": "Existing projects",
+      "x-generated": "-",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbActivityCreateParams": {
