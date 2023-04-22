@@ -6,7 +6,7 @@ import { isAuthorized } from 'src/services/authorization'
 import { describe, expect, it, test } from 'vitest'
 
 describe('roles and scopes', async () => {
-  const user = getGetCurrentUserMock()
+  const user = getGetCurrentUserMock() as UserResponse
   test('role', () => {
     user.role = 'user'
     expect(isAuthorized({ user, requiredRole: 'admin' })).toBe(false)

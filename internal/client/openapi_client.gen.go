@@ -458,6 +458,7 @@ type UserResponse struct {
 	Role     Role          `json:"role"`
 	Scopes   Scopes        `json:"scopes"`
 	Teams    *[]DbTeam     `json:"teams"`
+	User     DbUser        `json:"user"`
 }
 
 // UuidUUID defines the model for UuidUUID.

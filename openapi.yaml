@@ -830,9 +830,12 @@ components:
             $ref: '#/components/schemas/DbTeam'
           nullable: true
           type: array
+        user:
+          $ref: '#/components/schemas/DbUser'
       required:
         - role
         - scopes
+        - user
       type: object
       x-postgen-struct: RestUserResponse
     HTTPValidationError:

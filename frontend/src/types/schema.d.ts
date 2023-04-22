@@ -237,6 +237,7 @@ export interface components {
       role: components["schemas"]["Role"];
       scopes: components["schemas"]["Scopes"];
       teams?: (components["schemas"]["DbTeam"])[] | null;
+      user: components["schemas"]["DbUser"];
     };
     /** HTTPValidationError */
     HTTPValidationError: {

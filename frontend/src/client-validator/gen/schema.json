@@ -768,11 +768,15 @@
             "array",
             "null"
           ]
+        },
+        "user": {
+          "$ref": "#/definitions/DbUser"
         }
       },
       "required": [
         "role",
-        "scopes"
+        "scopes",
+        "user"
       ],
       "type": "object",
       "x-postgen-struct": "RestUserResponse",

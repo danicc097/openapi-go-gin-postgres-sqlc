@@ -26,7 +26,7 @@ import {
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import _, { random, uniqueId } from 'lodash'
-import type { DemoProjectWorkItemsResponse, ProjectConfig } from 'src/gen/model'
+import type { RestDemoProjectWorkItemsResponse, ProjectConfig } from 'src/gen/model'
 import moment from 'moment'
 import { getGetProjectWorkitemsMock, getProjectMSW } from 'src/gen/project/project.msw'
 import { StyledEuiCheckbox } from 'src/components/KanbanBoard/KanbanBoard.styles'

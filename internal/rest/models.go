@@ -14,8 +14,7 @@ type UserResponse struct {
 	APIKey   *db.UserAPIKey `json:"apiKey"`
 	Teams    *[]db.Team     `json:"teams"`
 	Projects *[]db.Project  `json:"projects"`
-
-	*db.User
+	User     db.User        `json:"user" required:"true"`
 }
 
 // DemoProjectWorkItemsResponse represents an OpenAPI schema response for a ProjectBoard.

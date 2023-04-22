@@ -10,6 +10,7 @@ import type { DbProject } from './dbProject'
 import type { Role } from './role'
 import type { Scopes } from './scopes'
 import type { DbTeam } from './dbTeam'
+import type { DbUser } from './dbUser'
 
 export interface UserResponse {
   apiKey?: DbUserAPIKey
@@ -17,4 +18,5 @@ export interface UserResponse {
   role: Role
   scopes: Scopes
   teams?: DbTeam[] | null
+  user: DbUser
 }
