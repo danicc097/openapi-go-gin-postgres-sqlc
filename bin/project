@@ -4,9 +4,6 @@
 #
 # Main s̶c̶r̶i̶p̶t program to manage the entire project stack.
 #
-# For first-timers, ensure all dependencies and tools are installed with `project bootstrap`
-# and run `project gen` at least once to build required tools and also ensure your output is deterministic.
-#
 #
 
 export PROC=$$
@@ -19,19 +16,13 @@ ensure_pwd_is_top_level
 
 # breaks ci when there's an error
 # import util/log util/exception util/tryCatch util/namedParameters
-# if [[ $env = "dev" ]]; then
-# fi
 
 set -Eeo pipefail
 set -o errtrace
 
+trap 'show_tracebacks' ERR
+
 SCRIPT="$(basename $0)"
-
-trap 'err_handler $LINENO' ERR
-
-err_handler() {
-  echo "Error catched in ${MAGENTA}$SCRIPT:$1${OFF}"
-}
 
 trap killgroup SIGINT
 

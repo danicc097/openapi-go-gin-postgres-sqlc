@@ -225,7 +225,25 @@ ensure_envvars_set() {
   { ((n_missing != 0)) && exit 1; } || true
 }
 
-######################## db ###########################
+function show_tracebacks() {
+  local err_code="$?"
+  set +o xtrace
+  local bash_command=${BASH_COMMAND}
+  echo "${RED}Error in ${BASH_SOURCE[1]}:${BASH_LINENO[0]} ('$bash_command' exited with status $err_code)${OFF}" >&2
+
+  if [ ${#FUNCNAME[@]} -gt 2 ]; then
+    # Print out the stack trace described by $function_stack
+    echo "${RED}Traceback of ${BASH_SOURCE[1]} (most recent call last):${OFF}" >&2
+    for ((i = 0; i < ${#FUNCNAME[@]} - 1; i++)); do
+      local funcname="${FUNCNAME[$i]}"
+      [ "$i" -eq "0" ] && funcname=$bash_command
+      echo -e "  ${MAGENTA}${BASH_SOURCE[$i + 1]##*\/}:${BASH_LINENO[$i]}${OFF}\\t$funcname" >&2
+    done
+  fi
+  exit 1
+}
+
+######################## postgres ###########################
 
 # Drop and recreate database `db`. Defaults to POSTGRES_DB.
 drop_and_recreate_db() {
