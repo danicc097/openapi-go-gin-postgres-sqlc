@@ -20,7 +20,7 @@ type DemoProjectWorkItem struct {
 	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at" required:"true"` // last_message_at
 	Reopened      bool      `json:"reopened" db:"reopened" required:"true"`             // reopened
 
-	WorkItem *WorkItem `json:"workItem" db:"work_item"` // O2O
+	WorkItem *WorkItem `json:"workItem" db:"work_item" openapi-go:"ignore"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }

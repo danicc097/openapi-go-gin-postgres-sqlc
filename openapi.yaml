@@ -499,7 +499,6 @@ components:
       type: object
       x-postgen-struct: DbWorkItemTag
     DbWorkItemType: # Generated from internal structs. DO NOT EDIT.
-      nullable: true
       properties:
         color:
           type: string
@@ -522,7 +521,6 @@ components:
       type: object
       x-postgen-struct: DbWorkItemType
     DbDemoProjectWorkItem: # Generated from internal structs. DO NOT EDIT.
-      nullable: true
       properties:
         lastMessageAt:
           format: date-time
@@ -546,7 +544,6 @@ components:
       type: object
       x-postgen-struct: DbDemoProjectWorkItem
     DbUserAPIKey: # Generated from internal structs. DO NOT EDIT.
-      nullable: true
       properties:
         apiKey:
           type: string
@@ -942,7 +939,11 @@ components:
           title: Error Type
           type: string
     UuidUUID: # Generated from internal structs. DO NOT EDIT.
-      type: string
+      items:
+        minimum: 0
+        type: integer
+      nullable: true
+      type: array
     PgtypeJSONB: # Generated from internal structs. DO NOT EDIT.
       type: object
     demoProjectKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
@@ -973,7 +974,6 @@ components:
         - name
       type: object
     DbProject2WorkItem: # Generated from internal structs. DO NOT EDIT.
-      nullable: true
       properties:
         customDateForProject2:
           format: date-time

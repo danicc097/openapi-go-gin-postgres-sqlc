@@ -242,7 +242,7 @@ type DbTimeEntry struct {
 	Start           time.Time `json:"start"`
 	TeamID          *int      `json:"teamID"`
 	TimeEntryID     int       `json:"timeEntryID"`
-	UserID          UuidUUID  `json:"userID"`
+	UserID          *UuidUUID `json:"userID"`
 	WorkItemID      *int      `json:"workItemID"`
 }
 
@@ -258,8 +258,8 @@ type DbUser struct {
 	LastName                 *string        `json:"lastName"`
 	Teams                    *[]DbTeam      `json:"teams"`
 	TimeEntries              *[]DbTimeEntry `json:"timeEntries"`
-	UserAPIKey               *DbUserAPIKey  `json:"userAPIKey"`
-	UserID                   UuidUUID       `json:"userID"`
+	UserAPIKey               *DbUserAPIKey  `json:"userAPIKey,omitempty"`
+	UserID                   *UuidUUID      `json:"userID"`
 	Username                 string         `json:"username"`
 	WorkItems                *[]DbWorkItem  `json:"workItems"`
 }
@@ -269,7 +269,7 @@ type DbUserAPIKey struct {
 	ApiKey    string    `json:"apiKey"`
 	ExpiresOn time.Time `json:"expiresOn"`
 	User      *DbUser   `json:"user,omitempty"`
-	UserID    UuidUUID  `json:"userID"`
+	UserID    *UuidUUID `json:"userID"`
 }
 
 // DbWorkItem defines the model for DbWorkItem.
@@ -277,12 +277,12 @@ type DbWorkItem struct {
 	Closed              *time.Time             `json:"closed"`
 	CreatedAt           time.Time              `json:"createdAt"`
 	DeletedAt           *time.Time             `json:"deletedAt"`
-	DemoProjectWorkItem *DbDemoProjectWorkItem `json:"demoProjectWorkItem"`
+	DemoProjectWorkItem *DbDemoProjectWorkItem `json:"demoProjectWorkItem,omitempty"`
 	Description         string                 `json:"description"`
 	KanbanStepID        int                    `json:"kanbanStepID"`
 	Members             *[]DbWorkItemMember    `json:"members"`
 	Metadata            *[]int                 `json:"metadata"`
-	Project2WorkItem    *DbProject2WorkItem    `json:"project2WorkItem"`
+	Project2WorkItem    *DbProject2WorkItem    `json:"project2WorkItem,omitempty"`
 	TargetDate          time.Time              `json:"targetDate"`
 	TeamID              int                    `json:"teamID"`
 	TimeEntries         *[]DbTimeEntry         `json:"timeEntries"`
@@ -291,7 +291,7 @@ type DbWorkItem struct {
 	WorkItemComments    *[]DbWorkItemComment   `json:"workItemComments"`
 	WorkItemID          int                    `json:"workItemID"`
 	WorkItemTags        *[]DbWorkItemTag       `json:"workItemTags"`
-	WorkItemType        *DbWorkItemType        `json:"workItemType"`
+	WorkItemType        *DbWorkItemType        `json:"workItemType,omitempty"`
 	WorkItemTypeID      int                    `json:"workItemTypeID"`
 }
 
@@ -300,7 +300,7 @@ type DbWorkItemComment struct {
 	CreatedAt         time.Time `json:"createdAt"`
 	Message           string    `json:"message"`
 	UpdatedAt         time.Time `json:"updatedAt"`
-	UserID            UuidUUID  `json:"userID"`
+	UserID            *UuidUUID `json:"userID"`
 	WorkItemCommentID int       `json:"workItemCommentID"`
 	WorkItemID        int       `json:"workItemID"`
 }
@@ -398,25 +398,25 @@ type ProjectConfig struct {
 
 // RestDemoProjectWorkItemsResponse defines the model for RestDemoProjectWorkItemsResponse.
 type RestDemoProjectWorkItemsResponse struct {
-	Closed              *time.Time             `json:"closed"`
-	CreatedAt           time.Time              `json:"createdAt"`
-	DeletedAt           *time.Time             `json:"deletedAt"`
-	DemoProjectWorkItem *DbDemoProjectWorkItem `json:"demoProjectWorkItem"`
-	Description         string                 `json:"description"`
-	KanbanStepID        int                    `json:"kanbanStepID"`
-	Members             *[]DbUser              `json:"members"`
-	Metadata            *[]int                 `json:"metadata"`
-	Project2WorkItem    *DbProject2WorkItem    `json:"project2WorkItem"`
-	TargetDate          time.Time              `json:"targetDate"`
-	TeamID              int                    `json:"teamID"`
-	TimeEntries         *[]DbTimeEntry         `json:"timeEntries"`
-	Title               string                 `json:"title"`
-	UpdatedAt           time.Time              `json:"updatedAt"`
-	WorkItemComments    *[]DbWorkItemComment   `json:"workItemComments"`
-	WorkItemID          int                    `json:"workItemID"`
-	WorkItemTags        *[]DbWorkItemTag       `json:"workItemTags"`
-	WorkItemType        *DbWorkItemType        `json:"workItemType"`
-	WorkItemTypeID      int                    `json:"workItemTypeID"`
+	Closed              *time.Time            `json:"closed"`
+	CreatedAt           time.Time             `json:"createdAt"`
+	DeletedAt           *time.Time            `json:"deletedAt"`
+	DemoProjectWorkItem DbDemoProjectWorkItem `json:"demoProjectWorkItem"`
+	Description         string                `json:"description"`
+	KanbanStepID        int                   `json:"kanbanStepID"`
+	Members             *[]DbUser             `json:"members"`
+	Metadata            *[]int                `json:"metadata"`
+	Project2WorkItem    *DbProject2WorkItem   `json:"project2WorkItem,omitempty"`
+	TargetDate          time.Time             `json:"targetDate"`
+	TeamID              int                   `json:"teamID"`
+	TimeEntries         *[]DbTimeEntry        `json:"timeEntries"`
+	Title               string                `json:"title"`
+	UpdatedAt           time.Time             `json:"updatedAt"`
+	WorkItemComments    *[]DbWorkItemComment  `json:"workItemComments"`
+	WorkItemID          int                   `json:"workItemID"`
+	WorkItemTags        *[]DbWorkItemTag      `json:"workItemTags"`
+	WorkItemType        *DbWorkItemType       `json:"workItemType,omitempty"`
+	WorkItemTypeID      int                   `json:"workItemTypeID"`
 }
 
 // RestProjectBoardResponse defines the model for RestProjectBoardResponse.
@@ -453,7 +453,7 @@ type UpdateUserRequest struct {
 
 // UserResponse defines the model for UserResponse.
 type UserResponse struct {
-	ApiKey   *DbUserAPIKey `json:"apiKey"`
+	ApiKey   *DbUserAPIKey `json:"apiKey,omitempty"`
 	Projects *[]DbProject  `json:"projects"`
 	Role     Role          `json:"role"`
 	Scopes   Scopes        `json:"scopes"`
@@ -462,7 +462,7 @@ type UserResponse struct {
 }
 
 // UuidUUID defines the model for UuidUUID.
-type UuidUUID = string
+type UuidUUID = []int
 
 // ValidationError defines the model for ValidationError.
 type ValidationError struct {

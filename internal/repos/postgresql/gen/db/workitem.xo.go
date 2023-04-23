@@ -27,13 +27,13 @@ type WorkItem struct {
 	UpdatedAt      time.Time  `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
 	DeletedAt      *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
 
-	DemoProjectWorkItem *DemoProjectWorkItem `json:"demoProjectWorkItem" db:"demo_project_work_item"` // O2O
-	Project2WorkItem    *Project2WorkItem    `json:"project2WorkItem" db:"project_2_work_item"`       // O2O
-	TimeEntries         *[]TimeEntry         `json:"timeEntries" db:"time_entries"`                   // O2M
-	WorkItemComments    *[]WorkItemComment   `json:"workItemComments" db:"work_item_comments"`        // O2M
-	Members             *[]WorkItem_Member   `json:"members" db:"members"`                            // M2M
-	WorkItemTags        *[]WorkItemTag       `json:"workItemTags" db:"work_item_tags"`                // M2M
-	WorkItemType        *WorkItemType        `json:"workItemType" db:"work_item_type"`                // O2O
+	DemoProjectWorkItem *DemoProjectWorkItem `json:"demoProjectWorkItem" db:"demo_project_work_item" openapi-go:"ignore"` // O2O
+	Project2WorkItem    *Project2WorkItem    `json:"project2WorkItem" db:"project_2_work_item" openapi-go:"ignore"`       // O2O
+	TimeEntries         *[]TimeEntry         `json:"timeEntries" db:"time_entries" openapi-go:"ignore"`                   // O2M
+	WorkItemComments    *[]WorkItemComment   `json:"workItemComments" db:"work_item_comments" openapi-go:"ignore"`        // O2M
+	Members             *[]WorkItem_Member   `json:"members" db:"members" openapi-go:"ignore"`                            // M2M
+	WorkItemTags        *[]WorkItemTag       `json:"workItemTags" db:"work_item_tags" openapi-go:"ignore"`                // M2M
+	WorkItemType        *WorkItemType        `json:"workItemType" db:"work_item_type" openapi-go:"ignore"`                // O2O
 	// xo fields
 	_exists, _deleted bool
 }

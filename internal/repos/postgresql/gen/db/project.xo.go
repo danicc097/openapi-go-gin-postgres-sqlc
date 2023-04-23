@@ -23,11 +23,11 @@ type Project struct {
 	CreatedAt          time.Time      `json:"createdAt" db:"created_at" required:"true"`                         // created_at
 	UpdatedAt          time.Time      `json:"updatedAt" db:"updated_at" required:"true"`                         // updated_at
 
-	Activities    *[]Activity     `json:"activities" db:"activities"`         // O2M
-	KanbanSteps   *[]KanbanStep   `json:"kanbanSteps" db:"kanban_steps"`      // O2M
-	Teams         *[]Team         `json:"teams" db:"teams"`                   // O2M
-	WorkItemTags  *[]WorkItemTag  `json:"workItemTags" db:"work_item_tags"`   // O2M
-	WorkItemTypes *[]WorkItemType `json:"workItemTypes" db:"work_item_types"` // O2M
+	Activities    *[]Activity     `json:"activities" db:"activities" openapi-go:"ignore"`         // O2M
+	KanbanSteps   *[]KanbanStep   `json:"kanbanSteps" db:"kanban_steps" openapi-go:"ignore"`      // O2M
+	Teams         *[]Team         `json:"teams" db:"teams" openapi-go:"ignore"`                   // O2M
+	WorkItemTags  *[]WorkItemTag  `json:"workItemTags" db:"work_item_tags" openapi-go:"ignore"`   // O2M
+	WorkItemTypes *[]WorkItemType `json:"workItemTypes" db:"work_item_types" openapi-go:"ignore"` // O2M
 	// xo fields
 	_exists, _deleted bool
 }

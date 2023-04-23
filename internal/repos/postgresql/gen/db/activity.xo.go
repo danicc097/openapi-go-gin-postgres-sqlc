@@ -18,7 +18,7 @@ type Activity struct {
 	Description  string `json:"description" db:"description" required:"true"`    // description
 	IsProductive bool   `json:"isProductive" db:"is_productive" required:"true"` // is_productive
 
-	TimeEntries *[]TimeEntry `json:"timeEntries" db:"time_entries"` // O2M
+	TimeEntries *[]TimeEntry `json:"timeEntries" db:"time_entries" openapi-go:"ignore"` // O2M
 	// xo fields
 	_exists, _deleted bool
 }

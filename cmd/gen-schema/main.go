@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -41,6 +42,8 @@ func main() {
 		// default name comes from package directory, not the given import alias
 		// e.g. repomodels -/-> Repomodels, its the last dir (models)
 
+		fmt.Fprintf(os.Stderr, "defaultDefName: %s", defaultDefName)
+
 		return defaultDefName
 	})
 
@@ -53,11 +56,18 @@ func main() {
 		if !hasJSONTag(st) {
 			log.Fatalf("struct %s: ensure there is at least a JSON tag set", sn)
 		}
+
+		st = cloneStructWithoutIgnoredFields(st)
+
 		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
 		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
 
+		s, _ := reflector.Spec.MarshalYAML()
+		fmt.Fprintf(os.Stderr, "spec: %+v\n", string(s))
+		fmt.Fprintf(os.Stderr, "st: %+v\n", st)
+
 		// IMPORTANT: ensure structs are public
-		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]interface{}{"x-postgen-struct": sn}
+		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]any{"x-postgen-struct": sn}
 	}
 	s, err := reflector.Spec.MarshalYAML()
 	handleError(err)
@@ -65,7 +75,7 @@ func main() {
 	fmt.Println(string(s))
 }
 
-func hasJSONTag(input interface{}) bool {
+func hasJSONTag(input any) bool {
 	t := reflect.TypeOf(input)
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
@@ -82,4 +92,37 @@ func hasJSONTag(input interface{}) bool {
 	}
 
 	return false
+}
+
+func cloneStructWithoutIgnoredFields(src any) any {
+	srcType := reflect.TypeOf(src)
+
+	dstType := reflect.StructOf(filterIgnoredFields(srcType))
+	// dstType = reflect.StructOf([]reflect.StructField{{
+	// 	Name:    srcType.Name(),
+	// 	PkgPath: srcType.PkgPath(),
+	// 	Type:    dstType,
+	// }})
+
+	dst := reflect.New(dstType).Elem()
+
+	return dst.Interface()
+}
+
+// filterIgnoredFields returns all fields that do not have
+// the "openapi-go" tag set to "ignore".
+func filterIgnoredFields(t reflect.Type) []reflect.StructField {
+	var filteredFields []reflect.StructField
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		if val, ok := field.Tag.Lookup("openapi-go"); !ok || val != "ignore" {
+			if field.Type.Kind() == reflect.Struct {
+				subFields := filterIgnoredFields(field.Type)
+				field.Type = reflect.StructOf(subFields)
+			}
+			filteredFields = append(filteredFields, field)
+		}
+	}
+
+	return filteredFields
 }

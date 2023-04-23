@@ -1253,6 +1253,7 @@ update_spec_with_structs() {
   schema_names=$(yq e ".components.schemas[] | select(has(\"$vext\")) | key" $SPEC)
   mapfile -t struct_names <<<$struct_names
   mapfile -t schema_names <<<$schema_names
+
   declare -A schemas
   for i in ${!struct_names[@]}; do
     schemas["${struct_names[$i]}"]="${schema_names[$i]}" # keep track of custom structs per schema name
