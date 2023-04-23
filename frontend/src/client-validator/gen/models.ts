@@ -6,69 +6,15 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type UuidUUID = string
+export type UuidUUID = number[] | null
 /**
  * Existing projects
  */
 export type Project = 'demoProject' | 'demoProject2'
-export type DbUserAPIKey = {
-  apiKey: string
-  expiresOn: string
-  user?: DbUser
-  userID: UuidUUID
-} & DbUserAPIKey1
-export type DbUserAPIKey1 = {
-  apiKey: string
-  expiresOn: string
-  user?: DbUser
-  userID: UuidUUID
-} | null
-export type DbDemoProjectWorkItem = {
-  lastMessageAt: string
-  line: string
-  ref: string
-  reopened: boolean
-  workItem?: DbWorkItem
-  workItemID: number
-} & DbDemoProjectWorkItem1
-export type DbDemoProjectWorkItem1 = {
-  lastMessageAt: string
-  line: string
-  ref: string
-  reopened: boolean
-  workItem?: DbWorkItem
-  workItemID: number
-} | null
 /**
  * represents a database 'work_item_role'
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
-export type DbProject2WorkItem = {
-  customDateForProject2: string | null
-  workItem?: DbWorkItem
-  workItemID: number
-} & DbProject2WorkItem1
-export type DbProject2WorkItem1 = {
-  customDateForProject2: string | null
-  workItem?: DbWorkItem
-  workItemID: number
-} | null
-export type DbWorkItemType = {
-  color: string
-  description: string
-  name: string
-  projectID: number
-  workItem?: DbWorkItem
-  workItemTypeID: number
-} & DbWorkItemType1
-export type DbWorkItemType1 = {
-  color: string
-  description: string
-  name: string
-  projectID: number
-  workItem?: DbWorkItem
-  workItemTypeID: number
-} | null
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 export type Scope =
   | 'test-scope'
@@ -136,7 +82,7 @@ export interface DbProject {
   teams?: DbTeam[] | null
   updatedAt: string
   workItemTags?: DbWorkItemTag[] | null
-  workItemTypes?: DbWorkItemType1[] | null
+  workItemTypes?: DbWorkItemType[] | null
 }
 export interface DbTeam {
   createdAt: string
@@ -164,6 +110,12 @@ export interface DbUser {
   username: string
   workItems?: DbWorkItem[] | null
 }
+export interface DbUserAPIKey {
+  apiKey: string
+  expiresOn: string
+  user?: DbUser
+  userID: UuidUUID
+}
 export interface DbWorkItem {
   closed: string | null
   createdAt: string
@@ -185,9 +137,22 @@ export interface DbWorkItem {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
+export interface DbDemoProjectWorkItem {
+  lastMessageAt: string
+  line: string
+  ref: string
+  reopened: boolean
+  workItem?: DbWorkItem
+  workItemID: number
+}
 export interface DbWorkItem_Member {
   role: WorkItemRole
   user?: DbUser
+}
+export interface DbProject2WorkItem {
+  customDateForProject2: string | null
+  workItem?: DbWorkItem
+  workItemID: number
 }
 export interface DbWorkItemComment {
   createdAt: string
@@ -205,6 +170,14 @@ export interface DbWorkItemTag {
   workItemTagID: number
   workItems?: DbWorkItem[] | null
 }
+export interface DbWorkItemType {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItem?: DbWorkItem
+  workItemTypeID: number
+}
 export interface ProjectConfig {
   fields: ModelsProjectConfigField[] | null
   header: string[] | null
@@ -220,12 +193,12 @@ export interface RestDemoProjectWorkItemsResponse {
   closed: string | null
   createdAt: string
   deletedAt: string | null
-  demoProjectWorkItem: DbDemoProjectWorkItem1
+  demoProjectWorkItem: DbDemoProjectWorkItem
   description: string
   kanbanStepID: number
   members?: DbUser[] | null
   metadata: number[] | null
-  project2WorkItem?: DbProject2WorkItem1
+  project2WorkItem?: DbProject2WorkItem
   targetDate: string
   teamID: number
   timeEntries?: DbTimeEntry[] | null
@@ -234,7 +207,7 @@ export interface RestDemoProjectWorkItemsResponse {
   workItemComments?: DbWorkItemComment[] | null
   workItemID: number
   workItemTags?: DbWorkItemTag[] | null
-  workItemType?: DbWorkItemType1
+  workItemType?: DbWorkItemType
   workItemTypeID: number
 }
 export interface InitializeProjectRequest {
@@ -280,7 +253,7 @@ export interface RestProjectBoardResponse {
   project?: DbProject
 }
 export interface UserResponse {
-  apiKey?: DbUserAPIKey1
+  apiKey?: DbUserAPIKey
   projects?: DbProject[] | null
   role: Role
   scopes: Scopes

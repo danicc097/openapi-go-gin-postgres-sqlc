@@ -134,7 +134,7 @@ export interface components {
       projectID: number;
       workItem?: components["schemas"]["DbWorkItem"];
       workItemTypeID: number;
-    } | null;
+    };
     DbDemoProjectWorkItem: {
       /** Format: date-time */
       lastMessageAt: string;
@@ -143,14 +143,14 @@ export interface components {
       reopened: boolean;
       workItem?: components["schemas"]["DbWorkItem"];
       workItemID: number;
-    } | null;
+    };
     DbUserAPIKey: {
       apiKey: string;
       /** Format: date-time */
       expiresOn: string;
       user?: components["schemas"]["DbUser"];
       userID: components["schemas"]["UuidUUID"];
-    } | null;
+    };
     DbUser: {
       /** Format: date-time */
       createdAt: string;
@@ -295,7 +295,7 @@ export interface components {
       /** Error Type */
       type: string;
     };
-    UuidUUID: string;
+    UuidUUID: (number)[] | null;
     PgtypeJSONB: Record<string, never>;
     /**
      * @description Kanban columns for project demoProject 
@@ -309,12 +309,12 @@ export interface components {
       path: string;
       showCollapsed: boolean;
     };
-    DbProject2WorkItem: ({
+    DbProject2WorkItem: {
       /** Format: date-time */
       customDateForProject2: string | null;
       workItem?: components["schemas"]["DbWorkItem"];
       workItemID: number;
-    }) | null;
+    };
     DbWorkItem: {
       /** Format: date-time */
       closed: string | null;

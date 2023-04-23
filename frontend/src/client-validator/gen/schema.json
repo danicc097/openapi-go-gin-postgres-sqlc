@@ -275,10 +275,7 @@
         "description",
         "color"
       ],
-      "type": [
-        "object",
-        "null"
-      ],
+      "type": "object",
       "x-postgen-struct": "DbWorkItemType",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -311,10 +308,7 @@
         "lastMessageAt",
         "reopened"
       ],
-      "type": [
-        "object",
-        "null"
-      ],
+      "type": "object",
       "x-postgen-struct": "DbDemoProjectWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -339,10 +333,7 @@
         "expiresOn",
         "userID"
       ],
-      "type": [
-        "object",
-        "null"
-      ],
+      "type": "object",
       "x-postgen-struct": "DbUserAPIKey",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -907,7 +898,14 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "UuidUUID": {
-      "type": "string",
+      "items": {
+        "minimum": 0,
+        "type": "integer"
+      },
+      "type": [
+        "array",
+        "null"
+      ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "PgtypeJSONB": {
@@ -973,10 +971,7 @@
         "workItemID",
         "customDateForProject2"
       ],
-      "type": [
-        "object",
-        "null"
-      ],
+      "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItem": {
