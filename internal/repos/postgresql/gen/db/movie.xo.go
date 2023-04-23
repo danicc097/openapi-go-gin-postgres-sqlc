@@ -40,6 +40,7 @@ type MovieSelectConfig struct {
 	orderBy string
 	joins   MovieJoins
 }
+
 type MovieSelectConfigOption func(*MovieSelectConfig)
 
 // WithMovieLimit limits row selection.

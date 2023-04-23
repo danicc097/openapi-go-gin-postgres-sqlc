@@ -27,15 +27,71 @@ type WorkItem struct {
 	UpdatedAt      time.Time  `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
 	DeletedAt      *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
 
-	DemoProjectWorkItem *DemoProjectWorkItem `json:"demoProjectWorkItem" db:"demo_project_work_item"` // O2O
-	Project2WorkItem    *Project2WorkItem    `json:"project2WorkItem" db:"project_2_work_item"`       // O2O
-	TimeEntries         *[]TimeEntry         `json:"timeEntries" db:"time_entries"`                   // O2M
-	WorkItemComments    *[]WorkItemComment   `json:"workItemComments" db:"work_item_comments"`        // O2M
-	Members             *[]WorkItem_Member   `json:"members" db:"members"`                            // M2M
-	WorkItemTags        *[]WorkItemTag       `json:"workItemTags" db:"work_item_tags"`                // M2M
-	WorkItemType        *WorkItemType        `json:"workItemType" db:"work_item_type"`                // O2O
+	demoProjectWorkItem *DemoProjectWorkItem `json:"-" db:"demo_project_work_item"` // O2O
+	project2workItem    *Project2WorkItem    `json:"-" db:"project_2_work_item"`    // O2O
+	timeEntries         *[]TimeEntry         `json:"-" db:"time_entries"`           // O2M
+	workItemComments    *[]WorkItemComment   `json:"-" db:"work_item_comments"`     // O2M
+	members             *[]WorkItem_Member   `json:"-" db:"members"`                // M2M
+	workItemTags        *[]WorkItemTag       `json:"-" db:"work_item_tags"`         // M2M
+	workItemType        *WorkItemType        `json:"-" db:"work_item_type"`         // O2O
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (s *WorkItem) DemoProjectWorkItem() *DemoProjectWorkItem {
+	return s.demoProjectWorkItem
+}
+
+func (s *WorkItem) SetDemoProjectWorkItem(f *DemoProjectWorkItem) {
+	s.demoProjectWorkItem = f
+}
+
+func (s *WorkItem) Project2WorkItem() *Project2WorkItem {
+	return s.project2workItem
+}
+
+func (s *WorkItem) SetProject2WorkItem(f *Project2WorkItem) {
+	s.project2workItem = f
+}
+
+func (s *WorkItem) TimeEntries() *[]TimeEntry {
+	return s.timeEntries
+}
+
+func (s *WorkItem) SetTimeEntries(f *[]TimeEntry) {
+	s.timeEntries = f
+}
+
+func (s *WorkItem) WorkItemComments() *[]WorkItemComment {
+	return s.workItemComments
+}
+
+func (s *WorkItem) SetWorkItemComments(f *[]WorkItemComment) {
+	s.workItemComments = f
+}
+
+func (s *WorkItem) Members() *[]WorkItem_Member {
+	return s.members
+}
+
+func (s *WorkItem) SetMembers(f *[]WorkItem_Member) {
+	s.members = f
+}
+
+func (s *WorkItem) WorkItemTags() *[]WorkItemTag {
+	return s.workItemTags
+}
+
+func (s *WorkItem) SetWorkItemTags(f *[]WorkItemTag) {
+	s.workItemTags = f
+}
+
+func (s *WorkItem) WorkItemType() *WorkItemType {
+	return s.workItemType
+}
+
+func (s *WorkItem) SetWorkItemType(f *WorkItemType) {
+	s.workItemType = f
 }
 
 // WorkItemCreateParams represents insert params for 'public.work_items'
@@ -68,6 +124,7 @@ type WorkItemSelectConfig struct {
 	joins     WorkItemJoins
 	deletedAt string
 }
+
 type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
 
 // WithWorkItemLimit limits row selection.

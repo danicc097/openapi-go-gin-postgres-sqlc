@@ -55,6 +55,7 @@ type TimeEntrySelectConfig struct {
 	orderBy string
 	joins   TimeEntryJoins
 }
+
 type TimeEntrySelectConfigOption func(*TimeEntrySelectConfig)
 
 // WithTimeEntryLimit limits row selection.

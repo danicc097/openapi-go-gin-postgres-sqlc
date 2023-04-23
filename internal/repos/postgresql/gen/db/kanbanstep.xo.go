@@ -49,6 +49,7 @@ type KanbanStepSelectConfig struct {
 	orderBy string
 	joins   KanbanStepJoins
 }
+
 type KanbanStepSelectConfigOption func(*KanbanStepSelectConfig)
 
 // WithKanbanStepLimit limits row selection.

@@ -31,12 +31,44 @@ type User struct {
 	UpdatedAt                time.Time  `json:"-" db:"updated_at"`                                                        // updated_at
 	DeletedAt                *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`                                // deleted_at
 
-	TimeEntries *[]TimeEntry `json:"timeEntries" db:"time_entries"` // O2M
-	UserAPIKey  *UserAPIKey  `json:"userAPIKey" db:"user_api_key"`  // O2O
-	Teams       *[]Team      `json:"teams" db:"teams"`              // M2M
-	WorkItems   *[]WorkItem  `json:"workItems" db:"work_items"`     // M2M
+	timeEntries *[]TimeEntry `json:"-" db:"time_entries"` // O2M
+	userAPIKey  *UserAPIKey  `json:"-" db:"user_api_key"` // O2O
+	teams       *[]Team      `json:"-" db:"teams"`        // M2M
+	workItems   *[]WorkItem  `json:"-" db:"work_items"`   // M2M
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (s *User) TimeEntries() *[]TimeEntry {
+	return s.timeEntries
+}
+
+func (s *User) SetTimeEntries(f *[]TimeEntry) {
+	s.timeEntries = f
+}
+
+func (s *User) UserAPIKey() *UserAPIKey {
+	return s.userAPIKey
+}
+
+func (s *User) SetUserAPIKey(f *UserAPIKey) {
+	s.userAPIKey = f
+}
+
+func (s *User) Teams() *[]Team {
+	return s.teams
+}
+
+func (s *User) SetTeams(f *[]Team) {
+	s.teams = f
+}
+
+func (s *User) WorkItems() *[]WorkItem {
+	return s.workItems
+}
+
+func (s *User) SetWorkItems(f *[]WorkItem) {
+	s.workItems = f
 }
 
 // UserCreateParams represents insert params for 'public.users'
@@ -73,6 +105,7 @@ type UserSelectConfig struct {
 	joins     UserJoins
 	deletedAt string
 }
+
 type UserSelectConfigOption func(*UserSelectConfig)
 
 // WithUserLimit limits row selection.

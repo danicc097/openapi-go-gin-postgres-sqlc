@@ -17,9 +17,17 @@ type Project2WorkItem struct {
 	WorkItemID            int64      `json:"workItemID" db:"work_item_id" required:"true"`                         // work_item_id
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2" required:"true"` // custom_date_for_project_2
 
-	WorkItem *WorkItem `json:"workItem" db:"work_item"` // O2O
+	workItem *WorkItem `json:"-" db:"work_item"` // O2O
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (s *Project2WorkItem) WorkItem() *WorkItem {
+	return s.workItem
+}
+
+func (s *Project2WorkItem) SetWorkItem(f *WorkItem) {
+	s.workItem = f
 }
 
 // Project2WorkItemCreateParams represents insert params for 'public.project_2_work_items'
@@ -38,6 +46,7 @@ type Project2WorkItemSelectConfig struct {
 	orderBy string
 	joins   Project2WorkItemJoins
 }
+
 type Project2WorkItemSelectConfigOption func(*Project2WorkItemSelectConfig)
 
 // WithProject2WorkItemLimit limits row selection.

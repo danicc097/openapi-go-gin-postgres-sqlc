@@ -45,6 +45,7 @@ type WorkItemCommentSelectConfig struct {
 	orderBy string
 	joins   WorkItemCommentJoins
 }
+
 type WorkItemCommentSelectConfigOption func(*WorkItemCommentSelectConfig)
 
 // WithWorkItemCommentLimit limits row selection.

@@ -18,9 +18,17 @@ type UserNotification struct {
 	Read               bool      `json:"read" db:"read" required:"true"`                               // read
 	UserID             uuid.UUID `json:"userID" db:"user_id" required:"true"`                          // user_id
 
-	Notification *Notification `json:"notification" db:"notification"` // O2O
+	notification *Notification `json:"-" db:"notification"` // O2O
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (s *UserNotification) Notification() *Notification {
+	return s.notification
+}
+
+func (s *UserNotification) SetNotification(f *Notification) {
+	s.notification = f
 }
 
 // UserNotificationCreateParams represents insert params for 'public.user_notifications'
@@ -42,6 +50,7 @@ type UserNotificationSelectConfig struct {
 	orderBy string
 	joins   UserNotificationJoins
 }
+
 type UserNotificationSelectConfigOption func(*UserNotificationSelectConfig)
 
 // WithUserNotificationLimit limits row selection.

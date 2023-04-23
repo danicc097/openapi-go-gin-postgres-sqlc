@@ -40,6 +40,7 @@ type WorkItemMemberSelectConfig struct {
 	orderBy string
 	joins   WorkItemMemberJoins
 }
+
 type WorkItemMemberSelectConfigOption func(*WorkItemMemberSelectConfig)
 
 // WithWorkItemMemberLimit limits row selection.

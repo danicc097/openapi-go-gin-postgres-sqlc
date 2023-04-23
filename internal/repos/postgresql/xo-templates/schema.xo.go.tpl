@@ -219,6 +219,10 @@ type {{ $t.GoName }} struct {
 	_exists, _deleted bool
 {{ end -}}
 }
+
+{{ join_field_getter_setters $t.SQLName $constraints $tables }}
+
+
 {{/* NOTE: ensure sqlc does not generate clashing names */}}
 // {{ $t.GoName }}CreateParams represents insert params for '{{ schema $t.SQLName }}'
 type {{ $t.GoName }}CreateParams struct {

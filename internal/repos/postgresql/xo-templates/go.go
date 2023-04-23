@@ -1132,16 +1132,17 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"logf_pkeys":          f.logf_pkeys,
 		"logf_update":         f.logf_update,
 		// type
-		"names":        f.names,
-		"names_all":    f.names_all,
-		"names_ignore": f.names_ignore,
-		"params":       f.params,
-		"zero":         f.zero,
-		"type":         f.typefn,
-		"field":        f.field,
-		"fieldmapping": f.fieldmapping,
-		"join_fields":  f.join_fields,
-		"short":        f.short,
+		"names":                     f.names,
+		"names_all":                 f.names_all,
+		"names_ignore":              f.names_ignore,
+		"params":                    f.params,
+		"zero":                      f.zero,
+		"type":                      f.typefn,
+		"field":                     f.field,
+		"fieldmapping":              f.fieldmapping,
+		"join_fields":               f.join_fields,
+		"join_field_getter_setters": f.join_field_getter_setters,
+		"short":                     f.short,
 		// sqlstr funcs
 		"querystr":     f.querystr,
 		"sqlstr":       f.sqlstr,
@@ -1487,7 +1488,8 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints []Constraint
 			deletedAt   string`)
 	}
 	buf.WriteString(`
-	}`)
+	}
+	`)
 	buf.WriteString(fmt.Sprintf(`
 	type %[1]sSelectConfigOption func(*%[1]sSelectConfig)
 
@@ -1549,10 +1551,9 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 
 			lookupTable := tables[c.TableName]
 			extraCols := getLookupTableRegularFields(lookupTable)
-			fmt.Printf("M2M join: %s extraCols: %v\n", lookupTable.SQLName, extraCols)
 
 			if c.ColumnName != c.RefColumnName {
-				// differs from actual column, e.g. having member UUID in lookup instead of user_id
+				// differs from actual column, e.g. having `member` col in lookup instead of user_id
 				lookupName = c.ColumnName
 
 				originalStruct := camelExport(inflector.Singularize(strings.TrimSuffix(c.RefColumnName, "_id")))
@@ -1570,7 +1571,6 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 						tag = tag + ` ref:"#/components/schemas/` + col.OpenAPISchema + `"`
 					}
 					tag = tag + "`"
-					fmt.Printf("tagsssssss: %v\n", tag)
 					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), f.typefn(col.Type), tag))
 				}
 				extraStructs = append(extraStructs, (fmt.Sprintf(`
@@ -1620,8 +1620,6 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 }
 
 // TODO low prio put note if it has no index
-
-// TODO custom types based on sql comment : "type:models.Project"
 
 // func_context generates a func signature for v with context determined by the
 // context mode.
@@ -2377,8 +2375,6 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 		} else {
 			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
 		}
-
-		// TODO if m2m join need group by {{.CurrentTable}}.{{.LookupRefColumn}}
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
 }
@@ -2793,8 +2789,8 @@ func (f *Funcs) join_fields(sqlname string, constraints []Constraint, tables Tab
 				typ = camelExport(singularize(sqlname)) + "_" + camelExport(singularize(lookupName))
 			}
 
-			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(camel(lookupName)), inflector.Pluralize(lookupName))
-			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
+			tag = fmt.Sprintf("`json:\"-\" db:\"%s\"`", inflector.Pluralize(lookupName))
+			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", camel(inflector.Pluralize(goName)), typ, tag, c.Cardinality))
 			// TODO revisit. O2M and M2O from different viewpoints.
 		case "O2M", "M2O":
 			if c.RefTableName != sqlname {
@@ -2802,21 +2798,103 @@ func (f *Funcs) join_fields(sqlname string, constraints []Constraint, tables Tab
 			}
 			goName = camelExport(singularize(c.TableName))
 			typ = goName
-			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", inflector.Pluralize(camel(c.TableName)), inflector.Pluralize(c.TableName))
-			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
+			tag = fmt.Sprintf("`json:\"-\" db:\"%s\"`", inflector.Pluralize(c.TableName))
+			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", camel(inflector.Pluralize(goName)), typ, tag, c.Cardinality))
 		case "O2O":
 			if c.TableName == sqlname {
 				goName = camelExport(singularize(c.RefTableName))
 				typ = goName
-				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", camel(inflector.Singularize(c.RefTableName)), inflector.Singularize(c.RefTableName))
-				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, c.Cardinality))
+				tag = fmt.Sprintf("`json:\"-\" db:\"%s\"`", inflector.Singularize(c.RefTableName))
+				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", camel(goName), typ, tag, c.Cardinality))
 			}
 			if c.RefTableName == sqlname {
 				goName = camelExport(singularize(c.TableName))
 				typ = goName
-				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\"`", camel(inflector.Singularize(c.TableName)), inflector.Singularize(c.TableName))
-				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, c.Cardinality))
+				tag = fmt.Sprintf("`json:\"-\" db:\"%s\"`", inflector.Singularize(c.TableName))
+				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", camel(goName), typ, tag, c.Cardinality))
 			}
+		default:
+			continue
+		}
+	}
+
+	return buf.String(), nil
+}
+
+// join_field_getter_setters generates getters for private join fields
+func (f *Funcs) join_field_getter_setters(sqlname string, constraints []Constraint, tables Tables) (string, error) {
+	if len(constraints) > 0 {
+		f.loadConstraints(constraints, sqlname)
+	}
+
+	cc, ok := f.tableConstraints[sqlname]
+	if !ok {
+		return "", nil
+	}
+	var buf strings.Builder
+
+	var goName, typ string
+	for _, c := range cc {
+		// sync with extratypes
+		switch c.Cardinality {
+		case "M2M":
+			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
+			goName = camelExport(singularize(lookupName))
+			typ = camelExport(singularize(c.RefTableName))
+
+			if c.ColumnName != c.RefColumnName {
+				// differs from actual column, e.g. having member UUID in lookup instead of user_id
+				lookupName = c.ColumnName
+				goName = camelExport(singularize(lookupName))
+				// prevent name clashing
+				typ = camelExport(singularize(sqlname)) + "_" + camelExport(singularize(lookupName))
+			}
+
+			buf.WriteString(fmt.Sprintf(`
+func (s *%[1]s) %[2]s() *[]%[3]s {
+	return s.%[4]s
+}
+
+func (s *%[1]s) Set%[2]s(f *[]%[3]s) {
+	s.%[4]s = f
+}
+			`, camelExport(singularize(sqlname)), inflector.Pluralize(goName), typ, camel(inflector.Pluralize(goName))))
+
+		case "O2M", "M2O":
+			if c.RefTableName != sqlname {
+				continue
+			}
+			goName = camelExport(singularize(c.TableName))
+			typ = goName
+
+			buf.WriteString(fmt.Sprintf(`
+func (s *%[1]s) %[2]s() *[]%[3]s {
+	return s.%[4]s
+}
+
+func (s *%[1]s) Set%[2]s(f *[]%[3]s) {
+	s.%[4]s = f
+}
+			`, camelExport(singularize(sqlname)), inflector.Pluralize(goName), typ, camel(inflector.Pluralize(goName))))
+		case "O2O":
+			if c.TableName == sqlname {
+				goName = camelExport(singularize(c.RefTableName))
+				typ = goName
+			}
+			if c.RefTableName == sqlname {
+				goName = camelExport(singularize(c.TableName))
+				typ = goName
+			}
+
+			buf.WriteString(fmt.Sprintf(`
+func (s *%[1]s) %[2]s() *%[3]s {
+	return s.%[4]s
+}
+
+func (s *%[1]s) Set%[2]s(f *%[3]s) {
+	s.%[4]s = f
+}
+			`, camelExport(singularize(sqlname)), goName, typ, camel(goName)))
 		default:
 			continue
 		}

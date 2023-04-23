@@ -18,9 +18,17 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description" required:"true"`        // description
 	Color         string `json:"color" db:"color" required:"true"`                    // color
 
-	WorkItems *[]WorkItem `json:"workItems" db:"work_items"` // M2M
+	workItems *[]WorkItem `json:"-" db:"work_items"` // M2M
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (s *WorkItemTag) WorkItems() *[]WorkItem {
+	return s.workItems
+}
+
+func (s *WorkItemTag) SetWorkItems(f *[]WorkItem) {
+	s.workItems = f
 }
 
 // WorkItemTagCreateParams represents insert params for 'public.work_item_tags'
@@ -44,6 +52,7 @@ type WorkItemTagSelectConfig struct {
 	orderBy string
 	joins   WorkItemTagJoins
 }
+
 type WorkItemTagSelectConfigOption func(*WorkItemTagSelectConfig)
 
 // WithWorkItemTagLimit limits row selection.

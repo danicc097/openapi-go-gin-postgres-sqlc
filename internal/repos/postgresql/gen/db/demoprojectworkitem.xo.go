@@ -20,9 +20,17 @@ type DemoProjectWorkItem struct {
 	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at" required:"true"` // last_message_at
 	Reopened      bool      `json:"reopened" db:"reopened" required:"true"`             // reopened
 
-	WorkItem *WorkItem `json:"workItem" db:"work_item"` // O2O
+	workItem *WorkItem `json:"-" db:"work_item"` // O2O
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (s *DemoProjectWorkItem) WorkItem() *WorkItem {
+	return s.workItem
+}
+
+func (s *DemoProjectWorkItem) SetWorkItem(f *WorkItem) {
+	s.workItem = f
 }
 
 // DemoProjectWorkItemCreateParams represents insert params for 'public.demo_project_work_items'
@@ -47,6 +55,7 @@ type DemoProjectWorkItemSelectConfig struct {
 	orderBy string
 	joins   DemoProjectWorkItemJoins
 }
+
 type DemoProjectWorkItemSelectConfigOption func(*DemoProjectWorkItemSelectConfig)
 
 // WithDemoProjectWorkItemLimit limits row selection.

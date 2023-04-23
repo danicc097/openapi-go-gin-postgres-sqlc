@@ -54,7 +54,7 @@ func TestDemoProjectWorkItem_Update(t *testing.T) {
 			},
 			want: func() *db.DemoProjectWorkItem {
 				u := *demoprojectworkitem
-				u.WorkItem.Description = "new description"
+				u.WorkItem().Description = "new description"
 				u.Line = "new line"
 
 				return &u
@@ -74,7 +74,7 @@ func TestDemoProjectWorkItem_Update(t *testing.T) {
 				return
 			}
 
-			got.WorkItem.UpdatedAt = demoprojectworkitem.WorkItem.UpdatedAt // ignore
+			got.WorkItem().UpdatedAt = demoprojectworkitem.WorkItem().UpdatedAt // ignore
 			assert.Equal(t, tc.want, got)
 		})
 	}

@@ -20,9 +20,17 @@ type UserAPIKey struct {
 	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on" required:"true"` // expires_on
 	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true"`       // user_id
 
-	User *User `json:"user" db:"user"` // O2O
+	user *User `json:"-" db:"user"` // O2O
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (s *UserAPIKey) User() *User {
+	return s.user
+}
+
+func (s *UserAPIKey) SetUser(f *User) {
+	s.user = f
 }
 
 // UserAPIKeyCreateParams represents insert params for 'public.user_api_keys'
@@ -44,6 +52,7 @@ type UserAPIKeySelectConfig struct {
 	orderBy string
 	joins   UserAPIKeyJoins
 }
+
 type UserAPIKeySelectConfigOption func(*UserAPIKeySelectConfig)
 
 // WithUserAPIKeyLimit limits row selection.

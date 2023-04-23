@@ -36,6 +36,7 @@ type SchemaMigrationSelectConfig struct {
 	orderBy string
 	joins   SchemaMigrationJoins
 }
+
 type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
 
 // WithSchemaMigrationLimit limits row selection.

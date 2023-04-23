@@ -56,7 +56,7 @@ func (u *DemoProjectWorkItem) Create(ctx context.Context, d db.DBTX, params repo
 		return nil, fmt.Errorf("could not save demoProjectWorkItem: %w", parseErrorDetail(err))
 	}
 
-	demoProjectWorkItem.WorkItem = workItem
+	demoProjectWorkItem.SetWorkItem(workItem)
 
 	return demoProjectWorkItem, nil
 }
@@ -88,7 +88,7 @@ func (u *DemoProjectWorkItem) Update(ctx context.Context, d db.DBTX, id int64, p
 		return nil, fmt.Errorf("could not update demoProjectWorkItem: %w", parseErrorDetail(err))
 	}
 
-	demoProjectWorkItem.WorkItem = workItem
+	demoProjectWorkItem.SetWorkItem(workItem)
 
 	return demoProjectWorkItem, err
 }
@@ -104,5 +104,5 @@ func (u *DemoProjectWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (
 		return nil, fmt.Errorf("could not delete workItem: %w", parseErrorDetail(err))
 	}
 
-	return workItem.DemoProjectWorkItem, err
+	return workItem.DemoProjectWorkItem(), err
 }

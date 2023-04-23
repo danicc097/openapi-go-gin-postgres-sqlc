@@ -30,7 +30,7 @@ trap errtrap SIGUSR1
 trap 'exit-cleanup $LINENO' 0
 
 exit-cleanup() {
-  if [[ $restore_cache = 1 ]]; then
+  if [[ $restore_cache = 1 && -z $NO_CACHE ]]; then
     cache-gen.restore
   fi
 }
@@ -548,6 +548,7 @@ x.gen.frontend() {
       set +a
 
       cd frontend
+      # TODO get here and have x functions for orval, etc. x.gen.orval
       pnpm run generate
     )
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -746,7 +747,6 @@ x.run.frontend() {
   set +a
 
   cd frontend
-  pnpm run generate
 
   pnpm run dev |
     sed -e "s/^/${GREEN}[Vite]${OFF} /"
@@ -796,7 +796,6 @@ x.run-prod() {
   run_shared_services up -d --build --remove-orphans
   x.db.recreate
 
-  cd frontend && pnpm run generate && cd - >/dev/null
   x.gen
 
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker compose \
@@ -1176,7 +1175,6 @@ sync_db_enums_with_spec() {
     local schema_name="$(to_pascal $db_enum_name)"
     local enum_values=()
     mapfile -t enum_values < <(dockerdb_psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$db_enum_name\"));" 2>/dev/null)
-    echo "Including  in $SPEC with values: [${enum_values[*]}]"
 
     local schema_path=".components.schemas.$schema_name"
     if yq -e "$schema_path" $SPEC &>/dev/null; then # -e exits 1 if no match
@@ -1563,6 +1561,10 @@ while [[ "$#" -gt 0 ]]; do
   --x-no-gen)
     # Skips code generation steps.
     export NO_GEN=1
+    ;;
+  --x-no-cache)
+    # Code generation backup is not restored on failure.
+    export NO_CACHE=1
     ;;
   --x-env=*)
     # Environment to run commands in. Defaults to "dev".

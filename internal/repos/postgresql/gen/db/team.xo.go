@@ -21,10 +21,26 @@ type Team struct {
 	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
 	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
-	TimeEntries *[]TimeEntry `json:"timeEntries" db:"time_entries"` // O2M
-	Users       *[]User      `json:"users" db:"users"`              // M2M
+	timeEntries *[]TimeEntry `json:"-" db:"time_entries"` // O2M
+	users       *[]User      `json:"-" db:"users"`        // M2M
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (s *Team) TimeEntries() *[]TimeEntry {
+	return s.timeEntries
+}
+
+func (s *Team) SetTimeEntries(f *[]TimeEntry) {
+	s.timeEntries = f
+}
+
+func (s *Team) Users() *[]User {
+	return s.users
+}
+
+func (s *Team) SetUsers(f *[]User) {
+	s.users = f
 }
 
 // TeamCreateParams represents insert params for 'public.teams'
@@ -46,6 +62,7 @@ type TeamSelectConfig struct {
 	orderBy string
 	joins   TeamJoins
 }
+
 type TeamSelectConfigOption func(*TeamSelectConfig)
 
 // WithTeamLimit limits row selection.

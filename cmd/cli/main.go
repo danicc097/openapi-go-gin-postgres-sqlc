@@ -124,7 +124,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("UserAPIKeyByAPIKey: %v", err)
 	}
-	fmt.Printf("found user from its api key u: %v#\n", uak.User)
+	fmt.Printf("found user from its api key u: %v#\n", uak.User())
 
 	getUserNotificationsByUserID := SELECT(
 		UserNotifications.AllColumns,

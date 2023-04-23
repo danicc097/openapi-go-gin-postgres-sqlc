@@ -23,13 +23,53 @@ type Project struct {
 	CreatedAt          time.Time      `json:"createdAt" db:"created_at" required:"true"`                         // created_at
 	UpdatedAt          time.Time      `json:"updatedAt" db:"updated_at" required:"true"`                         // updated_at
 
-	Activities    *[]Activity     `json:"activities" db:"activities"`         // O2M
-	KanbanSteps   *[]KanbanStep   `json:"kanbanSteps" db:"kanban_steps"`      // O2M
-	Teams         *[]Team         `json:"teams" db:"teams"`                   // O2M
-	WorkItemTags  *[]WorkItemTag  `json:"workItemTags" db:"work_item_tags"`   // O2M
-	WorkItemTypes *[]WorkItemType `json:"workItemTypes" db:"work_item_types"` // O2M
+	activities    *[]Activity     `json:"-" db:"activities"`      // O2M
+	kanbanSteps   *[]KanbanStep   `json:"-" db:"kanban_steps"`    // O2M
+	teams         *[]Team         `json:"-" db:"teams"`           // O2M
+	workItemTags  *[]WorkItemTag  `json:"-" db:"work_item_tags"`  // O2M
+	workItemTypes *[]WorkItemType `json:"-" db:"work_item_types"` // O2M
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (s *Project) Activities() *[]Activity {
+	return s.activities
+}
+
+func (s *Project) SetActivities(f *[]Activity) {
+	s.activities = f
+}
+
+func (s *Project) KanbanSteps() *[]KanbanStep {
+	return s.kanbanSteps
+}
+
+func (s *Project) SetKanbanSteps(f *[]KanbanStep) {
+	s.kanbanSteps = f
+}
+
+func (s *Project) Teams() *[]Team {
+	return s.teams
+}
+
+func (s *Project) SetTeams(f *[]Team) {
+	s.teams = f
+}
+
+func (s *Project) WorkItemTags() *[]WorkItemTag {
+	return s.workItemTags
+}
+
+func (s *Project) SetWorkItemTags(f *[]WorkItemTag) {
+	s.workItemTags = f
+}
+
+func (s *Project) WorkItemTypes() *[]WorkItemType {
+	return s.workItemTypes
+}
+
+func (s *Project) SetWorkItemTypes(f *[]WorkItemType) {
+	s.workItemTypes = f
 }
 
 // ProjectCreateParams represents insert params for 'public.projects'
@@ -53,6 +93,7 @@ type ProjectSelectConfig struct {
 	orderBy string
 	joins   ProjectJoins
 }
+
 type ProjectSelectConfigOption func(*ProjectSelectConfig)
 
 // WithProjectLimit limits row selection.

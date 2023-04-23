@@ -9,7 +9,7 @@ export default defineConfig({
       target: './src/gen/main.ts',
       schemas: './src/gen/model',
       client: 'react-query',
-      mock: false, // until changes are made to deeply nested generation
+      mock: true, // until changes are made to deeply nested generation
       tsconfig: './tsconfig.json',
       // for extreme cases can also override the core package itself https://github.com/anymaniax/orval/tree/master/packages/core
       override: {

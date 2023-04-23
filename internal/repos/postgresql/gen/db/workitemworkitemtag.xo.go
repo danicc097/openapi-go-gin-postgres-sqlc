@@ -36,6 +36,7 @@ type WorkItemWorkItemTagSelectConfig struct {
 	orderBy string
 	joins   WorkItemWorkItemTagJoins
 }
+
 type WorkItemWorkItemTagSelectConfigOption func(*WorkItemWorkItemTagSelectConfig)
 
 // WithWorkItemWorkItemTagLimit limits row selection.

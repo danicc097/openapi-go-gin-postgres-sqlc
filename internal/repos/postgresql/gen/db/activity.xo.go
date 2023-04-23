@@ -18,9 +18,17 @@ type Activity struct {
 	Description  string `json:"description" db:"description" required:"true"`    // description
 	IsProductive bool   `json:"isProductive" db:"is_productive" required:"true"` // is_productive
 
-	TimeEntries *[]TimeEntry `json:"timeEntries" db:"time_entries"` // O2M
+	timeEntries *[]TimeEntry `json:"-" db:"time_entries"` // O2M
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (s *Activity) TimeEntries() *[]TimeEntry {
+	return s.timeEntries
+}
+
+func (s *Activity) SetTimeEntries(f *[]TimeEntry) {
+	s.timeEntries = f
 }
 
 // ActivityCreateParams represents insert params for 'public.activities'
@@ -44,6 +52,7 @@ type ActivitySelectConfig struct {
 	orderBy string
 	joins   ActivityJoins
 }
+
 type ActivitySelectConfigOption func(*ActivitySelectConfig)
 
 // WithActivityLimit limits row selection.

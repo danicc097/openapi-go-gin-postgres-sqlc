@@ -18,9 +18,17 @@ type WorkItemType struct {
 	Description    string `json:"description" db:"description" required:"true"`          // description
 	Color          string `json:"color" db:"color" required:"true"`                      // color
 
-	WorkItem *WorkItem `json:"workItem" db:"work_item"` // O2O
+	workItem *WorkItem `json:"-" db:"work_item"` // O2O
 	// xo fields
 	_exists, _deleted bool
+}
+
+func (s *WorkItemType) WorkItem() *WorkItem {
+	return s.workItem
+}
+
+func (s *WorkItemType) SetWorkItem(f *WorkItem) {
+	s.workItem = f
 }
 
 // WorkItemTypeCreateParams represents insert params for 'public.work_item_types'
@@ -44,6 +52,7 @@ type WorkItemTypeSelectConfig struct {
 	orderBy string
 	joins   WorkItemTypeJoins
 }
+
 type WorkItemTypeSelectConfigOption func(*WorkItemTypeSelectConfig)
 
 // WithWorkItemTypeLimit limits row selection.

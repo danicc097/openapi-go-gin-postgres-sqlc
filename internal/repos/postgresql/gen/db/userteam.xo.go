@@ -37,6 +37,7 @@ type UserTeamSelectConfig struct {
 	orderBy string
 	joins   UserTeamJoins
 }
+
 type UserTeamSelectConfigOption func(*UserTeamSelectConfig)
 
 // WithUserTeamLimit limits row selection.
