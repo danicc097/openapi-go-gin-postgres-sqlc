@@ -77,9 +77,9 @@ type MiddlewareFunc func(c *gin.Context)
 // AdminPing operation with its own middleware.
 func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 
-	c.Set(externalRef0.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{})
 
-	c.Set(externalRef0.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.AdminPing(c)
 }
@@ -128,9 +128,9 @@ func (siw *ServerInterfaceWrapper) GetProject(c *gin.Context) {
 		return
 	}
 
-	c.Set(externalRef0.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{})
 
-	c.Set(externalRef0.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.GetProject(c, id)
 }
@@ -149,9 +149,9 @@ func (siw *ServerInterfaceWrapper) GetProjectBoard(c *gin.Context) {
 		return
 	}
 
-	c.Set(externalRef0.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{})
 
-	c.Set(externalRef0.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.GetProjectBoard(c, id)
 }
@@ -170,9 +170,9 @@ func (siw *ServerInterfaceWrapper) GetProjectConfig(c *gin.Context) {
 		return
 	}
 
-	c.Set(externalRef0.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{})
 
-	c.Set(externalRef0.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.GetProjectConfig(c, id)
 }
@@ -191,9 +191,9 @@ func (siw *ServerInterfaceWrapper) UpdateProjectConfig(c *gin.Context) {
 		return
 	}
 
-	c.Set(externalRef0.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{})
 
-	c.Set(externalRef0.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.UpdateProjectConfig(c, id)
 }
@@ -212,9 +212,9 @@ func (siw *ServerInterfaceWrapper) InitializeProject(c *gin.Context) {
 		return
 	}
 
-	c.Set(externalRef0.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{})
 
-	c.Set(externalRef0.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.InitializeProject(c, id)
 }
@@ -233,9 +233,9 @@ func (siw *ServerInterfaceWrapper) GetProjectWorkitems(c *gin.Context) {
 		return
 	}
 
-	c.Set(externalRef0.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{})
 
-	c.Set(externalRef0.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params externalRef0.GetProjectWorkitemsParams
@@ -262,9 +262,9 @@ func (siw *ServerInterfaceWrapper) GetProjectWorkitems(c *gin.Context) {
 // GetCurrentUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
 
-	c.Set(externalRef0.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{})
 
-	c.Set(externalRef0.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.GetCurrentUser(c)
 }
@@ -283,9 +283,9 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	c.Set(externalRef0.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{})
 
-	c.Set(externalRef0.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.DeleteUser(c, id)
 }
@@ -304,9 +304,9 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	c.Set(externalRef0.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{})
 
-	c.Set(externalRef0.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.UpdateUser(c, id)
 }
@@ -325,9 +325,9 @@ func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
 		return
 	}
 
-	c.Set(externalRef0.Bearer_authScopes, []string{""})
+	c.Set(externalRef0.Bearer_authScopes, []string{})
 
-	c.Set(externalRef0.Api_keyScopes, []string{""})
+	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.UpdateUserAuthorization(c, id)
 }

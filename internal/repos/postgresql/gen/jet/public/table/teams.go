@@ -16,7 +16,7 @@ var Teams = newTeamsTable("public", "teams", "")
 type teamsTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	TeamID      postgres.ColumnInteger
 	ProjectID   postgres.ColumnInteger
 	Name        postgres.ColumnString

@@ -360,6 +360,14 @@ func cloneBytes(b []byte) []byte {
 
 func concat(stringList ...string) string {
 	var b strings.Builder
+
+	var length int
+	for i := 0; i < len(stringList); i++ {
+		length += len(stringList[i])
+	}
+
+	b.Grow(length)
+
 	for _, str := range stringList {
 		b.WriteString(str)
 	}

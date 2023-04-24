@@ -16,7 +16,7 @@ var Project2WorkItems = newProject2WorkItemsTable("public", "project_2_work_item
 type project2WorkItemsTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	WorkItemID            postgres.ColumnInteger
 	CustomDateForProject2 postgres.ColumnTimestampz
 

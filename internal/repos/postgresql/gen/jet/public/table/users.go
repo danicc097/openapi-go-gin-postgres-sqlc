@@ -16,7 +16,7 @@ var Users = newUsersTable("public", "users", "")
 type usersTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	UserID                   postgres.ColumnString
 	Username                 postgres.ColumnString
 	Email                    postgres.ColumnString
@@ -88,7 +88,7 @@ func newUsersTableImpl(schemaName, tableName, alias string) usersTable {
 		UpdatedAtColumn                = postgres.TimestampzColumn("updated_at")
 		DeletedAtColumn                = postgres.TimestampzColumn("deleted_at")
 		allColumns                     = postgres.ColumnList{UserIDColumn, UsernameColumn, EmailColumn, FirstNameColumn, LastNameColumn, FullNameColumn, ExternalIDColumn, APIKeyIDColumn, ScopesColumn, RoleRankColumn, HasPersonalNotificationsColumn, HasGlobalNotificationsColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
-		mutableColumns                 = postgres.ColumnList{UsernameColumn, EmailColumn, FirstNameColumn, LastNameColumn, FullNameColumn, ExternalIDColumn, APIKeyIDColumn, ScopesColumn, RoleRankColumn, HasPersonalNotificationsColumn, HasGlobalNotificationsColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
+		mutableColumns                 = postgres.ColumnList{UsernameColumn, EmailColumn, FirstNameColumn, LastNameColumn, ExternalIDColumn, APIKeyIDColumn, ScopesColumn, RoleRankColumn, HasPersonalNotificationsColumn, HasGlobalNotificationsColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
 	)
 
 	return usersTable{

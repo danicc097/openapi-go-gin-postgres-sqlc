@@ -201,9 +201,12 @@ func Generate(spec *openapi3.T, opts Configuration) (string, error) {
 
 	var strictServerOut string
 	if opts.Generate.Strict {
-		responses, err := GenerateResponseDefinitions("", spec.Components.Responses)
-		if err != nil {
-			return "", fmt.Errorf("error generation response definitions for schema: %w", err)
+		var responses []ResponseDefinition
+		if spec.Components != nil {
+			responses, err = GenerateResponseDefinitions("", spec.Components.Responses)
+			if err != nil {
+				return "", fmt.Errorf("error generation response definitions for schema: %w", err)
+			}
 		}
 		strictServerResponses, err := GenerateStrictResponses(t, responses)
 		if err != nil {
@@ -339,28 +342,31 @@ func Generate(spec *openapi3.T, opts Configuration) (string, error) {
 }
 
 func GenerateTypeDefinitions(t *template.Template, swagger *openapi3.T, ops []OperationDefinition, excludeSchemas []string) (string, error) {
-	schemaTypes, err := GenerateTypesForSchemas(t, swagger.Components.Schemas, excludeSchemas)
-	if err != nil {
-		return "", fmt.Errorf("error generating Go types for component schemas: %w", err)
-	}
+	var allTypes []TypeDefinition
+	if swagger.Components != nil {
+		schemaTypes, err := GenerateTypesForSchemas(t, swagger.Components.Schemas, excludeSchemas)
+		if err != nil {
+			return "", fmt.Errorf("error generating Go types for component schemas: %w", err)
+		}
 
-	paramTypes, err := GenerateTypesForParameters(t, swagger.Components.Parameters)
-	if err != nil {
-		return "", fmt.Errorf("error generating Go types for component parameters: %w", err)
-	}
-	allTypes := append(schemaTypes, paramTypes...)
+		paramTypes, err := GenerateTypesForParameters(t, swagger.Components.Parameters)
+		if err != nil {
+			return "", fmt.Errorf("error generating Go types for component parameters: %w", err)
+		}
+		allTypes = append(schemaTypes, paramTypes...)
 
-	responseTypes, err := GenerateTypesForResponses(t, swagger.Components.Responses)
-	if err != nil {
-		return "", fmt.Errorf("error generating Go types for component responses: %w", err)
-	}
-	allTypes = append(allTypes, responseTypes...)
+		responseTypes, err := GenerateTypesForResponses(t, swagger.Components.Responses)
+		if err != nil {
+			return "", fmt.Errorf("error generating Go types for component responses: %w", err)
+		}
+		allTypes = append(allTypes, responseTypes...)
 
-	bodyTypes, err := GenerateTypesForRequestBodies(t, swagger.Components.RequestBodies)
-	if err != nil {
-		return "", fmt.Errorf("error generating Go types for component request bodies: %w", err)
+		bodyTypes, err := GenerateTypesForRequestBodies(t, swagger.Components.RequestBodies)
+		if err != nil {
+			return "", fmt.Errorf("error generating Go types for component request bodies: %w", err)
+		}
+		allTypes = append(allTypes, bodyTypes...)
 	}
-	allTypes = append(allTypes, bodyTypes...)
 
 	// Go through all operations, and add their types to allTypes, so that we can
 	// scan all of them for enums. Operation definitions are handled differently
@@ -396,7 +402,12 @@ func GenerateTypeDefinitions(t *template.Template, swagger *openapi3.T, ops []Op
 		return "", fmt.Errorf("error generating union boilerplate: %w", err)
 	}
 
-	typeDefinitions := strings.Join([]string{enumsOut, typesOut, operationsOut, allOfBoilerplate, unionBoilerplate}, "")
+	unionAndAdditionalBoilerplate, err := GenerateUnionAndAdditionalProopertiesBoilerplate(t, allTypes)
+	if err != nil {
+		return "", fmt.Errorf("error generating boilerplate for union types with additionalProperties: %w", err)
+	}
+
+	typeDefinitions := strings.Join([]string{enumsOut, typesOut, operationsOut, allOfBoilerplate, unionBoilerplate, unionAndAdditionalBoilerplate}, "")
 	return typeDefinitions, nil
 }
 
@@ -778,6 +789,26 @@ func GenerateUnionBoilerplate(t *template.Template, typeDefs []TypeDefinition) (
 	return GenerateTemplates([]string{"union.tmpl"}, t, context)
 }
 
+func GenerateUnionAndAdditionalProopertiesBoilerplate(t *template.Template, typeDefs []TypeDefinition) (string, error) {
+	var filteredTypes []TypeDefinition
+	for _, t := range typeDefs {
+		if len(t.Schema.UnionElements) != 0 && t.Schema.HasAdditionalProperties {
+			filteredTypes = append(filteredTypes, t)
+		}
+	}
+
+	if len(filteredTypes) == 0 {
+		return "", nil
+	}
+	context := struct {
+		Types []TypeDefinition
+	}{
+		Types: filteredTypes,
+	}
+
+	return GenerateTemplates([]string{"union-and-additional-properties.tmpl"}, t, context)
+}
+
 // SanitizeCode runs sanitizers across the generated Go code to ensure the
 // generated code will be able to compile.
 func SanitizeCode(goCode string) string {
@@ -868,6 +899,10 @@ func OperationImports(ops []OperationDefinition) (map[string]goImport, error) {
 
 func GetTypeDefinitionsImports(swagger *openapi3.T, excludeSchemas []string) (map[string]goImport, error) {
 	res := map[string]goImport{}
+	if swagger.Components == nil {
+		return res, nil
+	}
+
 	schemaImports, err := GetSchemaImports(swagger.Components.Schemas, excludeSchemas)
 	if err != nil {
 		return nil, err

@@ -16,7 +16,7 @@ var WorkItemMember = newWorkItemMemberTable("public", "work_item_member", "")
 type workItemMemberTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	WorkItemID postgres.ColumnInteger
 	Member     postgres.ColumnString
 	Role       postgres.ColumnString

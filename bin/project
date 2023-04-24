@@ -470,12 +470,12 @@ x.gen.client-server() {
     go build -o oapi-codegen cmd/oapi-codegen/main.go
 
     echo "Running generation"
-    local paths=".openapi.paths.yaml"
-    local types=".openapi.types.yaml"
+    paths=".openapi.paths.yaml"
+    types=".openapi.types.yaml"
 
     # hack to get separate types generation
-    sed "s/\$ref: '\#\//\$ref: '$types\#\//g" $SPEC >$paths
-    yq e 'del(.components)' -i $paths
+    sed "s/\$ref: '\#\//\$ref: '$types\#\//g" $SPEC >"$paths"
+    # yq e 'del(.components)' -i "$paths" # dont delete since recent oapi-codegen does some checks even we are not generating types
     cp $SPEC $types
 
     ./oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC" || err "Failed types generation"

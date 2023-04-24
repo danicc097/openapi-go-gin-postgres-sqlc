@@ -16,7 +16,7 @@ var SchemaMigrations = newSchemaMigrationsTable("public", "schema_migrations", "
 type schemaMigrationsTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	Version postgres.ColumnInteger
 	Dirty   postgres.ColumnBool
 

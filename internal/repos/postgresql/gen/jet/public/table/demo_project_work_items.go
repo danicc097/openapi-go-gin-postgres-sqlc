@@ -16,7 +16,7 @@ var DemoProjectWorkItems = newDemoProjectWorkItemsTable("public", "demo_project_
 type demoProjectWorkItemsTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	WorkItemID    postgres.ColumnInteger
 	Ref           postgres.ColumnString
 	Line          postgres.ColumnString

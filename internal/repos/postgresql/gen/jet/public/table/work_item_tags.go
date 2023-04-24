@@ -16,7 +16,7 @@ var WorkItemTags = newWorkItemTagsTable("public", "work_item_tags", "")
 type workItemTagsTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	WorkItemTagID postgres.ColumnInteger
 	ProjectID     postgres.ColumnInteger
 	Name          postgres.ColumnString

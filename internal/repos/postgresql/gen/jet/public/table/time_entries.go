@@ -16,7 +16,7 @@ var TimeEntries = newTimeEntriesTable("public", "time_entries", "")
 type timeEntriesTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	TimeEntryID     postgres.ColumnInteger
 	WorkItemID      postgres.ColumnInteger
 	ActivityID      postgres.ColumnInteger

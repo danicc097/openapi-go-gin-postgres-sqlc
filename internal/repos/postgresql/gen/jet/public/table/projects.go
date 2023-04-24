@@ -16,7 +16,7 @@ var Projects = newProjectsTable("public", "projects", "")
 type projectsTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	ProjectID          postgres.ColumnInteger
 	Name               postgres.ColumnString
 	Description        postgres.ColumnString

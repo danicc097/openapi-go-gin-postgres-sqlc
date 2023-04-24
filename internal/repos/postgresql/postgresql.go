@@ -88,7 +88,7 @@ func New(logger *zap.Logger) (*pgxpool.Pool, *sql.DB, error) {
 // See https://pkg.go.dev/github.com/jackc/pgx/v5@v5.3.1/pgtype#hdr-New_PostgreSQL_Type_Support
 func registerDataTypes(ctx context.Context, conn *pgx.Conn, typeNames []string) error {
 	for _, typeName := range typeNames {
-		fmt.Printf("registering %v\n", typeName)
+		// fmt.Printf("registering %v\n", typeName)
 		dataType, err := conn.LoadType(ctx, typeName)
 		if err != nil {
 			return err
