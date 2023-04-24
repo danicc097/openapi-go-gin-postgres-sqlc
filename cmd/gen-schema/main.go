@@ -12,11 +12,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/swaggest/jsonschema-go"
-
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/postgen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
+	"github.com/google/uuid"
+	"github.com/swaggest/jsonschema-go"
 	"github.com/swaggest/openapi-go/openapi3"
 )
 
@@ -49,13 +50,22 @@ func main() {
 	})
 
 	// see https://github.com/swaggest/openapi-go/discussions/62#discussioncomment-5710581
-	reflector.DefaultOptions = append(reflector.DefaultOptions, jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
-		if params.Field.Tag.Get("openapi-go") == "ignore" {
-			return jsonschema.ErrSkipProperty
-		}
+	reflector.DefaultOptions = append(reflector.DefaultOptions,
+		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
+			if params.Field.Tag.Get("openapi-go") == "ignore" {
+				return jsonschema.ErrSkipProperty
+			}
 
-		return nil
-	}))
+			return nil
+		}),
+		jsonschema.InterceptType(func(v reflect.Value, s *jsonschema.Schema) (stop bool, err error) {
+			if s.ReflectType == reflect.TypeOf(uuid.New()) {
+				s.Type = &jsonschema.Type{SimpleTypes: pointers.New(jsonschema.String)}
+				s.Items = &jsonschema.Items{}
+			}
+			return false, nil
+		}),
+	)
 
 	for i, sn := range structNames {
 		dummyOp := openapi3.Operation{}

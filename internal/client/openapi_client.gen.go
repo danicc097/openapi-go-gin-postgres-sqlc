@@ -233,7 +233,7 @@ type DbTimeEntry struct {
 	Start           time.Time `json:"start"`
 	TeamID          *int      `json:"teamID"`
 	TimeEntryID     int       `json:"timeEntryID"`
-	UserID          *UuidUUID `json:"userID"`
+	UserID          UuidUUID  `json:"userID"`
 	WorkItemID      *int      `json:"workItemID"`
 }
 
@@ -247,7 +247,7 @@ type DbUser struct {
 	HasGlobalNotifications   bool       `json:"hasGlobalNotifications"`
 	HasPersonalNotifications bool       `json:"hasPersonalNotifications"`
 	LastName                 *string    `json:"lastName"`
-	UserID                   *UuidUUID  `json:"userID"`
+	UserID                   UuidUUID   `json:"userID"`
 	Username                 string     `json:"username"`
 }
 
@@ -255,7 +255,7 @@ type DbUser struct {
 type DbUserAPIKey struct {
 	ApiKey    string    `json:"apiKey"`
 	ExpiresOn time.Time `json:"expiresOn"`
-	UserID    *UuidUUID `json:"userID"`
+	UserID    UuidUUID  `json:"userID"`
 }
 
 // DbWorkItem defines the model for DbWorkItem.
@@ -279,7 +279,7 @@ type DbWorkItemComment struct {
 	CreatedAt         time.Time `json:"createdAt"`
 	Message           string    `json:"message"`
 	UpdatedAt         time.Time `json:"updatedAt"`
-	UserID            *UuidUUID `json:"userID"`
+	UserID            UuidUUID  `json:"userID"`
 	WorkItemCommentID int       `json:"workItemCommentID"`
 	WorkItemID        int       `json:"workItemID"`
 }
@@ -438,7 +438,7 @@ type UserResponse struct {
 }
 
 // UuidUUID defines the model for UuidUUID.
-type UuidUUID = []int
+type UuidUUID = string
 
 // ValidationError defines the model for ValidationError.
 type ValidationError struct {

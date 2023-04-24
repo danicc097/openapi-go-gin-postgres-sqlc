@@ -10,13 +10,7 @@ import { faker } from '@faker-js/faker'
 import { Project, Role, Scope } from '.././model'
 
 export const getGetCurrentUserMock = () => ({
-  apiKey: {
-    apiKey: faker.random.word(),
-    expiresOn: (() => faker.date.past())(),
-    userID: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-      faker.datatype.number({ min: 0, max: undefined }),
-    ),
-  },
+  apiKey: { apiKey: faker.random.word(), expiresOn: (() => faker.date.past())(), userID: faker.random.word() },
   projects: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     createdAt: (() => faker.date.past())(),
     description: faker.random.word(),
@@ -43,21 +37,13 @@ export const getGetCurrentUserMock = () => ({
     hasGlobalNotifications: faker.datatype.boolean(),
     hasPersonalNotifications: faker.datatype.boolean(),
     lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-    userID: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-      faker.datatype.number({ min: 0, max: undefined }),
-    ),
+    userID: faker.random.word(),
     username: faker.random.word(),
   },
 })
 
 export const getUpdateUserMock = () => ({
-  apiKey: {
-    apiKey: faker.random.word(),
-    expiresOn: (() => faker.date.past())(),
-    userID: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-      faker.datatype.number({ min: 0, max: undefined }),
-    ),
-  },
+  apiKey: { apiKey: faker.random.word(), expiresOn: (() => faker.date.past())(), userID: faker.random.word() },
   projects: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     createdAt: (() => faker.date.past())(),
     description: faker.random.word(),
@@ -84,9 +70,7 @@ export const getUpdateUserMock = () => ({
     hasGlobalNotifications: faker.datatype.boolean(),
     hasPersonalNotifications: faker.datatype.boolean(),
     lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-    userID: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-      faker.datatype.number({ min: 0, max: undefined }),
-    ),
+    userID: faker.random.word(),
     username: faker.random.word(),
   },
 })

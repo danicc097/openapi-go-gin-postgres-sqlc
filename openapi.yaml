@@ -760,9 +760,9 @@ components:
         user:
           $ref: '#/components/schemas/DbUser'
       required:
+        - user
         - role
         - scopes
-        - user
       type: object
       x-postgen-struct: RestUserResponse
     HTTPValidationError:
@@ -869,11 +869,7 @@ components:
           title: Error Type
           type: string
     UuidUUID: # Generated from internal structs. DO NOT EDIT.
-      items:
-        minimum: 0
-        type: integer
-      nullable: true
-      type: array
+      type: string
     PgtypeJSONB: # Generated from internal structs. DO NOT EDIT.
       type: object
     demoProjectKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.

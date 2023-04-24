@@ -10,7 +10,7 @@
  * Existing projects
  */
 export type Project = 'demoProject' | 'demoProject2'
-export type UuidUUID = number[] | null
+export type UuidUUID = string
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 export type Scope =
   | 'test-scope'

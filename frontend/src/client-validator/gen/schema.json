@@ -642,9 +642,9 @@
         }
       },
       "required": [
+        "user",
         "role",
-        "scopes",
-        "user"
+        "scopes"
       ],
       "type": "object",
       "x-postgen-struct": "RestUserResponse",
@@ -775,14 +775,7 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "UuidUUID": {
-      "items": {
-        "minimum": 0,
-        "type": "integer"
-      },
-      "type": [
-        "array",
-        "null"
-      ],
+      "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "PgtypeJSONB": {

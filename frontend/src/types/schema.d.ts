@@ -278,7 +278,7 @@ export interface components {
       /** Error Type */
       type: string;
     };
-    UuidUUID: (number)[] | null;
+    UuidUUID: string;
     PgtypeJSONB: Record<string, never>;
     /**
      * @description Kanban columns for project demoProject 

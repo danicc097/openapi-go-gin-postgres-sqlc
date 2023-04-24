@@ -64,9 +64,7 @@ export const getGetProjectWorkitemsMock = () =>
         hasGlobalNotifications: faker.datatype.boolean(),
         hasPersonalNotifications: faker.datatype.boolean(),
         lastName: faker.helpers.arrayElement([faker.random.word(), null]),
-        userID: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-          faker.datatype.number({ min: 0, max: undefined }),
-        ),
+        userID: faker.random.word(),
         username: faker.random.word(),
       })),
       metadata: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
@@ -81,9 +79,7 @@ export const getGetProjectWorkitemsMock = () =>
         start: (() => faker.date.past())(),
         teamID: faker.helpers.arrayElement([faker.datatype.number({ min: undefined, max: undefined }), null]),
         timeEntryID: faker.datatype.number({ min: undefined, max: undefined }),
-        userID: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-          faker.datatype.number({ min: 0, max: undefined }),
-        ),
+        userID: faker.random.word(),
         workItemID: faker.helpers.arrayElement([faker.datatype.number({ min: undefined, max: undefined }), null]),
       })),
       title: faker.random.word(),
@@ -92,9 +88,7 @@ export const getGetProjectWorkitemsMock = () =>
         createdAt: (() => faker.date.past())(),
         message: faker.random.word(),
         updatedAt: (() => faker.date.past())(),
-        userID: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-          faker.datatype.number({ min: 0, max: undefined }),
-        ),
+        userID: faker.random.word(),
         workItemCommentID: faker.datatype.number({ min: undefined, max: undefined }),
         workItemID: faker.datatype.number({ min: undefined, max: undefined }),
       })),
