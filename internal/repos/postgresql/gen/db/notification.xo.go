@@ -26,7 +26,7 @@ type Notification struct {
 	Receiver         *uuid.UUID       `json:"receiver" db:"receiver" required:"true"`                                                              // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
 
-	UserNotification *UserNotification `json:"userNotification" db:"user_notification"` // O2O
+	UserNotification *UserNotification `json:"-" db:"user_notification" openapi-go:"ignore"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }

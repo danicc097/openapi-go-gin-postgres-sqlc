@@ -46,7 +46,7 @@ export default function Navbar() {
 
   useEffect(() => {
     if (user && notify) {
-      showTestNotification(user.email)
+      showTestNotification(user.user.email)
       setNotify(false)
     }
   }, [user, showTestNotification, notify])
@@ -71,9 +71,9 @@ export default function Navbar() {
     <EuiHeaderSectionItemButton
       aria-label="User avatar"
       data-test-subj="avatar"
-      onClick={() => user?.email && toggleAvatarMenu()}
+      onClick={() => user?.user.email && toggleAvatarMenu()}
     >
-      {user?.email ? (
+      {user?.user.email ? (
         <UserAvatar size="l" user={user} initialsLength={2} />
       ) : (
         <Link to="/login">
@@ -84,7 +84,7 @@ export default function Navbar() {
   )
 
   const renderAvatarMenu = () => {
-    if (!user?.email) return null
+    if (!user?.user.email) return null
     return (
       <AvatarMenu>
         <EuiFlexGroup
@@ -106,9 +106,9 @@ export default function Navbar() {
                 // alignItems="center"
               >
                 <EuiFlexItem>
-                  <strong>{user?.username}</strong>
+                  <strong>{user?.user.username}</strong>
                 </EuiFlexItem>
-                <EuiFlexItem>{_.truncate(user?.email, { length: 25 })}</EuiFlexItem>
+                <EuiFlexItem>{_.truncate(user?.user.email, { length: 25 })}</EuiFlexItem>
               </EuiFlexGroup>
             </EuiFlexGroup>
           </EuiFlexItem>
@@ -179,7 +179,7 @@ export default function Navbar() {
       sections={[
         {
           items: [
-            user?.userID !== '' ? <CollapsibleNav user={user} /> : null,
+            user?.user.userID !== '' ? <CollapsibleNav user={user} /> : null,
 
             <LogoSection href="/" key={0}>
               <EuiIcon type={logo} size="l" />

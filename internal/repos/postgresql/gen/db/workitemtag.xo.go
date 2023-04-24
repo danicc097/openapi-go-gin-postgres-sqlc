@@ -18,7 +18,7 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description" required:"true"`        // description
 	Color         string `json:"color" db:"color" required:"true"`                    // color
 
-	WorkItems *[]WorkItem `json:"workItems" db:"work_items"` // M2M
+	WorkItems *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
 	// xo fields
 	_exists, _deleted bool
 }

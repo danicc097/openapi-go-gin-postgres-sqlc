@@ -91,12 +91,12 @@ type OperationContext struct {
 // SetupRequest sets up operation parameters.
 func (r *Reflector) SetupRequest(oc OperationContext) error {
 	return joinErrors(
-		r.parseParametersIn(oc, ParameterInQuery, oc.ReqQueryMapping),
-		r.parseParametersIn(oc, ParameterInPath, oc.ReqPathMapping),
-		r.parseParametersIn(oc, ParameterInCookie, oc.ReqCookieMapping),
-		r.parseParametersIn(oc, ParameterInHeader, oc.ReqHeaderMapping),
-		r.parseRequestBody(oc, tagJSON, mimeJSON, oc.HTTPMethod, nil),
-		r.parseRequestBody(oc, tagFormData, mimeFormUrlencoded, oc.HTTPMethod, oc.ReqFormDataMapping),
+		r.parseParametersIn(oc, oc.ReqQueryMapping, ParameterInQuery, tagForm),
+		r.parseParametersIn(oc, oc.ReqPathMapping, ParameterInPath),
+		r.parseParametersIn(oc, oc.ReqCookieMapping, ParameterInCookie),
+		r.parseParametersIn(oc, oc.ReqHeaderMapping, ParameterInHeader),
+		r.parseRequestBody(oc, mimeJSON, oc.HTTPMethod, nil, tagJSON),
+		r.parseRequestBody(oc, mimeFormUrlencoded, oc.HTTPMethod, oc.ReqFormDataMapping, tagFormData, tagForm),
 	)
 }
 
@@ -112,6 +112,7 @@ func (r *Reflector) SetRequest(o *Operation, input interface{}, httpMethod strin
 const (
 	tagJSON            = "json"
 	tagFormData        = "formData"
+	tagForm            = "form"
 	mimeJSON           = "application/json"
 	mimeFormUrlencoded = "application/x-www-form-urlencoded"
 	mimeMultipart      = "multipart/form-data"
@@ -133,7 +134,7 @@ type RequestJSONBodyEnforcer interface {
 }
 
 func (r *Reflector) parseRequestBody(
-	oc OperationContext, tag, mime string, httpMethod string, mapping map[string]string,
+	oc OperationContext, mime string, httpMethod string, mapping map[string]string, tag string, additionalTags ...string,
 ) error {
 	o := oc.Operation
 	input := oc.Input
@@ -151,6 +152,13 @@ func (r *Reflector) parseRequestBody(
 	}
 
 	hasTaggedFields := refl.HasTaggedFields(input, tag)
+	for _, t := range additionalTags {
+		if hasTaggedFields {
+			break
+		}
+
+		hasTaggedFields = refl.HasTaggedFields(input, t)
+	}
 
 	// Form data can not have map or array as body.
 	if !hasTaggedFields && len(mapping) == 0 && tag != tagJSON {
@@ -179,9 +187,9 @@ func (r *Reflector) parseRequestBody(
 		jsonschema.DefinitionsPrefix("#/components/schemas/"+definitionPrefix),
 		jsonschema.RootRef,
 		jsonschema.PropertyNameMapping(mapping),
-		jsonschema.PropertyNameTag(tag),
-		jsonschema.InterceptType(func(v reflect.Value, s *jsonschema.Schema) (bool, error) {
-			vv := v.Interface()
+		jsonschema.PropertyNameTag(tag, additionalTags...),
+		jsonschema.InterceptSchema(func(params jsonschema.InterceptSchemaParams) (stop bool, err error) {
+			vv := params.Value.Interface()
 
 			found := false
 			if _, ok := vv.(*multipart.File); ok {
@@ -193,8 +201,8 @@ func (r *Reflector) parseRequestBody(
 			}
 
 			if found {
-				s.AddType(jsonschema.String)
-				s.WithFormat("binary")
+				params.Schema.AddType(jsonschema.String)
+				params.Schema.WithFormat("binary")
 
 				hasFileUpload = true
 
@@ -240,7 +248,7 @@ const (
 )
 
 func (r *Reflector) parseParametersIn(
-	oc OperationContext, in ParameterIn, propertyMapping map[string]string,
+	oc OperationContext, propertyMapping map[string]string, in ParameterIn, additionalTags ...string,
 ) error {
 	o := oc.Operation
 	input := oc.Input
@@ -254,12 +262,20 @@ func (r *Reflector) parseParametersIn(
 		jsonschema.DefinitionsPrefix("#/components/schemas/"),
 		jsonschema.CollectDefinitions(r.collectDefinition),
 		jsonschema.PropertyNameMapping(propertyMapping),
-		jsonschema.PropertyNameTag(string(in)),
+		jsonschema.PropertyNameTag(string(in), additionalTags...),
 		func(rc *jsonschema.ReflectContext) {
 			rc.UnnamedFieldWithTag = true
 		},
 		jsonschema.SkipEmbeddedMapsSlices,
-		jsonschema.InterceptProperty(func(name string, field reflect.StructField, propertySchema *jsonschema.Schema) error {
+		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
+			if !params.Processed {
+				return nil
+			}
+
+			name := params.Name
+			propertySchema := params.PropertySchema
+			field := params.Field
+
 			s := SchemaOrRef{}
 			s.FromJSONSchema(propertySchema.ToSchemaOrBool())
 
@@ -380,7 +396,15 @@ func (r *Reflector) parseResponseHeader(resp *Response, oc OperationContext) err
 		jsonschema.InlineRefs,
 		jsonschema.PropertyNameMapping(mapping),
 		jsonschema.PropertyNameTag("header"),
-		jsonschema.InterceptProperty(func(name string, field reflect.StructField, propertySchema *jsonschema.Schema) error {
+		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
+			if !params.Processed {
+				return nil
+			}
+
+			propertySchema := params.PropertySchema
+			field := params.Field
+			name := params.Name
+
 			s := SchemaOrRef{}
 			s.FromJSONSchema(propertySchema.ToSchemaOrBool())
 
@@ -465,6 +489,10 @@ func (r *Reflector) hasJSONBody(output interface{}) (bool, error) {
 
 // SetupResponse sets up operation response.
 func (r *Reflector) SetupResponse(oc OperationContext) error {
+	if oc.HTTPStatus == 0 {
+		oc.HTTPStatus = 200
+	}
+
 	httpStatus := strconv.Itoa(oc.HTTPStatus)
 	resp := oc.Operation.Responses.MapOfResponseOrRefValues[httpStatus].Response
 

@@ -16,7 +16,7 @@ var Notifications = newNotificationsTable("public", "notifications", "")
 type notificationsTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	NotificationID   postgres.ColumnInteger
 	ReceiverRank     postgres.ColumnInteger
 	Title            postgres.ColumnString

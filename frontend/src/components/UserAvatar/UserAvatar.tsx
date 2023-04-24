@@ -19,7 +19,7 @@ export default function UserAvatar({ user, size = 'l', initialsLength = 2, type 
       fontWeight: 'bold',
     },
     type: type,
-    color: generateColor(user?.email) || '#1E90FF',
+    color: generateColor(user?.user.email) || '#1E90FF',
     initialsLength,
   }
 

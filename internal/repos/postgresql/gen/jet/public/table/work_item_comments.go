@@ -16,7 +16,7 @@ var WorkItemComments = newWorkItemCommentsTable("public", "work_item_comments", 
 type workItemCommentsTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	WorkItemCommentID postgres.ColumnInteger
 	WorkItemID        postgres.ColumnInteger
 	UserID            postgres.ColumnString

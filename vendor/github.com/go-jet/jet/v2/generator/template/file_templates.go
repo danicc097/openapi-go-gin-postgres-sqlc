@@ -29,10 +29,10 @@ var {{tableTemplate.InstanceName}} = new{{tableTemplate.TypeName}}("{{schemaName
 type {{structImplName}} struct {
 	{{dialect.PackageName}}.Table
 	
-	//Columns
+	// Columns
 {{- range $i, $c := .Columns}}
 {{- $field := columnField $c}}
-	{{$field.Name}} {{dialect.PackageName}}.Column{{$field.Type}}
+	{{$field.Name}} {{dialect.PackageName}}.Column{{$field.Type}} {{- if $c.Comment }} // {{$c.Comment}} {{end}}
 {{- end}}
 
 	AllColumns     {{dialect.PackageName}}.ColumnList
@@ -97,6 +97,17 @@ func new{{tableTemplate.TypeName}}Impl(schemaName, tableName, alias string) {{st
 }
 `
 
+var tableSqlBuilderSetSchemaTemplate = `package {{package}}
+
+// UseSchema sets a new schema name for all generated {{type}} SQL builder types. It is recommended to invoke 
+// this method only once at the beginning of the program.
+func UseSchema(schema string) {
+{{- range .}}
+	{{ .InstanceName }} = {{ .InstanceName }}.FromSchema(schema)
+{{- end}}
+}
+`
+
 var tableModelFileTemplate = `package {{package}}
 
 {{ with modelImports }}
@@ -111,7 +122,7 @@ import (
 type {{$modelTableTemplate.TypeName}} struct {
 {{- range .Columns}}
 {{- $field := structField .}}
-	{{$field.Name}} {{$field.Type.Name}} ` + "{{$field.TagsString}}" + `
+	{{$field.Name}} {{$field.Type.Name}} ` + "{{$field.TagsString}}" + ` {{- if .Comment }} // {{.Comment}} {{end}}
 {{- end}}
 }
 

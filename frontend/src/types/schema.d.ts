@@ -82,7 +82,6 @@ export interface components {
       isProductive: boolean;
       name: string;
       projectID: number;
-      timeEntries?: (components["schemas"]["DbTimeEntry"])[] | null;
     };
     DbKanbanStep: {
       color: string;
@@ -94,19 +93,13 @@ export interface components {
       timeTrackable: boolean;
     };
     DbProject: {
-      activities?: (components["schemas"]["DbActivity"])[] | null;
       /** Format: date-time */
       createdAt: string;
       description: string;
-      initialized: boolean;
-      kanbanSteps?: (components["schemas"]["DbKanbanStep"])[] | null;
       name: components["schemas"]["Project"];
       projectID: number;
-      teams?: (components["schemas"]["DbTeam"])[] | null;
       /** Format: date-time */
       updatedAt: string;
-      workItemTags?: (components["schemas"]["DbWorkItemTag"])[] | null;
-      workItemTypes?: (components["schemas"]["DbWorkItemType"])[] | null;
     };
     DbTeam: {
       /** Format: date-time */
@@ -115,10 +108,8 @@ export interface components {
       name: string;
       projectID: number;
       teamID: number;
-      timeEntries?: (components["schemas"]["DbTimeEntry"])[] | null;
       /** Format: date-time */
       updatedAt: string;
-      users?: (components["schemas"]["DbUser"])[] | null;
     };
     DbWorkItemTag: {
       color: string;
@@ -126,32 +117,28 @@ export interface components {
       name: string;
       projectID: number;
       workItemTagID: number;
-      workItems?: (components["schemas"]["DbWorkItem"])[] | null;
     };
     DbWorkItemType: {
       color: string;
       description: string;
       name: string;
       projectID: number;
-      workItem?: components["schemas"]["DbWorkItem"];
       workItemTypeID: number;
-    } | null;
+    };
     DbDemoProjectWorkItem: {
       /** Format: date-time */
       lastMessageAt: string;
       line: string;
       ref: string;
       reopened: boolean;
-      workItem?: components["schemas"]["DbWorkItem"];
       workItemID: number;
-    } | null;
+    };
     DbUserAPIKey: {
       apiKey: string;
       /** Format: date-time */
       expiresOn: string;
-      user?: components["schemas"]["DbUser"];
       userID: components["schemas"]["UuidUUID"];
-    } | null;
+    };
     DbUser: {
       /** Format: date-time */
       createdAt: string;
@@ -163,12 +150,8 @@ export interface components {
       hasGlobalNotifications: boolean;
       hasPersonalNotifications: boolean;
       lastName: string | null;
-      teams?: (components["schemas"]["DbTeam"])[] | null;
-      timeEntries?: (components["schemas"]["DbTimeEntry"])[] | null;
-      userAPIKey?: components["schemas"]["DbUserAPIKey"];
       userID: components["schemas"]["UuidUUID"];
       username: string;
-      workItems?: (components["schemas"]["DbWorkItem"])[] | null;
     };
     DbTimeEntry: {
       activityID: number;
@@ -207,7 +190,6 @@ export interface components {
       kanbanStepID: number;
       members?: (components["schemas"]["DbUser"])[] | null;
       metadata: (number)[] | null;
-      project2WorkItem?: components["schemas"]["DbProject2WorkItem"];
       /** Format: date-time */
       targetDate: string;
       teamID: number;
@@ -238,6 +220,7 @@ export interface components {
       role: components["schemas"]["Role"];
       scopes: components["schemas"]["Scopes"];
       teams?: (components["schemas"]["DbTeam"])[] | null;
+      user: components["schemas"]["DbUser"];
     };
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -309,12 +292,12 @@ export interface components {
       path: string;
       showCollapsed: boolean;
     };
-    DbProject2WorkItem: ({
+    DbProject2WorkItem: {
       /** Format: date-time */
       customDateForProject2: string | null;
       workItem?: components["schemas"]["DbWorkItem"];
       workItemID: number;
-    }) | null;
+    };
     DbWorkItem: {
       /** Format: date-time */
       closed: string | null;
@@ -322,23 +305,16 @@ export interface components {
       createdAt: string;
       /** Format: date-time */
       deletedAt: string | null;
-      demoProjectWorkItem?: components["schemas"]["DbDemoProjectWorkItem"];
       description: string;
       kanbanStepID: number;
-      members?: (components["schemas"]["DbWorkItem_Member"])[] | null;
       metadata: (number)[] | null;
-      project2WorkItem?: components["schemas"]["DbProject2WorkItem"];
       /** Format: date-time */
       targetDate: string;
       teamID: number;
-      timeEntries?: (components["schemas"]["DbTimeEntry"])[] | null;
       title: string;
       /** Format: date-time */
       updatedAt: string;
-      workItemComments?: (components["schemas"]["DbWorkItemComment"])[] | null;
       workItemID: number;
-      workItemTags?: (components["schemas"]["DbWorkItemTag"])[] | null;
-      workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
     };
     /**

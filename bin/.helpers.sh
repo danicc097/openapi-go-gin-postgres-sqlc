@@ -187,14 +187,14 @@ err() {
 # Retrieve all environment variables from `env_file` and
 # set the key-value pairs in the given associative array
 get_envvars() {
-  declare -n arr="$1" # pass ref by name
+  local -n __arr="$1" # pass ref by name
   local env_file="$2"
   if [[ -f "$env_file" ]]; then
     while read -r line; do
       if [[ $line =~ ^[\#]?([A-Za-z0-9_]+)[[:space:]]*=[[:space:]]*(.*?)$ ]]; then
         key="$(trim_string ${BASH_REMATCH[1]})"
         val="$(trim_string ${BASH_REMATCH[2]})"
-        arr[$key]=$val
+        __arr[$key]=$val
       fi
     done <"$env_file"
   else
@@ -225,7 +225,25 @@ ensure_envvars_set() {
   { ((n_missing != 0)) && exit 1; } || true
 }
 
-######################## db ###########################
+function show_tracebacks() {
+  local err_code="$?"
+  set +o xtrace
+  local bash_command=${BASH_COMMAND}
+  echo "${RED}Error in ${BASH_SOURCE[1]}:${BASH_LINENO[0]} ('$bash_command' exited with status $err_code)${OFF}" >&2
+
+  if [ ${#FUNCNAME[@]} -gt 2 ]; then
+    # Print out the stack trace described by $function_stack
+    echo "${RED}Traceback of ${BASH_SOURCE[1]} (most recent call last):${OFF}" >&2
+    for ((i = 0; i < ${#FUNCNAME[@]} - 1; i++)); do
+      local funcname="${FUNCNAME[$i]}"
+      [ "$i" -eq "0" ] && funcname=$bash_command
+      echo -e "  ${MAGENTA}${BASH_SOURCE[$i + 1]##*\/}:${BASH_LINENO[$i]}${OFF}\\t$funcname" >&2
+    done
+  fi
+  exit 1
+}
+
+######################## postgres ###########################
 
 # Drop and recreate database `db`. Defaults to POSTGRES_DB.
 drop_and_recreate_db() {

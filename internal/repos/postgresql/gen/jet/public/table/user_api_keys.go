@@ -16,7 +16,7 @@ var UserAPIKeys = newUserAPIKeysTable("public", "user_api_keys", "")
 type userAPIKeysTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	UserAPIKeyID postgres.ColumnInteger
 	APIKey       postgres.ColumnString
 	ExpiresOn    postgres.ColumnTimestampz

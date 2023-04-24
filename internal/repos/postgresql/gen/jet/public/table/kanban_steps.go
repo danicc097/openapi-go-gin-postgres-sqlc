@@ -16,7 +16,7 @@ var KanbanSteps = newKanbanStepsTable("public", "kanban_steps", "")
 type kanbanStepsTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	KanbanStepID  postgres.ColumnInteger
 	ProjectID     postgres.ColumnInteger
 	StepOrder     postgres.ColumnInteger

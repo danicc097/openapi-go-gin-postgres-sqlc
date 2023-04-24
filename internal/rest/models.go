@@ -9,13 +9,13 @@ import (
 
 // UserResponse represents an OpenAPI schema response for a User.
 type UserResponse struct {
-	Role     models.Role    `json:"role" ref:"#/components/schemas/Role" required:"true"`
-	Scopes   []string       `json:"scopes" ref:"#/components/schemas/Scopes" required:"true"`
-	APIKey   *db.UserAPIKey `json:"apiKey"`
-	Teams    *[]db.Team     `json:"teams"`
-	Projects *[]db.Project  `json:"projects"`
+	User   db.User     `json:"user" required:"true"`
+	Role   models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
+	Scopes []string    `json:"scopes" ref:"#/components/schemas/Scopes" required:"true"`
 
-	*db.User
+	APIKey   *db.UserAPIKey `json:"apiKey,omitempty"`
+	Teams    *[]db.Team     `json:"teams,omitempty"`
+	Projects *[]db.Project  `json:"projects,omitempty"`
 }
 
 // DemoProjectWorkItemsResponse represents an OpenAPI schema response for a ProjectBoard.

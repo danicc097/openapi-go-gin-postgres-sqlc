@@ -16,7 +16,7 @@ var Activities = newActivitiesTable("public", "activities", "")
 type activitiesTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	ActivityID   postgres.ColumnInteger
 	ProjectID    postgres.ColumnInteger
 	Name         postgres.ColumnString

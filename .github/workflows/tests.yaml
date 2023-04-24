@@ -21,7 +21,7 @@ jobs:
           submodules: recursive
       - uses: ./.github/actions/setup
       # source .envrc instead of direnv setup
-      - name: Run project
+      - name: Setup project
         run: |
           source .envrc
 
@@ -32,6 +32,14 @@ jobs:
 
           project test.backend-setup --x-env=ci
 
+          project lint --x-env=ci
+
+      - name: Diff check
+        run: |
           git diff --exit-code # -- . ':!dir_to_skip'
+
+      - name: Test backend
+        run: |
+          source .envrc
 
           project test -race -count=40 --x-env=ci

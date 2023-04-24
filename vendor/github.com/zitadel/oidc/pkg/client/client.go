@@ -1,7 +1,11 @@
 package client
 
 import (
+	"errors"
+	"fmt"
+	"io"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strings"
 	"time"
@@ -15,20 +19,17 @@ import (
 	"github.com/zitadel/oidc/pkg/oidc"
 )
 
-var (
-	Encoder = func() httphelper.Encoder {
-		e := schema.NewEncoder()
-		e.RegisterEncoder(oidc.SpaceDelimitedArray{}, func(value reflect.Value) string {
-			return value.Interface().(oidc.SpaceDelimitedArray).Encode()
-		})
-		return e
-	}()
-)
+var Encoder = func() httphelper.Encoder {
+	e := schema.NewEncoder()
+	e.RegisterEncoder(oidc.SpaceDelimitedArray{}, func(value reflect.Value) string {
+		return value.Interface().(oidc.SpaceDelimitedArray).Encode()
+	})
+	return e
+}()
 
-//Discover calls the discovery endpoint of the provided issuer and returns its configuration
-//It accepts an optional argument "wellknownUrl" which can be used to overide the dicovery endpoint url
+// Discover calls the discovery endpoint of the provided issuer and returns its configuration
+// It accepts an optional argument "wellknownUrl" which can be used to overide the dicovery endpoint url
 func Discover(issuer string, httpClient *http.Client, wellKnownUrl ...string) (*oidc.DiscoveryConfiguration, error) {
-
 	wellKnown := strings.TrimSuffix(issuer, "/") + oidc.DiscoveryEndpoint
 	if len(wellKnownUrl) == 1 && wellKnownUrl[0] != "" {
 		wellKnown = wellKnownUrl[0]
@@ -72,6 +73,79 @@ func callTokenEndpoint(request interface{}, authFn interface{}, caller TokenEndp
 		RefreshToken: tokenRes.RefreshToken,
 		Expiry:       time.Now().UTC().Add(time.Duration(tokenRes.ExpiresIn) * time.Second),
 	}, nil
+}
+
+type EndSessionCaller interface {
+	GetEndSessionEndpoint() string
+	HttpClient() *http.Client
+}
+
+func CallEndSessionEndpoint(request interface{}, authFn interface{}, caller EndSessionCaller) (*url.URL, error) {
+	req, err := httphelper.FormRequest(caller.GetEndSessionEndpoint(), request, Encoder, authFn)
+	if err != nil {
+		return nil, err
+	}
+	client := caller.HttpClient()
+	client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+	resp, err := client.Do(req)
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("EndSession failure, %d status code: %s", resp.StatusCode, string(body))
+	}
+	location, err := resp.Location()
+	if err != nil {
+		if errors.Is(err, http.ErrNoLocation) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return location, nil
+}
+
+type RevokeCaller interface {
+	GetRevokeEndpoint() string
+	HttpClient() *http.Client
+}
+
+type RevokeRequest struct {
+	Token         string `schema:"token"`
+	TokenTypeHint string `schema:"token_type_hint"`
+	ClientID      string `schema:"client_id"`
+	ClientSecret  string `schema:"client_secret"`
+}
+
+func CallRevokeEndpoint(request interface{}, authFn interface{}, caller RevokeCaller) error {
+	req, err := httphelper.FormRequest(caller.GetRevokeEndpoint(), request, Encoder, authFn)
+	if err != nil {
+		return err
+	}
+	client := caller.HttpClient()
+	client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	// According to RFC7009 in section 2.2:
+	// "The content of the response body is ignored by the client as all
+	// necessary information is conveyed in the response code."
+	if resp.StatusCode != 200 {
+		body, err := io.ReadAll(resp.Body)
+		if err == nil {
+			return fmt.Errorf("revoke returned status %d and text: %s", resp.StatusCode, string(body))
+		} else {
+			return fmt.Errorf("revoke returned status %d", resp.StatusCode)
+		}
+	}
+	return nil
 }
 
 func NewSignerFromPrivateKeyByte(key []byte, keyID string) (jose.Signer, error) {

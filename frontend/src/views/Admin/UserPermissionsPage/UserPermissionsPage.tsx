@@ -39,7 +39,7 @@ import { newFrontendSpan } from 'src/TraceProvider'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { createLabel, renderSuperSelect } from 'src/utils/forms'
-import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
+// import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import UserAvatar from 'src/components/UserAvatar/UserAvatar'
 import type { RequiredKeys } from 'src/types/utils'
 
@@ -53,8 +53,30 @@ export default function UserPermissionsPage() {
   const { addToast, dismissToast, theme } = useUISlice()
 
   const [allUsers] = useState<UserResponse[]>(
-    [...Array(20)].map((x, i) => {
-      return getGetCurrentUserMock()
+    [...Array(1)].map((x, i) => {
+      return {
+        role: 'user',
+        scopes: ['users:read'],
+        apiKey: null,
+        teams: null,
+        projects: null,
+        user: {
+          userID: 'c7fd2433-dbb7-4612-ab13-ddb0d3404728',
+          username: 'user_2',
+          email: 'user_2@email.com',
+          firstName: 'Name 2',
+          lastName: 'Surname 2',
+          fullName: 'Name 2 Surname 2',
+          hasPersonalNotifications: false,
+          hasGlobalNotifications: true,
+          createdAt: new Date('2023-04-01T06:24:22.390699Z'),
+          deletedAt: null,
+          timeEntries: null,
+          userAPIKey: null,
+          teams: null,
+          workItems: null,
+        },
+      }
     }),
   )
 
@@ -65,7 +87,7 @@ export default function UserPermissionsPage() {
           ? allUsers.map((user) => ({
               label: (
                 <>
-                  <UserAvatar user={user} size={'s'}></UserAvatar> <>{user?.email}</>
+                  <UserAvatar user={user} size={'s'}></UserAvatar> <>{user?.user.email}</>
                 </>
               ),
               append: <EuiBadge color={roleColor(user.role)}>{user.role}</EuiBadge>,
@@ -226,7 +248,7 @@ export default function UserPermissionsPage() {
       >
         <>
           {_.unescape(`You're about to update auth information for `)}
-          <strong>{userSelection.email}</strong>.<p>Are you sure you want to do this?</p>
+          <strong>{userSelection.user.email}</strong>.<p>Are you sure you want to do this?</p>
         </>
       </EuiConfirmModal>
     ) : null
@@ -285,7 +307,7 @@ export default function UserPermissionsPage() {
           isDisabled={userSelection === null}
           color="primary"
           data-test-subj="updateUserAuthForm__submit"
-        >{`Update role for ${userSelection?.email ?? '...'}`}</EuiButton>
+        >{`Update role for ${userSelection?.user.email ?? '...'}`}</EuiButton>
       </EuiForm>
       {renderModal()}
     </>

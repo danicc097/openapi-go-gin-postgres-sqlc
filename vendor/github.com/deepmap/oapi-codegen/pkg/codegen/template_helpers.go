@@ -22,11 +22,13 @@ import (
 
 	"github.com/deepmap/oapi-codegen/pkg/util"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const (
 	// These allow the case statements to be sorted later:
-	prefixMostSpecific, prefixLessSpecific, prefixLeastSpecific = "3", "6", "9"
+	prefixLeastSpecific = "9"
 
 	defaultClientTypeName = "Client"
 )
@@ -37,6 +39,8 @@ var (
 	contentTypesXML  = []string{echo.MIMEApplicationXML, echo.MIMETextXML, "application/problems+xml"}
 
 	responseTypeSuffix = "Response"
+
+	titleCaser = cases.Title(language.English)
 )
 
 // This function takes an array of Parameter definition, and generates a valid
@@ -259,7 +263,11 @@ func getConditionOfResponseName(statusCodeVar, responseName string) string {
 
 // This outputs a string array
 func toStringArray(sarr []string) string {
-	return `[]string{"` + strings.Join(sarr, `","`) + `"}`
+	s := strings.Join(sarr, `","`)
+	if len(s) > 0 {
+		s = `"` + s + `"`
+	}
+	return `[]string{` + s + `}`
 }
 
 func stripNewLines(s string) string {
@@ -288,7 +296,7 @@ var TemplateFunctions = template.FuncMap{
 	"getResponseTypeDefinitions": getResponseTypeDefinitions,
 	"toStringArray":              toStringArray,
 	"lower":                      strings.ToLower,
-	"title":                      strings.Title,
+	"title":                      titleCaser.String,
 	"stripNewLines":              stripNewLines,
 	"sanitizeGoIdentity":         SanitizeGoIdentity,
 	"toGoComment":                StringWithTypeNameToGoComment,

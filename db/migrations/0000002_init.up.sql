@@ -15,8 +15,7 @@ create table projects (
   project_id serial primary key
   , name text not null unique
   , description text not null
-  , work_items_table_name text not null
-  , initialized boolean not null default false -- TODO IMPORTANT: not needed. will initialize everything via sql migration (kanban steps, wi types...)
+  , work_items_table_name text not null -- ensures project inserts are documented properly, postmigration script checks this column
   , board_config jsonb not null default '{}'
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
@@ -504,26 +503,20 @@ select
 insert into projects (
   name
   , description
-  , work_items_table_name
-  , initialized)
+  , work_items_table_name)
 values (
   'demoProject'
   , 'description for demoProject'
-  , 'demo_project_work_items'
-  , true -- doesn't matter for demo since it will be programmatically (re)initialized
-);
+  , 'demo_project_work_items');
 
 insert into projects (
   name
   , description
-  , work_items_table_name
-  , initialized)
+  , work_items_table_name)
 values (
   'demoProject2'
   , 'description for demoProject2'
-  , 'demo_project_work_items'
-  , true -- doesn't matter for demo since it will be programmatically (re)initialized
-);
+  , 'demo_project_work_items');
 
 insert into kanban_steps (
   name

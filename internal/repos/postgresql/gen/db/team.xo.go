@@ -21,8 +21,8 @@ type Team struct {
 	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
 	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
-	TimeEntries *[]TimeEntry `json:"timeEntries" db:"time_entries"` // O2M
-	Users       *[]User      `json:"users" db:"users"`              // M2M
+	TimeEntries *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
+	Users       *[]User      `json:"-" db:"users" openapi-go:"ignore"`        // M2M
 	// xo fields
 	_exists, _deleted bool
 }

@@ -18,7 +18,7 @@ type WorkItemType struct {
 	Description    string `json:"description" db:"description" required:"true"`          // description
 	Color          string `json:"color" db:"color" required:"true"`                      // color
 
-	WorkItem *WorkItem `json:"workItem" db:"work_item"` // O2O
+	WorkItem *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }

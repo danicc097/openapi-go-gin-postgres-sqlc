@@ -12,3 +12,12 @@ repos:
         always_run: true
         verbose: true
         files: ''
+      - id: gen
+        name: gen
+        entry: bin/project gen
+        language: script
+        types: [text]
+        pass_filenames: false
+        always_run: true
+        verbose: true
+        files: ''

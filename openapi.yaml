@@ -351,11 +351,6 @@ components:
           type: string
         projectID:
           type: integer
-        timeEntries:
-          items:
-            $ref: '#/components/schemas/DbTimeEntry'
-          nullable: true
-          type: array
       required:
         - activityID
         - projectID
@@ -393,50 +388,22 @@ components:
       x-postgen-struct: DbKanbanStep
     DbProject: # Generated from internal structs. DO NOT EDIT.
       properties:
-        activities:
-          items:
-            $ref: '#/components/schemas/DbActivity'
-          nullable: true
-          type: array
         createdAt:
           format: date-time
           type: string
         description:
           type: string
-        initialized:
-          type: boolean
-        kanbanSteps:
-          items:
-            $ref: '#/components/schemas/DbKanbanStep'
-          nullable: true
-          type: array
         name:
           $ref: '#/components/schemas/Project'
         projectID:
           type: integer
-        teams:
-          items:
-            $ref: '#/components/schemas/DbTeam'
-          nullable: true
-          type: array
         updatedAt:
           format: date-time
           type: string
-        workItemTags:
-          items:
-            $ref: '#/components/schemas/DbWorkItemTag'
-          nullable: true
-          type: array
-        workItemTypes:
-          items:
-            $ref: '#/components/schemas/DbWorkItemType'
-          nullable: true
-          type: array
       required:
         - projectID
         - name
         - description
-        - initialized
         - createdAt
         - updatedAt
       type: object
@@ -454,19 +421,9 @@ components:
           type: integer
         teamID:
           type: integer
-        timeEntries:
-          items:
-            $ref: '#/components/schemas/DbTimeEntry'
-          nullable: true
-          type: array
         updatedAt:
           format: date-time
           type: string
-        users:
-          items:
-            $ref: '#/components/schemas/DbUser'
-          nullable: true
-          type: array
       required:
         - teamID
         - projectID
@@ -488,11 +445,6 @@ components:
           type: integer
         workItemTagID:
           type: integer
-        workItems:
-          items:
-            $ref: '#/components/schemas/DbWorkItem'
-          nullable: true
-          type: array
       required:
         - workItemTagID
         - projectID
@@ -502,7 +454,6 @@ components:
       type: object
       x-postgen-struct: DbWorkItemTag
     DbWorkItemType: # Generated from internal structs. DO NOT EDIT.
-      nullable: true
       properties:
         color:
           type: string
@@ -512,8 +463,6 @@ components:
           type: string
         projectID:
           type: integer
-        workItem:
-          $ref: '#/components/schemas/DbWorkItem'
         workItemTypeID:
           type: integer
       required:
@@ -525,7 +474,6 @@ components:
       type: object
       x-postgen-struct: DbWorkItemType
     DbDemoProjectWorkItem: # Generated from internal structs. DO NOT EDIT.
-      nullable: true
       properties:
         lastMessageAt:
           format: date-time
@@ -536,8 +484,6 @@ components:
           type: string
         reopened:
           type: boolean
-        workItem:
-          $ref: '#/components/schemas/DbWorkItem'
         workItemID:
           type: integer
       required:
@@ -549,15 +495,12 @@ components:
       type: object
       x-postgen-struct: DbDemoProjectWorkItem
     DbUserAPIKey: # Generated from internal structs. DO NOT EDIT.
-      nullable: true
       properties:
         apiKey:
           type: string
         expiresOn:
           format: date-time
           type: string
-        user:
-          $ref: '#/components/schemas/DbUser'
         userID:
           $ref: '#/components/schemas/UuidUUID'
       required:
@@ -590,27 +533,10 @@ components:
         lastName:
           nullable: true
           type: string
-        teams:
-          items:
-            $ref: '#/components/schemas/DbTeam'
-          nullable: true
-          type: array
-        timeEntries:
-          items:
-            $ref: '#/components/schemas/DbTimeEntry'
-          nullable: true
-          type: array
-        userAPIKey:
-          $ref: '#/components/schemas/DbUserAPIKey'
         userID:
           $ref: '#/components/schemas/UuidUUID'
         username:
           type: string
-        workItems:
-          items:
-            $ref: '#/components/schemas/DbWorkItem'
-          nullable: true
-          type: array
       required:
         - userID
         - username
@@ -729,8 +655,6 @@ components:
             type: integer
           nullable: true
           type: array
-        project2WorkItem:
-          $ref: '#/components/schemas/DbProject2WorkItem'
         targetDate:
           format: date-time
           type: string
@@ -833,7 +757,10 @@ components:
             $ref: '#/components/schemas/DbTeam'
           nullable: true
           type: array
+        user:
+          $ref: '#/components/schemas/DbUser'
       required:
+        - user
         - role
         - scopes
       type: object
@@ -871,6 +798,7 @@ components:
         - team-settings:write
         - project-settings:write
         - work-item:review
+      x-generated: '-'
     Scopes: # workaround for openapi-go gen
       type: array
       items:
@@ -884,7 +812,8 @@ components:
         - manager
         - admin
         - superAdmin
-    WorkItemRole: # Generated from database enum. DO NOT EDIT.
+      x-generated: '-'
+    WorkItemRole: # Generated from database enum 'work_item_role'. DO NOT EDIT.
       title: WorkItem role
       type: string
       x-generated: '-'
@@ -971,7 +900,6 @@ components:
         - name
       type: object
     DbProject2WorkItem: # Generated from internal structs. DO NOT EDIT.
-      nullable: true
       properties:
         customDateForProject2:
           format: date-time
@@ -998,54 +926,28 @@ components:
           format: date-time
           nullable: true
           type: string
-        demoProjectWorkItem:
-          $ref: '#/components/schemas/DbDemoProjectWorkItem'
         description:
           type: string
         kanbanStepID:
           type: integer
-        members:
-          items:
-            $ref: '#/components/schemas/DbWorkItem_Member'
-          nullable: true
-          type: array
         metadata:
           items:
             minimum: 0
             type: integer
           nullable: true
           type: array
-        project2WorkItem:
-          $ref: '#/components/schemas/DbProject2WorkItem'
         targetDate:
           format: date-time
           type: string
         teamID:
           type: integer
-        timeEntries:
-          items:
-            $ref: '#/components/schemas/DbTimeEntry'
-          nullable: true
-          type: array
         title:
           type: string
         updatedAt:
           format: date-time
           type: string
-        workItemComments:
-          items:
-            $ref: '#/components/schemas/DbWorkItemComment'
-          nullable: true
-          type: array
         workItemID:
           type: integer
-        workItemTags:
-          items:
-            $ref: '#/components/schemas/DbWorkItemTag'
-          nullable: true
-          type: array
-        workItemType:
-          $ref: '#/components/schemas/DbWorkItemType'
         workItemTypeID:
           type: integer
       required:
@@ -1069,6 +971,7 @@ components:
         - demoProject2
       type: string
       description: Existing projects
+      x-generated: '-'
     DbActivityCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
         description:
@@ -1142,7 +1045,7 @@ components:
       required:
         - role
       type: object
-    NotificationType: # Generated from database enum. DO NOT EDIT.
+    NotificationType: # Generated from database enum 'notification_type'. DO NOT EDIT.
       description: represents a database 'notification_type'
       type: string
       x-generated: '-'

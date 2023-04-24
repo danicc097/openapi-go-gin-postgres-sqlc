@@ -16,7 +16,7 @@ var Movies = newMoviesTable("public", "movies", "")
 type moviesTable struct {
 	postgres.Table
 
-	//Columns
+	// Columns
 	MovieID  postgres.ColumnInteger
 	Title    postgres.ColumnString
 	Year     postgres.ColumnInteger
