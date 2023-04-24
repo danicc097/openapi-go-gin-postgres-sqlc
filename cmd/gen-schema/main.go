@@ -8,10 +8,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/swaggest/jsonschema-go"
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
 
@@ -42,10 +43,19 @@ func main() {
 		// default name comes from package directory, not the given import alias
 		// e.g. repomodels -/-> Repomodels, its the last dir (models)
 
-		fmt.Fprintf(os.Stderr, "defaultDefName: %s", defaultDefName)
+		// fmt.Fprintf(os.Stderr, "defaultDefName: %s", defaultDefName)
 
 		return defaultDefName
 	})
+
+	// see https://github.com/swaggest/openapi-go/discussions/62#discussioncomment-5710581
+	reflector.DefaultOptions = append(reflector.DefaultOptions, jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
+		if params.Field.Tag.Get("openapi-go") == "ignore" {
+			return jsonschema.ErrSkipProperty
+		}
+
+		return nil
+	}))
 
 	for i, sn := range structNames {
 		dummyOp := openapi3.Operation{}
@@ -57,14 +67,10 @@ func main() {
 			log.Fatalf("struct %s: ensure there is at least a JSON tag set", sn)
 		}
 
-		st = cloneStructWithoutIgnoredFields(st)
+		// st = cloneStructWithoutIgnoredFields(st)
 
 		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
 		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
-
-		s, _ := reflector.Spec.MarshalYAML()
-		fmt.Fprintf(os.Stderr, "spec: %+v\n", string(s))
-		fmt.Fprintf(os.Stderr, "st: %+v\n", st)
 
 		// IMPORTANT: ensure structs are public
 		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]any{"x-postgen-struct": sn}
@@ -102,6 +108,7 @@ func cloneStructWithoutIgnoredFields(src any) any {
 	// 	Name:    srcType.Name(),
 	// 	PkgPath: srcType.PkgPath(),
 	// 	Type:    dstType,
+	// 	Tag:     `json:"activity" required:"true"`,
 	// }})
 
 	dst := reflect.New(dstType).Elem()

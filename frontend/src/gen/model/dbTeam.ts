@@ -5,8 +5,6 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbTimeEntry } from './dbTimeEntry'
-import type { DbUser } from './dbUser'
 
 export interface DbTeam {
   createdAt: Date
@@ -14,7 +12,5 @@ export interface DbTeam {
   name: string
   projectID: number
   teamID: number
-  timeEntries?: DbTimeEntry[] | null
   updatedAt: Date
-  users?: DbUser[] | null
 }

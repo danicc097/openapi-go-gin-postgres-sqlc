@@ -5,11 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbTeam } from './dbTeam'
-import type { DbTimeEntry } from './dbTimeEntry'
-import type { DbUserAPIKey } from './dbUserAPIKey'
 import type { UuidUUID } from './uuidUUID'
-import type { DbWorkItem } from './dbWorkItem'
 
 export interface DbUser {
   createdAt: Date
@@ -20,10 +16,6 @@ export interface DbUser {
   hasGlobalNotifications: boolean
   hasPersonalNotifications: boolean
   lastName: string | null
-  teams?: DbTeam[] | null
-  timeEntries?: DbTimeEntry[] | null
-  userAPIKey?: DbUserAPIKey
   userID: UuidUUID
   username: string
-  workItems?: DbWorkItem[] | null
 }

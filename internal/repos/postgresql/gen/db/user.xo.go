@@ -31,10 +31,10 @@ type User struct {
 	UpdatedAt                time.Time  `json:"-" db:"updated_at"`                                                        // updated_at
 	DeletedAt                *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`                                // deleted_at
 
-	TimeEntries *[]TimeEntry `json:"timeEntries" db:"time_entries" openapi-go:"ignore"` // O2M
-	UserAPIKey  *UserAPIKey  `json:"userAPIKey" db:"user_api_key" openapi-go:"ignore"`  // O2O
-	Teams       *[]Team      `json:"teams" db:"teams" openapi-go:"ignore"`              // M2M
-	WorkItems   *[]WorkItem  `json:"workItems" db:"work_items" openapi-go:"ignore"`     // M2M
+	TimeEntries *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
+	UserAPIKey  *UserAPIKey  `json:"-" db:"user_api_key" openapi-go:"ignore"` // O2O
+	Teams       *[]Team      `json:"-" db:"teams" openapi-go:"ignore"`        // M2M
+	WorkItems   *[]WorkItem  `json:"-" db:"work_items" openapi-go:"ignore"`   // M2M
 	// xo fields
 	_exists, _deleted bool
 }

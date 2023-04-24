@@ -2792,7 +2792,7 @@ func (f *Funcs) join_fields(sqlname string, constraints []Constraint, tables Tab
 				typ = camelExport(singularize(sqlname)) + "_" + camelExport(singularize(lookupName))
 			}
 
-			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Pluralize(camel(lookupName)), inflector.Pluralize(lookupName))
+			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Pluralize(lookupName))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
 			// TODO revisit. O2M and M2O from different viewpoints.
 		case "O2M", "M2O":
@@ -2801,19 +2801,19 @@ func (f *Funcs) join_fields(sqlname string, constraints []Constraint, tables Tab
 			}
 			goName = camelExport(singularize(c.TableName))
 			typ = goName
-			tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Pluralize(camel(c.TableName)), inflector.Pluralize(c.TableName))
+			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Pluralize(c.TableName))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
 		case "O2O":
 			if c.TableName == sqlname {
 				goName = camelExport(singularize(c.RefTableName))
 				typ = goName
-				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-go:\"ignore\"`", camel(inflector.Singularize(c.RefTableName)), inflector.Singularize(c.RefTableName))
+				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Singularize(c.RefTableName))
 				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, c.Cardinality))
 			}
 			if c.RefTableName == sqlname {
 				goName = camelExport(singularize(c.TableName))
 				typ = goName
-				tag = fmt.Sprintf("`json:\"%s\" db:\"%s\" openapi-go:\"ignore\"`", camel(inflector.Singularize(c.TableName)), inflector.Singularize(c.TableName))
+				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Singularize(c.TableName))
 				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, c.Cardinality))
 			}
 		default:

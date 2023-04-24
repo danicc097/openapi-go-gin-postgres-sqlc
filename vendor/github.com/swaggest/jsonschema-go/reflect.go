@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"path"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -65,9 +66,15 @@ type Ref struct {
 	Name string
 }
 
+var defNameEscaper = strings.NewReplacer(
+	"~", "~0",
+	"/", "~1",
+	"%", "%25",
+)
+
 // Schema creates schema instance from reference.
 func (r Ref) Schema() Schema {
-	s := r.Path + r.Name
+	s := r.Path + defNameEscaper.Replace(r.Name)
 
 	return Schema{
 		Ref: &s,
@@ -111,7 +118,10 @@ func (r *Reflector) InterceptDefName(f func(t reflect.Type, defaultDefName strin
 	})
 }
 
-func checkSchemaSetup(v reflect.Value, s *Schema) (bool, error) {
+func checkSchemaSetup(params InterceptSchemaParams) (bool, error) {
+	v := params.Value
+	s := params.Schema
+
 	vi := v.Interface()
 	if v.Kind() == reflect.Ptr && v.IsNil() {
 		vi = reflect.New(v.Type().Elem()).Interface()
@@ -214,6 +224,7 @@ func checkSchemaSetup(v reflect.Value, s *Schema) (bool, error) {
 //	CollectDefinitions
 //	DefinitionsPrefix
 //	PropertyNameTag
+//	InterceptNullability
 //	InterceptType
 //	InterceptProperty
 //	InlineRefs
@@ -232,7 +243,7 @@ func (r *Reflector) Reflect(i interface{}, options ...func(rc *ReflectContext)) 
 	rc.Path = []string{"#"}
 	rc.typeCycles = make(map[refl.TypeString]bool)
 
-	InterceptType(checkSchemaSetup)(&rc)
+	InterceptSchema(checkSchemaSetup)(&rc)
 
 	for _, option := range r.DefaultOptions {
 		option(&rc)
@@ -241,6 +252,8 @@ func (r *Reflector) Reflect(i interface{}, options ...func(rc *ReflectContext)) 
 	for _, option := range options {
 		option(&rc)
 	}
+
+	rc.deprecatedFallback()
 
 	schema, err := r.reflect(i, &rc, false, nil)
 	if err == nil && len(rc.definitions) > 0 {
@@ -251,7 +264,7 @@ func (r *Reflector) Reflect(i interface{}, options ...func(rc *ReflectContext)) 
 			ref := rc.definitionRefs[typeString]
 
 			if rc.CollectDefinitions != nil {
-				rc.CollectDefinitions(ref.Name, def)
+				rc.CollectDefinitions(ref.Name, *def)
 			} else {
 				schema.Definitions[ref.Name] = def.ToSchemaOrBool()
 			}
@@ -312,11 +325,11 @@ func (r *Reflector) reflectDefer(defName string, typeString refl.TypeString, rc 
 	}
 
 	if rc.definitions == nil {
-		rc.definitions = make(map[refl.TypeString]Schema, 1)
+		rc.definitions = make(map[refl.TypeString]*Schema, 1)
 		rc.definitionRefs = make(map[refl.TypeString]Ref, 1)
 	}
 
-	rc.definitions[typeString] = schema
+	rc.definitions[typeString] = &schema
 	ref := Ref{Path: rc.DefinitionsPrefix, Name: defName}
 	rc.definitionRefs[typeString] = ref
 
@@ -333,10 +346,10 @@ func (r *Reflector) reflectDefer(defName string, typeString refl.TypeString, rc 
 
 func (r *Reflector) reflect(i interface{}, rc *ReflectContext, keepType bool, parent *Schema) (schema Schema, err error) {
 	var (
-		typeString refl.TypeString
-		defName    string
 		t          = reflect.TypeOf(i)
 		v          = reflect.ValueOf(i)
+		typeString refl.TypeString
+		defName    string
 	)
 
 	defer func() {
@@ -396,14 +409,23 @@ func (r *Reflector) reflect(i interface{}, rc *ReflectContext, keepType bool, pa
 		}
 	}
 
+	if rc.interceptSchema != nil {
+		if ret, err := rc.interceptSchema(InterceptSchemaParams{
+			Value:     v,
+			Schema:    &schema,
+			Processed: false,
+		}); err != nil || ret {
+			return schema, err
+		}
+	}
+
 	if r.isWellKnownType(t, &schema) {
 		return schema, nil
 	}
 
-	if rc.InterceptType != nil {
-		if ret, err := rc.InterceptType(v, &schema); err != nil || ret {
-			return schema, err
-		}
+	if (t.Implements(typeOfTextUnmarshaler) || reflect.PtrTo(t).Implements(typeOfTextUnmarshaler)) &&
+		(t.Implements(typeOfTextMarshaler) || reflect.PtrTo(t).Implements(typeOfTextMarshaler)) {
+		schema.AddType(String)
 	}
 
 	if ref, ok := rc.definitionRefs[typeString]; ok && defName != "" {
@@ -414,7 +436,7 @@ func (r *Reflector) reflect(i interface{}, rc *ReflectContext, keepType bool, pa
 		return schema, nil
 	}
 
-	if t.PkgPath() != "" && len(rc.Path) > 1 && defName != "" {
+	if t.PkgPath() != "" && len(rc.Path) > 1 && defName != "" && !r.inlineDefinition[typeString] {
 		rc.typeCycles[typeString] = true
 	}
 
@@ -434,8 +456,12 @@ func (r *Reflector) reflect(i interface{}, rc *ReflectContext, keepType bool, pa
 		return schema, err
 	}
 
-	if rc.InterceptType != nil {
-		if ret, err := rc.InterceptType(v, &schema); err != nil || ret {
+	if rc.interceptSchema != nil {
+		if ret, err := rc.interceptSchema(InterceptSchemaParams{
+			Value:     v,
+			Schema:    &schema,
+			Processed: true,
+		}); err != nil || ret {
 			return schema, err
 		}
 	}
@@ -565,15 +591,10 @@ func (r *Reflector) isWellKnownType(t reflect.Type, schema *Schema) bool {
 		return true
 	}
 
-	if (t.Implements(typeOfTextUnmarshaler) || reflect.PtrTo(t).Implements(typeOfTextUnmarshaler)) &&
-		(t.Implements(typeOfTextMarshaler) || reflect.PtrTo(t).Implements(typeOfTextMarshaler)) {
-		schema.AddType(String)
-
-		return true
-	}
-
 	return false
 }
+
+var baseNameRegex = regexp.MustCompile(`\[(.+\/)*([^\/]+)·\d+\]`)
 
 func (r *Reflector) defName(rc *ReflectContext, t reflect.Type) string {
 	if t.PkgPath() == "" || t == typeOfTime || t == typeOfJSONRawMsg || t == typeOfDate {
@@ -596,10 +617,13 @@ func (r *Reflector) defName(rc *ReflectContext, t reflect.Type) string {
 	try := 1
 
 	for {
+		tn := t.Name()
+		tn = baseNameRegex.ReplaceAllString(tn, "[$2]")
+
 		if t.PkgPath() == "main" {
-			defName = toCamel(strings.Title(t.Name()))
+			defName = toCamel(strings.Title(tn))
 		} else {
-			defName = toCamel(path.Base(t.PkgPath())) + strings.Title(t.Name())
+			defName = toCamel(path.Base(t.PkgPath()) + strings.Title(tn))
 		}
 
 		if rc.DefName != nil {
@@ -661,6 +685,14 @@ func (r *Reflector) kindSwitch(t reflect.Type, v reflect.Value, schema *Schema, 
 			itemValue = reflect.New(elemType).Interface()
 		}
 
+		for v.Kind() == reflect.Ptr {
+			v = v.Elem()
+		}
+
+		if (v.Kind() == reflect.Slice || v.Kind() == reflect.Array) && v.Len() > 0 {
+			itemValue = v.Index(0).Interface()
+		}
+
 		itemsSchema, err := r.reflect(itemValue, rc, false, schema)
 		if err != nil {
 			return err
@@ -677,6 +709,19 @@ func (r *Reflector) kindSwitch(t reflect.Type, v reflect.Value, schema *Schema, 
 
 		if itemValue == nil && elemType != typeOfEmptyInterface {
 			itemValue = reflect.New(elemType).Interface()
+		}
+
+		for v.Kind() == reflect.Ptr {
+			v = v.Elem()
+		}
+
+		if v.Kind() == reflect.Map {
+			rng := v.MapRange()
+			for rng.Next() {
+				itemValue = rng.Value().Interface()
+
+				break
+			}
 		}
 
 		additionalPropertiesSchema, err := r.reflect(itemValue, rc, false, schema)
@@ -736,6 +781,26 @@ func (r *Reflector) fieldVal(fv reflect.Value, ft reflect.Type) interface{} {
 	return fieldVal
 }
 
+func (r *Reflector) propertyTag(rc *ReflectContext, field reflect.StructField) (string, bool) {
+	if rc.PropertyNameMapping != nil {
+		if tag, tagFound := rc.PropertyNameMapping[field.Name]; tagFound {
+			return tag, true
+		}
+	}
+
+	if tag, tagFound := field.Tag.Lookup(rc.PropertyNameTag); tagFound {
+		return tag, true
+	}
+
+	for _, t := range rc.PropertyNameAdditionalTags {
+		if tag, tagFound := field.Tag.Lookup(t); tagFound {
+			return tag, true
+		}
+	}
+
+	return "", false
+}
+
 func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectContext) error {
 	t := v.Type()
 	if t.Kind() == reflect.Ptr {
@@ -750,17 +815,7 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
-
-		var (
-			tag      string
-			tagFound bool
-		)
-
-		if rc.PropertyNameMapping != nil {
-			tag, tagFound = rc.PropertyNameMapping[field.Name]
-		} else {
-			tag, tagFound = field.Tag.Lookup(rc.PropertyNameTag)
-		}
+		tag, tagFound := r.propertyTag(rc, field)
 
 		// Skip explicitly discarded field.
 		if tag == "-" {
@@ -825,6 +880,22 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 
 		rc.Path = append(rc.Path, propName)
 
+		if rc.interceptProp != nil {
+			if err := rc.interceptProp(InterceptPropParams{
+				Path:  rc.Path,
+				Name:  propName,
+				Field: field,
+			}); err != nil {
+				if errors.Is(err, ErrSkipProperty) {
+					rc.Path = rc.Path[:len(rc.Path)-1]
+
+					continue
+				}
+
+				return err
+			}
+		}
+
 		propertySchema, err := r.reflect(fieldVal, rc, true, parent)
 		if err != nil {
 			if errors.Is(err, ErrSkipProperty) {
@@ -834,22 +905,18 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 			return err
 		}
 
-		if !omitEmpty {
-			checkNullability(&propertySchema, rc, ft)
+		checkNullability(&propertySchema, rc, ft, omitEmpty)
+
+		if !rc.SkipNonConstraints {
+			err = checkInlineValue(&propertySchema, field, "default", propertySchema.WithDefault)
+			if err != nil {
+				return fmt.Errorf("%s: %w", strings.Join(append(rc.Path[1:], field.Name), "."), err)
+			}
 		}
 
-		if propertySchema.Type != nil && propertySchema.Type.SimpleTypes != nil {
-			if !rc.SkipNonConstraints {
-				err = checkInlineValue(&propertySchema, field, "default", propertySchema.WithDefault)
-				if err != nil {
-					return fmt.Errorf("%s: %w", strings.Join(append(rc.Path[1:], field.Name), "."), err)
-				}
-			}
-
-			err = checkInlineValue(&propertySchema, field, "const", propertySchema.WithConst)
-			if err != nil {
-				return err
-			}
+		err = checkInlineValue(&propertySchema, field, "const", propertySchema.WithConst)
+		if err != nil {
+			return err
 		}
 
 		if err := refl.PopulateFieldsFromTags(&propertySchema, field.Tag); err != nil {
@@ -876,8 +943,14 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 			propertySchema.Type = nil
 		}
 
-		if rc.InterceptProperty != nil {
-			if err := rc.InterceptProperty(propName, field, &propertySchema); err != nil {
+		if rc.interceptProp != nil {
+			if err := rc.interceptProp(InterceptPropParams{
+				Path:           rc.Path,
+				Name:           propName,
+				Field:          field,
+				PropertySchema: &propertySchema,
+				Processed:      true,
+			}); err != nil {
 				if errors.Is(err, ErrSkipProperty) {
 					continue
 				}
@@ -901,14 +974,17 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 func checkInlineValue(propertySchema *Schema, field reflect.StructField, tag string, setter func(interface{}) *Schema) error {
 	var val interface{}
 
-	t := *propertySchema.Type.SimpleTypes
+	var t SimpleType
+	if propertySchema.Type != nil && propertySchema.Type.SimpleTypes != nil {
+		t = *propertySchema.Type.SimpleTypes
+	}
 
-	switch t {
+	switch t { //nolint:exhaustive // Covered by default case.
 	case Integer:
 		var v *int64
 
 		if err := refl.ReadIntPtrTag(field.Tag, tag, &v); err != nil {
-			return err
+			return fmt.Errorf("parsing %s for %s: %w", tag, t, err)
 		}
 
 		if v != nil {
@@ -918,7 +994,7 @@ func checkInlineValue(propertySchema *Schema, field reflect.StructField, tag str
 		var v *float64
 
 		if err := refl.ReadFloatPtrTag(field.Tag, tag, &v); err != nil {
-			return err
+			return fmt.Errorf("parsing %s for %s: %w", tag, t, err)
 		}
 
 		if v != nil {
@@ -938,14 +1014,39 @@ func checkInlineValue(propertySchema *Schema, field reflect.StructField, tag str
 		var v *bool
 
 		if err := refl.ReadBoolPtrTag(field.Tag, tag, &v); err != nil {
-			return err
+			return fmt.Errorf("parsing %s for %s: %w", tag, t, err)
 		}
 
 		if v != nil {
 			val = *v
 		}
+	case Null:
+		// No default for type null.
 
-	case Array, Null, Object:
+	default:
+		var v string
+
+		refl.ReadStringTag(field.Tag, tag, &v)
+
+		if v == "" {
+			break
+		}
+
+		err := json.Unmarshal([]byte(v), &val)
+		if err == nil {
+			break
+		}
+
+		if strings.HasPrefix(v, "[") && strings.HasSuffix(v, "]") &&
+			propertySchema.Items != nil &&
+			propertySchema.Items.SchemaOrBool != nil &&
+			propertySchema.Items.SchemaOrBool.TypeObject.HasType(String) {
+			val = strings.Split(v[1:len(v)-1], ",")
+
+			break
+		}
+
+		return fmt.Errorf("parsing %s as JSON: %w", tag, err)
 	}
 
 	if val != nil {
@@ -955,16 +1056,54 @@ func checkInlineValue(propertySchema *Schema, field reflect.StructField, tag str
 	return nil
 }
 
-func checkNullability(propertySchema *Schema, rc *ReflectContext, ft reflect.Type) {
+// checkNullability checks Go semantic conditions and adds null type to schemas when appropriate.
+//
+// Presence of `omitempty` field tag disables nullability for the reason that marshaled value
+// would be absent instead of having `null`.
+//
+// Shared definitions (used by $ref) are not nullable by default, so that they can be set to nullable
+// where necessary with `"anyOf":[{"type":"null"},{"$ref":"..."}]` (see ReflectContext.EnvelopNullability).
+//
+// Nullability cases include:
+//   - Array, slice accepts `null` as a value.
+//   - Object without properties, it is a map, and it accepts `null` as a value.
+//   - Pointer type.
+func checkNullability(propertySchema *Schema, rc *ReflectContext, ft reflect.Type, omitEmpty bool) {
+	in := InterceptNullabilityParams{
+		OrigSchema: *propertySchema,
+		Schema:     propertySchema,
+		Type:       ft,
+		OmitEmpty:  omitEmpty,
+	}
+
+	defer func() {
+		if rc.InterceptNullability != nil {
+			rc.InterceptNullability(in)
+		}
+	}()
+
+	if omitEmpty {
+		return
+	}
+
 	if propertySchema.HasType(Array) ||
 		(propertySchema.HasType(Object) && len(propertySchema.Properties) == 0 && propertySchema.Ref == nil) {
 		propertySchema.AddType(Null)
+
+		in.NullAdded = true
+	}
+
+	if ft.Kind() == reflect.Ptr && propertySchema.Ref == nil && ft.Elem() != typeOfJSONRawMsg {
+		propertySchema.AddType(Null)
+
+		in.NullAdded = true
 	}
 
 	if propertySchema.Ref != nil && ft.Kind() != reflect.Struct {
 		def := rc.getDefinition(*propertySchema.Ref)
+		in.RefDef = def
 
-		if (def.HasType(Array) || def.HasType(Object)) && !def.HasType(Null) {
+		if (def.HasType(Array) || def.HasType(Object) || ft.Kind() == reflect.Ptr) && !def.HasType(Null) {
 			if rc.EnvelopNullability {
 				refSchema := *propertySchema
 				propertySchema.Ref = nil
@@ -972,8 +1111,6 @@ func checkNullability(propertySchema *Schema, rc *ReflectContext, ft reflect.Typ
 					Null.ToSchemaOrBool(),
 					refSchema.ToSchemaOrBool(),
 				}
-			} else {
-				def.AddType(Null)
 			}
 		}
 	}
