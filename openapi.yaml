@@ -855,6 +855,7 @@ components:
         - loc
         - msg
         - type
+        - detail
       type: object
       properties:
         loc:
@@ -866,7 +867,10 @@ components:
           title: Message
           type: string
         type:
-          title: Error Type
+          title: Error type
+          type: string
+        detail:
+          title: Error details
           type: string
     UuidUUID: # Generated from internal structs. DO NOT EDIT.
       type: string

@@ -275,8 +275,10 @@ export interface components {
       loc: (string)[];
       /** Message */
       msg: string;
-      /** Error Type */
+      /** Error type */
       type: string;
+      /** Error details */
+      detail: string;
     };
     UuidUUID: string;
     PgtypeJSONB: Record<string, never>;

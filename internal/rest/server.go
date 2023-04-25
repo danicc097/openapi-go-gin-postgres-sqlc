@@ -1,8 +1,10 @@
 package rest
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -28,6 +30,7 @@ import (
 
 	internal "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
@@ -42,6 +45,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
+
+const ValidationErrorSeparator = "$$$$"
 
 type Config struct {
 	// Port to listen to. Use ":0" for a random port.
@@ -186,8 +191,30 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 		MultiError:            true,
 		AuthenticationFunc:    verifyAuthentication,
 	}
+
 	oafilterOpts.WithCustomSchemaErrorFunc(func(err *openapi3.SchemaError) string {
-		return fmt.Sprintf("%s: %s", err.SchemaField, err.Reason)
+		detail := &bytes.Buffer{}
+		detail.WriteString("\nSchema:\n  ")
+		encoder := json.NewEncoder(detail)
+		encoder.SetIndent("  ", "  ")
+		if err := encoder.Encode(err.Schema); err != nil {
+			panic(err)
+		}
+		detail.WriteString("\nValue:\n  ")
+		if err := encoder.Encode(err.Value); err != nil {
+			panic(err)
+		}
+
+		ve := &models.ValidationError{
+			Loc:    err.JSONPointer(),
+			Msg:    err.Reason,
+			Type:   err.SchemaField,
+			Detail: detail.String(),
+		}
+
+		b, _ := json.Marshal(ve)
+
+		return ValidationErrorSeparator + string(b)
 	})
 	oaOptions := OAValidatorOptions{
 		ValidateResponse: true,

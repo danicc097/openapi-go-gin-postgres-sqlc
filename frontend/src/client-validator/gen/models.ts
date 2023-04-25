@@ -24,6 +24,7 @@ export type Scopes = Scope[]
 export type Location = string[]
 export type Message = string
 export type ErrorType = string
+export type ErrorDetails = string
 export type Detail = ValidationError[]
 /**
  * string identifiers for SSE event listeners.
@@ -220,6 +221,7 @@ export interface ValidationError {
   loc: Location
   msg: Message
   type: ErrorType
+  detail: ErrorDetails
 }
 /**
  * represents User data to update
