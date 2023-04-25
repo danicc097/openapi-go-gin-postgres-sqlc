@@ -25,13 +25,19 @@ const (
 	ErrorCodeAlreadyExists
 	ErrorCodeUnauthorized
 	ErrorCodeUnauthenticated
-	ErrorCodeValidationError
-	ErrorCodeResponseValidationError
+	ErrorCodeValidation
+	ErrorCodeResponseValidation
 
 	ErrorCodeInvalidRole
 	ErrorCodeInvalidScope
 
 	ErrorCodeInvalidUUID
+)
+
+type HTTPErrorType string
+
+const (
+	HTTPErrorTypeResponseValidation HTTPErrorType = "response-validation-error"
 )
 
 // WrapErrorf returns a wrapped error.

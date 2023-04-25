@@ -35,18 +35,11 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 			status = http.StatusNotFound
 		case internal.ErrorCodeInvalidArgument:
 			status = http.StatusBadRequest
-
-			// TODO kin errors render response in the middleware
-			// var verrors validation.Errors
-			// if errors.As(ierr, &verrors) {
-			// 	resp.Validations = verrors
-			// }
-
-		case internal.ErrorCodeValidationError:
+		case internal.ErrorCodeValidation:
 			status = http.StatusBadRequest
 			resp.Message = ierr.Error()
 			// TODO add tests with nested locs, etc.
-		case internal.ErrorCodeResponseValidationError:
+		case internal.ErrorCodeResponseValidation:
 			status = http.StatusUnprocessableEntity
 
 			validationErrors := strings.Split(err.Error(), ValidationErrorSeparator)[1:]
@@ -55,7 +48,6 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 			for i, vErrString := range validationErrors {
 				vErrString := strings.Split(vErrString, "|")[0]
 				var vErr models.ValidationError
-				fmt.Printf("vErrString: %v\n", vErrString)
 
 				err := json.Unmarshal([]byte(vErrString), &vErr)
 				vErrs[i] = vErr

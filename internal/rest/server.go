@@ -208,7 +208,7 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 		ve := &models.ValidationError{
 			Loc:    err.JSONPointer(),
 			Msg:    err.Reason,
-			Type:   err.SchemaField,
+			Type:   internal.HTTPErrorTypeResponseValidation,
 			Detail: detail.String(),
 		}
 

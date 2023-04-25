@@ -81,7 +81,7 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 				options.ErrorHandler(c, err.Error(), http.StatusBadRequest)
 			} else {
 				// error response customized via WithCustomSchemaErrorFunc
-				renderErrorResponse(c, "invalid request", internal.WrapErrorf(err, internal.ErrorCodeValidationError, "OpenAPI request validation failed"))
+				renderErrorResponse(c, "invalid request", internal.WrapErrorf(err, internal.ErrorCodeValidation, "OpenAPI request validation failed"))
 			}
 
 			rbw.ResponseWriter.Write(rbw.body.Bytes())
@@ -119,7 +119,7 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 
 		if err := openapi3filter.ValidateResponse(c.Request.Context(), input); err != nil {
 			rbw.body.Reset()
-			renderErrorResponse(c, "invalid response", internal.WrapErrorf(err, internal.ErrorCodeResponseValidationError, "OpenAPI response validation failed"))
+			renderErrorResponse(c, "invalid response", internal.WrapErrorf(err, internal.ErrorCodeResponseValidation, "OpenAPI response validation failed"))
 			rbw.ResponseWriter.Write(rbw.body.Bytes())
 
 			return
@@ -163,11 +163,11 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 		case *routers.RouteError:
 			// We've got a bad request, the path requested doesn't match
 			// either server, or path, or something.
-			return internal.NewErrorf(internal.ErrorCodeValidationError, e.Reason)
+			return internal.NewErrorf(internal.ErrorCodeValidation, e.Reason)
 		default:
 			// This should never happen today, but if our upstream code changes,
 			// we don't want to crash the server, so handle the unexpected error.
-			return internal.NewErrorf(internal.ErrorCodeValidationError, "unknown error validating route: %s", err.Error())
+			return internal.NewErrorf(internal.ErrorCodeValidation, "unknown error validating route: %s", err.Error())
 		}
 	}
 
@@ -202,13 +202,13 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 			// Split up the verbose error by lines and return the first one
 			// openapi errors seem to be multi-line with a decent message on the first
 			errorLines := strings.Split(e.Error(), "\n")
-			return internal.NewErrorf(internal.ErrorCodeValidationError, "error in openapi3filter.RequestError: %s", errorLines[0])
+			return internal.NewErrorf(internal.ErrorCodeValidation, "error in openapi3filter.RequestError: %s", errorLines[0])
 		case *openapi3filter.SecurityRequirementsError:
-			return internal.NewErrorf(internal.ErrorCodeValidationError, "error in openapi3filter.SecurityRequirementsError: %s", e.Error())
+			return internal.NewErrorf(internal.ErrorCodeValidation, "error in openapi3filter.SecurityRequirementsError: %s", e.Error())
 		default:
 			// This should never happen today, but if our upstream code changes,
 			// we don't want to crash the server, so handle the unexpected error.
-			return internal.NewErrorf(internal.ErrorCodeValidationError, "unknown error validating request: %s", err)
+			return internal.NewErrorf(internal.ErrorCodeValidation, "unknown error validating request: %s", err)
 		}
 	}
 	return nil
@@ -232,5 +232,5 @@ func getMultiErrorHandlerFromOptions(options *OAValidatorOptions) MultiErrorHand
 // of all of the errors. This method is called if there are no other
 // methods defined on the options.
 func defaultMultiErrorHandler(me openapi3.MultiError) error {
-	return internal.NewErrorf(internal.ErrorCodeValidationError, "validation errors encountered: %s", me)
+	return internal.NewErrorf(internal.ErrorCodeValidation, "validation errors encountered: %s", me)
 }
