@@ -613,6 +613,44 @@
         "apiKey": {
           "$ref": "#/definitions/DbUserAPIKey"
         },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fullName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hasGlobalNotifications": {
+          "type": "boolean"
+        },
+        "hasPersonalNotifications": {
+          "type": "boolean"
+        },
+        "lastName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "projects": {
           "items": {
             "$ref": "#/definitions/DbProject"
@@ -637,12 +675,24 @@
             "null"
           ]
         },
-        "user": {
-          "$ref": "#/definitions/DbUser"
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        },
+        "username": {
+          "type": "string"
         }
       },
       "required": [
-        "user",
+        "userID",
+        "username",
+        "email",
+        "firstName",
+        "lastName",
+        "fullName",
+        "hasPersonalNotifications",
+        "hasGlobalNotifications",
+        "createdAt",
+        "deletedAt",
         "role",
         "scopes"
       ],

@@ -216,11 +216,22 @@ export interface components {
     };
     UserResponse: {
       apiKey?: components["schemas"]["DbUserAPIKey"];
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt: string | null;
+      email: string;
+      firstName: string | null;
+      fullName: string | null;
+      hasGlobalNotifications: boolean;
+      hasPersonalNotifications: boolean;
+      lastName: string | null;
       projects?: (components["schemas"]["DbProject"])[] | null;
       role: components["schemas"]["Role"];
       scopes: components["schemas"]["Scopes"];
       teams?: (components["schemas"]["DbTeam"])[] | null;
-      user: components["schemas"]["DbUser"];
+      userID: components["schemas"]["UuidUUID"];
+      username: string;
     };
     /** HTTPValidationError */
     HTTPValidationError: {

@@ -208,11 +208,20 @@ export interface RestProjectBoardResponse {
 }
 export interface UserResponse {
   apiKey?: DbUserAPIKey
+  createdAt: string
+  deletedAt: string | null
+  email: string
+  firstName: string | null
+  fullName: string | null
+  hasGlobalNotifications: boolean
+  hasPersonalNotifications: boolean
+  lastName: string | null
   projects?: DbProject[] | null
   role: Role
   scopes: Scopes
   teams?: DbTeam[] | null
-  user: DbUser
+  userID: UuidUUID
+  username: string
 }
 export interface HTTPValidationError {
   detail?: Detail
