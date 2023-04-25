@@ -9,9 +9,9 @@ import (
 
 // UserResponse represents an OpenAPI schema response for a User.
 type UserResponse struct {
-	User   db.User     `json:"user" required:"true"`
-	Role   models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
-	Scopes []string    `json:"scopes" ref:"#/components/schemas/Scopes" required:"true"`
+	db.User `required:"true"`
+	Role    models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
+	Scopes  []string    `json:"scopes" ref:"#/components/schemas/Scopes" required:"true"`
 
 	APIKey   *db.UserAPIKey `json:"apiKey,omitempty"`
 	Teams    *[]db.Team     `json:"teams,omitempty"`

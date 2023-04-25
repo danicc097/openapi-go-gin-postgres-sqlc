@@ -745,6 +745,28 @@ components:
       properties:
         apiKey:
           $ref: '#/components/schemas/DbUserAPIKey'
+        createdAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        email:
+          type: string
+        firstName:
+          nullable: true
+          type: string
+        fullName:
+          nullable: true
+          type: string
+        hasGlobalNotifications:
+          type: boolean
+        hasPersonalNotifications:
+          type: boolean
+        lastName:
+          nullable: true
+          type: string
         projects:
           items:
             $ref: '#/components/schemas/DbProject'
@@ -759,10 +781,21 @@ components:
             $ref: '#/components/schemas/DbTeam'
           nullable: true
           type: array
-        user:
-          $ref: '#/components/schemas/DbUser'
+        userID:
+          $ref: '#/components/schemas/UuidUUID'
+        username:
+          type: string
       required:
-        - user
+        - userID
+        - username
+        - email
+        - firstName
+        - lastName
+        - fullName
+        - hasPersonalNotifications
+        - hasGlobalNotifications
+        - createdAt
+        - deletedAt
         - role
         - scopes
       type: object
@@ -856,8 +889,8 @@ components:
       required:
         - loc
         - msg
-        - type
         - detail
+        - type
       type: object
       properties:
         loc:
@@ -869,11 +902,19 @@ components:
           title: Message
           type: string
         type:
-          title: Error type
-          type: string
+          $ref: '#/components/schemas/HttpErrorType'
         detail:
           title: Error details
           type: string
+        ctx:
+          title: Contextual information
+          type: object
+    HttpErrorType:
+      type: string
+      enum:
+        - response_validation
+        - request_validation
+        - unknown
     UuidUUID: # Generated from internal structs. DO NOT EDIT.
       type: string
     PgtypeJSONB: # Generated from internal structs. DO NOT EDIT.

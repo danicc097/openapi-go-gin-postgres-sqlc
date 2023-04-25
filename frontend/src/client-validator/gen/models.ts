@@ -23,7 +23,7 @@ export type Scope =
 export type Scopes = Scope[]
 export type Location = string[]
 export type Message = string
-export type ErrorType = string
+export type HttpErrorType = 'response_validation' | 'request_validation' | 'unknown'
 export type ErrorDetails = string
 export type Detail = ValidationError[]
 /**
@@ -229,9 +229,11 @@ export interface HTTPValidationError {
 export interface ValidationError {
   loc: Location
   msg: Message
-  type: ErrorType
+  type: HttpErrorType
   detail: ErrorDetails
+  ctx?: ContextualInformation
 }
+export interface ContextualInformation {}
 /**
  * represents User data to update
  */

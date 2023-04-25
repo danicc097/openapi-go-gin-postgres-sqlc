@@ -802,8 +802,8 @@
       "required": [
         "loc",
         "msg",
-        "type",
-        "detail"
+        "detail",
+        "type"
       ],
       "type": "object",
       "properties": {
@@ -819,14 +819,26 @@
           "type": "string"
         },
         "type": {
-          "title": "Error type",
-          "type": "string"
+          "$ref": "#/definitions/HttpErrorType"
         },
         "detail": {
           "title": "Error details",
           "type": "string"
+        },
+        "ctx": {
+          "title": "Contextual information",
+          "type": "object"
         }
       },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "HttpErrorType": {
+      "type": "string",
+      "enum": [
+        "response_validation",
+        "request_validation",
+        "unknown"
+      ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "UuidUUID": {
@@ -1193,6 +1205,9 @@
     },
     "ValidationError": {
       "$ref": "#/definitions/ValidationError"
+    },
+    "HttpErrorType": {
+      "$ref": "#/definitions/HttpErrorType"
     },
     "UuidUUID": {
       "$ref": "#/definitions/UuidUUID"

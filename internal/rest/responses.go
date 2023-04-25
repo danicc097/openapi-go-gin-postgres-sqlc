@@ -40,7 +40,7 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 			resp.Message = ierr.Error()
 			// TODO add tests with nested locs, etc.
 		case internal.ErrorCodeResponseValidation:
-			status = http.StatusUnprocessableEntity
+			status = http.StatusInternalServerError
 
 			validationErrors := strings.Split(err.Error(), ValidationErrorSeparator)[1:]
 			vErrs := make([]models.ValidationError, len(validationErrors))
@@ -52,7 +52,7 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 				err := json.Unmarshal([]byte(vErrString), &vErr)
 				vErrs[i] = vErr
 				if err != nil {
-					c.String(http.StatusInternalServerError, fmt.Sprintf("Invalid ValidationError: %s", vErrString))
+					c.String(http.StatusInternalServerError, fmt.Sprintf("invalid ValidationError: %s", vErrString))
 					return
 				}
 			}

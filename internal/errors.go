@@ -34,12 +34,6 @@ const (
 	ErrorCodeInvalidUUID
 )
 
-type HTTPErrorType string
-
-const (
-	HTTPErrorTypeResponseValidation HTTPErrorType = "response-validation-error"
-)
-
 // WrapErrorf returns a wrapped error.
 func WrapErrorf(orig error, code ErrorCode, format string, a ...any) error {
 	return &Error{

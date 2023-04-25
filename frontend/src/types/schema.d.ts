@@ -286,11 +286,14 @@ export interface components {
       loc: (string)[];
       /** Message */
       msg: string;
-      /** Error type */
-      type: string;
+      type: components["schemas"]["HttpErrorType"];
       /** Error details */
       detail: string;
+      /** Contextual information */
+      ctx?: Record<string, never>;
     };
+    /** @enum {string} */
+    HttpErrorType: "response_validation" | "request_validation" | "unknown";
     UuidUUID: string;
     PgtypeJSONB: Record<string, never>;
     /**

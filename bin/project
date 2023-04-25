@@ -558,7 +558,7 @@ x.gen.frontend() {
           'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
           frontend/config.template.json >/tmp/config.tmp.json && mv /tmp/config.tmp.json "$ENV_REPLACE_GLOB"
         envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
-        frontend/nginx/replace-envvars.sh "$envvars"
+        frontend/nginx/replace-envvars.sh "$envvars" # FIXME
       } &
       {
         node frontend/generate-client-validator.js
