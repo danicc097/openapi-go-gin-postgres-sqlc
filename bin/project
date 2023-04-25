@@ -471,12 +471,12 @@ x.gen.client-server() {
 
     echo "Running generation"
     paths=".openapi.paths.yaml"
-    types=".openapi.types.yaml"
+    # types=".openapi.types.yaml"
 
     # hack to get separate types generation
-    sed "s/\$ref: '\#\//\$ref: '$types\#\//g" $SPEC >"$paths"
+    sed "s/\$ref: '\#\//\$ref: '$SPEC\#\//g" $SPEC >"$paths"
     # yq e 'del(.components)' -i "$paths" # dont delete since recent oapi-codegen does some checks even we are not generating types
-    cp $SPEC $types
+    # cp $SPEC $types
 
     ./oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC" || err "Failed types generation"
     ./oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
