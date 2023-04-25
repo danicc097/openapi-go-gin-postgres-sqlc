@@ -87,11 +87,12 @@ func TestOapiRequestValidator(t *testing.T) {
 		called = true
 	})
 	// Let's send the request to the wrong server, this should fail validation
-	{
-		rec := doGet(t, g, "http://not.test-server.com/resource")
-		assert.Equal(t, http.StatusBadRequest, rec.Code)
-		assert.False(t, called, "Handler should not have been called")
-	}
+	// NOTE: allowing any server now
+	// {
+	// 	rec := doGet(t, g, "http://not.test-server.com/resource")
+	// 	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	// 	assert.False(t, called, "Handler should not have been called")
+	// }
 
 	// Let's send a good request, it should pass
 	{
