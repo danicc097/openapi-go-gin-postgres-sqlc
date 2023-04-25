@@ -27,12 +27,13 @@ SCRIPT="$(basename $0)"
 trap killgroup SIGINT
 
 trap errtrap SIGUSR1
-trap 'exit-cleanup $LINENO' 0
+trap 'exit-cleanup $LINENO' 0 # EXIT (0) executed on exit from the shell
 
 exit-cleanup() {
   if [[ $restore_cache = 1 && -z $NO_CACHE ]]; then
-    cache-gen.restore
+    cache-gen.restore #
   fi
+  cd "$TOP_LEVEL_DIR" || true
 }
 
 killgroup() {
@@ -69,8 +70,9 @@ readonly FRONTEND_SRC="frontend/src"
 readonly FRONTEND_GEN="$FRONTEND_SRC/gen"
 
 readonly CACHE=".generate.cache"
-readonly CACHE_PG_REPO_GEN="$CACHE/pgrepo/gen"
-readonly CACHE_FRONTEND_GEN="$CACHE/frontend/gen"
+readonly CACHE_GEN="$CACHE/gen"
+readonly CACHE_PG_REPO_GEN="$CACHE_GEN/pgrepo/gen"
+readonly CACHE_FRONTEND_GEN="$CACHE_GEN/frontend/gen"
 
 readonly MAX_FNAME_LOG_LEN=13
 
@@ -536,6 +538,7 @@ x.gen.proto() {
 
 # Run frontend code generation.
 x.gen.frontend() {
+  cache-gen
   { { {
     (
       set -a
@@ -543,11 +546,41 @@ x.gen.frontend() {
       source ".env.$env"
       set +a
 
-      cd frontend
-      # TODO get here and have x functions for orval, etc. x.gen.orval
-      pnpm run generate
+      SCHEMA_OUT="frontend/src/types/schema.d.ts"
+      export ENV_REPLACE_GLOB=frontend/config.json
+
+      mkdir -p frontend/src/types
+      rm -rf frontend/src/gen
+
+      {
+        # ensure config has all k:v as "<KEY>": "$<KEY>"
+        jq \
+          'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
+          frontend/config.template.json >/tmp/config.tmp.json && mv /tmp/config.tmp.json "$ENV_REPLACE_GLOB"
+        envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
+        frontend/nginx/replace-envvars.sh "$envvars"
+      } &
+      {
+        node frontend/generate-client-validator.js
+        # TODO allow custom validate.ts baked into fork
+        rm -f frontend/src/client-validator/gen/validate.ts
+        find frontend/src/client-validator/gen/ -type f -exec \
+          sed -i "s/from '.\/validate'/from '..\/validate'/g" {} \;
+      } &
+      {
+        openapi-typescript openapi.yaml --output "$SCHEMA_OUT" --path-params-as-types --prettier-config .prettierrc
+        echo "/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable */
+// @ts-nocheck
+export type schemas = components['schemas']
+" | cat - "$SCHEMA_OUT" >/tmp/out && mv /tmp/out "$SCHEMA_OUT"
+      } &
+      orval --config frontend/orval.config.ts &
+
+      wait_without_error
     )
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  cache-gen.cleanup
 }
 
 # Run all codegen and postgen commands for the project.
@@ -1310,10 +1343,12 @@ cache-gen() {
 
   restore_cache_caller="${FUNCNAME[1]}"
 
+  rm -rf "$CACHE_GEN"
+  mkdir -p "$CACHE_GEN"
   mkdir -p "$CACHE_FRONTEND_GEN"
   mkdir -p "$CACHE_PG_REPO_GEN"
 
-  cp "$SPEC" "$CACHE"
+  cp "$SPEC" "$CACHE_GEN"
   rsync -a --delete "$FRONTEND_GEN/" "$CACHE_FRONTEND_GEN"
   rsync -a --delete "$PG_REPO_GEN/" "$CACHE_PG_REPO_GEN"
 
@@ -1327,12 +1362,10 @@ cache-gen.cleanup() {
 }
 
 cache-gen.restore() {
-  echo "Restoring previous generated code"
-  mv "$CACHE/$SPEC" "$SPEC"
-  rm -rf "$PG_REPO_GEN"
-  mv "$CACHE_PG_REPO_GEN" "$PG_REPO"
-  rm -rf "$FRONTEND_GEN"
-  mv "$CACHE_FRONTEND_GEN" "$FRONTEND_SRC"
+  echo "Restoring previously generated code..."
+  mv "$CACHE_GEN/$SPEC" "$SPEC"
+  rsync -a --delete "$CACHE_PG_REPO_GEN/" "$PG_REPO_GEN/"
+  rsync -a --delete "$CACHE_FRONTEND_GEN/" "$FRONTEND_GEN/"
 }
 
 usage() {
