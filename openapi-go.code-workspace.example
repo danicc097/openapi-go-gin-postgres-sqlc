@@ -12,6 +12,9 @@
       "!merge",
       "!!merge",
     ],
+    "go.testEnvVars": {
+      "POSTGRES_TRACE": "false",
+    },
     "remote.SSH.defaultForwardedPorts": [
       // use zipkin instead: https://github.com/jaegertracing/jaeger/issues/3479#issuecomment-1012199971
       // {

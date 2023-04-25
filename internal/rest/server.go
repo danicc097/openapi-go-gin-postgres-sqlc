@@ -184,59 +184,20 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 	//
 
 	// -- openapi
-	oafilterOpts := openapi3filter.Options{
-		ExcludeRequestBody:    false,
-		ExcludeResponseBody:   false,
-		IncludeResponseStatus: false,
-		MultiError:            true,
-		AuthenticationFunc:    verifyAuthentication,
-	}
-
-	oafilterOpts.WithCustomSchemaErrorFunc(func(err *openapi3.SchemaError) string {
-		detail := &bytes.Buffer{}
-		detail.WriteString("\nSchema:\n  ")
-		encoder := json.NewEncoder(detail)
-		encoder.SetIndent("  ", "  ")
-		if err := encoder.Encode(err.Schema); err != nil {
-			panic(err)
-		}
-		detail.WriteString("\nValue:\n  ")
-		if err := encoder.Encode(err.Value); err != nil {
-			panic(err)
-		}
-
-		ve := &models.ValidationError{
-			Loc:    err.JSONPointer(),
-			Msg:    err.Reason,
-			Type:   models.HttpErrorTypeUnknown,
-			Detail: detail.String(),
-		}
-
-		b, _ := json.Marshal(ve)
-
-		return ValidationErrorSeparator + string(b)
-	})
-	oaOptions := OAValidatorOptions{
-		ValidateResponse: true,
-		Options:          oafilterOpts,
-		// MultiErrorHandler: func(me openapi3.MultiError) error {
-		// 	return fmt.Errorf("multiple errors:  %s", me.Error())
-		// },
-	}
-
 	openapi, err := ReadOpenAPI(conf.SpecPath)
 	if err != nil {
 		return nil, err
 	}
 
 	oasMw := newOpenapiMiddleware(conf.Logger, openapi)
+	oaOptions := createOpenAPIValidatorOptions()
+	vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))
 
 	rlMw := newRateLimitMiddleware(conf.Logger, 25, 10)
 	switch cfg.AppEnv {
 	case "prod":
 		vg.Use(rlMw.Limit())
 	}
-	vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))
 
 	urepo := reposwrappers.NewUserWithTracing(
 		reposwrappers.NewUserWithTimeout(
@@ -281,8 +242,6 @@ func NewServer(conf Config, opts ...ServerOption) (*server, error) {
 }
 
 // Run configures a server and underlying services with the given configuration.
-// TODO should take in AppConfig.
-// RunTestServer also takes AppConfig
 // NewServer takes its own config as is now
 func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan error, error) {
 	var err error
@@ -413,4 +372,48 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 	}()
 
 	return errC, nil
+}
+
+func createOpenAPIValidatorOptions() OAValidatorOptions {
+	oafilterOpts := openapi3filter.Options{
+		ExcludeRequestBody:    false,
+		ExcludeResponseBody:   false,
+		IncludeResponseStatus: false,
+		MultiError:            true,
+		AuthenticationFunc:    verifyAuthentication,
+	}
+
+	oafilterOpts.WithCustomSchemaErrorFunc(func(err *openapi3.SchemaError) string {
+		detail := &bytes.Buffer{}
+		detail.WriteString("\nSchema:\n  ")
+		encoder := json.NewEncoder(detail)
+		encoder.SetIndent("  ", "  ")
+		if err := encoder.Encode(err.Schema); err != nil {
+			panic(err)
+		}
+		detail.WriteString("\nValue:\n  ")
+		if err := encoder.Encode(err.Value); err != nil {
+			panic(err)
+		}
+
+		ve := &models.ValidationError{
+			Loc:    err.JSONPointer(),
+			Msg:    err.Reason,
+			Type:   models.HttpErrorTypeUnknown, // no way to distinguish here yet
+			Detail: detail.String(),
+		}
+
+		b, _ := json.Marshal(ve)
+
+		return ValidationErrorSeparator + string(b)
+	})
+	oaOptions := OAValidatorOptions{
+		ValidateResponse: true,
+		Options:          oafilterOpts,
+		// MultiErrorHandler: func(me openapi3.MultiError) error {
+		// 	return fmt.Errorf("multiple errors:  %s", me.Error())
+		// },
+	}
+
+	return oaOptions
 }

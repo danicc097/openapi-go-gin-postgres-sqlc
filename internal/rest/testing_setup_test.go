@@ -28,12 +28,17 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
+
+	_ "embed"
 )
 
 var (
 	testPool    *pgxpool.Pool
 	testSQLPool *sql.DB // for jet, use .Sql() to use pgx directly
 )
+
+//go:embed testdata/test_spec.yaml
+var testSchema []byte
 
 func TestMain(m *testing.M) {
 	os.Exit(testMain(m))

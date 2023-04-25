@@ -31,6 +31,7 @@ servers:
   - url: https://openapi.prod.localhost/api/v2
   # for tests validation middleware to work on random port.
   - url: /v2
+  - url: /
 tags:
   - description: Operations about user
     name: user

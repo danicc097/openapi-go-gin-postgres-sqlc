@@ -24,7 +24,6 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 	status := http.StatusInternalServerError
 
 	var ierr *internal.Error
-	fmt.Printf("err: %v\n", err)
 	if !errors.As(err, &ierr) {
 		resp.Error = "internal error"
 		resp.Message = msg
@@ -35,32 +34,14 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 			status = http.StatusNotFound
 		case internal.ErrorCodeInvalidArgument:
 			status = http.StatusBadRequest
-		case internal.ErrorCodeValidation:
+		case internal.ErrorCodeRequestValidation:
 			status = http.StatusBadRequest
-			resp.Message = ierr.Error()
-			// TODO add tests with nested locs, etc.
+			resp.Message = "OpenAPI request validation failed"
+			resp.ValidationError = extractValidationError(err.Error(), c, "request")
 		case internal.ErrorCodeResponseValidation:
 			status = http.StatusInternalServerError
-
-			validationErrors := strings.Split(err.Error(), ValidationErrorSeparator)[1:]
-			vErrs := make([]models.ValidationError, len(validationErrors))
-
-			for i, vErrString := range validationErrors {
-				vErrString := strings.Split(vErrString, "|")[0]
-				var vErr models.ValidationError
-
-				err := json.Unmarshal([]byte(vErrString), &vErr)
-				vErrs[i] = vErr
-				if err != nil {
-					c.String(http.StatusInternalServerError, fmt.Sprintf("invalid ValidationError: %s", vErrString))
-					return
-				}
-			}
-
 			resp.Message = "OpenAPI response validation failed"
-			resp.ValidationError = models.HTTPValidationError{
-				Detail: &vErrs,
-			}
+			resp.ValidationError = extractValidationError(err.Error(), c, "response")
 		case internal.ErrorCodeAlreadyExists:
 			status = http.StatusConflict
 		case internal.ErrorCodeUnauthorized:
@@ -82,6 +63,33 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 	}
 
 	renderResponse(c, resp, status)
+}
+
+func extractValidationError(errString string, c *gin.Context, typ string) models.HTTPValidationError {
+	validationErrors := strings.Split(errString, ValidationErrorSeparator)[1:]
+	vErrs := make([]models.ValidationError, len(validationErrors))
+
+	for i, vErrString := range validationErrors {
+		vErrString := strings.Split(vErrString, "|")[0]
+		var vErr models.ValidationError
+
+		err := json.Unmarshal([]byte(vErrString), &vErr)
+		if typ == "request" {
+			vErr.Type = models.HttpErrorTypeRequestValidation
+		} else {
+			vErr.Type = models.HttpErrorTypeResponseValidation
+		}
+		vErrs[i] = vErr
+		if err != nil {
+			c.String(http.StatusInternalServerError, fmt.Sprintf("invalid ValidationError: %s", vErrString))
+			c.Abort()
+		}
+	}
+
+	httpValidationError := models.HTTPValidationError{
+		Detail: &vErrs,
+	}
+	return httpValidationError
 }
 
 func renderResponse(c *gin.Context, res interface{}, status int) {

@@ -2,7 +2,6 @@ package rest
 
 import (
 	"context"
-	_ "embed"
 	"errors"
 	"io"
 	"net/http"
@@ -20,9 +19,6 @@ import (
 
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
 )
-
-//go:embed testdata/test_spec.yaml
-var testSchema []byte
 
 func doGet(t *testing.T, handler http.Handler, rawURL string) *httptest.ResponseRecorder {
 	u, err := url.Parse(rawURL)
@@ -316,7 +312,7 @@ func TestRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T) {
 			MultiError:            true,
 		},
 		MultiErrorHandler: func(me openapi3.MultiError) error {
-			return internal.NewErrorf(internal.ErrorCodeValidation, "Bad stuff -  %s", me.Error())
+			return internal.NewErrorf(internal.ErrorCodeRequestValidation, "Bad stuff -  %s", me.Error())
 		},
 	}
 

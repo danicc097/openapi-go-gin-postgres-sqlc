@@ -25,7 +25,7 @@ const (
 	ErrorCodeAlreadyExists
 	ErrorCodeUnauthorized
 	ErrorCodeUnauthenticated
-	ErrorCodeValidation
+	ErrorCodeRequestValidation
 	ErrorCodeResponseValidation
 
 	ErrorCodeInvalidRole

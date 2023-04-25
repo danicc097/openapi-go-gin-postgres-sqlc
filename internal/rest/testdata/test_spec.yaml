@@ -4,6 +4,9 @@ info:
   title: TestServer
 servers:
   - url: http://test-server.com/
+  # for tests validation middleware to work on random port.
+  - url: /v2
+  - url: /
 paths:
   /resource:
     get:
@@ -50,7 +53,7 @@ paths:
           description: no content
   /protected_resource2:
     get:
-      operationId: getProtectedResource
+      operationId: getProtectedResource2
       security:
         - BearerAuth:
             - otherScope
@@ -59,7 +62,7 @@ paths:
           description: no content
   /protected_resource_401:
     get:
-      operationId: getProtectedResource
+      operationId: getProtectedResource401
       security:
         - BearerAuth:
             - unauthorized
@@ -68,7 +71,7 @@ paths:
           description: no content
   /multiparamresource:
     get:
-      operationId: getResource
+      operationId: getResourceMulti
       parameters:
         - name: id
           in: query
@@ -95,6 +98,45 @@ paths:
                     type: string
                   id:
                     type: integer
+  /validation_errors:
+    get:
+      operationId: responseValidationError
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                properties:
+                  name:
+                    type: string
+                  id:
+                    type: integer
+    post:
+      operationId: requestValidationError
+      responses:
+        "200":
+          description: success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                id:
+                  type: integer
+                nested:
+                  type: object
+                  properties:
+                    color:
+                      type: string
+                    nestedProperty:
+                      type: string
+                  required:
+                    - nestedProperty
+
 components:
   securitySchemes:
     BearerAuth:
