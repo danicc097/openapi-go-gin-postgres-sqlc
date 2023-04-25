@@ -5,16 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
 )
 
 // ErrorResponse represents a response containing an error message.
 type ErrorResponse struct {
-	Error   string `json:"error"`
-	Message string `json:"message"`
-	// Validations validation.Errors `json:"validations,omitempty"`
+	Error           string                     `json:"error"`
+	Message         string                     `json:"message"`
+	ValidationError models.HTTPValidationError `json:"validationError,omitempty"`
 }
 
 func renderErrorResponse(c *gin.Context, msg string, err error) {
@@ -33,19 +35,32 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 			status = http.StatusNotFound
 		case internal.ErrorCodeInvalidArgument:
 			status = http.StatusBadRequest
-
-			// TODO kin errors render response in the middleware
-			// var verrors validation.Errors
-			// if errors.As(ierr, &verrors) {
-			// 	resp.Validations = verrors
-			// }
-
-		case internal.ErrorCodeValidationError:
+		case internal.ErrorCodeValidation:
 			status = http.StatusBadRequest
 			resp.Message = ierr.Error()
-		case internal.ErrorCodeResponseValidationError:
+			// TODO add tests with nested locs, etc.
+		case internal.ErrorCodeResponseValidation:
 			status = http.StatusUnprocessableEntity
-			resp.Message = ierr.Error()
+
+			validationErrors := strings.Split(err.Error(), ValidationErrorSeparator)[1:]
+			vErrs := make([]models.ValidationError, len(validationErrors))
+
+			for i, vErrString := range validationErrors {
+				vErrString := strings.Split(vErrString, "|")[0]
+				var vErr models.ValidationError
+
+				err := json.Unmarshal([]byte(vErrString), &vErr)
+				vErrs[i] = vErr
+				if err != nil {
+					c.String(http.StatusInternalServerError, fmt.Sprintf("Invalid ValidationError: %s", vErrString))
+					return
+				}
+			}
+
+			resp.Message = "OpenAPI response validation failed"
+			resp.ValidationError = models.HTTPValidationError{
+				Detail: &vErrs,
+			}
 		case internal.ErrorCodeAlreadyExists:
 			status = http.StatusConflict
 		case internal.ErrorCodeUnauthorized:

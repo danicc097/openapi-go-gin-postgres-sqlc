@@ -429,9 +429,10 @@ type UuidUUID = string
 
 // ValidationError defines the model for ValidationError.
 type ValidationError struct {
-	Loc  []string `json:"loc"`
-	Msg  string   `json:"msg"`
-	Type string   `json:"type"`
+	Detail string   `json:"detail"`
+	Loc    []string `json:"loc"`
+	Msg    string   `json:"msg"`
+	Type   string   `json:"type"`
 }
 
 // WorkItemRole represents a database 'work_item_role'

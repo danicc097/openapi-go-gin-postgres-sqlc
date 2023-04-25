@@ -316,7 +316,7 @@ func TestRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T) {
 			MultiError:            true,
 		},
 		MultiErrorHandler: func(me openapi3.MultiError) error {
-			return internal.NewErrorf(internal.ErrorCodeValidationError, "Bad stuff -  %s", me.Error())
+			return internal.NewErrorf(internal.ErrorCodeValidation, "Bad stuff -  %s", me.Error())
 		},
 	}
 

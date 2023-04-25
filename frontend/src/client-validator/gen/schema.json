@@ -752,7 +752,8 @@
       "required": [
         "loc",
         "msg",
-        "type"
+        "type",
+        "detail"
       ],
       "type": "object",
       "properties": {
@@ -768,7 +769,11 @@
           "type": "string"
         },
         "type": {
-          "title": "Error Type",
+          "title": "Error type",
+          "type": "string"
+        },
+        "detail": {
+          "title": "Error details",
           "type": "string"
         }
       },

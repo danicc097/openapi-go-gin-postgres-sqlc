@@ -25,8 +25,8 @@ const (
 	ErrorCodeAlreadyExists
 	ErrorCodeUnauthorized
 	ErrorCodeUnauthenticated
-	ErrorCodeValidationError
-	ErrorCodeResponseValidationError
+	ErrorCodeValidation
+	ErrorCodeResponseValidation
 
 	ErrorCodeInvalidRole
 	ErrorCodeInvalidScope
@@ -34,8 +34,14 @@ const (
 	ErrorCodeInvalidUUID
 )
 
+type HTTPErrorType string
+
+const (
+	HTTPErrorTypeResponseValidation HTTPErrorType = "response-validation-error"
+)
+
 // WrapErrorf returns a wrapped error.
-func WrapErrorf(orig error, code ErrorCode, format string, a ...interface{}) error {
+func WrapErrorf(orig error, code ErrorCode, format string, a ...any) error {
 	return &Error{
 		code: code,
 		orig: orig,
@@ -44,7 +50,7 @@ func WrapErrorf(orig error, code ErrorCode, format string, a ...interface{}) err
 }
 
 // NewErrorf instantiates a new error.
-func NewErrorf(code ErrorCode, format string, a ...interface{}) error {
+func NewErrorf(code ErrorCode, format string, a ...any) error {
 	return WrapErrorf(nil, code, format, a...)
 }
 
