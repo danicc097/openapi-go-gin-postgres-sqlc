@@ -12,5 +12,5 @@ if [[ -z $existing_vars ]]; then
 fi
 
 for file in $ENV_REPLACE_GLOB; do
-  envsubst $existing_vars <"$file" | sponge "$file"
+  envsubst "$existing_vars" <"$file" | sponge "$file"
 done
