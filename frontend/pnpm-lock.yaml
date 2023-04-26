@@ -41,12 +41,12 @@ dependencies:
   '@opentelemetry/auto-instrumentations-web':
     specifier: ^0.30.0
     version: 0.30.0(@opentelemetry/api@1.2.0)(zone.js@0.11.4)
-  '@opentelemetry/context-zone':
-    specifier: ^1.7.0
-    version: 1.7.0(@opentelemetry/api@1.2.0)
+  '@opentelemetry/context-zone-peer-dep':
+    specifier: ^1.12.0
+    version: 1.12.0(@opentelemetry/api@1.2.0)(zone.js@0.11.4)
   '@opentelemetry/core':
-    specifier: ^1.7.0
-    version: 1.7.0(@opentelemetry/api@1.2.0)
+    specifier: ^1.12.0
+    version: 1.12.0(@opentelemetry/api@1.2.0)
   '@opentelemetry/exporter-trace-otlp-http':
     specifier: ^0.33.0
     version: 0.33.0(@opentelemetry/api@1.2.0)
@@ -1198,25 +1198,25 @@ packages:
       - zone.js
     dev: false
 
-  /@opentelemetry/context-zone-peer-dep@1.7.0(@opentelemetry/api@1.2.0)(zone.js@0.11.8):
-    resolution: {integrity: sha512-lyY6gXmVTSsx8rdxvQ3EqiEwvyK3iWDJyt2G6nc/kpMon4gQsqPaOylevdVVw9FL5fhJMmJJPiRVHu3qDP63Zg==}
+  /@opentelemetry/context-zone-peer-dep@1.12.0(@opentelemetry/api@1.2.0)(zone.js@0.11.4):
+    resolution: {integrity: sha512-yEmMc6JuOpRi6Qc/H3WE0u2bP6GFmmFjRIbQQadXsC2/OpGX6VE2ysOOOPVrgBqviOWZ+6BLzI8caxxG+USB3A==}
     engines: {node: '>=14'}
     peerDependencies:
-      '@opentelemetry/api': '>=1.0.0 <1.3.0'
+      '@opentelemetry/api': '>=1.0.0 <1.5.0'
       zone.js: ^0.10.2 || ^0.11.0
     dependencies:
       '@opentelemetry/api': 1.2.0
-      zone.js: 0.11.8
+      zone.js: 0.11.4
     dev: false
 
-  /@opentelemetry/context-zone@1.7.0(@opentelemetry/api@1.2.0):
-    resolution: {integrity: sha512-ngl8uGzQM6/GMX4FtwrZ69qcvsCBA0u2AMwbO+j2aji/SXEqIOr8L9nM7A8/XzBo2UkmOte0jq2Mbir9TnWuZg==}
+  /@opentelemetry/core@1.12.0(@opentelemetry/api@1.2.0):
+    resolution: {integrity: sha512-4DWYNb3dLs2mSCGl65jY3aEgbvPWSHVQV/dmDWiYeWUrMakZQFcymqZOSUNZO0uDrEJoxMu8O5tZktX6UKFwag==}
     engines: {node: '>=14'}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.0.0 <1.5.0'
     dependencies:
-      '@opentelemetry/context-zone-peer-dep': 1.7.0(@opentelemetry/api@1.2.0)(zone.js@0.11.8)
-      zone.js: 0.11.8
-    transitivePeerDependencies:
-      - '@opentelemetry/api'
+      '@opentelemetry/api': 1.2.0
+      '@opentelemetry/semantic-conventions': 1.12.0
     dev: false
 
   /@opentelemetry/core@1.6.0(@opentelemetry/api@1.2.0):
@@ -1273,7 +1273,7 @@ packages:
       '@opentelemetry/api': ^1.0.0
     dependencies:
       '@opentelemetry/api': 1.2.0
-      '@opentelemetry/core': 1.7.0(@opentelemetry/api@1.2.0)
+      '@opentelemetry/core': 1.12.0(@opentelemetry/api@1.2.0)
       '@opentelemetry/instrumentation': 0.32.0(@opentelemetry/api@1.2.0)
       '@opentelemetry/sdk-trace-base': 1.7.0(@opentelemetry/api@1.2.0)
       '@opentelemetry/sdk-trace-web': 1.7.0(@opentelemetry/api@1.2.0)
@@ -1320,7 +1320,7 @@ packages:
       zone.js: 0.11.4
     dependencies:
       '@opentelemetry/api': 1.2.0
-      '@opentelemetry/core': 1.7.0(@opentelemetry/api@1.2.0)
+      '@opentelemetry/core': 1.12.0(@opentelemetry/api@1.2.0)
       '@opentelemetry/instrumentation': 0.32.0(@opentelemetry/api@1.2.0)
       '@opentelemetry/sdk-trace-web': 1.7.0(@opentelemetry/api@1.2.0)
       zone.js: 0.11.4
@@ -1503,6 +1503,11 @@ packages:
       '@opentelemetry/core': 1.7.0(@opentelemetry/api@1.2.0)
       '@opentelemetry/sdk-trace-base': 1.7.0(@opentelemetry/api@1.2.0)
       '@opentelemetry/semantic-conventions': 1.7.0
+    dev: false
+
+  /@opentelemetry/semantic-conventions@1.12.0:
+    resolution: {integrity: sha512-hO+bdeGOlJwqowUBoZF5LyP3ORUFOP1G0GRv8N45W/cztXbT2ZEXaAzfokRS9Xc9FWmYrDj32mF6SzH6wuoIyA==}
+    engines: {node: '>=14'}
     dev: false
 
   /@opentelemetry/semantic-conventions@1.6.0:
@@ -1846,7 +1851,7 @@ packages:
       '@stoplight/spectral-rulesets': 1.15.0
       '@stoplight/spectral-runtime': 1.1.2
       '@stoplight/types': 13.12.0
-      '@types/node': 18.16.0
+      '@types/node': 18.16.1
       pony-cause: 1.1.1
       rollup: 2.79.1
       tslib: 2.5.0
@@ -1866,7 +1871,7 @@ packages:
       '@stoplight/spectral-runtime': 1.1.2
       '@stoplight/types': 13.12.0
       '@stoplight/yaml': 4.2.3
-      '@types/node': 18.16.0
+      '@types/node': 18.16.1
       ajv: 8.12.0
       ast-types: 0.14.2
       astring: 1.8.4
@@ -2043,7 +2048,7 @@ packages:
   /@types/es-aggregate-error@1.0.2:
     resolution: {integrity: sha512-erqUpFXksaeR2kejKnhnjZjbFxUpGZx4Z7ydNL9ie8tEhXPiZTsLeUDJ6aR1F8j5wWUAtOAQWUqkc7givBJbBA==}
     dependencies:
-      '@types/node': 18.16.0
+      '@types/node': 18.16.1
     dev: false
 
   /@types/estree@0.0.39:
@@ -2058,7 +2063,7 @@ packages:
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 18.16.0
+      '@types/node': 18.16.1
     dev: true
 
   /@types/hast@2.3.4:
@@ -2104,10 +2109,6 @@ packages:
   /@types/lodash@4.14.189:
     resolution: {integrity: sha512-kb9/98N6X8gyME9Cf7YaqIMvYGnBSWqEci6tiettE6iJWH1XdJz/PO8LB0GtLCG7x8dU3KWhZT+lA1a35127tA==}
 
-  /@types/lodash@4.14.194:
-    resolution: {integrity: sha512-r22s9tAS7imvBt2lyHC9B8AGwWnXaYb1tY09oyLkXDs4vArpYJzw09nj8MLx5VfciBPGIb+ZwG0ssYnEPJxn/g==}
-    dev: true
-
   /@types/mdast@3.0.10:
     resolution: {integrity: sha512-W864tg/Osz1+9f4lrGTZpCSO5/z4608eUp19tbozkq2HJK6i3z1kT0H9tlADXuYIb1YYOBByU4Jsqkk75q48qA==}
     dependencies:
@@ -2122,8 +2123,8 @@ packages:
     resolution: {integrity: sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==}
     dev: false
 
-  /@types/node@18.16.0:
-    resolution: {integrity: sha512-BsAaKhB+7X+H4GnSjGhJG9Qi8Tw+inU9nJDwmD5CgOmBLEI6ArdhikpLX7DjbjDRDTbqZzU2LSQNZg8WGPiSZQ==}
+  /@types/node@18.16.1:
+    resolution: {integrity: sha512-DZxSZWXxFfOlx7k7Rv4LAyiMroaxa3Ly/7OOzZO8cBNho0YzAi4qlbrx8W27JGqG57IgR/6J7r+nOJWw6kcvZA==}
 
   /@types/node@18.7.23:
     resolution: {integrity: sha512-DWNcCHolDq0ZKGizjx2DZjR/PqsYwAcYUJmfMWqtVU2MBMG5Mo+xFZrhGId5r/O5HOuMPyQEcM6KUBp5lBZZBg==}
@@ -5315,7 +5316,7 @@ packages:
     dependencies:
       '@bcherny/json-schema-ref-parser': 10.0.5-fork
       '@types/json-schema': 7.0.11
-      '@types/lodash': 4.14.194
+      '@types/lodash': 4.14.189
       '@types/prettier': 2.7.2
       cli-color: 2.0.3
       get-stdin: 8.0.0
@@ -5326,7 +5327,7 @@ packages:
       minimist: 1.2.8
       mkdirp: 1.0.4
       mz: 2.7.0
-      prettier: 2.8.8
+      prettier: 2.7.1
     dev: true
 
   /json-schema-traverse@0.4.1:
@@ -6208,12 +6209,6 @@ packages:
 
   /prettier@2.7.1:
     resolution: {integrity: sha512-ujppO+MkdPqoVINuDFDRLClm7D78qbDt0/NR+wp5FqEZOoTNAjPHWj17QRhu7geIHJfcNhRk1XVQmF8Bp3ye+g==}
-    engines: {node: '>=10.13.0'}
-    hasBin: true
-    dev: true
-
-  /prettier@2.8.8:
-    resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
     engines: {node: '>=10.13.0'}
     hasBin: true
     dev: true
@@ -8006,12 +8001,6 @@ packages:
 
   /zone.js@0.11.4:
     resolution: {integrity: sha512-DDh2Ab+A/B+9mJyajPjHFPWfYU1H+pdun4wnnk0OcQTNjem1XQSZ2CDW+rfZEUDjv5M19SBqAkjZi0x5wuB5Qw==}
-    dependencies:
-      tslib: 2.4.0
-    dev: false
-
-  /zone.js@0.11.8:
-    resolution: {integrity: sha512-82bctBg2hKcEJ21humWIkXRlLBBmrc3nN7DFh5LGGhcyycO2S7FN8NmdvlcKaGFDNVL4/9kFLmwmInTavdJERA==}
     dependencies:
       tslib: 2.4.0
     dev: false

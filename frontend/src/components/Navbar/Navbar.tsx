@@ -71,9 +71,9 @@ export default function Navbar() {
     <EuiHeaderSectionItemButton
       aria-label="User avatar"
       data-test-subj="avatar"
-      onClick={() => user?.user.email && toggleAvatarMenu()}
+      onClick={() => user?.email && toggleAvatarMenu()}
     >
-      {user?.user.email ? (
+      {user?.email ? (
         <UserAvatar size="l" user={user} initialsLength={2} />
       ) : (
         <Link to="/login">
@@ -84,7 +84,7 @@ export default function Navbar() {
   )
 
   const renderAvatarMenu = () => {
-    if (!user?.user.email) return null
+    if (!user?.email) return null
     return (
       <AvatarMenu>
         <EuiFlexGroup
@@ -106,9 +106,9 @@ export default function Navbar() {
                 // alignItems="center"
               >
                 <EuiFlexItem>
-                  <strong>{user?.user.username}</strong>
+                  <strong>{user?.username}</strong>
                 </EuiFlexItem>
-                <EuiFlexItem>{_.truncate(user?.user.email, { length: 25 })}</EuiFlexItem>
+                <EuiFlexItem>{_.truncate(user?.email, { length: 25 })}</EuiFlexItem>
               </EuiFlexGroup>
             </EuiFlexGroup>
           </EuiFlexItem>
@@ -179,7 +179,7 @@ export default function Navbar() {
       sections={[
         {
           items: [
-            user?.user.userID !== '' ? <CollapsibleNav user={user} /> : null,
+            user?.userID !== '' ? <CollapsibleNav user={user} /> : null,
 
             <LogoSection href="/" key={0}>
               <EuiIcon type={logo} size="l" />
