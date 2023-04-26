@@ -43,3 +43,10 @@ jobs:
           source .envrc
 
           project test -race -count=40 --x-env=ci
+
+      - name: Test frontend
+        run: |
+          source .envrc
+
+          cd frontend
+          pnpm run test:no-watch
