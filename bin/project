@@ -648,6 +648,7 @@ x.lint() {
   { { {
     x.lint.sql &
     x.lint.go &
+    x.lint.frontend &
     wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -668,6 +669,17 @@ x.lint.go() {
 
     goimports -w $files || echo Linting failed
     gofumpt -w $files || echo Linting failed
+
+    echo "Success"
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Format frontend files.
+x.lint.frontend() {
+  { { {
+    cd frontend
+    pnpm run lint:fix
+    echo "Success"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -692,6 +704,8 @@ x.lint.sql() {
         --comma-break \
         $(find "$slq_dir" -maxdepth 3 -name '*.*sql')
     done
+
+    echo "Success"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
