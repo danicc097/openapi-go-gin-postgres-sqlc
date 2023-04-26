@@ -28,7 +28,7 @@ jobs:
           # go mod download # use vendor
           go mod verify
 
-          cd frontend && pnpm i && cd -
+          cd frontend && pnpm i --frozen-lockfile && cd -
 
           project test.backend-setup --x-env=ci
 

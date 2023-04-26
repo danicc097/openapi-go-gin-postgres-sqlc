@@ -186,7 +186,7 @@ install.bin.direnv() {
 check.bin.pnpm() {
   { { {
     vers=$(pnpm --version)
-    minver=9
+    minver=8
     if [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
       report_success
     else
