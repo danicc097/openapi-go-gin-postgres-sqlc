@@ -50,29 +50,30 @@ func TestOapiRequestValidator(t *testing.T) {
 
 	// Set up an authenticator to check authenticated function. It will allow
 	// access to "someScope", but disallow others.
+	kinopenapiOpts := openapi3filter.Options{
+		AuthenticationFunc: func(c context.Context, input *openapi3filter.AuthenticationInput) error {
+			gCtx := getGinContextFromCtx(c)
+			assert.NotNil(t, gCtx)
+
+			assert.EqualValues(t, "hi!", getUserDataFromCtx(c))
+
+			for _, s := range input.Scopes {
+				if s == "someScope" {
+					return nil
+				}
+				if s == "unauthorized" {
+					return errors.New("unauthorized")
+				}
+			}
+			return errors.New("forbidden")
+		},
+	}
+	kinopenapiOpts.WithCustomSchemaErrorFunc(CustomSchemaErrorFunc)
 	options := OAValidatorOptions{
 		ErrorHandler: func(c *gin.Context, message string, statusCode int) {
 			c.String(statusCode, "test: "+message)
 		},
-		Options: openapi3filter.Options{
-			AuthenticationFunc: func(c context.Context, input *openapi3filter.AuthenticationInput) error {
-				// The gin context should be propagated into here.
-				gCtx := getGinContextFromCtx(c)
-				assert.NotNil(t, gCtx)
-				// As should user data
-				assert.EqualValues(t, "hi!", getUserDataFromCtx(c))
-
-				for _, s := range input.Scopes {
-					if s == "someScope" {
-						return nil
-					}
-					if s == "unauthorized" {
-						return errors.New("unauthorized")
-					}
-				}
-				return errors.New("forbidden")
-			},
-		},
+		Options:  kinopenapiOpts,
 		UserData: "hi!",
 	}
 
@@ -200,13 +201,15 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 
 	// Set up an authenticator to check authenticated function. It will allow
 	// access to "someScope", but disallow others.
+	kinopenapiOpts := openapi3filter.Options{
+		ExcludeRequestBody:    false,
+		ExcludeResponseBody:   false,
+		IncludeResponseStatus: true,
+		MultiError:            true,
+	}
+	kinopenapiOpts.WithCustomSchemaErrorFunc(CustomSchemaErrorFunc)
 	options := OAValidatorOptions{
-		Options: openapi3filter.Options{
-			ExcludeRequestBody:    false,
-			ExcludeResponseBody:   false,
-			IncludeResponseStatus: true,
-			MultiError:            true,
-		},
+		Options: kinopenapiOpts,
 	}
 
 	oasMw := newOpenapiMiddleware(zaptest.NewLogger(t), openapi)
@@ -305,13 +308,15 @@ func TestRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T) {
 
 	// Set up an authenticator to check authenticated function. It will allow
 	// access to "someScope", but disallow others.
+	kinopenapiOpts := openapi3filter.Options{
+		ExcludeRequestBody:    false,
+		ExcludeResponseBody:   false,
+		IncludeResponseStatus: true,
+		MultiError:            true,
+	}
+	kinopenapiOpts.WithCustomSchemaErrorFunc(CustomSchemaErrorFunc)
 	options := OAValidatorOptions{
-		Options: openapi3filter.Options{
-			ExcludeRequestBody:    false,
-			ExcludeResponseBody:   false,
-			IncludeResponseStatus: true,
-			MultiError:            true,
-		},
+		Options: kinopenapiOpts,
 		MultiErrorHandler: func(me openapi3.MultiError) error {
 			return internal.NewErrorf(internal.ErrorCodeRequestValidation, "Bad stuff -  %s", me.Error())
 		},

@@ -375,6 +375,9 @@ func Run(env, address, specPath, rolePolicyPath, scopePolicyPath string) (<-chan
 }
 
 func createOpenAPIValidatorOptions() OAValidatorOptions {
+	// TODO if env != prod so that no values are shown in `details` (secrets, passwords)
+	// openapi3.SchemaErrorDetailsDisabled = true
+
 	oafilterOpts := openapi3filter.Options{
 		ExcludeRequestBody:    false,
 		ExcludeResponseBody:   false,
@@ -383,30 +386,7 @@ func createOpenAPIValidatorOptions() OAValidatorOptions {
 		AuthenticationFunc:    verifyAuthentication,
 	}
 
-	oafilterOpts.WithCustomSchemaErrorFunc(func(err *openapi3.SchemaError) string {
-		detail := &bytes.Buffer{}
-		detail.WriteString("\nSchema:\n  ")
-		encoder := json.NewEncoder(detail)
-		encoder.SetIndent("  ", "  ")
-		if err := encoder.Encode(err.Schema); err != nil {
-			panic(err)
-		}
-		detail.WriteString("\nValue:\n  ")
-		if err := encoder.Encode(err.Value); err != nil {
-			panic(err)
-		}
-
-		ve := &models.ValidationError{
-			Loc:    err.JSONPointer(),
-			Msg:    err.Reason,
-			Type:   models.HttpErrorTypeUnknown, // no way to distinguish here yet
-			Detail: detail.String(),
-		}
-
-		b, _ := json.Marshal(ve)
-
-		return ValidationErrorSeparator + string(b)
-	})
+	oafilterOpts.WithCustomSchemaErrorFunc(CustomSchemaErrorFunc)
 	oaOptions := OAValidatorOptions{
 		ValidateResponse: true,
 		Options:          oafilterOpts,
@@ -416,4 +396,37 @@ func createOpenAPIValidatorOptions() OAValidatorOptions {
 	}
 
 	return oaOptions
+}
+
+func CustomSchemaErrorFunc(err *openapi3.SchemaError) string {
+	// TODO export more fields from kinopenapi for path params (loc currently null)
+	fmt.Printf("WithCustomSchemaErrorFunc JSONPointer: %+v\n", err.JSONPointer())
+	fmt.Printf("WithCustomSchemaErrorFunc Schema: %+v\n", err.Schema)
+	fmt.Printf("WithCustomSchemaErrorFunc Value: %+v\n", err.Value)
+	fmt.Printf("WithCustomSchemaErrorFunc Reason: %+v\n", err.Reason)
+	fmt.Printf("WithCustomSchemaErrorFunc SchemaField: %+v\n", err.SchemaField)
+	fmt.Printf("WithCustomSchemaErrorFunc Origin: %+v\n", err.Origin)
+
+	detail := &bytes.Buffer{}
+	detail.WriteString("\nSchema:\n  ")
+	encoder := json.NewEncoder(detail)
+	encoder.SetIndent("  ", "  ")
+	if err := encoder.Encode(err.Schema); err != nil {
+		panic(err)
+	}
+	detail.WriteString("\nValue:\n  ")
+	if err := encoder.Encode(err.Value); err != nil {
+		panic(err)
+	}
+
+	ve := &models.ValidationError{
+		Loc:    err.JSONPointer(),
+		Msg:    err.Reason,
+		Type:   models.HttpErrorTypeUnknown, // no way to distinguish here yet
+		Detail: detail.String(),
+	}
+
+	b, _ := json.Marshal(ve)
+
+	return ValidationErrorSeparator + string(b)
 }
