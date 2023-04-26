@@ -400,12 +400,16 @@ func createOpenAPIValidatorOptions() OAValidatorOptions {
 
 func CustomSchemaErrorFunc(err *openapi3.SchemaError) string {
 	// TODO export more fields from kinopenapi for path params (loc currently null)
-	fmt.Printf("WithCustomSchemaErrorFunc JSONPointer: %+v\n", err.JSONPointer())
+	// it should return if its a schemaerror in a parameter or body
+	// also if its req vs res validation error. so we dont use
+	// unknown below, (inferred on our own validator before/after orig request handled)
+	fmt.Printf("WithCustomSchemaErrorFunc JSONPointer: %s\n", err.JSONPointer())
 	fmt.Printf("WithCustomSchemaErrorFunc Schema: %+v\n", err.Schema)
-	fmt.Printf("WithCustomSchemaErrorFunc Value: %+v\n", err.Value)
-	fmt.Printf("WithCustomSchemaErrorFunc Reason: %+v\n", err.Reason)
-	fmt.Printf("WithCustomSchemaErrorFunc SchemaField: %+v\n", err.SchemaField)
-	fmt.Printf("WithCustomSchemaErrorFunc Origin: %+v\n", err.Origin)
+	fmt.Printf("WithCustomSchemaErrorFunc Value: %s\n", err.Value)
+	fmt.Printf("WithCustomSchemaErrorFunc Reason: %s\n", err.Reason)
+	fmt.Printf("WithCustomSchemaErrorFunc Schema.Title: %s\n", err.Schema.Title)
+	fmt.Printf("WithCustomSchemaErrorFunc SchemaField: %s\n", err.SchemaField)
+	fmt.Printf("WithCustomSchemaErrorFunc Origin: %s\n", err.Origin)
 
 	detail := &bytes.Buffer{}
 	detail.WriteString("\nSchema:\n  ")
