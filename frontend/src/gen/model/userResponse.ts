@@ -10,13 +10,22 @@ import type { DbProject } from './dbProject'
 import type { Role } from './role'
 import type { Scopes } from './scopes'
 import type { DbTeam } from './dbTeam'
-import type { DbUser } from './dbUser'
+import type { UuidUUID } from './uuidUUID'
 
 export interface UserResponse {
   apiKey?: DbUserAPIKey
+  createdAt: Date
+  deletedAt: Date | null
+  email: string
+  firstName: string | null
+  fullName: string | null
+  hasGlobalNotifications: boolean
+  hasPersonalNotifications: boolean
+  lastName: string | null
   projects?: DbProject[] | null
   role: Role
   scopes: Scopes
   teams?: DbTeam[] | null
-  user: DbUser
+  userID: UuidUUID
+  username: string
 }

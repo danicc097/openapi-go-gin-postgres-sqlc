@@ -28,7 +28,9 @@ jobs:
           # go mod download # use vendor
           go mod verify
 
-          cd frontend && pnpm i && cd -
+          cd frontend
+          pnpm i --frozen-lockfile
+          cd -
 
           project test.backend-setup --x-env=ci
 
@@ -43,3 +45,10 @@ jobs:
           source .envrc
 
           project test -race -count=40 --x-env=ci
+
+      - name: Test frontend
+        run: |
+          source .envrc
+
+          cd frontend
+          pnpm run test:no-watch

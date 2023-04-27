@@ -3,10 +3,13 @@
 source "${BASH_SOURCE%/*}/.helpers.sh"
 
 report_failure() {
+  local info="$1"
   echo "
 ${RED}Failed ${FUNCNAME[1]##*.} check.${OFF}
 Minimum version: $minver
-Current version: $vers"
+Current version: $vers
+$info
+"
   exit 1
 }
 
@@ -183,7 +186,7 @@ install.bin.direnv() {
 check.bin.pnpm() {
   { { {
     vers=$(pnpm --version)
-    minver=7
+    minver=8
     if [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
       report_success
     else
@@ -194,7 +197,7 @@ check.bin.pnpm() {
 
 install.bin.pnpm() {
   { { {
-    sudo npm i -g pnpm@7.6.0
+    npm i -g pnpm@8.3.1
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

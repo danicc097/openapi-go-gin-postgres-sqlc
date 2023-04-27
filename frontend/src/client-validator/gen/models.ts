@@ -21,11 +21,27 @@ export type Scope =
   | 'project-settings:write'
   | 'work-item:review'
 export type Scopes = Scope[]
+/**
+ * location in body path, if any
+ */
 export type Location = string[]
+/**
+ * should always be shown to the user
+ */
 export type Message = string
-export type ErrorType = string
+export type HttpErrorType = 'response_validation' | 'request_validation' | 'unknown'
+/**
+ * verbose details of the error
+ */
 export type ErrorDetails = string
+/**
+ * Additional details for validation errors
+ */
 export type Detail = ValidationError[]
+/**
+ * Descriptive error messages to show in a callout
+ */
+export type Messages = string[]
 /**
  * string identifiers for SSE event listeners.
  */
@@ -208,21 +224,33 @@ export interface RestProjectBoardResponse {
 }
 export interface UserResponse {
   apiKey?: DbUserAPIKey
+  createdAt: string
+  deletedAt: string | null
+  email: string
+  firstName: string | null
+  fullName: string | null
+  hasGlobalNotifications: boolean
+  hasPersonalNotifications: boolean
+  lastName: string | null
   projects?: DbProject[] | null
   role: Role
   scopes: Scopes
   teams?: DbTeam[] | null
-  user: DbUser
+  userID: UuidUUID
+  username: string
 }
 export interface HTTPValidationError {
   detail?: Detail
+  messages: Messages
 }
 export interface ValidationError {
   loc: Location
   msg: Message
-  type: ErrorType
+  type: HttpErrorType
   detail: ErrorDetails
+  ctx?: ContextualInformation
 }
+export interface ContextualInformation {}
 /**
  * represents User data to update
  */

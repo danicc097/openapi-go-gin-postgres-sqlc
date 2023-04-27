@@ -25,6 +25,22 @@ const (
 	Bearer_authScopes = "bearer_auth.Scopes"
 )
 
+// Defines values for HttpErrorType.
+const (
+	RequestValidation  HttpErrorType = "request_validation"
+	ResponseValidation HttpErrorType = "response_validation"
+	Unknown            HttpErrorType = "unknown"
+)
+
+// AllHttpErrorTypeValues returns all possible values for HttpErrorType.
+func AllHttpErrorTypeValues() []HttpErrorType {
+	return []HttpErrorType{
+		RequestValidation,
+		ResponseValidation,
+		Unknown,
+	}
+}
+
 // Defines values for NotificationType.
 const (
 	Global   NotificationType = "global"
@@ -330,8 +346,15 @@ type DbWorkItemMember struct {
 
 // HTTPValidationError defines the model for HTTPValidationError.
 type HTTPValidationError struct {
+	// Detail Additional details for validation errors
 	Detail *[]ValidationError `json:"detail,omitempty"`
+
+	// Messages Descriptive error messages to show in a callout
+	Messages []string `json:"messages"`
 }
+
+// HttpErrorType defines the model for HttpErrorType.
+type HttpErrorType string
 
 // InitializeProjectRequest defines the model for InitializeProjectRequest.
 type InitializeProjectRequest struct {
@@ -429,12 +452,21 @@ type UpdateUserRequest struct {
 
 // UserResponse defines the model for UserResponse.
 type UserResponse struct {
-	ApiKey   *DbUserAPIKey `json:"apiKey,omitempty"`
-	Projects *[]DbProject  `json:"projects"`
-	Role     Role          `json:"role"`
-	Scopes   Scopes        `json:"scopes"`
-	Teams    *[]DbTeam     `json:"teams"`
-	User     DbUser        `json:"user"`
+	ApiKey                   *DbUserAPIKey `json:"apiKey,omitempty"`
+	CreatedAt                time.Time     `json:"createdAt"`
+	DeletedAt                *time.Time    `json:"deletedAt"`
+	Email                    string        `json:"email"`
+	FirstName                *string       `json:"firstName"`
+	FullName                 *string       `json:"fullName"`
+	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`
+	HasPersonalNotifications bool          `json:"hasPersonalNotifications"`
+	LastName                 *string       `json:"lastName"`
+	Projects                 *[]DbProject  `json:"projects"`
+	Role                     Role          `json:"role"`
+	Scopes                   Scopes        `json:"scopes"`
+	Teams                    *[]DbTeam     `json:"teams"`
+	UserID                   UuidUUID      `json:"userID"`
+	Username                 string        `json:"username"`
 }
 
 // UuidUUID defines the model for UuidUUID.
@@ -442,10 +474,17 @@ type UuidUUID = string
 
 // ValidationError defines the model for ValidationError.
 type ValidationError struct {
-	Detail string   `json:"detail"`
-	Loc    []string `json:"loc"`
-	Msg    string   `json:"msg"`
-	Type   string   `json:"type"`
+	Ctx *map[string]interface{} `json:"ctx,omitempty"`
+
+	// Detail verbose details of the error
+	Detail string `json:"detail"`
+
+	// Loc location in body path, if any
+	Loc []string `json:"loc"`
+
+	// Msg should always be shown to the user
+	Msg  string        `json:"msg"`
+	Type HttpErrorType `json:"type"`
 }
 
 // WorkItemRole represents a database 'work_item_role'

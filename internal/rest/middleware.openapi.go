@@ -42,6 +42,7 @@ type openapiMiddleware struct {
 // TODO kin-openapi already has middleware, possibly added after this was created
 // - see openapi3filter.NewValidator and tests/examples
 // we just need to add our own onError func and wrap it all in gin.WrapH
+// there's also onLog to use zap
 func newOpenapiMiddleware(
 	logger *zap.Logger,
 	spec *openapi3.T,
@@ -81,7 +82,7 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 				options.ErrorHandler(c, err.Error(), http.StatusBadRequest)
 			} else {
 				// error response customized via WithCustomSchemaErrorFunc
-				renderErrorResponse(c, "invalid request", internal.WrapErrorf(err, internal.ErrorCodeValidation, "OpenAPI request validation failed"))
+				renderErrorResponse(c, "invalid request", internal.WrapErrorf(err, internal.ErrorCodeRequestValidation, "OpenAPI request validation failed"))
 			}
 
 			rbw.ResponseWriter.Write(rbw.body.Bytes())
@@ -90,7 +91,7 @@ func (o *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 			return
 		}
 
-		c.Next()
+		c.Next() // handle actual endpoint
 
 		if !options.ValidateResponse || getSkipResponseValidationFromCtx(c) {
 			rbw.ResponseWriter.Write(rbw.body.Bytes())
@@ -163,11 +164,11 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 		case *routers.RouteError:
 			// We've got a bad request, the path requested doesn't match
 			// either server, or path, or something.
-			return internal.NewErrorf(internal.ErrorCodeValidation, e.Reason)
+			return internal.NewErrorf(internal.ErrorCodeRequestValidation, e.Reason)
 		default:
 			// This should never happen today, but if our upstream code changes,
 			// we don't want to crash the server, so handle the unexpected error.
-			return internal.NewErrorf(internal.ErrorCodeValidation, "unknown error validating route: %s", err.Error())
+			return internal.NewErrorf(internal.ErrorCodeRequestValidation, "unknown error validating route: %s", err.Error())
 		}
 	}
 
@@ -189,7 +190,7 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 
 	err = openapi3filter.ValidateRequest(requestContext, validationInput)
 	if err != nil {
-		fmt.Printf("err: %T ::: %v\n", err, err)
+		// fmt.Printf("err: %T ::: %v\n", err, err)
 		me := openapi3.MultiError{}
 		if errors.As(err, &me) {
 			errFunc := getMultiErrorHandlerFromOptions(options)
@@ -202,13 +203,13 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 			// Split up the verbose error by lines and return the first one
 			// openapi errors seem to be multi-line with a decent message on the first
 			errorLines := strings.Split(e.Error(), "\n")
-			return internal.NewErrorf(internal.ErrorCodeValidation, "error in openapi3filter.RequestError: %s", errorLines[0])
+			return internal.NewErrorf(internal.ErrorCodeRequestValidation, "error in openapi3filter.RequestError: %s", errorLines[0])
 		case *openapi3filter.SecurityRequirementsError:
-			return internal.NewErrorf(internal.ErrorCodeValidation, "error in openapi3filter.SecurityRequirementsError: %s", e.Error())
+			return internal.NewErrorf(internal.ErrorCodeRequestValidation, "error in openapi3filter.SecurityRequirementsError: %s", e.Error())
 		default:
 			// This should never happen today, but if our upstream code changes,
 			// we don't want to crash the server, so handle the unexpected error.
-			return internal.NewErrorf(internal.ErrorCodeValidation, "unknown error validating request: %s", err)
+			return internal.NewErrorf(internal.ErrorCodeRequestValidation, "unknown error validating request: %s", err)
 		}
 	}
 	return nil
@@ -232,5 +233,5 @@ func getMultiErrorHandlerFromOptions(options *OAValidatorOptions) MultiErrorHand
 // of all of the errors. This method is called if there are no other
 // methods defined on the options.
 func defaultMultiErrorHandler(me openapi3.MultiError) error {
-	return internal.NewErrorf(internal.ErrorCodeValidation, "validation errors encountered: %s", me)
+	return internal.WrapErrorf(me, internal.ErrorCodeRequestValidation, "validation errors encountered")
 }

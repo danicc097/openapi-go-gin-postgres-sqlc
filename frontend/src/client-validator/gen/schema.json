@@ -613,6 +613,44 @@
         "apiKey": {
           "$ref": "#/definitions/DbUserAPIKey"
         },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fullName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hasGlobalNotifications": {
+          "type": "boolean"
+        },
+        "hasPersonalNotifications": {
+          "type": "boolean"
+        },
+        "lastName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "projects": {
           "items": {
             "$ref": "#/definitions/DbProject"
@@ -637,12 +675,24 @@
             "null"
           ]
         },
-        "user": {
-          "$ref": "#/definitions/DbUser"
+        "userID": {
+          "$ref": "#/definitions/UuidUUID"
+        },
+        "username": {
+          "type": "string"
         }
       },
       "required": [
-        "user",
+        "userID",
+        "username",
+        "email",
+        "firstName",
+        "lastName",
+        "fullName",
+        "hasPersonalNotifications",
+        "hasGlobalNotifications",
+        "createdAt",
+        "deletedAt",
         "role",
         "scopes"
       ],
@@ -653,12 +703,24 @@
     "HTTPValidationError": {
       "title": "HTTPValidationError",
       "type": "object",
+      "required": [
+        "messages"
+      ],
       "properties": {
         "detail": {
           "title": "Detail",
+          "description": "Additional details for validation errors",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ValidationError"
+          }
+        },
+        "messages": {
+          "title": "Messages",
+          "description": "Descriptive error messages to show in a callout",
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       },
@@ -752,13 +814,14 @@
       "required": [
         "loc",
         "msg",
-        "type",
-        "detail"
+        "detail",
+        "type"
       ],
       "type": "object",
       "properties": {
         "loc": {
           "title": "Location",
+          "description": "location in body path, if any",
           "type": "array",
           "items": {
             "type": "string"
@@ -766,17 +829,31 @@
         },
         "msg": {
           "title": "Message",
+          "description": "should always be shown to the user",
           "type": "string"
         },
         "type": {
-          "title": "Error type",
-          "type": "string"
+          "$ref": "#/definitions/HttpErrorType"
         },
         "detail": {
+          "description": "verbose details of the error",
           "title": "Error details",
           "type": "string"
+        },
+        "ctx": {
+          "title": "Contextual information",
+          "type": "object"
         }
       },
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "HttpErrorType": {
+      "type": "string",
+      "enum": [
+        "response_validation",
+        "request_validation",
+        "unknown"
+      ],
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "UuidUUID": {
@@ -1143,6 +1220,9 @@
     },
     "ValidationError": {
       "$ref": "#/definitions/ValidationError"
+    },
+    "HttpErrorType": {
+      "$ref": "#/definitions/HttpErrorType"
     },
     "UuidUUID": {
       "$ref": "#/definitions/UuidUUID"

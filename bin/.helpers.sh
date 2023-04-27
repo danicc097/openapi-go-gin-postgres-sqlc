@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC1091,SC2155,SC2086
 
-# set -Eeo pipefail
+TOP_LEVEL_DIR="$(git rev-parse --show-toplevel)"
 
 if [ -t 1 ]; then
   RED="$(tput setaf 1)"
@@ -28,17 +28,15 @@ else
 fi
 
 ensure_pwd_is_top_level() {
-  TOP_LEVEL="$(git rev-parse --show-toplevel)"
-
-  if [[ -z $TOP_LEVEL ]]; then
+  if [[ -z $TOP_LEVEL_DIR ]]; then
     echo "No .git directory found, skipping top level directory check."
     return
   fi
 
-  if [[ "$PWD" != "$TOP_LEVEL" ]] && [[ -z "$IS_TESTING" && -z "$IGNORE_PWD" ]]; then
+  if [[ "$PWD" != "$TOP_LEVEL_DIR" ]] && [[ -z "$IS_TESTING" && -z "$IGNORE_PWD" ]]; then
     echo >&2 "
 Please run this script from the top level of the repository.
-Top level: $TOP_LEVEL
+Top level: $TOP_LEVEL_DIR
 Current directory: $PWD"
     exit
   fi

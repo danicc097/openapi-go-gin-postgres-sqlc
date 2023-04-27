@@ -29,6 +29,7 @@ import {
   UpdateUserRequest,
   UpdateUserAuthRequest,
   ValidationError,
+  HttpErrorType,
   UuidUUID,
   PgtypeJSONB,
   demoProjectKanbanSteps,
@@ -83,6 +84,7 @@ export const schemaDefinitions = {
   UpdateUserRequest: info<UpdateUserRequest>('UpdateUserRequest', '#/definitions/UpdateUserRequest'),
   UpdateUserAuthRequest: info<UpdateUserAuthRequest>('UpdateUserAuthRequest', '#/definitions/UpdateUserAuthRequest'),
   ValidationError: info<ValidationError>('ValidationError', '#/definitions/ValidationError'),
+  HttpErrorType: info<HttpErrorType>('HttpErrorType', '#/definitions/HttpErrorType'),
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
   PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
   demoProjectKanbanSteps: info<demoProjectKanbanSteps>(

@@ -4,6 +4,9 @@ info:
   title: TestServer
 servers:
   - url: http://test-server.com/
+  # for tests validation middleware to work on random port.
+  - url: /v2
+  - url: /
 paths:
   /resource:
     get:
@@ -50,7 +53,7 @@ paths:
           description: no content
   /protected_resource2:
     get:
-      operationId: getProtectedResource
+      operationId: getProtectedResource2
       security:
         - BearerAuth:
             - otherScope
@@ -59,7 +62,7 @@ paths:
           description: no content
   /protected_resource_401:
     get:
-      operationId: getProtectedResource
+      operationId: getProtectedResource401
       security:
         - BearerAuth:
             - unauthorized
@@ -68,22 +71,10 @@ paths:
           description: no content
   /multiparamresource:
     get:
-      operationId: getResource
+      operationId: getResourceMulti
       parameters:
-        - name: id
-          in: query
-          required: true
-          schema:
-            type: integer
-            minimum: 10
-            maximum: 100
-        - name: id2
-          required: true
-          in: query
-          schema:
-            type: integer
-            minimum: 10
-            maximum: 100
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/id2'
       responses:
         "200":
           description: success
@@ -95,7 +86,63 @@ paths:
                     type: string
                   id:
                     type: integer
+  /validation_errors:
+    get:
+      operationId: responseValidationError
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                properties:
+                  name:
+                    type: string
+                  id:
+                    type: integer
+    post:
+      operationId: requestValidationError
+      responses:
+        "200":
+          description: success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                id:
+                  type: integer
+                nested:
+                  type: object
+                  properties:
+                    color:
+                      type: string
+                    nestedProperty:
+                      type: string
+                  required:
+                    - nestedProperty
+
 components:
+  parameters:
+    id:
+      name: id
+      in: query
+      required: true
+      schema:
+        type: integer
+        minimum: 10
+        maximum: 100
+    id2:
+      name: id2
+      in: query
+      required: true
+      schema:
+        type: integer
+        minimum: 10
+        maximum: 100
   securitySchemes:
     BearerAuth:
       type: http

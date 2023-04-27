@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-empty-function */
 export type Primitive = string | number | symbol
 
 export type GenericObject = Record<Primitive, unknown>

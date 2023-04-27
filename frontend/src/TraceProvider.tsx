@@ -1,5 +1,5 @@
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web'
-import { ZoneContextManager } from '@opentelemetry/context-zone'
+import { ZoneContextManager } from '@opentelemetry/context-zone-peer-dep'
 import type { FetchCustomAttributeFunction } from '@opentelemetry/instrumentation-fetch'
 import type { XHRCustomAttributeFunction } from '@opentelemetry/instrumentation-xml-http-request'
 import { registerInstrumentations } from '@opentelemetry/instrumentation'

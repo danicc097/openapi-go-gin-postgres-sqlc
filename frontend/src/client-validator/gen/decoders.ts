@@ -33,6 +33,7 @@ import {
   UpdateUserRequest,
   UpdateUserAuthRequest,
   ValidationError,
+  HttpErrorType,
   UuidUUID,
   PgtypeJSONB,
   demoProjectKanbanSteps,
@@ -356,6 +357,18 @@ export const ValidationErrorDecoder: Decoder<ValidationError> = {
       throw new Error(`Schema ${ValidationErrorDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ValidationErrorDecoder.definitionName)
+  },
+}
+export const HttpErrorTypeDecoder: Decoder<HttpErrorType> = {
+  definitionName: 'HttpErrorType',
+  schemaRef: '#/definitions/HttpErrorType',
+
+  decode(json: unknown): HttpErrorType {
+    const schema = ajv.getSchema(HttpErrorTypeDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${HttpErrorTypeDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, HttpErrorTypeDecoder.definitionName)
   },
 }
 export const UuidUUIDDecoder: Decoder<UuidUUID> = {

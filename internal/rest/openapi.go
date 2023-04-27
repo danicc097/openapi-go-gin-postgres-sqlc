@@ -7,7 +7,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
-// ReadOpenAPI parses and validates an OpenAPI by filename and returns it.
+// ReadOpenAPI parses and validates an OpenAPI spec by filename and returns it.
 func ReadOpenAPI(path string) (*openapi3.T, error) {
 	schemaBlob, err := os.ReadFile(path)
 	if err != nil {
@@ -17,7 +17,7 @@ func ReadOpenAPI(path string) (*openapi3.T, error) {
 
 	openapi, err := sl.LoadFromData(schemaBlob)
 	if err != nil {
-		return nil, fmt.Errorf("openapi spec: %w", err)
+		return nil, fmt.Errorf("openapi spec loading: %w", err)
 	}
 
 	if err = openapi.Validate(sl.Context); err != nil {

@@ -1,5 +1,5 @@
 import type { Toast } from '@elastic/eui/src/components/toast/global_toast_list'
-import create from 'zustand'
+import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
 export type Theme = 'dark' | 'light'
