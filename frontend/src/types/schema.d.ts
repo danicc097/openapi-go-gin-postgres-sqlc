@@ -236,8 +236,16 @@ export interface components {
     };
     /** HTTPValidationError */
     HTTPValidationError: {
-      /** Detail */
+      /**
+       * Detail 
+       * @description Additional details for validation errors
+       */
       detail?: (components["schemas"]["ValidationError"])[];
+      /**
+       * Messages 
+       * @description Descriptive error messages to show in a callout
+       */
+      messages: (string)[];
     };
     /**
      * @description string identifiers for SSE event listeners. 
@@ -283,12 +291,21 @@ export interface components {
     };
     /** ValidationError */
     ValidationError: {
-      /** Location */
+      /**
+       * Location 
+       * @description location in body path, if any
+       */
       loc: (string)[];
-      /** Message */
+      /**
+       * Message 
+       * @description should always be shown to the user
+       */
       msg: string;
       type: components["schemas"]["HttpErrorType"];
-      /** Error details */
+      /**
+       * Error details 
+       * @description verbose details of the error
+       */
       detail: string;
       /** Contextual information */
       ctx?: Record<string, never>;

@@ -346,7 +346,11 @@ type DbWorkItemMember struct {
 
 // HTTPValidationError defines the model for HTTPValidationError.
 type HTTPValidationError struct {
+	// Detail Additional details for validation errors
 	Detail *[]ValidationError `json:"detail,omitempty"`
+
+	// Messages Descriptive error messages to show in a callout
+	Messages []string `json:"messages"`
 }
 
 // HttpErrorType defines the model for HttpErrorType.
@@ -470,11 +474,17 @@ type UuidUUID = string
 
 // ValidationError defines the model for ValidationError.
 type ValidationError struct {
-	Ctx    *map[string]interface{} `json:"ctx,omitempty"`
-	Detail string                  `json:"detail"`
-	Loc    []string                `json:"loc"`
-	Msg    string                  `json:"msg"`
-	Type   HttpErrorType           `json:"type"`
+	Ctx *map[string]interface{} `json:"ctx,omitempty"`
+
+	// Detail verbose details of the error
+	Detail string `json:"detail"`
+
+	// Loc location in body path, if any
+	Loc []string `json:"loc"`
+
+	// Msg should always be shown to the user
+	Msg  string        `json:"msg"`
+	Type HttpErrorType `json:"type"`
 }
 
 // WorkItemRole represents a database 'work_item_role'

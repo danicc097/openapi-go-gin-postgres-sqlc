@@ -804,12 +804,21 @@ components:
     HTTPValidationError:
       title: HTTPValidationError
       type: object
+      required:
+        - messages
       properties:
         detail:
           title: Detail
+          description: Additional details for validation errors
           type: array
           items:
             $ref: '#/components/schemas/ValidationError'
+        messages:
+          title: Messages
+          description: Descriptive error messages to show in a callout
+          type: array
+          items:
+            type: string
     Topics:
       description: string identifiers for SSE event listeners.
       type: string
@@ -896,15 +905,18 @@ components:
       properties:
         loc:
           title: Location
+          description: location in body path, if any
           type: array
           items:
             type: string
         msg:
           title: Message
+          description: should always be shown to the user
           type: string
         type:
           $ref: '#/components/schemas/HttpErrorType'
         detail:
+          description: verbose details of the error
           title: Error details
           type: string
         ctx:

@@ -46,7 +46,7 @@ func TestValidationErrorsResponse(t *testing.T) {
 		req, _ := http.NewRequest(http.MethodGet, "/validation_errors", nil)
 		engine.ServeHTTP(resp, req)
 
-		jsonErr := "{\"error\":\"invalid response\",\"message\":\"OpenAPI response validation failed\",\"validationError\":{\"detail\":[{\"detail\":\"\\nSchema:\\n  {\\n    \\\"type\\\": \\\"integer\\\"\\n  }\\n\\nValue:\\n  \\\"a_wrong_id\\\"\\n\",\"loc\":[\"id\"],\"msg\":\"value must be an integer\",\"type\":\"response_validation\"}]}}"
+		jsonErr := "{\"error\":\"invalid response\",\"message\":\"OpenAPI response validation failed\",\"validationError\":{\"detail\":[{\"detail\":\"\\nSchema:\\n  {\\n    \\\"type\\\": \\\"integer\\\"\\n  }\\n\\nValue:\\n  \\\"a_wrong_id\\\"\\n\",\"loc\":[\"id\"],\"msg\":\"value must be an integer\",\"type\":\"response_validation\"}],\"messages\":[\"response body doesn't match schema\"]}}"
 
 		assert.Equal(t, jsonErr, resp.Body.String())
 		assert.Equal(t, http.StatusInternalServerError, resp.Code)
@@ -90,7 +90,7 @@ func TestValidationErrorsResponse(t *testing.T) {
 		req.Header.Add("Content-Type", "application/json")
 		engine.ServeHTTP(resp, req)
 
-		jsonErr := "{\"error\":\"invalid request\",\"message\":\"OpenAPI request validation failed\",\"validationError\":{\"detail\":[{\"detail\":\"\\nSchema:\\n  {\\n    \\\"type\\\": \\\"integer\\\"\\n  }\\n\\nValue:\\n  \\\"a_wrong_id\\\"\\n\",\"loc\":[\"id\"],\"msg\":\"value must be an integer\",\"type\":\"request_validation\"},{\"detail\":\"\\nSchema:\\n  {\\n    \\\"type\\\": \\\"string\\\"\\n  }\\n\\nValue:\\n  1234\\n\",\"loc\":[\"name\"],\"msg\":\"value must be a string\",\"type\":\"request_validation\"},{\"detail\":\"\\nSchema:\\n  {\\n    \\\"properties\\\": {\\n      \\\"color\\\": {\\n        \\\"type\\\": \\\"string\\\"\\n      },\\n      \\\"nestedProperty\\\": {\\n        \\\"type\\\": \\\"string\\\"\\n      }\\n    },\\n    \\\"required\\\": [\\n      \\\"nestedProperty\\\"\\n    ],\\n    \\\"type\\\": \\\"object\\\"\\n  }\\n\\nValue:\\n  {\\n    \\\"color\\\": \\\"color\\\"\\n  }\\n\",\"loc\":[\"nested\",\"nestedProperty\"],\"msg\":\"property \\\"nestedProperty\\\" is missing\",\"type\":\"request_validation\"}]}}"
+		jsonErr := "{\"error\":\"invalid request\",\"message\":\"OpenAPI request validation failed\",\"validationError\":{\"detail\":[{\"detail\":\"\\nSchema:\\n  {\\n    \\\"type\\\": \\\"integer\\\"\\n  }\\n\\nValue:\\n  \\\"a_wrong_id\\\"\\n\",\"loc\":[\"id\"],\"msg\":\"value must be an integer\",\"type\":\"request_validation\"},{\"detail\":\"\\nSchema:\\n  {\\n    \\\"type\\\": \\\"string\\\"\\n  }\\n\\nValue:\\n  1234\\n\",\"loc\":[\"name\"],\"msg\":\"value must be a string\",\"type\":\"request_validation\"},{\"detail\":\"\\nSchema:\\n  {\\n    \\\"properties\\\": {\\n      \\\"color\\\": {\\n        \\\"type\\\": \\\"string\\\"\\n      },\\n      \\\"nestedProperty\\\": {\\n        \\\"type\\\": \\\"string\\\"\\n      }\\n    },\\n    \\\"required\\\": [\\n      \\\"nestedProperty\\\"\\n    ],\\n    \\\"type\\\": \\\"object\\\"\\n  }\\n\\nValue:\\n  {\\n    \\\"color\\\": \\\"color\\\"\\n  }\\n\",\"loc\":[\"nested\",\"nestedProperty\"],\"msg\":\"property \\\"nestedProperty\\\" is missing\",\"type\":\"request_validation\"}],\"messages\":[\"request body has an error: doesn't match schema\"]}}"
 
 		assert.Equal(t, jsonErr, resp.Body.String())
 		assert.Equal(t, http.StatusBadRequest, resp.Code)

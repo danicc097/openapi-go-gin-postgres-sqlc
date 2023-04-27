@@ -21,11 +21,27 @@ export type Scope =
   | 'project-settings:write'
   | 'work-item:review'
 export type Scopes = Scope[]
+/**
+ * location in body path, if any
+ */
 export type Location = string[]
+/**
+ * should always be shown to the user
+ */
 export type Message = string
 export type HttpErrorType = 'response_validation' | 'request_validation' | 'unknown'
+/**
+ * verbose details of the error
+ */
 export type ErrorDetails = string
+/**
+ * Additional details for validation errors
+ */
 export type Detail = ValidationError[]
+/**
+ * Descriptive error messages to show in a callout
+ */
+export type Messages = string[]
 /**
  * string identifiers for SSE event listeners.
  */
@@ -225,6 +241,7 @@ export interface UserResponse {
 }
 export interface HTTPValidationError {
   detail?: Detail
+  messages: Messages
 }
 export interface ValidationError {
   loc: Location

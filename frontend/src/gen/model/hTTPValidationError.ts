@@ -8,5 +8,8 @@
 import type { ValidationError } from './validationError'
 
 export interface HTTPValidationError {
+  /** Additional details for validation errors */
   detail?: ValidationError[]
+  /** Descriptive error messages to show in a callout */
+  messages: string[]
 }

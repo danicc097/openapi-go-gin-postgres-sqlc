@@ -73,20 +73,8 @@ paths:
     get:
       operationId: getResourceMulti
       parameters:
-        - name: id
-          in: query
-          required: true
-          schema:
-            type: integer
-            minimum: 10
-            maximum: 100
-        - name: id2
-          required: true
-          in: query
-          schema:
-            type: integer
-            minimum: 10
-            maximum: 100
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/id2'
       responses:
         "200":
           description: success
@@ -138,6 +126,23 @@ paths:
                     - nestedProperty
 
 components:
+  parameters:
+    id:
+      name: id
+      in: query
+      required: true
+      schema:
+        type: integer
+        minimum: 10
+        maximum: 100
+    id2:
+      name: id2
+      in: query
+      required: true
+      schema:
+        type: integer
+        minimum: 10
+        maximum: 100
   securitySchemes:
     BearerAuth:
       type: http

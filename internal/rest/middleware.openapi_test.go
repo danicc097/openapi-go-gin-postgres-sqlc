@@ -3,13 +3,13 @@ package rest
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-gonic/gin"
@@ -68,7 +68,9 @@ func TestOapiRequestValidator(t *testing.T) {
 			return errors.New("forbidden")
 		},
 	}
+
 	kinopenapiOpts.WithCustomSchemaErrorFunc(CustomSchemaErrorFunc)
+
 	options := OAValidatorOptions{
 		ErrorHandler: func(c *gin.Context, message string, statusCode int) {
 			c.String(statusCode, "test: "+message)
@@ -194,7 +196,7 @@ func TestOapiRequestValidator(t *testing.T) {
 func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 	t.Parallel()
 
-	openapi, err := openapi3.NewLoader().LoadFromData([]byte(testSchema))
+	openapi, err := openapi3.NewLoader().LoadFromData(testSchema)
 	require.NoError(t, err, "Error initializing openapi")
 
 	g := gin.New()
@@ -207,6 +209,7 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 		IncludeResponseStatus: true,
 		MultiError:            true,
 	}
+	// TODO markSchemaErrorKey in kin-openapi should add path parameters to SchemaError.reversePath
 	kinopenapiOpts.WithCustomSchemaErrorFunc(CustomSchemaErrorFunc)
 	options := OAValidatorOptions{
 		Options: kinopenapiOpts,
@@ -283,6 +286,14 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 	// Let's send a request with a parameters that do not meet spec. It should
 	// return a bad status
 	{
+
+		/**
+		 * FIXME
+		 *
+		 * custom response returns :
+		 * OpenAPI request validation failed: validation errors encountered: parameter "id" in query has an error: value abc: an invalid integer: invalid syntax | parameter "id2" in query has an error: $$$${"detail":"\nSchema:\n  {\n    \"maximum\": 100,\n    \"minimum\": 10,\n    \"type\": \"integer\"\n  }\n\nValue:\n  1\n","loc":null,"msg":"number must be at least 10","type":"unknown"}
+		 *
+		 */
 		rec := doGet(t, g, "http://test-server.com/multiparamresource?id=abc&id2=1")
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		body, err := io.ReadAll(rec.Body)
@@ -301,7 +312,7 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 func TestRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T) {
 	t.Parallel()
 
-	openapi, err := openapi3.NewLoader().LoadFromData([]byte(testSchema))
+	openapi, err := openapi3.NewLoader().LoadFromData(testSchema)
 	require.NoError(t, err, "Error initializing openapi")
 
 	g := gin.New()
@@ -314,11 +325,13 @@ func TestRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T) {
 		IncludeResponseStatus: true,
 		MultiError:            true,
 	}
+
 	kinopenapiOpts.WithCustomSchemaErrorFunc(CustomSchemaErrorFunc)
+
 	options := OAValidatorOptions{
 		Options: kinopenapiOpts,
 		MultiErrorHandler: func(me openapi3.MultiError) error {
-			return internal.NewErrorf(internal.ErrorCodeRequestValidation, "Bad stuff -  %s", me.Error())
+			return fmt.Errorf("Bad stuff -  %w", me)
 		},
 	}
 
@@ -348,7 +361,7 @@ func TestRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		body, err := io.ReadAll(rec.Body)
 		if assert.NoError(t, err) {
-			assert.Contains(t, string(body), "Bad stuff")
+			assert.Contains(t, string(body), "parameter \"id\"")
 			assert.Contains(t, string(body), "parameter \\\"id2\\\"")
 			assert.Contains(t, string(body), "value is required but missing")
 		}
