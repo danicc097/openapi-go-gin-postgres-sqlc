@@ -75,7 +75,7 @@ func RandomLastName() string {
 
 // RandomEmail generates a random email.
 func RandomEmail() string {
-	return fmt.Sprintf("%s-%s@email.com", RandomNameIdentifier(3, "."), RandomString(int(RandomInt64(3, 5))))
+	return fmt.Sprintf("%s@email.com", RandomNameIdentifier(3, "."))
 }
 
 // RandomNameIdentifier generates a random name identifier,
