@@ -390,27 +390,12 @@ func createOpenAPIValidatorOptions() OAValidatorOptions {
 	oaOptions := OAValidatorOptions{
 		ValidateResponse: true,
 		Options:          oafilterOpts,
-		// MultiErrorHandler: func(me openapi3.MultiError) error {
-		// 	return fmt.Errorf("multiple errors:  %s", me.Error())
-		// },
 	}
 
 	return oaOptions
 }
 
 func CustomSchemaErrorFunc(err *openapi3.SchemaError) string {
-	// TODO export more fields from kinopenapi for path params (loc currently null)
-	// it should return if its a schemaerror in a parameter or body
-	// also if its req vs res validation error. so we dont use
-	// unknown below, (inferred on our own validator before/after orig request handled)
-	fmt.Printf("WithCustomSchemaErrorFunc JSONPointer: %s\n", err.JSONPointer())
-	fmt.Printf("WithCustomSchemaErrorFunc Schema: %+v\n", err.Schema)
-	fmt.Printf("WithCustomSchemaErrorFunc Value: %s\n", err.Value)
-	fmt.Printf("WithCustomSchemaErrorFunc Reason: %s\n", err.Reason)
-	fmt.Printf("WithCustomSchemaErrorFunc Schema.Title: %s\n", err.Schema.Title)
-	fmt.Printf("WithCustomSchemaErrorFunc SchemaField: %s\n", err.SchemaField)
-	fmt.Printf("WithCustomSchemaErrorFunc Origin: %s\n", err.Origin)
-
 	detail := &bytes.Buffer{}
 	detail.WriteString("\nSchema:\n  ")
 	encoder := json.NewEncoder(detail)

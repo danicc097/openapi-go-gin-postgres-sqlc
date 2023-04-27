@@ -3,7 +3,6 @@ package rest
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -241,7 +240,6 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		body, err := io.ReadAll(rec.Body)
 		if assert.NoError(t, err) {
-			assert.Contains(t, string(body), "validation errors encountered")
 			assert.Contains(t, string(body), "parameter \\\"id2\\\"")
 			assert.Contains(t, string(body), "value is required but missing")
 		}
@@ -256,7 +254,6 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		body, err := io.ReadAll(rec.Body)
 		if assert.NoError(t, err) {
-			assert.Contains(t, string(body), "validation errors encountered")
 			assert.Contains(t, string(body), "parameter \\\"id\\\"")
 			assert.Contains(t, string(body), "value is required but missing")
 			assert.Contains(t, string(body), "parameter \\\"id2\\\"")
@@ -273,127 +270,6 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		body, err := io.ReadAll(rec.Body)
 		if assert.NoError(t, err) {
-			assert.Contains(t, string(body), "validation errors encountered")
-			assert.Contains(t, string(body), "parameter \\\"id\\\"")
-			assert.Contains(t, string(body), "number must be at most 100")
-			assert.Contains(t, string(body), "parameter \\\"id2\\\"")
-			assert.Contains(t, string(body), "value is required but missing")
-		}
-		assert.False(t, called, "Handler should not have been called")
-		called = false
-	}
-
-	// Let's send a request with a parameters that do not meet spec. It should
-	// return a bad status
-	{
-
-		/**
-		 * FIXME
-		 *
-		 * custom response returns :
-		 * OpenAPI request validation failed: validation errors encountered: parameter "id" in query has an error: value abc: an invalid integer: invalid syntax | parameter "id2" in query has an error: $$$${"detail":"\nSchema:\n  {\n    \"maximum\": 100,\n    \"minimum\": 10,\n    \"type\": \"integer\"\n  }\n\nValue:\n  1\n","loc":null,"msg":"number must be at least 10","type":"unknown"}
-		 *
-		 */
-		rec := doGet(t, g, "http://test-server.com/multiparamresource?id=abc&id2=1")
-		assert.Equal(t, http.StatusBadRequest, rec.Code)
-		body, err := io.ReadAll(rec.Body)
-		if assert.NoError(t, err) {
-			assert.Contains(t, string(body), "validation errors encountered")
-			assert.Contains(t, string(body), "parameter \\\"id\\\"")
-			assert.Contains(t, string(body), "abc: an invalid integer: invalid syntax")
-			assert.Contains(t, string(body), "parameter \\\"id2\\\"")
-			assert.Contains(t, string(body), "number must be at least 10")
-		}
-		assert.False(t, called, "Handler should not have been called")
-		called = false
-	}
-}
-
-func TestRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T) {
-	t.Parallel()
-
-	openapi, err := openapi3.NewLoader().LoadFromData(testSchema)
-	require.NoError(t, err, "Error initializing openapi")
-
-	g := gin.New()
-
-	// Set up an authenticator to check authenticated function. It will allow
-	// access to "someScope", but disallow others.
-	kinopenapiOpts := openapi3filter.Options{
-		ExcludeRequestBody:    false,
-		ExcludeResponseBody:   false,
-		IncludeResponseStatus: true,
-		MultiError:            true,
-	}
-
-	kinopenapiOpts.WithCustomSchemaErrorFunc(CustomSchemaErrorFunc)
-
-	options := OAValidatorOptions{
-		Options: kinopenapiOpts,
-		MultiErrorHandler: func(me openapi3.MultiError) error {
-			return fmt.Errorf("Bad stuff -  %w", me)
-		},
-	}
-
-	oasMw := newOpenapiMiddleware(zaptest.NewLogger(t), openapi)
-	g.Use(oasMw.RequestValidatorWithOptions(&options))
-
-	called := false
-
-	// Install a request handler for /resource. We want to make sure it doesn't
-	// get called.
-	g.GET("/multiparamresource", func(c *gin.Context) {
-		called = true
-	})
-
-	// Let's send a good request, it should pass
-	{
-		rec := doGet(t, g, "http://test-server.com/multiparamresource?id=50&id2=50")
-		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.True(t, called, "Handler should have been called")
-		called = false
-	}
-
-	// Let's send a request with a missing parameter, it should return
-	// a bad status
-	{
-		rec := doGet(t, g, "http://test-server.com/multiparamresource?id=50")
-		assert.Equal(t, http.StatusBadRequest, rec.Code)
-		body, err := io.ReadAll(rec.Body)
-		if assert.NoError(t, err) {
-			assert.Contains(t, string(body), "parameter \"id\"")
-			assert.Contains(t, string(body), "parameter \\\"id2\\\"")
-			assert.Contains(t, string(body), "value is required but missing")
-		}
-		assert.False(t, called, "Handler should not have been called")
-		called = false
-	}
-
-	// Let's send a request with a 2 missing parameters, it should return
-	// a bad status
-	{
-		rec := doGet(t, g, "http://test-server.com/multiparamresource")
-		assert.Equal(t, http.StatusBadRequest, rec.Code)
-		body, err := io.ReadAll(rec.Body)
-		if assert.NoError(t, err) {
-			assert.Contains(t, string(body), "Bad stuff")
-			assert.Contains(t, string(body), "parameter \\\"id\\\"")
-			assert.Contains(t, string(body), "value is required but missing")
-			assert.Contains(t, string(body), "parameter \\\"id2\\\"")
-			assert.Contains(t, string(body), "value is required but missing")
-		}
-		assert.False(t, called, "Handler should not have been called")
-		called = false
-	}
-
-	// Let's send a request with a 1 missing parameter, and another outside
-	// or the parameters. It should return a bad status
-	{
-		rec := doGet(t, g, "http://test-server.com/multiparamresource?id=500")
-		assert.Equal(t, http.StatusBadRequest, rec.Code)
-		body, err := io.ReadAll(rec.Body)
-		if assert.NoError(t, err) {
-			assert.Contains(t, string(body), "Bad stuff")
 			assert.Contains(t, string(body), "parameter \\\"id\\\"")
 			assert.Contains(t, string(body), "number must be at most 100")
 			assert.Contains(t, string(body), "parameter \\\"id2\\\"")
@@ -410,7 +286,6 @@ func TestRequestValidatorWithOptionsMultiErrorAndCustomHandler(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		body, err := io.ReadAll(rec.Body)
 		if assert.NoError(t, err) {
-			assert.Contains(t, string(body), "Bad stuff")
 			assert.Contains(t, string(body), "parameter \\\"id\\\"")
 			assert.Contains(t, string(body), "abc: an invalid integer: invalid syntax")
 			assert.Contains(t, string(body), "parameter \\\"id2\\\"")

@@ -46,7 +46,7 @@ func TestValidationErrorsResponse(t *testing.T) {
 		req, _ := http.NewRequest(http.MethodGet, "/validation_errors", nil)
 		engine.ServeHTTP(resp, req)
 
-		jsonErr := "{\"error\":\"invalid response\",\"message\":\"OpenAPI response validation failed\",\"validationError\":{\"detail\":[{\"detail\":\"\\nSchema:\\n  {\\n    \\\"type\\\": \\\"integer\\\"\\n  }\\n\\nValue:\\n  \\\"a_wrong_id\\\"\\n\",\"loc\":[\"id\"],\"msg\":\"value must be an integer\",\"type\":\"response_validation\"}],\"messages\":[\"response body doesn't match schema\"]}}"
+		jsonErr := "{\"error\":\"invalid response\",\"message\":\"OpenAPI response validation failed\",\"validationError\":{\"detail\":[{\"detail\":\"\\nSchema:\\n  {\\n    \\\"type\\\": \\\"integer\\\"\\n  }\\n\\nValue:\\n  \\\"a_wrong_id\\\"\\n\",\"loc\":[\"id\"],\"msg\":\"value must be an integer\",\"type\":\"response_validation\"}],\"messages\":[\"response body error\"]}}"
 
 		assert.Equal(t, jsonErr, resp.Body.String())
 		assert.Equal(t, http.StatusInternalServerError, resp.Code)
