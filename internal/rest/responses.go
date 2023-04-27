@@ -109,7 +109,7 @@ func extractValidationError(err error, c *gin.Context, typ string) models.HTTPVa
 		var vErr models.ValidationError
 
 		if err := json.Unmarshal([]byte(vErrString), &vErr); err != nil {
-			// instead err could be a string, which will only shown in callout via origErr, or be badly formatted
+			// instead err could be a string (which will only be shown in callout via origErr) or badly formatted
 			origErrs = append(origErrs, origErr)
 
 			continue
@@ -125,9 +125,10 @@ func extractValidationError(err error, c *gin.Context, typ string) models.HTTPVa
 			origErrs = append(origErrs, origErr)
 		}
 
-		if typ == "request" {
+		switch typ {
+		case "request":
 			vErr.Type = models.HttpErrorTypeRequestValidation
-		} else {
+		case "response":
 			vErr.Type = models.HttpErrorTypeResponseValidation
 		}
 

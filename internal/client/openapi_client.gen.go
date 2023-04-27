@@ -477,7 +477,10 @@ type ValidationError struct {
 	Ctx *map[string]interface{} `json:"ctx,omitempty"`
 
 	// Detail verbose details of the error
-	Detail string `json:"detail"`
+	Detail struct {
+		Schema map[string]interface{} `json:"schema"`
+		Value  string                 `json:"value"`
+	} `json:"detail"`
 
 	// Loc location in body path, if any
 	Loc []string `json:"loc"`

@@ -918,7 +918,15 @@ components:
         detail:
           description: verbose details of the error
           title: Error details
-          type: string
+          type: object
+          required:
+            - schema
+            - value
+          properties:
+            schema:
+              type: object
+            value:
+              type: string
         ctx:
           title: Contextual information
           type: object

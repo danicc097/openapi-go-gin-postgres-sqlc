@@ -306,7 +306,10 @@ export interface components {
        * Error details 
        * @description verbose details of the error
        */
-      detail: string;
+      detail: {
+        schema: Record<string, never>;
+        value: string;
+      };
       /** Contextual information */
       ctx?: Record<string, never>;
     };

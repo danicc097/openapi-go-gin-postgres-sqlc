@@ -31,10 +31,6 @@ export type Location = string[]
 export type Message = string
 export type HttpErrorType = 'response_validation' | 'request_validation' | 'unknown'
 /**
- * verbose details of the error
- */
-export type ErrorDetails = string
-/**
  * Additional details for validation errors
  */
 export type Detail = ValidationError[]
@@ -249,6 +245,13 @@ export interface ValidationError {
   type: HttpErrorType
   detail: ErrorDetails
   ctx?: ContextualInformation
+}
+/**
+ * verbose details of the error
+ */
+export interface ErrorDetails {
+  schema: {}
+  value: string
 }
 export interface ContextualInformation {}
 /**
