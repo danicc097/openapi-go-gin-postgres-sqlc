@@ -44,9 +44,12 @@ var (
 
 // nolint:gochecknoglobals
 var scopesByRole = map[models.Role][]models.Scope{
-	models.RoleUser:    userScopes,
-	models.RoleManager: managerScopes,
-	models.RoleAdmin:   adminScopes,
+	models.RoleGuest:        {},
+	models.RoleUser:         userScopes,
+	models.RoleAdvancedUser: userScopes,
+	models.RoleManager:      managerScopes,
+	models.RoleAdmin:        adminScopes,
+	models.RoleSuperAdmin:   adminScopes,
 }
 
 // Authorization represents a service for authorization.
@@ -165,14 +168,10 @@ func (a *Authorization) HasRequiredScopes(scopes []string, requiredScopes []mode
 }
 
 // DefaultScopes returns the default scopes for a role.
-func (a *Authorization) DefaultScopes(role Role) (scopes []models.Scope) {
-	if role.Rank > a.roles[models.RoleUser].Rank {
-		scopes = append(scopes, models.ScopeUsersRead)
+func (a *Authorization) DefaultScopes(role models.Role) (scopes []models.Scope) {
+	if defaultScopes, ok := scopesByRole[role]; ok {
+		scopes = append(scopes, defaultScopes...)
 	}
-	if role.Rank > a.roles[models.RoleAdvancedUser].Rank {
-	}
-
-	// TODO fill in
 
 	return scopes
 }

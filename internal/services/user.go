@@ -61,7 +61,6 @@ func NewUser(logger *zap.Logger, urepo repos.User, notificationrepo repos.Notifi
 func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParams) (*db.User, error) {
 	defer newOTELSpan(ctx, "User.Register").End()
 
-	var rank int16
 	if params.Role == "" {
 		params.Role = models.RoleUser
 	}
@@ -69,10 +68,10 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	if err != nil {
 		return nil, errors.Wrap(err, "authzsvc.ByName")
 	}
-	rank = role.Rank
+	rank := role.Rank
 
-	// append default scopes per role regardless of current
-	params.Scopes = append(params.Scopes, u.authzsvc.DefaultScopes(role)...)
+	// append default scopes for role upon registration regardless of provided params
+	params.Scopes = append(params.Scopes, u.authzsvc.DefaultScopes(params.Role)...)
 
 	scopes := make([]string, 0, len(params.Scopes))
 	for _, s := range params.Scopes {
