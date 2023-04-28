@@ -23,64 +23,73 @@ func NewActivity() *Activity {
 var _ repos.Activity = (*Activity)(nil)
 
 func (a *Activity) Create(ctx context.Context, d db.DBTX, params db.ActivityCreateParams) (*db.Activity, error) {
-	workItemTag := &db.Activity{
+	activity := &db.Activity{
 		Name:         params.Name,
 		Description:  params.Description,
 		ProjectID:    params.ProjectID,
 		IsProductive: params.IsProductive,
 	}
 
-	if _, err := workItemTag.Save(ctx, d); err != nil {
+	if _, err := activity.Save(ctx, d); err != nil {
 		return nil, err
 	}
 
-	return workItemTag, nil
+	return activity, nil
 }
 
 func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params db.ActivityUpdateParams) (*db.Activity, error) {
-	workItemTag, err := a.ByID(ctx, d, id)
+	activity, err := a.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get workItemTag by id %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get activity by id %w", parseErrorDetail(err))
 	}
 
-	updateEntityWithParams(workItemTag, &params)
+	updateEntityWithParams(activity, &params)
 
-	workItemTag, err = workItemTag.Update(ctx, d)
+	activity, err = activity.Update(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not update workItemTag: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not update activity: %w", parseErrorDetail(err))
 	}
 
-	return workItemTag, err
+	return activity, err
 }
 
-func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error) {
-	workItemTag, err := db.ActivityByNameProjectID(ctx, d, name, projectID)
+func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error) {
+	activity, err := db.ActivityByNameProjectID(ctx, d, name, projectID)
 	if err != nil {
-		return nil, fmt.Errorf("could not get workItemTag: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get activity: %w", parseErrorDetail(err))
 	}
 
-	return workItemTag, nil
+	return activity, nil
+}
+
+func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID int) ([]db.Activity, error) {
+	activities, err := db.ActivitiesByProjectID(ctx, d, projectID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get activity: %w", parseErrorDetail(err))
+	}
+
+	return activities, nil
 }
 
 func (a *Activity) ByID(ctx context.Context, d db.DBTX, id int) (*db.Activity, error) {
-	workItemTag, err := db.ActivityByActivityID(ctx, d, id)
+	activity, err := db.ActivityByActivityID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get workItemTag: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get activity: %w", parseErrorDetail(err))
 	}
 
-	return workItemTag, nil
+	return activity, nil
 }
 
 func (a *Activity) Delete(ctx context.Context, d db.DBTX, id int) (*db.Activity, error) {
-	workItemTag, err := a.ByID(ctx, d, id)
+	activity, err := a.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get workItemTag by id %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get activity by id %w", parseErrorDetail(err))
 	}
 
-	err = workItemTag.Delete(ctx, d)
+	err = activity.Delete(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not delete workItemTag: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not delete activity: %w", parseErrorDetail(err))
 	}
 
-	return workItemTag, err
+	return activity, err
 }

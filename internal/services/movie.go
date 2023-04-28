@@ -7,7 +7,6 @@ import (
 
 	tfidf "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
 )
