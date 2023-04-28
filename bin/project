@@ -52,6 +52,7 @@ errtrap() {
 source ".envrc"
 
 readonly SPEC="openapi.yaml"
+readonly BUILD_DIR="bin/build"
 readonly PROTO_DIR="internal/pb"
 readonly MIGRATIONS_DIR="db/migrations"
 readonly CERTIFICATES_DIR="certificates"
@@ -240,7 +241,7 @@ x.gen.pregen() {
     [[ -n "$missing_opids" ]] && err "Paths missing operationId: $(printf "\t\n%s" ${missing_opids[*]})"
 
     # spec must always be valid before generating. Schemas to generate must already exist with the appropiate vendor extension
-    ./pregen -env=".env.$env" --validate-spec-only
+    pregen -env=".env.$env" --validate-spec-only
 
     x.db.drop
     x.migrate up
@@ -329,7 +330,7 @@ x.gen.pregen() {
     # but some tooling is not aware of this and raises errors, e.g. openapi-typescript-codegen, vscode yaml
     sed -i 's/!!merge //' $SPEC
 
-    ./pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
+    pregen -env=".env.$env" -op-id-auth="$OPID_AUTH"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   cache-gen.cleanup
 }
@@ -362,7 +363,7 @@ x.gen.postgen() {
 
     update_spec_with_structs
 
-    ./postgen -env=".env.$env"
+    postgen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   cache-gen.cleanup
 }
@@ -415,8 +416,6 @@ x.gen.xo() {
 # Generate a type-safe SQL builder.
 x.gen.jet() {
   { { {
-    go build -o jet cmd/jet/main.go
-
     # results may be combined with xo's *Public structs and not reinvent the wheel for jet.
     # should not be hard to generate all adapters at once jet->xo *Public in a new file alongside jet gen.
     # in the end fields are the same name if goName conventions are followed (configurable via custom jet cmd)
@@ -426,7 +425,7 @@ x.gen.jet() {
     local schema=public
     rm -rf "$gen_path"
     {
-      ./jet -dbname="$GEN_POSTGRES_DB" -env=.env."$env" --out=./"$gen_path" --schema=$schema
+      jet -dbname="$GEN_POSTGRES_DB" -env=.env."$env" --out=./"$gen_path" --schema=$schema
       mv "./$gen_path"/$GEN_POSTGRES_DB/* "$gen_path"
       rm -r "./$gen_path/$GEN_POSTGRES_DB/"
     }
@@ -476,9 +475,9 @@ x.gen.client-server() {
     sed "s/\$ref: '\#\//\$ref: '$SPEC\#\//g" $SPEC >"$paths"
     # yq e 'del(.components)' -i "$paths" # dont delete since recent oapi-codegen does some checks even if we are not generating types
 
-    ./oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC" || err "Failed types generation"
-    ./oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
-    ./oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
+    oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC" || err "Failed types generation"
+    oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
+    oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC" || err "Failed client generation"
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -637,10 +636,15 @@ x.gen() {
 # Build code generation custom tools.
 x.gen.build-tools() {
   { { {
-    for cmd in pregen postgen gen-schema oapi-codegen; do
-      { go build -o $cmd cmd/$cmd/main.go ||
+    out_dir=$BUILD_DIR
+
+    mkdir -p $out_dir
+    for cmd in pregen postgen gen-schema oapi-codegen jet; do
+      echo Building $cmd...
+      { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
         echo "Could not rebuild $cmd. If you made changes to it, build it with a compilable app state" >&2; } &
     done
+
     wait
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -759,10 +763,10 @@ x.test-watch() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Test and build the entire project.
+# Build the entire project.
 x.build() {
   { { {
-    go build -o rest-server "$PWD"/cmd/rest-server
+    go build -o $BUILD_DIR/rest-server "$PWD"/cmd/rest-server
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1311,7 +1315,7 @@ update_spec_with_structs() {
   # to create the map, else we are stuck forever in a bad state unless we checkout a valid version and carefully update.
   # FIXME e.g. operation_ids.gen.go is overridden with an empty template when pregen fails and breaks gen-schema
 
-  ./gen-schema --struct-names $struct_names_list | yq '
+  gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml
 
