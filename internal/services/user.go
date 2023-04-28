@@ -21,8 +21,8 @@ type User struct {
 	authzsvc         *Authorization
 }
 
-// TODO repo should be aware of models Role and Scope
 // NOTE: the most important distinction about repositories is that they represent collections of entities. They do not represent database storage or caching or any number of technical concerns. Repositories represent collections. How you hold those collections is simply an implementation detail.
+// TODO repo should be aware of models Role and Scope and the conversion / default values is done in repo?
 type UserRegisterParams struct {
 	Username   string
 	Email      string
@@ -62,6 +62,9 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	defer newOTELSpan(ctx, "User.Register").End()
 
 	var rank int16
+	if params.Role == "" {
+		params.Role = models.RoleUser
+	}
 	role, err := u.authzsvc.RoleByName(string(params.Role))
 	if err != nil {
 		return nil, errors.Wrap(err, "authzsvc.ByName")

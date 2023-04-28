@@ -27,15 +27,33 @@ type Scope struct {
 }
 
 type (
-	userRoles  = map[models.Role]Role
-	userScopes = map[models.Scope]Scope
+	roles  = map[models.Role]Role
+	scopes = map[models.Scope]Scope
 )
+
+// nolint:gochecknoglobals
+// NOTE: ensure any changes are followed by an appropriate migration.
+var (
+	userScopes = []models.Scope{
+		models.ScopeUsersRead,
+		models.ScopeTestScope,
+	}
+	managerScopes = append(userScopes, models.ScopeWorkItemReview)
+	adminScopes   = append(managerScopes, models.ScopeWorkItemReview)
+)
+
+// nolint:gochecknoglobals
+var scopesByRole = map[models.Role][]models.Scope{
+	models.RoleUser:    userScopes,
+	models.RoleManager: managerScopes,
+	models.RoleAdmin:   adminScopes,
+}
 
 // Authorization represents a service for authorization.
 type Authorization struct {
 	logger         *zap.Logger
-	roles          userRoles
-	scopes         userScopes
+	roles          roles
+	scopes         scopes
 	existingRoles  []models.Role
 	existingScopes []models.Scope
 }
@@ -43,8 +61,8 @@ type Authorization struct {
 // NewAuthorization returns a new Authorization service.
 // Existing roles and scopes will be loaded from the given policy JSON file paths.
 func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string) (*Authorization, error) {
-	roles := make(userRoles)
-	scopes := make(userScopes)
+	roles := make(roles)
+	scopes := make(scopes)
 
 	scopeBlob, err := os.ReadFile(scopePolicy)
 	if err != nil {

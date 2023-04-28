@@ -166,6 +166,7 @@ x.check-build-deps() {
 
       confirm "Do you want to install $bin now?" || exit 1
 
+      # TODO test -n "$NO_CONFIRMATION" && { yes y | install...}
       echo "Installing $bin..."
       if ! "install.bin.$bin"; then
         err "$bin installation failed"
@@ -1019,7 +1020,8 @@ x.db.initial-data() {
     x.db.drop
     x.migrate up
     echo "Loading initial data to $POSTGRES_DB"
-    dockerdb_psql -d $POSTGRES_DB <"./db/initial_data_$env.pgsql"
+    # dockerdb_psql -d $POSTGRES_DB <"./db/initial_data_$env.pgsql"
+    go run cmd/initial-data/main.go -env .env.$env
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1409,6 +1411,7 @@ usage() {
       comment_paragraph="$($comment_parser)"
       ROWS["${rows[$i]}"]="$comment_paragraph"
       mapfile -t comments <<<"${ROWS[${rows[$i]}]}"
+      # Parse # Args:
       for comment in "${comments[@]}"; do
         comment="$(clean_comment "$comment")"
         args="-"
@@ -1427,6 +1430,7 @@ usage() {
           continue
         fi
 
+        # if its the first doc line show all info
         if [[ $j = 0 ]]; then
           docs+=("$(
             printf -- "%s\t%s\t%s" \
@@ -1437,6 +1441,7 @@ usage() {
           continue
         fi
 
+        # if its a remaining comment line
         docs+=("$(
           printf -- "%s\t%s\t%s" \
             "" \
@@ -1605,7 +1610,7 @@ while [[ "$#" -gt 0 ]]; do
     export FORCE_REGEN=1
     ;;
   --x-no-confirmation)
-    # Bypasses confirmation messages.
+    # Bypasses confirmation messages. (WIP: Use `yes` in the meantime)
     export NO_CONFIRMATION=1
     ;;
   --x-no-gen)
