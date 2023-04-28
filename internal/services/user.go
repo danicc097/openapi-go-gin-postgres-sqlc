@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -66,7 +67,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	}
 	role, err := u.authzsvc.RoleByName(string(params.Role))
 	if err != nil {
-		return nil, errors.Wrap(err, "authzsvc.ByName")
+		return nil, fmt.Errorf("authzsvc.ByName: %w", err)
 	}
 	rank := role.Rank
 
@@ -90,7 +91,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 
 	user, err := u.urepo.Create(ctx, d, repoParams)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.Create")
+		return nil, fmt.Errorf("urepo.Create: %w", err)
 	}
 
 	return user, nil
@@ -114,12 +115,12 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 
 	user, err := u.urepo.ByID(ctx, d, uid)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.ByID")
+		return nil, fmt.Errorf("urepo.ByID: %w", err)
 	}
 
 	adminRole, err := u.authzsvc.RoleByName(string(models.RoleAdmin))
 	if err != nil {
-		return nil, errors.Wrap(err, "authzsvc.ByName")
+		return nil, fmt.Errorf("authzsvc.ByName: %w", err)
 	}
 
 	if user.UserID != caller.UserID &&
@@ -140,7 +141,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 
 	user, err = u.urepo.Update(ctx, d, uid, repoUpdateParams)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.Update")
+		return nil, fmt.Errorf("urepo.Update: %w", err)
 	}
 
 	return user, nil
@@ -163,12 +164,12 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 
 	user, err := u.urepo.ByID(ctx, d, uid)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.ByID")
+		return nil, fmt.Errorf("urepo.ByID: %w", err)
 	}
 
 	adminRole, err := u.authzsvc.RoleByName(string(models.RoleAdmin))
 	if err != nil {
-		return nil, errors.Wrap(err, "authzsvc.ByName")
+		return nil, fmt.Errorf("authzsvc.ByName: %w", err)
 	}
 
 	if caller.RoleRank < adminRole.Rank {
@@ -181,7 +182,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 	if params.Role != nil {
 		role, err := u.authzsvc.RoleByName(string(*params.Role))
 		if err != nil {
-			return nil, errors.Wrap(err, "authzsvc.ByName")
+			return nil, fmt.Errorf("authzsvc.ByName: %w", err)
 		}
 		if role.Rank > caller.RoleRank {
 			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set a user rank higher than self")
@@ -221,7 +222,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		RoleRank: rank,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.Update")
+		return nil, fmt.Errorf("urepo.Update: %w", err)
 	}
 
 	return user, nil
@@ -232,7 +233,7 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 
 	uak, err := u.urepo.CreateAPIKey(ctx, d, user)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.CreateAPIKey")
+		return nil, fmt.Errorf("urepo.CreateAPIKey: %w", err)
 	}
 
 	return uak, nil
@@ -244,7 +245,7 @@ func (u *User) ByExternalID(ctx context.Context, d db.DBTX, id string) (*db.User
 
 	user, err := u.urepo.ByExternalID(ctx, d, id)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.ByExternalID")
+		return nil, fmt.Errorf("urepo.ByExternalID: %w", err)
 	}
 
 	return user, nil
@@ -256,7 +257,7 @@ func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, 
 
 	user, err := u.urepo.ByEmail(ctx, d, email)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.ByEmail")
+		return nil, fmt.Errorf("urepo.ByEmail: %w", err)
 	}
 
 	return user, nil
@@ -268,7 +269,7 @@ func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string) (*db.
 
 	user, err := u.urepo.ByUsername(ctx, d, username)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.ByUsername")
+		return nil, fmt.Errorf("urepo.ByUsername: %w", err)
 	}
 
 	return user, nil
@@ -280,7 +281,7 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 
 	user, err := u.urepo.ByAPIKey(ctx, d, apiKey)
 	if err != nil {
-		return nil, errors.Wrap(err, "urepo.ByAPIKey")
+		return nil, fmt.Errorf("urepo.ByAPIKey: %w", err)
 	}
 
 	return user, nil
@@ -300,7 +301,7 @@ func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userI
 
 	// user, err := u.notificationrepo.LatestUserNotifications(ctx, d, db.GetUserNotificationsParams{UserID: uid})
 	// if err != nil {
-	// 	return nil, errors.Wrap(err, "urepo.ByAPIKey")
+	// 	return nil, fmt.Errorf("urepo.ByAPIKey: %w", err)
 	// }
 
 	// return user, nil

@@ -10,7 +10,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -38,7 +37,7 @@ func NewAuthentication(logger *zap.Logger, usvc *User, pool *pgxpool.Pool) *Auth
 func (a *Authentication) GetUserFromAccessToken(ctx context.Context, token string) (*db.User, error) {
 	claims, err := a.ParseToken(ctx, token)
 	if err != nil {
-		return nil, errors.Wrap(err, "invalid token")
+		return nil, fmt.Errorf("invalid token: %w", err)
 	}
 
 	user, err := a.usvc.ByEmail(ctx, a.pool, claims.Email)
@@ -80,7 +79,7 @@ func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	ss, err := token.SignedString(os.Getenv("SIGNING_KEY"))
 	if err != nil {
-		return "", errors.Wrap(err, "could not sign token")
+		return "", fmt.Errorf("could not sign token: %w", err)
 	}
 	fmt.Printf("signed string %v : %v\n", ss, err)
 
@@ -91,7 +90,7 @@ func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.
 func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User) (*db.UserAPIKey, error) {
 	uak, err := a.usvc.CreateAPIKey(ctx, a.pool, user)
 	if err != nil {
-		return nil, errors.Wrap(err, "usvc.CreateAPIKey")
+		return nil, fmt.Errorf("usvc.CreateAPIKey: %w", err)
 	}
 
 	return uak, nil
@@ -111,7 +110,7 @@ func (a *Authentication) ParseToken(ctx context.Context, tokenString string) (*A
 	if ok && token.Valid {
 		fmt.Printf("%v %v", claims.Email, claims.Username)
 	} else {
-		return nil, errors.Wrap(err, "could not parse token string")
+		return nil, fmt.Errorf("could not parse token string: %w", err)
 	}
 
 	return claims, nil
