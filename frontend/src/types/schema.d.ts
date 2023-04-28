@@ -206,11 +206,9 @@ export interface components {
     };
     InitializeProjectRequest: {
       activities?: (components["schemas"]["DbActivityCreateParams"])[] | null;
-      kanbanSteps?: (components["schemas"]["DbKanbanStepCreateParams"])[] | null;
       projectID?: number;
       teams?: (components["schemas"]["DbTeamCreateParams"])[] | null;
       workItemTags?: (components["schemas"]["DbWorkItemTagCreateParams"])[] | null;
-      workItemTypes?: (components["schemas"]["DbWorkItemTypeCreateParams"])[] | null;
     };
     RestProjectBoardResponse: {
       project?: components["schemas"]["DbProject"];

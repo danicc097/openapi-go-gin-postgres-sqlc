@@ -554,15 +554,6 @@
             "null"
           ]
         },
-        "kanbanSteps": {
-          "items": {
-            "$ref": "#/definitions/DbKanbanStepCreateParams"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
         "projectID": {
           "type": "integer"
         },
@@ -578,15 +569,6 @@
         "workItemTags": {
           "items": {
             "$ref": "#/definitions/DbWorkItemTagCreateParams"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemTypes": {
-          "items": {
-            "$ref": "#/definitions/DbWorkItemTypeCreateParams"
           },
           "type": [
             "array",

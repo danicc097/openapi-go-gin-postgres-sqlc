@@ -13,10 +13,10 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
-// clear && go run cmd/initial-data/main.go -env .env.dev
 func main() {
 	var env, scopePolicyPath, rolePolicyPath string
 
@@ -45,22 +45,45 @@ func main() {
 
 	usvc := services.NewUser(logger, urepo, notifrepo, authzsvc)
 	ctx := context.Background()
+
+	registerUsers(usvc, ctx, pool, logger)
+}
+
+func registerUsers(usvc *services.User, ctx context.Context, pool *pgxpool.Pool, logger *zap.Logger) {
 	for i := 0; i < 10; i++ {
 		u, err := usvc.Register(ctx, pool, services.UserRegisterParams{
 			Username:   "user_" + strconv.Itoa(i),
 			FirstName:  pointers.New("Name " + strconv.Itoa(i)),
 			Email:      "user_" + strconv.Itoa(i) + "@mail.com",
 			ExternalID: "external_id_user_" + strconv.Itoa(i),
-			// TODO default role of User if not set
-			Role: models.RoleUser,
-			// TODO map of default Scopes for a given role
-			Scopes: []models.Scope{models.ScopeUsersRead},
 		})
 		if err != nil {
 			log.Fatalf("Could not register user: %s", err)
 		}
-		log.Default().Println("Registered", u.Username)
+		logger.Sugar().Info("Registered ", u.Username)
 	}
+	u, err := usvc.Register(ctx, pool, services.UserRegisterParams{
+		Username:   "manager_1",
+		FirstName:  pointers.New("MrManager"),
+		Email:      "manager_1" + "@mail.com",
+		ExternalID: "external_id_manager_1",
+		Role:       models.RoleManager,
+	})
+	if err != nil {
+		log.Fatalf("Could not register user: %s", err)
+	}
+	logger.Sugar().Info("Registered ", u.Username)
+	u, err = usvc.Register(ctx, pool, services.UserRegisterParams{
+		Username:   "superadmin_1",
+		FirstName:  pointers.New("MrSuperadmin"),
+		Email:      "superadmin_1" + "@mail.com",
+		ExternalID: "external_id_superadmin_1",
+		Role:       models.RoleSuperAdmin,
+	})
+	if err != nil {
+		log.Fatalf("Could not register user: %s", err)
+	}
+	logger.Sugar().Info("Registered ", u.Username)
 }
 
 func errAndExit(out []byte, err error) {

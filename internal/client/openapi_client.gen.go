@@ -358,12 +358,10 @@ type HttpErrorType string
 
 // InitializeProjectRequest defines the model for InitializeProjectRequest.
 type InitializeProjectRequest struct {
-	Activities    *[]DbActivityCreateParams     `json:"activities"`
-	KanbanSteps   *[]DbKanbanStepCreateParams   `json:"kanbanSteps"`
-	ProjectID     *int                          `json:"projectID,omitempty"`
-	Teams         *[]DbTeamCreateParams         `json:"teams"`
-	WorkItemTags  *[]DbWorkItemTagCreateParams  `json:"workItemTags"`
-	WorkItemTypes *[]DbWorkItemTypeCreateParams `json:"workItemTypes"`
+	Activities   *[]DbActivityCreateParams    `json:"activities"`
+	ProjectID    *int                         `json:"projectID,omitempty"`
+	Teams        *[]DbTeamCreateParams        `json:"teams"`
+	WorkItemTags *[]DbWorkItemTagCreateParams `json:"workItemTags"`
 }
 
 // ModelsProject defines the model for ModelsProject.

@@ -3,8 +3,8 @@ package repos
 import (
 	"context"
 
-	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	repomodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/google/uuid"
 )
@@ -14,16 +14,13 @@ import (
 // to create teams, activities, etc. The first time we must go through the project
 // creation steps and create everything at once.
 // Later on everything can be updated in the project settings panel, and new elements created.
-// Once a board is created it cannot be deleted.
 type ProjectBoardCreateParams struct {
 	ProjectID int `json:"projectID"`
 	// TeamIDs   []int `json:"teamIDs"` // completely useless. the only check needed is to ensure at least one team
-	// exacts associated to projectID, else prompt the user to create at least 1 team before creating a board.
-	Activities    []db.ActivityCreateParams     `json:"activities"`
-	KanbanSteps   []db.KanbanStepCreateParams   `json:"kanbanSteps"`
-	Teams         []db.TeamCreateParams         `json:"teams"`
-	WorkItemTypes []db.WorkItemTypeCreateParams `json:"workItemTypes"`
-	WorkItemTags  []db.WorkItemTagCreateParams  `json:"workItemTags"`
+	// is associated to projectID, else prompt the user to create >=1 team before creating a board, handled at /teams/:project_name/create.
+	Activities   []db.ActivityCreateParams    `json:"activities"`
+	Teams        []db.TeamCreateParams        `json:"teams"`
+	WorkItemTags []db.WorkItemTagCreateParams `json:"workItemTags"`
 }
 
 // ProjectBoard defines the datastore/repository handling persisting ProjectBoard records.
@@ -46,8 +43,8 @@ type ProjectBoard interface {
 
 
 	*/
-	Create(ctx context.Context, d db.DBTX, params ProjectBoardCreateParams) (*models.ProjectBoard, error)
-	ByID(ctx context.Context, d db.DBTX, projectID int) (*models.ProjectBoard, error)
+	Create(ctx context.Context, d db.DBTX, params ProjectBoardCreateParams) (*repomodels.ProjectBoard, error)
+	ByID(ctx context.Context, d db.DBTX, projectID int) (*repomodels.ProjectBoard, error)
 }
 
 type DemoProjectWorkItemUpdateParams struct {
@@ -75,7 +72,7 @@ type DemoProjectWorkItem interface {
 // WorkItem defines the datastore/repository handling persisting WorkItem records.
 /**
  * TODO:
- * instead pass `, project models.Project` and do appropiate joins in workitem.xo.go depending on it.
+ * instead pass `, project repomodels.Project` and do appropiate joins in workitem.xo.go depending on it.
  * in case we need specific indexes from {project}workitem.xo.go we can do e.g. DemoProjectWorkItemsByRefLine with no workitem join
  * and then just loop over those and filter by ID taking the performance hit. it will be rare to use those filters anyway.
  * If not we can always go back to sqlc or use jet + reuse the xo model
@@ -113,7 +110,7 @@ type User interface {
 // Project defines the datastore/repository handling persisting Project records.
 // Projects are manually created on demand.
 type Project interface {
-	ByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (*db.Project, error)
+	ByName(ctx context.Context, d db.DBTX, name models.Project) (*db.Project, error)
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.Project, error)
 }
 

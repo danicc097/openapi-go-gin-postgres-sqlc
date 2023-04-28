@@ -10,7 +10,7 @@
 #      with `x-postgen-struct: <pascal cased package+struct name>`
 # Path operations:
 #   - `x-required-scopes` is an array of required scope keys from scopes.json
-#   - `x-required-role` is a required role name from role.json
+#   - `x-required-role` is a required role name from roles.json
 #
 #
 #
@@ -712,11 +712,6 @@ components:
             $ref: '#/components/schemas/DbActivityCreateParams'
           nullable: true
           type: array
-        kanbanSteps:
-          items:
-            $ref: '#/components/schemas/DbKanbanStepCreateParams'
-          nullable: true
-          type: array
         projectID:
           type: integer
         teams:
@@ -727,11 +722,6 @@ components:
         workItemTags:
           items:
             $ref: '#/components/schemas/DbWorkItemTagCreateParams'
-          nullable: true
-          type: array
-        workItemTypes:
-          items:
-            $ref: '#/components/schemas/DbWorkItemTypeCreateParams'
           nullable: true
           type: array
       type: object

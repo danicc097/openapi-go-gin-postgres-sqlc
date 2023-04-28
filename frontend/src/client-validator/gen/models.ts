@@ -178,11 +178,9 @@ export interface RestDemoProjectWorkItemsResponse {
 }
 export interface InitializeProjectRequest {
   activities?: DbActivityCreateParams[] | null
-  kanbanSteps?: DbKanbanStepCreateParams[] | null
   projectID?: number
   teams?: DbTeamCreateParams[] | null
   workItemTags?: DbWorkItemTagCreateParams[] | null
-  workItemTypes?: DbWorkItemTypeCreateParams[] | null
 }
 export interface DbActivityCreateParams {
   description?: string
@@ -190,26 +188,12 @@ export interface DbActivityCreateParams {
   name?: string
   projectID?: number
 }
-export interface DbKanbanStepCreateParams {
-  color?: string
-  description?: string
-  name?: string
-  projectID?: number
-  stepOrder?: number | null
-  timeTrackable?: boolean
-}
 export interface DbTeamCreateParams {
   description?: string
   name?: string
   projectID?: number
 }
 export interface DbWorkItemTagCreateParams {
-  color?: string
-  description?: string
-  name?: string
-  projectID?: number
-}
-export interface DbWorkItemTypeCreateParams {
   color?: string
   description?: string
   name?: string
@@ -293,6 +277,20 @@ export interface DbWorkItem {
   updatedAt: string
   workItemID: number
   workItemTypeID: number
+}
+export interface DbKanbanStepCreateParams {
+  color?: string
+  description?: string
+  name?: string
+  projectID?: number
+  stepOrder?: number | null
+  timeTrackable?: boolean
+}
+export interface DbWorkItemTypeCreateParams {
+  color?: string
+  description?: string
+  name?: string
+  projectID?: number
 }
 export interface DbWorkItem_Member {
   role: WorkItemRole
