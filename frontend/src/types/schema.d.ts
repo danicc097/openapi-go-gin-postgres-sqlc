@@ -206,11 +206,9 @@ export interface components {
     };
     InitializeProjectRequest: {
       activities?: (components["schemas"]["DbActivityCreateParams"])[] | null;
-      kanbanSteps?: (components["schemas"]["DbKanbanStepCreateParams"])[] | null;
       projectID?: number;
       teams?: (components["schemas"]["DbTeamCreateParams"])[] | null;
       workItemTags?: (components["schemas"]["DbWorkItemTagCreateParams"])[] | null;
-      workItemTypes?: (components["schemas"]["DbWorkItemTypeCreateParams"])[] | null;
     };
     RestProjectBoardResponse: {
       project?: components["schemas"]["DbProject"];
@@ -306,7 +304,10 @@ export interface components {
        * Error details 
        * @description verbose details of the error
        */
-      detail: string;
+      detail: {
+        schema: Record<string, never>;
+        value: string;
+      };
       /** Contextual information */
       ctx?: Record<string, never>;
     };
@@ -314,11 +315,6 @@ export interface components {
     HttpErrorType: "response_validation" | "request_validation" | "unknown";
     UuidUUID: string;
     PgtypeJSONB: Record<string, never>;
-    /**
-     * @description Kanban columns for project demoProject 
-     * @enum {string}
-     */
-    demoProjectKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
     ModelsProjectConfigField: {
       isEditable: boolean;
       isVisible: boolean;
@@ -399,6 +395,10 @@ export interface components {
      * @enum {string}
      */
     NotificationType: "personal" | "global";
+    /** @enum {string} */
+    DemoProjectKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
+    /** @enum {string} */
+    DemoProject2KanbanSteps: "Received";
   };
   responses: never;
   parameters: {

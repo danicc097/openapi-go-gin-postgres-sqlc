@@ -8,7 +8,7 @@ import (
 	"context"
 	"time"
 
-	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
@@ -49,7 +49,7 @@ func (_d ProjectWithRetry) ByID(ctx context.Context, d db.DBTX, id int) (pp1 *db
 }
 
 // ByName implements repos.Project
-func (_d ProjectWithRetry) ByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (pp1 *db.Project, err error) {
+func (_d ProjectWithRetry) ByName(ctx context.Context, d db.DBTX, name models.Project) (pp1 *db.Project, err error) {
 	pp1, err = _d.Project.ByName(ctx, d, name)
 	if err == nil || _d._retryCount < 1 {
 		return

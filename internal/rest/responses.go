@@ -38,11 +38,11 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 		case internal.ErrorCodeRequestValidation:
 			status = http.StatusBadRequest
 			resp.Message = "OpenAPI request validation failed"
-			resp.ValidationError = extractValidationError(err, c, "request")
+			resp.ValidationError = extractValidationError(err, "request")
 		case internal.ErrorCodeResponseValidation:
 			status = http.StatusInternalServerError
 			resp.Message = "OpenAPI response validation failed"
-			resp.ValidationError = extractValidationError(err, c, "response")
+			resp.ValidationError = extractValidationError(err, "response")
 		case internal.ErrorCodeAlreadyExists:
 			status = http.StatusConflict
 		case internal.ErrorCodeUnauthorized:
@@ -66,23 +66,22 @@ func renderErrorResponse(c *gin.Context, msg string, err error) {
 	renderResponse(c, resp, status)
 }
 
-func extractValidationError(err error, c *gin.Context, typ string) models.HTTPValidationError {
+func extractValidationError(err error, typ string) models.HTTPValidationError {
 	var origErrs []string
 	var vErrs []models.ValidationError
 
 	unwrappedErr := err
 	for uErr := errors.Unwrap(unwrappedErr); uErr != nil; {
-		unwrappedErr = uErr
-
 		e := strings.TrimSpace(uErr.Error())
 		if strings.HasPrefix(e, "response body doesn't match schema:") {
-			origErrs = append(origErrs, "response body error")
-			unwrappedErr = errors.Unwrap(unwrappedErr)
+			unwrappedErr = errors.Unwrap(uErr)
+
+			origErrs = append(origErrs, "response body error") // this is obviously not catched on client-side validation
 
 			break
 		}
 		if strings.HasPrefix(e, "validation errors encountered:") {
-			unwrappedErr = errors.Unwrap(unwrappedErr)
+			unwrappedErr = errors.Unwrap(uErr)
 
 			break
 		}
@@ -109,7 +108,7 @@ func extractValidationError(err error, c *gin.Context, typ string) models.HTTPVa
 		var vErr models.ValidationError
 
 		if err := json.Unmarshal([]byte(vErrString), &vErr); err != nil {
-			// instead err could be a string, which will only shown in callout via origErr, or be badly formatted
+			// instead err could be a string (which will only be shown in callout via origErr) or badly formatted
 			origErrs = append(origErrs, origErr)
 
 			continue
@@ -125,9 +124,10 @@ func extractValidationError(err error, c *gin.Context, typ string) models.HTTPVa
 			origErrs = append(origErrs, origErr)
 		}
 
-		if typ == "request" {
+		switch typ {
+		case "request":
 			vErr.Type = models.HttpErrorTypeRequestValidation
-		} else {
+		case "response":
 			vErr.Type = models.HttpErrorTypeResponseValidation
 		}
 

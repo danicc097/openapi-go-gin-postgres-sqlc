@@ -7,7 +7,6 @@ import (
 
 	tfidf "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
 )
@@ -42,7 +41,7 @@ func (m *movie) Create(ctx context.Context, movie *db.Movie) error {
 	m.logger.Sugar().Infof("Movie predictions: %v", predictions)
 
 	if _, err := movie.Insert(ctx, m.d); err != nil {
-		return errors.Wrap(err, "movierepo.Create")
+		return fmt.Errorf("movierepo.Create: %w", err)
 	}
 
 	return nil

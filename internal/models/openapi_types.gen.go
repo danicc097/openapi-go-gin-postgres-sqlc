@@ -12,6 +12,36 @@ const (
 	Bearer_authScopes = "bearer_auth.Scopes"
 )
 
+// Defines values for DemoProject2KanbanSteps.
+const (
+	DemoProject2KanbanStepsReceived DemoProject2KanbanSteps = "Received"
+)
+
+// AllDemoProject2KanbanStepsValues returns all possible values for DemoProject2KanbanSteps.
+func AllDemoProject2KanbanStepsValues() []DemoProject2KanbanSteps {
+	return []DemoProject2KanbanSteps{
+		DemoProject2KanbanStepsReceived,
+	}
+}
+
+// Defines values for DemoProjectKanbanSteps.
+const (
+	DemoProjectKanbanStepsDisabled       DemoProjectKanbanSteps = "Disabled"
+	DemoProjectKanbanStepsReceived       DemoProjectKanbanSteps = "Received"
+	DemoProjectKanbanStepsUnderReview    DemoProjectKanbanSteps = "Under review"
+	DemoProjectKanbanStepsWorkInProgress DemoProjectKanbanSteps = "Work in progress"
+)
+
+// AllDemoProjectKanbanStepsValues returns all possible values for DemoProjectKanbanSteps.
+func AllDemoProjectKanbanStepsValues() []DemoProjectKanbanSteps {
+	return []DemoProjectKanbanSteps{
+		DemoProjectKanbanStepsDisabled,
+		DemoProjectKanbanStepsReceived,
+		DemoProjectKanbanStepsUnderReview,
+		DemoProjectKanbanStepsWorkInProgress,
+	}
+}
+
 // Defines values for HttpErrorType.
 const (
 	HttpErrorTypeRequestValidation  HttpErrorType = "request_validation"
@@ -125,24 +155,6 @@ func AllWorkItemRoleValues() []WorkItemRole {
 	return []WorkItemRole{
 		WorkItemRolePreparer,
 		WorkItemRoleReviewer,
-	}
-}
-
-// Defines values for DemoProjectKanbanSteps.
-const (
-	DemoProjectKanbanStepsDisabled       DemoProjectKanbanSteps = "Disabled"
-	DemoProjectKanbanStepsReceived       DemoProjectKanbanSteps = "Received"
-	DemoProjectKanbanStepsUnderReview    DemoProjectKanbanSteps = "Under review"
-	DemoProjectKanbanStepsWorkInProgress DemoProjectKanbanSteps = "Work in progress"
-)
-
-// AllDemoProjectKanbanStepsValues returns all possible values for DemoProjectKanbanSteps.
-func AllDemoProjectKanbanStepsValues() []DemoProjectKanbanSteps {
-	return []DemoProjectKanbanSteps{
-		DemoProjectKanbanStepsDisabled,
-		DemoProjectKanbanStepsReceived,
-		DemoProjectKanbanStepsUnderReview,
-		DemoProjectKanbanStepsWorkInProgress,
 	}
 }
 
@@ -331,6 +343,12 @@ type DbWorkItemMember struct {
 	User *DbUser      `json:"user,omitempty"`
 }
 
+// DemoProject2KanbanSteps defines the model for DemoProject2KanbanSteps.
+type DemoProject2KanbanSteps string
+
+// DemoProjectKanbanSteps defines the model for DemoProjectKanbanSteps.
+type DemoProjectKanbanSteps string
+
 // HTTPValidationError defines the model for HTTPValidationError.
 type HTTPValidationError struct {
 	// Detail Additional details for validation errors
@@ -345,12 +363,10 @@ type HttpErrorType string
 
 // InitializeProjectRequest defines the model for InitializeProjectRequest.
 type InitializeProjectRequest struct {
-	Activities    *[]DbActivityCreateParams     `json:"activities"`
-	KanbanSteps   *[]DbKanbanStepCreateParams   `json:"kanbanSteps"`
-	ProjectID     *int                          `json:"projectID,omitempty"`
-	Teams         *[]DbTeamCreateParams         `json:"teams"`
-	WorkItemTags  *[]DbWorkItemTagCreateParams  `json:"workItemTags"`
-	WorkItemTypes *[]DbWorkItemTypeCreateParams `json:"workItemTypes"`
+	Activities   *[]DbActivityCreateParams    `json:"activities"`
+	ProjectID    *int                         `json:"projectID,omitempty"`
+	Teams        *[]DbTeamCreateParams        `json:"teams"`
+	WorkItemTags *[]DbWorkItemTagCreateParams `json:"workItemTags"`
 }
 
 // ModelsProject defines the model for ModelsProject.
@@ -464,7 +480,10 @@ type ValidationError struct {
 	Ctx *map[string]interface{} `json:"ctx,omitempty"`
 
 	// Detail verbose details of the error
-	Detail string `json:"detail"`
+	Detail struct {
+		Schema map[string]interface{} `json:"schema"`
+		Value  string                 `json:"value"`
+	} `json:"detail"`
 
 	// Loc location in body path, if any
 	Loc []string `json:"loc"`
@@ -476,9 +495,6 @@ type ValidationError struct {
 
 // WorkItemRole represents a database 'work_item_role'
 type WorkItemRole string
-
-// DemoProjectKanbanSteps Kanban columns for project demoProject
-type DemoProjectKanbanSteps string
 
 // PathSerial defines the model for PathSerial.
 type PathSerial = int

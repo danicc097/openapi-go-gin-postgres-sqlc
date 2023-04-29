@@ -2,6 +2,7 @@ package resttestutil
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -9,7 +10,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/pkg/errors"
 )
 
 type CreateUserParams struct {
@@ -39,7 +39,7 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	}
 	user, err := ff.usvc.Register(ctx, ff.pool, ucp)
 	if err != nil {
-		return nil, errors.Wrap(err, "usvc.Register")
+		return nil, fmt.Errorf("usvc.Register: %w", err)
 	}
 
 	if params.DeletedAt != nil {
@@ -52,13 +52,13 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	if params.WithAPIKey {
 		apiKey, err = ff.authnsvc.CreateAPIKeyForUser(ctx, user)
 		if err != nil {
-			return nil, errors.Wrap(err, "authnsvc.CreateAPIKeyForUser")
+			return nil, fmt.Errorf("authnsvc.CreateAPIKeyForUser: %w", err)
 		}
 	}
 	if params.WithToken {
 		accessToken, err = ff.authnsvc.CreateAccessTokenForUser(ctx, user) // TODO simply returns a jwt
 		if err != nil {
-			return nil, errors.Wrap(err, "authnsvc.CreateAPIKeyForUser")
+			return nil, fmt.Errorf("authnsvc.CreateAPIKeyForUser: %w", err)
 		}
 	}
 

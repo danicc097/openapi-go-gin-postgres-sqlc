@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -396,23 +395,23 @@ func createOpenAPIValidatorOptions() OAValidatorOptions {
 }
 
 func CustomSchemaErrorFunc(err *openapi3.SchemaError) string {
-	detail := &bytes.Buffer{}
-	detail.WriteString("\nSchema:\n  ")
-	encoder := json.NewEncoder(detail)
-	encoder.SetIndent("  ", "  ")
-	if err := encoder.Encode(err.Schema); err != nil {
-		panic(err)
-	}
-	detail.WriteString("\nValue:\n  ")
-	if err := encoder.Encode(err.Value); err != nil {
-		panic(err)
-	}
+	value, _ := json.Marshal(err.Value)
+
+	var schema map[string]any
+	s, _ := err.Schema.MarshalJSON()
+	_ = json.Unmarshal(s, &schema)
 
 	ve := &models.ValidationError{
-		Loc:    err.JSONPointer(),
-		Msg:    err.Reason,
-		Type:   models.HttpErrorTypeUnknown, // no way to distinguish here yet
-		Detail: detail.String(),
+		Loc:  err.JSONPointer(),
+		Msg:  err.Reason,
+		Type: models.HttpErrorTypeUnknown, // no way to distinguish here yet
+		Detail: struct {
+			Schema map[string]interface{} "json:\"schema\""
+			Value  string                 "json:\"value\""
+		}{
+			Schema: schema,
+			Value:  string(value),
+		},
 	}
 
 	b, _ := json.Marshal(ve)

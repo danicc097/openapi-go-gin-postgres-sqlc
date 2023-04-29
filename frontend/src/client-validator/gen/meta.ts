@@ -32,7 +32,6 @@ import {
   HttpErrorType,
   UuidUUID,
   PgtypeJSONB,
-  demoProjectKanbanSteps,
   ModelsProjectConfigField,
   DbProject2WorkItem,
   DbWorkItem,
@@ -47,6 +46,8 @@ import {
   DbWorkItemRole,
   DbWorkItem_Member,
   NotificationType,
+  DemoProjectKanbanSteps,
+  DemoProject2KanbanSteps,
 } from './models'
 
 export const schemaDefinitions = {
@@ -87,10 +88,6 @@ export const schemaDefinitions = {
   HttpErrorType: info<HttpErrorType>('HttpErrorType', '#/definitions/HttpErrorType'),
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
   PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
-  demoProjectKanbanSteps: info<demoProjectKanbanSteps>(
-    'demoProjectKanbanSteps',
-    '#/definitions/demoProjectKanbanSteps',
-  ),
   ModelsProjectConfigField: info<ModelsProjectConfigField>(
     'ModelsProjectConfigField',
     '#/definitions/ModelsProjectConfigField',
@@ -120,6 +117,14 @@ export const schemaDefinitions = {
   DbWorkItemRole: info<DbWorkItemRole>('DbWorkItemRole', '#/definitions/DbWorkItemRole'),
   DbWorkItem_Member: info<DbWorkItem_Member>('DbWorkItem_Member', '#/definitions/DbWorkItem_Member'),
   NotificationType: info<NotificationType>('NotificationType', '#/definitions/NotificationType'),
+  DemoProjectKanbanSteps: info<DemoProjectKanbanSteps>(
+    'DemoProjectKanbanSteps',
+    '#/definitions/DemoProjectKanbanSteps',
+  ),
+  DemoProject2KanbanSteps: info<DemoProject2KanbanSteps>(
+    'DemoProject2KanbanSteps',
+    '#/definitions/DemoProject2KanbanSteps',
+  ),
 }
 
 export interface SchemaInfo<T> {

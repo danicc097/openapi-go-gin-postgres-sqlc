@@ -128,6 +128,9 @@ to_pascal() {
   local string=$1
   local pascal_case=""
 
+  # Replace spaces with nothing and capitalize the following letter
+  string=$(echo "$string" | sed 's/ \([a-z]\)/\U\1/g')
+
   # Replace underscores and hyphens with spaces
   string=${string//[_-]/ }
 
@@ -146,6 +149,16 @@ to_lower() {
     s="${s/${BASH_REMATCH[0]}/${BASH_REMATCH[0],}}"
   done
   printf '%s\n' "$s"
+}
+
+# splits a string by the first instance of a separator
+function cut_first() {
+  local str="$1"
+  local separator="$2"
+  local first_part="${str%%"$separator"*}"
+  local second_part="${str#*"$separator"}"
+  echo "$first_part"
+  echo "$second_part"
 }
 
 # returns 0 if an element has been found

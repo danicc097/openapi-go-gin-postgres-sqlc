@@ -36,7 +36,6 @@ import {
   HttpErrorType,
   UuidUUID,
   PgtypeJSONB,
-  demoProjectKanbanSteps,
   ModelsProjectConfigField,
   DbProject2WorkItem,
   DbWorkItem,
@@ -51,6 +50,8 @@ import {
   DbWorkItemRole,
   DbWorkItem_Member,
   NotificationType,
+  DemoProjectKanbanSteps,
+  DemoProject2KanbanSteps,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -395,18 +396,6 @@ export const PgtypeJSONBDecoder: Decoder<PgtypeJSONB> = {
     return validateJson(json, schema, PgtypeJSONBDecoder.definitionName)
   },
 }
-export const demoProjectKanbanStepsDecoder: Decoder<demoProjectKanbanSteps> = {
-  definitionName: 'demoProjectKanbanSteps',
-  schemaRef: '#/definitions/demoProjectKanbanSteps',
-
-  decode(json: unknown): demoProjectKanbanSteps {
-    const schema = ajv.getSchema(demoProjectKanbanStepsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${demoProjectKanbanStepsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, demoProjectKanbanStepsDecoder.definitionName)
-  },
-}
 export const ModelsProjectConfigFieldDecoder: Decoder<ModelsProjectConfigField> = {
   definitionName: 'ModelsProjectConfigField',
   schemaRef: '#/definitions/ModelsProjectConfigField',
@@ -573,5 +562,29 @@ export const NotificationTypeDecoder: Decoder<NotificationType> = {
       throw new Error(`Schema ${NotificationTypeDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, NotificationTypeDecoder.definitionName)
+  },
+}
+export const DemoProjectKanbanStepsDecoder: Decoder<DemoProjectKanbanSteps> = {
+  definitionName: 'DemoProjectKanbanSteps',
+  schemaRef: '#/definitions/DemoProjectKanbanSteps',
+
+  decode(json: unknown): DemoProjectKanbanSteps {
+    const schema = ajv.getSchema(DemoProjectKanbanStepsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DemoProjectKanbanStepsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DemoProjectKanbanStepsDecoder.definitionName)
+  },
+}
+export const DemoProject2KanbanStepsDecoder: Decoder<DemoProject2KanbanSteps> = {
+  definitionName: 'DemoProject2KanbanSteps',
+  schemaRef: '#/definitions/DemoProject2KanbanSteps',
+
+  decode(json: unknown): DemoProject2KanbanSteps {
+    const schema = ajv.getSchema(DemoProject2KanbanStepsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DemoProject2KanbanStepsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DemoProject2KanbanStepsDecoder.definitionName)
   },
 }

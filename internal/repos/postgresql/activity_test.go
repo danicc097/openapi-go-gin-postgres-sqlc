@@ -45,7 +45,7 @@ func TestActivity_ByIndexedQueries(t *testing.T) {
 			args: argsString{
 				filter:    activity.Name,
 				projectID: activity.ProjectID,
-				fn:        (activityRepo.ByProjectID),
+				fn:        (activityRepo.ByName),
 			},
 		},
 	}
@@ -118,4 +118,26 @@ func TestActivity_ByIndexedQueries(t *testing.T) {
 			assert.Contains(t, err.Error(), errContains)
 		})
 	}
+
+	t.Run("project_id", func(t *testing.T) {
+		t.Parallel()
+
+		foundActivity, err := activityRepo.ByProjectID(context.Background(), testPool, activity.ProjectID)
+		if err != nil {
+			t.Fatalf("unexpected error = %v", err)
+		}
+		assert.Equal(t, foundActivity[0].ProjectID, activity.ProjectID)
+	})
+
+	t.Run("project_id"+" - no rows when record does not exist", func(t *testing.T) {
+		t.Parallel()
+
+		filter := 254364 // does not exist
+
+		aa, err := activityRepo.ByProjectID(context.Background(), testPool, filter)
+		if err != nil {
+			t.Fatalf("unexpected error = %v", err)
+		}
+		assert.Len(t, aa, 0)
+	})
 }

@@ -1,6 +1,3 @@
-// Code adapted from:
-// https://github.com/MarioCarrion/todo-api-microservice-example
-
 package main
 
 import (
@@ -49,6 +46,7 @@ func main() {
 
 	// go openBrowser(url)
 
+	// dummy values for dashboard
 	cpuTemp := prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "cpu_temperature_celsius",
 		Help: "Current temperature of the CPU.",

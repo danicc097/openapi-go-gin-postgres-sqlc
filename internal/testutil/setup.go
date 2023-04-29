@@ -31,7 +31,7 @@ func Setup() {
 	os.Setenv("POSTGRES_DB", "postgres_test")
 	os.Setenv("IS_TESTING", "1") // for external scripts
 
-	// update config
+	// update config with testing env vars
 	if err := internal.NewAppConfig(); err != nil {
 		log.Fatalf("internal.NewAppConfig: %s\n", err)
 	}

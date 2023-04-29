@@ -31,10 +31,6 @@ export type Location = string[]
 export type Message = string
 export type HttpErrorType = 'response_validation' | 'request_validation' | 'unknown'
 /**
- * verbose details of the error
- */
-export type ErrorDetails = string
-/**
  * Additional details for validation errors
  */
 export type Detail = ValidationError[]
@@ -50,10 +46,6 @@ export type Topics = 'GlobalAlerts'
  * represents a database 'work_item_role'
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
-/**
- * Kanban columns for project demoProject
- */
-export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 export type ModelsProject = string
 export type ModelsRole = string
 export type DbWorkItemRole = string
@@ -61,6 +53,8 @@ export type DbWorkItemRole = string
  * represents a database 'notification_type'
  */
 export type NotificationType = 'personal' | 'global'
+export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
+export type DemoProject2KanbanSteps = 'Received'
 
 export interface DbActivity {
   activityID: number
@@ -182,11 +176,9 @@ export interface RestDemoProjectWorkItemsResponse {
 }
 export interface InitializeProjectRequest {
   activities?: DbActivityCreateParams[] | null
-  kanbanSteps?: DbKanbanStepCreateParams[] | null
   projectID?: number
   teams?: DbTeamCreateParams[] | null
   workItemTags?: DbWorkItemTagCreateParams[] | null
-  workItemTypes?: DbWorkItemTypeCreateParams[] | null
 }
 export interface DbActivityCreateParams {
   description?: string
@@ -194,26 +186,12 @@ export interface DbActivityCreateParams {
   name?: string
   projectID?: number
 }
-export interface DbKanbanStepCreateParams {
-  color?: string
-  description?: string
-  name?: string
-  projectID?: number
-  stepOrder?: number | null
-  timeTrackable?: boolean
-}
 export interface DbTeamCreateParams {
   description?: string
   name?: string
   projectID?: number
 }
 export interface DbWorkItemTagCreateParams {
-  color?: string
-  description?: string
-  name?: string
-  projectID?: number
-}
-export interface DbWorkItemTypeCreateParams {
   color?: string
   description?: string
   name?: string
@@ -249,6 +227,13 @@ export interface ValidationError {
   type: HttpErrorType
   detail: ErrorDetails
   ctx?: ContextualInformation
+}
+/**
+ * verbose details of the error
+ */
+export interface ErrorDetails {
+  schema: {}
+  value: string
 }
 export interface ContextualInformation {}
 /**
@@ -290,6 +275,20 @@ export interface DbWorkItem {
   updatedAt: string
   workItemID: number
   workItemTypeID: number
+}
+export interface DbKanbanStepCreateParams {
+  color?: string
+  description?: string
+  name?: string
+  projectID?: number
+  stepOrder?: number | null
+  timeTrackable?: boolean
+}
+export interface DbWorkItemTypeCreateParams {
+  color?: string
+  description?: string
+  name?: string
+  projectID?: number
 }
 export interface DbWorkItem_Member {
   role: WorkItemRole

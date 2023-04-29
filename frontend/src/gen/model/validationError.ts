@@ -6,6 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { HttpErrorType } from './httpErrorType'
+import type { ValidationErrorDetail } from './validationErrorDetail'
 import type { ValidationErrorCtx } from './validationErrorCtx'
 
 export interface ValidationError {
@@ -15,6 +16,6 @@ export interface ValidationError {
   msg: string
   type: HttpErrorType
   /** verbose details of the error */
-  detail: string
+  detail: ValidationErrorDetail
   ctx?: ValidationErrorCtx
 }

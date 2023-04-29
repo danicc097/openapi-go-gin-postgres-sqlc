@@ -15,7 +15,7 @@ create table projects (
   project_id serial primary key
   , name text not null unique
   , description text not null
-  , work_items_table_name text not null -- ensures project inserts are documented properly, postmigration script checks this column
+  , work_items_table_name text not null unique -- ensures project inserts are documented properly, postmigration script checks this column
   , board_config jsonb not null default '{}'
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
@@ -516,7 +516,7 @@ insert into projects (
 values (
   'demoProject2'
   , 'description for demoProject2'
-  , 'demo_project_work_items');
+  , 'project_2_work_items');
 
 insert into kanban_steps (
   name
@@ -584,3 +584,20 @@ values (
       projects
     where
       name = 'demoProject') , '#2b2444' , 3);
+
+insert into kanban_steps (
+  name
+  , description
+  , project_id
+  , color
+  , step_order)
+values (
+  'Received'
+  , 'description for Received column'
+  , (
+    select
+      project_id
+    from
+      projects
+    where
+      name = 'demoProject2') , '#aaaaaa' , 1);

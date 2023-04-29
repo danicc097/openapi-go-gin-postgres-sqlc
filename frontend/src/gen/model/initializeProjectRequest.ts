@@ -6,16 +6,12 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { DbActivityCreateParams } from './dbActivityCreateParams'
-import type { DbKanbanStepCreateParams } from './dbKanbanStepCreateParams'
 import type { DbTeamCreateParams } from './dbTeamCreateParams'
 import type { DbWorkItemTagCreateParams } from './dbWorkItemTagCreateParams'
-import type { DbWorkItemTypeCreateParams } from './dbWorkItemTypeCreateParams'
 
 export interface InitializeProjectRequest {
   activities?: DbActivityCreateParams[] | null
-  kanbanSteps?: DbKanbanStepCreateParams[] | null
   projectID?: number
   teams?: DbTeamCreateParams[] | null
   workItemTags?: DbWorkItemTagCreateParams[] | null
-  workItemTypes?: DbWorkItemTypeCreateParams[] | null
 }
