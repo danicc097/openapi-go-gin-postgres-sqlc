@@ -407,10 +407,10 @@ EOF
 # inserted exclusively via migrations
 generate_model_mappings_dicts() {
   local prefix="$1"
-  local -n __arr="$2"
+  local -n __arr="$2" # db rows
   echo "var (
 	${prefix}NameByID = map[int]models.${prefix}{
-      " >>$model_mappings_path
+  " >>$model_mappings_path
   for row in "${__arr[@]}"; do
     first=$(cut_first "$row" "|") # always safe
     mapfile -t arr <<<"${first}"
@@ -419,7 +419,8 @@ generate_model_mappings_dicts() {
     echo "${id}: models.${prefix}$(to_pascal "$name")," >>$model_mappings_path
   done
   echo "}
-	${prefix}IDByName = map[models.${prefix}]int{" >>$model_mappings_path
+	${prefix}IDByName = map[models.${prefix}]int{
+  " >>$model_mappings_path
   for row in "${__arr[@]}"; do
     first=$(cut_first "$row" "|") # always safe
     mapfile -t arr <<<"${first}"
@@ -428,7 +429,7 @@ generate_model_mappings_dicts() {
     echo "models.${prefix}$(to_pascal "$name"): ${id}," >>$model_mappings_path
   done
   echo "})
-    " >>$model_mappings_path
+  " >>$model_mappings_path
 }
 
 # outputs safe double-quoted paths for yq and
