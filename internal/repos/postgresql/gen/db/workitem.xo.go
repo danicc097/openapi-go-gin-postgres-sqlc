@@ -334,7 +334,7 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         work_item_id) joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
 -- O2M join generated from "work_item_comments_work_item_id_fkey"
 left join (
@@ -343,29 +343,27 @@ left join (
     , array_agg(work_item_comments.*) as work_item_comments
   from
     work_item_comments
-   group by
+  group by
         work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
 -- M2M join generated from "work_item_member_member_fkey"
 left join (
 	select
-		work_item_member.work_item_id as work_item_member_work_item_id
-		, work_item_member.role as role
-		
-		, array_agg(users.*) filter (where users.* is not null) as __users
+			work_item_member.work_item_id as work_item_member_work_item_id
+			, work_item_member.role as role
+			, array_agg(users.*) filter (where users.* is not null) as __users
 		from work_item_member
-    join users on users.user_id = work_item_member.member
+    	join users on users.user_id = work_item_member.member
     group by work_item_member_work_item_id
-		, role
-		
+			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_items.work_item_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
 	select
-		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-		, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
 		from work_item_work_item_tag
-    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+    	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
     group by work_item_work_item_tag_work_item_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 
@@ -434,7 +432,7 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         work_item_id) joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
 -- O2M join generated from "work_item_comments_work_item_id_fkey"
 left join (
@@ -443,29 +441,27 @@ left join (
     , array_agg(work_item_comments.*) as work_item_comments
   from
     work_item_comments
-   group by
+  group by
         work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
 -- M2M join generated from "work_item_member_member_fkey"
 left join (
 	select
-		work_item_member.work_item_id as work_item_member_work_item_id
-		, work_item_member.role as role
-		
-		, array_agg(users.*) filter (where users.* is not null) as __users
+			work_item_member.work_item_id as work_item_member_work_item_id
+			, work_item_member.role as role
+			, array_agg(users.*) filter (where users.* is not null) as __users
 		from work_item_member
-    join users on users.user_id = work_item_member.member
+    	join users on users.user_id = work_item_member.member
     group by work_item_member_work_item_id
-		, role
-		
+			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_items.work_item_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
 	select
-		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-		, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
 		from work_item_work_item_tag
-    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+    	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
     group by work_item_work_item_tag_work_item_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 
@@ -532,7 +528,7 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         work_item_id) joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
 -- O2M join generated from "work_item_comments_work_item_id_fkey"
 left join (
@@ -541,29 +537,27 @@ left join (
     , array_agg(work_item_comments.*) as work_item_comments
   from
     work_item_comments
-   group by
+  group by
         work_item_id) joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
 -- M2M join generated from "work_item_member_member_fkey"
 left join (
 	select
-		work_item_member.work_item_id as work_item_member_work_item_id
-		, work_item_member.role as role
-		
-		, array_agg(users.*) filter (where users.* is not null) as __users
+			work_item_member.work_item_id as work_item_member_work_item_id
+			, work_item_member.role as role
+			, array_agg(users.*) filter (where users.* is not null) as __users
 		from work_item_member
-    join users on users.user_id = work_item_member.member
+    	join users on users.user_id = work_item_member.member
     group by work_item_member_work_item_id
-		, role
-		
+			, role
   ) as joined_members on joined_members.work_item_member_work_item_id = work_items.work_item_id
 
 -- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
 	select
-		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-		, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
+			work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+			, array_agg(work_item_tags.*) filter (where work_item_tags.* is not null) as __work_item_tags
 		from work_item_work_item_tag
-    join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+    	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
     group by work_item_work_item_tag_work_item_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 

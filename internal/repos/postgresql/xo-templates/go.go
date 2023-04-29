@@ -2254,17 +2254,17 @@ const (
 	M2MJoin = `
 left join (
 	select
-		{{.LookupTable}}.{{.LookupColumn}} as {{.LookupTable}}_{{.LookupColumn}}
-		{{- range .LookupExtraCols }}
-		, {{$.LookupTable}}.{{.}} as {{.}}
-		{{ end }}
-		, array_agg({{.JoinTable}}.*) filter (where {{.JoinTable}}.* is not null) as __{{.LookupJoinTablePKAgg}}
+			{{.LookupTable}}.{{.LookupColumn}} as {{.LookupTable}}_{{.LookupColumn}}
+			{{- range .LookupExtraCols }}
+			, {{$.LookupTable}}.{{.}} as {{ . -}}
+			{{- end }}
+			, array_agg({{.JoinTable}}.*) filter (where {{.JoinTable}}.* is not null) as __{{.LookupJoinTablePKAgg}}
 		from {{.LookupTable}}
-    join {{.JoinTable}} on {{.JoinTable}}.{{.JoinTablePK}} = {{.LookupTable}}.{{.LookupJoinTablePK}}
+    	join {{.JoinTable}} on {{.JoinTable}}.{{.JoinTablePK}} = {{.LookupTable}}.{{.LookupJoinTablePK}}
     group by {{.LookupTable}}_{{.LookupColumn}}
-		{{- range .LookupExtraCols }}
-		, {{.}}
-		{{ end }}
+			{{- range .LookupExtraCols }}
+			, {{ . -}}
+			{{- end }}
   ) as joined_{{.LookupJoinTablePKSuffix}} on joined_{{.LookupJoinTablePKSuffix}}.{{.LookupTable}}_{{.LookupColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}
 `
 	M2OJoin = `
@@ -2274,7 +2274,7 @@ left join (
     , array_agg({{.JoinTable}}.*) as {{.JoinTable}}
   from
     {{.JoinTable}}
-   group by
+  group by
         {{.JoinColumn}}) joined_{{.JoinTable}} on joined_{{.JoinTable}}.{{.JoinTable}}_{{.JoinRefColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
 	O2MJoin = M2OJoin
 	O2OJoin = `
@@ -2354,12 +2354,6 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 			filters = append(filters, after)
 		}
 
-		/**   -- for openapi requests we can have manual or generated adapters to convert request bodies to xo models.
-		  -- For responses use a struct as is, that can be generated: see https://github.com/swaggest/rest/ -> we could generate
-		  -- openapi schema refs from xo models (we just care about types, this will be used for responses only)
-		  -- so we could easily respond with whatever json object.
-		  -- specifically see https://github.com/swaggest/openapi-go (Type-based reflection of Go structures to OpenAPI 3 schema.) */
-		// no need to be dynamic for joins, if a join is not specified in opts postgres wont waste time on it.
 		lines := []string{
 			"SELECT ",
 			strings.Join(fields, ",\n") + " ",
@@ -2376,8 +2370,6 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 		} else {
 			return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "` +\n\t `"))
 		}
-
-		// TODO if m2m join need group by {{.CurrentTable}}.{{.LookupRefColumn}}
 	}
 	return fmt.Sprintf("[[ UNSUPPORTED TYPE 26: %T ]]", v)
 }

@@ -145,6 +145,10 @@ create table notifications (
 
 create index on notifications (receiver_rank , notification_type , created_at);
 
+comment on column notifications.sender is 'cardinality:O2O';
+
+comment on column notifications.receiver is 'cardinality:O2O';
+
 create table user_notifications (
   user_notification_id bigserial primary key
   , notification_id int not null
@@ -156,6 +160,8 @@ create table user_notifications (
 );
 
 comment on column user_notifications.notification_id is 'cardinality:O2O';
+
+comment on column user_notifications.user_id is 'cardinality:O2M';
 
 create index on user_notifications (user_id);
 

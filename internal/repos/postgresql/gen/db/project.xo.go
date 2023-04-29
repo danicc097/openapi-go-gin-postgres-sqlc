@@ -249,7 +249,7 @@ left join (
     , array_agg(activities.*) as activities
   from
     activities
-   group by
+  group by
         project_id) joined_activities on joined_activities.activities_project_id = projects.project_id
 -- O2M join generated from "kanban_steps_project_id_fkey"
 left join (
@@ -258,7 +258,7 @@ left join (
     , array_agg(kanban_steps.*) as kanban_steps
   from
     kanban_steps
-   group by
+  group by
         project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
 -- O2M join generated from "teams_project_id_fkey"
 left join (
@@ -267,7 +267,7 @@ left join (
     , array_agg(teams.*) as teams
   from
     teams
-   group by
+  group by
         project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
 -- O2M join generated from "work_item_tags_project_id_fkey"
 left join (
@@ -276,7 +276,7 @@ left join (
     , array_agg(work_item_tags.*) as work_item_tags
   from
     work_item_tags
-   group by
+  group by
         project_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
 -- O2M join generated from "work_item_types_project_id_fkey"
 left join (
@@ -285,7 +285,7 @@ left join (
     , array_agg(work_item_types.*) as work_item_types
   from
     work_item_types
-   group by
+  group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
 		` WHERE projects.name = $6 `
 	sqlstr += c.orderBy
@@ -337,7 +337,7 @@ left join (
     , array_agg(activities.*) as activities
   from
     activities
-   group by
+  group by
         project_id) joined_activities on joined_activities.activities_project_id = projects.project_id
 -- O2M join generated from "kanban_steps_project_id_fkey"
 left join (
@@ -346,7 +346,7 @@ left join (
     , array_agg(kanban_steps.*) as kanban_steps
   from
     kanban_steps
-   group by
+  group by
         project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
 -- O2M join generated from "teams_project_id_fkey"
 left join (
@@ -355,7 +355,7 @@ left join (
     , array_agg(teams.*) as teams
   from
     teams
-   group by
+  group by
         project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
 -- O2M join generated from "work_item_tags_project_id_fkey"
 left join (
@@ -364,7 +364,7 @@ left join (
     , array_agg(work_item_tags.*) as work_item_tags
   from
     work_item_tags
-   group by
+  group by
         project_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
 -- O2M join generated from "work_item_types_project_id_fkey"
 left join (
@@ -373,7 +373,7 @@ left join (
     , array_agg(work_item_types.*) as work_item_types
   from
     work_item_types
-   group by
+  group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
 		` WHERE projects.project_id = $6 `
 	sqlstr += c.orderBy
@@ -425,7 +425,7 @@ left join (
     , array_agg(activities.*) as activities
   from
     activities
-   group by
+  group by
         project_id) joined_activities on joined_activities.activities_project_id = projects.project_id
 -- O2M join generated from "kanban_steps_project_id_fkey"
 left join (
@@ -434,7 +434,7 @@ left join (
     , array_agg(kanban_steps.*) as kanban_steps
   from
     kanban_steps
-   group by
+  group by
         project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
 -- O2M join generated from "teams_project_id_fkey"
 left join (
@@ -443,7 +443,7 @@ left join (
     , array_agg(teams.*) as teams
   from
     teams
-   group by
+  group by
         project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
 -- O2M join generated from "work_item_tags_project_id_fkey"
 left join (
@@ -452,7 +452,7 @@ left join (
     , array_agg(work_item_tags.*) as work_item_tags
   from
     work_item_tags
-   group by
+  group by
         project_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
 -- O2M join generated from "work_item_types_project_id_fkey"
 left join (
@@ -461,7 +461,7 @@ left join (
     , array_agg(work_item_types.*) as work_item_types
   from
     work_item_types
-   group by
+  group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
 		` WHERE projects.work_items_table_name = $6 `
 	sqlstr += c.orderBy

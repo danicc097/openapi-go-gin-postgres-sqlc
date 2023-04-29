@@ -43,7 +43,7 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	}
 
 	if params.DeletedAt != nil {
-		// TODO delete user (merely setting deleted_at != null)
+		ff.usvc.Delete()
 	}
 
 	var accessToken string

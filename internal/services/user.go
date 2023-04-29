@@ -266,10 +266,22 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 	return user, nil
 }
 
+// Delete marks a user as deleted.
+func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error) {
+	defer newOTELSpan(ctx, "User.Delete").End()
+
+	user, err := u.urepo.Delete(ctx, d, id)
+	if err != nil {
+		return nil, fmt.Errorf("urepo.Delete: %w", err)
+	}
+
+	return user, nil
+}
+
 // TODO
-func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userID string) ([]db.GetUserNotificationsRow, error) {
+func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userID string) ([]db.UserNotification, error) {
 	// this will also set user.has_new_personal_notifications to false in the same tx
-	return []db.GetUserNotificationsRow{}, nil
+	return []db.UserNotification{}, nil
 
 	// defer newOTELSpan(ctx, "User.ByAPIKey").End()
 
