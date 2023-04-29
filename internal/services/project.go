@@ -155,7 +155,7 @@ func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, obj map[st
 				if reflect.TypeOf(value) != reflect.TypeOf(newField[key]) {
 					continue
 				}
-				fmt.Printf("value: %v\n", value)
+				// fmt.Printf("value: %v\n", value)
 				newField[key] = value
 			}
 			fieldsMap[path] = newField

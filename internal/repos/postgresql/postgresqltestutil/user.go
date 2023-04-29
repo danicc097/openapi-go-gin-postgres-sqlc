@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
@@ -36,7 +37,7 @@ func RandomUserCreateParams(t *testing.T) db.UserCreateParams {
 		FirstName:  pointers.New(testutil.RandomFirstName()),
 		LastName:   pointers.New(testutil.RandomLastName()),
 		ExternalID: testutil.RandomString(10),
-		Scopes:     []string{"scope1", "scope2"},
+		Scopes:     models.Scopes{"scope1", "scope2"},
 		RoleRank:   int16(testutil.RandomInt64(2, 4)),
 	}
 }

@@ -60,11 +60,6 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	// append default scopes for role upon registration regardless of provided params
 	params.Scopes = append(params.Scopes, u.authzsvc.DefaultScopes(params.Role)...)
 
-	scopes := make([]string, 0, len(params.Scopes))
-	for _, s := range params.Scopes {
-		scopes = append(scopes, string(s))
-	}
-
 	repoParams := db.UserCreateParams{
 		FirstName:  params.FirstName,
 		LastName:   params.LastName,
@@ -72,7 +67,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 		Email:      params.Email,
 		ExternalID: params.ExternalID,
 		RoleRank:   rank,
-		Scopes:     scopes,
+		Scopes:     params.Scopes,
 	}
 
 	user, err := u.urepo.Create(ctx, d, repoParams)
@@ -164,26 +159,21 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		}
 	}
 
-	var scopes *[]string
 	if params.Scopes != nil {
-		ss := make([]string, 0, len(*params.Scopes))
 		for _, s := range *params.Scopes {
-			if !slices.Contains(caller.Scopes, string(s)) {
+			if !slices.Contains(caller.Scopes, s) {
 				return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set a scope unassigned to self")
 			}
-
-			ss = append(ss, string(s))
 		}
 
 		if caller.RoleRank < adminRole.Rank {
 			for _, s := range user.Scopes {
-				if !slices.Contains(ss, s) {
+				if !slices.Contains(*params.Scopes, s) {
 					return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot unassign a user's scope")
 				}
 			}
 		}
 
-		scopes = &ss
 	}
 
 	var rank *int16
@@ -202,12 +192,12 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		}
 		rank = &role.Rank
 
-		// TODO reset scopes here (always overridden)
-		scopes = pointers.New(userScopes)
+		// always reset scopes when changing role
+		params.Scopes = pointers.New(scopesByRole[*params.Role])
 	}
 
 	user, err = u.urepo.Update(ctx, d, uid, db.UserUpdateParams{
-		Scopes:   scopes,
+		Scopes:   params.Scopes,
 		RoleRank: rank,
 	})
 	if err != nil {

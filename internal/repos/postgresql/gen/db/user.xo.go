@@ -10,26 +10,28 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 )
 
 // User represents a row from 'public.users'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type User struct {
-	UserID                   uuid.UUID  `json:"userID" db:"user_id" required:"true"`                                      // user_id
-	Username                 string     `json:"username" db:"username" required:"true"`                                   // username
-	Email                    string     `json:"email" db:"email" required:"true"`                                         // email
-	FirstName                *string    `json:"firstName" db:"first_name" required:"true"`                                // first_name
-	LastName                 *string    `json:"lastName" db:"last_name" required:"true"`                                  // last_name
-	FullName                 *string    `json:"fullName" db:"full_name" required:"true"`                                  // full_name
-	ExternalID               string     `json:"-" db:"external_id"`                                                       // external_id
-	APIKeyID                 *int       `json:"-" db:"api_key_id"`                                                        // api_key_id
-	Scopes                   []string   `json:"-" db:"scopes"`                                                            // scopes
-	RoleRank                 int16      `json:"-" db:"role_rank"`                                                         // role_rank
-	HasPersonalNotifications bool       `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true"` // has_personal_notifications
-	HasGlobalNotifications   bool       `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true"`     // has_global_notifications
-	CreatedAt                time.Time  `json:"createdAt" db:"created_at" required:"true"`                                // created_at
-	UpdatedAt                time.Time  `json:"-" db:"updated_at"`                                                        // updated_at
-	DeletedAt                *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`                                // deleted_at
+	UserID                   uuid.UUID     `json:"userID" db:"user_id" required:"true"`                                      // user_id
+	Username                 string        `json:"username" db:"username" required:"true"`                                   // username
+	Email                    string        `json:"email" db:"email" required:"true"`                                         // email
+	FirstName                *string       `json:"firstName" db:"first_name" required:"true"`                                // first_name
+	LastName                 *string       `json:"lastName" db:"last_name" required:"true"`                                  // last_name
+	FullName                 *string       `json:"fullName" db:"full_name" required:"true"`                                  // full_name
+	ExternalID               string        `json:"-" db:"external_id"`                                                       // external_id
+	APIKeyID                 *int          `json:"-" db:"api_key_id"`                                                        // api_key_id
+	Scopes                   models.Scopes `json:"-" db:"scopes" ref:"#/components/schemas/Scopes"`                          // scopes
+	RoleRank                 int16         `json:"-" db:"role_rank"`                                                         // role_rank
+	HasPersonalNotifications bool          `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true"` // has_personal_notifications
+	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true"`     // has_global_notifications
+	CreatedAt                time.Time     `json:"createdAt" db:"created_at" required:"true"`                                // created_at
+	UpdatedAt                time.Time     `json:"-" db:"updated_at"`                                                        // updated_at
+	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at" required:"true"`                                // deleted_at
 
 	TimeEntries *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
 	UserAPIKey  *UserAPIKey  `json:"-" db:"user_api_key" openapi-go:"ignore"` // O2O
@@ -41,30 +43,30 @@ type User struct {
 
 // UserCreateParams represents insert params for 'public.users'
 type UserCreateParams struct {
-	Username                 string   `json:"username"`                 // username
-	Email                    string   `json:"email"`                    // email
-	FirstName                *string  `json:"firstName"`                // first_name
-	LastName                 *string  `json:"lastName"`                 // last_name
-	ExternalID               string   `json:"-"`                        // external_id
-	APIKeyID                 *int     `json:"-"`                        // api_key_id
-	Scopes                   []string `json:"-"`                        // scopes
-	RoleRank                 int16    `json:"-"`                        // role_rank
-	HasPersonalNotifications bool     `json:"hasPersonalNotifications"` // has_personal_notifications
-	HasGlobalNotifications   bool     `json:"hasGlobalNotifications"`   // has_global_notifications
+	Username                 string        `json:"username"`                 // username
+	Email                    string        `json:"email"`                    // email
+	FirstName                *string       `json:"firstName"`                // first_name
+	LastName                 *string       `json:"lastName"`                 // last_name
+	ExternalID               string        `json:"-"`                        // external_id
+	APIKeyID                 *int          `json:"-"`                        // api_key_id
+	Scopes                   models.Scopes `json:"-"`                        // scopes
+	RoleRank                 int16         `json:"-"`                        // role_rank
+	HasPersonalNotifications bool          `json:"hasPersonalNotifications"` // has_personal_notifications
+	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`   // has_global_notifications
 }
 
 // UserUpdateParams represents update params for 'public.users'
 type UserUpdateParams struct {
-	Username                 *string   `json:"username"`                 // username
-	Email                    *string   `json:"email"`                    // email
-	FirstName                **string  `json:"firstName"`                // first_name
-	LastName                 **string  `json:"lastName"`                 // last_name
-	ExternalID               *string   `json:"-"`                        // external_id
-	APIKeyID                 **int     `json:"-"`                        // api_key_id
-	Scopes                   *[]string `json:"-"`                        // scopes
-	RoleRank                 *int16    `json:"-"`                        // role_rank
-	HasPersonalNotifications *bool     `json:"hasPersonalNotifications"` // has_personal_notifications
-	HasGlobalNotifications   *bool     `json:"hasGlobalNotifications"`   // has_global_notifications
+	Username                 *string        `json:"username"`                 // username
+	Email                    *string        `json:"email"`                    // email
+	FirstName                **string       `json:"firstName"`                // first_name
+	LastName                 **string       `json:"lastName"`                 // last_name
+	ExternalID               *string        `json:"-"`                        // external_id
+	APIKeyID                 **int          `json:"-"`                        // api_key_id
+	Scopes                   *models.Scopes `json:"-"`                        // scopes
+	RoleRank                 *int16         `json:"-"`                        // role_rank
+	HasPersonalNotifications *bool          `json:"hasPersonalNotifications"` // has_personal_notifications
+	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications"`   // has_global_notifications
 }
 
 type UserSelectConfig struct {

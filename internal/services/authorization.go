@@ -32,7 +32,6 @@ type (
 
 // nolint:gochecknoglobals
 // NOTE: ensure any changes are followed by an appropriate migration.
-// Scopes assigned/revoked upon role change (reset completely).
 var (
 	userScopes = []models.Scope{
 		models.ScopeUsersRead,
@@ -43,6 +42,7 @@ var (
 )
 
 // nolint:gochecknoglobals
+// Scopes assigned/revoked upon role change (reset completely).
 var scopesByRole = map[models.Role][]models.Scope{
 	models.RoleGuest:        {},
 	models.RoleUser:         userScopes,

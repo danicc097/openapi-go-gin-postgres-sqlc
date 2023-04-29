@@ -150,7 +150,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 		caller *db.User
 	}
 	type want struct {
-		Scopes []string
+		Scopes models.Scopes
 		Rank   int16
 	}
 
@@ -164,14 +164,14 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			name: "user_updated_up_to_same_rank_and_scopes",
 			args: args{
 				params: &models.UpdateUserAuthRequest{
-					Scopes: &[]models.Scope{models.ScopeUsersRead, models.ScopeTestScope},
-					Role:   (*models.Role)(pointers.New(string(models.RoleManager))),
+					Scopes: &[]models.Scope{models.ScopeUsersWrite},
+					Role:   pointers.New(models.RoleManager),
 				},
 				id:     testUsers.user.UserID.String(),
 				caller: testUsers.manager,
 			},
 			want: want{
-				Scopes: []string{string(models.ScopeUsersRead), string(models.ScopeTestScope)},
+				Scopes: testUsers.manager.Scopes, // when role is updated scopes are reset, and the ones in params ignored
 				Rank:   roles.manager.Rank,
 			},
 		},
@@ -179,7 +179,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			name: "cannot_update_to_role_higher_than_self",
 			args: args{
 				params: &models.UpdateUserAuthRequest{
-					Role: (*models.Role)(pointers.New(string(models.RoleAdmin))),
+					Role: pointers.New(models.RoleAdmin),
 				},
 				id:     testUsers.user.UserID.String(),
 				caller: testUsers.manager,
@@ -207,7 +207,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				caller: testUsers.admin,
 			},
 			want: want{
-				Scopes: []string{string(models.ScopeUsersRead), string(models.ScopeProjectSettingsWrite)},
+				Scopes: models.Scopes{models.ScopeUsersRead, models.ScopeProjectSettingsWrite},
 				Rank:   testUsers.user.RoleRank,
 			},
 		},
@@ -226,7 +226,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			name: "cannot_demote_role_if_not_admin",
 			args: args{
 				params: &models.UpdateUserAuthRequest{
-					Role: (*models.Role)(pointers.New(string(models.RoleGuest))),
+					Role: pointers.New(models.RoleGuest),
 				},
 				id:     testUsers.advanced.UserID.String(),
 				caller: testUsers.manager,
@@ -254,7 +254,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				caller: testUsers.admin,
 			},
 			want: want{
-				Scopes: []string{},
+				Scopes: models.Scopes{},
 				Rank:   testUsers.user.RoleRank,
 			},
 		},
@@ -262,14 +262,14 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			name: "can_demote_role_if_admin",
 			args: args{
 				params: &models.UpdateUserAuthRequest{
-					Role: (*models.Role)(pointers.New(string(models.RoleGuest))),
+					Role: pointers.New(models.RoleGuest),
 				},
 				id:     testUsers.advanced.UserID.String(),
 				caller: testUsers.admin,
 			},
 			want: want{
 				Rank:   roles.guest.Rank,
-				Scopes: testUsers.advanced.Scopes,
+				Scopes: testUsers.guest.Scopes, // scopes are reset on role change
 			},
 		},
 	}
@@ -307,6 +307,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 	}
 }
 
+// TODO use resttestutil, and rename all that to servicetestutil instead
+// dont use repos here, we want the actual services logic
 func createTestUsers(t *testing.T, roles testRoles) testUsers {
 	t.Helper()
 
@@ -314,27 +316,22 @@ func createTestUsers(t *testing.T, roles testRoles) testUsers {
 
 	ucp := postgresqltestutil.RandomUserCreateParams(t)
 	ucp.RoleRank = roles.guest.Rank
-	ucp.Scopes = []string{string(models.ScopeTestScope)}
 	guest, _ := urepo.Create(context.Background(), testPool, ucp)
 
 	ucp = postgresqltestutil.RandomUserCreateParams(t)
 	ucp.RoleRank = roles.user.Rank
-	ucp.Scopes = []string{string(models.ScopeTestScope)}
 	user, _ := urepo.Create(context.Background(), testPool, ucp)
 
 	ucp = postgresqltestutil.RandomUserCreateParams(t)
 	ucp.RoleRank = roles.advanced.Rank
-	ucp.Scopes = []string{string(models.ScopeTestScope)}
 	advanced, _ := urepo.Create(context.Background(), testPool, ucp)
 
 	ucp = postgresqltestutil.RandomUserCreateParams(t)
 	ucp.RoleRank = roles.manager.Rank
-	ucp.Scopes = []string{string(models.ScopeUsersRead), string(models.ScopeTestScope)}
 	manager, _ := urepo.Create(context.Background(), testPool, ucp)
 
 	ucp = postgresqltestutil.RandomUserCreateParams(t)
 	ucp.RoleRank = roles.admin.Rank
-	ucp.Scopes = []string{string(models.ScopeUsersRead), string(models.ScopeProjectSettingsWrite)}
 	admin, _ := urepo.Create(context.Background(), testPool, ucp)
 
 	return testUsers{

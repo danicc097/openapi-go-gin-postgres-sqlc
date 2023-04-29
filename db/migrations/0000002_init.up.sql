@@ -85,7 +85,7 @@ comment on column users.api_key_id is 'property:private';
 
 comment on column users.role_rank is 'property:private';
 
-comment on column users.scopes is 'property:private';
+comment on column users.scopes is 'property:private,type:models.Scopes';
 
 comment on column users.updated_at is 'property:private';
 
