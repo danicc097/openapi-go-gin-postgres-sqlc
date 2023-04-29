@@ -315,11 +315,6 @@ export interface components {
     HttpErrorType: "response_validation" | "request_validation" | "unknown";
     UuidUUID: string;
     PgtypeJSONB: Record<string, never>;
-    /**
-     * @description Kanban columns for project demoProject 
-     * @enum {string}
-     */
-    demoProjectKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
     ModelsProjectConfigField: {
       isEditable: boolean;
       isVisible: boolean;
@@ -400,6 +395,10 @@ export interface components {
      * @enum {string}
      */
     NotificationType: "personal" | "global";
+    /** @enum {string} */
+    DemoProjectKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
+    /** @enum {string} */
+    DemoProject2KanbanSteps: "Received";
   };
   responses: never;
   parameters: {

@@ -858,17 +858,6 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "demoProjectKanbanSteps": {
-      "enum": [
-        "Disabled",
-        "Received",
-        "Under review",
-        "Work in progress"
-      ],
-      "type": "string",
-      "description": "Kanban columns for project demoProject",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "ModelsProjectConfigField": {
       "properties": {
         "isEditable": {
@@ -1137,6 +1126,25 @@
         "global"
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoProjectKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Disabled",
+        "Received",
+        "Under review",
+        "Work in progress"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoProject2KanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Received"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -1224,9 +1232,6 @@
     "PgtypeJSONB": {
       "$ref": "#/definitions/PgtypeJSONB"
     },
-    "demoProjectKanbanSteps": {
-      "$ref": "#/definitions/demoProjectKanbanSteps"
-    },
     "ModelsProjectConfigField": {
       "$ref": "#/definitions/ModelsProjectConfigField"
     },
@@ -1268,6 +1273,12 @@
     },
     "NotificationType": {
       "$ref": "#/definitions/NotificationType"
+    },
+    "DemoProjectKanbanSteps": {
+      "$ref": "#/definitions/DemoProjectKanbanSteps"
+    },
+    "DemoProject2KanbanSteps": {
+      "$ref": "#/definitions/DemoProject2KanbanSteps"
     }
   }
 }

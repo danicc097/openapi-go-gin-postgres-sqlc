@@ -584,3 +584,20 @@ values (
       projects
     where
       name = 'demoProject') , '#2b2444' , 3);
+
+insert into kanban_steps (
+  name
+  , description
+  , project_id
+  , color
+  , step_order)
+values (
+  'Received'
+  , 'description for Received column'
+  , (
+    select
+      project_id
+    from
+      projects
+    where
+      name = 'demoProject2') , '#aaaaaa' , 1);

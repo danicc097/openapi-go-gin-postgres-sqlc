@@ -930,14 +930,6 @@ components:
       type: string
     PgtypeJSONB: # Generated from internal structs. DO NOT EDIT.
       type: object
-    demoProjectKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
-      enum:
-        - Disabled
-        - Received
-        - Under review
-        - Work in progress
-      type: string
-      description: Kanban columns for project demoProject
     ModelsProjectConfigField: # Generated from internal structs. DO NOT EDIT.
       properties:
         isEditable:
@@ -1110,6 +1102,19 @@ components:
       enum:
         - personal
         - global
+    DemoProjectKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
+      type: string
+      enum:
+        - Disabled
+        - Received
+        - Under review
+        - Work in progress
+      x-generated: '-'
+    DemoProject2KanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
+      type: string
+      enum:
+        - Received
+      x-generated: '-'
   examples:
     User:
       value:

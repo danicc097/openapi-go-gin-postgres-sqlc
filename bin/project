@@ -274,7 +274,6 @@ x.gen.pregen() {
     replace_enum_in_spec "Project" db_projects "$src_comment"
 
     for project in ${db_projects[@]}; do
-      project="$(to_pascal $project)"
       mapfile -t kanban_steps < <(dockerdb_psql -d $POSTGRES_DB -c "
           select name from kanban_steps where project_id = (
             select project_id from projects where name = '$project'
@@ -282,7 +281,7 @@ x.gen.pregen() {
       [[ ${#kanban_steps[@]} -gt 0 ]] || {
         echo "${YELLOW}[WARNING] No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue
       }
-      schema_name="${project}KanbanSteps"
+      schema_name="$(to_pascal $project)KanbanSteps"
       src_comment="kanban_steps table"
       replace_enum_in_spec "$schema_name" kanban_steps "$src_comment"
     done
@@ -1328,11 +1327,6 @@ update_spec_with_structs() {
   struct_names_list=$(join_by "," ${struct_names[*]})
   ((${#struct_names_list} == 0)) && return
 
-  # FIXME this build is not allowed to fail as of now, since new structs (internal/postgen/structs.gen.go:11)
-  # won't be available in that case. This requires a compilable state in all packages that gen-schema imports
-  # to create the map, else we are stuck forever in a bad state unless we checkout a valid version and carefully update.
-  # FIXME e.g. operation_ids.gen.go is overridden with an empty template when pregen fails and breaks gen-schema
-
   gen-schema --struct-names $struct_names_list | yq '
     with_entries(select(.key == "components"))' \
     >/tmp/openapi.yaml
@@ -1341,8 +1335,7 @@ update_spec_with_structs() {
   skip_schemas=("Project")
   mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
   for project in ${db_projects[@]}; do
-    project="$(to_pascal $project)"
-    skip_schemas+=("${project}KanbanSteps")
+    skip_schemas+=("$(to_pascal $project)KanbanSteps")
   done
 
   # replace every schema back into the spec

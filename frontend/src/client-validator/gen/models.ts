@@ -46,10 +46,6 @@ export type Topics = 'GlobalAlerts'
  * represents a database 'work_item_role'
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
-/**
- * Kanban columns for project demoProject
- */
-export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 export type ModelsProject = string
 export type ModelsRole = string
 export type DbWorkItemRole = string
@@ -57,6 +53,8 @@ export type DbWorkItemRole = string
  * represents a database 'notification_type'
  */
 export type NotificationType = 'personal' | 'global'
+export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
+export type DemoProject2KanbanSteps = 'Received'
 
 export interface DbActivity {
   activityID: number
