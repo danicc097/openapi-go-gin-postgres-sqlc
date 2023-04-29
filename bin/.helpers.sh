@@ -128,6 +128,9 @@ to_pascal() {
   local string=$1
   local pascal_case=""
 
+  # Replace spaces with nothing and capitalize the following letter
+  string=$(echo "$string" | sed 's/ \([a-z]\)/\U\1/g')
+
   # Replace underscores and hyphens with spaces
   string=${string//[_-]/ }
 
