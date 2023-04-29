@@ -15,7 +15,7 @@ type KanbanStep struct {
 }
 
 // NewKanbanStep returns a new KanbanStep service.
-func NewKanbanStep(logger *zap.Logger, ksrepo repos.KanbanStep, notificationrepo repos.Notification, authzsvc *Authorization) *KanbanStep {
+func NewKanbanStep(logger *zap.Logger, ksrepo repos.KanbanStep) *KanbanStep {
 	return &KanbanStep{
 		logger: logger,
 		ksrepo: ksrepo,

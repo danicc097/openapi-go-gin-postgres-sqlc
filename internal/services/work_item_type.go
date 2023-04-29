@@ -15,7 +15,7 @@ type WorkItemTag struct {
 }
 
 // NewWorkItemTag returns a new WorkItemTag service.
-func NewWorkItemTag(logger *zap.Logger, witRepo repos.WorkItemTag, notificationrepo repos.Notification, authzsvc *Authorization) *WorkItemTag {
+func NewWorkItemTag(logger *zap.Logger, witRepo repos.WorkItemTag) *WorkItemTag {
 	return &WorkItemTag{
 		logger:  logger,
 		witRepo: witRepo,

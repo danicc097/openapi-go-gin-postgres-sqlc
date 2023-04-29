@@ -230,6 +230,19 @@ x.setup.swagger-ui() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
+# TODO REMOVE
+x.gen.hardcoded-db() {
+  mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select project_id,name from projects;" 2>/dev/null)
+  echo "${db_projects[0]}"
+  first=$(cut_first "${db_projects[1]}" "|") # always safe
+  echo first: $first
+  mapfile -t arr <<<"${first}"
+  local id="${arr[0]}"
+  local name="${arr[1]}"
+  echo id: $id
+  echo name: $name
+}
+
 # Run pre-generation scripts in the internal package.
 x.gen.pregen() {
   cache-gen
@@ -250,6 +263,9 @@ x.gen.pregen() {
     sync_db_enums_with_spec
 
     ######## Sync projects and related project info
+
+    # TODO for manually inserted elements via migrations, e.g. projects, kanban_steps, work_item_type,
+    # generate 2-way maps id<- ->name to save up useless db calls and make logic switching much easier
 
     mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
     [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"

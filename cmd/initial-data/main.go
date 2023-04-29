@@ -35,18 +35,31 @@ func main() {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}
 
-	notifrepo := postgresql.NewNotification()
-	urepo := postgresql.NewUser()
+	notifRepo := postgresql.NewNotification()
+	userRepo := postgresql.NewUser()
+	activityRepo := postgresql.NewActivity()
+	teamRepo := postgresql.NewTeam()
+	projectRepo := postgresql.NewProject()
+	teRepo := postgresql.NewTimeEntry()
+	wiTypeRepo := postgresql.NewWorkItemType()
+	wiTagRepo := postgresql.NewWorkItemTag()
 
-	authzsvc, err := services.NewAuthorization(logger, scopePolicyPath, rolePolicyPath)
+	authzSvc, err := services.NewAuthorization(logger, scopePolicyPath, rolePolicyPath)
 	if err != nil {
 		log.Fatalf("NewAuthorization: %s\n", err)
 	}
 
-	usvc := services.NewUser(logger, urepo, notifrepo, authzsvc)
+	userSvc := services.NewUser(logger, userRepo, notifRepo, authzSvc)
+	/*activitySvc :=*/ _ = services.NewActivity(logger, activityRepo)
+	/*teamSvc :=*/ _ = services.NewTeam(logger, teamRepo)
+	/*projectSvc :=*/ _ = services.NewProject(logger, projectRepo, teamRepo)
+	/*teSvc :=*/ _ = services.NewTimeEntry(logger, teRepo)
+	/*wiTypeSvc :=*/ _ = services.NewWorkItemType(logger, wiTypeRepo)
+	/*wiTagSvc :=*/ _ = services.NewWorkItemTag(logger, wiTagRepo)
+
 	ctx := context.Background()
 
-	registerUsers(usvc, ctx, pool, logger)
+	registerUsers(userSvc, ctx, pool, logger)
 }
 
 func registerUsers(usvc *services.User, ctx context.Context, pool *pgxpool.Pool, logger *zap.Logger) {

@@ -15,7 +15,7 @@ type WorkItemType struct {
 }
 
 // NewWorkItemType returns a new WorkItemType service.
-func NewWorkItemType(logger *zap.Logger, witRepo repos.WorkItemType, notificationrepo repos.Notification, authzsvc *Authorization) *WorkItemType {
+func NewWorkItemType(logger *zap.Logger, witRepo repos.WorkItemType) *WorkItemType {
 	return &WorkItemType{
 		logger:  logger,
 		witRepo: witRepo,

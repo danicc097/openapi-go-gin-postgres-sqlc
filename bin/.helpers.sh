@@ -148,6 +148,16 @@ to_lower() {
   printf '%s\n' "$s"
 }
 
+# splits a string by the first instance of a separator
+function cut_first() {
+  local str="$1"
+  local separator="$2"
+  local first_part="${str%%"$separator"*}"
+  local second_part="${str#*"$separator"}"
+  echo "$first_part"
+  echo "$second_part"
+}
+
 # returns 0 if an element has been found
 element_in_array() {
   local element=$1

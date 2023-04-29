@@ -15,7 +15,7 @@ type Activity struct {
 }
 
 // NewActivity returns a new Activity service.
-func NewActivity(logger *zap.Logger, aRepo repos.Activity, notificationrepo repos.Notification, authzsvc *Authorization) *Activity {
+func NewActivity(logger *zap.Logger, aRepo repos.Activity) *Activity {
 	return &Activity{
 		logger: logger,
 		aRepo:  aRepo,

@@ -392,3 +392,91 @@ left join (
 	p._exists = true
 	return &p, nil
 }
+
+// ProjectByWorkItemsTableName retrieves a row from 'public.projects' as a Project.
+//
+// Generated from index 'projects_work_items_table_name_key'.
+func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName string, opts ...ProjectSelectConfigOption) (*Project, error) {
+	c := &ProjectSelectConfig{joins: ProjectJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`projects.project_id,
+projects.name,
+projects.description,
+projects.work_items_table_name,
+projects.board_config,
+projects.created_at,
+projects.updated_at,
+(case when $1::boolean = true then COALESCE(joined_activities.activities, '{}') end) as activities,
+(case when $2::boolean = true then COALESCE(joined_kanban_steps.kanban_steps, '{}') end) as kanban_steps,
+(case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
+(case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
+(case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
+		`FROM public.projects ` +
+		`-- O2M join generated from "activities_project_id_fkey"
+left join (
+  select
+  project_id as activities_project_id
+    , array_agg(activities.*) as activities
+  from
+    activities
+   group by
+        project_id) joined_activities on joined_activities.activities_project_id = projects.project_id
+-- O2M join generated from "kanban_steps_project_id_fkey"
+left join (
+  select
+  project_id as kanban_steps_project_id
+    , array_agg(kanban_steps.*) as kanban_steps
+  from
+    kanban_steps
+   group by
+        project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
+-- O2M join generated from "teams_project_id_fkey"
+left join (
+  select
+  project_id as teams_project_id
+    , array_agg(teams.*) as teams
+  from
+    teams
+   group by
+        project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
+-- O2M join generated from "work_item_tags_project_id_fkey"
+left join (
+  select
+  project_id as work_item_tags_project_id
+    , array_agg(work_item_tags.*) as work_item_tags
+  from
+    work_item_tags
+   group by
+        project_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
+-- O2M join generated from "work_item_types_project_id_fkey"
+left join (
+  select
+  project_id as work_item_types_project_id
+    , array_agg(work_item_types.*) as work_item_types
+  from
+    work_item_types
+   group by
+        project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
+		` WHERE projects.work_items_table_name = $6 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	// logf(sqlstr, workItemsTableName)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, workItemsTableName)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("projects/ProjectByWorkItemsTableName/db.Query: %w", err))
+	}
+	p, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[Project])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("projects/ProjectByWorkItemsTableName/pgx.CollectOneRow: %w", err))
+	}
+	p._exists = true
+	return &p, nil
+}

@@ -15,7 +15,7 @@ type Team struct {
 }
 
 // NewTeam returns a new Team service.
-func NewTeam(logger *zap.Logger, trepo repos.Team, notificationrepo repos.Notification, authzsvc *Authorization) *Team {
+func NewTeam(logger *zap.Logger, trepo repos.Team) *Team {
 	return &Team{
 		logger: logger,
 		trepo:  trepo,

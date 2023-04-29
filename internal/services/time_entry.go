@@ -15,7 +15,7 @@ type TimeEntry struct {
 }
 
 // NewTimeEntry returns a new TimeEntry service.
-func NewTimeEntry(logger *zap.Logger, teRepo repos.TimeEntry, notificationrepo repos.Notification, authzsvc *Authorization) *TimeEntry {
+func NewTimeEntry(logger *zap.Logger, teRepo repos.TimeEntry) *TimeEntry {
 	return &TimeEntry{
 		logger: logger,
 		teRepo: teRepo,
