@@ -15,7 +15,6 @@ import (
 
 // Role represents a predefined role that may be required
 // for specific actions regardless of scopes assigned to a user.
-// TODO It is also associated with a collection of scopes that get assigned/revoked upon role change.
 type Role struct {
 	Description string      `json:"description"`
 	Rank        int16       `json:"rank"` // to avoid casting. postgres smallint with check > 0
@@ -33,6 +32,7 @@ type (
 
 // nolint:gochecknoglobals
 // NOTE: ensure any changes are followed by an appropriate migration.
+// Scopes assigned/revoked upon role change (reset completely).
 var (
 	userScopes = []models.Scope{
 		models.ScopeUsersRead,

@@ -25,27 +25,13 @@ type User struct {
 // NOTE: the most important distinction about repositories is that they represent collections of entities. They do not represent database storage or caching or any number of technical concerns. Repositories represent collections. How you hold those collections is simply an implementation detail.
 // TODO repo should be aware of models Role and Scope and the conversion / default values is done in repo?
 type UserRegisterParams struct {
-	Username   string
-	Email      string
-	FirstName  *string
-	LastName   *string
-	ExternalID string
-	Scopes     []models.Scope
-	Role       models.Role
-}
-
-type UserUpdateParams struct {
-	FirstName      *string
-	LastName       *string
-	ID             string
-	RequestingUser *db.User
-}
-
-type UserUpdateAuthorizationParams struct {
-	Rank           *int16
-	Scopes         *[]string
-	ID             string
-	RequestingUser *db.User
+	Username   string         `json:"username" required:"true"`
+	Email      string         `json:"email" required:"true"`
+	FirstName  *string        `json:"firstName"`
+	LastName   *string        `json:"lastName"`
+	ExternalID string         `json:"externalID" required:"true"`
+	Scopes     []models.Scope `json:"scopes" ref:"#/components/schemas/Scopes" required:"true"`
+	Role       models.Role    `json:"role" ref:"#/components/schemas/Role" required:"true"`
 }
 
 // NewUser returns a new User service.
@@ -178,23 +164,6 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		}
 	}
 
-	var rank *int16
-	if params.Role != nil {
-		role, err := u.authzsvc.RoleByName(string(*params.Role))
-		if err != nil {
-			return nil, fmt.Errorf("authzsvc.ByName: %w", err)
-		}
-		if role.Rank > caller.RoleRank {
-			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set a user rank higher than self")
-		}
-		if caller.RoleRank < adminRole.Rank {
-			if role.Rank < user.RoleRank {
-				return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot demote a user role")
-			}
-		}
-		rank = &role.Rank
-	}
-
 	var scopes *[]string
 	if params.Scopes != nil {
 		ss := make([]string, 0, len(*params.Scopes))
@@ -215,6 +184,26 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		}
 
 		scopes = &ss
+	}
+
+	var rank *int16
+	if params.Role != nil {
+		role, err := u.authzsvc.RoleByName(string(*params.Role))
+		if err != nil {
+			return nil, fmt.Errorf("authzsvc.ByName: %w", err)
+		}
+		if role.Rank > caller.RoleRank {
+			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set a user rank higher than self")
+		}
+		if caller.RoleRank < adminRole.Rank {
+			if role.Rank < user.RoleRank {
+				return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot demote a user role")
+			}
+		}
+		rank = &role.Rank
+
+		// TODO reset scopes here (always overridden)
+		scopes = pointers.New(userScopes)
 	}
 
 	user, err = u.urepo.Update(ctx, d, uid, db.UserUpdateParams{
