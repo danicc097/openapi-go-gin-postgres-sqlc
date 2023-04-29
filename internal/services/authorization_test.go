@@ -27,8 +27,7 @@ func TestAuthorization_Roles(t *testing.T) {
 	assert.ErrorContains(t, svc.HasRequiredRole(userRole, models.RoleManager), "access restricted")
 	assert.ErrorContains(t, svc.HasRequiredRole(userRole, models.RoleAdmin), "access restricted")
 	assert.ErrorContains(t, svc.HasRequiredRole(managerRole, models.RoleAdmin), "access restricted")
-
-	assert.ErrorContains(t, svc.HasRequiredRole(services.Role{}, models.RoleAdmin), "role is not valid: unknown role")
+	assert.ErrorContains(t, svc.HasRequiredRole(services.Role{}, models.RoleAdmin), "access restricted")
 
 	assert.NoError(t, svc.HasRequiredRole(services.Role{Rank: managerRole.Rank, Name: models.RoleManager}, models.RoleManager))
 }
@@ -43,7 +42,6 @@ func TestAuthorization_Scopes(t *testing.T) {
 
 	req := []models.Scope{models.ScopeTeamSettingsWrite}
 	assert.ErrorContains(t, svc.HasRequiredScopes([]string{}, req), "access restricted")
-	assert.ErrorContains(t, svc.HasRequiredScopes([]string{string("")}, req), "scopes are not valid")
 	assert.ErrorContains(t, svc.HasRequiredScopes([]string{string(models.ScopeUsersRead)}, req), "access restricted")
 	assert.NoError(t, svc.HasRequiredScopes([]string{string(models.ScopeTeamSettingsWrite)}, req))
 

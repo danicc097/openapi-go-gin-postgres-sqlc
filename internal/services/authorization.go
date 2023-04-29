@@ -76,10 +76,10 @@ func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string)
 		return nil, fmt.Errorf("role policy: %w", err)
 	}
 	if err := json.Unmarshal(scopeBlob, &scopes); err != nil {
-		return nil, fmt.Errorf("scope policy: %w", err)
+		return nil, fmt.Errorf("scope policy loading: %w", err)
 	}
 	if err := json.Unmarshal(roleBlob, &roles); err != nil {
-		return nil, fmt.Errorf("role policy: %w", err)
+		return nil, fmt.Errorf("role policy loading: %w", err)
 	}
 
 	return &Authorization{
@@ -119,30 +119,7 @@ func (a *Authorization) ScopeByName(scope string) (Scope, error) {
 	return s, nil
 }
 
-func (a *Authorization) ValidateScopes(scopes ...string) error {
-	for _, s := range scopes {
-		_, ok := a.scopes[models.Scope(s)]
-		if !ok {
-			return internal.NewErrorf(internal.ErrorCodeInvalidScope, "unknown scope %s", s)
-		}
-	}
-
-	return nil
-}
-
-func (a *Authorization) ValidateRole(role string) error {
-	_, ok := a.roles[models.Role(role)]
-	if !ok {
-		return internal.NewErrorf(internal.ErrorCodeInvalidRole, "unknown role %s", role)
-	}
-
-	return nil
-}
-
 func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) error {
-	if err := a.ValidateRole(string(role.Name)); err != nil {
-		return internal.WrapErrorf(err, internal.ErrorCodeUnauthorized, "role is not valid")
-	}
 	rl, ok := a.roles[requiredRole]
 	if !ok {
 		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown role %s", requiredRole)
@@ -155,9 +132,6 @@ func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) err
 }
 
 func (a *Authorization) HasRequiredScopes(scopes []string, requiredScopes []models.Scope) error {
-	if err := a.ValidateScopes(scopes...); err != nil {
-		return internal.WrapErrorf(err, internal.ErrorCodeUnauthorized, "scopes are not valid")
-	}
 	for _, rs := range requiredScopes {
 		if !slices.Contains(scopes, string(rs)) {
 			return internal.NewErrorf(internal.ErrorCodeUnauthorized, fmt.Sprintf("access restricted: missing scope %s", rs))
