@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
@@ -34,13 +35,13 @@ func TestUser_Update(t *testing.T) {
 				id: user.UserID,
 				params: db.UserUpdateParams{
 					RoleRank: pointers.New[int16](10),
-					Scopes:   &[]string{"test", "test", "test"},
+					Scopes:   &models.Scopes{"test", "test", "test"},
 				},
 			},
 			want: func() *db.User {
 				u := *user
 				u.RoleRank = 10
-				u.Scopes = []string{"test"}
+				u.Scopes = models.Scopes{"test"}
 
 				return &u
 			}(),

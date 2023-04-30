@@ -40,11 +40,11 @@ func TestAuthorization_Scopes(t *testing.T) {
 		t.Fatalf("NewAuthorization: %v", err)
 	}
 
-	req := []models.Scope{models.ScopeTeamSettingsWrite}
-	assert.ErrorContains(t, svc.HasRequiredScopes([]string{}, req), "access restricted")
-	assert.ErrorContains(t, svc.HasRequiredScopes([]string{string(models.ScopeUsersRead)}, req), "access restricted")
-	assert.NoError(t, svc.HasRequiredScopes([]string{string(models.ScopeTeamSettingsWrite)}, req))
+	req := models.Scopes{models.ScopeTeamSettingsWrite}
+	assert.ErrorContains(t, svc.HasRequiredScopes(models.Scopes{}, req), "access restricted")
+	assert.ErrorContains(t, svc.HasRequiredScopes(models.Scopes{models.ScopeUsersRead}, req), "access restricted")
+	assert.NoError(t, svc.HasRequiredScopes(models.Scopes{models.ScopeTeamSettingsWrite}, req))
 
-	req = []models.Scope{models.ScopeTeamSettingsWrite, models.ScopeUsersRead}
-	assert.ErrorContains(t, svc.HasRequiredScopes([]string{string(models.ScopeUsersRead)}, req), "access restricted")
+	req = models.Scopes{models.ScopeTeamSettingsWrite, models.ScopeUsersRead}
+	assert.ErrorContains(t, svc.HasRequiredScopes(models.Scopes{models.ScopeUsersRead}, req), "access restricted")
 }

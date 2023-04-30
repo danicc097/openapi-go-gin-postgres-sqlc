@@ -33,7 +33,7 @@ type (
 // nolint:gochecknoglobals
 // NOTE: ensure any changes are followed by an appropriate migration.
 var (
-	userScopes = []models.Scope{
+	userScopes = models.Scopes{
 		models.ScopeUsersRead,
 		models.ScopeTestScope,
 	}
@@ -43,7 +43,7 @@ var (
 
 // nolint:gochecknoglobals
 // Scopes assigned/revoked upon role change (reset completely).
-var scopesByRole = map[models.Role][]models.Scope{
+var scopesByRole = map[models.Role]models.Scopes{
 	models.RoleGuest:        {},
 	models.RoleUser:         userScopes,
 	models.RoleAdvancedUser: userScopes,
@@ -58,7 +58,7 @@ type Authorization struct {
 	roles          roles
 	scopes         scopes
 	existingRoles  []models.Role
-	existingScopes []models.Scope
+	existingScopes models.Scopes
 }
 
 // NewAuthorization returns a new Authorization service.
@@ -131,9 +131,9 @@ func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) err
 	return nil
 }
 
-func (a *Authorization) HasRequiredScopes(scopes []string, requiredScopes []models.Scope) error {
+func (a *Authorization) HasRequiredScopes(scopes models.Scopes, requiredScopes models.Scopes) error {
 	for _, rs := range requiredScopes {
-		if !slices.Contains(scopes, string(rs)) {
+		if !slices.Contains(scopes, rs) {
 			return internal.NewErrorf(internal.ErrorCodeUnauthorized, fmt.Sprintf("access restricted: missing scope %s", rs))
 		}
 	}
@@ -142,7 +142,7 @@ func (a *Authorization) HasRequiredScopes(scopes []string, requiredScopes []mode
 }
 
 // DefaultScopes returns the default scopes for a role.
-func (a *Authorization) DefaultScopes(role models.Role) (scopes []models.Scope) {
+func (a *Authorization) DefaultScopes(role models.Role) (scopes models.Scopes) {
 	if defaultScopes, ok := scopesByRole[role]; ok {
 		scopes = append(scopes, defaultScopes...)
 	}
