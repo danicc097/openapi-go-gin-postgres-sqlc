@@ -146,9 +146,11 @@ create table notifications (
 
 create index on notifications (receiver_rank , notification_type , created_at);
 
--- TODO xo update first
--- comment on column notifications.sender IS 'cardinality:O2O';
--- comment on column notifications.receiver IS 'cardinality:O2O';
+-- FIXME generate SenderJoin *User and ReceiverJoin *User in notification.xo.go with O2M, and []*User with M2O
+-- it also must be named NotificationsJoin + RefColumnName if name clashes, e.g. NotificationsJoinSender
+comment on column notifications.sender IS 'cardinality:O2M';
+comment on column notifications.receiver IS 'cardinality:O2M';
+
 create table user_notifications (
   user_notification_id bigserial primary key
   , notification_id int not null
@@ -161,8 +163,8 @@ create table user_notifications (
 
 comment on column user_notifications.notification_id is 'cardinality:O2O';
 
--- TODO xo update first
--- comment on column user_notifications.user_id IS 'cardinality:O2M';
+-- FIXME
+comment on column user_notifications.user_id IS 'cardinality:O2M';
 create index on user_notifications (user_id);
 
 -- read field simply used to show 'NEW' label but there is no filtering

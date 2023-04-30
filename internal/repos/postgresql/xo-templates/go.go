@@ -903,16 +903,52 @@ func convertConstraints(ctx context.Context, constraints []xo.Constraint) ([]Con
 		if !validCardinality(constraint.Cardinality) {
 			return []Constraint{}, fmt.Errorf("invalid cardinality: %s", constraint.Cardinality)
 		}
+		card := cardinality(constraint.Cardinality)
+
+		// TODO JoinTableClash
+		/**
+		 * we probably must check via for _, c := range f.tableConstraints[x.Table.SQLName] instead
+		 *
+		 *
+		 */
+		var joinTableClash bool
+		for _, c := range constraints {
+			ccard := cardinality(constraint.Cardinality)
+		outer:
+			switch card {
+			case M2M:
+				if c.ColumnName == constraint.ColumnName && ccard == M2M {
+					joinTableClash = true
+					fmt.Printf("%-40s| c.ColumnName == constraint.ColumnName: %s == %s\n", c.Name, c.ColumnName, constraint.ColumnName)
+					break outer
+				}
+			case O2M, M2O:
+				if c.TableName == constraint.TableName && (ccard == O2M || ccard == M2O) {
+					joinTableClash = true
+					fmt.Printf("%-40s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
+					break outer
+				}
+			case O2O:
+				if c.TableName == constraint.TableName && ccard == O2O {
+					joinTableClash = true
+					fmt.Printf("%-40s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
+					break outer
+				}
+			}
+		}
 
 		cc[i] = Constraint{
-			Type:          constraint.Type,
-			Cardinality:   cardinality(constraint.Cardinality), // cardinality comments only needed on FK columns, never base tables
-			Name:          constraint.Name,
-			TableName:     constraint.TableName,
-			RefTableName:  constraint.RefTableName,
-			ColumnName:    constraint.ColumnName,
-			RefColumnName: constraint.RefColumnName,
+			Type:           constraint.Type,
+			Cardinality:    card, // cardinality comments only needed on FK columns, never base tables
+			Name:           constraint.Name,
+			TableName:      constraint.TableName,
+			RefTableName:   constraint.RefTableName,
+			ColumnName:     constraint.ColumnName,
+			RefColumnName:  constraint.RefColumnName,
+			JoinTableClash: joinTableClash,
 		}
+
+		// fmt.Printf("cc[i]: %+v\n", cc[i])
 	}
 
 	return cc, nil
@@ -2406,11 +2442,6 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 		return // don't duplicate
 	}
 	for _, c := range cc {
-		// TODO save constraint when it's primary key and foreign key at the same time
-		// in that case will generate joins on referenced table to all other tables that
-		// have PK = FK = referenced table's PK
-		// new field PKisFKTables []string should suffice. List of tables where their PK is a FK
-		// to the current table's PK -> generate join using (<pk>) for all
 		if c.Cardinality == "" || c.Type != "foreign_key" {
 			continue
 		}
@@ -2788,6 +2819,22 @@ func (f *Funcs) join_fields(sqlname string, constraints []Constraint, tables Tab
 	var buf strings.Builder
 
 	var goName, tag, typ string
+
+	/**
+	 *
+	 * TODO if 2 found with the same name, append referencing table, e.g.
+	 *
+	UserJoin             *User             `json:"-" db:"user" openapi-go:"ignore"`              // O2O
+	UserJoin             *User             `json:"-" db:"user" openapi-go:"ignore"`              // O2O
+
+	should be
+
+	UserJoinSender         *User             `json:"-" db:"user_sender" openapi-go:"ignore"`              // O2O
+	UserJoinReceiver       *User             `json:"-" db:"user_receiver" openapi-go:"ignore"`              // O2O
+
+	and all related code adapted accordingly
+	for every `for _, c := range cc {` loop (join structs, queries...)
+	*/
 	for _, c := range cc {
 		// sync with extratypes
 		switch c.Cardinality {
@@ -2803,7 +2850,6 @@ func (f *Funcs) join_fields(sqlname string, constraints []Constraint, tables Tab
 
 			if c.ColumnName != c.RefColumnName {
 				// differs from actual column, e.g. having member UUID in lookup instead of user_id
-				goName = camelExport(singularize(lookupName))
 				// prevent name clashing
 				typ = camelExport(singularize(sqlname)) + "_" + camelExport(singularize(lookupName))
 			}
@@ -3294,6 +3340,7 @@ type Constraint struct {
 	RefColumnName   string
 	LookupColumn    string // (M2M) lookup table column
 	LookupRefColumn string // (M2M) referenced PK by LookupColumn
+	JoinTableClash  bool   // Whether other constraints join against the same table (not necessarily )
 }
 
 // Field is a field template.

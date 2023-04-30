@@ -863,25 +863,28 @@ x.test() {
 x.test.xo() {
   { { {
     POSTGRES_DB="xo_tests"
-    GEN_POSTGRES_DB="xo_tests"
+    GEN_POSTGRES_DB="$POSTGRES_DB"
 
     drop_and_recreate_db $POSTGRES_DB
 
     echo "Running xo template tests"
 
-    dockerdb_psql -d $POSTGRES_DB <"$PG_REPO/xo-templates/tests/schema.sql"
+    test_dir="$PG_REPO/xo-templates/tests"
+    dockerdb_psql -d $POSTGRES_DB <"$test_dir/schema.sql"
     echo "Schema loaded"
 
-    rm -rf "$PG_REPO/xo-templates/tests/got"
-    mkdir -p "$PG_REPO/xo-templates/tests/got"
-    xo_schema -o "$PG_REPO/xo-templates/tests/got" --debug \
+    rm -rf "$test_dir/got"
+    mkdir -p "$test_dir/got"
+    xo_schema -o "$test_dir/got" --debug \
       --schema public \
       --ignore "*.created_at" \
       --ignore "*.updated_at" || err "Failed xo public schema generation"
 
-    files=$(find "$PG_REPO/xo-templates/tests/got" \
+    files=$(find "$test_dir/got" \
       -name "*.go")
     goimports -w $files
+
+    # TODO cmp, and run this in CI right before backend tests
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
