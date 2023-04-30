@@ -27,6 +27,23 @@ import (
 	"mvdan.cc/gofumpt/format"
 )
 
+type cardinality string
+
+const (
+	M2M cardinality = "M2M"
+	O2M cardinality = "O2M"
+	M2O cardinality = "M2O"
+	O2O cardinality = "O2O"
+)
+
+func validCardinality(s string) bool {
+	c := cardinality(s)
+	if c != "" && c != M2M && c != O2M && c != M2O && c != O2O {
+		return false
+	}
+	return true
+}
+
 func formatJSON(obj interface{}) string {
 	bytes, _ := json.MarshalIndent(obj, "  ", "  ")
 	return string(bytes)
@@ -549,8 +566,10 @@ type Tables map[string]Table
 
 // emitSchema emits the xo schema for the template set.
 func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) error {
-	constraints := convertConstraints(ctx, schema.Constraints)
-
+	constraints, err := convertConstraints(ctx, schema.Constraints)
+	if err != nil {
+		return err
+	}
 	for _, e := range schema.Enums {
 		if e.EnumPkg != "" || (e.Schema == "public" && schema.Name != "public") {
 			continue // will share enums with public, no need to emit
@@ -877,12 +896,17 @@ func convertIndex(ctx context.Context, t Table, i xo.Index) (Index, error) {
 	}, nil
 }
 
-func convertConstraints(ctx context.Context, constraints []xo.Constraint) []Constraint {
+func convertConstraints(ctx context.Context, constraints []xo.Constraint) ([]Constraint, error) {
 	cc := make([]Constraint, len(constraints))
+
 	for i, constraint := range constraints {
+		if !validCardinality(constraint.Cardinality) {
+			return []Constraint{}, fmt.Errorf("invalid cardinality: %s", constraint.Cardinality)
+		}
+
 		cc[i] = Constraint{
 			Type:          constraint.Type,
-			Cardinality:   constraint.Cardinality, // cardinality comments only needed on FK columns, never base tables
+			Cardinality:   cardinality(constraint.Cardinality), // cardinality comments only needed on FK columns, never base tables
 			Name:          constraint.Name,
 			TableName:     constraint.TableName,
 			RefTableName:  constraint.RefTableName,
@@ -891,7 +915,7 @@ func convertConstraints(ctx context.Context, constraints []xo.Constraint) []Cons
 		}
 	}
 
-	return cc
+	return cc, nil
 }
 
 func convertFKey(ctx context.Context, t Table, fk xo.ForeignKey) (ForeignKey, error) {
@@ -1544,7 +1568,7 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	for _, c := range cc {
 		var joinName string
 		switch c.Cardinality {
-		case "M2M":
+		case M2M:
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 
 			lookupTable := tables[c.TableName]
@@ -1583,12 +1607,12 @@ type %s struct {
 
 			joinName = camelExport(inflector.Pluralize(lookupName))
 
-		case "O2M", "M2O":
+		case O2M, M2O:
 			if c.RefTableName != sqlname {
 				continue
 			}
 			joinName = camelExport(c.TableName)
-		case "O2O":
+		case O2O:
 			if c.TableName == sqlname {
 				joinName = camelExport(singularize(c.RefTableName))
 			}
@@ -1884,15 +1908,15 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 			for _, c := range f.tableConstraints[x.SQLName] {
 				var joinName string
 				switch c.Cardinality {
-				case "M2M":
+				case M2M:
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 					joinName = prefix + camelExport(inflector.Pluralize(lookupName))
-				case "O2M", "M2O":
+				case O2M, M2O:
 					if c.RefTableName != x.SQLName {
 						continue
 					}
 					joinName = prefix + camelExport(c.TableName)
-				case "O2O":
+				case O2O:
 					if c.TableName == x.SQLName {
 						joinName = prefix + camelExport(singularize(c.RefTableName))
 					}
@@ -1919,15 +1943,15 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 			for _, c := range f.tableConstraints[x.Table.SQLName] {
 				var joinName string
 				switch c.Cardinality {
-				case "M2M":
+				case M2M:
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 					joinName = pref + camelExport(inflector.Pluralize(lookupName))
-				case "O2M", "M2O":
+				case O2M, M2O:
 					if c.RefTableName != x.Table.SQLName {
 						continue
 					}
 					joinName = pref + camelExport(c.TableName)
-				case "O2O":
+				case O2O:
 					if c.TableName == x.Table.SQLName {
 						joinName = pref + camelExport(singularize(c.RefTableName))
 					}
@@ -2389,7 +2413,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 		if c.Cardinality == "" || c.Type != "foreign_key" {
 			continue
 		}
-		if c.Cardinality == "M2M" && c.RefTableName == table {
+		if c.Cardinality == M2M && c.RefTableName == table {
 			for _, c1 := range cc {
 				if c1.TableName == c.TableName && c1.ColumnName != c.ColumnName && c1.Type == "foreign_key" {
 					c1.LookupColumn = c.ColumnName
@@ -2397,9 +2421,9 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 					f.tableConstraints[table] = append(f.tableConstraints[table], c1)
 				}
 			}
-		} else if c.Cardinality == "O2O" && c.TableName == table {
+		} else if c.Cardinality == O2O && c.TableName == table {
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
-		} else if c.Cardinality == "O2O" && c.RefTableName == table {
+		} else if c.Cardinality == O2O && c.RefTableName == table {
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
 		} else if c.RefTableName == table {
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
@@ -2417,7 +2441,7 @@ func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.Fu
 	fmt.Fprintf(joins, "-- %s join generated from %q", c.Cardinality, c.Name)
 
 	switch c.Cardinality {
-	case "M2M":
+	case M2M:
 		joinTpl = M2MJoin
 		selectTpl = M2MSelect
 
@@ -2460,7 +2484,7 @@ func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.Fu
 
 		}
 
-	case "O2M", "M2O":
+	case O2M, M2O:
 		// TODO properly gen in both sides like with O2O below, differentiating O2M and M2O
 		if c.RefTableName == x.Table.SQLName {
 			joinTpl = O2MJoin
@@ -2472,7 +2496,7 @@ func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.Fu
 			params["JoinRefColumn"] = c.RefColumnName
 			params["CurrentTable"] = x.Table.SQLName
 		}
-	case "O2O":
+	case O2O:
 		joinTpl = O2OJoin
 		selectTpl = O2OSelect
 
@@ -2766,7 +2790,7 @@ func (f *Funcs) join_fields(sqlname string, constraints []Constraint, tables Tab
 	for _, c := range cc {
 		// sync with extratypes
 		switch c.Cardinality {
-		case "M2M":
+		case M2M:
 
 			_ = tables[c.TableName]
 			// extraCols := getLookupTableRegularFields(lookupTable)
@@ -2787,7 +2811,7 @@ func (f *Funcs) join_fields(sqlname string, constraints []Constraint, tables Tab
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Pluralize(lookupName))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
 			// TODO revisit. O2M and M2O from different viewpoints.
-		case "O2M", "M2O":
+		case O2M, M2O:
 			if c.RefTableName != sqlname {
 				continue
 			}
@@ -2795,7 +2819,7 @@ func (f *Funcs) join_fields(sqlname string, constraints []Constraint, tables Tab
 			typ = goName
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Pluralize(c.TableName))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
-		case "O2O":
+		case O2O:
 			if c.TableName == sqlname {
 				goName = camelExport(singularize(c.RefTableName))
 				typ = goName
@@ -3169,6 +3193,7 @@ func addInitialisms(ctx context.Context) error {
 }
 
 // contains determines if v contains s.
+// NOTE: yaegi not supporting generics yet
 func contains(v []string, s string) bool {
 	for _, z := range v {
 		if z == s {
@@ -3259,9 +3284,8 @@ type Index struct {
 // Constraint is a table constraint.
 type Constraint struct {
 	// "unique" "check" "primary_key" "foreign_key"
-	Type string
-	// "M2M" "O2M" "M2O" "O2O"
-	Cardinality string
+	Type        string
+	Cardinality cardinality
 	// Key name
 	Name            string
 	TableName       string

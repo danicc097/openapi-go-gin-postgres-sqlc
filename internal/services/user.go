@@ -25,13 +25,13 @@ type User struct {
 // NOTE: the most important distinction about repositories is that they represent collections of entities. They do not represent database storage or caching or any number of technical concerns. Repositories represent collections. How you hold those collections is simply an implementation detail.
 // TODO repo should be aware of models Role and Scope and the conversion / default values is done in repo?
 type UserRegisterParams struct {
-	Username   string         `json:"username" required:"true"`
-	Email      string         `json:"email" required:"true"`
-	FirstName  *string        `json:"firstName"`
-	LastName   *string        `json:"lastName"`
-	ExternalID string         `json:"externalID" required:"true"`
-	Scopes     []models.Scope `json:"scopes" ref:"#/components/schemas/Scopes" required:"true"`
-	Role       models.Role    `json:"role" ref:"#/components/schemas/Role" required:"true"`
+	Username   string        `json:"username" required:"true"`
+	Email      string        `json:"email" required:"true"`
+	FirstName  *string       `json:"firstName"`
+	LastName   *string       `json:"lastName"`
+	ExternalID string        `json:"externalID" required:"true"`
+	Scopes     models.Scopes `json:"scopes" ref:"#/components/schemas/Scopes" required:"true"`
+	Role       models.Role   `json:"role" ref:"#/components/schemas/Role" required:"true"`
 }
 
 // NewUser returns a new User service.

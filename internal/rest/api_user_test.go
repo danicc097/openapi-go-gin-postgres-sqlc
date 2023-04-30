@@ -36,7 +36,7 @@ func TestGetUserRoute(t *testing.T) {
 		t.Parallel()
 
 		role := models.RoleAdvancedUser
-		scopes := []models.Scope{models.ScopeProjectSettingsWrite}
+		scopes := models.Scopes{models.ScopeProjectSettingsWrite}
 
 		ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       role,
@@ -86,7 +86,7 @@ func TestUpdateUserRoute(t *testing.T) {
 	t.Run("manager updates another user authorization", func(t *testing.T) {
 		t.Parallel()
 
-		scopes := []models.Scope{models.ScopeProjectSettingsWrite}
+		scopes := models.Scopes{models.ScopeProjectSettingsWrite}
 
 		manager, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       models.RoleManager,

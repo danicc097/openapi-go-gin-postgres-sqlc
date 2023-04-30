@@ -15,7 +15,7 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{
 					MinimumRole: models.Role("admin"),
-					RequiredScopes: []models.Scope{
+					RequiredScopes: models.Scopes{
 						models.Scope("test-scope")},
 				}),
 		}
@@ -25,7 +25,7 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{
 					MinimumRole: models.Role("admin"),
-					RequiredScopes: []models.Scope{
+					RequiredScopes: models.Scopes{
 						models.Scope("test-scope"),
 						models.Scope("users:write")},
 				}),

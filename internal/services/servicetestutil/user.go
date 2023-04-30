@@ -15,7 +15,7 @@ import (
 type CreateUserParams struct {
 	DeletedAt  *time.Time
 	Role       models.Role
-	Scopes     []models.Scope
+	Scopes     models.Scopes
 	WithToken  bool // if true, an access token is created and returned
 	WithAPIKey bool // if true, an api key is created and returned
 }

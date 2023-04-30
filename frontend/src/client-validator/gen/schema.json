@@ -1145,6 +1145,10 @@
       ],
       "x-generated": "-",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsScope": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -1279,6 +1283,9 @@
     },
     "DemoProject2KanbanSteps": {
       "$ref": "#/definitions/DemoProject2KanbanSteps"
+    },
+    "ModelsScope": {
+      "$ref": "#/definitions/ModelsScope"
     }
   }
 }

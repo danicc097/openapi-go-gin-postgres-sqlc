@@ -22,7 +22,7 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
         MinimumRole: models.Role("{{$authInfo.Role}}"),
         {{- end }}
         {{- if $authInfo.Scopes }}
-        RequiredScopes: []models.Scope{
+        RequiredScopes: models.Scopes{
           {{ stringsJoinSlice $authInfo.Scopes "models.Scope(\"" "\")" ",\n" -}}
         },
         {{- end }}

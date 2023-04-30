@@ -52,6 +52,7 @@ import {
   NotificationType,
   DemoProjectKanbanSteps,
   DemoProject2KanbanSteps,
+  ModelsScope,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -586,5 +587,17 @@ export const DemoProject2KanbanStepsDecoder: Decoder<DemoProject2KanbanSteps> = 
       throw new Error(`Schema ${DemoProject2KanbanStepsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DemoProject2KanbanStepsDecoder.definitionName)
+  },
+}
+export const ModelsScopeDecoder: Decoder<ModelsScope> = {
+  definitionName: 'ModelsScope',
+  schemaRef: '#/definitions/ModelsScope',
+
+  decode(json: unknown): ModelsScope {
+    const schema = ajv.getSchema(ModelsScopeDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ModelsScopeDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ModelsScopeDecoder.definitionName)
   },
 }
