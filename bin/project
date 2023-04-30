@@ -83,6 +83,10 @@ restore_cache=0
 # to allow for nested cache-gen and cache-cleanup inside multiple functions.
 restore_cache_caller=""
 
+# stores the first executing function to determine if a migration
+# is needed when running gen* functions which call each other
+gen_migrated=""
+
 pids=""
 env="dev"
 dump_prefix="dump_${env}_"
@@ -230,22 +234,10 @@ x.setup.swagger-ui() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# TODO REMOVE
-x.gen.hardcoded-db() {
-  mapfile -t db_projects < <(dockerdb_psql -d $POSTGRES_DB -c "select project_id,name from projects;" 2>/dev/null)
-  echo "${db_projects[0]}"
-  first=$(cut_first "${db_projects[1]}" "|") # always safe
-  echo first: $first
-  mapfile -t arr <<<"${first}"
-  local id="${arr[0]}"
-  local name="${arr[1]}"
-  echo id: $id
-  echo name: $name
-}
-
 # Run pre-generation scripts in the internal package.
 x.gen.pregen() {
   cache-gen
+  drop-and-migrate
   { { {
     POSTGRES_DB="$GEN_POSTGRES_DB"
 
@@ -256,9 +248,6 @@ x.gen.pregen() {
 
     # spec must always be valid before generating. Schemas to generate must already exist with the appropiate vendor extension
     pregen -env=".env.$env" --validate-spec-only
-
-    x.db.drop
-    x.migrate up
 
     sync_db_enums_with_spec
 
@@ -451,6 +440,7 @@ clean_yq_array() {
 # Run post-generation scripts in the internal package.
 x.gen.postgen() {
   cache-gen
+  drop-and-migrate
   { { {
     POSTGRES_DB="$GEN_POSTGRES_DB"
 
@@ -468,6 +458,7 @@ x.gen.postgen() {
 # Generate type-safe Go code from SQL.
 x.gen.sqlc() {
   cache-gen
+  drop-and-migrate
   { { {
     echo "Running generation"
     sqlc generate --experimental -f "$PG_REPO"/sqlc.yaml || err "Failed sqlc generation"
@@ -479,6 +470,7 @@ x.gen.sqlc() {
 # Automatically generate CRUD and index queries with joins based on existing indexes from a Postgres schema.
 x.gen.xo() {
   cache-gen
+  drop-and-migrate
   { { {
     echo "Running generation"
     # xo schema --help
@@ -510,8 +502,34 @@ x.gen.xo() {
   cache-gen.cleanup
 }
 
+# Shows current database column comments used in xo codegen
+# to ease further updates to comments in migrations.
+x.gen.show-column-comments() {
+  local query="SELECT DISTINCT
+  c.relname as table,
+  a.attname::varchar AS column,
+  COALESCE(col_description(format('%s.%s', n.nspname, c.relname)::regclass::oid, isc.ordinal_position), '') as column_comment
+FROM pg_attribute a
+  JOIN ONLY pg_class c ON c.oid = a.attrelid
+  JOIN ONLY pg_namespace n ON n.oid = c.relnamespace
+  INNER JOIN information_schema.columns as isc on c.relname = isc.table_name and isc.column_name = a.attname
+  LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid
+    AND a.attnum = ANY(ct.conkey)
+    AND ct.contype = 'p'
+  LEFT JOIN pg_attrdef ad ON ad.adrelid = c.oid
+    AND ad.adnum = a.attnum
+WHERE a.attisdropped = false
+  AND n.nspname = 'public'
+  AND (true OR a.attnum > 0)
+  AND col_description(format('%s.%s', n.nspname, c.relname)::regclass::oid, isc.ordinal_position) is not null;"
+
+  dockerdb psql --no-psqlrc -d $POSTGRES_DB -c "$query" 2>/dev/null
+}
+
 # Generate a type-safe SQL builder.
 x.gen.jet() {
+  cache-gen
+  drop-and-migrate
   { { {
     # results may be combined with xo's *Public structs and not reinvent the wheel for jet.
     # should not be hard to generate all adapters at once jet->xo *Public in a new file alongside jet gen.
@@ -527,6 +545,7 @@ x.gen.jet() {
       rm -r "./$gen_path/$GEN_POSTGRES_DB/"
     }
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  cache-gen.cleanup
 }
 
 # Generate interface wrappers with common logic: tracing, timeout...
@@ -1447,6 +1466,18 @@ xo_schema() {
   xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$DB_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
     --src "$PG_REPO"/xo-templates \
     "$@"
+}
+
+drop-and-migrate() {
+  test -n "$gen_migrated" && return
+
+  gen_migrated="${FUNCNAME[1]}"
+  { { {
+    POSTGRES_DB="$GEN_POSTGRES_DB"
+
+    x.db.drop
+    x.migrate up
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 # saves the current gen state to allow restoring in the event of early exit

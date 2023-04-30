@@ -26,8 +26,6 @@ type Notification struct {
 	Receiver         *uuid.UUID       `json:"receiver" db:"receiver" required:"true"`                                                              // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
 
-	User             *User             `json:"-" db:"user" openapi-go:"ignore"`              // O2O
-	User             *User             `json:"-" db:"user" openapi-go:"ignore"`              // O2O
 	UserNotification *UserNotification `json:"-" db:"user_notification" openapi-go:"ignore"` // O2O
 	// xo fields
 	_exists, _deleted bool
@@ -93,8 +91,6 @@ func WithNotificationOrderBy(rows ...NotificationOrderBy) NotificationSelectConf
 }
 
 type NotificationJoins struct {
-	User             bool
-	User             bool
 	UserNotification bool
 }
 
@@ -242,23 +238,17 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true then row(users.*) end) as user,
-(case when $2::boolean = true then row(users.*) end) as user,
-(case when $3::boolean = true then row(user_notifications.*) end) as user_notification ` +
+(case when $1::boolean = true then row(user_notifications.*) end) as user_notification ` +
 		`FROM public.notifications ` +
-		`-- O2O join generated from "notifications_receiver_fkey"
-left join users on users.user_id = notifications.receiver
--- O2O join generated from "notifications_sender_fkey"
-left join users on users.user_id = notifications.sender
--- O2O join generated from "user_notifications_notification_id_fkey"
+		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join user_notifications on user_notifications.notification_id = notifications.notification_id` +
-		` WHERE notifications.notification_id = $4 `
+		` WHERE notifications.notification_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, notificationID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.User, c.joins.UserNotification, notificationID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.UserNotification, notificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", err))
 	}
@@ -292,23 +282,17 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true then row(users.*) end) as user,
-(case when $2::boolean = true then row(users.*) end) as user,
-(case when $3::boolean = true then row(user_notifications.*) end) as user_notification ` +
+(case when $1::boolean = true then row(user_notifications.*) end) as user_notification ` +
 		`FROM public.notifications ` +
-		`-- O2O join generated from "notifications_receiver_fkey"
-left join users on users.user_id = notifications.receiver
--- O2O join generated from "notifications_sender_fkey"
-left join users on users.user_id = notifications.sender
--- O2O join generated from "user_notifications_notification_id_fkey"
+		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join user_notifications on user_notifications.notification_id = notifications.notification_id` +
-		` WHERE notifications.receiver_rank = $4 AND notifications.notification_type = $5 AND notifications.created_at = $6 `
+		` WHERE notifications.receiver_rank = $2 AND notifications.notification_type = $3 AND notifications.created_at = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, receiverRank, notificationType, createdAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.User, c.joins.UserNotification, receiverRank, notificationType, createdAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.UserNotification, receiverRank, notificationType, createdAt)
 	if err != nil {
 		return nil, logerror(err)
 	}
