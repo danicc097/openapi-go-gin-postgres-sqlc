@@ -42,8 +42,9 @@ var (
 )
 
 // nolint:gochecknoglobals
-// Scopes assigned/revoked upon role change (reset completely).
-var scopesByRole = map[models.Role]models.Scopes{
+// ScopesByRole represents user scopes by role.
+// Scopes are assigned/revoked upon role change (reset completely).
+var ScopesByRole = map[models.Role]models.Scopes{
 	models.RoleGuest:        {},
 	models.RoleUser:         userScopes,
 	models.RoleAdvancedUser: userScopes,
@@ -55,8 +56,8 @@ var scopesByRole = map[models.Role]models.Scopes{
 // Authorization represents a service for authorization.
 type Authorization struct {
 	logger         *zap.Logger
-	roles          roles
-	scopes         scopes
+	Roles          roles
+	Scopes         scopes
 	existingRoles  []models.Role
 	existingScopes models.Scopes
 }
@@ -84,15 +85,15 @@ func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string)
 
 	return &Authorization{
 		logger:         logger,
-		roles:          roles,
-		scopes:         scopes,
+		Roles:          roles,
+		Scopes:         scopes,
 		existingRoles:  models.AllRoleValues(),
 		existingScopes: models.AllScopeValues(),
 	}, nil
 }
 
-func (a *Authorization) RoleByName(role string) (Role, error) {
-	rl, ok := a.roles[models.Role(role)]
+func (a *Authorization) RoleByName(role models.Role) (Role, error) {
+	rl, ok := a.Roles[models.Role(role)]
 	if !ok {
 		return Role{}, internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown role %s", role)
 	}
@@ -101,7 +102,7 @@ func (a *Authorization) RoleByName(role string) (Role, error) {
 }
 
 func (a *Authorization) RoleByRank(rank int16) (Role, bool) {
-	for _, r := range a.roles {
+	for _, r := range a.Roles {
 		if r.Rank == rank {
 			return r, true
 		}
@@ -111,7 +112,7 @@ func (a *Authorization) RoleByRank(rank int16) (Role, bool) {
 }
 
 func (a *Authorization) ScopeByName(scope string) (Scope, error) {
-	s, ok := a.scopes[models.Scope(scope)]
+	s, ok := a.Scopes[models.Scope(scope)]
 	if !ok {
 		return Scope{}, internal.NewErrorf(internal.ErrorCodeInvalidScope, "unknown scope %s", scope)
 	}
@@ -120,7 +121,7 @@ func (a *Authorization) ScopeByName(scope string) (Scope, error) {
 }
 
 func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) error {
-	rl, ok := a.roles[requiredRole]
+	rl, ok := a.Roles[requiredRole]
 	if !ok {
 		return internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown role %s", requiredRole)
 	}
@@ -143,7 +144,7 @@ func (a *Authorization) HasRequiredScopes(scopes models.Scopes, requiredScopes m
 
 // DefaultScopes returns the default scopes for a role.
 func (a *Authorization) DefaultScopes(role models.Role) (scopes models.Scopes) {
-	if defaultScopes, ok := scopesByRole[role]; ok {
+	if defaultScopes, ok := ScopesByRole[role]; ok {
 		scopes = append(scopes, defaultScopes...)
 	}
 

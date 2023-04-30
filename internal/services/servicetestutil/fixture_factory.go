@@ -1,4 +1,4 @@
-package resttestutil
+package servicetestutil
 
 import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"

@@ -51,9 +51,9 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	if params.Role == "" {
 		params.Role = models.RoleUser
 	}
-	role, err := u.authzsvc.RoleByName(string(params.Role))
+	role, err := u.authzsvc.RoleByName(params.Role)
 	if err != nil {
-		return nil, fmt.Errorf("authzsvc.ByName: %w", err)
+		return nil, fmt.Errorf("authzsvc.RoleByName: %w", err)
 	}
 	rank := role.Rank
 
@@ -99,10 +99,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		return nil, fmt.Errorf("urepo.ByID: %w", err)
 	}
 
-	adminRole, err := u.authzsvc.RoleByName(string(models.RoleAdmin))
-	if err != nil {
-		return nil, fmt.Errorf("authzsvc.ByName: %w", err)
-	}
+	adminRole := u.authzsvc.Roles[models.RoleAdmin]
 
 	if user.UserID != caller.UserID &&
 		caller.RoleRank < adminRole.Rank {
@@ -148,10 +145,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		return nil, fmt.Errorf("urepo.ByID: %w", err)
 	}
 
-	adminRole, err := u.authzsvc.RoleByName(string(models.RoleAdmin))
-	if err != nil {
-		return nil, fmt.Errorf("authzsvc.ByName: %w", err)
-	}
+	adminRole := u.authzsvc.Roles[models.RoleAdmin]
 
 	if caller.RoleRank < adminRole.Rank {
 		if user.UserID == caller.UserID { // exit early, though it's not possible to update to something not assigned to self already anyway
@@ -173,14 +167,13 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 				}
 			}
 		}
-
 	}
 
 	var rank *int16
 	if params.Role != nil {
-		role, err := u.authzsvc.RoleByName(string(*params.Role))
+		role, err := u.authzsvc.RoleByName(*params.Role)
 		if err != nil {
-			return nil, fmt.Errorf("authzsvc.ByName: %w", err)
+			return nil, fmt.Errorf("authzsvc.RoleByName: %w", err)
 		}
 		if role.Rank > caller.RoleRank {
 			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set a user rank higher than self")
@@ -193,7 +186,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		rank = &role.Rank
 
 		// always reset scopes when changing role
-		params.Scopes = pointers.New(scopesByRole[*params.Role])
+		params.Scopes = pointers.New(ScopesByRole[*params.Role])
 	}
 
 	user, err = u.urepo.Update(ctx, d, uid, db.UserUpdateParams{

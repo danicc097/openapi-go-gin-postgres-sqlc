@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,9 +18,8 @@ func TestAdminPingRoute(t *testing.T) {
 
 	ff := newTestFixtureFactory(t)
 
-	ufixture, err := ff.CreateUser(context.Background(), resttestutil.CreateUserParams{
+	ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleAdmin,
-		Scopes:     []models.Scope{models.ScopeTestScope},
 		WithAPIKey: true,
 	})
 	if err != nil {

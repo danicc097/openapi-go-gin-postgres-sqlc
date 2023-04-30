@@ -8,8 +8,8 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -67,8 +67,8 @@ func TestAuthorizationMiddleware_Roles(t *testing.T) {
 
 			req, _ := http.NewRequest(http.MethodGet, "/", nil)
 
-			ff := resttestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
-			ufixture, err := ff.CreateUser(context.Background(), resttestutil.CreateUserParams{
+			ff := servicetestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
+			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
 				WithAPIKey: true,
 			})

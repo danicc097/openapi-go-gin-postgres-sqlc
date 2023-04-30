@@ -1,4 +1,4 @@
-package resttestutil
+package servicetestutil
 
 type createWorkItemParams struct {
 	typ string

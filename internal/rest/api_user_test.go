@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/gin-gonic/gin"
@@ -38,7 +38,7 @@ func TestGetUserRoute(t *testing.T) {
 		role := models.RoleAdvancedUser
 		scopes := []models.Scope{models.ScopeProjectSettingsWrite}
 
-		ufixture, err := ff.CreateUser(context.Background(), resttestutil.CreateUserParams{
+		ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       role,
 			WithAPIKey: true,
 			Scopes:     scopes,
@@ -88,7 +88,7 @@ func TestUpdateUserRoute(t *testing.T) {
 
 		scopes := []models.Scope{models.ScopeProjectSettingsWrite}
 
-		manager, err := ff.CreateUser(context.Background(), resttestutil.CreateUserParams{
+		manager, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       models.RoleManager,
 			WithAPIKey: true,
 			Scopes:     scopes,
@@ -96,7 +96,7 @@ func TestUpdateUserRoute(t *testing.T) {
 		if err != nil {
 			t.Fatalf("ff.CreateUser: %s", err)
 		}
-		normalUser, err := ff.CreateUser(context.Background(), resttestutil.CreateUserParams{
+		normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       models.RoleUser,
 			WithAPIKey: true,
 			Scopes:     scopes,
@@ -132,7 +132,7 @@ func TestUpdateUserRoute(t *testing.T) {
 	t.Run("user updates itself", func(t *testing.T) {
 		t.Parallel()
 
-		normalUser, err := ff.CreateUser(context.Background(), resttestutil.CreateUserParams{
+		normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       models.RoleUser,
 			WithAPIKey: true,
 		})
