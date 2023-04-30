@@ -198,7 +198,7 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true and row(notifications.*) is not null then row(notifications.*) end) as notification ` +
+(case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join notifications on notifications.notification_id = user_notifications.notification_id` +
@@ -237,7 +237,7 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true and row(notifications.*) is not null then row(notifications.*) end) as notification ` +
+(case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join notifications on notifications.notification_id = user_notifications.notification_id` +
@@ -277,7 +277,7 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true and row(notifications.*) is not null then row(notifications.*) end) as notification ` +
+(case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join notifications on notifications.notification_id = user_notifications.notification_id` +
@@ -316,7 +316,7 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opt
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
-(case when $1::boolean = true and row(notifications.*) is not null then row(notifications.*) end) as notification ` +
+(case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification ` +
 		`FROM public.user_notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join notifications on notifications.notification_id = user_notifications.notification_id` +

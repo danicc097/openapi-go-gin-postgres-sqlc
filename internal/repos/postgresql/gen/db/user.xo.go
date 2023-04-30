@@ -311,7 +311,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true and row(user_api_keys.*) is not null then row(user_api_keys.*) end) as user_api_key,
+(case when $2::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $3::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
 		`FROM public.users `+
@@ -394,7 +394,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true and row(user_api_keys.*) is not null then row(user_api_keys.*) end) as user_api_key,
+(case when $2::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $3::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
 		`FROM public.users `+
@@ -477,7 +477,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true and row(user_api_keys.*) is not null then row(user_api_keys.*) end) as user_api_key,
+(case when $2::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $3::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
 		`FROM public.users `+
@@ -559,7 +559,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true and row(user_api_keys.*) is not null then row(user_api_keys.*) end) as user_api_key,
+(case when $2::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $3::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
 		`FROM public.users `+
@@ -641,7 +641,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true and row(user_api_keys.*) is not null then row(user_api_keys.*) end) as user_api_key,
+(case when $2::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $3::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
 		`FROM public.users `+
@@ -723,7 +723,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true and row(user_api_keys.*) is not null then row(user_api_keys.*) end) as user_api_key,
+(case when $2::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $3::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
 		`FROM public.users `+
@@ -806,7 +806,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true and row(user_api_keys.*) is not null then row(user_api_keys.*) end) as user_api_key,
+(case when $2::boolean = true and user_api_keys.user_id is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $3::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
 		`FROM public.users `+

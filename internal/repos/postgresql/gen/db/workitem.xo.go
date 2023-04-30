@@ -316,13 +316,13 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and row(demo_two_work_items.*) is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
-(case when $2::boolean = true and row(demo_work_items.*) is not null then row(demo_work_items.*) end) as demo_work_item,
+(case when $1::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $7::boolean = true and row(work_item_types.*) is not null then row(work_item_types.*) end) as work_item_type `+
+(case when $7::boolean = true and work_item_types.work_item_type_id is not null then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
@@ -414,13 +414,13 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and row(demo_two_work_items.*) is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
-(case when $2::boolean = true and row(demo_work_items.*) is not null then row(demo_work_items.*) end) as demo_work_item,
+(case when $1::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $7::boolean = true and row(work_item_types.*) is not null then row(work_item_types.*) end) as work_item_type `+
+(case when $7::boolean = true and work_item_types.work_item_type_id is not null then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
@@ -511,13 +511,13 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and row(demo_two_work_items.*) is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
-(case when $2::boolean = true and row(demo_work_items.*) is not null then row(demo_work_items.*) end) as demo_work_item,
+(case when $1::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $7::boolean = true and row(work_item_types.*) is not null then row(work_item_types.*) end) as work_item_type `+
+(case when $7::boolean = true and work_item_types.work_item_type_id is not null then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id

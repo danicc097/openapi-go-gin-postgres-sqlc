@@ -239,7 +239,7 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and row(user_notifications.*) is not null then row(user_notifications.*) end) as user_notification ` +
+(case when $1::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join user_notifications on user_notifications.notification_id = notifications.notification_id` +
@@ -284,7 +284,7 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and row(user_notifications.*) is not null then row(user_notifications.*) end) as user_notification ` +
+(case when $1::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join user_notifications on user_notifications.notification_id = notifications.notification_id` +

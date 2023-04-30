@@ -68,6 +68,7 @@ func main() {
 			fmt.Print("2")
 			// errAndExit(out, err) // exit code 1 for some reason
 		}
+		fmt.Println(cmd.Stdout)
 	}
 
 	logger, _ := zap.NewDevelopment()
@@ -116,7 +117,7 @@ func main() {
 
 	fmt.Printf("user: %+v\n", user)
 	// test correct queries
-	key := user.UserID.String() + "-key-hashed"
+	key := user.UserAPIKeyJoin.APIKey
 	uak, err := db.UserAPIKeyByAPIKey(context.Background(), pool, key, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
 	if err != nil {
 		log.Fatalf("UserAPIKeyByAPIKey: %v", err)

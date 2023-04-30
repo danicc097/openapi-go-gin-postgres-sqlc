@@ -15,6 +15,7 @@ import (
 type BookAuthor struct {
 	BookID   int       `json:"bookID" db:"book_id" required:"true"`     // book_id
 	AuthorID uuid.UUID `json:"authorID" db:"author_id" required:"true"` // author_id
+
 }
 
 // BookAuthorCreateParams represents insert params for 'public.book_authors'
@@ -45,7 +46,10 @@ func WithBookAuthorLimit(limit int) BookAuthorSelectConfigOption {
 
 type BookAuthorOrderBy = string
 
-type BookAuthorJoins struct{}
+const ()
+
+type BookAuthorJoins struct {
+}
 
 // WithBookAuthorJoin joins with the given tables.
 func WithBookAuthorJoin(joins BookAuthorJoins) BookAuthorSelectConfigOption {

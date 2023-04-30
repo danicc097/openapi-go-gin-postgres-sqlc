@@ -2252,7 +2252,8 @@ func (f *Funcs) sqlstr_soft_delete(v interface{}) []string {
 const (
 	M2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.LookupJoinTablePKSuffix}}.__{{.LookupJoinTablePKAgg}}, '{}') end) as {{.LookupJoinTablePKSuffix}}`
 	O2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}`
-	O2OSelect = `(case when {{.Nth}}::boolean = true and row({{.JoinTable}}.*) is not null then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
+	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
+	O2OSelect = `(case when {{.Nth}}::boolean = true and {{.JoinTable}}.{{.JoinRefColumn}} is not null then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}`
 )
 
 const (

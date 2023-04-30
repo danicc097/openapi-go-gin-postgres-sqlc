@@ -13,7 +13,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
@@ -46,10 +45,11 @@ func main() {
 
 	authzSvc, err := services.NewAuthorization(logger, scopePolicyPath, rolePolicyPath)
 	if err != nil {
-		log.Fatalf("NewAuthorization: %s\n", err)
+		logger.Sugar().Fatalf("NewAuthorization: %s\n", err)
 	}
 
 	userSvc := services.NewUser(logger, userRepo, notifRepo, authzSvc)
+	authnSvc := services.NewAuthentication(logger, userSvc, pool)
 	/*activitySvc :=*/ _ = services.NewActivity(logger, activityRepo)
 	/*teamSvc :=*/ _ = services.NewTeam(logger, teamRepo)
 	/*projectSvc :=*/ _ = services.NewProject(logger, projectRepo, teamRepo)
@@ -59,23 +59,25 @@ func main() {
 
 	ctx := context.Background()
 
-	registerUsers(userSvc, ctx, pool, logger)
-}
-
-func registerUsers(usvc *services.User, ctx context.Context, pool *pgxpool.Pool, logger *zap.Logger) {
+	logger.Sugar().Info("Registering users...")
 	for i := 0; i < 10; i++ {
-		u, err := usvc.Register(ctx, pool, services.UserRegisterParams{
+		u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
 			Username:   "user_" + strconv.Itoa(i),
 			FirstName:  pointers.New("Name " + strconv.Itoa(i)),
 			Email:      "user_" + strconv.Itoa(i) + "@mail.com",
 			ExternalID: "external_id_user_" + strconv.Itoa(i),
 		})
 		if err != nil {
-			log.Fatalf("Could not register user: %s", err)
+			logger.Sugar().Fatalf("Could not register user: %s", err)
 		}
-		logger.Sugar().Info("Registered ", u.Username)
+		_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
+		if err != nil {
+			logger.Sugar().Fatalf("Could not create api key for user: %s", err)
+		}
+
+		logger.Sugar().Info("Registered", u.Username)
 	}
-	u, err := usvc.Register(ctx, pool, services.UserRegisterParams{
+	u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
 		Username:   "manager_1",
 		FirstName:  pointers.New("MrManager"),
 		Email:      "manager_1" + "@mail.com",
@@ -83,10 +85,14 @@ func registerUsers(usvc *services.User, ctx context.Context, pool *pgxpool.Pool,
 		Role:       models.RoleManager,
 	})
 	if err != nil {
-		log.Fatalf("Could not register user: %s", err)
+		logger.Sugar().Fatalf("Could not register user: %s", err)
 	}
-	logger.Sugar().Info("Registered ", u.Username)
-	u, err = usvc.Register(ctx, pool, services.UserRegisterParams{
+	_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
+	if err != nil {
+		logger.Sugar().Fatalf("Could not create api key for user: %s", err)
+	}
+	logger.Sugar().Info("Registered", u.Username)
+	u, err = userSvc.Register(ctx, pool, services.UserRegisterParams{
 		Username:   "superadmin_1",
 		FirstName:  pointers.New("MrSuperadmin"),
 		Email:      "superadmin_1" + "@mail.com",
@@ -94,9 +100,13 @@ func registerUsers(usvc *services.User, ctx context.Context, pool *pgxpool.Pool,
 		Role:       models.RoleSuperAdmin,
 	})
 	if err != nil {
-		log.Fatalf("Could not register user: %s", err)
+		logger.Sugar().Fatalf("Could not register user: %s", err)
 	}
-	logger.Sugar().Info("Registered ", u.Username)
+	_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
+	if err != nil {
+		logger.Sugar().Fatalf("Could not create api key for user: %s", err)
+	}
+	logger.Sugar().Info("Registered", u.Username)
 }
 
 func errAndExit(out []byte, err error) {

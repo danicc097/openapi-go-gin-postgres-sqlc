@@ -217,7 +217,7 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true and row(users.*) is not null then row(users.*) end) as user ` +
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +
@@ -256,7 +256,7 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true and row(users.*) is not null then row(users.*) end) as user ` +
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +
@@ -295,7 +295,7 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true and row(users.*) is not null then row(users.*) end) as user ` +
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +
