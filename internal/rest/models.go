@@ -5,13 +5,14 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	repomodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 )
 
 // UserResponse represents an OpenAPI schema response for a User.
 type UserResponse struct {
-	db.User `required:"true"`
-	Role    models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
-	Scopes  []string    `json:"scopes" ref:"#/components/schemas/Scopes" required:"true"`
+	db.User
+	Role   models.Role   `json:"role" ref:"#/components/schemas/Role" required:"true"`
+	Scopes models.Scopes `json:"scopes" ref:"#/components/schemas/Scopes" required:"true"`
 
 	APIKey   *db.UserAPIKey `json:"apiKey,omitempty"`
 	Teams    *[]db.Team     `json:"teams,omitempty"`
@@ -20,7 +21,7 @@ type UserResponse struct {
 
 // DemoProjectWorkItemsResponse represents an OpenAPI schema response for a ProjectBoard.
 type DemoProjectWorkItemsResponse struct {
-	db.WorkItem         `required:"true"`
+	db.WorkItem
 	DemoProjectWorkItem db.DemoProjectWorkItem `json:"demoProjectWorkItem" required:"true"`
 	TimeEntries         *[]db.TimeEntry        `json:"timeEntries"`
 	WorkItemComments    *[]db.WorkItemComment  `json:"workItemComments"`
@@ -49,4 +50,8 @@ type TeamCreateRequest struct {
 
 type TeamUpdateRequest struct {
 	db.TeamUpdateParams
+}
+
+type UserCreateRequest struct {
+	services.UserRegisterParams
 }

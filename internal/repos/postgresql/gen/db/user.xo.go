@@ -10,26 +10,28 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 )
 
 // User represents a row from 'public.users'.
 // Include "property:private" in a SQL column comment to exclude a field from JSON.
 type User struct {
-	UserID                   uuid.UUID  `json:"userID" db:"user_id" required:"true"`                                      // user_id
-	Username                 string     `json:"username" db:"username" required:"true"`                                   // username
-	Email                    string     `json:"email" db:"email" required:"true"`                                         // email
-	FirstName                *string    `json:"firstName" db:"first_name" required:"true"`                                // first_name
-	LastName                 *string    `json:"lastName" db:"last_name" required:"true"`                                  // last_name
-	FullName                 *string    `json:"fullName" db:"full_name" required:"true"`                                  // full_name
-	ExternalID               string     `json:"-" db:"external_id"`                                                       // external_id
-	APIKeyID                 *int       `json:"-" db:"api_key_id"`                                                        // api_key_id
-	Scopes                   []string   `json:"-" db:"scopes"`                                                            // scopes
-	RoleRank                 int16      `json:"-" db:"role_rank"`                                                         // role_rank
-	HasPersonalNotifications bool       `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true"` // has_personal_notifications
-	HasGlobalNotifications   bool       `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true"`     // has_global_notifications
-	CreatedAt                time.Time  `json:"createdAt" db:"created_at" required:"true"`                                // created_at
-	UpdatedAt                time.Time  `json:"-" db:"updated_at"`                                                        // updated_at
-	DeletedAt                *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`                                // deleted_at
+	UserID                   uuid.UUID     `json:"userID" db:"user_id" required:"true"`                                      // user_id
+	Username                 string        `json:"username" db:"username" required:"true"`                                   // username
+	Email                    string        `json:"email" db:"email" required:"true"`                                         // email
+	FirstName                *string       `json:"firstName" db:"first_name" required:"true"`                                // first_name
+	LastName                 *string       `json:"lastName" db:"last_name" required:"true"`                                  // last_name
+	FullName                 *string       `json:"fullName" db:"full_name" required:"true"`                                  // full_name
+	ExternalID               string        `json:"-" db:"external_id"`                                                       // external_id
+	APIKeyID                 *int          `json:"-" db:"api_key_id"`                                                        // api_key_id
+	Scopes                   models.Scopes `json:"-" db:"scopes" ref:"#/components/schemas/Scopes"`                          // scopes
+	RoleRank                 int16         `json:"-" db:"role_rank"`                                                         // role_rank
+	HasPersonalNotifications bool          `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true"` // has_personal_notifications
+	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true"`     // has_global_notifications
+	CreatedAt                time.Time     `json:"createdAt" db:"created_at" required:"true"`                                // created_at
+	UpdatedAt                time.Time     `json:"-" db:"updated_at"`                                                        // updated_at
+	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at" required:"true"`                                // deleted_at
 
 	TimeEntries *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
 	UserAPIKey  *UserAPIKey  `json:"-" db:"user_api_key" openapi-go:"ignore"` // O2O
@@ -41,30 +43,30 @@ type User struct {
 
 // UserCreateParams represents insert params for 'public.users'
 type UserCreateParams struct {
-	Username                 string   `json:"username"`                 // username
-	Email                    string   `json:"email"`                    // email
-	FirstName                *string  `json:"firstName"`                // first_name
-	LastName                 *string  `json:"lastName"`                 // last_name
-	ExternalID               string   `json:"-"`                        // external_id
-	APIKeyID                 *int     `json:"-"`                        // api_key_id
-	Scopes                   []string `json:"-"`                        // scopes
-	RoleRank                 int16    `json:"-"`                        // role_rank
-	HasPersonalNotifications bool     `json:"hasPersonalNotifications"` // has_personal_notifications
-	HasGlobalNotifications   bool     `json:"hasGlobalNotifications"`   // has_global_notifications
+	Username                 string        `json:"username"`                 // username
+	Email                    string        `json:"email"`                    // email
+	FirstName                *string       `json:"firstName"`                // first_name
+	LastName                 *string       `json:"lastName"`                 // last_name
+	ExternalID               string        `json:"-"`                        // external_id
+	APIKeyID                 *int          `json:"-"`                        // api_key_id
+	Scopes                   models.Scopes `json:"-"`                        // scopes
+	RoleRank                 int16         `json:"-"`                        // role_rank
+	HasPersonalNotifications bool          `json:"hasPersonalNotifications"` // has_personal_notifications
+	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`   // has_global_notifications
 }
 
 // UserUpdateParams represents update params for 'public.users'
 type UserUpdateParams struct {
-	Username                 *string   `json:"username"`                 // username
-	Email                    *string   `json:"email"`                    // email
-	FirstName                **string  `json:"firstName"`                // first_name
-	LastName                 **string  `json:"lastName"`                 // last_name
-	ExternalID               *string   `json:"-"`                        // external_id
-	APIKeyID                 **int     `json:"-"`                        // api_key_id
-	Scopes                   *[]string `json:"-"`                        // scopes
-	RoleRank                 *int16    `json:"-"`                        // role_rank
-	HasPersonalNotifications *bool     `json:"hasPersonalNotifications"` // has_personal_notifications
-	HasGlobalNotifications   *bool     `json:"hasGlobalNotifications"`   // has_global_notifications
+	Username                 *string        `json:"username"`                 // username
+	Email                    *string        `json:"email"`                    // email
+	FirstName                **string       `json:"firstName"`                // first_name
+	LastName                 **string       `json:"lastName"`                 // last_name
+	ExternalID               *string        `json:"-"`                        // external_id
+	APIKeyID                 **int          `json:"-"`                        // api_key_id
+	Scopes                   *models.Scopes `json:"-"`                        // scopes
+	RoleRank                 *int16         `json:"-"`                        // role_rank
+	HasPersonalNotifications *bool          `json:"hasPersonalNotifications"` // has_personal_notifications
+	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications"`   // has_global_notifications
 }
 
 type UserSelectConfig struct {
@@ -319,27 +321,27 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey"
 left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			user_team.user_id as user_team_user_id
+			, array_agg(teams.*) filter (where teams.* is not null) as __teams
 		from user_team
-    join teams on teams.team_id = user_team.team_id
+    	join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			work_item_member.member as work_item_member_member
+			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
 		from work_item_member
-    join work_items on work_items.work_item_id = work_item_member.work_item_id
+    	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -402,27 +404,27 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey"
 left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			user_team.user_id as user_team_user_id
+			, array_agg(teams.*) filter (where teams.* is not null) as __teams
 		from user_team
-    join teams on teams.team_id = user_team.team_id
+    	join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			work_item_member.member as work_item_member_member
+			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
 		from work_item_member
-    join work_items on work_items.work_item_id = work_item_member.work_item_id
+    	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -485,27 +487,27 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey"
 left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			user_team.user_id as user_team_user_id
+			, array_agg(teams.*) filter (where teams.* is not null) as __teams
 		from user_team
-    join teams on teams.team_id = user_team.team_id
+    	join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			work_item_member.member as work_item_member_member
+			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
 		from work_item_member
-    join work_items on work_items.work_item_id = work_item_member.work_item_id
+    	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -566,27 +568,27 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey"
 left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			user_team.user_id as user_team_user_id
+			, array_agg(teams.*) filter (where teams.* is not null) as __teams
 		from user_team
-    join teams on teams.team_id = user_team.team_id
+    	join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			work_item_member.member as work_item_member_member
+			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
 		from work_item_member
-    join work_items on work_items.work_item_id = work_item_member.work_item_id
+    	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -647,27 +649,27 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey"
 left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			user_team.user_id as user_team_user_id
+			, array_agg(teams.*) filter (where teams.* is not null) as __teams
 		from user_team
-    join teams on teams.team_id = user_team.team_id
+    	join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			work_item_member.member as work_item_member_member
+			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
 		from work_item_member
-    join work_items on work_items.work_item_id = work_item_member.work_item_id
+    	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -728,27 +730,27 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey"
 left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			user_team.user_id as user_team_user_id
+			, array_agg(teams.*) filter (where teams.* is not null) as __teams
 		from user_team
-    join teams on teams.team_id = user_team.team_id
+    	join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			work_item_member.member as work_item_member_member
+			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
 		from work_item_member
-    join work_items on work_items.work_item_id = work_item_member.work_item_id
+    	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+
@@ -811,27 +813,27 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
 -- O2O join generated from "user_api_keys_user_id_fkey"
 left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
-		user_team.user_id as user_team_user_id
-		, array_agg(teams.*) filter (where teams.* is not null) as __teams
+			user_team.user_id as user_team_user_id
+			, array_agg(teams.*) filter (where teams.* is not null) as __teams
 		from user_team
-    join teams on teams.team_id = user_team.team_id
+    	join teams on teams.team_id = user_team.team_id
     group by user_team_user_id
   ) as joined_teams on joined_teams.user_team_user_id = users.user_id
 
 -- M2M join generated from "work_item_member_work_item_id_fkey"
 left join (
 	select
-		work_item_member.member as work_item_member_member
-		, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+			work_item_member.member as work_item_member_member
+			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
 		from work_item_member
-    join work_items on work_items.work_item_id = work_item_member.work_item_id
+    	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
 `+

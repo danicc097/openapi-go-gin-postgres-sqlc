@@ -1,4 +1,4 @@
-package resttestutil
+package servicetestutil
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 type CreateUserParams struct {
 	DeletedAt  *time.Time
 	Role       models.Role
-	Scopes     []models.Scope
+	Scopes     models.Scopes
 	WithToken  bool // if true, an access token is created and returned
 	WithAPIKey bool // if true, an api key is created and returned
 }
@@ -43,7 +43,10 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	}
 
 	if params.DeletedAt != nil {
-		// TODO delete user (merely setting deleted_at != null)
+		user, err = ff.usvc.Delete(ctx, ff.pool, user.UserID)
+		if err != nil {
+			return nil, fmt.Errorf("usvc.Delete: %w", err)
+		}
 	}
 
 	var accessToken string

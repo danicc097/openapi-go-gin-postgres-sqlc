@@ -209,7 +209,7 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
 		` WHERE activities.name = $2 AND activities.project_id = $3 `
 	sqlstr += c.orderBy
@@ -255,7 +255,7 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
 		` WHERE activities.name = $2 `
 	sqlstr += c.orderBy
@@ -303,7 +303,7 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
 		` WHERE activities.project_id = $2 `
 	sqlstr += c.orderBy
@@ -351,7 +351,7 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
 		` WHERE activities.activity_id = $2 `
 	sqlstr += c.orderBy

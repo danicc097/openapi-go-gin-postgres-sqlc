@@ -1115,6 +1115,8 @@ components:
       enum:
         - Received
       x-generated: '-'
+    ModelsScope: # Generated from internal structs. DO NOT EDIT.
+      type: string
   examples:
     User:
       value:

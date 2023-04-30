@@ -55,6 +55,7 @@ export type DbWorkItemRole = string
 export type NotificationType = 'personal' | 'global'
 export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 export type DemoProject2KanbanSteps = 'Received'
+export type ModelsScope = string
 
 export interface DbActivity {
   activityID: number

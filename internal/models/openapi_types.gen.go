@@ -384,6 +384,9 @@ type ModelsProjectConfigField struct {
 // ModelsRole defines the model for ModelsRole.
 type ModelsRole = string
 
+// ModelsScope defines the model for ModelsScope.
+type ModelsScope = string
+
 // NotificationType represents a database 'notification_type'
 type NotificationType string
 

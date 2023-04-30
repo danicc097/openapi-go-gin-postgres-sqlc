@@ -25,27 +25,13 @@ type User struct {
 // NOTE: the most important distinction about repositories is that they represent collections of entities. They do not represent database storage or caching or any number of technical concerns. Repositories represent collections. How you hold those collections is simply an implementation detail.
 // TODO repo should be aware of models Role and Scope and the conversion / default values is done in repo?
 type UserRegisterParams struct {
-	Username   string
-	Email      string
-	FirstName  *string
-	LastName   *string
-	ExternalID string
-	Scopes     []models.Scope
-	Role       models.Role
-}
-
-type UserUpdateParams struct {
-	FirstName      *string
-	LastName       *string
-	ID             string
-	RequestingUser *db.User
-}
-
-type UserUpdateAuthorizationParams struct {
-	Rank           *int16
-	Scopes         *[]string
-	ID             string
-	RequestingUser *db.User
+	Username   string        `json:"username" required:"true"`
+	Email      string        `json:"email" required:"true"`
+	FirstName  *string       `json:"firstName"`
+	LastName   *string       `json:"lastName"`
+	ExternalID string        `json:"externalID" required:"true"`
+	Scopes     models.Scopes `json:"scopes" ref:"#/components/schemas/Scopes" required:"true"`
+	Role       models.Role   `json:"role" ref:"#/components/schemas/Role" required:"true"`
 }
 
 // NewUser returns a new User service.
@@ -65,19 +51,14 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	if params.Role == "" {
 		params.Role = models.RoleUser
 	}
-	role, err := u.authzsvc.RoleByName(string(params.Role))
+	role, err := u.authzsvc.RoleByName(params.Role)
 	if err != nil {
-		return nil, fmt.Errorf("authzsvc.ByName: %w", err)
+		return nil, fmt.Errorf("authzsvc.RoleByName: %w", err)
 	}
 	rank := role.Rank
 
 	// append default scopes for role upon registration regardless of provided params
 	params.Scopes = append(params.Scopes, u.authzsvc.DefaultScopes(params.Role)...)
-
-	scopes := make([]string, 0, len(params.Scopes))
-	for _, s := range params.Scopes {
-		scopes = append(scopes, string(s))
-	}
 
 	repoParams := db.UserCreateParams{
 		FirstName:  params.FirstName,
@@ -86,7 +67,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 		Email:      params.Email,
 		ExternalID: params.ExternalID,
 		RoleRank:   rank,
-		Scopes:     scopes,
+		Scopes:     params.Scopes,
 	}
 
 	user, err := u.urepo.Create(ctx, d, repoParams)
@@ -118,10 +99,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		return nil, fmt.Errorf("urepo.ByID: %w", err)
 	}
 
-	adminRole, err := u.authzsvc.RoleByName(string(models.RoleAdmin))
-	if err != nil {
-		return nil, fmt.Errorf("authzsvc.ByName: %w", err)
-	}
+	adminRole := u.authzsvc.Roles[models.RoleAdmin]
 
 	if user.UserID != caller.UserID &&
 		caller.RoleRank < adminRole.Rank {
@@ -167,10 +145,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		return nil, fmt.Errorf("urepo.ByID: %w", err)
 	}
 
-	adminRole, err := u.authzsvc.RoleByName(string(models.RoleAdmin))
-	if err != nil {
-		return nil, fmt.Errorf("authzsvc.ByName: %w", err)
-	}
+	adminRole := u.authzsvc.Roles[models.RoleAdmin]
 
 	if caller.RoleRank < adminRole.Rank {
 		if user.UserID == caller.UserID { // exit early, though it's not possible to update to something not assigned to self already anyway
@@ -178,11 +153,27 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		}
 	}
 
+	if params.Scopes != nil {
+		for _, s := range *params.Scopes {
+			if !slices.Contains(caller.Scopes, s) {
+				return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set a scope unassigned to self")
+			}
+		}
+
+		if caller.RoleRank < adminRole.Rank {
+			for _, s := range user.Scopes {
+				if !slices.Contains(*params.Scopes, s) {
+					return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot unassign a user's scope")
+				}
+			}
+		}
+	}
+
 	var rank *int16
 	if params.Role != nil {
-		role, err := u.authzsvc.RoleByName(string(*params.Role))
+		role, err := u.authzsvc.RoleByName(*params.Role)
 		if err != nil {
-			return nil, fmt.Errorf("authzsvc.ByName: %w", err)
+			return nil, fmt.Errorf("authzsvc.RoleByName: %w", err)
 		}
 		if role.Rank > caller.RoleRank {
 			return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set a user rank higher than self")
@@ -193,32 +184,13 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 			}
 		}
 		rank = &role.Rank
-	}
 
-	var scopes *[]string
-	if params.Scopes != nil {
-		ss := make([]string, 0, len(*params.Scopes))
-		for _, s := range *params.Scopes {
-			if !slices.Contains(caller.Scopes, string(s)) {
-				return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot set a scope unassigned to self")
-			}
-
-			ss = append(ss, string(s))
-		}
-
-		if caller.RoleRank < adminRole.Rank {
-			for _, s := range user.Scopes {
-				if !slices.Contains(ss, s) {
-					return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot unassign a user's scope")
-				}
-			}
-		}
-
-		scopes = &ss
+		// always reset scopes when changing role
+		params.Scopes = pointers.New(ScopesByRole[*params.Role])
 	}
 
 	user, err = u.urepo.Update(ctx, d, uid, db.UserUpdateParams{
-		Scopes:   scopes,
+		Scopes:   params.Scopes,
 		RoleRank: rank,
 	})
 	if err != nil {
@@ -287,10 +259,22 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 	return user, nil
 }
 
+// Delete marks a user as deleted.
+func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error) {
+	defer newOTELSpan(ctx, "User.Delete").End()
+
+	user, err := u.urepo.Delete(ctx, d, id)
+	if err != nil {
+		return nil, fmt.Errorf("urepo.Delete: %w", err)
+	}
+
+	return user, nil
+}
+
 // TODO
-func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userID string) ([]db.GetUserNotificationsRow, error) {
+func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userID string) ([]db.UserNotification, error) {
 	// this will also set user.has_new_personal_notifications to false in the same tx
-	return []db.GetUserNotificationsRow{}, nil
+	return []db.UserNotification{}, nil
 
 	// defer newOTELSpan(ctx, "User.ByAPIKey").End()
 

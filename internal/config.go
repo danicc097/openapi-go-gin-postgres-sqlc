@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	lock = &sync.Mutex{}
+	configLock = &sync.RWMutex{}
 
 	config *AppConfig
 )
@@ -58,8 +58,8 @@ type AppConfig struct {
 // NewAppConfig initializes app config from current environment variables.
 // config can be replaced with subsequent calls.
 func NewAppConfig() error {
-	lock.Lock()
-	defer lock.Unlock()
+	configLock.Lock()
+	defer configLock.Unlock()
 
 	cfg := &AppConfig{}
 
@@ -74,8 +74,8 @@ func NewAppConfig() error {
 
 // Config returns the app global config initialized from environment variables
 func Config() AppConfig {
-	lock.Lock()
-	defer lock.Unlock()
+	configLock.RLock()
+	defer configLock.RUnlock()
 
 	return *config
 }

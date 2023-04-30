@@ -235,15 +235,15 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
 -- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
-		user_team.team_id as user_team_team_id
-		, array_agg(users.*) filter (where users.* is not null) as __users
+			user_team.team_id as user_team_team_id
+			, array_agg(users.*) filter (where users.* is not null) as __users
 		from user_team
-    join users on users.user_id = user_team.user_id
+    	join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
@@ -293,15 +293,15 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
 -- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
-		user_team.team_id as user_team_team_id
-		, array_agg(users.*) filter (where users.* is not null) as __users
+			user_team.team_id as user_team_team_id
+			, array_agg(users.*) filter (where users.* is not null) as __users
 		from user_team
-    join users on users.user_id = user_team.user_id
+    	join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
@@ -353,15 +353,15 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
 -- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
-		user_team.team_id as user_team_team_id
-		, array_agg(users.*) filter (where users.* is not null) as __users
+			user_team.team_id as user_team_team_id
+			, array_agg(users.*) filter (where users.* is not null) as __users
 		from user_team
-    join users on users.user_id = user_team.user_id
+    	join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
@@ -413,15 +413,15 @@ left join (
     , array_agg(time_entries.*) as time_entries
   from
     time_entries
-   group by
+  group by
         team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
 -- M2M join generated from "user_team_user_id_fkey"
 left join (
 	select
-		user_team.team_id as user_team_team_id
-		, array_agg(users.*) filter (where users.* is not null) as __users
+			user_team.team_id as user_team_team_id
+			, array_agg(users.*) filter (where users.* is not null) as __users
 		from user_team
-    join users on users.user_id = user_team.user_id
+    	join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +

@@ -85,7 +85,7 @@ comment on column users.api_key_id is 'property:private';
 
 comment on column users.role_rank is 'property:private';
 
-comment on column users.scopes is 'property:private';
+comment on column users.scopes is 'property:private,type:models.Scopes';
 
 comment on column users.updated_at is 'property:private';
 
@@ -145,6 +145,9 @@ create table notifications (
 
 create index on notifications (receiver_rank , notification_type , created_at);
 
+-- TODO xo update first
+-- comment on column notifications.sender IS 'cardinality:O2O';
+-- comment on column notifications.receiver IS 'cardinality:O2O';
 create table user_notifications (
   user_notification_id bigserial primary key
   , notification_id int not null
@@ -157,6 +160,8 @@ create table user_notifications (
 
 comment on column user_notifications.notification_id is 'cardinality:O2O';
 
+-- TODO xo update first
+-- comment on column user_notifications.user_id IS 'cardinality:O2M';
 create index on user_notifications (user_id);
 
 -- read field simply used to show 'NEW' label but there is no filtering

@@ -48,6 +48,7 @@ import {
   NotificationType,
   DemoProjectKanbanSteps,
   DemoProject2KanbanSteps,
+  ModelsScope,
 } from './models'
 
 export const schemaDefinitions = {
@@ -125,6 +126,7 @@ export const schemaDefinitions = {
     'DemoProject2KanbanSteps',
     '#/definitions/DemoProject2KanbanSteps',
   ),
+  ModelsScope: info<ModelsScope>('ModelsScope', '#/definitions/ModelsScope'),
 }
 
 export interface SchemaInfo<T> {

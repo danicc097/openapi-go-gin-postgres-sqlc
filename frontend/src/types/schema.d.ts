@@ -399,6 +399,7 @@ export interface components {
     DemoProjectKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
     /** @enum {string} */
     DemoProject2KanbanSteps: "Received";
+    ModelsScope: string;
   };
   responses: never;
   parameters: {

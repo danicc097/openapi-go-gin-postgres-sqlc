@@ -15,8 +15,8 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	redis "github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
@@ -112,7 +112,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares []gin.Handl
 	return srv.httpsrv, nil
 }
 
-func newTestFixtureFactory(t *testing.T) *resttestutil.FixtureFactory {
+func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
 	logger := zaptest.NewLogger(t)
 	authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
 	if err != nil {
@@ -132,6 +132,6 @@ func newTestFixtureFactory(t *testing.T) *resttestutil.FixtureFactory {
 	)
 	authnsvc := services.NewAuthentication(logger, usvc, testPool)
 
-	ff := resttestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
+	ff := servicetestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
 	return ff
 }

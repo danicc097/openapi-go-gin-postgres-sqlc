@@ -77,7 +77,8 @@ func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	ss, err := token.SignedString(os.Getenv("SIGNING_KEY"))
+	cfg := internal.Config()
+	ss, err := token.SignedString(cfg.SigningKey)
 	if err != nil {
 		return "", fmt.Errorf("could not sign token: %w", err)
 	}
@@ -86,7 +87,7 @@ func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.
 	return ss, nil
 }
 
-// CreateAccessTokenForUser creates a new API key for a user.
+// CreateAPIKeyForUser creates a new API key for a user.
 func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User) (*db.UserAPIKey, error) {
 	uak, err := a.usvc.CreateAPIKey(ctx, a.pool, user)
 	if err != nil {
@@ -98,8 +99,9 @@ func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User)
 
 // ParseToken returns a token string claims.
 func (a *Authentication) ParseToken(ctx context.Context, tokenString string) (*AppClaims, error) {
+	cfg := internal.Config()
 	token, err := jwt.ParseWithClaims(tokenString, &AppClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return os.Getenv("SIGNING_KEY"), nil
+		return cfg.SigningKey, nil
 	})
 
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

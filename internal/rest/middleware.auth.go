@@ -86,7 +86,7 @@ type operationIDScopes = map[OperationID][]string
 
 type AuthRestriction struct {
 	MinimumRole    models.Role
-	RequiredScopes []models.Scope
+	RequiredScopes models.Scopes
 }
 
 // EnsureAuthorized checks whether the client is authorized.

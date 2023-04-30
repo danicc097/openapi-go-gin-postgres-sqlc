@@ -12,23 +12,22 @@ import (
 func TestAuthorization_Roles(t *testing.T) {
 	t.Parallel()
 
-	svc, err := services.NewAuthorization(zaptest.NewLogger(t), "testdata/scopes.json", "testdata/roles.json")
+	svc, err := services.NewAuthorization(zaptest.NewLogger(t), "../../scopes.json", "../../roles.json")
 	if err != nil {
 		t.Fatalf("NewAuthorization: %v", err)
 	}
-	userRole, err := svc.RoleByName(string(models.RoleUser))
+	userRole, err := svc.RoleByName(models.RoleUser)
 	if err != nil {
 		t.Fatalf("role does not exist: %v", err)
 	}
-	managerRole, err := svc.RoleByName(string(models.RoleManager))
+	managerRole, err := svc.RoleByName(models.RoleManager)
 	if err != nil {
 		t.Fatalf("role does not exist: %v", err)
 	}
 	assert.ErrorContains(t, svc.HasRequiredRole(userRole, models.RoleManager), "access restricted")
 	assert.ErrorContains(t, svc.HasRequiredRole(userRole, models.RoleAdmin), "access restricted")
 	assert.ErrorContains(t, svc.HasRequiredRole(managerRole, models.RoleAdmin), "access restricted")
-
-	assert.ErrorContains(t, svc.HasRequiredRole(services.Role{}, models.RoleAdmin), "role is not valid: unknown role")
+	assert.ErrorContains(t, svc.HasRequiredRole(services.Role{}, models.RoleAdmin), "access restricted")
 
 	assert.NoError(t, svc.HasRequiredRole(services.Role{Rank: managerRole.Rank, Name: models.RoleManager}, models.RoleManager))
 }
@@ -36,17 +35,16 @@ func TestAuthorization_Roles(t *testing.T) {
 func TestAuthorization_Scopes(t *testing.T) {
 	t.Parallel()
 
-	svc, err := services.NewAuthorization(zaptest.NewLogger(t), "testdata/scopes.json", "testdata/roles.json")
+	svc, err := services.NewAuthorization(zaptest.NewLogger(t), "../../scopes.json", "../../roles.json")
 	if err != nil {
 		t.Fatalf("NewAuthorization: %v", err)
 	}
 
-	req := []models.Scope{models.ScopeTeamSettingsWrite}
-	assert.ErrorContains(t, svc.HasRequiredScopes([]string{}, req), "access restricted")
-	assert.ErrorContains(t, svc.HasRequiredScopes([]string{string("")}, req), "scopes are not valid")
-	assert.ErrorContains(t, svc.HasRequiredScopes([]string{string(models.ScopeUsersRead)}, req), "access restricted")
-	assert.NoError(t, svc.HasRequiredScopes([]string{string(models.ScopeTeamSettingsWrite)}, req))
+	req := models.Scopes{models.ScopeTeamSettingsWrite}
+	assert.ErrorContains(t, svc.HasRequiredScopes(models.Scopes{}, req), "access restricted")
+	assert.ErrorContains(t, svc.HasRequiredScopes(models.Scopes{models.ScopeUsersRead}, req), "access restricted")
+	assert.NoError(t, svc.HasRequiredScopes(models.Scopes{models.ScopeTeamSettingsWrite}, req))
 
-	req = []models.Scope{models.ScopeTeamSettingsWrite, models.ScopeUsersRead}
-	assert.ErrorContains(t, svc.HasRequiredScopes([]string{string(models.ScopeUsersRead)}, req), "access restricted")
+	req = models.Scopes{models.ScopeTeamSettingsWrite, models.ScopeUsersRead}
+	assert.ErrorContains(t, svc.HasRequiredScopes(models.Scopes{models.ScopeUsersRead}, req), "access restricted")
 }

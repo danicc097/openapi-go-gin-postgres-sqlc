@@ -6,7 +6,12 @@ import (
 	"os"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"go.uber.org/zap/zaptest"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -36,4 +41,28 @@ func testMain(m *testing.M) int {
 	defer testPool.Close()
 
 	return m.Run()
+}
+
+func newTestFixtureFactory(t *testing.T) *servicetestutil.FixtureFactory {
+	logger := zaptest.NewLogger(t)
+	authzsvc, err := services.NewAuthorization(logger, "../../scopes.json", "../../roles.json")
+	if err != nil {
+		t.Fatalf("services.NewAuthorization: %v", err)
+	}
+	usvc := services.NewUser(
+		logger,
+		reposwrappers.NewUserWithTracing(
+			reposwrappers.NewUserWithTimeout(
+				postgresql.NewUser(), reposwrappers.UserWithTimeoutConfig{}),
+			postgresql.OtelName, nil),
+		reposwrappers.NewNotificationWithTracing(
+			reposwrappers.NewNotificationWithTimeout(
+				postgresql.NewNotification(), reposwrappers.NotificationWithTimeoutConfig{}),
+			postgresql.OtelName, nil),
+		authzsvc,
+	)
+	authnsvc := services.NewAuthentication(logger, usvc, testPool)
+
+	ff := servicetestutil.NewFixtureFactory(usvc, testPool, authnsvc, authzsvc)
+	return ff
 }
