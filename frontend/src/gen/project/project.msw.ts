@@ -46,7 +46,7 @@ export const getGetProjectWorkitemsMock = () =>
       closed: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       createdAt: (() => faker.date.past())(),
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-      demoProjectWorkItem: {
+      demoWorkItem: {
         lastMessageAt: (() => faker.date.past())(),
         line: faker.random.word(),
         ref: faker.random.word(),

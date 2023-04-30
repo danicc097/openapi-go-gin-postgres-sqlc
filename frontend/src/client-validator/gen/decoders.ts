@@ -14,13 +14,13 @@ import {
   DbTeam,
   DbWorkItemTag,
   DbWorkItemType,
-  DbDemoProjectWorkItem,
+  DbDemoWorkItem,
   DbUserAPIKey,
   DbUser,
   DbTimeEntry,
   DbWorkItemComment,
   ProjectConfig,
-  RestDemoProjectWorkItemsResponse,
+  RestDemoWorkItemsResponse,
   InitializeProjectRequest,
   RestProjectBoardResponse,
   UserResponse,
@@ -37,7 +37,6 @@ import {
   UuidUUID,
   PgtypeJSONB,
   ModelsProjectConfigField,
-  DbProject2WorkItem,
   DbWorkItem,
   Project,
   DbActivityCreateParams,
@@ -53,6 +52,11 @@ import {
   DemoProjectKanbanSteps,
   DemoProject2KanbanSteps,
   ModelsScope,
+  Demo2WorkItemTypes,
+  DemoKanbanSteps,
+  DemoTwoKanbanSteps,
+  DemoTwoWorkItemTypes,
+  DemoWorkItemTypes,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -133,16 +137,16 @@ export const DbWorkItemTypeDecoder: Decoder<DbWorkItemType> = {
     return validateJson(json, schema, DbWorkItemTypeDecoder.definitionName)
   },
 }
-export const DbDemoProjectWorkItemDecoder: Decoder<DbDemoProjectWorkItem> = {
-  definitionName: 'DbDemoProjectWorkItem',
-  schemaRef: '#/definitions/DbDemoProjectWorkItem',
+export const DbDemoWorkItemDecoder: Decoder<DbDemoWorkItem> = {
+  definitionName: 'DbDemoWorkItem',
+  schemaRef: '#/definitions/DbDemoWorkItem',
 
-  decode(json: unknown): DbDemoProjectWorkItem {
-    const schema = ajv.getSchema(DbDemoProjectWorkItemDecoder.schemaRef)
+  decode(json: unknown): DbDemoWorkItem {
+    const schema = ajv.getSchema(DbDemoWorkItemDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${DbDemoProjectWorkItemDecoder.definitionName} not found`)
+      throw new Error(`Schema ${DbDemoWorkItemDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, DbDemoProjectWorkItemDecoder.definitionName)
+    return validateJson(json, schema, DbDemoWorkItemDecoder.definitionName)
   },
 }
 export const DbUserAPIKeyDecoder: Decoder<DbUserAPIKey> = {
@@ -205,16 +209,16 @@ export const ProjectConfigDecoder: Decoder<ProjectConfig> = {
     return validateJson(json, schema, ProjectConfigDecoder.definitionName)
   },
 }
-export const RestDemoProjectWorkItemsResponseDecoder: Decoder<RestDemoProjectWorkItemsResponse> = {
-  definitionName: 'RestDemoProjectWorkItemsResponse',
-  schemaRef: '#/definitions/RestDemoProjectWorkItemsResponse',
+export const RestDemoWorkItemsResponseDecoder: Decoder<RestDemoWorkItemsResponse> = {
+  definitionName: 'RestDemoWorkItemsResponse',
+  schemaRef: '#/definitions/RestDemoWorkItemsResponse',
 
-  decode(json: unknown): RestDemoProjectWorkItemsResponse {
-    const schema = ajv.getSchema(RestDemoProjectWorkItemsResponseDecoder.schemaRef)
+  decode(json: unknown): RestDemoWorkItemsResponse {
+    const schema = ajv.getSchema(RestDemoWorkItemsResponseDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${RestDemoProjectWorkItemsResponseDecoder.definitionName} not found`)
+      throw new Error(`Schema ${RestDemoWorkItemsResponseDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, RestDemoProjectWorkItemsResponseDecoder.definitionName)
+    return validateJson(json, schema, RestDemoWorkItemsResponseDecoder.definitionName)
   },
 }
 export const InitializeProjectRequestDecoder: Decoder<InitializeProjectRequest> = {
@@ -409,18 +413,6 @@ export const ModelsProjectConfigFieldDecoder: Decoder<ModelsProjectConfigField> 
     return validateJson(json, schema, ModelsProjectConfigFieldDecoder.definitionName)
   },
 }
-export const DbProject2WorkItemDecoder: Decoder<DbProject2WorkItem> = {
-  definitionName: 'DbProject2WorkItem',
-  schemaRef: '#/definitions/DbProject2WorkItem',
-
-  decode(json: unknown): DbProject2WorkItem {
-    const schema = ajv.getSchema(DbProject2WorkItemDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${DbProject2WorkItemDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, DbProject2WorkItemDecoder.definitionName)
-  },
-}
 export const DbWorkItemDecoder: Decoder<DbWorkItem> = {
   definitionName: 'DbWorkItem',
   schemaRef: '#/definitions/DbWorkItem',
@@ -599,5 +591,65 @@ export const ModelsScopeDecoder: Decoder<ModelsScope> = {
       throw new Error(`Schema ${ModelsScopeDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ModelsScopeDecoder.definitionName)
+  },
+}
+export const Demo2WorkItemTypesDecoder: Decoder<Demo2WorkItemTypes> = {
+  definitionName: 'Demo2WorkItemTypes',
+  schemaRef: '#/definitions/Demo2WorkItemTypes',
+
+  decode(json: unknown): Demo2WorkItemTypes {
+    const schema = ajv.getSchema(Demo2WorkItemTypesDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${Demo2WorkItemTypesDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, Demo2WorkItemTypesDecoder.definitionName)
+  },
+}
+export const DemoKanbanStepsDecoder: Decoder<DemoKanbanSteps> = {
+  definitionName: 'DemoKanbanSteps',
+  schemaRef: '#/definitions/DemoKanbanSteps',
+
+  decode(json: unknown): DemoKanbanSteps {
+    const schema = ajv.getSchema(DemoKanbanStepsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DemoKanbanStepsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DemoKanbanStepsDecoder.definitionName)
+  },
+}
+export const DemoTwoKanbanStepsDecoder: Decoder<DemoTwoKanbanSteps> = {
+  definitionName: 'DemoTwoKanbanSteps',
+  schemaRef: '#/definitions/DemoTwoKanbanSteps',
+
+  decode(json: unknown): DemoTwoKanbanSteps {
+    const schema = ajv.getSchema(DemoTwoKanbanStepsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DemoTwoKanbanStepsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DemoTwoKanbanStepsDecoder.definitionName)
+  },
+}
+export const DemoTwoWorkItemTypesDecoder: Decoder<DemoTwoWorkItemTypes> = {
+  definitionName: 'DemoTwoWorkItemTypes',
+  schemaRef: '#/definitions/DemoTwoWorkItemTypes',
+
+  decode(json: unknown): DemoTwoWorkItemTypes {
+    const schema = ajv.getSchema(DemoTwoWorkItemTypesDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DemoTwoWorkItemTypesDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DemoTwoWorkItemTypesDecoder.definitionName)
+  },
+}
+export const DemoWorkItemTypesDecoder: Decoder<DemoWorkItemTypes> = {
+  definitionName: 'DemoWorkItemTypes',
+  schemaRef: '#/definitions/DemoWorkItemTypes',
+
+  decode(json: unknown): DemoWorkItemTypes {
+    const schema = ajv.getSchema(DemoWorkItemTypesDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DemoWorkItemTypesDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DemoWorkItemTypesDecoder.definitionName)
   },
 }

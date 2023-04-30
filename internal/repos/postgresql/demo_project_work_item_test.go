@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
@@ -15,45 +16,38 @@ import (
 
 // TODO test Create, etc. completely
 
-func TestDemoProjectWorkItem_Update(t *testing.T) {
+func TestDemoWorkItem_Update(t *testing.T) {
 	t.Parallel()
 
-	projectRepo := postgresql.NewProject()
+	projectID := internal.ProjectIDByName[internalmodels.ProjectDemo]
+	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, projectID)
 
-	ctx := context.Background()
-
-	project, err := projectRepo.ByName(ctx, testPool, internalmodels.ProjectDemoProject)
-	if err != nil {
-		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
-	}
-	// user, _ := postgresqltestutil.NewRandomUser(t, testPool)
-	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
-	workItemType, _ := postgresqltestutil.NewRandomWorkItemType(t, testPool, project.ProjectID)
-	kanbanStep, _ := postgresqltestutil.NewRandomKanbanStep(t, testPool, project.ProjectID)
-	demoprojectworkitem, _ := postgresqltestutil.NewRandomDemoProjectWorkItem(t, testPool, project.ProjectID, kanbanStep.KanbanStepID, workItemType.WorkItemTypeID, team.TeamID)
+	kanbanStepID := internal.DemoKanbanStepsIDByName[internalmodels.DemoKanbanStepsReceived]
+	workItemTypeID := internal.DemoWorkItemTypesIDByName[internalmodels.DemoWorkItemTypesType1]
+	demoWorkItem, _ := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, projectID, kanbanStepID, workItemTypeID, team.TeamID)
 
 	type args struct {
 		id     int64
-		params repos.DemoProjectWorkItemUpdateParams
+		params repos.DemoWorkItemUpdateParams
 	}
 	type params struct {
 		name    string
 		args    args
-		want    *db.DemoProjectWorkItem
+		want    *db.DemoWorkItem
 		wantErr bool
 	}
 	tests := []params{
 		{
 			name: "updated",
 			args: args{
-				id: demoprojectworkitem.WorkItemID,
-				params: repos.DemoProjectWorkItemUpdateParams{
+				id: demoWorkItem.WorkItemID,
+				params: repos.DemoWorkItemUpdateParams{
 					Base:        &db.WorkItemUpdateParams{Description: pointers.New("new description")},
-					DemoProject: &db.DemoProjectWorkItemUpdateParams{Line: pointers.New("new line")},
+					DemoProject: &db.DemoWorkItemUpdateParams{Line: pointers.New("new line")},
 				},
 			},
-			want: func() *db.DemoProjectWorkItem {
-				u := *demoprojectworkitem
+			want: func() *db.DemoWorkItem {
+				u := *demoWorkItem
 				u.WorkItem.Description = "new description"
 				u.Line = "new line"
 
@@ -66,15 +60,15 @@ func TestDemoProjectWorkItem_Update(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			u := postgresql.NewDemoProjectWorkItem()
+			u := postgresql.NewDemoWorkItem()
 			got, err := u.Update(context.Background(), testPool, tc.args.id, tc.args.params)
 			if (err != nil) != tc.wantErr {
-				t.Errorf("DemoProjectWorkItem.Update() error = %v, wantErr %v", err, tc.wantErr)
+				t.Errorf("DemoWorkItem.Update() error = %v, wantErr %v", err, tc.wantErr)
 
 				return
 			}
 
-			got.WorkItem.UpdatedAt = demoprojectworkitem.WorkItem.UpdatedAt // ignore
+			got.WorkItem.UpdatedAt = demoWorkItem.WorkItem.UpdatedAt // ignore
 			assert.Equal(t, tc.want, got)
 		})
 	}

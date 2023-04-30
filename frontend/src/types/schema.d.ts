@@ -126,7 +126,7 @@ export interface components {
       projectID: number;
       workItemTypeID: number;
     };
-    DbDemoProjectWorkItem: {
+    DbDemoWorkItem: {
       /** Format: date-time */
       lastMessageAt: string;
       line: string;
@@ -179,14 +179,14 @@ export interface components {
       fields: (components["schemas"]["ModelsProjectConfigField"])[] | null;
       header: (string)[] | null;
     };
-    RestDemoProjectWorkItemsResponse: {
+    RestDemoWorkItemsResponse: {
       /** Format: date-time */
       closed: string | null;
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
       deletedAt: string | null;
-      demoProjectWorkItem: components["schemas"]["DbDemoProjectWorkItem"];
+      demoWorkItem: components["schemas"]["DbDemoWorkItem"];
       description: string;
       kanbanStepID: number;
       members?: (components["schemas"]["DbUser"])[] | null;
@@ -322,12 +322,6 @@ export interface components {
       path: string;
       showCollapsed: boolean;
     };
-    DbProject2WorkItem: {
-      /** Format: date-time */
-      customDateForProject2: string | null;
-      workItem?: components["schemas"]["DbWorkItem"];
-      workItemID: number;
-    };
     DbWorkItem: {
       /** Format: date-time */
       closed: string | null;
@@ -351,7 +345,7 @@ export interface components {
      * @description Existing projects 
      * @enum {string}
      */
-    Project: "demoProject" | "demoProject2";
+    Project: "demo" | "demo_two";
     DbActivityCreateParams: {
       description?: string;
       isProductive?: boolean;
@@ -400,6 +394,16 @@ export interface components {
     /** @enum {string} */
     DemoProject2KanbanSteps: "Received";
     ModelsScope: string;
+    /** @enum {string} */
+    Demo2WorkItemTypes: "Type 1" | "Type 2" | "Another type";
+    /** @enum {string} */
+    DemoKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
+    /** @enum {string} */
+    DemoTwoKanbanSteps: "Received";
+    /** @enum {string} */
+    DemoTwoWorkItemTypes: "Type 1" | "Type 2" | "Another type";
+    /** @enum {string} */
+    DemoWorkItemTypes: "Type 1";
   };
   responses: never;
   parameters: {
@@ -607,7 +611,7 @@ export interface operations {
       /** @description Project successfully initialized. */
       200: {
         content: {
-          "application/json": components["schemas"]["RestDemoProjectWorkItemsResponse"];
+          "application/json": components["schemas"]["RestDemoWorkItemsResponse"];
         };
       };
     };

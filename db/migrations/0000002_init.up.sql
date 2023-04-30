@@ -19,6 +19,7 @@ create table projects (
   , board_config jsonb not null default '{}'
   , created_at timestamp with time zone default current_timestamp not null
   , updated_at timestamp with time zone default current_timestamp not null
+  , check (name ~ '^[a-zA-Z0-9_\-]+$')
 );
 
 comment on column projects.work_items_table_name is 'property:private';
@@ -336,9 +337,9 @@ when a new project is required -> manual table creation with empty new fields, j
  - not nullable -> must set default value for the existing rows
  - nullable and custom business logic when it's required or not. previous rows remain null or with default as required
  */
--- project for tour. when starting it user joins the only demoProject team. when exiting it user is removed.
+-- project for tour. when starting it user joins the only demo team. when exiting it user is removed.
 -- we can reset it every X hours
-create table demo_project_work_items (
+create table demo_work_items (
   work_item_id bigint primary key references work_items (work_item_id) on delete cascade
   , ref text not null
   , line text not null
@@ -346,18 +347,18 @@ create table demo_project_work_items (
   , reopened boolean not null default false
 );
 
-create index on demo_project_work_items (ref , line);
+create index on demo_work_items (ref , line);
 
-create table project_2_work_items (
+create table demo_two_work_items (
   work_item_id bigint primary key references work_items (work_item_id) on delete cascade
   , custom_date_for_project_2 timestamp with time zone
 );
 
 comment on column work_items.work_item_id is 'cardinality:O2O';
 
-comment on column demo_project_work_items.work_item_id is 'cardinality:O2O';
+comment on column demo_work_items.work_item_id is 'cardinality:O2O';
 
-comment on column project_2_work_items.work_item_id is 'cardinality:O2O';
+comment on column demo_two_work_items.work_item_id is 'cardinality:O2O';
 
 -- for finding all deleted work items exclusively
 create index on work_items (deleted_at)
@@ -510,18 +511,18 @@ insert into projects (
   , description
   , work_items_table_name)
 values (
-  'demoProject'
-  , 'description for demoProject'
-  , 'demo_project_work_items');
+  'demo'
+  , 'description for demo'
+  , 'demo_work_items');
 
 insert into projects (
   name
   , description
   , work_items_table_name)
 values (
-  'demoProject2'
-  , 'description for demoProject2'
-  , 'project_2_work_items');
+  'demo_two'
+  , 'description for demo_two'
+  , 'demo_two_work_items');
 
 insert into kanban_steps (
   name
@@ -537,7 +538,7 @@ values (
     from
       projects
     where
-      name = 'demoProject') , '#aaaaaa');
+      name = 'demo') , '#aaaaaa');
 
 insert into kanban_steps (
   name
@@ -554,7 +555,7 @@ values (
     from
       projects
     where
-      name = 'demoProject') , '#aaaaaa' , 1);
+      name = 'demo') , '#aaaaaa' , 1);
 
 insert into kanban_steps (
   name
@@ -571,7 +572,7 @@ values (
     from
       projects
     where
-      name = 'demoProject') , '#f6f343' , 2);
+      name = 'demo') , '#f6f343' , 2);
 
 insert into kanban_steps (
   name
@@ -588,7 +589,23 @@ values (
     from
       projects
     where
-      name = 'demoProject') , '#2b2444' , 3);
+      name = 'demo') , '#2b2444' , 3);
+
+insert into work_item_types (
+  name
+  , description
+  , project_id
+  , color)
+values (
+  'Type 1'
+  , 'description for Type 1 work item type'
+  , (
+    select
+      project_id
+    from
+      projects
+    where
+      name = 'demo') , '#282828');
 
 insert into kanban_steps (
   name
@@ -605,4 +622,52 @@ values (
     from
       projects
     where
-      name = 'demoProject2') , '#aaaaaa' , 1);
+      name = 'demo_two') , '#bbbbbb' , 1);
+
+insert into work_item_types (
+  name
+  , description
+  , project_id
+  , color)
+values (
+  'Type 1'
+  , 'description for Type 1 work item type'
+  , (
+    select
+      project_id
+    from
+      projects
+    where
+      name = 'demo_two') , '#282828');
+
+insert into work_item_types (
+  name
+  , description
+  , project_id
+  , color)
+values (
+  'Type 2'
+  , 'description for Type 2 work item type'
+  , (
+    select
+      project_id
+    from
+      projects
+    where
+      name = 'demo_two') , '#d0f810');
+
+insert into work_item_types (
+  name
+  , description
+  , project_id
+  , color)
+values (
+  'Another type'
+  , 'description for Another type work item type'
+  , (
+    select
+      project_id
+    from
+      projects
+    where
+      name = 'demo_two') , '#d0f810');

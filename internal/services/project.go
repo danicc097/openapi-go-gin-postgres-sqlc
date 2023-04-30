@@ -77,9 +77,9 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 
 	var workItem any
 	switch internalmodels.Project(project.Name) {
-	case internalmodels.ProjectDemoProject:
+	case internalmodels.ProjectDemo:
 		// explicitly initialize what we want to allow an admin to edit in project config ui
-		workItem = &internalmodels.RestDemoProjectWorkItemsResponse{DemoProjectWorkItem: internalmodels.DbDemoProjectWorkItem{}, Closed: pointers.New(time.Now())}
+		workItem = &internalmodels.RestDemoWorkItemsResponse{DemoWorkItem: internalmodels.DbDemoWorkItem{}, Closed: pointers.New(time.Now())}
 		// workItem = structs.InitializeFields(reflect.ValueOf(workItem), 1).Interface() //
 		fmt.Printf("workItem: %+v\n", workItem)
 	}

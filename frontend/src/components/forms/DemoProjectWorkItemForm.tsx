@@ -1,3 +1,3 @@
-export default function DemoProjectWorkItemForm() {
+export default function DemoWorkItemForm() {
   return null
 }

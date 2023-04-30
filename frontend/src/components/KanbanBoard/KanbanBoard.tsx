@@ -26,7 +26,7 @@ import {
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import _, { random, uniqueId } from 'lodash'
-import type { RestDemoProjectWorkItemsResponse, ProjectConfig } from 'src/gen/model'
+import type { RestDemoWorkItemsResponse, ProjectConfig } from 'src/gen/model'
 import moment from 'moment'
 // import { getGetProjectWorkitemsMock, getProjectMSW } from 'src/gen/project/project.msw'
 import { StyledEuiCheckbox } from 'src/components/KanbanBoard/KanbanBoard.styles'
@@ -40,9 +40,9 @@ import { removePrefix } from 'src/utils/strings'
 
 const makeId = htmlIdGenerator()
 
-const exampleDemoProjectWorkItem = {
+const exampleDemoWorkItem = {
   workItemType: 'type 1',
-  demoProjectWorkItem: {
+  demoWorkItem: {
     ref: 'ABCD-ABCD',
     line: 123,
     KPIs: [
@@ -79,70 +79,70 @@ const boardConfig: ProjectConfig = {
       isEditable: true,
       showCollapsed: true,
       isVisible: true,
-      path: 'demoProjectWorkItem',
+      path: 'demoWorkItem',
       name: 'Demo project',
     },
     {
       isEditable: true,
       showCollapsed: false,
       isVisible: true,
-      path: 'demoProjectWorkItem.metadata',
+      path: 'demoWorkItem.metadata',
       name: 'Metadata',
     },
     {
       isEditable: true,
       showCollapsed: false,
       isVisible: true,
-      path: 'demoProjectWorkItem.metadata.externalLink',
+      path: 'demoWorkItem.metadata.externalLink',
       name: 'External link',
     },
     {
       isEditable: true,
       showCollapsed: true,
       isVisible: true,
-      path: 'demoProjectWorkItem.ref',
+      path: 'demoWorkItem.ref',
       name: 'Reference',
     },
     {
       isEditable: true,
       showCollapsed: true,
       isVisible: true,
-      path: 'demoProjectWorkItem.line',
+      path: 'demoWorkItem.line',
       name: 'Line number',
     },
     {
       isEditable: true,
       showCollapsed: true,
       isVisible: true,
-      path: 'demoProjectWorkItem.KPIs',
+      path: 'demoWorkItem.KPIs',
       name: 'KPIs',
     },
     {
       isEditable: true,
       showCollapsed: true,
       isVisible: true,
-      path: 'demoProjectWorkItem.KPIs.name',
+      path: 'demoWorkItem.KPIs.name',
       name: 'Name',
     },
     {
       isEditable: true,
       showCollapsed: false,
       isVisible: true,
-      path: 'demoProjectWorkItem.KPIs.complexity',
+      path: 'demoWorkItem.KPIs.complexity',
       name: 'Complexity',
     },
     {
       isEditable: true,
       showCollapsed: false,
       isVisible: true,
-      path: 'demoProjectWorkItem.KPIs.tags',
+      path: 'demoWorkItem.KPIs.tags',
       name: 'Tags',
     },
     {
       isEditable: true,
       showCollapsed: true,
       isVisible: true,
-      path: 'demoProjectWorkItem.tags',
+      path: 'demoWorkItem.tags',
       name: 'Tags',
     },
   ],
@@ -235,7 +235,7 @@ export default function KanbanBoard() {
               display="plain"
               // footer={<></>}
             >
-              {renderCard(exampleDemoProjectWorkItem)}
+              {renderCard(exampleDemoWorkItem)}
               <EuiSpacer />
               <EuiButton
                 key={1}

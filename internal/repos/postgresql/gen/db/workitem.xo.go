@@ -27,13 +27,13 @@ type WorkItem struct {
 	UpdatedAt      time.Time  `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
 	DeletedAt      *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
 
-	DemoProjectWorkItem *DemoProjectWorkItem `json:"-" db:"demo_project_work_item" openapi-go:"ignore"` // O2O
-	Project2WorkItem    *Project2WorkItem    `json:"-" db:"project_2_work_item" openapi-go:"ignore"`    // O2O
-	TimeEntries         *[]TimeEntry         `json:"-" db:"time_entries" openapi-go:"ignore"`           // O2M
-	WorkItemComments    *[]WorkItemComment   `json:"-" db:"work_item_comments" openapi-go:"ignore"`     // O2M
-	Members             *[]WorkItem_Member   `json:"-" db:"members" openapi-go:"ignore"`                // M2M
-	WorkItemTags        *[]WorkItemTag       `json:"-" db:"work_item_tags" openapi-go:"ignore"`         // M2M
-	WorkItemType        *WorkItemType        `json:"-" db:"work_item_type" openapi-go:"ignore"`         // O2O
+	DemoTwoWorkItem  *DemoTwoWorkItem   `json:"-" db:"demo_two_work_item" openapi-go:"ignore"` // O2O
+	DemoWorkItem     *DemoWorkItem      `json:"-" db:"demo_work_item" openapi-go:"ignore"`     // O2O
+	TimeEntries      *[]TimeEntry       `json:"-" db:"time_entries" openapi-go:"ignore"`       // O2M
+	WorkItemComments *[]WorkItemComment `json:"-" db:"work_item_comments" openapi-go:"ignore"` // O2M
+	Members          *[]WorkItem_Member `json:"-" db:"members" openapi-go:"ignore"`            // M2M
+	WorkItemTags     *[]WorkItemTag     `json:"-" db:"work_item_tags" openapi-go:"ignore"`     // M2M
+	WorkItemType     *WorkItemType      `json:"-" db:"work_item_type" openapi-go:"ignore"`     // O2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -122,13 +122,13 @@ func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 }
 
 type WorkItemJoins struct {
-	DemoProjectWorkItem bool
-	Project2WorkItem    bool
-	TimeEntries         bool
-	WorkItemComments    bool
-	Members             bool
-	WorkItemTags        bool
-	WorkItemType        bool
+	DemoTwoWorkItem  bool
+	DemoWorkItem     bool
+	TimeEntries      bool
+	WorkItemComments bool
+	Members          bool
+	WorkItemTags     bool
+	WorkItemType     bool
 }
 
 // WithWorkItemJoin joins with the given tables.
@@ -315,18 +315,18 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then row(demo_project_work_items.*) end) as demo_project_work_item,
-(case when $2::boolean = true then row(project_2_work_items.*) end) as project_2_work_item,
+(case when $1::boolean = true then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true then row(demo_work_items.*) end) as demo_work_item,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
 (case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
-left join demo_project_work_items on demo_project_work_items.work_item_id = work_items.work_item_id
--- O2O join generated from "project_2_work_items_work_item_id_fkey"
-left join project_2_work_items on project_2_work_items.work_item_id = work_items.work_item_id
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
+left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
+-- O2O join generated from "demo_work_items_work_item_id_fkey"
+left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
 -- O2M join generated from "time_entries_work_item_id_fkey"
 left join (
   select
@@ -375,7 +375,7 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 
 	// run
 	// logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, deletedAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, deletedAt)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -413,18 +413,18 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then row(demo_project_work_items.*) end) as demo_project_work_item,
-(case when $2::boolean = true then row(project_2_work_items.*) end) as project_2_work_item,
+(case when $1::boolean = true then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true then row(demo_work_items.*) end) as demo_work_item,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
 (case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
-left join demo_project_work_items on demo_project_work_items.work_item_id = work_items.work_item_id
--- O2O join generated from "project_2_work_items_work_item_id_fkey"
-left join project_2_work_items on project_2_work_items.work_item_id = work_items.work_item_id
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
+left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
+-- O2O join generated from "demo_work_items_work_item_id_fkey"
+left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
 -- O2M join generated from "time_entries_work_item_id_fkey"
 left join (
   select
@@ -473,7 +473,7 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", err))
 	}
@@ -509,18 +509,18 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then row(demo_project_work_items.*) end) as demo_project_work_item,
-(case when $2::boolean = true then row(project_2_work_items.*) end) as project_2_work_item,
+(case when $1::boolean = true then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true then row(demo_work_items.*) end) as demo_work_item,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
 (case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_project_work_items_work_item_id_fkey"
-left join demo_project_work_items on demo_project_work_items.work_item_id = work_items.work_item_id
--- O2O join generated from "project_2_work_items_work_item_id_fkey"
-left join project_2_work_items on project_2_work_items.work_item_id = work_items.work_item_id
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
+left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
+-- O2O join generated from "demo_work_items_work_item_id_fkey"
+left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
 -- O2M join generated from "time_entries_work_item_id_fkey"
 left join (
   select
@@ -569,7 +569,7 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoProjectWorkItem, c.joins.Project2WorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, teamID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItemType, teamID)
 	if err != nil {
 		return nil, logerror(err)
 	}

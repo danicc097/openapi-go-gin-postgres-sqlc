@@ -5,10 +5,11 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbWorkItem } from './dbWorkItem'
 
-export interface DbProject2WorkItem {
-  customDateForProject2: Date | null
-  workItem?: DbWorkItem
+export interface DbDemoWorkItem {
+  lastMessageAt: Date
+  line: string
+  ref: string
+  reopened: boolean
   workItemID: number
 }

@@ -30,7 +30,7 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 		{
 			name: "name",
 			args: argsString{
-				filter: internalmodels.ProjectDemoProject,
+				filter: internalmodels.ProjectDemo,
 				fn:     (projectRepo.ByName),
 			},
 		},

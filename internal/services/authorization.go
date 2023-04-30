@@ -93,7 +93,7 @@ func NewAuthorization(logger *zap.Logger, scopePolicy string, rolePolicy string)
 }
 
 func (a *Authorization) RoleByName(role models.Role) (Role, error) {
-	rl, ok := a.Roles[models.Role(role)]
+	rl, ok := a.Roles[role]
 	if !ok {
 		return Role{}, internal.NewErrorf(internal.ErrorCodeUnauthorized, "unknown role %s", role)
 	}

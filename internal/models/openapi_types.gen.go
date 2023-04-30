@@ -12,6 +12,40 @@ const (
 	Bearer_authScopes = "bearer_auth.Scopes"
 )
 
+// Defines values for Demo2WorkItemTypes.
+const (
+	Demo2WorkItemTypesAnotherType Demo2WorkItemTypes = "Another type"
+	Demo2WorkItemTypesType1       Demo2WorkItemTypes = "Type 1"
+	Demo2WorkItemTypesType2       Demo2WorkItemTypes = "Type 2"
+)
+
+// AllDemo2WorkItemTypesValues returns all possible values for Demo2WorkItemTypes.
+func AllDemo2WorkItemTypesValues() []Demo2WorkItemTypes {
+	return []Demo2WorkItemTypes{
+		Demo2WorkItemTypesAnotherType,
+		Demo2WorkItemTypesType1,
+		Demo2WorkItemTypesType2,
+	}
+}
+
+// Defines values for DemoKanbanSteps.
+const (
+	DemoKanbanStepsDisabled       DemoKanbanSteps = "Disabled"
+	DemoKanbanStepsReceived       DemoKanbanSteps = "Received"
+	DemoKanbanStepsUnderReview    DemoKanbanSteps = "Under review"
+	DemoKanbanStepsWorkInProgress DemoKanbanSteps = "Work in progress"
+)
+
+// AllDemoKanbanStepsValues returns all possible values for DemoKanbanSteps.
+func AllDemoKanbanStepsValues() []DemoKanbanSteps {
+	return []DemoKanbanSteps{
+		DemoKanbanStepsDisabled,
+		DemoKanbanStepsReceived,
+		DemoKanbanStepsUnderReview,
+		DemoKanbanStepsWorkInProgress,
+	}
+}
+
 // Defines values for DemoProject2KanbanSteps.
 const (
 	DemoProject2KanbanStepsReceived DemoProject2KanbanSteps = "Received"
@@ -39,6 +73,46 @@ func AllDemoProjectKanbanStepsValues() []DemoProjectKanbanSteps {
 		DemoProjectKanbanStepsReceived,
 		DemoProjectKanbanStepsUnderReview,
 		DemoProjectKanbanStepsWorkInProgress,
+	}
+}
+
+// Defines values for DemoTwoKanbanSteps.
+const (
+	DemoTwoKanbanStepsReceived DemoTwoKanbanSteps = "Received"
+)
+
+// AllDemoTwoKanbanStepsValues returns all possible values for DemoTwoKanbanSteps.
+func AllDemoTwoKanbanStepsValues() []DemoTwoKanbanSteps {
+	return []DemoTwoKanbanSteps{
+		DemoTwoKanbanStepsReceived,
+	}
+}
+
+// Defines values for DemoTwoWorkItemTypes.
+const (
+	DemoTwoWorkItemTypesAnotherType DemoTwoWorkItemTypes = "Another type"
+	DemoTwoWorkItemTypesType1       DemoTwoWorkItemTypes = "Type 1"
+	DemoTwoWorkItemTypesType2       DemoTwoWorkItemTypes = "Type 2"
+)
+
+// AllDemoTwoWorkItemTypesValues returns all possible values for DemoTwoWorkItemTypes.
+func AllDemoTwoWorkItemTypesValues() []DemoTwoWorkItemTypes {
+	return []DemoTwoWorkItemTypes{
+		DemoTwoWorkItemTypesAnotherType,
+		DemoTwoWorkItemTypesType1,
+		DemoTwoWorkItemTypesType2,
+	}
+}
+
+// Defines values for DemoWorkItemTypes.
+const (
+	DemoWorkItemTypesType1 DemoWorkItemTypes = "Type 1"
+)
+
+// AllDemoWorkItemTypesValues returns all possible values for DemoWorkItemTypes.
+func AllDemoWorkItemTypesValues() []DemoWorkItemTypes {
+	return []DemoWorkItemTypes{
+		DemoWorkItemTypesType1,
 	}
 }
 
@@ -74,15 +148,15 @@ func AllNotificationTypeValues() []NotificationType {
 
 // Defines values for Project.
 const (
-	ProjectDemoProject  Project = "demoProject"
-	ProjectDemoProject2 Project = "demoProject2"
+	ProjectDemo    Project = "demo"
+	ProjectDemoTwo Project = "demo_two"
 )
 
 // AllProjectValues returns all possible values for Project.
 func AllProjectValues() []Project {
 	return []Project{
-		ProjectDemoProject,
-		ProjectDemoProject2,
+		ProjectDemo,
+		ProjectDemoTwo,
 	}
 }
 
@@ -175,8 +249,8 @@ type DbActivityCreateParams struct {
 	ProjectID    *int    `json:"projectID,omitempty"`
 }
 
-// DbDemoProjectWorkItem defines the model for DbDemoProjectWorkItem.
-type DbDemoProjectWorkItem struct {
+// DbDemoWorkItem defines the model for DbDemoWorkItem.
+type DbDemoWorkItem struct {
 	LastMessageAt time.Time `json:"lastMessageAt"`
 	Line          string    `json:"line"`
 	Ref           string    `json:"ref"`
@@ -214,13 +288,6 @@ type DbProject struct {
 	Name      Project   `json:"name"`
 	ProjectID int       `json:"projectID"`
 	UpdatedAt time.Time `json:"updatedAt"`
-}
-
-// DbProject2WorkItem defines the model for DbProject2WorkItem.
-type DbProject2WorkItem struct {
-	CustomDateForProject2 *time.Time  `json:"customDateForProject2"`
-	WorkItem              *DbWorkItem `json:"workItem,omitempty"`
-	WorkItemID            int         `json:"workItemID"`
 }
 
 // DbTeam defines the model for DbTeam.
@@ -343,11 +410,26 @@ type DbWorkItemMember struct {
 	User *DbUser      `json:"user,omitempty"`
 }
 
+// Demo2WorkItemTypes defines the model for Demo2WorkItemTypes.
+type Demo2WorkItemTypes string
+
+// DemoKanbanSteps defines the model for DemoKanbanSteps.
+type DemoKanbanSteps string
+
 // DemoProject2KanbanSteps defines the model for DemoProject2KanbanSteps.
 type DemoProject2KanbanSteps string
 
 // DemoProjectKanbanSteps defines the model for DemoProjectKanbanSteps.
 type DemoProjectKanbanSteps string
+
+// DemoTwoKanbanSteps defines the model for DemoTwoKanbanSteps.
+type DemoTwoKanbanSteps string
+
+// DemoTwoWorkItemTypes defines the model for DemoTwoWorkItemTypes.
+type DemoTwoWorkItemTypes string
+
+// DemoWorkItemTypes defines the model for DemoWorkItemTypes.
+type DemoWorkItemTypes string
 
 // HTTPValidationError defines the model for HTTPValidationError.
 type HTTPValidationError struct {
@@ -402,26 +484,26 @@ type ProjectConfig struct {
 	Header *[]string                   `json:"header"`
 }
 
-// RestDemoProjectWorkItemsResponse defines the model for RestDemoProjectWorkItemsResponse.
-type RestDemoProjectWorkItemsResponse struct {
-	Closed              *time.Time            `json:"closed"`
-	CreatedAt           time.Time             `json:"createdAt"`
-	DeletedAt           *time.Time            `json:"deletedAt"`
-	DemoProjectWorkItem DbDemoProjectWorkItem `json:"demoProjectWorkItem"`
-	Description         string                `json:"description"`
-	KanbanStepID        int                   `json:"kanbanStepID"`
-	Members             *[]DbUser             `json:"members"`
-	Metadata            *[]int                `json:"metadata"`
-	TargetDate          time.Time             `json:"targetDate"`
-	TeamID              int                   `json:"teamID"`
-	TimeEntries         *[]DbTimeEntry        `json:"timeEntries"`
-	Title               string                `json:"title"`
-	UpdatedAt           time.Time             `json:"updatedAt"`
-	WorkItemComments    *[]DbWorkItemComment  `json:"workItemComments"`
-	WorkItemID          int                   `json:"workItemID"`
-	WorkItemTags        *[]DbWorkItemTag      `json:"workItemTags"`
-	WorkItemType        *DbWorkItemType       `json:"workItemType,omitempty"`
-	WorkItemTypeID      int                   `json:"workItemTypeID"`
+// RestDemoWorkItemsResponse defines the model for RestDemoWorkItemsResponse.
+type RestDemoWorkItemsResponse struct {
+	Closed           *time.Time           `json:"closed"`
+	CreatedAt        time.Time            `json:"createdAt"`
+	DeletedAt        *time.Time           `json:"deletedAt"`
+	DemoWorkItem     DbDemoWorkItem       `json:"demoWorkItem"`
+	Description      string               `json:"description"`
+	KanbanStepID     int                  `json:"kanbanStepID"`
+	Members          *[]DbUser            `json:"members"`
+	Metadata         *[]int               `json:"metadata"`
+	TargetDate       time.Time            `json:"targetDate"`
+	TeamID           int                  `json:"teamID"`
+	TimeEntries      *[]DbTimeEntry       `json:"timeEntries"`
+	Title            string               `json:"title"`
+	UpdatedAt        time.Time            `json:"updatedAt"`
+	WorkItemComments *[]DbWorkItemComment `json:"workItemComments"`
+	WorkItemID       int                  `json:"workItemID"`
+	WorkItemTags     *[]DbWorkItemTag     `json:"workItemTags"`
+	WorkItemType     *DbWorkItemType      `json:"workItemType,omitempty"`
+	WorkItemTypeID   int                  `json:"workItemTypeID"`
 }
 
 // RestProjectBoardResponse defines the model for RestProjectBoardResponse.

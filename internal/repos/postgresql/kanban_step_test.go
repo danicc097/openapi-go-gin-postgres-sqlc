@@ -4,30 +4,17 @@ import (
 	"context"
 	"testing"
 
-	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
-	projectRepo := postgresql.NewProject()
 	kanbanStepRepo := postgresql.NewKanbanStep()
-
-	ctx := context.Background()
-
-	project, err := projectRepo.ByName(ctx, testPool, internalmodels.ProjectDemoProject)
-	if err != nil {
-		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
-	}
-	tcp := postgresqltestutil.RandomKanbanStepCreateParams(t, project.ProjectID)
-	kanbanStep, err := kanbanStepRepo.Create(ctx, testPool, tcp)
-	if err != nil {
-		t.Fatalf("kanbanStepRepo.Create unexpected error = %v", err)
-	}
 
 	type argsInt struct {
 		filter int
@@ -40,7 +27,7 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 		{
 			name: "kanbanStep_id",
 			args: argsInt{
-				filter: kanbanStep.KanbanStepID,
+				filter: internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived],
 				fn:     (kanbanStepRepo.ByID),
 			},
 		},
@@ -54,7 +41,7 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
-			assert.Equal(t, foundKanbanStep.KanbanStepID, kanbanStep.KanbanStepID)
+			assert.Equal(t, foundKanbanStep.KanbanStepID, internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived])
 		})
 
 		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
@@ -83,7 +70,7 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 		{
 			name: "project_id",
 			args: argsIntNotUnique{
-				filter: kanbanStep.ProjectID,
+				filter: internal.ProjectIDByName[models.ProjectDemoTwo],
 				fn:     (kanbanStepRepo.ByProject),
 			},
 		},
@@ -99,7 +86,7 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 			}
 			found := false
 			for _, ks := range foundKanbanSteps {
-				if ks.KanbanStepID == kanbanStep.KanbanStepID {
+				if ks.KanbanStepID == internal.DemoTwoKanbanStepsIDByName[models.DemoTwoKanbanStepsReceived] {
 					found = true
 					break
 				}

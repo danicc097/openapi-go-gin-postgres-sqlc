@@ -195,7 +195,7 @@
       "x-postgen-struct": "DbWorkItemType",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "DbDemoProjectWorkItem": {
+    "DbDemoWorkItem": {
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
@@ -222,7 +222,7 @@
         "reopened"
       ],
       "type": "object",
-      "x-postgen-struct": "DbDemoProjectWorkItem",
+      "x-postgen-struct": "DbDemoWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbUserAPIKey": {
@@ -425,7 +425,7 @@
       "x-postgen-struct": "ModelsProjectConfig",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "RestDemoProjectWorkItemsResponse": {
+    "RestDemoWorkItemsResponse": {
       "properties": {
         "closed": {
           "format": "date-time",
@@ -445,8 +445,8 @@
             "null"
           ]
         },
-        "demoProjectWorkItem": {
-          "$ref": "#/definitions/DbDemoProjectWorkItem"
+        "demoWorkItem": {
+          "$ref": "#/definitions/DbDemoWorkItem"
         },
         "description": {
           "type": "string"
@@ -537,10 +537,10 @@
         "createdAt",
         "updatedAt",
         "deletedAt",
-        "demoProjectWorkItem"
+        "demoWorkItem"
       ],
       "type": "object",
-      "x-postgen-struct": "RestDemoProjectWorkItemsResponse",
+      "x-postgen-struct": "RestDemoWorkItemsResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "InitializeProjectRequest": {
@@ -886,29 +886,6 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "DbProject2WorkItem": {
-      "properties": {
-        "customDateForProject2": {
-          "format": "date-time",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "workItem": {
-          "$ref": "#/definitions/DbWorkItem"
-        },
-        "workItemID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemID",
-        "customDateForProject2"
-      ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "DbWorkItem": {
       "properties": {
         "closed": {
@@ -986,8 +963,8 @@
     },
     "Project": {
       "enum": [
-        "demoProject",
-        "demoProject2"
+        "demo",
+        "demo_two"
       ],
       "type": "string",
       "description": "Existing projects",
@@ -1149,6 +1126,53 @@
     "ModelsScope": {
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Demo2WorkItemTypes": {
+      "type": "string",
+      "enum": [
+        "Type 1",
+        "Type 2",
+        "Another type"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Disabled",
+        "Received",
+        "Under review",
+        "Work in progress"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoTwoKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Received"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoTwoWorkItemTypes": {
+      "type": "string",
+      "enum": [
+        "Type 1",
+        "Type 2",
+        "Another type"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoWorkItemTypes": {
+      "type": "string",
+      "enum": [
+        "Type 1"
+      ],
+      "x-generated": "-",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -1170,8 +1194,8 @@
     "DbWorkItemType": {
       "$ref": "#/definitions/DbWorkItemType"
     },
-    "DbDemoProjectWorkItem": {
-      "$ref": "#/definitions/DbDemoProjectWorkItem"
+    "DbDemoWorkItem": {
+      "$ref": "#/definitions/DbDemoWorkItem"
     },
     "DbUserAPIKey": {
       "$ref": "#/definitions/DbUserAPIKey"
@@ -1188,8 +1212,8 @@
     "ProjectConfig": {
       "$ref": "#/definitions/ProjectConfig"
     },
-    "RestDemoProjectWorkItemsResponse": {
-      "$ref": "#/definitions/RestDemoProjectWorkItemsResponse"
+    "RestDemoWorkItemsResponse": {
+      "$ref": "#/definitions/RestDemoWorkItemsResponse"
     },
     "InitializeProjectRequest": {
       "$ref": "#/definitions/InitializeProjectRequest"
@@ -1239,9 +1263,6 @@
     "ModelsProjectConfigField": {
       "$ref": "#/definitions/ModelsProjectConfigField"
     },
-    "DbProject2WorkItem": {
-      "$ref": "#/definitions/DbProject2WorkItem"
-    },
     "DbWorkItem": {
       "$ref": "#/definitions/DbWorkItem"
     },
@@ -1286,6 +1307,21 @@
     },
     "ModelsScope": {
       "$ref": "#/definitions/ModelsScope"
+    },
+    "Demo2WorkItemTypes": {
+      "$ref": "#/definitions/Demo2WorkItemTypes"
+    },
+    "DemoKanbanSteps": {
+      "$ref": "#/definitions/DemoKanbanSteps"
+    },
+    "DemoTwoKanbanSteps": {
+      "$ref": "#/definitions/DemoTwoKanbanSteps"
+    },
+    "DemoTwoWorkItemTypes": {
+      "$ref": "#/definitions/DemoTwoWorkItemTypes"
+    },
+    "DemoWorkItemTypes": {
+      "$ref": "#/definitions/DemoWorkItemTypes"
     }
   }
 }

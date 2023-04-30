@@ -22,7 +22,7 @@ func Test_MergeConfigFields(t *testing.T) {
 	fakeProjectRepo := &repostesting.FakeProject{}
 	fakeProjectRepo.ByIDStub = func(ctx context.Context, d db.DBTX, i int) (*db.Project, error) {
 		return &db.Project{
-			Name: internalmodels.ProjectDemoProject,
+			Name: internalmodels.ProjectDemo,
 			BoardConfig: []byte(`
 		{
 			"header": ["demoProject.ref", "workItemType"],
@@ -31,14 +31,14 @@ func Test_MergeConfigFields(t *testing.T) {
 					"isEditable": true,
 					"showCollapsed": true,
 					"isVisible": true,
-					"path": "demoProjectWorkItem",
+					"path": "demoWorkItem",
 					"name": "Demo project"
 				},
 				{
 					"isEditable": true,
 					"showCollapsed": true,
 					"isVisible": true,
-					"path": "demoProjectWorkItem.ref",
+					"path": "demoWorkItem.ref",
 					"name": "Reference"
 				}
 			]
@@ -79,12 +79,12 @@ func Test_MergeConfigFields(t *testing.T) {
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "workItemID", Name: "workItemID"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "createdAt", Name: "createdAt"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "title", Name: "title"},
-					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem", Name: "Demo project"},
-					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem.workItemID", Name: "workItemID"},
-					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem.ref", Name: "Reference"},
-					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem.reopened", Name: "reopened"},
-					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem.lastMessageAt", Name: "lastMessageAt"},
-					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoProjectWorkItem.line", Name: "line"},
+					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoWorkItem", Name: "Demo project"},
+					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoWorkItem.workItemID", Name: "workItemID"},
+					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoWorkItem.ref", Name: "Reference"},
+					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoWorkItem.reopened", Name: "reopened"},
+					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoWorkItem.lastMessageAt", Name: "lastMessageAt"},
+					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "demoWorkItem.line", Name: "line"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "closed", Name: "closed"},
 				},
 			},

@@ -1067,8 +1067,14 @@ x.migrate.create() {
 
 ########################## db ##########################
 
+# psql session for the current environment.
 x.db.psql() {
   docker exec -it postgres_db_"$PROJECT_PREFIX" psql -d $POSTGRES_DB
+}
+
+# psql session for the codegen specific database.
+x.db.psql-gen() {
+  docker exec -it postgres_db_"$PROJECT_PREFIX" psql -d $GEN_POSTGRES_DB
 }
 
 # Show active and max number of connections for the current environment.

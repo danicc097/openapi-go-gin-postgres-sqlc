@@ -19,15 +19,15 @@ type UserResponse struct {
 	Projects *[]db.Project  `json:"projects,omitempty"`
 }
 
-// DemoProjectWorkItemsResponse represents an OpenAPI schema response for a ProjectBoard.
-type DemoProjectWorkItemsResponse struct {
+// DemoWorkItemsResponse represents an OpenAPI schema response for a ProjectBoard.
+type DemoWorkItemsResponse struct {
 	db.WorkItem
-	DemoProjectWorkItem db.DemoProjectWorkItem `json:"demoProjectWorkItem" required:"true"`
-	TimeEntries         *[]db.TimeEntry        `json:"timeEntries"`
-	WorkItemComments    *[]db.WorkItemComment  `json:"workItemComments"`
-	Members             *[]db.User             `json:"members"`
-	WorkItemTags        *[]db.WorkItemTag      `json:"workItemTags"`
-	WorkItemType        *db.WorkItemType       `json:"workItemType"`
+	DemoWorkItem     db.DemoWorkItem       `json:"demoWorkItem" required:"true"`
+	TimeEntries      *[]db.TimeEntry       `json:"timeEntries"`
+	WorkItemComments *[]db.WorkItemComment `json:"workItemComments"`
+	Members          *[]db.User            `json:"members"`
+	WorkItemTags     *[]db.WorkItemTag     `json:"workItemTags"`
+	WorkItemType     *db.WorkItemType      `json:"workItemType"`
 }
 
 // ProjectBoardResponse represents an OpenAPI schema response for a ProjectBoard.
