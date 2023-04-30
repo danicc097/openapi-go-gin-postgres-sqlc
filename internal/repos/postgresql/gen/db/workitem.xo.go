@@ -27,13 +27,13 @@ type WorkItem struct {
 	UpdatedAt      time.Time  `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
 	DeletedAt      *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
 
-	DemoTwoWorkItem  *DemoTwoWorkItem   `json:"-" db:"demo_two_work_item" openapi-go:"ignore"` // O2O
-	DemoWorkItem     *DemoWorkItem      `json:"-" db:"demo_work_item" openapi-go:"ignore"`     // O2O
-	TimeEntries      *[]TimeEntry       `json:"-" db:"time_entries" openapi-go:"ignore"`       // O2M
-	WorkItemComments *[]WorkItemComment `json:"-" db:"work_item_comments" openapi-go:"ignore"` // O2M
-	Members          *[]WorkItem_Member `json:"-" db:"members" openapi-go:"ignore"`            // M2M
-	WorkItemTags     *[]WorkItemTag     `json:"-" db:"work_item_tags" openapi-go:"ignore"`     // M2M
-	WorkItemType     *WorkItemType      `json:"-" db:"work_item_type" openapi-go:"ignore"`     // O2O
+	DemoTwoWorkItemJoin  *DemoTwoWorkItem   `json:"-" db:"demo_two_work_item" openapi-go:"ignore"` // O2O
+	DemoWorkItemJoin     *DemoWorkItem      `json:"-" db:"demo_work_item" openapi-go:"ignore"`     // O2O
+	TimeEntriesJoin      *[]TimeEntry       `json:"-" db:"time_entries" openapi-go:"ignore"`       // O2M
+	WorkItemCommentsJoin *[]WorkItemComment `json:"-" db:"work_item_comments" openapi-go:"ignore"` // O2M
+	MembersJoin          *[]WorkItem_Member `json:"-" db:"members" openapi-go:"ignore"`            // M2M
+	WorkItemTagsJoin     *[]WorkItemTag     `json:"-" db:"work_item_tags" openapi-go:"ignore"`     // M2M
+	WorkItemTypeJoin     *WorkItemType      `json:"-" db:"work_item_type" openapi-go:"ignore"`     // O2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -168,6 +168,7 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newwi._exists = true
 	*wi = newwi
 
@@ -315,13 +316,13 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then row(demo_two_work_items.*) end) as demo_two_work_item,
-(case when $2::boolean = true then row(demo_work_items.*) end) as demo_work_item,
+(case when $1::boolean = true and row(demo_two_work_items.*) is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true and row(demo_work_items.*) is not null then row(demo_work_items.*) end) as demo_work_item,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
+(case when $7::boolean = true and row(work_item_types.*) is not null then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
@@ -413,13 +414,13 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then row(demo_two_work_items.*) end) as demo_two_work_item,
-(case when $2::boolean = true then row(demo_work_items.*) end) as demo_work_item,
+(case when $1::boolean = true and row(demo_two_work_items.*) is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true and row(demo_work_items.*) is not null then row(demo_work_items.*) end) as demo_work_item,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
+(case when $7::boolean = true and row(work_item_types.*) is not null then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
@@ -482,6 +483,7 @@ left join work_item_types on work_item_types.work_item_type_id = work_items.work
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
 	}
 	wi._exists = true
+
 	return &wi, nil
 }
 
@@ -509,13 +511,13 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true then row(demo_two_work_items.*) end) as demo_two_work_item,
-(case when $2::boolean = true then row(demo_work_items.*) end) as demo_work_item,
+(case when $1::boolean = true and row(demo_two_work_items.*) is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true and row(demo_work_items.*) is not null then row(demo_work_items.*) end) as demo_work_item,
 (case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
 (case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags,
-(case when $7::boolean = true then row(work_item_types.*) end) as work_item_type `+
+(case when $7::boolean = true and row(work_item_types.*) is not null then row(work_item_types.*) end) as work_item_type `+
 		`FROM public.work_items `+
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id

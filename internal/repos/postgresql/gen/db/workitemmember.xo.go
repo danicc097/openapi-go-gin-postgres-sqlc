@@ -247,6 +247,7 @@ work_item_member.role ` +
 		return nil, logerror(fmt.Errorf("work_item_member/WorkItemMemberByWorkItemIDMember/pgx.CollectOneRow: %w", err))
 	}
 	wim._exists = true
+
 	return &wim, nil
 }
 

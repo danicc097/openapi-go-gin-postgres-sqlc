@@ -12,6 +12,8 @@ repos:
         always_run: true
         verbose: true
         files: ''
+
+      # don't want this at all.
       # - id: gen
       #   name: gen
       #   entry: bin/project gen

@@ -21,8 +21,8 @@ type Team struct {
 	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
 	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
-	TimeEntries *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
-	Users       *[]User      `json:"-" db:"users" openapi-go:"ignore"`        // M2M
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
+	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`        // M2M
 	// xo fields
 	_exists, _deleted bool
 }
@@ -117,6 +117,7 @@ func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newt._exists = true
 	*t = newt
 
@@ -262,6 +263,7 @@ left join (
 		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
 	t._exists = true
+
 	return &t, nil
 }
 
@@ -440,6 +442,7 @@ left join (
 		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/pgx.CollectOneRow: %w", err))
 	}
 	t._exists = true
+
 	return &t, nil
 }
 

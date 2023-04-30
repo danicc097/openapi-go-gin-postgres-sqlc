@@ -20,7 +20,7 @@ type UserAPIKey struct {
 	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on" required:"true"` // expires_on
 	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true"`       // user_id
 
-	User *User `json:"-" db:"user" openapi-go:"ignore"` // O2O
+	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -110,6 +110,7 @@ func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newuak._exists = true
 	*uak = newuak
 
@@ -216,7 +217,7 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true then row(users.*) end) as user ` +
+(case when $1::boolean = true and row(users.*) is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +
@@ -235,6 +236,7 @@ left join users on users.user_id = user_api_keys.user_id` +
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/pgx.CollectOneRow: %w", err))
 	}
 	uak._exists = true
+
 	return &uak, nil
 }
 
@@ -254,7 +256,7 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true then row(users.*) end) as user ` +
+(case when $1::boolean = true and row(users.*) is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +
@@ -273,6 +275,7 @@ left join users on users.user_id = user_api_keys.user_id` +
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/pgx.CollectOneRow: %w", err))
 	}
 	uak._exists = true
+
 	return &uak, nil
 }
 
@@ -292,7 +295,7 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true then row(users.*) end) as user ` +
+(case when $1::boolean = true and row(users.*) is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
 		`-- O2O join generated from "user_api_keys_user_id_fkey"
 left join users on users.user_id = user_api_keys.user_id` +
@@ -311,6 +314,7 @@ left join users on users.user_id = user_api_keys.user_id` +
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/pgx.CollectOneRow: %w", err))
 	}
 	uak._exists = true
+
 	return &uak, nil
 }
 

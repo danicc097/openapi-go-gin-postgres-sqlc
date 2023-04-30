@@ -33,10 +33,10 @@ type User struct {
 	UpdatedAt                time.Time     `json:"-" db:"updated_at"`                                                        // updated_at
 	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at" required:"true"`                                // deleted_at
 
-	TimeEntries *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
-	UserAPIKey  *UserAPIKey  `json:"-" db:"user_api_key" openapi-go:"ignore"` // O2O
-	Teams       *[]Team      `json:"-" db:"teams" openapi-go:"ignore"`        // M2M
-	WorkItems   *[]WorkItem  `json:"-" db:"work_items" openapi-go:"ignore"`   // M2M
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
+	UserAPIKeyJoin  *UserAPIKey  `json:"-" db:"user_api_key" openapi-go:"ignore"` // O2O
+	TeamsJoin       *[]Team      `json:"-" db:"teams" openapi-go:"ignore"`        // M2M
+	WorkItemsJoin   *[]WorkItem  `json:"-" db:"work_items" openapi-go:"ignore"`   // M2M
 	// xo fields
 	_exists, _deleted bool
 }
@@ -159,6 +159,7 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newu._exists = true
 	*u = newu
 
@@ -310,7 +311,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $2::boolean = true and row(user_api_keys.*) is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $3::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
 		`FROM public.users `+
@@ -393,7 +394,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $2::boolean = true and row(user_api_keys.*) is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $3::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
 		`FROM public.users `+
@@ -476,7 +477,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $2::boolean = true and row(user_api_keys.*) is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $3::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
 		`FROM public.users `+
@@ -526,6 +527,7 @@ left join (
 		return nil, logerror(fmt.Errorf("users/UserByEmail/pgx.CollectOneRow: %w", err))
 	}
 	u._exists = true
+
 	return &u, nil
 }
 
@@ -557,7 +559,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $2::boolean = true and row(user_api_keys.*) is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $3::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
 		`FROM public.users `+
@@ -607,6 +609,7 @@ left join (
 		return nil, logerror(fmt.Errorf("users/UserByExternalID/pgx.CollectOneRow: %w", err))
 	}
 	u._exists = true
+
 	return &u, nil
 }
 
@@ -638,7 +641,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $2::boolean = true and row(user_api_keys.*) is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $3::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
 		`FROM public.users `+
@@ -688,6 +691,7 @@ left join (
 		return nil, logerror(fmt.Errorf("users/UserByUserID/pgx.CollectOneRow: %w", err))
 	}
 	u._exists = true
+
 	return &u, nil
 }
 
@@ -719,7 +723,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $2::boolean = true and row(user_api_keys.*) is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $3::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
 		`FROM public.users `+
@@ -802,7 +806,7 @@ users.created_at,
 users.updated_at,
 users.deleted_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then row(user_api_keys.*) end) as user_api_key,
+(case when $2::boolean = true and row(user_api_keys.*) is not null then row(user_api_keys.*) end) as user_api_key,
 (case when $3::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
 		`FROM public.users `+
@@ -852,6 +856,7 @@ left join (
 		return nil, logerror(fmt.Errorf("users/UserByUsername/pgx.CollectOneRow: %w", err))
 	}
 	u._exists = true
+
 	return &u, nil
 }
 

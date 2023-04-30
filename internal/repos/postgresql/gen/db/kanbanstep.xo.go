@@ -97,6 +97,7 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newks._exists = true
 	*ks = newks
 
@@ -223,6 +224,7 @@ kanban_steps.time_trackable ` +
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByKanbanStepID/pgx.CollectOneRow: %w", err))
 	}
 	ks._exists = true
+
 	return &ks, nil
 }
 
@@ -303,6 +305,7 @@ kanban_steps.time_trackable ` +
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDName/pgx.CollectOneRow: %w", err))
 	}
 	ks._exists = true
+
 	return &ks, nil
 }
 
@@ -383,6 +386,7 @@ kanban_steps.time_trackable ` +
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDNameStepOrder/pgx.CollectOneRow: %w", err))
 	}
 	ks._exists = true
+
 	return &ks, nil
 }
 
@@ -545,6 +549,7 @@ kanban_steps.time_trackable ` +
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDStepOrder/pgx.CollectOneRow: %w", err))
 	}
 	ks._exists = true
+
 	return &ks, nil
 }
 

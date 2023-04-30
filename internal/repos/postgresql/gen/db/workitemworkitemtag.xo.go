@@ -143,6 +143,7 @@ work_item_work_item_tag.work_item_id ` +
 		return nil, logerror(fmt.Errorf("work_item_work_item_tag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/pgx.CollectOneRow: %w", err))
 	}
 	wiwit._exists = true
+
 	return &wiwit, nil
 }
 

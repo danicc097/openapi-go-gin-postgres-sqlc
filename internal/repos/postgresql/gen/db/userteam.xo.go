@@ -144,6 +144,7 @@ user_team.user_id ` +
 		return nil, logerror(fmt.Errorf("user_team/UserTeamByUserIDTeamID/pgx.CollectOneRow: %w", err))
 	}
 	ut._exists = true
+
 	return &ut, nil
 }
 

@@ -77,8 +77,6 @@ func main() {
 	}
 
 	var rows pgx.Rows
-	var b []byte
-	println(b)
 
 	//
 	//
@@ -116,15 +114,14 @@ func main() {
 	// 	}
 	// }
 
-	format.PrintJSON(user)
-
+	fmt.Printf("user: %+v\n", user)
 	// test correct queries
 	key := user.UserID.String() + "-key-hashed"
 	uak, err := db.UserAPIKeyByAPIKey(context.Background(), pool, key, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
 	if err != nil {
 		log.Fatalf("UserAPIKeyByAPIKey: %v", err)
 	}
-	fmt.Printf("found user from its api key u: %v#\n", uak.User)
+	fmt.Printf("found user from its api key u: %v#\n", uak.UserJoin)
 
 	getUserNotificationsByUserID := SELECT(
 		UserNotifications.AllColumns,

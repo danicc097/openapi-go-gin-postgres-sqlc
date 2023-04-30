@@ -18,7 +18,7 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description" required:"true"`        // description
 	Color         string `json:"color" db:"color" required:"true"`                    // color
 
-	WorkItems *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
+	WorkItemsJoin *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
 	// xo fields
 	_exists, _deleted bool
 }
@@ -93,6 +93,7 @@ func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newwit._exists = true
 	*wit = newwit
 
@@ -227,6 +228,7 @@ left join (
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
 	wit._exists = true
+
 	return &wit, nil
 }
 
@@ -372,6 +374,7 @@ left join (
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByWorkItemTagID/pgx.CollectOneRow: %w", err))
 	}
 	wit._exists = true
+
 	return &wit, nil
 }
 

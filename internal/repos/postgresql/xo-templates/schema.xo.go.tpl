@@ -120,6 +120,7 @@ generated queries from indexes
 
 	// run
 	// logf(sqlstr, {{ params $i.Fields false }})
+
 {{- if $i.IsUnique }}
   rows, err := {{ db "Query" $i }}
 	if err != nil {
@@ -132,7 +133,7 @@ generated queries from indexes
 
 	{{- if $i.Table.PrimaryKeys }}
   {{ short $i.Table }}._exists = true
-	{{ end -}}
+	{{ end }}
 
 	return &{{ short $i.Table }}, nil
 {{- else }}
@@ -276,7 +277,7 @@ type {{ $t.GoName }}UpdateParams struct {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/pgx.CollectOneRow: %w", err))
 	}
-{{- end }}
+{{ end }}
 	new{{ short $t }}._exists = true
   *{{ short $t }} = new{{ short $t }}
 

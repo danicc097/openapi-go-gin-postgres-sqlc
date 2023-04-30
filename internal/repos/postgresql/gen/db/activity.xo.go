@@ -18,7 +18,7 @@ type Activity struct {
 	Description  string `json:"description" db:"description" required:"true"`    // description
 	IsProductive bool   `json:"isProductive" db:"is_productive" required:"true"` // is_productive
 
-	TimeEntries *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
 	// xo fields
 	_exists, _deleted bool
 }
@@ -93,6 +93,7 @@ func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newa._exists = true
 	*a = newa
 
@@ -226,6 +227,7 @@ left join (
 		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
 	a._exists = true
+
 	return &a, nil
 }
 
@@ -368,6 +370,7 @@ left join (
 		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/pgx.CollectOneRow: %w", err))
 	}
 	a._exists = true
+
 	return &a, nil
 }
 

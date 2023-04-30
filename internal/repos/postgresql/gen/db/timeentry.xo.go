@@ -120,6 +120,7 @@ func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newte._exists = true
 	*te = newte
 
@@ -247,6 +248,7 @@ time_entries.duration_minutes ` +
 		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/pgx.CollectOneRow: %w", err))
 	}
 	te._exists = true
+
 	return &te, nil
 }
 

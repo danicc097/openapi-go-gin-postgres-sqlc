@@ -88,6 +88,7 @@ func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Movie/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newm._exists = true
 	*m = newm
 
@@ -211,5 +212,6 @@ movies.synopsis ` +
 		return nil, logerror(fmt.Errorf("movies/MovieByMovieID/pgx.CollectOneRow: %w", err))
 	}
 	m._exists = true
+
 	return &m, nil
 }

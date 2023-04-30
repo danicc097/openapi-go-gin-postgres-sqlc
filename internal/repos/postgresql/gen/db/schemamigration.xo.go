@@ -205,5 +205,6 @@ schema_migrations.dirty ` +
 		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/pgx.CollectOneRow: %w", err))
 	}
 	sm._exists = true
+
 	return &sm, nil
 }

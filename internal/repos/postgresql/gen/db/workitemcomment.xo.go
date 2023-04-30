@@ -114,6 +114,7 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newwic._exists = true
 	*wic = newwic
 
@@ -239,6 +240,7 @@ work_item_comments.updated_at ` +
 		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/pgx.CollectOneRow: %w", err))
 	}
 	wic._exists = true
+
 	return &wic, nil
 }
 

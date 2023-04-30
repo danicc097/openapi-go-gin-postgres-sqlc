@@ -1565,6 +1565,7 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	var extraStructs []string
 
 	buf.WriteString(fmt.Sprintf("type %sJoins struct {\n", name))
+
 	for _, c := range cc {
 		var joinName string
 		switch c.Cardinality {
@@ -1577,7 +1578,6 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 
 			if c.ColumnName != c.RefColumnName {
 				// differs from actual column, e.g. having member UUID in lookup instead of user_id
-				lookupName = c.ColumnName
 
 				originalStruct := camelExport(inflector.Singularize(strings.TrimSuffix(c.RefColumnName, "_id")))
 				tag := fmt.Sprintf("`json:\"%s\" db:\"%s\"`", camel(originalStruct), inflector.Pluralize(strings.TrimSuffix(c.RefColumnName, "_id")))
@@ -2252,7 +2252,7 @@ func (f *Funcs) sqlstr_soft_delete(v interface{}) []string {
 const (
 	M2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.LookupJoinTablePKSuffix}}.__{{.LookupJoinTablePKAgg}}, '{}') end) as {{.LookupJoinTablePKSuffix}}`
 	O2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}`
-	O2OSelect = `(case when {{.Nth}}::boolean = true then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
+	O2OSelect = `(case when {{.Nth}}::boolean = true and row({{.JoinTable}}.*) is not null then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}` // need to use singular value as json tag as well
 )
 
 const (
@@ -2802,14 +2802,13 @@ func (f *Funcs) join_fields(sqlname string, constraints []Constraint, tables Tab
 
 			if c.ColumnName != c.RefColumnName {
 				// differs from actual column, e.g. having member UUID in lookup instead of user_id
-				lookupName = c.ColumnName
 				goName = camelExport(singularize(lookupName))
 				// prevent name clashing
 				typ = camelExport(singularize(sqlname)) + "_" + camelExport(singularize(lookupName))
 			}
 
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Pluralize(lookupName))
-			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
+			buf.WriteString(fmt.Sprintf("\t%sJoin *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
 			// TODO revisit. O2M and M2O from different viewpoints.
 		case O2M, M2O:
 			if c.RefTableName != sqlname {
@@ -2818,19 +2817,19 @@ func (f *Funcs) join_fields(sqlname string, constraints []Constraint, tables Tab
 			goName = camelExport(singularize(c.TableName))
 			typ = goName
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Pluralize(c.TableName))
-			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
+			buf.WriteString(fmt.Sprintf("\t%sJoin *[]%s %s // %s\n", inflector.Pluralize(goName), typ, tag, c.Cardinality))
 		case O2O:
 			if c.TableName == sqlname {
 				goName = camelExport(singularize(c.RefTableName))
 				typ = goName
 				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Singularize(c.RefTableName))
-				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, c.Cardinality))
+				buf.WriteString(fmt.Sprintf("\t%sJoin *%s %s // %s\n", goName, typ, tag, c.Cardinality))
 			}
 			if c.RefTableName == sqlname {
 				goName = camelExport(singularize(c.TableName))
 				typ = goName
 				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Singularize(c.TableName))
-				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, c.Cardinality))
+				buf.WriteString(fmt.Sprintf("\t%sJoin *%s %s // %s\n", goName, typ, tag, c.Cardinality))
 			}
 		default:
 			continue

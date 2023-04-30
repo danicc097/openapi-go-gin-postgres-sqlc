@@ -23,11 +23,11 @@ type Project struct {
 	CreatedAt          time.Time      `json:"createdAt" db:"created_at" required:"true"`                         // created_at
 	UpdatedAt          time.Time      `json:"updatedAt" db:"updated_at" required:"true"`                         // updated_at
 
-	Activities    *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`      // O2M
-	KanbanSteps   *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`    // O2M
-	Teams         *[]Team         `json:"-" db:"teams" openapi-go:"ignore"`           // O2M
-	WorkItemTags  *[]WorkItemTag  `json:"-" db:"work_item_tags" openapi-go:"ignore"`  // O2M
-	WorkItemTypes *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"` // O2M
+	ActivitiesJoin    *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`      // O2M
+	KanbanStepsJoin   *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`    // O2M
+	TeamsJoin         *[]Team         `json:"-" db:"teams" openapi-go:"ignore"`           // O2M
+	WorkItemTagsJoin  *[]WorkItemTag  `json:"-" db:"work_item_tags" openapi-go:"ignore"`  // O2M
+	WorkItemTypesJoin *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"` // O2M
 	// xo fields
 	_exists, _deleted bool
 }
@@ -127,6 +127,7 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newp._exists = true
 	*p = newp
 
@@ -302,6 +303,7 @@ left join (
 		return nil, logerror(fmt.Errorf("projects/ProjectByName/pgx.CollectOneRow: %w", err))
 	}
 	p._exists = true
+
 	return &p, nil
 }
 
@@ -390,6 +392,7 @@ left join (
 		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/pgx.CollectOneRow: %w", err))
 	}
 	p._exists = true
+
 	return &p, nil
 }
 
@@ -478,5 +481,6 @@ left join (
 		return nil, logerror(fmt.Errorf("projects/ProjectByWorkItemsTableName/pgx.CollectOneRow: %w", err))
 	}
 	p._exists = true
+
 	return &p, nil
 }
