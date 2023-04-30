@@ -9,22 +9,22 @@ import (
 	"go.uber.org/zap"
 )
 
-type WorkItemType struct {
+type WorkItemTag struct {
 	logger  *zap.Logger
-	witRepo repos.WorkItemType
+	witRepo repos.WorkItemTag
 }
 
-// NewWorkItemType returns a new WorkItemType service.
-func NewWorkItemType(logger *zap.Logger, witRepo repos.WorkItemType) *WorkItemType {
-	return &WorkItemType{
+// NewWorkItemTag returns a new WorkItemTag service.
+func NewWorkItemTag(logger *zap.Logger, witRepo repos.WorkItemTag) *WorkItemTag {
+	return &WorkItemTag{
 		logger:  logger,
 		witRepo: witRepo,
 	}
 }
 
 // ByID gets a work item tag by ID.
-func (wit *WorkItemType) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error) {
-	defer newOTELSpan(ctx, "WorkItemType.ByID").End()
+func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error) {
+	defer newOTELSpan(ctx, "WorkItemTag.ByID").End()
 
 	witObj, err := wit.witRepo.ByID(ctx, d, id)
 	if err != nil {
@@ -35,8 +35,8 @@ func (wit *WorkItemType) ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkI
 }
 
 // ByName gets a work item tag by name.
-func (wit *WorkItemType) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemType, error) {
-	defer newOTELSpan(ctx, "WorkItemType.ByName").End()
+func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemTag, error) {
+	defer newOTELSpan(ctx, "WorkItemTag.ByName").End()
 
 	witObj, err := wit.witRepo.ByName(ctx, d, name, projectID)
 	if err != nil {
@@ -47,8 +47,8 @@ func (wit *WorkItemType) ByName(ctx context.Context, d db.DBTX, name string, pro
 }
 
 // Create creates a new work item tag.
-func (wit *WorkItemType) Create(ctx context.Context, d db.DBTX, params db.WorkItemTypeCreateParams) (*db.WorkItemType, error) {
-	defer newOTELSpan(ctx, "WorkItemType.Create").End()
+func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
+	defer newOTELSpan(ctx, "WorkItemTag.Create").End()
 
 	witObj, err := wit.witRepo.Create(ctx, d, params)
 	if err != nil {
@@ -59,8 +59,8 @@ func (wit *WorkItemType) Create(ctx context.Context, d db.DBTX, params db.WorkIt
 }
 
 // Update updates an existing work item tag.
-func (wit *WorkItemType) Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTypeUpdateParams) (*db.WorkItemType, error) {
-	defer newOTELSpan(ctx, "WorkItemType.Update").End()
+func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
+	defer newOTELSpan(ctx, "WorkItemTag.Update").End()
 
 	witObj, err := wit.witRepo.Update(ctx, d, id, params)
 	if err != nil {
@@ -71,8 +71,8 @@ func (wit *WorkItemType) Update(ctx context.Context, d db.DBTX, id int, params d
 }
 
 // Delete deletes a work item tag by ID.
-func (wit *WorkItemType) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error) {
-	defer newOTELSpan(ctx, "WorkItemType.Delete").End()
+func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error) {
+	defer newOTELSpan(ctx, "WorkItemTag.Delete").End()
 
 	witObj, err := wit.witRepo.Delete(ctx, d, id)
 	if err != nil {

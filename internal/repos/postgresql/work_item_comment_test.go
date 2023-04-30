@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
@@ -15,30 +15,20 @@ import (
 func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
-	projectRepo := postgresql.NewProject()
-	workItemRepo := postgresql.NewDemoProjectWorkItem()
 	workItemCommentRepo := postgresql.NewWorkItemComment()
 
 	ctx := context.Background()
 
-	project, err := projectRepo.ByName(ctx, testPool, internalmodels.ProjectDemoProject)
-	if err != nil {
-		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
-	}
+	projectID := internal.ProjectIDByName[internalmodels.ProjectDemo]
+	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, projectID)
 
-	workItemType, _ := postgresqltestutil.NewRandomWorkItemType(t, testPool, project.ProjectID)
-	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
-	kanbanStep, _ := postgresqltestutil.NewRandomKanbanStep(t, testPool, project.ProjectID)
+	kanbanStepID := internal.DemoKanbanStepsIDByName[internalmodels.DemoKanbanStepsReceived]
+	workItemTypeID := internal.DemoWorkItemTypesIDByName[internalmodels.DemoWorkItemTypesType1]
+	demoWorkItem, _ := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, projectID, kanbanStepID, workItemTypeID, team.TeamID)
+
 	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
-	dpwi, err := workItemRepo.Create(ctx, testPool, repos.DemoProjectWorkItemCreateParams{
-		DemoProject: postgresqltestutil.RandomDemoProjectWorkItemCreateParams(t),
-		Base:        postgresqltestutil.RandomWorkItemCreateParams(t, kanbanStep.KanbanStepID, workItemType.WorkItemTypeID, team.TeamID),
-	})
-	if err != nil {
-		t.Fatalf("workItemRepo.Create unexpected error = %v", err)
-	}
-	wiccp := postgresqltestutil.RandomWorkItemCommentCreateParams(t, dpwi.WorkItemID, user.UserID)
+	wiccp := postgresqltestutil.RandomWorkItemCommentCreateParams(t, demoWorkItem.WorkItemID, user.UserID)
 
 	workItemComment, err := workItemCommentRepo.Create(ctx, testPool, wiccp)
 	if err != nil {

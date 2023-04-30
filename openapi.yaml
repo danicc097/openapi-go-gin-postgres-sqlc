@@ -315,7 +315,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/RestDemoProjectWorkItemsResponse'
+                  - $ref: '#/components/schemas/RestDemoWorkItemsResponse'
       tags:
         - project
 components:
@@ -476,7 +476,7 @@ components:
         - color
       type: object
       x-postgen-struct: DbWorkItemType
-    DbDemoProjectWorkItem: # Generated from internal structs. DO NOT EDIT.
+    DbDemoWorkItem: # Generated from internal structs. DO NOT EDIT.
       properties:
         lastMessageAt:
           format: date-time
@@ -496,7 +496,7 @@ components:
         - lastMessageAt
         - reopened
       type: object
-      x-postgen-struct: DbDemoProjectWorkItem
+      x-postgen-struct: DbDemoWorkItem
     DbUserAPIKey: # Generated from internal structs. DO NOT EDIT.
       properties:
         apiKey:
@@ -628,7 +628,7 @@ components:
         - fields
       type: object
       x-postgen-struct: ModelsProjectConfig
-    RestDemoProjectWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
+    RestDemoWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         closed:
           format: date-time
@@ -641,8 +641,8 @@ components:
           format: date-time
           nullable: true
           type: string
-        demoProjectWorkItem:
-          $ref: '#/components/schemas/DbDemoProjectWorkItem'
+        demoWorkItem:
+          $ref: '#/components/schemas/DbDemoWorkItem'
         description:
           type: string
         kanbanStepID:
@@ -702,9 +702,9 @@ components:
         - createdAt
         - updatedAt
         - deletedAt
-        - demoProjectWorkItem
+        - demoWorkItem
       type: object
-      x-postgen-struct: RestDemoProjectWorkItemsResponse
+      x-postgen-struct: RestDemoWorkItemsResponse
     InitializeProjectRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         activities:
@@ -949,20 +949,6 @@ components:
         - path
         - name
       type: object
-    DbProject2WorkItem: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        customDateForProject2:
-          format: date-time
-          nullable: true
-          type: string
-        workItem:
-          $ref: '#/components/schemas/DbWorkItem'
-        workItemID:
-          type: integer
-      required:
-        - workItemID
-        - customDateForProject2
-      type: object
     DbWorkItem: # Generated from internal structs. DO NOT EDIT.
       properties:
         closed:
@@ -1017,8 +1003,8 @@ components:
       x-postgen-struct: DbWorkItem
     Project: # Generated from projects table. DO NOT EDIT.
       enum:
-        - demoProject
-        - demoProject2
+        - demo
+        - demo_two
       type: string
       description: Existing projects
       x-generated: '-'
@@ -1117,6 +1103,38 @@ components:
       x-generated: '-'
     ModelsScope: # Generated from internal structs. DO NOT EDIT.
       type: string
+    Demo2WorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
+      type: string
+      enum:
+        - Type 1
+        - Type 2
+        - Another type
+      x-generated: '-'
+    DemoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
+      type: string
+      enum:
+        - Disabled
+        - Received
+        - Under review
+        - Work in progress
+      x-generated: '-'
+    DemoTwoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
+      type: string
+      enum:
+        - Received
+      x-generated: '-'
+    DemoTwoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
+      type: string
+      enum:
+        - Type 1
+        - Type 2
+        - Another type
+      x-generated: '-'
+    DemoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
+      type: string
+      enum:
+        - Type 1
+      x-generated: '-'
   examples:
     User:
       value:

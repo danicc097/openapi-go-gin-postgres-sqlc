@@ -8,25 +8,25 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
-// DemoProjectWorkItem represents the repository used for interacting with DemoProjectWorkItem records.
-type DemoProjectWorkItem struct {
+// DemoWorkItem represents the repository used for interacting with DemoWorkItem records.
+type DemoWorkItem struct {
 	q *db.Queries
 }
 
-// NewDemoProjectWorkItem instantiates the DemoProjectWorkItem repository.
-func NewDemoProjectWorkItem() *DemoProjectWorkItem {
-	return &DemoProjectWorkItem{
+// NewDemoWorkItem instantiates the DemoWorkItem repository.
+func NewDemoWorkItem() *DemoWorkItem {
+	return &DemoWorkItem{
 		q: db.New(),
 	}
 }
 
-var _ repos.DemoProjectWorkItem = (*DemoProjectWorkItem)(nil)
+var _ repos.DemoWorkItem = (*DemoWorkItem)(nil)
 
-func (u *DemoProjectWorkItem) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.DemoProjectWorkItemSelectConfigOption) (*db.DemoProjectWorkItem, error) {
-	return db.DemoProjectWorkItemByWorkItemID(ctx, d, id, opts...)
+func (u *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.DemoWorkItemSelectConfigOption) (*db.DemoWorkItem, error) {
+	return db.DemoWorkItemByWorkItemID(ctx, d, id, opts...)
 }
 
-func (u *DemoProjectWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoProjectWorkItemCreateParams) (*db.DemoProjectWorkItem, error) {
+func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoWorkItemCreateParams) (*db.DemoWorkItem, error) {
 	workItem := &db.WorkItem{
 		Title:          params.Base.Title,
 		Description:    params.Base.Description,
@@ -43,7 +43,7 @@ func (u *DemoProjectWorkItem) Create(ctx context.Context, d db.DBTX, params repo
 		return nil, fmt.Errorf("could not save workItem: %w", parseErrorDetail(err))
 	}
 
-	demoProjectWorkItem := &db.DemoProjectWorkItem{
+	demoWorkItem := &db.DemoWorkItem{
 		WorkItemID:    workItem.WorkItemID,
 		Ref:           params.DemoProject.Ref,
 		Line:          params.DemoProject.Line,
@@ -51,22 +51,22 @@ func (u *DemoProjectWorkItem) Create(ctx context.Context, d db.DBTX, params repo
 		Reopened:      params.DemoProject.Reopened,
 	}
 
-	demoProjectWorkItem, err = demoProjectWorkItem.Save(ctx, d)
+	demoWorkItem, err = demoWorkItem.Save(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not save demoProjectWorkItem: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not save demoWorkItem: %w", parseErrorDetail(err))
 	}
 
-	demoProjectWorkItem.WorkItem = workItem
+	demoWorkItem.WorkItem = workItem
 
-	return demoProjectWorkItem, nil
+	return demoWorkItem, nil
 }
 
-func (u *DemoProjectWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoProjectWorkItemUpdateParams) (*db.DemoProjectWorkItem, error) {
-	demoProjectWorkItem, err := u.ByID(ctx, d, id)
+func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoWorkItemUpdateParams) (*db.DemoWorkItem, error) {
+	demoWorkItem, err := u.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get demoProjectWorkItem by id: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get demoWorkItem by id: %w", parseErrorDetail(err))
 	}
-	workItem, err := demoProjectWorkItem.FKWorkItem_WorkItemID(ctx, d)
+	workItem, err := demoWorkItem.FKWorkItem_WorkItemID(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not get associated workItem: %w", parseErrorDetail(err))
 	}
@@ -76,25 +76,25 @@ func (u *DemoProjectWorkItem) Update(ctx context.Context, d db.DBTX, id int64, p
 	}
 
 	if params.DemoProject != nil {
-		updateEntityWithParams(demoProjectWorkItem, params.DemoProject)
+		updateEntityWithParams(demoWorkItem, params.DemoProject)
 	}
 
 	workItem, err = workItem.Update(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not update workItem: %w", parseErrorDetail(err))
 	}
-	demoProjectWorkItem, err = demoProjectWorkItem.Update(ctx, d)
+	demoWorkItem, err = demoWorkItem.Update(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not update demoProjectWorkItem: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not update demoWorkItem: %w", parseErrorDetail(err))
 	}
 
-	demoProjectWorkItem.WorkItem = workItem
+	demoWorkItem.WorkItem = workItem
 
-	return demoProjectWorkItem, err
+	return demoWorkItem, err
 }
 
-func (u *DemoProjectWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.DemoProjectWorkItem, error) {
-	workItem, err := db.WorkItemByWorkItemID(ctx, d, id, db.WithWorkItemJoin(db.WorkItemJoins{DemoProjectWorkItem: true}))
+func (u *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.DemoWorkItem, error) {
+	workItem, err := db.WorkItemByWorkItemID(ctx, d, id, db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItem: %w", parseErrorDetail(err))
 	}
@@ -104,5 +104,5 @@ func (u *DemoProjectWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (
 		return nil, fmt.Errorf("could not delete workItem: %w", parseErrorDetail(err))
 	}
 
-	return workItem.DemoProjectWorkItem, err
+	return workItem.DemoWorkItem, err
 }

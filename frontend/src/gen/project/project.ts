@@ -23,7 +23,7 @@ import type {
   DbProject,
   ProjectConfig,
   RestProjectBoardResponse,
-  RestDemoProjectWorkItemsResponse,
+  RestDemoWorkItemsResponse,
   GetProjectWorkitemsParams,
 } from '.././model'
 
@@ -413,7 +413,7 @@ export const getProjectWorkitems = (
   id: number,
   params?: GetProjectWorkitemsParams,
   options?: AxiosRequestConfig,
-): Promise<AxiosResponse<RestDemoProjectWorkItemsResponse>> => {
+): Promise<AxiosResponse<RestDemoWorkItemsResponse>> => {
   return axios.get(`/project/${id}/workitems`, {
     ...options,
     params: { ...params, ...options?.params },

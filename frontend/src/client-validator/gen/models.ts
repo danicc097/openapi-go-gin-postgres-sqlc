@@ -9,7 +9,7 @@
 /**
  * Existing projects
  */
-export type Project = 'demoProject' | 'demoProject2'
+export type Project = 'demo' | 'demo_two'
 export type UuidUUID = string
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 export type Scope =
@@ -56,6 +56,11 @@ export type NotificationType = 'personal' | 'global'
 export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 export type DemoProject2KanbanSteps = 'Received'
 export type ModelsScope = string
+export type Demo2WorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
+export type DemoKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
+export type DemoTwoKanbanSteps = 'Received'
+export type DemoTwoWorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
+export type DemoWorkItemTypes = 'Type 1'
 
 export interface DbActivity {
   activityID: number
@@ -102,7 +107,7 @@ export interface DbWorkItemType {
   projectID: number
   workItemTypeID: number
 }
-export interface DbDemoProjectWorkItem {
+export interface DbDemoWorkItem {
   lastMessageAt: string
   line: string
   ref: string
@@ -155,11 +160,11 @@ export interface ModelsProjectConfigField {
   path: string
   showCollapsed: boolean
 }
-export interface RestDemoProjectWorkItemsResponse {
+export interface RestDemoWorkItemsResponse {
   closed: string | null
   createdAt: string
   deletedAt: string | null
-  demoProjectWorkItem: DbDemoProjectWorkItem
+  demoWorkItem: DbDemoWorkItem
   description: string
   kanbanStepID: number
   members?: DbUser[] | null
@@ -258,11 +263,6 @@ export interface UpdateUserAuthRequest {
   scopes?: Scopes
 }
 export interface PgtypeJSONB {}
-export interface DbProject2WorkItem {
-  customDateForProject2: string | null
-  workItem?: DbWorkItem
-  workItemID: number
-}
 export interface DbWorkItem {
   closed: string | null
   createdAt: string

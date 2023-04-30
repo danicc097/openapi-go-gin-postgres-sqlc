@@ -6,35 +6,57 @@ import "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 
 var (
 	ProjectNameByID = map[int]models.Project{
-		1: models.ProjectDemoProject,
-		2: models.ProjectDemoProject2,
+		1: models.ProjectDemo,
+		2: models.ProjectDemoTwo,
 	}
 	ProjectIDByName = map[models.Project]int{
-		models.ProjectDemoProject:  1,
-		models.ProjectDemoProject2: 2,
+		models.ProjectDemo:    1,
+		models.ProjectDemoTwo: 2,
 	}
 )
 
 var (
-	DemoProjectKanbanStepsNameByID = map[int]models.DemoProjectKanbanSteps{
-		1: models.DemoProjectKanbanStepsDisabled,
-		2: models.DemoProjectKanbanStepsReceived,
-		3: models.DemoProjectKanbanStepsUnderReview,
-		4: models.DemoProjectKanbanStepsWorkInProgress,
+	DemoKanbanStepsNameByID = map[int]models.DemoKanbanSteps{
+		1: models.DemoKanbanStepsDisabled,
+		2: models.DemoKanbanStepsReceived,
+		3: models.DemoKanbanStepsUnderReview,
+		4: models.DemoKanbanStepsWorkInProgress,
 	}
-	DemoProjectKanbanStepsIDByName = map[models.DemoProjectKanbanSteps]int{
-		models.DemoProjectKanbanStepsDisabled:       1,
-		models.DemoProjectKanbanStepsReceived:       2,
-		models.DemoProjectKanbanStepsUnderReview:    3,
-		models.DemoProjectKanbanStepsWorkInProgress: 4,
+	DemoKanbanStepsIDByName = map[models.DemoKanbanSteps]int{
+		models.DemoKanbanStepsDisabled:       1,
+		models.DemoKanbanStepsReceived:       2,
+		models.DemoKanbanStepsUnderReview:    3,
+		models.DemoKanbanStepsWorkInProgress: 4,
 	}
 )
 
 var (
-	DemoProject2KanbanStepsNameByID = map[int]models.DemoProject2KanbanSteps{
-		5: models.DemoProject2KanbanStepsReceived,
+	DemoTwoKanbanStepsNameByID = map[int]models.DemoTwoKanbanSteps{
+		5: models.DemoTwoKanbanStepsReceived,
 	}
-	DemoProject2KanbanStepsIDByName = map[models.DemoProject2KanbanSteps]int{
-		models.DemoProject2KanbanStepsReceived: 5,
+	DemoTwoKanbanStepsIDByName = map[models.DemoTwoKanbanSteps]int{
+		models.DemoTwoKanbanStepsReceived: 5,
+	}
+)
+
+var (
+	DemoWorkItemTypesNameByID = map[int]models.DemoWorkItemTypes{
+		1: models.DemoWorkItemTypesType1,
+	}
+	DemoWorkItemTypesIDByName = map[models.DemoWorkItemTypes]int{
+		models.DemoWorkItemTypesType1: 1,
+	}
+)
+
+var (
+	DemoTwoWorkItemTypesNameByID = map[int]models.DemoTwoWorkItemTypes{
+		2: models.DemoTwoWorkItemTypesType1,
+		3: models.DemoTwoWorkItemTypesType2,
+		4: models.DemoTwoWorkItemTypesAnotherType,
+	}
+	DemoTwoWorkItemTypesIDByName = map[models.DemoTwoWorkItemTypes]int{
+		models.DemoTwoWorkItemTypesType1:       2,
+		models.DemoTwoWorkItemTypesType2:       3,
+		models.DemoTwoWorkItemTypesAnotherType: 4,
 	}
 )

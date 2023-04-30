@@ -6,13 +6,9 @@
  * OpenAPI spec version: 2.0.0
  */
 
-/**
- * Existing projects
- */
-export type Project = typeof Project[keyof typeof Project]
+export type DemoWorkItemTypes = typeof DemoWorkItemTypes[keyof typeof DemoWorkItemTypes]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const Project = {
-  demo: 'demo',
-  demo_two: 'demo_two',
+export const DemoWorkItemTypes = {
+  Type_1: 'Type 1',
 } as const

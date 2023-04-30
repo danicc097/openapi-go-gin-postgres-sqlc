@@ -47,23 +47,23 @@ type ProjectBoard interface {
 	ByID(ctx context.Context, d db.DBTX, projectID int) (*repomodels.ProjectBoard, error)
 }
 
-type DemoProjectWorkItemUpdateParams struct {
-	DemoProject *db.DemoProjectWorkItemUpdateParams
+type DemoWorkItemUpdateParams struct {
+	DemoProject *db.DemoWorkItemUpdateParams
 	Base        *db.WorkItemUpdateParams
 }
 
-type DemoProjectWorkItemCreateParams struct {
-	DemoProject db.DemoProjectWorkItemCreateParams
+type DemoWorkItemCreateParams struct {
+	DemoProject db.DemoWorkItemCreateParams
 	Base        db.WorkItemCreateParams
 }
 
-// DemoProjectWorkItem defines the datastore/repository handling persisting DemoProjectWorkItem records.
-type DemoProjectWorkItem interface {
-	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.DemoProjectWorkItemSelectConfigOption) (*db.DemoProjectWorkItem, error)
+// DemoWorkItem defines the datastore/repository handling persisting DemoWorkItem records.
+type DemoWorkItem interface {
+	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.DemoWorkItemSelectConfigOption) (*db.DemoWorkItem, error)
 	// params for dedicated workItem require workItemID (FK-as-PK)
-	Create(ctx context.Context, d db.DBTX, params DemoProjectWorkItemCreateParams) (*db.DemoProjectWorkItem, error)
-	Update(ctx context.Context, d db.DBTX, id int64, params DemoProjectWorkItemUpdateParams) (*db.DemoProjectWorkItem, error)
-	Delete(ctx context.Context, d db.DBTX, id int64) (*db.DemoProjectWorkItem, error)
+	Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.DemoWorkItem, error)
+	Update(ctx context.Context, d db.DBTX, id int64, params DemoWorkItemUpdateParams) (*db.DemoWorkItem, error)
+	Delete(ctx context.Context, d db.DBTX, id int64) (*db.DemoWorkItem, error)
 	// repo has Update only, then service has Close() (Update with closed=True), Move() (Update with kanban step change), ...)
 	// params for dedicated workItem require workItemID (FK-as-PK)
 	// TBD if useful: ByTag, ByType (for closed workitem searches. open ones simply return everything and filter in client)
@@ -73,7 +73,7 @@ type DemoProjectWorkItem interface {
 /**
  * TODO:
  * instead pass `, project repomodels.Project` and do appropiate joins in workitem.xo.go depending on it.
- * in case we need specific indexes from {project}workitem.xo.go we can do e.g. DemoProjectWorkItemsByRefLine with no workitem join
+ * in case we need specific indexes from {project}workitem.xo.go we can do e.g. DemoWorkItemsByRefLine with no workitem join
  * and then just loop over those and filter by ID taking the performance hit. it will be rare to use those filters anyway.
  * If not we can always go back to sqlc or use jet + reuse the xo model
  *
@@ -109,6 +109,7 @@ type User interface {
 
 // Project defines the datastore/repository handling persisting Project records.
 // Projects are manually created on demand.
+// NOTE: Read-only. Managed via migrations.
 type Project interface {
 	ByName(ctx context.Context, d db.DBTX, name models.Project) (*db.Project, error)
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.Project, error)
@@ -124,22 +125,18 @@ type Team interface {
 }
 
 // KanbanStep defines the datastore/repository handling persisting KanbanStep records.
+// NOTE: Read-only. Managed via migrations.
 type KanbanStep interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.KanbanStep, error)
 	ByProject(ctx context.Context, d db.DBTX, projectID int) ([]db.KanbanStep, error)
-	Create(ctx context.Context, d db.DBTX, params db.KanbanStepCreateParams) (*db.KanbanStep, error)
-	Update(ctx context.Context, d db.DBTX, id int, params db.KanbanStepUpdateParams) (*db.KanbanStep, error)
-	Delete(ctx context.Context, d db.DBTX, id int) (*db.KanbanStep, error)
 }
 
 // WorkItemType defines the datastore/repository handling persisting WorkItemType records.
+// NOTE: Read-only. Managed via migrations.
 type WorkItemType interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error)
 	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.WorkItemType, error)
 	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemType, error)
-	Create(ctx context.Context, d db.DBTX, params db.WorkItemTypeCreateParams) (*db.WorkItemType, error)
-	Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTypeUpdateParams) (*db.WorkItemType, error)
-	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemType, error)
 }
 
 // WorkItemComment defines the datastore/repository handling persisting WorkItemComment records.

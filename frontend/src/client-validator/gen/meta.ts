@@ -10,13 +10,13 @@ import {
   DbTeam,
   DbWorkItemTag,
   DbWorkItemType,
-  DbDemoProjectWorkItem,
+  DbDemoWorkItem,
   DbUserAPIKey,
   DbUser,
   DbTimeEntry,
   DbWorkItemComment,
   ProjectConfig,
-  RestDemoProjectWorkItemsResponse,
+  RestDemoWorkItemsResponse,
   InitializeProjectRequest,
   RestProjectBoardResponse,
   UserResponse,
@@ -33,7 +33,6 @@ import {
   UuidUUID,
   PgtypeJSONB,
   ModelsProjectConfigField,
-  DbProject2WorkItem,
   DbWorkItem,
   Project,
   DbActivityCreateParams,
@@ -49,6 +48,11 @@ import {
   DemoProjectKanbanSteps,
   DemoProject2KanbanSteps,
   ModelsScope,
+  Demo2WorkItemTypes,
+  DemoKanbanSteps,
+  DemoTwoKanbanSteps,
+  DemoTwoWorkItemTypes,
+  DemoWorkItemTypes,
 } from './models'
 
 export const schemaDefinitions = {
@@ -58,15 +62,15 @@ export const schemaDefinitions = {
   DbTeam: info<DbTeam>('DbTeam', '#/definitions/DbTeam'),
   DbWorkItemTag: info<DbWorkItemTag>('DbWorkItemTag', '#/definitions/DbWorkItemTag'),
   DbWorkItemType: info<DbWorkItemType>('DbWorkItemType', '#/definitions/DbWorkItemType'),
-  DbDemoProjectWorkItem: info<DbDemoProjectWorkItem>('DbDemoProjectWorkItem', '#/definitions/DbDemoProjectWorkItem'),
+  DbDemoWorkItem: info<DbDemoWorkItem>('DbDemoWorkItem', '#/definitions/DbDemoWorkItem'),
   DbUserAPIKey: info<DbUserAPIKey>('DbUserAPIKey', '#/definitions/DbUserAPIKey'),
   DbUser: info<DbUser>('DbUser', '#/definitions/DbUser'),
   DbTimeEntry: info<DbTimeEntry>('DbTimeEntry', '#/definitions/DbTimeEntry'),
   DbWorkItemComment: info<DbWorkItemComment>('DbWorkItemComment', '#/definitions/DbWorkItemComment'),
   ProjectConfig: info<ProjectConfig>('ProjectConfig', '#/definitions/ProjectConfig'),
-  RestDemoProjectWorkItemsResponse: info<RestDemoProjectWorkItemsResponse>(
-    'RestDemoProjectWorkItemsResponse',
-    '#/definitions/RestDemoProjectWorkItemsResponse',
+  RestDemoWorkItemsResponse: info<RestDemoWorkItemsResponse>(
+    'RestDemoWorkItemsResponse',
+    '#/definitions/RestDemoWorkItemsResponse',
   ),
   InitializeProjectRequest: info<InitializeProjectRequest>(
     'InitializeProjectRequest',
@@ -93,7 +97,6 @@ export const schemaDefinitions = {
     'ModelsProjectConfigField',
     '#/definitions/ModelsProjectConfigField',
   ),
-  DbProject2WorkItem: info<DbProject2WorkItem>('DbProject2WorkItem', '#/definitions/DbProject2WorkItem'),
   DbWorkItem: info<DbWorkItem>('DbWorkItem', '#/definitions/DbWorkItem'),
   Project: info<Project>('Project', '#/definitions/Project'),
   DbActivityCreateParams: info<DbActivityCreateParams>(
@@ -127,6 +130,11 @@ export const schemaDefinitions = {
     '#/definitions/DemoProject2KanbanSteps',
   ),
   ModelsScope: info<ModelsScope>('ModelsScope', '#/definitions/ModelsScope'),
+  Demo2WorkItemTypes: info<Demo2WorkItemTypes>('Demo2WorkItemTypes', '#/definitions/Demo2WorkItemTypes'),
+  DemoKanbanSteps: info<DemoKanbanSteps>('DemoKanbanSteps', '#/definitions/DemoKanbanSteps'),
+  DemoTwoKanbanSteps: info<DemoTwoKanbanSteps>('DemoTwoKanbanSteps', '#/definitions/DemoTwoKanbanSteps'),
+  DemoTwoWorkItemTypes: info<DemoTwoWorkItemTypes>('DemoTwoWorkItemTypes', '#/definitions/DemoTwoWorkItemTypes'),
+  DemoWorkItemTypes: info<DemoWorkItemTypes>('DemoWorkItemTypes', '#/definitions/DemoWorkItemTypes'),
 }
 
 export interface SchemaInfo<T> {

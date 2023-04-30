@@ -11,11 +11,11 @@ package table
 // this method only once at the beginning of the program.
 func UseSchema(schema string) {
 	Activities = Activities.FromSchema(schema)
-	DemoProjectWorkItems = DemoProjectWorkItems.FromSchema(schema)
+	DemoTwoWorkItems = DemoTwoWorkItems.FromSchema(schema)
+	DemoWorkItems = DemoWorkItems.FromSchema(schema)
 	KanbanSteps = KanbanSteps.FromSchema(schema)
 	Movies = Movies.FromSchema(schema)
 	Notifications = Notifications.FromSchema(schema)
-	Project2WorkItems = Project2WorkItems.FromSchema(schema)
 	Projects = Projects.FromSchema(schema)
 	SchemaMigrations = SchemaMigrations.FromSchema(schema)
 	Teams = Teams.FromSchema(schema)

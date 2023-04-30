@@ -4,30 +4,17 @@ import (
 	"context"
 	"testing"
 
-	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestWorkItemType_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
-	projectRepo := postgresql.NewProject()
 	workItemTypeRepo := postgresql.NewWorkItemType()
-
-	ctx := context.Background()
-	project, err := projectRepo.ByName(ctx, testPool, internalmodels.ProjectDemoProject)
-	if err != nil {
-		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
-	}
-	tcp := postgresqltestutil.RandomWorkItemTypeCreateParams(t, project.ProjectID)
-
-	workItemType, err := workItemTypeRepo.Create(ctx, testPool, tcp)
-	if err != nil {
-		t.Fatalf("workItemTypeRepo.Create unexpected error = %v", err)
-	}
 
 	type argsString struct {
 		filter    string
@@ -42,8 +29,8 @@ func TestWorkItemType_ByIndexedQueries(t *testing.T) {
 		{
 			name: "name",
 			args: argsString{
-				filter:    workItemType.Name,
-				projectID: workItemType.ProjectID,
+				filter:    string(models.DemoWorkItemTypesType1), // work item types table shared by all
+				projectID: internal.ProjectIDByName[models.ProjectDemo],
 				fn:        (workItemTypeRepo.ByName),
 			},
 		},
@@ -57,7 +44,7 @@ func TestWorkItemType_ByIndexedQueries(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
-			assert.Equal(t, foundWorkItemType.WorkItemTypeID, workItemType.WorkItemTypeID)
+			assert.Equal(t, foundWorkItemType.Name, string(models.DemoWorkItemTypesType1)) // TODO will be handled via internal/models_mappings.gen.go
 		})
 
 		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {
@@ -86,7 +73,7 @@ func TestWorkItemType_ByIndexedQueries(t *testing.T) {
 		{
 			name: "workItemType_id",
 			args: argsInt{
-				filter: workItemType.WorkItemTypeID,
+				filter: internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1],
 				fn:     (workItemTypeRepo.ByID),
 			},
 		},
@@ -100,7 +87,7 @@ func TestWorkItemType_ByIndexedQueries(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}
-			assert.Equal(t, foundWorkItemType.WorkItemTypeID, workItemType.WorkItemTypeID)
+			assert.Equal(t, foundWorkItemType.WorkItemTypeID, internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1])
 		})
 
 		t.Run(tc.name+" - no rows when record does not exist", func(t *testing.T) {

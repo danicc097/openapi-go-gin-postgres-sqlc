@@ -11,15 +11,15 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewRandomDemoProjectWorkItem(t *testing.T, pool *pgxpool.Pool, projectID, kanbanStepID, workItemTypeID, teamID int) (*db.DemoProjectWorkItem, error) {
+func NewRandomDemoWorkItem(t *testing.T, pool *pgxpool.Pool, projectID, kanbanStepID, workItemTypeID, teamID int) (*db.DemoWorkItem, error) {
 	t.Helper()
 
-	dpwiRepo := postgresql.NewDemoProjectWorkItem()
+	dpwiRepo := postgresql.NewDemoWorkItem()
 
-	dpwicp := RandomDemoProjectWorkItemCreateParams(t)
+	dpwicp := RandomDemoWorkItemCreateParams(t)
 	wicp := RandomWorkItemCreateParams(t, kanbanStepID, workItemTypeID, teamID)
 
-	dpwi, err := dpwiRepo.Create(context.Background(), pool, repos.DemoProjectWorkItemCreateParams{DemoProject: dpwicp, Base: wicp})
+	dpwi, err := dpwiRepo.Create(context.Background(), pool, repos.DemoWorkItemCreateParams{DemoProject: dpwicp, Base: wicp})
 	if err != nil {
 		t.Logf("%s", err)
 		return nil, err
@@ -28,10 +28,10 @@ func NewRandomDemoProjectWorkItem(t *testing.T, pool *pgxpool.Pool, projectID, k
 	return dpwi, nil
 }
 
-func RandomDemoProjectWorkItemCreateParams(t *testing.T) db.DemoProjectWorkItemCreateParams {
+func RandomDemoWorkItemCreateParams(t *testing.T) db.DemoWorkItemCreateParams {
 	t.Helper()
 
-	return db.DemoProjectWorkItemCreateParams{
+	return db.DemoWorkItemCreateParams{
 		Ref:           "ref-" + testutil.RandomString(5),
 		Line:          "line-" + testutil.RandomString(5),
 		Reopened:      testutil.RandomBool(),
