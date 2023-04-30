@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 
 	zapadapter "github.com/jackc/pgx-zap"
 	"github.com/jackc/pgx/v5"
@@ -20,6 +21,8 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 )
+
+var pgxAfterConnectLock = sync.Mutex{}
 
 // New instantiates the PostgreSQL database using configuration defined in environment variables.
 func New(logger *zap.Logger) (*pgxpool.Pool, *sql.DB, error) {
@@ -58,6 +61,9 @@ func New(logger *zap.Logger) (*pgxpool.Pool, *sql.DB, error) {
 	// called after a connection is established, but before it is added to the pool.
 	// Will run once.
 	poolConfig.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
+		pgxAfterConnectLock.Lock()
+		defer pgxAfterConnectLock.Unlock()
+
 		err = registerDataTypes(context.Background(), c, typeNames)
 		if err != nil {
 			return internal.WrapErrorf(err, internal.ErrorCodeUnknown, "could not register data types")

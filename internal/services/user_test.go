@@ -158,7 +158,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			name: "user_updated_up_to_same_rank_and_scopes_allowed",
 			args: args{
 				params: &models.UpdateUserAuthRequest{
-					Scopes: &testUsers.manager.User.Scopes,
+					Scopes: pointers.New(services.ScopesByRole[models.RoleManager]),
 					Role:   pointers.New(models.RoleManager),
 				},
 				id:     testUsers.user.User.UserID.String(),
@@ -195,7 +195,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			name: "can_set_scopes_assigned_to_self_without_role_update",
 			args: args{
 				params: &models.UpdateUserAuthRequest{
-					Scopes: &testUsers.admin.User.Scopes,
+					Scopes: pointers.New(services.ScopesByRole[models.RoleAdmin]),
 				},
 				id:     testUsers.user.User.UserID.String(),
 				caller: testUsers.admin.User,
