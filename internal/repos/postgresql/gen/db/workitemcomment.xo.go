@@ -25,7 +25,6 @@ type WorkItemComment struct {
 	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true"`                   // created_at
 	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at" required:"true"`                   // updated_at
 
-	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (inferred)
 	// xo fields
 	_exists, _deleted bool
 }
@@ -84,7 +83,6 @@ func WithWorkItemCommentOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentS
 }
 
 type WorkItemCommentJoins struct {
-	User bool
 }
 
 // WithWorkItemCommentJoin joins with the given tables.
@@ -227,18 +225,16 @@ work_item_comments.work_item_id,
 work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
-work_item_comments.updated_at,
-(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+work_item_comments.updated_at ` +
 		`FROM public.work_item_comments ` +
-		`-- O2O join generated from "work_item_comments_user_id_fkey"
-left join users on users.user_id = work_item_comments.user_id` +
-		` WHERE work_item_comments.work_item_comment_id = $2 `
+		`` +
+		` WHERE work_item_comments.work_item_comment_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemCommentID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, workItemCommentID)
+	rows, err := db.Query(ctx, sqlstr, workItemCommentID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/db.Query: %w", err))
 	}
@@ -268,18 +264,16 @@ work_item_comments.work_item_id,
 work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
-work_item_comments.updated_at,
-(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+work_item_comments.updated_at ` +
 		`FROM public.work_item_comments ` +
-		`-- O2O join generated from "work_item_comments_user_id_fkey"
-left join users on users.user_id = work_item_comments.user_id` +
-		` WHERE work_item_comments.work_item_id = $2 `
+		`` +
+		` WHERE work_item_comments.work_item_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, workItemID)
+	rows, err := db.Query(ctx, sqlstr, workItemID)
 	if err != nil {
 		return nil, logerror(err)
 	}

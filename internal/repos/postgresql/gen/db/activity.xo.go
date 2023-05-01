@@ -21,7 +21,7 @@ type Activity struct {
 	Description  string `json:"description" db:"description" required:"true"`    // description
 	IsProductive bool   `json:"isProductive" db:"is_productive" required:"true"` // is_productive
 
-	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -206,7 +206,7 @@ activities.description,
 activities.is_productive,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2M join generated from "time_entries_activity_id_fkey"
+		`-- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
@@ -253,7 +253,7 @@ activities.description,
 activities.is_productive,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2M join generated from "time_entries_activity_id_fkey"
+		`-- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
@@ -301,7 +301,7 @@ activities.description,
 activities.is_productive,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2M join generated from "time_entries_activity_id_fkey"
+		`-- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
@@ -349,7 +349,7 @@ activities.description,
 activities.is_productive,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2M join generated from "time_entries_activity_id_fkey"
+		`-- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id

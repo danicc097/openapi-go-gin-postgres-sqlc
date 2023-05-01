@@ -39,7 +39,7 @@ create table teams (
   , unique (name , project_id)
 );
 
-comment on column teams.project_id is 'cardinality:O2M';
+comment on column teams.project_id is 'cardinality:M2O';
 
 create table user_api_keys (
   user_api_key_id serial primary key
@@ -147,9 +147,9 @@ create index on notifications (receiver_rank , notification_type , created_at);
 
 -- FIXME generate SenderJoin *User and ReceiverJoin *User in notification.xo.go with O2M, and []*User with M2O
 -- it also must be named NotificationsJoin + RefColumnName if name clashes, e.g. NotificationsJoinSender
-comment on column notifications.sender is 'cardinality:O2M';
+comment on column notifications.sender is 'cardinality:M2O';
 
-comment on column notifications.receiver is 'cardinality:O2M';
+comment on column notifications.receiver is 'cardinality:M2O';
 
 create table user_notifications (
   user_notification_id bigserial primary key
@@ -163,7 +163,7 @@ create table user_notifications (
 
 -- comment on column user_notifications.notification_id IS 'cardinality:O2O';
 -- FIXME
-comment on column user_notifications.user_id is 'cardinality:O2M';
+comment on column user_notifications.user_id is 'cardinality:M2O';
 
 create index on user_notifications (user_id);
 
@@ -260,7 +260,7 @@ create unique index on kanban_steps (project_id , name)
 where
   step_order is null;
 
-comment on column kanban_steps.project_id is 'cardinality:O2M';
+comment on column kanban_steps.project_id is 'cardinality:M2O';
 
 -- types restricted per project
 create table work_item_types (
@@ -274,7 +274,7 @@ create table work_item_types (
   , check (color ~* '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
 );
 
-comment on column work_item_types.project_id is 'cardinality:O2M';
+comment on column work_item_types.project_id is 'cardinality:M2O';
 
 -- create table invoice_types (
 --   invoice_type_id serial primary key
@@ -373,9 +373,8 @@ create table work_item_comments (
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
 );
 
-comment on column work_item_comments.work_item_id is 'cardinality:O2M';
-
--- comment on column work_item_comments.user_id is 'cardinality:O2M';
+comment on column work_item_comments.work_item_id is 'cardinality:M2O';
+comment on column work_item_comments.user_id is 'cardinality:M2O';
 
 create index on work_item_comments (work_item_id);
 
@@ -390,7 +389,7 @@ create table work_item_tags (
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
 
-comment on column work_item_tags.project_id is 'cardinality:O2M';
+comment on column work_item_tags.project_id is 'cardinality:M2O';
 
 create table work_item_work_item_tag (
   work_item_tag_id int not null
@@ -439,7 +438,7 @@ create table activities (
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
 
-comment on column activities.project_id is 'cardinality:O2M';
+comment on column activities.project_id is 'cardinality:M2O';
 
 -- will restrict available activities on a per-project basis
 -- where project_id is null (shared) or project_id = @project_id
@@ -461,13 +460,13 @@ create table time_entries (
   , check (num_nonnulls (team_id , work_item_id) = 1) -- team_id null when a work_item id is associated and viceversa
 );
 
-comment on column time_entries.work_item_id is 'cardinality:O2M';
+comment on column time_entries.work_item_id is 'cardinality:M2O';
 
-comment on column time_entries.team_id is 'cardinality:O2M';
+comment on column time_entries.team_id is 'cardinality:M2O';
 
-comment on column time_entries.activity_id is 'cardinality:O2M';
+comment on column time_entries.activity_id is 'cardinality:M2O';
 
-comment on column time_entries.user_id is 'cardinality:O2M';
+comment on column time_entries.user_id is 'cardinality:M2O';
 
 -- A multicolumn B-tree index can be used with query conditions that involve any subset of the index's
 -- columns, but the index is most efficient when there are constraints on the leading (leftmost) columns.

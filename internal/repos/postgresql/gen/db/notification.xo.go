@@ -244,7 +244,7 @@ notifications.receiver,
 notifications.notification_type,
 (case when $1::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification ` +
 		`FROM public.notifications ` +
-		`-- O2O join generated from "user_notifications_notification_id_fkey"
+		`-- O2O join generated from "user_notifications_notification_id_fkey(1)"
 left join user_notifications on user_notifications.notification_id = notifications.notification_id` +
 		` WHERE notifications.notification_id = $2 `
 	sqlstr += c.orderBy
@@ -289,7 +289,7 @@ notifications.receiver,
 notifications.notification_type,
 (case when $1::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification ` +
 		`FROM public.notifications ` +
-		`-- O2O join generated from "user_notifications_notification_id_fkey"
+		`-- O2O join generated from "user_notifications_notification_id_fkey(1)"
 left join user_notifications on user_notifications.notification_id = notifications.notification_id` +
 		` WHERE notifications.receiver_rank = $2 AND notifications.notification_type = $3 AND notifications.created_at = $4 `
 	sqlstr += c.orderBy

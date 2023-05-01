@@ -964,6 +964,11 @@ cc_label:
 		// 	}
 		// }
 
+		// FIXME right now with O2M|M2O, we are not generating both sides or taking O2M or M2O
+		// distinction into account. it simply generates on the table referenced by the FK,
+		// not in the table where the column is, always as []*** and nothing is generated on the
+		// table with the FK constraint.
+
 		if constraint.Type == "foreign_key" && constraint.Cardinality == "" {
 			// dummy constraint to automatically create join in
 			//  (TODO need to do this only if fk fields len = 1)
@@ -980,7 +985,7 @@ cc_label:
 			cc = append(cc, Constraint{
 				Type:           constraint.Type,
 				Cardinality:    O2O,
-				Name:           constraint.Name,
+				Name:           constraint.Name + "(1)",
 				RefTableName:   constraint.TableName,
 				TableName:      constraint.RefTableName,
 				RefColumnName:  constraint.ColumnName,
@@ -988,19 +993,62 @@ cc_label:
 				JoinTableClash: joinTableClash,
 				IsGeneratedO2O: true,
 			})
-			cc = append(cc, Constraint{
-				Type:           constraint.Type,
-				Cardinality:    O2O,
-				Name:           constraint.Name,
-				TableName:      constraint.TableName,
-				RefTableName:   constraint.RefTableName,
-				ColumnName:     constraint.ColumnName,
-				RefColumnName:  constraint.RefColumnName,
-				JoinTableClash: joinTableClash,
-				IsGeneratedO2O: true,
-			})
+
+			// not needed
+			// cc = append(cc, Constraint{
+			// 	Type:           constraint.Type,
+			// 	Cardinality:    O2O,
+			// 	Name:           constraint.Name + "(2)",
+			// 	TableName:      constraint.TableName,
+			// 	RefTableName:   constraint.RefTableName,
+			// 	ColumnName:     constraint.ColumnName,
+			// 	RefColumnName:  constraint.RefColumnName,
+			// 	JoinTableClash: joinTableClash,
+			// 	IsGeneratedO2O: true,
+			// })
 
 			continue
+		}
+
+		if constraint.Cardinality == "M2O" || constraint.Cardinality == "O2M" {
+			/**
+			 * TODO will generate O2O dummy constraint on refTable or table
+			 * depending is M2O or O2M
+			 * and create the other constraint accordingly
+			 */
+			for _, seenConstraint := range cc {
+				if seenConstraint.TableName == constraint.TableName &&
+					seenConstraint.RefTableName == constraint.RefTableName &&
+					seenConstraint.Type == constraint.Type && seenConstraint.Cardinality == cardinality(constraint.Cardinality) {
+					continue cc_label
+				}
+			}
+
+			// cc = append(cc, Constraint{
+			// 	Type:           constraint.Type,
+			// 	Cardinality:    M2O,
+			// 	Name:           constraint.Name + "(TEST)",
+			// 	RefTableName:   constraint.TableName,
+			// 	TableName:      constraint.RefTableName,
+			// 	RefColumnName:  constraint.ColumnName,
+			// 	ColumnName:     constraint.RefColumnName,
+			// 	JoinTableClash: joinTableClash,
+			// })
+
+			// continue
+
+			// TBD based on cardin
+			// cc = append(cc, Constraint{
+			// 	Type:           constraint.Type,
+			// 	Cardinality:    M2O,
+			// 	Name:           constraint.Name + "(2)",
+			// 	TableName:      constraint.TableName,
+			// 	RefTableName:   constraint.RefTableName,
+			// 	ColumnName:     constraint.ColumnName,
+			// 	RefColumnName:  constraint.RefColumnName,
+			// 	JoinTableClash: joinTableClash,
+			// })
+			// continue
 		}
 
 		cc = append(cc, Constraint{
@@ -1675,7 +1723,7 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 
 			lookupTable := tables[c.TableName]
 			extraCols := getLookupTableRegularFields(lookupTable)
-			fmt.Printf("M2M join: %s extraCols: %v\n", lookupTable.SQLName, extraCols)
+			// fmt.Printf("M2M join: %s extraCols: %v\n", lookupTable.SQLName, extraCols)
 
 			if c.ColumnName != c.RefColumnName {
 				// differs from actual column, e.g. having member UUID in lookup instead of user_id
@@ -1709,12 +1757,17 @@ type %s struct {
 			joinName = camelExport(inflector.Pluralize(lookupName))
 
 		case O2M, M2O:
-			if c.RefTableName != sqlname {
-				continue
+			if c.RefTableName == sqlname {
+				joinName = camelExport(c.TableName)
+				if c.JoinTableClash {
+					joinName = joinName + camelExport(c.ColumnName)
+				}
 			}
-			joinName = camelExport(c.TableName)
-			if c.JoinTableClash {
-				joinName = joinName + camelExport(c.ColumnName)
+			if c.TableName == sqlname {
+				joinName = camelExport(c.RefTableName)
+				if c.JoinTableClash {
+					joinName = joinName + camelExport(c.RefColumnName)
+				}
 			}
 		case O2O:
 			if c.TableName == sqlname {
@@ -1751,8 +1804,6 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 }
 
 // TODO low prio put note if it has no index
-
-// TODO custom types based on sql comment : "type:models.Project"
 
 // func_context generates a func signature for v with context determined by the
 // context mode.
@@ -2020,12 +2071,17 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 					joinName = prefix + camelExport(inflector.Pluralize(lookupName))
 				case O2M, M2O:
-					if c.RefTableName != x.SQLName {
-						continue
+					if c.RefTableName == x.SQLName {
+						joinName = prefix + camelExport(c.TableName)
+						if c.JoinTableClash {
+							joinName = joinName + "_" + c.ColumnName
+						}
 					}
-					joinName = prefix + camelExport(c.TableName)
-					if c.JoinTableClash {
-						joinName = joinName + "_" + c.ColumnName
+					if c.TableName == x.SQLName {
+						joinName = prefix + camelExport(c.RefTableName)
+						if c.JoinTableClash {
+							joinName = joinName + "_" + c.RefColumnName
+						}
 					}
 				case O2O:
 					if c.TableName == x.SQLName {
@@ -2060,12 +2116,17 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 					joinName = pref + camelExport(inflector.Pluralize(lookupName))
 				case O2M, M2O:
-					if c.RefTableName != x.Table.SQLName {
-						continue
+					if c.RefTableName == x.Table.SQLName {
+						joinName = pref + camelExport(c.TableName)
+						if c.JoinTableClash {
+							joinName = joinName + camelExport(c.ColumnName)
+						}
 					}
-					joinName = pref + camelExport(c.TableName)
-					if c.JoinTableClash {
-						joinName = joinName + camelExport(c.ColumnName)
+					if c.TableName == x.SQLName {
+						joinName = pref + camelExport(c.RefTableName)
+						if c.JoinTableClash {
+							joinName = joinName + camelExport(c.RefColumnName)
+						}
 					}
 				case O2O:
 					if c.TableName == x.Table.SQLName {
@@ -2508,7 +2569,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 		return // don't duplicate
 	}
 	for _, c := range cc {
-		if c.Cardinality == "" || c.Type != "foreign_key" {
+		if c.Type != "foreign_key" {
 			continue
 		}
 		if c.Cardinality == M2M && c.RefTableName == table {
@@ -2519,9 +2580,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 					f.tableConstraints[table] = append(f.tableConstraints[table], c1)
 				}
 			}
-		} else if c.Cardinality == O2O && c.TableName == table {
-			f.tableConstraints[table] = append(f.tableConstraints[table], c)
-		} else if c.Cardinality == O2O && c.RefTableName == table {
+		} else if c.Cardinality == O2O && (c.TableName == table || c.RefTableName == table) {
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
 		} else if c.RefTableName == table {
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
@@ -2582,19 +2641,28 @@ func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.Fu
 		}
 
 	case O2M, M2O:
-		if c.JoinTableClash {
-			params["ClashSuffix"] = "_" + c.ColumnName
-		}
-
+		joinTpl = O2MJoin
+		selectTpl = O2MSelect
 		// TODO properly gen in both sides like with O2O below, differentiating O2M and M2O
 		if c.RefTableName == x.Table.SQLName {
-			joinTpl = O2MJoin
-			selectTpl = O2MSelect
-
 			params["JoinColumn"] = c.ColumnName
 			params["JoinTable"] = c.TableName
 			params["JoinRefColumn"] = c.RefColumnName
 			params["CurrentTable"] = x.Table.SQLName
+
+			if c.JoinTableClash {
+				params["ClashSuffix"] = "_" + c.ColumnName
+			}
+		}
+		if c.TableName == x.Table.SQLName {
+			params["JoinColumn"] = c.RefColumnName
+			params["JoinTable"] = c.RefTableName
+			params["JoinRefColumn"] = c.ColumnName
+			params["CurrentTable"] = x.Table.SQLName
+
+			if c.JoinTableClash {
+				params["ClashSuffix"] = "_" + c.RefColumnName
+			}
 		}
 	case O2O:
 		if c.TableName == x.Table.SQLName {
@@ -2922,18 +2990,32 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Pluralize(lookupName))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, c.Cardinality))
-			// TODO revisit. O2M and M2O from different viewpoints.
 		case O2M, M2O:
-			if c.RefTableName != t.SQLName {
-				continue
+			var joinName string
+			if c.RefTableName == t.SQLName {
+				goName = camelExport(singularize(c.TableName))
+				typ = goName
+				goName = inflector.Pluralize(goName) + "Join"
+				joinName = inflector.Pluralize(c.TableName)
+				if c.JoinTableClash {
+					joinName = joinName + "_" + c.ColumnName
+					goName = goName + camelExport(c.ColumnName)
+				}
 			}
-			goName = camelExport(singularize(c.TableName))
-			typ = goName
-			goName = inflector.Pluralize(goName) + "Join"
-			joinName := inflector.Pluralize(c.TableName)
-			if c.JoinTableClash {
-				joinName = joinName + "_" + c.ColumnName
-				goName = goName + camelExport(c.ColumnName)
+
+			if c.TableName == t.SQLName {
+				goName = camelExport(singularize(c.RefTableName))
+				typ = goName
+				goName = inflector.Pluralize(goName) + "Join"
+				joinName = inflector.Pluralize(c.RefTableName)
+				if c.JoinTableClash {
+					joinName = joinName + "_" + c.RefColumnName
+					goName = goName + camelExport(c.RefColumnName)
+				}
+			}
+
+			if joinName == "" {
+				continue
 			}
 
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
@@ -3430,6 +3512,7 @@ type Constraint struct {
 	LookupRefColumn string // (M2M) referenced PK by LookupColumn
 	JoinTableClash  bool   // Whether other constraints join against the same table (not necessarily )
 	IsGeneratedO2O  bool   // Whether this constraint has been generated or altered automatically
+	IsGeneratedO2M  bool   // Whether this constraint has been generated or altered automatically
 }
 
 // Field is a field template.
