@@ -24,6 +24,7 @@ type UserAPIKey struct {
 	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true"`       // user_id
 
 	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
+	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
 	// xo fields
 	_exists, _deleted bool
 }
@@ -78,6 +79,7 @@ func WithUserAPIKeyOrderBy(rows ...UserAPIKeyOrderBy) UserAPIKeySelectConfigOpti
 }
 
 type UserAPIKeyJoins struct {
+	User bool
 	User bool
 }
 
@@ -220,17 +222,20 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true and users.user_api_key_id is not null then row(users.*) end) as user ` +
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $2::boolean = true and users.user_api_key_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
-		`-- O2O join generated from "users_api_key_id_fkey"
+		`-- O2O join generated from "user_api_keys_user_id_fkey"
+left join users on users.user_id = user_api_keys.user_id
+-- O2O join generated from "users_api_key_id_fkey"
 left join users on users.api_key_id = user_api_keys.user_api_key_id` +
-		` WHERE user_api_keys.api_key = $2 `
+		` WHERE user_api_keys.api_key = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, apiKey)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, apiKey)
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.User, apiKey)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", err))
 	}
@@ -259,17 +264,20 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true and users.user_api_key_id is not null then row(users.*) end) as user ` +
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $2::boolean = true and users.user_api_key_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
-		`-- O2O join generated from "users_api_key_id_fkey"
+		`-- O2O join generated from "user_api_keys_user_id_fkey"
+left join users on users.user_id = user_api_keys.user_id
+-- O2O join generated from "users_api_key_id_fkey"
 left join users on users.api_key_id = user_api_keys.user_api_key_id` +
-		` WHERE user_api_keys.user_api_key_id = $2 `
+		` WHERE user_api_keys.user_api_key_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userAPIKeyID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, userAPIKeyID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.User, userAPIKeyID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", err))
 	}
@@ -298,17 +306,20 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true and users.user_api_key_id is not null then row(users.*) end) as user ` +
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $2::boolean = true and users.user_api_key_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
-		`-- O2O join generated from "users_api_key_id_fkey"
+		`-- O2O join generated from "user_api_keys_user_id_fkey"
+left join users on users.user_id = user_api_keys.user_id
+-- O2O join generated from "users_api_key_id_fkey"
 left join users on users.api_key_id = user_api_keys.user_api_key_id` +
-		` WHERE user_api_keys.user_id = $2 `
+		` WHERE user_api_keys.user_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, userID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.User, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", err))
 	}

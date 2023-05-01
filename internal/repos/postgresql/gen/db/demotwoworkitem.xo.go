@@ -20,6 +20,7 @@ type DemoTwoWorkItem struct {
 	WorkItemID            int64      `json:"workItemID" db:"work_item_id" required:"true"`                         // work_item_id
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2" required:"true"` // custom_date_for_project_2
 
+	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
 	// xo fields
 	_exists, _deleted bool
 }
@@ -71,6 +72,7 @@ func WithDemoTwoWorkItemOrderBy(rows ...DemoTwoWorkItemOrderBy) DemoTwoWorkItemS
 }
 
 type DemoTwoWorkItemJoins struct {
+	WorkItem bool
 }
 
 // WithDemoTwoWorkItemJoin joins with the given tables.
@@ -208,16 +210,18 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, o
 	// query
 	sqlstr := `SELECT ` +
 		`demo_two_work_items.work_item_id,
-demo_two_work_items.custom_date_for_project_2 ` +
+demo_two_work_items.custom_date_for_project_2,
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.demo_two_work_items ` +
-		`` +
-		` WHERE demo_two_work_items.work_item_id = $1 `
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
+left join work_items on work_items.work_item_id = demo_two_work_items.work_item_id` +
+		` WHERE demo_two_work_items.work_item_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_two_work_items/DemoTwoWorkItemByWorkItemID/db.Query: %w", err))
 	}

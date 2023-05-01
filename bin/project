@@ -759,7 +759,7 @@ x.gen.build-tools() {
     for cmd in pregen postgen gen-schema oapi-codegen jet; do
       echo Building $cmd...
       { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
-        echo "Could not rebuild $cmd. If you made changes to it, build it with a compilable app state" >&2; } &
+        echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
     done
 
     wait

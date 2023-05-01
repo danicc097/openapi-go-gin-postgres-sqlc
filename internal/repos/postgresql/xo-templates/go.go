@@ -566,7 +566,7 @@ type Tables map[string]Table
 
 // emitSchema emits the xo schema for the template set.
 func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) error {
-	constraints, err := convertConstraints(ctx, schema.Constraints)
+	constraints, err := convertConstraints(ctx, schema.Constraints, schema.Tables)
 	if err != nil {
 		return err
 	}
@@ -907,7 +907,7 @@ func convertIndex(ctx context.Context, t Table, i xo.Index) (Index, error) {
 	}, nil
 }
 
-func convertConstraints(ctx context.Context, constraints []xo.Constraint) ([]Constraint, error) {
+func convertConstraints(ctx context.Context, constraints []xo.Constraint, tables []xo.Table) ([]Constraint, error) {
 	var cc []Constraint // will create additional dummy constraints for automatic O2O
 
 	for _, constraint := range constraints {
@@ -950,13 +950,29 @@ func convertConstraints(ctx context.Context, constraints []xo.Constraint) ([]Con
 			}
 		}
 
+		// var isSingleFK, isSinglePK bool
+		// for i, t := range tables {
+
+		// 	for _, tfk := range table.ForeignKeys {
+		// 		if len(tfk.FieldNames) == 1 && tfk.FieldNames[0] == field.SQLName {
+		// 			isSingleFK = true
+		// 			break
+		// 		}
+		// 	}
+		// 	if len(table.PrimaryKeys) == 1 && table.PrimaryKeys[0].SQLName == field.SQLName {
+		// 		isSinglePK = true
+		// 	}
+		// }
+
 		if constraint.Type == "foreign_key" && constraint.Cardinality == "" {
 			// dummy constraint to automatically create join in
 			//  (TODO need to do this only if fk fields len = 1)
 			// and check if field is unique or not
+			// TODO ignore duplicate joins generated for lookup keys between tables like api_key_id
+
 			cc = append(cc, Constraint{
 				Type:           constraint.Type,
-				Cardinality:    O2O, // cardinality comments only needed on FK columns, never base tables
+				Cardinality:    O2O,
 				Name:           constraint.Name,
 				RefTableName:   constraint.TableName,
 				TableName:      constraint.RefTableName,
@@ -965,17 +981,17 @@ func convertConstraints(ctx context.Context, constraints []xo.Constraint) ([]Con
 				JoinTableClash: joinTableClash,
 				IsGeneratedO2O: true,
 			})
-			// force O2O on foreign_keys
-			// cc = append(cc, Constraint{
-			// 	Type:           constraint.Type,
-			// 	Cardinality:    "O2O", // cardinality comments only needed on FK columns, never base tables
-			// 	Name:           constraint.Name,
-			// 	TableName:      constraint.TableName,
-			// 	RefTableName:   constraint.RefTableName,
-			// 	ColumnName:     constraint.ColumnName,
-			// 	RefColumnName:  constraint.RefColumnName,
-			// 	JoinTableClash: joinTableClash,
-			// })
+			cc = append(cc, Constraint{
+				Type:           constraint.Type,
+				Cardinality:    O2O,
+				Name:           constraint.Name,
+				TableName:      constraint.TableName,
+				RefTableName:   constraint.RefTableName,
+				ColumnName:     constraint.ColumnName,
+				RefColumnName:  constraint.RefColumnName,
+				JoinTableClash: joinTableClash,
+				IsGeneratedO2O: true,
+			})
 
 			continue
 		}
