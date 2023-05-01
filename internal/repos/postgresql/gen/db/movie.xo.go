@@ -10,7 +10,10 @@ import (
 )
 
 // Movie represents a row from 'public.movies'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type Movie struct {
 	MovieID  int    `json:"movieID" db:"movie_id" required:"true"`  // movie_id
 	Title    string `json:"title" db:"title" required:"true"`       // title
@@ -88,6 +91,7 @@ func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Movie/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newm._exists = true
 	*m = newm
 
@@ -211,5 +215,6 @@ movies.synopsis ` +
 		return nil, logerror(fmt.Errorf("movies/MovieByMovieID/pgx.CollectOneRow: %w", err))
 	}
 	m._exists = true
+
 	return &m, nil
 }

@@ -13,7 +13,10 @@ import (
 )
 
 // Notification represents a row from 'public.notifications'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type Notification struct {
 	NotificationID   int              `json:"notificationID" db:"notification_id" required:"true"`                                                 // notification_id
 	ReceiverRank     *int16           `json:"receiverRank" db:"receiver_rank" required:"true"`                                                     // receiver_rank
@@ -26,7 +29,7 @@ type Notification struct {
 	Receiver         *uuid.UUID       `json:"receiver" db:"receiver" required:"true"`                                                              // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
 
-	UserNotification *UserNotification `json:"-" db:"user_notification" openapi-go:"ignore"` // O2O
+	UserNotificationJoin *UserNotification `json:"-" db:"user_notification" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
 	// xo fields
 	_exists, _deleted bool
 }
@@ -126,6 +129,7 @@ func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newn._exists = true
 	*n = newn
 
@@ -238,7 +242,7 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true then row(user_notifications.*) end) as user_notification ` +
+(case when $1::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join user_notifications on user_notifications.notification_id = notifications.notification_id` +
@@ -257,6 +261,7 @@ left join user_notifications on user_notifications.notification_id = notificatio
 		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/pgx.CollectOneRow: %w", err))
 	}
 	n._exists = true
+
 	return &n, nil
 }
 
@@ -282,7 +287,7 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true then row(user_notifications.*) end) as user_notification ` +
+(case when $1::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "user_notifications_notification_id_fkey"
 left join user_notifications on user_notifications.notification_id = notifications.notification_id` +

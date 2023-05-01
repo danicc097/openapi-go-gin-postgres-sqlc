@@ -151,6 +151,7 @@ export interface components {
       hasGlobalNotifications: boolean;
       hasPersonalNotifications: boolean;
       lastName: string | null;
+      scopes: components["schemas"]["Scopes"];
       userID: components["schemas"]["UuidUUID"];
       username: string;
     };

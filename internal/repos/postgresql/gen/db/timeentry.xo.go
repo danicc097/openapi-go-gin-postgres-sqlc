@@ -13,7 +13,10 @@ import (
 )
 
 // TimeEntry represents a row from 'public.time_entries'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type TimeEntry struct {
 	TimeEntryID     int64     `json:"timeEntryID" db:"time_entry_id" required:"true"`        // time_entry_id
 	WorkItemID      *int64    `json:"workItemID" db:"work_item_id" required:"true"`          // work_item_id
@@ -120,6 +123,7 @@ func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newte._exists = true
 	*te = newte
 
@@ -247,6 +251,7 @@ time_entries.duration_minutes ` +
 		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/pgx.CollectOneRow: %w", err))
 	}
 	te._exists = true
+
 	return &te, nil
 }
 

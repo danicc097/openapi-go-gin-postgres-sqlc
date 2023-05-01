@@ -536,6 +536,8 @@ components:
         lastName:
           nullable: true
           type: string
+        scopes:
+          $ref: '#/components/schemas/Scopes'
         userID:
           $ref: '#/components/schemas/UuidUUID'
         username:
@@ -547,6 +549,7 @@ components:
         - firstName
         - lastName
         - fullName
+        - scopes
         - hasPersonalNotifications
         - hasGlobalNotifications
         - createdAt
@@ -783,12 +786,12 @@ components:
         - firstName
         - lastName
         - fullName
+        - scopes
         - hasPersonalNotifications
         - hasGlobalNotifications
         - createdAt
         - deletedAt
         - role
-        - scopes
       type: object
       x-postgen-struct: RestUserResponse
     HTTPValidationError:

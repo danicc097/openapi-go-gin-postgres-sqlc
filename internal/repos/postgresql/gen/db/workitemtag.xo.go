@@ -10,7 +10,10 @@ import (
 )
 
 // WorkItemTag represents a row from 'public.work_item_tags'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type WorkItemTag struct {
 	WorkItemTagID int    `json:"workItemTagID" db:"work_item_tag_id" required:"true"` // work_item_tag_id
 	ProjectID     int    `json:"projectID" db:"project_id" required:"true"`           // project_id
@@ -18,7 +21,7 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description" required:"true"`        // description
 	Color         string `json:"color" db:"color" required:"true"`                    // color
 
-	WorkItems *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
+	WorkItemsJoin *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
 	// xo fields
 	_exists, _deleted bool
 }
@@ -93,6 +96,7 @@ func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newwit._exists = true
 	*wit = newwit
 
@@ -227,6 +231,7 @@ left join (
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
 	wit._exists = true
+
 	return &wit, nil
 }
 
@@ -372,6 +377,7 @@ left join (
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByWorkItemTagID/pgx.CollectOneRow: %w", err))
 	}
 	wit._exists = true
+
 	return &wit, nil
 }
 

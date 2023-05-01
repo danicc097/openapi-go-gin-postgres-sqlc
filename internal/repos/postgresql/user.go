@@ -47,7 +47,7 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params db.UserCreateParams
 func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.UserUpdateParams) (*db.User, error) {
 	user, err := u.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get user by id %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get user by id: %w", parseErrorDetail(err))
 	}
 
 	if params.Scopes != nil {
@@ -119,11 +119,11 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 		return nil, fmt.Errorf("could not get api key: %w", parseErrorDetail(err))
 	}
 
-	if uak.User == nil {
+	if uak.UserJoin == nil {
 		return nil, fmt.Errorf("could not join user by api key")
 	}
 
-	return uak.User, nil
+	return uak.UserJoin, nil
 }
 
 func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error) {

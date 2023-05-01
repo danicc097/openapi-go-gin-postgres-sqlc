@@ -120,6 +120,7 @@ generated queries from indexes
 
 	// run
 	// logf(sqlstr, {{ params $i.Fields false }})
+
 {{- if $i.IsUnique }}
   rows, err := {{ db "Query" $i }}
 	if err != nil {
@@ -132,7 +133,7 @@ generated queries from indexes
 
 	{{- if $i.Table.PrimaryKeys }}
   {{ short $i.Table }}._exists = true
-	{{ end -}}
+	{{ end }}
 
 	return &{{ short $i.Table }}, nil
 {{- else }}
@@ -207,13 +208,16 @@ generated queries from indexes
 // {{ $t.Comment | eval $t.GoName }}
 {{- else -}}
 // {{ $t.GoName }} represents a row from '{{ schema $t.SQLName }}'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//     - "property:private" to exclude a field from JSON.
+//     - "type:<pkg.type>" to override the type annotation.
+//     - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 {{- end }}
 type {{ $t.GoName }} struct {
 {{ range $t.Fields -}}
 	{{ field . "Table" $t -}}
 {{ end }}
-{{ join_fields $t.SQLName $constraints $tables }}
+{{ join_fields $t $constraints $tables }}
 {{- if $t.PrimaryKeys -}}
 	// xo fields
 	_exists, _deleted bool
@@ -276,7 +280,7 @@ type {{ $t.GoName }}UpdateParams struct {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/pgx.CollectOneRow: %w", err))
 	}
-{{- end }}
+{{ end }}
 	new{{ short $t }}._exists = true
   *{{ short $t }} = new{{ short $t }}
 

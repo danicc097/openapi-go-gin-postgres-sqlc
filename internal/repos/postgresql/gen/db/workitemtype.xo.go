@@ -10,7 +10,10 @@ import (
 )
 
 // WorkItemType represents a row from 'public.work_item_types'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type WorkItemType struct {
 	WorkItemTypeID int    `json:"workItemTypeID" db:"work_item_type_id" required:"true"` // work_item_type_id
 	ProjectID      int    `json:"projectID" db:"project_id" required:"true"`             // project_id
@@ -18,7 +21,7 @@ type WorkItemType struct {
 	Description    string `json:"description" db:"description" required:"true"`          // description
 	Color          string `json:"color" db:"color" required:"true"`                      // color
 
-	WorkItem *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
+	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
 	// xo fields
 	_exists, _deleted bool
 }
@@ -93,6 +96,7 @@ func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, erro
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newwit._exists = true
 	*wit = newwit
 
@@ -200,7 +204,7 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true then row(work_items.*) end) as work_item ` +
+(case when $1::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
@@ -219,6 +223,7 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
 	wit._exists = true
+
 	return &wit, nil
 }
 
@@ -239,7 +244,7 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true then row(work_items.*) end) as work_item ` +
+(case when $1::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
@@ -280,7 +285,7 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true then row(work_items.*) end) as work_item ` +
+(case when $1::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
@@ -321,7 +326,7 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true then row(work_items.*) end) as work_item ` +
+(case when $1::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
@@ -340,6 +345,7 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByWorkItemTypeID/pgx.CollectOneRow: %w", err))
 	}
 	wit._exists = true
+
 	return &wit, nil
 }
 

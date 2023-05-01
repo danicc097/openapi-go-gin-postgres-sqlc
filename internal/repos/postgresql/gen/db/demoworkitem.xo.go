@@ -12,7 +12,10 @@ import (
 )
 
 // DemoWorkItem represents a row from 'public.demo_work_items'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type DemoWorkItem struct {
 	WorkItemID    int64     `json:"workItemID" db:"work_item_id" required:"true"`       // work_item_id
 	Ref           string    `json:"ref" db:"ref" required:"true"`                       // ref
@@ -20,7 +23,7 @@ type DemoWorkItem struct {
 	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at" required:"true"` // last_message_at
 	Reopened      bool      `json:"reopened" db:"reopened" required:"true"`             // reopened
 
-	WorkItem *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
+	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
 	// xo fields
 	_exists, _deleted bool
 }
@@ -220,7 +223,7 @@ demo_work_items.ref,
 demo_work_items.line,
 demo_work_items.last_message_at,
 demo_work_items.reopened,
-(case when $1::boolean = true then row(work_items.*) end) as work_item ` +
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
@@ -239,6 +242,7 @@ left join work_items on work_items.work_item_id = demo_work_items.work_item_id` 
 		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
 	}
 	dwi._exists = true
+
 	return &dwi, nil
 }
 
@@ -259,7 +263,7 @@ demo_work_items.ref,
 demo_work_items.line,
 demo_work_items.last_message_at,
 demo_work_items.reopened,
-(case when $1::boolean = true then row(work_items.*) end) as work_item ` +
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.demo_work_items ` +
 		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +

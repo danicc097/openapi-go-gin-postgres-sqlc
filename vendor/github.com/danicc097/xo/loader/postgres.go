@@ -164,9 +164,9 @@ func PostgresGoType(d xo.Type, schema, itype string) (string, string, error) {
 		// TODO: write custom type for interval marshaling
 		goType, zero = "[]byte", "nil"
 	case "json":
-		goType, zero = "pgtype.JSON", "nil"
+		goType, zero = "[]byte", `""`
 	case "jsonb":
-		goType, zero = "pgtype.JSONB", "nil"
+		goType, zero = "[]byte", `""`
 	case "hstore":
 		goType, zero = "hstore.Hstore", "nil"
 	case "uuid":

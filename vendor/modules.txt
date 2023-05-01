@@ -44,7 +44,7 @@ github.com/cespare/xxhash/v2
 # github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311
 ## explicit; go 1.15
 github.com/chenzhuoyu/base64x
-# github.com/danicc097/xo v0.0.0-20221201135528-7fc8b1a0bfd4
+# github.com/danicc097/xo v0.0.0-20230501100212-f12603be74b1
 ## explicit; go 1.19
 github.com/danicc097/xo/loader
 github.com/danicc097/xo/models
@@ -281,7 +281,7 @@ github.com/labstack/gommon/log
 # github.com/leodido/go-urn v1.2.3
 ## explicit; go 1.16
 github.com/leodido/go-urn
-# github.com/lib/pq v1.10.8
+# github.com/lib/pq v1.10.9
 ## explicit; go 1.13
 github.com/lib/pq
 github.com/lib/pq/oid
@@ -357,7 +357,7 @@ github.com/smartystreets/assertions/internal/oglematchers
 github.com/smartystreets/gunit
 github.com/smartystreets/gunit/reports
 github.com/smartystreets/gunit/scan
-# github.com/spf13/cobra v1.6.1
+# github.com/spf13/cobra v1.7.0
 ## explicit; go 1.15
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
@@ -500,7 +500,7 @@ golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/sha3
-# golang.org/x/exp v0.0.0-20230420155640-133eef4313cb
+# golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
 ## explicit; go 1.20
 golang.org/x/exp/constraints
 golang.org/x/exp/slices
@@ -673,7 +673,10 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# mvdan.cc/gofumpt v0.4.0
-## explicit; go 1.18
+# mvdan.cc/gofumpt v0.5.0
+## explicit; go 1.19
 mvdan.cc/gofumpt/format
+mvdan.cc/gofumpt/internal/govendor/go/doc/comment
+mvdan.cc/gofumpt/internal/govendor/go/format
+mvdan.cc/gofumpt/internal/govendor/go/printer
 mvdan.cc/gofumpt/internal/version

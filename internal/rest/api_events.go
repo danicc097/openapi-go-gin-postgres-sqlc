@@ -74,15 +74,17 @@ func (ps *PubSub) Subscribe(topic models.Topics, userID string) <-chan string {
 	sub := make(chan string, 1)
 	ps.subs[topic][sub] = struct{}{}
 
+	// create personal sub chan if it doesn't exist already
 	if _, ok := ps.personalSub[userID]; !ok {
-		ps.personalSub[userID] = sub
+		c := make(chan string, 1)
+		ps.personalSub[userID] = c
 	}
 
 	return sub
 }
 
 func (ps *PubSub) Publish(topic models.Topics, msg string) {
-	ps.mu.RLock()
+	ps.mu.RLock() // only reading subs
 	defer ps.mu.RUnlock()
 
 	if ps.closed {
@@ -94,8 +96,9 @@ func (ps *PubSub) Publish(topic models.Topics, msg string) {
 	}
 }
 
+// PublishTo sends a direct message to the specified user IDs.
 func (ps *PubSub) PublishTo(userIDs []string, msg string) {
-	ps.mu.RLock()
+	ps.mu.RLock() // only reading subs
 	defer ps.mu.RUnlock()
 
 	if ps.closed {
@@ -280,7 +283,7 @@ func (stream *Event) listen() {
 }
 
 // TODO see if can reproduce https://github.com/gin-gonic/gin/issues/3142
-// some bugs where fixed in sse example committed 4 months later, so...
+// some bugs were fixed in sse example committed 4 months later, so...
 func (stream *Event) serveHTTP() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		fmt.Println("stream events - Initialize client channel")

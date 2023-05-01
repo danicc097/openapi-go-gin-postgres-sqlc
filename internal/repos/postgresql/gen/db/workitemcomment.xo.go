@@ -13,7 +13,10 @@ import (
 )
 
 // WorkItemComment represents a row from 'public.work_item_comments'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type WorkItemComment struct {
 	WorkItemCommentID int64     `json:"workItemCommentID" db:"work_item_comment_id" required:"true"` // work_item_comment_id
 	WorkItemID        int64     `json:"workItemID" db:"work_item_id" required:"true"`                // work_item_id
@@ -22,6 +25,7 @@ type WorkItemComment struct {
 	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true"`                   // created_at
 	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at" required:"true"`                   // updated_at
 
+	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
 	// xo fields
 	_exists, _deleted bool
 }
@@ -80,6 +84,7 @@ func WithWorkItemCommentOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentS
 }
 
 type WorkItemCommentJoins struct {
+	User bool
 }
 
 // WithWorkItemCommentJoin joins with the given tables.
@@ -114,6 +119,7 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newwic._exists = true
 	*wic = newwic
 
@@ -221,16 +227,18 @@ work_item_comments.work_item_id,
 work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
-work_item_comments.updated_at ` +
+work_item_comments.updated_at,
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.work_item_comments ` +
-		`` +
-		` WHERE work_item_comments.work_item_comment_id = $1 `
+		`-- O2O join generated from "work_item_comments_user_id_fkey"
+left join users on users.user_id = work_item_comments.user_id` +
+		` WHERE work_item_comments.work_item_comment_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemCommentID)
-	rows, err := db.Query(ctx, sqlstr, workItemCommentID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, workItemCommentID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/db.Query: %w", err))
 	}
@@ -239,6 +247,7 @@ work_item_comments.updated_at ` +
 		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/pgx.CollectOneRow: %w", err))
 	}
 	wic._exists = true
+
 	return &wic, nil
 }
 
@@ -259,16 +268,18 @@ work_item_comments.work_item_id,
 work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
-work_item_comments.updated_at ` +
+work_item_comments.updated_at,
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.work_item_comments ` +
-		`` +
-		` WHERE work_item_comments.work_item_id = $1 `
+		`-- O2O join generated from "work_item_comments_user_id_fkey"
+left join users on users.user_id = work_item_comments.user_id` +
+		` WHERE work_item_comments.work_item_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, workItemID)
 	if err != nil {
 		return nil, logerror(err)
 	}

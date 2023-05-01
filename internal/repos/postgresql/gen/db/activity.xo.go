@@ -10,7 +10,10 @@ import (
 )
 
 // Activity represents a row from 'public.activities'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type Activity struct {
 	ActivityID   int    `json:"activityID" db:"activity_id" required:"true"`     // activity_id
 	ProjectID    int    `json:"projectID" db:"project_id" required:"true"`       // project_id
@@ -18,7 +21,7 @@ type Activity struct {
 	Description  string `json:"description" db:"description" required:"true"`    // description
 	IsProductive bool   `json:"isProductive" db:"is_productive" required:"true"` // is_productive
 
-	TimeEntries *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
 	// xo fields
 	_exists, _deleted bool
 }
@@ -93,6 +96,7 @@ func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newa._exists = true
 	*a = newa
 
@@ -226,6 +230,7 @@ left join (
 		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
 	a._exists = true
+
 	return &a, nil
 }
 
@@ -368,6 +373,7 @@ left join (
 		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/pgx.CollectOneRow: %w", err))
 	}
 	a._exists = true
+
 	return &a, nil
 }
 

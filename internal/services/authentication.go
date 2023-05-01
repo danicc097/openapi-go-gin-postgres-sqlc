@@ -25,6 +25,8 @@ type Authentication struct {
 	usvc   *User
 }
 
+// NewAuthentication returns a new authentication service.
+// TODO can we use tx instead of providing pool at startup
 func NewAuthentication(logger *zap.Logger, usvc *User, pool *pgxpool.Pool) *Authentication {
 	return &Authentication{
 		logger: logger,

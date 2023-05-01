@@ -57,7 +57,7 @@ func TestGetUserRoute(t *testing.T) {
 
 		srv.Handler.ServeHTTP(resp, req)
 
-		ures := UserResponse{User: *ufixture.User, Role: role, Scopes: ufixture.User.Scopes}
+		ures := UserResponse{User: *ufixture.User, Role: role}
 
 		res, err := json.Marshal(ures)
 		if err != nil {

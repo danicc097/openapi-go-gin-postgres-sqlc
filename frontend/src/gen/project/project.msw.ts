@@ -7,7 +7,7 @@
  */
 import { rest } from 'msw'
 import { faker } from '@faker-js/faker'
-import { Project } from '.././model'
+import { Project, Scope } from '.././model'
 
 export const getGetProjectMock = () => ({
   createdAt: (() => faker.date.past())(),
@@ -64,6 +64,7 @@ export const getGetProjectWorkitemsMock = () =>
         hasGlobalNotifications: faker.datatype.boolean(),
         hasPersonalNotifications: faker.datatype.boolean(),
         lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+        scopes: faker.helpers.arrayElements(Object.values(Scope)),
         userID: faker.random.word(),
         username: faker.random.word(),
       })),

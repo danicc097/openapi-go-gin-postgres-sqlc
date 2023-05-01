@@ -11,7 +11,10 @@ import (
 )
 
 // UserTeam represents a row from 'public.user_team'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type UserTeam struct {
 	TeamID int       `json:"teamID" db:"team_id" required:"true"` // team_id
 	UserID uuid.UUID `json:"userID" db:"user_id" required:"true"` // user_id
@@ -144,6 +147,7 @@ user_team.user_id ` +
 		return nil, logerror(fmt.Errorf("user_team/UserTeamByUserIDTeamID/pgx.CollectOneRow: %w", err))
 	}
 	ut._exists = true
+
 	return &ut, nil
 }
 

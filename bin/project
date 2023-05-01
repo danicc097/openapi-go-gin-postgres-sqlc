@@ -61,7 +61,6 @@ readonly PG_REPO="$REPOS/postgresql"
 readonly POSTGRES_TEST_DB="postgres_test"
 readonly MAX_COMMENT_LEN=88
 readonly DUMPS_FOLDER="$HOME/openapi_go_gin_postgres_dumps"
-readonly GEN_POSTGRES_DB="gen_db"
 pkg="$(head -1 go.mod)"
 readonly GOMOD_PKG="${pkg#module *}"
 readonly OPID_AUTH="operationAuth.gen.json"
@@ -76,6 +75,8 @@ readonly CACHE_PG_REPO_GEN="$CACHE_GEN/pgrepo/gen"
 readonly CACHE_FRONTEND_GEN="$CACHE_GEN/frontend/gen"
 
 readonly MAX_FNAME_LOG_LEN=13
+
+GEN_POSTGRES_DB="gen_db"
 
 # determines if gen cache should be restore at program exit. 0|1
 restore_cache=0
@@ -758,7 +759,7 @@ x.gen.build-tools() {
     for cmd in pregen postgen gen-schema oapi-codegen jet; do
       echo Building $cmd...
       { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
-        echo "Could not rebuild $cmd. If you made changes to it, build it with a compilable app state" >&2; } &
+        echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
     done
 
     wait
@@ -809,7 +810,7 @@ x.lint.frontend() {
 x.lint.sql() {
   { { {
     SQL_DIRS=(
-      "$PG_REPO/queries"
+      "$REPOS"
       "db"
     )
     for slq_dir in ${SQL_DIRS[@]}; do
@@ -824,7 +825,7 @@ x.lint.sql() {
         --comma-start \
         --nogrouping \
         --comma-break \
-        $(find "$slq_dir" -maxdepth 3 -name '*.*sql')
+        $(find "$slq_dir" -name '*.*sql')
     done
 
     echo "Success"
@@ -850,11 +851,43 @@ x.test.backend-setup() {
 # Args: [...]
 x.test() {
   { { {
+    x.test.xo
+
     export POSTGRES_TRACE=false
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
     echo "Running ${GREEN}\"APP_ENV=$env go test $* ./...\"${OFF}"
     APP_ENV="$env" go test "$@" ./...
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Run custom xo generation script tests
+x.test.xo() {
+  { { {
+    POSTGRES_DB="xo_tests"
+    GEN_POSTGRES_DB="$POSTGRES_DB"
+
+    drop_and_recreate_db $POSTGRES_DB
+
+    echo "Running xo template tests"
+
+    test_dir="$PG_REPO/xo-templates/tests"
+    dockerdb_psql -d $POSTGRES_DB <"$test_dir/schema.sql"
+    echo "Schema loaded"
+
+    rm -rf "$test_dir/got"
+    mkdir -p "$test_dir/got"
+    xo_schema -o "$test_dir/got" --debug \
+      --schema public \
+      --ignore "*.created_at" \
+      --ignore "*.updated_at" || err "Failed xo public schema generation"
+
+    files=$(find "$test_dir/got" \
+      -name "*.go")
+    goimports -w $files
+    gofumpt -w $files
+
+    $test_dir/run_tests
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

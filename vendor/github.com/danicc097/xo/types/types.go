@@ -159,6 +159,7 @@ type Field struct {
 	Join         bool   `json:"join,omitempty"`
 	IsDateOrTime bool   `json:"is_date_or_time,omitempty"`
 	Properties   string `json:"properties,omitempty"`
+	TypeOverride string `json:"type_override,omitempty"`
 }
 
 // Type holds information for a database type.

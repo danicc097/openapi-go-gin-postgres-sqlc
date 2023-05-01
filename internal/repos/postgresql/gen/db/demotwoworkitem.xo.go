@@ -12,12 +12,15 @@ import (
 )
 
 // DemoTwoWorkItem represents a row from 'public.demo_two_work_items'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type DemoTwoWorkItem struct {
 	WorkItemID            int64      `json:"workItemID" db:"work_item_id" required:"true"`                         // work_item_id
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2" required:"true"` // custom_date_for_project_2
 
-	WorkItem *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
+	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
 	// xo fields
 	_exists, _deleted bool
 }
@@ -208,7 +211,7 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, o
 	sqlstr := `SELECT ` +
 		`demo_two_work_items.work_item_id,
 demo_two_work_items.custom_date_for_project_2,
-(case when $1::boolean = true then row(work_items.*) end) as work_item ` +
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.demo_two_work_items ` +
 		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = demo_two_work_items.work_item_id` +
@@ -227,6 +230,7 @@ left join work_items on work_items.work_item_id = demo_two_work_items.work_item_
 		return nil, logerror(fmt.Errorf("demo_two_work_items/DemoTwoWorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
 	}
 	dtwi._exists = true
+
 	return &dtwi, nil
 }
 

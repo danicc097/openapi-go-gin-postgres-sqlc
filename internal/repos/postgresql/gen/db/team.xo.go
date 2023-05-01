@@ -12,7 +12,10 @@ import (
 )
 
 // Team represents a row from 'public.teams'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type Team struct {
 	TeamID      int       `json:"teamID" db:"team_id" required:"true"`          // team_id
 	ProjectID   int       `json:"projectID" db:"project_id" required:"true"`    // project_id
@@ -21,8 +24,9 @@ type Team struct {
 	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
 	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
-	TimeEntries *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
-	Users       *[]User      `json:"-" db:"users" openapi-go:"ignore"`        // M2M
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
+	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`        // M2M
+	WorkItemJoin    *WorkItem    `json:"-" db:"work_item" openapi-go:"ignore"`    // O2O (inferred O2O - modify via `cardinality:` column comment)
 	// xo fields
 	_exists, _deleted bool
 }
@@ -83,6 +87,7 @@ func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 type TeamJoins struct {
 	TimeEntries bool
 	Users       bool
+	WorkItem    bool
 }
 
 // WithTeamJoin joins with the given tables.
@@ -117,6 +122,7 @@ func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Insert/pgx.CollectOneRow: %w", err))
 	}
+
 	newt._exists = true
 	*t = newt
 
@@ -226,7 +232,8 @@ teams.description,
 teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
+(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
+(case when $3::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -246,14 +253,16 @@ left join (
     	join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
-` +
-		` WHERE teams.name = $3 AND teams.project_id = $4 `
+
+-- O2O join generated from "work_items_team_id_fkey"
+left join work_items on work_items.team_id = teams.team_id` +
+		` WHERE teams.name = $4 AND teams.project_id = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/db.Query: %w", err))
 	}
@@ -262,6 +271,7 @@ left join (
 		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
 	t._exists = true
+
 	return &t, nil
 }
 
@@ -284,7 +294,8 @@ teams.description,
 teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
+(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
+(case when $3::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -304,14 +315,16 @@ left join (
     	join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
-` +
-		` WHERE teams.name = $3 `
+
+-- O2O join generated from "work_items_team_id_fkey"
+left join work_items on work_items.team_id = teams.team_id` +
+		` WHERE teams.name = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, name)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -344,7 +357,8 @@ teams.description,
 teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
+(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
+(case when $3::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -364,14 +378,16 @@ left join (
     	join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
-` +
-		` WHERE teams.project_id = $3 `
+
+-- O2O join generated from "work_items_team_id_fkey"
+left join work_items on work_items.team_id = teams.team_id` +
+		` WHERE teams.project_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, projectID)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -404,7 +420,8 @@ teams.description,
 teams.created_at,
 teams.updated_at,
 (case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
+(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
+(case when $3::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
 		`-- O2M join generated from "time_entries_team_id_fkey"
 left join (
@@ -424,14 +441,16 @@ left join (
     	join users on users.user_id = user_team.user_id
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
-` +
-		` WHERE teams.team_id = $3 `
+
+-- O2O join generated from "work_items_team_id_fkey"
+left join work_items on work_items.team_id = teams.team_id` +
+		` WHERE teams.team_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, teamID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, teamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/db.Query: %w", err))
 	}
@@ -440,6 +459,7 @@ left join (
 		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/pgx.CollectOneRow: %w", err))
 	}
 	t._exists = true
+
 	return &t, nil
 }
 

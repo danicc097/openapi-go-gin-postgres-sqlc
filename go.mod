@@ -3,7 +3,7 @@ module github.com/danicc097/openapi-go-gin-postgres-sqlc
 go 1.19
 
 require (
-	github.com/danicc097/xo v0.0.0-20221201135528-7fc8b1a0bfd4
+	github.com/danicc097/xo v0.0.0-20230501100212-f12603be74b1
 	github.com/deepmap/oapi-codegen v1.12.5-0.20230403173426-fd06f5aed350
 	github.com/getkin/kin-openapi v0.116.0
 	github.com/gin-contrib/cors v1.4.0
@@ -39,9 +39,9 @@ require (
 	go.opentelemetry.io/otel/sdk v1.14.0
 	go.opentelemetry.io/otel/trace v1.14.0
 	go.uber.org/zap v1.24.0
-	golang.org/x/exp v0.0.0-20230420155640-133eef4313cb
+	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
 	golang.org/x/sync v0.1.0
-	mvdan.cc/gofumpt v0.4.0
+	mvdan.cc/gofumpt v0.5.0
 )
 
 require (
@@ -69,7 +69,7 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
-	github.com/spf13/cobra v1.6.1 // indirect
+	github.com/spf13/cobra v1.7.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/swaggest/refl v1.1.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
@@ -106,7 +106,7 @@ require (
 	github.com/labstack/echo/v4 v4.10.2 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/leodido/go-urn v1.2.3 // indirect
-	github.com/lib/pq v1.10.8
+	github.com/lib/pq v1.10.9
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.18 // indirect
