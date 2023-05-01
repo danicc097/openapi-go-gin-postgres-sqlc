@@ -12,7 +12,10 @@ import (
 )
 
 // WorkItem represents a row from 'public.work_items'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type WorkItem struct {
 	WorkItemID     int64      `json:"workItemID" db:"work_item_id" required:"true"`          // work_item_id
 	Title          string     `json:"title" db:"title" required:"true"`                      // title

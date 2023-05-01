@@ -10,7 +10,10 @@ import (
 )
 
 // Book represents a row from 'public.books'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type Book struct {
 	BookID int    `json:"bookID" db:"book_id" required:"true"` // book_id
 	Name   string `json:"name" db:"name" required:"true"`      // name

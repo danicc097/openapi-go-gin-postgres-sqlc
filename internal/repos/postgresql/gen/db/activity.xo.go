@@ -10,7 +10,10 @@ import (
 )
 
 // Activity represents a row from 'public.activities'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type Activity struct {
 	ActivityID   int    `json:"activityID" db:"activity_id" required:"true"`     // activity_id
 	ProjectID    int    `json:"projectID" db:"project_id" required:"true"`       // project_id

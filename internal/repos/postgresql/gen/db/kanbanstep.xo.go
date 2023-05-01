@@ -10,7 +10,10 @@ import (
 )
 
 // KanbanStep represents a row from 'public.kanban_steps'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type KanbanStep struct {
 	KanbanStepID  int    `json:"kanbanStepID" db:"kanban_step_id" required:"true"`  // kanban_step_id
 	ProjectID     int    `json:"projectID" db:"project_id" required:"true"`         // project_id

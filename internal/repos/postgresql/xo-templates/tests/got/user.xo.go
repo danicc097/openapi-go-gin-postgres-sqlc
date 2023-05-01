@@ -11,7 +11,10 @@ import (
 )
 
 // User represents a row from 'public.users'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type User struct {
 	UserID uuid.UUID `json:"userID" db:"user_id" required:"true"` // user_id
 	Name   string    `json:"name" db:"name" required:"true"`      // name

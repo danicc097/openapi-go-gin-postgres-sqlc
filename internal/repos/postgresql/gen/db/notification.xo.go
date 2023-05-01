@@ -13,7 +13,10 @@ import (
 )
 
 // Notification represents a row from 'public.notifications'.
-// Include "property:private" in a SQL column comment to exclude a field from JSON.
+// Change properties via SQL column comments, joined with ",":
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type Notification struct {
 	NotificationID   int              `json:"notificationID" db:"notification_id" required:"true"`                                                 // notification_id
 	ReceiverRank     *int16           `json:"receiverRank" db:"receiver_rank" required:"true"`                                                     // receiver_rank
