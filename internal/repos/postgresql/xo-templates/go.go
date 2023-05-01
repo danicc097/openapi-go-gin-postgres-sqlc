@@ -909,7 +909,7 @@ func convertIndex(ctx context.Context, t Table, i xo.Index) (Index, error) {
 
 func convertConstraints(ctx context.Context, constraints []xo.Constraint, tables []xo.Table) ([]Constraint, error) {
 	var cc []Constraint // will create additional dummy constraints for automatic O2O
-
+cc_label:
 	for _, constraint := range constraints {
 		fmt.Printf("\nconstraint: %+v\n", constraint)
 		if !validCardinality(constraint.Cardinality) {
@@ -968,7 +968,14 @@ func convertConstraints(ctx context.Context, constraints []xo.Constraint, tables
 			// dummy constraint to automatically create join in
 			//  (TODO need to do this only if fk fields len = 1)
 			// and check if field is unique or not
-			// TODO ignore duplicate joins generated for lookup keys between tables like api_key_id
+			// ignore duplicate joins generated for partitioned columns to new tables, joined by helper keys, e.g. api_key_id
+			for _, seenConstraint := range cc {
+				if seenConstraint.TableName == constraint.TableName &&
+					seenConstraint.RefTableName == constraint.RefTableName &&
+					seenConstraint.Type == constraint.Type {
+					continue cc_label
+				}
+			}
 
 			cc = append(cc, Constraint{
 				Type:           constraint.Type,
