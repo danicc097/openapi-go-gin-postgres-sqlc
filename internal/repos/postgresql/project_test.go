@@ -105,7 +105,3 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 		})
 	}
 }
-
-// projects only created in migrations on demand
-// func randomProjectCreateParams(t *testing.T) repos.ProjectCreateParams {
-// }
