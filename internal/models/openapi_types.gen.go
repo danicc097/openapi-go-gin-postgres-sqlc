@@ -329,6 +329,7 @@ type DbUser struct {
 	HasGlobalNotifications   bool       `json:"hasGlobalNotifications"`
 	HasPersonalNotifications bool       `json:"hasPersonalNotifications"`
 	LastName                 *string    `json:"lastName"`
+	Scopes                   Scopes     `json:"scopes"`
 	UserID                   UuidUUID   `json:"userID"`
 	Username                 string     `json:"username"`
 }

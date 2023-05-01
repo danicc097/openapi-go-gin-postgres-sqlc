@@ -50,8 +50,6 @@ func WithBookReviewLimit(limit int) BookReviewSelectConfigOption {
 
 type BookReviewOrderBy = string
 
-const ()
-
 type BookReviewJoins struct {
 	Book bool
 }

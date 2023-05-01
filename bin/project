@@ -885,6 +885,7 @@ x.test.xo() {
     files=$(find "$test_dir/got" \
       -name "*.go")
     goimports -w $files
+    gofumpt -w $files
 
     $test_dir/run_tests
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

@@ -18,7 +18,7 @@ for want_file in "$CWD"/want/*; do
     exit_code=1
   fi
 
-  if ! diff -u "$want_file" "$got_file" >&2; then
+  if ! diff -u --color=always "$want_file" "$got_file" >&2; then
     echo "ERROR: $want_file and $got_file differ." >&2
     exit_code=1
   fi

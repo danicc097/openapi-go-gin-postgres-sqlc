@@ -11,7 +11,6 @@
  */
 export type Project = 'demo' | 'demo_two'
 export type UuidUUID = string
-export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 export type Scope =
   | 'test-scope'
   | 'users:read'
@@ -21,6 +20,7 @@ export type Scope =
   | 'project-settings:write'
   | 'work-item:review'
 export type Scopes = Scope[]
+export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 /**
  * location in body path, if any
  */
@@ -128,6 +128,7 @@ export interface DbUser {
   hasGlobalNotifications: boolean
   hasPersonalNotifications: boolean
   lastName: string | null
+  scopes: Scopes
   userID: UuidUUID
   username: string
 }

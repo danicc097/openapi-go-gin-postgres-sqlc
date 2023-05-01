@@ -51,8 +51,6 @@ func WithUserLimit(limit int) UserSelectConfigOption {
 
 type UserOrderBy = string
 
-const ()
-
 type UserJoins struct {
 	Books       bool
 	BookReviews bool
