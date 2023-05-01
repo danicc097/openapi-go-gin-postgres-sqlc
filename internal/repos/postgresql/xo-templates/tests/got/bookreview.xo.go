@@ -19,7 +19,7 @@ type BookReview struct {
 	BookID   *int      `json:"bookID" db:"book_id" required:"true"`    // book_id
 	Reviewer uuid.UUID `json:"reviewer" db:"reviewer" required:"true"` // reviewer
 
-	BookJoin *Book `json:"-" db:"book" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
+	BookJoin *Book `json:"-" db:"book" openapi-go:"ignore"` // O2O (inferred)
 }
 
 // BookReviewCreateParams represents insert params for 'public.book_reviews'

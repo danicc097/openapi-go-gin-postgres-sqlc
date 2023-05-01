@@ -25,7 +25,7 @@ type WorkItemComment struct {
 	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true"`                   // created_at
 	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at" required:"true"`                   // updated_at
 
-	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
+	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (inferred)
 	// xo fields
 	_exists, _deleted bool
 }

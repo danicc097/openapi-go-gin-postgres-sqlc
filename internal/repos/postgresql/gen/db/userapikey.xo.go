@@ -23,7 +23,7 @@ type UserAPIKey struct {
 	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on" required:"true"` // expires_on
 	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true"`       // user_id
 
-	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
+	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (inferred)
 	// xo fields
 	_exists, _deleted bool
 }

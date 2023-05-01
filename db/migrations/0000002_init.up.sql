@@ -375,6 +375,8 @@ create table work_item_comments (
 
 comment on column work_item_comments.work_item_id is 'cardinality:O2M';
 
+-- comment on column work_item_comments.user_id is 'cardinality:O2M';
+
 create index on work_item_comments (work_item_id);
 
 create table work_item_tags (

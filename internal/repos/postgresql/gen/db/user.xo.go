@@ -39,10 +39,10 @@ type User struct {
 	NotificationsJoinReceiver *[]Notification     `json:"-" db:"notifications_receiver" openapi-go:"ignore"` // O2M
 	NotificationsJoinSender   *[]Notification     `json:"-" db:"notifications_sender" openapi-go:"ignore"`   // O2M
 	TimeEntriesJoin           *[]TimeEntry        `json:"-" db:"time_entries" openapi-go:"ignore"`           // O2M
-	UserAPIKeyJoin            *UserAPIKey         `json:"-" db:"user_api_key" openapi-go:"ignore"`           // O2O (inferred O2O - modify via `cardinality:` column comment)
+	UserAPIKeyJoin            *UserAPIKey         `json:"-" db:"user_api_key" openapi-go:"ignore"`           // O2O (inferred)
 	UserNotificationsJoin     *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"`     // O2M
 	TeamsJoin                 *[]Team             `json:"-" db:"teams" openapi-go:"ignore"`                  // M2M
-	WorkItemCommentJoin       *WorkItemComment    `json:"-" db:"work_item_comment" openapi-go:"ignore"`      // O2O (inferred O2O - modify via `cardinality:` column comment)
+	WorkItemCommentJoin       *WorkItemComment    `json:"-" db:"work_item_comment" openapi-go:"ignore"`      // O2O (inferred)
 	WorkItemsJoin             *[]WorkItem         `json:"-" db:"work_items" openapi-go:"ignore"`             // M2M
 	// xo fields
 	_exists, _deleted bool

@@ -26,7 +26,7 @@ type Team struct {
 
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
 	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`        // M2M
-	WorkItemJoin    *WorkItem    `json:"-" db:"work_item" openapi-go:"ignore"`    // O2O (inferred O2O - modify via `cardinality:` column comment)
+	WorkItemJoin    *WorkItem    `json:"-" db:"work_item" openapi-go:"ignore"`    // O2O (inferred)
 	// xo fields
 	_exists, _deleted bool
 }

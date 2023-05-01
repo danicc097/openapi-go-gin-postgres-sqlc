@@ -2946,7 +2946,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 
 				var notes string
 				if c.IsGeneratedO2O {
-					notes = " (inferred O2O - modify via `cardinality:` column comment)"
+					notes = " (inferred)"
 				}
 
 				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Singularize(c.RefTableName))

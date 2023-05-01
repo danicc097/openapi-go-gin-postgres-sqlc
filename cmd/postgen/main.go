@@ -13,10 +13,9 @@ import (
 )
 
 func main() {
-	var env, cacheDir, specPath string
+	var env, specPath string
 
 	flag.StringVar(&env, "env", ".env", "Environment Variables filename")
-	flag.StringVar(&cacheDir, "cachedir", ".postgen.cache", "Cache dir")
 	flag.StringVar(&specPath, "spec", "openapi.yaml", "OpenAPI specification")
 	flag.Parse()
 

@@ -19,7 +19,7 @@ type Book struct {
 	Name   string `json:"name" db:"name" required:"true"`      // name
 
 	AuthorsJoin    *[]Book_Author `json:"-" db:"authors" openapi-go:"ignore"`     // M2M
-	BookReviewJoin *BookReview    `json:"-" db:"book_review" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
+	BookReviewJoin *BookReview    `json:"-" db:"book_review" openapi-go:"ignore"` // O2O (inferred)
 	// xo fields
 	_exists, _deleted bool
 }

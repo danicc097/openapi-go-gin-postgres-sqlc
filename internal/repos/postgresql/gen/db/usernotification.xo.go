@@ -21,7 +21,7 @@ type UserNotification struct {
 	Read               bool      `json:"read" db:"read" required:"true"`                               // read
 	UserID             uuid.UUID `json:"userID" db:"user_id" required:"true"`                          // user_id
 
-	NotificationJoin *Notification `json:"-" db:"notification" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
+	NotificationJoin *Notification `json:"-" db:"notification" openapi-go:"ignore"` // O2O (inferred)
 	// xo fields
 	_exists, _deleted bool
 }

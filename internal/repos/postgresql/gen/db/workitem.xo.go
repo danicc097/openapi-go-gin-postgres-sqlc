@@ -30,15 +30,15 @@ type WorkItem struct {
 	UpdatedAt      time.Time  `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
 	DeletedAt      *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
 
-	DemoTwoWorkItemJoin  *DemoTwoWorkItem   `json:"-" db:"demo_two_work_item" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
-	DemoWorkItemJoin     *DemoWorkItem      `json:"-" db:"demo_work_item" openapi-go:"ignore"`     // O2O (inferred O2O - modify via `cardinality:` column comment)
+	DemoTwoWorkItemJoin  *DemoTwoWorkItem   `json:"-" db:"demo_two_work_item" openapi-go:"ignore"` // O2O (inferred)
+	DemoWorkItemJoin     *DemoWorkItem      `json:"-" db:"demo_work_item" openapi-go:"ignore"`     // O2O (inferred)
 	TimeEntriesJoin      *[]TimeEntry       `json:"-" db:"time_entries" openapi-go:"ignore"`       // O2M
 	WorkItemCommentsJoin *[]WorkItemComment `json:"-" db:"work_item_comments" openapi-go:"ignore"` // O2M
 	MembersJoin          *[]WorkItem_Member `json:"-" db:"members" openapi-go:"ignore"`            // M2M
 	WorkItemTagsJoin     *[]WorkItemTag     `json:"-" db:"work_item_tags" openapi-go:"ignore"`     // M2M
-	KanbanStepJoin       *KanbanStep        `json:"-" db:"kanban_step" openapi-go:"ignore"`        // O2O (inferred O2O - modify via `cardinality:` column comment)
-	TeamJoin             *Team              `json:"-" db:"team" openapi-go:"ignore"`               // O2O (inferred O2O - modify via `cardinality:` column comment)
-	WorkItemTypeJoin     *WorkItemType      `json:"-" db:"work_item_type" openapi-go:"ignore"`     // O2O (inferred O2O - modify via `cardinality:` column comment)
+	KanbanStepJoin       *KanbanStep        `json:"-" db:"kanban_step" openapi-go:"ignore"`        // O2O (inferred)
+	TeamJoin             *Team              `json:"-" db:"team" openapi-go:"ignore"`               // O2O (inferred)
+	WorkItemTypeJoin     *WorkItemType      `json:"-" db:"work_item_type" openapi-go:"ignore"`     // O2O (inferred)
 	// xo fields
 	_exists, _deleted bool
 }

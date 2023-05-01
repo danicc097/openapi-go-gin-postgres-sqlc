@@ -77,8 +77,6 @@ func main() {
 		log.Fatalf("postgresql.New: %s\n", err)
 	}
 
-	var rows pgx.Rows
-
 	//
 	//
 	//
@@ -122,7 +120,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("UserAPIKeyByAPIKey: %v", err)
 	}
-	fmt.Printf("found user from its api key u: %v#\n", uak.UserJoin)
+	fmt.Printf("found user from its api key u: %+v\n", uak)
+	fmt.Printf("found user from its api key u (UserJoin): %+v\n", uak.UserJoin)
+
+	os.Exit(1)
 
 	getUserNotificationsByUserID := SELECT(
 		UserNotifications.AllColumns,
@@ -137,10 +138,10 @@ func main() {
 	).ORDER_BY(
 		Notifications.CreatedAt.DESC(),
 	)
-	query, args := getUserNotificationsByUserID.Sql()
+	// query, args := getUserNotificationsByUserID.Sql()
 
-	fmt.Printf("query: %v\n", query)
-	fmt.Printf("args: %#v\n", args)
+	// fmt.Printf("query: %v\n", query)
+	// fmt.Printf("args: %#v\n", args)
 
 	type Res []struct {
 		model.UserNotifications
@@ -166,21 +167,6 @@ func main() {
 		log.Fatal(err.Error())
 	}
 	format.PrintJSON(nn)
-
-	rows, _ = pool.Query(context.Background(), fmt.Sprintf(`SELECT user_api_keys.user_api_key_id,
-	user_api_keys.api_key,
-	user_api_keys.expires_on,
-	user_api_keys.user_id,
-	row_to_json(users.*) as user
-	FROM public.user_api_keys
-	left join users on users.user_id = user_api_keys.user_id
-	WHERE user_api_keys.user_id = '%s'`, user.UserID)) // select api_key from user_api_keys limit 1;
-	uaks, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[db.UserAPIKey])
-	if err != nil {
-		fmt.Printf("CollectRows error: %v", err)
-		return
-	}
-	format.PrintJSON(uaks[0])
 }
 
 type Item struct {
