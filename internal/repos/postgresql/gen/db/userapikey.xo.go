@@ -23,7 +23,6 @@ type UserAPIKey struct {
 	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on" required:"true"` // expires_on
 	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true"`       // user_id
 
-	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -78,7 +77,6 @@ func WithUserAPIKeyOrderBy(rows ...UserAPIKeyOrderBy) UserAPIKeySelectConfigOpti
 }
 
 type UserAPIKeyJoins struct {
-	User bool
 }
 
 // WithUserAPIKeyJoin joins with the given tables.
@@ -222,7 +220,7 @@ user_api_keys.expires_on,
 user_api_keys.user_id,
 (case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
-		`-- O2O join generated from "user_api_keys_user_id_fkey"
+		`-- automatic join generated from foreign key on "user_id"
 left join users on users.user_id = user_api_keys.user_id` +
 		` WHERE user_api_keys.api_key = $2 `
 	sqlstr += c.orderBy
@@ -230,7 +228,7 @@ left join users on users.user_id = user_api_keys.user_id` +
 
 	// run
 	// logf(sqlstr, apiKey)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, apiKey)
+	rows, err := db.Query(ctx, sqlstr, apiKey)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", err))
 	}
@@ -261,7 +259,7 @@ user_api_keys.expires_on,
 user_api_keys.user_id,
 (case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
-		`-- O2O join generated from "user_api_keys_user_id_fkey"
+		`-- automatic join generated from foreign key on "user_id"
 left join users on users.user_id = user_api_keys.user_id` +
 		` WHERE user_api_keys.user_api_key_id = $2 `
 	sqlstr += c.orderBy
@@ -269,7 +267,7 @@ left join users on users.user_id = user_api_keys.user_id` +
 
 	// run
 	// logf(sqlstr, userAPIKeyID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, userAPIKeyID)
+	rows, err := db.Query(ctx, sqlstr, userAPIKeyID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", err))
 	}
@@ -300,7 +298,7 @@ user_api_keys.expires_on,
 user_api_keys.user_id,
 (case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
-		`-- O2O join generated from "user_api_keys_user_id_fkey"
+		`-- automatic join generated from foreign key on "user_id"
 left join users on users.user_id = user_api_keys.user_id` +
 		` WHERE user_api_keys.user_id = $2 `
 	sqlstr += c.orderBy
@@ -308,7 +306,7 @@ left join users on users.user_id = user_api_keys.user_id` +
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, userID)
+	rows, err := db.Query(ctx, sqlstr, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", err))
 	}

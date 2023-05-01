@@ -195,10 +195,15 @@ func WorkItemMembersByMemberWorkItemID(ctx context.Context, db DB, member uuid.U
 	sqlstr := `SELECT ` +
 		`work_item_member.work_item_id,
 work_item_member.member,
-work_item_member.role ` +
+work_item_member.role,
+(case when $1::boolean = true and users.member is not null then row(users.*) end) as user,
+(case when $2::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_member ` +
-		`` +
-		` WHERE work_item_member.member = $1 AND work_item_member.work_item_id = $2 `
+		`-- automatic join generated from foreign key on "member"
+left join users on users.user_id = work_item_member.member
+-- automatic join generated from foreign key on "work_item_id"
+left join work_items on work_items.work_item_id = work_item_member.work_item_id` +
+		` WHERE work_item_member.member = $3 AND work_item_member.work_item_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -232,10 +237,15 @@ func WorkItemMemberByWorkItemIDMember(ctx context.Context, db DB, workItemID int
 	sqlstr := `SELECT ` +
 		`work_item_member.work_item_id,
 work_item_member.member,
-work_item_member.role ` +
+work_item_member.role,
+(case when $1::boolean = true and users.member is not null then row(users.*) end) as user,
+(case when $2::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_member ` +
-		`` +
-		` WHERE work_item_member.work_item_id = $1 AND work_item_member.member = $2 `
+		`-- automatic join generated from foreign key on "member"
+left join users on users.user_id = work_item_member.member
+-- automatic join generated from foreign key on "work_item_id"
+left join work_items on work_items.work_item_id = work_item_member.work_item_id` +
+		` WHERE work_item_member.work_item_id = $3 AND work_item_member.member = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -268,10 +278,15 @@ func WorkItemMembersByWorkItemID(ctx context.Context, db DB, workItemID int64, o
 	sqlstr := `SELECT ` +
 		`work_item_member.work_item_id,
 work_item_member.member,
-work_item_member.role ` +
+work_item_member.role,
+(case when $1::boolean = true and users.member is not null then row(users.*) end) as user,
+(case when $2::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_member ` +
-		`` +
-		` WHERE work_item_member.work_item_id = $1 `
+		`-- automatic join generated from foreign key on "member"
+left join users on users.user_id = work_item_member.member
+-- automatic join generated from foreign key on "work_item_id"
+left join work_items on work_items.work_item_id = work_item_member.work_item_id` +
+		` WHERE work_item_member.work_item_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -305,10 +320,15 @@ func WorkItemMembersByMember(ctx context.Context, db DB, member uuid.UUID, opts 
 	sqlstr := `SELECT ` +
 		`work_item_member.work_item_id,
 work_item_member.member,
-work_item_member.role ` +
+work_item_member.role,
+(case when $1::boolean = true and users.member is not null then row(users.*) end) as user,
+(case when $2::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_member ` +
-		`` +
-		` WHERE work_item_member.member = $1 `
+		`-- automatic join generated from foreign key on "member"
+left join users on users.user_id = work_item_member.member
+-- automatic join generated from foreign key on "work_item_id"
+left join work_items on work_items.work_item_id = work_item_member.work_item_id` +
+		` WHERE work_item_member.member = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

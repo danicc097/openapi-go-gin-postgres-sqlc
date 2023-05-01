@@ -209,10 +209,12 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable ` +
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
 		`FROM public.kanban_steps ` +
-		`` +
-		` WHERE kanban_steps.kanban_step_id = $1 `
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.kanban_step_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -249,10 +251,12 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable ` +
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
 		`FROM public.kanban_steps ` +
-		`` +
-		` WHERE kanban_steps.project_id = $1 AND (step_order IS NULL) `
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.project_id = $2 AND (step_order IS NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -290,10 +294,12 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable ` +
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
 		`FROM public.kanban_steps ` +
-		`` +
-		` WHERE kanban_steps.project_id = $1 AND kanban_steps.name = $2 AND (step_order IS NULL) `
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.project_id = $2 AND kanban_steps.name = $3 AND (step_order IS NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -330,10 +336,12 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable ` +
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
 		`FROM public.kanban_steps ` +
-		`` +
-		` WHERE kanban_steps.name = $1 AND (step_order IS NULL) `
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.name = $2 AND (step_order IS NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -371,10 +379,12 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable ` +
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
 		`FROM public.kanban_steps ` +
-		`` +
-		` WHERE kanban_steps.project_id = $1 AND kanban_steps.name = $2 AND kanban_steps.step_order = $3 AND (step_order IS NOT NULL) `
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.project_id = $2 AND kanban_steps.name = $3 AND kanban_steps.step_order = $4 AND (step_order IS NOT NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -411,10 +421,12 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable ` +
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
 		`FROM public.kanban_steps ` +
-		`` +
-		` WHERE kanban_steps.project_id = $1 AND (step_order IS NOT NULL) `
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.project_id = $2 AND (step_order IS NOT NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -452,10 +464,12 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable ` +
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
 		`FROM public.kanban_steps ` +
-		`` +
-		` WHERE kanban_steps.name = $1 AND (step_order IS NOT NULL) `
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.name = $2 AND (step_order IS NOT NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -493,10 +507,12 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable ` +
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
 		`FROM public.kanban_steps ` +
-		`` +
-		` WHERE kanban_steps.step_order = $1 AND (step_order IS NOT NULL) `
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.step_order = $2 AND (step_order IS NOT NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -534,10 +550,12 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable ` +
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
 		`FROM public.kanban_steps ` +
-		`` +
-		` WHERE kanban_steps.project_id = $1 AND kanban_steps.step_order = $2 `
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.project_id = $2 AND kanban_steps.step_order = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -574,10 +592,12 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable ` +
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
 		`FROM public.kanban_steps ` +
-		`` +
-		` WHERE kanban_steps.project_id = $1 `
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.project_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -615,10 +635,12 @@ kanban_steps.step_order,
 kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
-kanban_steps.time_trackable ` +
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
 		`FROM public.kanban_steps ` +
-		`` +
-		` WHERE kanban_steps.step_order = $1 `
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = kanban_steps.project_id` +
+		` WHERE kanban_steps.step_order = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

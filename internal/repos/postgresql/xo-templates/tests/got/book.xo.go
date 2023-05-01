@@ -49,8 +49,6 @@ func WithBookLimit(limit int) BookSelectConfigOption {
 
 type BookOrderBy = string
 
-const ()
-
 type BookJoins struct {
 	Authors bool
 }

@@ -21,6 +21,7 @@ type Activity struct {
 	Description  string `json:"description" db:"description" required:"true"`    // description
 	IsProductive bool   `json:"isProductive" db:"is_productive" required:"true"` // is_productive
 
+	ProjectJoin     *Project     `json:"-" db:"projects" openapi-go:"ignore"`     // Project field FK
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
 	// xo fields
 	_exists, _deleted bool
@@ -204,9 +205,12 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2M join generated from "time_entries_activity_id_fkey"
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = activities.project_id
+-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
@@ -215,7 +219,7 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.name = $2 AND activities.project_id = $3 `
+		` WHERE activities.name = $3 AND activities.project_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -251,9 +255,12 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2M join generated from "time_entries_activity_id_fkey"
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = activities.project_id
+-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
@@ -262,7 +269,7 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.name = $2 `
+		` WHERE activities.name = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -299,9 +306,12 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2M join generated from "time_entries_activity_id_fkey"
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = activities.project_id
+-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
@@ -310,7 +320,7 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id = $2 `
+		` WHERE activities.project_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -347,9 +357,12 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2M join generated from "time_entries_activity_id_fkey"
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = activities.project_id
+-- O2M join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
@@ -358,7 +371,7 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.activity_id = $2 `
+		` WHERE activities.activity_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

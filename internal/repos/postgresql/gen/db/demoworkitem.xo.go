@@ -23,7 +23,6 @@ type DemoWorkItem struct {
 	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at" required:"true"` // last_message_at
 	Reopened      bool      `json:"reopened" db:"reopened" required:"true"`             // reopened
 
-	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -81,7 +80,6 @@ func WithDemoWorkItemOrderBy(rows ...DemoWorkItemOrderBy) DemoWorkItemSelectConf
 }
 
 type DemoWorkItemJoins struct {
-	WorkItem bool
 }
 
 // WithDemoWorkItemJoin joins with the given tables.
@@ -225,7 +223,7 @@ demo_work_items.last_message_at,
 demo_work_items.reopened,
 (case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.demo_work_items ` +
-		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
+		`-- automatic join generated from foreign key on "work_item_id"
 left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
 		` WHERE demo_work_items.work_item_id = $2 `
 	sqlstr += c.orderBy
@@ -233,7 +231,7 @@ left join work_items on work_items.work_item_id = demo_work_items.work_item_id` 
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/db.Query: %w", err))
 	}
@@ -265,7 +263,7 @@ demo_work_items.last_message_at,
 demo_work_items.reopened,
 (case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.demo_work_items ` +
-		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
+		`-- automatic join generated from foreign key on "work_item_id"
 left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
 		` WHERE demo_work_items.ref = $2 AND demo_work_items.line = $3 `
 	sqlstr += c.orderBy
@@ -273,7 +271,7 @@ left join work_items on work_items.work_item_id = demo_work_items.work_item_id` 
 
 	// run
 	// logf(sqlstr, ref, line)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, ref, line)
+	rows, err := db.Query(ctx, sqlstr, ref, line)
 	if err != nil {
 		return nil, logerror(err)
 	}

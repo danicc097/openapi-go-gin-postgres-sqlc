@@ -128,10 +128,15 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 	// query
 	sqlstr := `SELECT ` +
 		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id ` +
+work_item_work_item_tag.work_item_id,
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
+(case when $2::boolean = true and work_item_tags.work_item_tag_id is not null then row(work_item_tags.*) end) as work_item_tag ` +
 		`FROM public.work_item_work_item_tag ` +
-		`` +
-		` WHERE work_item_work_item_tag.work_item_id = $1 AND work_item_work_item_tag.work_item_tag_id = $2 `
+		`-- automatic join generated from foreign key on "work_item_id"
+left join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+-- automatic join generated from foreign key on "work_item_tag_id"
+left join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id` +
+		` WHERE work_item_work_item_tag.work_item_id = $3 AND work_item_work_item_tag.work_item_tag_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -163,10 +168,15 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID int
 	// query
 	sqlstr := `SELECT ` +
 		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id ` +
+work_item_work_item_tag.work_item_id,
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
+(case when $2::boolean = true and work_item_tags.work_item_tag_id is not null then row(work_item_tags.*) end) as work_item_tag ` +
 		`FROM public.work_item_work_item_tag ` +
-		`` +
-		` WHERE work_item_work_item_tag.work_item_id = $1 `
+		`-- automatic join generated from foreign key on "work_item_id"
+left join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+-- automatic join generated from foreign key on "work_item_tag_id"
+left join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id` +
+		` WHERE work_item_work_item_tag.work_item_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -199,10 +209,15 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 	// query
 	sqlstr := `SELECT ` +
 		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id ` +
+work_item_work_item_tag.work_item_id,
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
+(case when $2::boolean = true and work_item_tags.work_item_tag_id is not null then row(work_item_tags.*) end) as work_item_tag ` +
 		`FROM public.work_item_work_item_tag ` +
-		`` +
-		` WHERE work_item_work_item_tag.work_item_tag_id = $1 `
+		`-- automatic join generated from foreign key on "work_item_id"
+left join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+-- automatic join generated from foreign key on "work_item_tag_id"
+left join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id` +
+		` WHERE work_item_work_item_tag.work_item_tag_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -235,10 +250,15 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 	// query
 	sqlstr := `SELECT ` +
 		`work_item_work_item_tag.work_item_tag_id,
-work_item_work_item_tag.work_item_id ` +
+work_item_work_item_tag.work_item_id,
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
+(case when $2::boolean = true and work_item_tags.work_item_tag_id is not null then row(work_item_tags.*) end) as work_item_tag ` +
 		`FROM public.work_item_work_item_tag ` +
-		`` +
-		` WHERE work_item_work_item_tag.work_item_tag_id = $1 AND work_item_work_item_tag.work_item_id = $2 `
+		`-- automatic join generated from foreign key on "work_item_id"
+left join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+-- automatic join generated from foreign key on "work_item_tag_id"
+left join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id` +
+		` WHERE work_item_work_item_tag.work_item_tag_id = $3 AND work_item_work_item_tag.work_item_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

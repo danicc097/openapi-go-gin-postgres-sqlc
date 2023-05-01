@@ -29,7 +29,6 @@ type Notification struct {
 	Receiver         *uuid.UUID       `json:"receiver" db:"receiver" required:"true"`                                                              // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
 
-	UserNotificationJoin *UserNotification `json:"-" db:"user_notification" openapi-go:"ignore"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -94,7 +93,6 @@ func WithNotificationOrderBy(rows ...NotificationOrderBy) NotificationSelectConf
 }
 
 type NotificationJoins struct {
-	UserNotification bool
 }
 
 // WithNotificationJoin joins with the given tables.
@@ -242,17 +240,20 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification ` +
+(case when $1::boolean = true and users.receiver is not null then row(users.*) end) as user,
+(case when $2::boolean = true and users.sender is not null then row(users.*) end) as user ` +
 		`FROM public.notifications ` +
-		`-- O2O join generated from "user_notifications_notification_id_fkey"
-left join user_notifications on user_notifications.notification_id = notifications.notification_id` +
-		` WHERE notifications.notification_id = $2 `
+		`-- automatic join generated from foreign key on "receiver"
+left join users on users.user_id = notifications.receiver
+-- automatic join generated from foreign key on "sender"
+left join users on users.user_id = notifications.sender` +
+		` WHERE notifications.notification_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, notificationID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.UserNotification, notificationID)
+	rows, err := db.Query(ctx, sqlstr, notificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", err))
 	}
@@ -287,17 +288,20 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and user_notifications.notification_id is not null then row(user_notifications.*) end) as user_notification ` +
+(case when $1::boolean = true and users.receiver is not null then row(users.*) end) as user,
+(case when $2::boolean = true and users.sender is not null then row(users.*) end) as user ` +
 		`FROM public.notifications ` +
-		`-- O2O join generated from "user_notifications_notification_id_fkey"
-left join user_notifications on user_notifications.notification_id = notifications.notification_id` +
-		` WHERE notifications.receiver_rank = $2 AND notifications.notification_type = $3 AND notifications.created_at = $4 `
+		`-- automatic join generated from foreign key on "receiver"
+left join users on users.user_id = notifications.receiver
+-- automatic join generated from foreign key on "sender"
+left join users on users.user_id = notifications.sender` +
+		` WHERE notifications.receiver_rank = $3 AND notifications.notification_type = $4 AND notifications.created_at = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, receiverRank, notificationType, createdAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.UserNotification, receiverRank, notificationType, createdAt)
+	rows, err := db.Query(ctx, sqlstr, receiverRank, notificationType, createdAt)
 	if err != nil {
 		return nil, logerror(err)
 	}

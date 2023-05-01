@@ -225,10 +225,15 @@ work_item_comments.work_item_id,
 work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
-work_item_comments.updated_at ` +
+work_item_comments.updated_at,
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $2::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_comments ` +
-		`` +
-		` WHERE work_item_comments.work_item_comment_id = $1 `
+		`-- automatic join generated from foreign key on "user_id"
+left join users on users.user_id = work_item_comments.user_id
+-- automatic join generated from foreign key on "work_item_id"
+left join work_items on work_items.work_item_id = work_item_comments.work_item_id` +
+		` WHERE work_item_comments.work_item_comment_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -264,10 +269,15 @@ work_item_comments.work_item_id,
 work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
-work_item_comments.updated_at ` +
+work_item_comments.updated_at,
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $2::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_comments ` +
-		`` +
-		` WHERE work_item_comments.work_item_id = $1 `
+		`-- automatic join generated from foreign key on "user_id"
+left join users on users.user_id = work_item_comments.user_id
+-- automatic join generated from foreign key on "work_item_id"
+left join work_items on work_items.work_item_id = work_item_comments.work_item_id` +
+		` WHERE work_item_comments.work_item_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

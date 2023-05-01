@@ -100,8 +100,7 @@ alter table user_api_keys
 -- and go from there to the user that owns it)
 --  generates join in users table
 -- comment on column users.api_key_id IS 'cardinality:O2O';
-comment on column user_api_keys.user_id is 'cardinality:O2O';
-
+-- comment on column user_api_keys.user_id IS 'cardinality:O2O';
 comment on column user_api_keys.user_api_key_id is 'property:private';
 
 -- -- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
@@ -148,8 +147,9 @@ create index on notifications (receiver_rank , notification_type , created_at);
 
 -- FIXME generate SenderJoin *User and ReceiverJoin *User in notification.xo.go with O2M, and []*User with M2O
 -- it also must be named NotificationsJoin + RefColumnName if name clashes, e.g. NotificationsJoinSender
-comment on column notifications.sender IS 'cardinality:O2M';
-comment on column notifications.receiver IS 'cardinality:O2M';
+comment on column notifications.sender is 'cardinality:O2M';
+
+comment on column notifications.receiver is 'cardinality:O2M';
 
 create table user_notifications (
   user_notification_id bigserial primary key
@@ -161,10 +161,10 @@ create table user_notifications (
   , foreign key (notification_id) references notifications (notification_id) on delete cascade
 );
 
-comment on column user_notifications.notification_id is 'cardinality:O2O';
-
+-- comment on column user_notifications.notification_id IS 'cardinality:O2O';
 -- FIXME
-comment on column user_notifications.user_id IS 'cardinality:O2M';
+comment on column user_notifications.user_id is 'cardinality:O2M';
+
 create index on user_notifications (user_id);
 
 -- read field simply used to show 'NEW' label but there is no filtering
@@ -327,8 +327,7 @@ create table work_items (
 );
 
 -- to get join directly instead of having to call xo's generated FK for every single one
-comment on column work_items.work_item_type_id is 'cardinality:O2O';
-
+-- comment on column work_items.work_item_type_id IS 'cardinality:O2O';
 create index on work_items (team_id);
 
 
@@ -356,12 +355,9 @@ create table demo_two_work_items (
   , custom_date_for_project_2 timestamp with time zone
 );
 
-comment on column work_items.work_item_id is 'cardinality:O2O';
-
-comment on column demo_work_items.work_item_id is 'cardinality:O2O';
-
-comment on column demo_two_work_items.work_item_id is 'cardinality:O2O';
-
+-- comment on column work_items.work_item_id IS 'cardinality:O2O';
+-- comment on column demo_work_items.work_item_id IS 'cardinality:O2O';
+-- comment on column demo_two_work_items.work_item_id IS 'cardinality:O2O';
 -- for finding all deleted work items exclusively
 create index on work_items (deleted_at)
 where (deleted_at is not null);

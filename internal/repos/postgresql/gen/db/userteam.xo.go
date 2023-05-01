@@ -129,10 +129,15 @@ func UserTeamByUserIDTeamID(ctx context.Context, db DB, userID uuid.UUID, teamID
 	// query
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
-user_team.user_id ` +
+user_team.user_id,
+(case when $1::boolean = true and teams.team_id is not null then row(teams.*) end) as team,
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_team ` +
-		`` +
-		` WHERE user_team.user_id = $1 AND user_team.team_id = $2 `
+		`-- automatic join generated from foreign key on "team_id"
+left join teams on teams.team_id = user_team.team_id
+-- automatic join generated from foreign key on "user_id"
+left join users on users.user_id = user_team.user_id` +
+		` WHERE user_team.user_id = $3 AND user_team.team_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -164,10 +169,15 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID int, opts ...UserTeamS
 	// query
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
-user_team.user_id ` +
+user_team.user_id,
+(case when $1::boolean = true and teams.team_id is not null then row(teams.*) end) as team,
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_team ` +
-		`` +
-		` WHERE user_team.team_id = $1 `
+		`-- automatic join generated from foreign key on "team_id"
+left join teams on teams.team_id = user_team.team_id
+-- automatic join generated from foreign key on "user_id"
+left join users on users.user_id = user_team.user_id` +
+		` WHERE user_team.team_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -200,10 +210,15 @@ func UserTeamsByTeamIDUserID(ctx context.Context, db DB, teamID int, userID uuid
 	// query
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
-user_team.user_id ` +
+user_team.user_id,
+(case when $1::boolean = true and teams.team_id is not null then row(teams.*) end) as team,
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_team ` +
-		`` +
-		` WHERE user_team.team_id = $1 AND user_team.user_id = $2 `
+		`-- automatic join generated from foreign key on "team_id"
+left join teams on teams.team_id = user_team.team_id
+-- automatic join generated from foreign key on "user_id"
+left join users on users.user_id = user_team.user_id` +
+		` WHERE user_team.team_id = $3 AND user_team.user_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -236,10 +251,15 @@ func UserTeamsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Use
 	// query
 	sqlstr := `SELECT ` +
 		`user_team.team_id,
-user_team.user_id ` +
+user_team.user_id,
+(case when $1::boolean = true and teams.team_id is not null then row(teams.*) end) as team,
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_team ` +
-		`` +
-		` WHERE user_team.user_id = $1 `
+		`-- automatic join generated from foreign key on "team_id"
+left join teams on teams.team_id = user_team.team_id
+-- automatic join generated from foreign key on "user_id"
+left join users on users.user_id = user_team.user_id` +
+		` WHERE user_team.user_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

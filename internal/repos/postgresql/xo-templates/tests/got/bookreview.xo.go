@@ -18,7 +18,6 @@ import (
 type BookReview struct {
 	BookID   *int      `json:"bookID" db:"book_id" required:"true"`    // book_id
 	Reviewer uuid.UUID `json:"reviewer" db:"reviewer" required:"true"` // reviewer
-
 }
 
 // BookReviewCreateParams represents insert params for 'public.book_reviews'
@@ -49,10 +48,7 @@ func WithBookReviewLimit(limit int) BookReviewSelectConfigOption {
 
 type BookReviewOrderBy = string
 
-const ()
-
-type BookReviewJoins struct {
-}
+type BookReviewJoins struct{}
 
 // WithBookReviewJoin joins with the given tables.
 func WithBookReviewJoin(joins BookReviewJoins) BookReviewSelectConfigOption {

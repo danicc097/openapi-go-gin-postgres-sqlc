@@ -24,6 +24,7 @@ type Team struct {
 	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
 	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
+	ProjectJoin     *Project     `json:"-" db:"projects" openapi-go:"ignore"`     // Project field FK
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
 	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`        // M2M
 	// xo fields
@@ -229,10 +230,13 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
 		`FROM public.teams ` +
-		`-- O2M join generated from "time_entries_team_id_fkey"
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = teams.project_id
+-- O2M join generated from "time_entries_team_id_fkey"
 left join (
   select
   team_id as time_entries_team_id
@@ -251,7 +255,7 @@ left join (
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
-		` WHERE teams.name = $3 AND teams.project_id = $4 `
+		` WHERE teams.name = $4 AND teams.project_id = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -288,10 +292,13 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
 		`FROM public.teams ` +
-		`-- O2M join generated from "time_entries_team_id_fkey"
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = teams.project_id
+-- O2M join generated from "time_entries_team_id_fkey"
 left join (
   select
   team_id as time_entries_team_id
@@ -310,7 +317,7 @@ left join (
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
-		` WHERE teams.name = $3 `
+		` WHERE teams.name = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -348,10 +355,13 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
 		`FROM public.teams ` +
-		`-- O2M join generated from "time_entries_team_id_fkey"
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = teams.project_id
+-- O2M join generated from "time_entries_team_id_fkey"
 left join (
   select
   team_id as time_entries_team_id
@@ -370,7 +380,7 @@ left join (
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
-		` WHERE teams.project_id = $3 `
+		` WHERE teams.project_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -408,10 +418,13 @@ teams.name,
 teams.description,
 teams.created_at,
 teams.updated_at,
-(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $2::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users ` +
 		`FROM public.teams ` +
-		`-- O2M join generated from "time_entries_team_id_fkey"
+		`-- automatic join generated from foreign key on "project_id"
+left join projects on projects.project_id = teams.project_id
+-- O2M join generated from "time_entries_team_id_fkey"
 left join (
   select
   team_id as time_entries_team_id
@@ -430,7 +443,7 @@ left join (
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 ` +
-		` WHERE teams.team_id = $3 `
+		` WHERE teams.team_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
