@@ -911,7 +911,7 @@ func convertConstraints(ctx context.Context, constraints []xo.Constraint, tables
 	var cc []Constraint // will create additional dummy constraints for automatic O2O
 cc_label:
 	for _, constraint := range constraints {
-		fmt.Printf("\nconstraint: %+v\n", constraint)
+		// fmt.Printf("constraint: %+v\n", constraint)
 		if !validCardinality(constraint.Cardinality) {
 			return []Constraint{}, fmt.Errorf("invalid cardinality: %s", constraint.Cardinality)
 		}

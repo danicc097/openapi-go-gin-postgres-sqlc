@@ -1,0 +1,28 @@
+#!/bin/bash
+
+exit_code=0
+
+CWD="$(dirname -- "$0")"
+
+echo
+echo Testing for file discrepancies...
+
+for want_file in "$CWD"/want/*; do
+  if [ ! -f "$want_file" ]; then
+    continue
+  fi
+
+  got_file="$CWD/got/${want_file##*/want/}"
+  if [ ! -f "$got_file" ]; then
+    echo "ERROR: $got_file does not exist"
+    exit_code=1
+  fi
+
+  if ! diff -u "$want_file" "$got_file" >&2; then
+    echo "ERROR: $want_file and $got_file differ." >&2
+    exit_code=1
+  fi
+
+done
+
+exit $exit_code

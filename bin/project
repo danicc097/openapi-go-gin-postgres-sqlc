@@ -851,6 +851,8 @@ x.test.backend-setup() {
 # Args: [...]
 x.test() {
   { { {
+    x.test.xo
+
     export POSTGRES_TRACE=false
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
@@ -884,8 +886,7 @@ x.test.xo() {
       -name "*.go")
     goimports -w $files
 
-    # TODO cmp, and run this in CI right before backend tests
-
+    $test_dir/run_tests
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

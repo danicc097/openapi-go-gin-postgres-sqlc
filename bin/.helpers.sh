@@ -242,7 +242,7 @@ function show_tracebacks() {
   local bash_command=${BASH_COMMAND}
   echo "${RED}Error in ${BASH_SOURCE[1]}:${BASH_LINENO[0]} ('$bash_command' exited with status $err_code)${OFF}" >&2
 
-  if [ ${#FUNCNAME[@]} -gt 2 ]; then
+  if [[ $bash_command != xlog* && $bash_command != xerr* && ${#FUNCNAME[@]} -gt 2 ]]; then
     # Print out the stack trace described by $function_stack
     echo "${RED}Traceback of ${BASH_SOURCE[1]} (most recent call last):${OFF}" >&2
     for ((i = 0; i < ${#FUNCNAME[@]} - 1; i++)); do
