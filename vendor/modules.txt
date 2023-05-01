@@ -1,9 +1,3 @@
-# github.com/Masterminds/goutils v1.1.1
-## explicit
-# github.com/Masterminds/semver/v3 v3.2.1
-## explicit; go 1.18
-# github.com/Masterminds/sprig/v3 v3.2.3
-## explicit; go 1.13
 # github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a
 ## explicit
 github.com/alicebob/gopher-json
@@ -50,7 +44,7 @@ github.com/cespare/xxhash/v2
 # github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311
 ## explicit; go 1.15
 github.com/chenzhuoyu/base64x
-# github.com/danicc097/xo v0.0.0-20230413212255-75d6e541ff1d
+# github.com/danicc097/xo v0.0.0-20230501100212-f12603be74b1
 ## explicit; go 1.19
 github.com/danicc097/xo/loader
 github.com/danicc097/xo/models
@@ -68,8 +62,6 @@ github.com/deepmap/oapi-codegen/pkg/util
 # github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
 ## explicit
 github.com/dgryski/go-rendezvous
-# github.com/fatih/color v1.15.0
-## explicit; go 1.17
 # github.com/fsnotify/fsnotify v1.5.1
 ## explicit; go 1.13
 # github.com/getkin/kin-openapi v0.116.0
@@ -164,8 +156,6 @@ github.com/goccy/go-json/internal/encoder/vm_color_indent
 github.com/goccy/go-json/internal/encoder/vm_indent
 github.com/goccy/go-json/internal/errors
 github.com/goccy/go-json/internal/runtime
-# github.com/goccy/go-yaml v1.11.0
-## explicit; go 1.18
 # github.com/golang-jwt/jwt/v4 v4.5.0
 ## explicit; go 1.16
 github.com/golang-jwt/jwt/v4
@@ -212,10 +202,6 @@ github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.1
 ## explicit; go 1.13
 github.com/hashicorp/go-multierror
-# github.com/huandu/xstrings v1.4.0
-## explicit; go 1.12
-# github.com/imdario/mergo v0.3.15
-## explicit; go 1.13
 # github.com/inconshreveable/mousetrap v1.1.0
 ## explicit; go 1.18
 github.com/inconshreveable/mousetrap
@@ -314,10 +300,6 @@ github.com/mattn/go-isatty
 # github.com/matttproud/golang_protobuf_extensions v1.0.4
 ## explicit; go 1.9
 github.com/matttproud/golang_protobuf_extensions/pbutil
-# github.com/mitchellh/copystructure v1.2.0
-## explicit; go 1.15
-# github.com/mitchellh/reflectwalk v1.0.2
-## explicit
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 ## explicit
 github.com/modern-go/concurrent
@@ -365,8 +347,6 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/shopspring/decimal v1.3.1
-## explicit; go 1.13
 # github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d
 ## explicit
 github.com/smartystreets/assertions
@@ -377,8 +357,6 @@ github.com/smartystreets/assertions/internal/oglematchers
 github.com/smartystreets/gunit
 github.com/smartystreets/gunit/reports
 github.com/smartystreets/gunit/scan
-# github.com/spf13/cast v1.5.0
-## explicit; go 1.18
 # github.com/spf13/cobra v1.7.0
 ## explicit; go 1.15
 github.com/spf13/cobra
@@ -398,8 +376,6 @@ github.com/swaggest/openapi-go/openapi3
 # github.com/swaggest/refl v1.1.0
 ## explicit; go 1.17
 github.com/swaggest/refl
-# github.com/traefik/yaegi v0.15.1
-## explicit; go 1.18
 # github.com/twitchyliquid64/golang-asm v0.15.1
 ## explicit; go 1.13
 github.com/twitchyliquid64/golang-asm/asm/arch
@@ -428,10 +404,6 @@ github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.2.2
 ## explicit; go 1.12
 github.com/valyala/fasttemplate
-# github.com/xo/dburl v0.14.2
-## explicit; go 1.20
-# github.com/yookoala/realpath v1.0.0
-## explicit
 # github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9
 ## explicit; go 1.14
 github.com/yuin/gopher-lua
@@ -594,8 +566,6 @@ golang.org/x/tools/internal/gocommand
 golang.org/x/tools/internal/gopathwalk
 golang.org/x/tools/internal/imports
 golang.org/x/tools/internal/typeparams
-# golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
-## explicit; go 1.17
 # google.golang.org/appengine v1.6.7
 ## explicit; go 1.11
 google.golang.org/appengine/internal
