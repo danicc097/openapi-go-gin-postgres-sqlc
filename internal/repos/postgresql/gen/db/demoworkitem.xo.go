@@ -220,12 +220,10 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts
 demo_work_items.ref,
 demo_work_items.line,
 demo_work_items.last_message_at,
-demo_work_items.reopened,
-(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
+demo_work_items.reopened ` +
 		`FROM public.demo_work_items ` +
-		`-- automatic join generated from foreign key on "work_item_id"
-left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.work_item_id = $2 `
+		`` +
+		` WHERE demo_work_items.work_item_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -260,12 +258,10 @@ func DemoWorkItemsByRefLine(ctx context.Context, db DB, ref string, line string,
 demo_work_items.ref,
 demo_work_items.line,
 demo_work_items.last_message_at,
-demo_work_items.reopened,
-(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
+demo_work_items.reopened ` +
 		`FROM public.demo_work_items ` +
-		`-- automatic join generated from foreign key on "work_item_id"
-left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
-		` WHERE demo_work_items.ref = $2 AND demo_work_items.line = $3 `
+		`` +
+		` WHERE demo_work_items.ref = $1 AND demo_work_items.line = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

@@ -30,9 +30,8 @@ type WorkItem struct {
 	UpdatedAt      time.Time  `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
 	DeletedAt      *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
 
-	KanbanStepJoin       *KanbanStep        `json:"-" db:"kanban_steps" openapi-go:"ignore"`       // KanbanStep field FK
-	TeamJoin             *Team              `json:"-" db:"teams" openapi-go:"ignore"`              // Team field FK
-	WorkItemTypeJoin     *WorkItemType      `json:"-" db:"work_item_types" openapi-go:"ignore"`    // WorkItemType field FK
+	DemoTwoWorkItemJoin  *DemoTwoWorkItem   `json:"-" db:"demo_two_work_item" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
+	DemoWorkItemJoin     *DemoWorkItem      `json:"-" db:"demo_work_item" openapi-go:"ignore"`     // O2O (inferred O2O - modify via `cardinality:` column comment)
 	TimeEntriesJoin      *[]TimeEntry       `json:"-" db:"time_entries" openapi-go:"ignore"`       // O2M
 	WorkItemCommentsJoin *[]WorkItemComment `json:"-" db:"work_item_comments" openapi-go:"ignore"` // O2M
 	MembersJoin          *[]WorkItem_Member `json:"-" db:"members" openapi-go:"ignore"`            // M2M
@@ -125,6 +124,8 @@ func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 }
 
 type WorkItemJoins struct {
+	DemoTwoWorkItem  bool
+	DemoWorkItem     bool
 	TimeEntries      bool
 	WorkItemComments bool
 	Members          bool
@@ -316,20 +317,17 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and kanban_steps.kanban_step_id is not null then row(kanban_steps.*) end) as kanban_step,
-(case when $2::boolean = true and teams.team_id is not null then row(teams.*) end) as team,
-(case when $3::boolean = true and work_item_types.work_item_type_id is not null then row(work_item_types.*) end) as work_item_type,
-(case when $4::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $6::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
-(case when $7::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
+(case when $1::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
+(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
+(case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
+(case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
-		`-- automatic join generated from foreign key on "kanban_step_id"
-left join kanban_steps on kanban_steps.kanban_step_id = work_items.kanban_step_id
--- automatic join generated from foreign key on "team_id"
-left join teams on teams.team_id = work_items.team_id
--- automatic join generated from foreign key on "work_item_type_id"
-left join work_item_types on work_item_types.work_item_type_id = work_items.work_item_type_id
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
+left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
+-- O2O join generated from "demo_work_items_work_item_id_fkey"
+left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
 -- O2M join generated from "time_entries_work_item_id_fkey"
 left join (
   select
@@ -370,13 +368,13 @@ left join (
     group by work_item_work_item_tag_work_item_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.deleted_at = $8 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s `, c.deletedAt)
+		` WHERE work_items.deleted_at = $7 AND (deleted_at IS NOT NULL)  AND work_items.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, deletedAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, deletedAt)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -414,20 +412,17 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and kanban_steps.kanban_step_id is not null then row(kanban_steps.*) end) as kanban_step,
-(case when $2::boolean = true and teams.team_id is not null then row(teams.*) end) as team,
-(case when $3::boolean = true and work_item_types.work_item_type_id is not null then row(work_item_types.*) end) as work_item_type,
-(case when $4::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $6::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
-(case when $7::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
+(case when $1::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
+(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
+(case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
+(case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
-		`-- automatic join generated from foreign key on "kanban_step_id"
-left join kanban_steps on kanban_steps.kanban_step_id = work_items.kanban_step_id
--- automatic join generated from foreign key on "team_id"
-left join teams on teams.team_id = work_items.team_id
--- automatic join generated from foreign key on "work_item_type_id"
-left join work_item_types on work_item_types.work_item_type_id = work_items.work_item_type_id
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
+left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
+-- O2O join generated from "demo_work_items_work_item_id_fkey"
+left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
 -- O2M join generated from "time_entries_work_item_id_fkey"
 left join (
   select
@@ -468,13 +463,13 @@ left join (
     group by work_item_work_item_tag_work_item_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.work_item_id = $8  AND work_items.deleted_at is %s `, c.deletedAt)
+		` WHERE work_items.work_item_id = $7  AND work_items.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", err))
 	}
@@ -511,20 +506,17 @@ work_items.target_date,
 work_items.created_at,
 work_items.updated_at,
 work_items.deleted_at,
-(case when $1::boolean = true and kanban_steps.kanban_step_id is not null then row(kanban_steps.*) end) as kanban_step,
-(case when $2::boolean = true and teams.team_id is not null then row(teams.*) end) as team,
-(case when $3::boolean = true and work_item_types.work_item_type_id is not null then row(work_item_types.*) end) as work_item_type,
-(case when $4::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
-(case when $5::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $6::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
-(case when $7::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
+(case when $1::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
+(case when $2::boolean = true and demo_work_items.work_item_id is not null then row(demo_work_items.*) end) as demo_work_item,
+(case when $3::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $4::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
+(case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
+(case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
-		`-- automatic join generated from foreign key on "kanban_step_id"
-left join kanban_steps on kanban_steps.kanban_step_id = work_items.kanban_step_id
--- automatic join generated from foreign key on "team_id"
-left join teams on teams.team_id = work_items.team_id
--- automatic join generated from foreign key on "work_item_type_id"
-left join work_item_types on work_item_types.work_item_type_id = work_items.work_item_type_id
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
+left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
+-- O2O join generated from "demo_work_items_work_item_id_fkey"
+left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
 -- O2M join generated from "time_entries_work_item_id_fkey"
 left join (
   select
@@ -565,13 +557,13 @@ left join (
     group by work_item_work_item_tag_work_item_id
   ) as joined_work_item_tags on joined_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `+
-		` WHERE work_items.team_id = $8  AND work_items.deleted_at is %s `, c.deletedAt)
+		` WHERE work_items.team_id = $7  AND work_items.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, teamID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, teamID)
 	if err != nil {
 		return nil, logerror(err)
 	}

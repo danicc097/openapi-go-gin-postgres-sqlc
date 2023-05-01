@@ -233,21 +233,10 @@ time_entries.team_id,
 time_entries.user_id,
 time_entries.comment,
 time_entries.start,
-time_entries.duration_minutes,
-(case when $1::boolean = true and activities.activity_id is not null then row(activities.*) end) as activity,
-(case when $2::boolean = true and teams.team_id is not null then row(teams.*) end) as team,
-(case when $3::boolean = true and users.user_id is not null then row(users.*) end) as user,
-(case when $4::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
+time_entries.duration_minutes ` +
 		`FROM public.time_entries ` +
-		`-- automatic join generated from foreign key on "activity_id"
-left join activities on activities.activity_id = time_entries.activity_id
--- automatic join generated from foreign key on "team_id"
-left join teams on teams.team_id = time_entries.team_id
--- automatic join generated from foreign key on "user_id"
-left join users on users.user_id = time_entries.user_id
--- automatic join generated from foreign key on "work_item_id"
-left join work_items on work_items.work_item_id = time_entries.work_item_id` +
-		` WHERE time_entries.time_entry_id = $5 `
+		`` +
+		` WHERE time_entries.time_entry_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -285,21 +274,10 @@ time_entries.team_id,
 time_entries.user_id,
 time_entries.comment,
 time_entries.start,
-time_entries.duration_minutes,
-(case when $1::boolean = true and activities.activity_id is not null then row(activities.*) end) as activity,
-(case when $2::boolean = true and teams.team_id is not null then row(teams.*) end) as team,
-(case when $3::boolean = true and users.user_id is not null then row(users.*) end) as user,
-(case when $4::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
+time_entries.duration_minutes ` +
 		`FROM public.time_entries ` +
-		`-- automatic join generated from foreign key on "activity_id"
-left join activities on activities.activity_id = time_entries.activity_id
--- automatic join generated from foreign key on "team_id"
-left join teams on teams.team_id = time_entries.team_id
--- automatic join generated from foreign key on "user_id"
-left join users on users.user_id = time_entries.user_id
--- automatic join generated from foreign key on "work_item_id"
-left join work_items on work_items.work_item_id = time_entries.work_item_id` +
-		` WHERE time_entries.user_id = $5 AND time_entries.team_id = $6 `
+		`` +
+		` WHERE time_entries.user_id = $1 AND time_entries.team_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -338,21 +316,10 @@ time_entries.team_id,
 time_entries.user_id,
 time_entries.comment,
 time_entries.start,
-time_entries.duration_minutes,
-(case when $1::boolean = true and activities.activity_id is not null then row(activities.*) end) as activity,
-(case when $2::boolean = true and teams.team_id is not null then row(teams.*) end) as team,
-(case when $3::boolean = true and users.user_id is not null then row(users.*) end) as user,
-(case when $4::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
+time_entries.duration_minutes ` +
 		`FROM public.time_entries ` +
-		`-- automatic join generated from foreign key on "activity_id"
-left join activities on activities.activity_id = time_entries.activity_id
--- automatic join generated from foreign key on "team_id"
-left join teams on teams.team_id = time_entries.team_id
--- automatic join generated from foreign key on "user_id"
-left join users on users.user_id = time_entries.user_id
--- automatic join generated from foreign key on "work_item_id"
-left join work_items on work_items.work_item_id = time_entries.work_item_id` +
-		` WHERE time_entries.work_item_id = $5 AND time_entries.team_id = $6 `
+		`` +
+		` WHERE time_entries.work_item_id = $1 AND time_entries.team_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

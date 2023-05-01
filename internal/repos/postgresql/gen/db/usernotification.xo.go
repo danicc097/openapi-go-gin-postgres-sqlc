@@ -198,15 +198,10 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
-user_notifications.user_id,
-(case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+user_notifications.user_id ` +
 		`FROM public.user_notifications ` +
-		`-- automatic join generated from foreign key on "notification_id"
-left join notifications on notifications.notification_id = user_notifications.notification_id
--- automatic join generated from foreign key on "user_id"
-left join users on users.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id = $3 AND user_notifications.user_id = $4 `
+		`` +
+		` WHERE user_notifications.notification_id = $1 AND user_notifications.user_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -240,15 +235,10 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
-user_notifications.user_id,
-(case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+user_notifications.user_id ` +
 		`FROM public.user_notifications ` +
-		`-- automatic join generated from foreign key on "notification_id"
-left join notifications on notifications.notification_id = user_notifications.notification_id
--- automatic join generated from foreign key on "user_id"
-left join users on users.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.notification_id = $3 `
+		`` +
+		` WHERE user_notifications.notification_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -283,15 +273,10 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
-user_notifications.user_id,
-(case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+user_notifications.user_id ` +
 		`FROM public.user_notifications ` +
-		`-- automatic join generated from foreign key on "notification_id"
-left join notifications on notifications.notification_id = user_notifications.notification_id
--- automatic join generated from foreign key on "user_id"
-left join users on users.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_notification_id = $3 `
+		`` +
+		` WHERE user_notifications.user_notification_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -325,15 +310,10 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opt
 		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
-user_notifications.user_id,
-(case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
-(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+user_notifications.user_id ` +
 		`FROM public.user_notifications ` +
-		`-- automatic join generated from foreign key on "notification_id"
-left join notifications on notifications.notification_id = user_notifications.notification_id
--- automatic join generated from foreign key on "user_id"
-left join users on users.user_id = user_notifications.user_id` +
-		` WHERE user_notifications.user_id = $3 `
+		`` +
+		` WHERE user_notifications.user_id = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

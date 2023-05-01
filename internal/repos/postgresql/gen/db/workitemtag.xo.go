@@ -21,7 +21,6 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description" required:"true"`        // description
 	Color         string `json:"color" db:"color" required:"true"`                    // color
 
-	ProjectJoin   *Project    `json:"-" db:"projects" openapi-go:"ignore"`   // Project field FK
 	WorkItemsJoin *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
 	// xo fields
 	_exists, _deleted bool
@@ -205,12 +204,9 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $1::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = work_item_tags.project_id
--- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
@@ -220,7 +216,7 @@ left join (
     group by work_item_work_item_tag_work_item_tag_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.name = $3 AND work_item_tags.project_id = $4 `
+		` WHERE work_item_tags.name = $2 AND work_item_tags.project_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -256,12 +252,9 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $1::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = work_item_tags.project_id
--- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
@@ -271,7 +264,7 @@ left join (
     group by work_item_work_item_tag_work_item_tag_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.name = $3 `
+		` WHERE work_item_tags.name = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -308,12 +301,9 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $1::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = work_item_tags.project_id
--- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
@@ -323,7 +313,7 @@ left join (
     group by work_item_work_item_tag_work_item_tag_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.project_id = $3 `
+		` WHERE work_item_tags.project_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -360,12 +350,9 @@ work_item_tags.project_id,
 work_item_tags.name,
 work_item_tags.description,
 work_item_tags.color,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
-(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+(case when $1::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = work_item_tags.project_id
--- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+		`-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
 			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
@@ -375,7 +362,7 @@ left join (
     group by work_item_work_item_tag_work_item_tag_id
   ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 ` +
-		` WHERE work_item_tags.work_item_tag_id = $3 `
+		` WHERE work_item_tags.work_item_tag_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 

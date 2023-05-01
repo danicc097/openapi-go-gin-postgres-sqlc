@@ -908,18 +908,17 @@ func convertIndex(ctx context.Context, t Table, i xo.Index) (Index, error) {
 }
 
 func convertConstraints(ctx context.Context, constraints []xo.Constraint) ([]Constraint, error) {
-	cc := make([]Constraint, len(constraints))
+	var cc []Constraint // will create additional dummy constraints for automatic O2O
 
-	for i, constraint := range constraints {
+	for _, constraint := range constraints {
 		fmt.Printf("\nconstraint: %+v\n", constraint)
 		if !validCardinality(constraint.Cardinality) {
 			return []Constraint{}, fmt.Errorf("invalid cardinality: %s", constraint.Cardinality)
 		}
 		card := cardinality(constraint.Cardinality)
 
-		// TODO JoinTableClash
 		/**
-		 * pending O2O and M2M testing
+		 * TODO JoinTableClash pending O2O and M2M testing
 		 */
 		var joinTableClash bool
 		for _, c := range constraints {
@@ -942,6 +941,7 @@ func convertConstraints(ctx context.Context, constraints []xo.Constraint) ([]Con
 					break outer
 				}
 			case O2O:
+				// NOTE: probably needs more checks
 				if c.TableName == constraint.TableName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && ccard == O2O {
 					joinTableClash = true
 					fmt.Printf("%-40s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
@@ -950,7 +950,37 @@ func convertConstraints(ctx context.Context, constraints []xo.Constraint) ([]Con
 			}
 		}
 
-		cc[i] = Constraint{
+		if constraint.Type == "foreign_key" && constraint.Cardinality == "" {
+			// dummy constraint to automatically create join in
+			//  (TODO need to do this only if fk fields len = 1)
+			// and check if field is unique or not
+			cc = append(cc, Constraint{
+				Type:           constraint.Type,
+				Cardinality:    O2O, // cardinality comments only needed on FK columns, never base tables
+				Name:           constraint.Name,
+				RefTableName:   constraint.TableName,
+				TableName:      constraint.RefTableName,
+				RefColumnName:  constraint.ColumnName,
+				ColumnName:     constraint.RefColumnName,
+				JoinTableClash: joinTableClash,
+				IsGeneratedO2O: true,
+			})
+			// force O2O on foreign_keys
+			// cc = append(cc, Constraint{
+			// 	Type:           constraint.Type,
+			// 	Cardinality:    "O2O", // cardinality comments only needed on FK columns, never base tables
+			// 	Name:           constraint.Name,
+			// 	TableName:      constraint.TableName,
+			// 	RefTableName:   constraint.RefTableName,
+			// 	ColumnName:     constraint.ColumnName,
+			// 	RefColumnName:  constraint.RefColumnName,
+			// 	JoinTableClash: joinTableClash,
+			// })
+
+			continue
+		}
+
+		cc = append(cc, Constraint{
 			Type:           constraint.Type,
 			Cardinality:    card, // cardinality comments only needed on FK columns, never base tables
 			Name:           constraint.Name,
@@ -959,8 +989,7 @@ func convertConstraints(ctx context.Context, constraints []xo.Constraint) ([]Con
 			ColumnName:     constraint.ColumnName,
 			RefColumnName:  constraint.RefColumnName,
 			JoinTableClash: joinTableClash,
-		}
-
+		})
 		// fmt.Printf("cc[i]: %+v\n", cc[i])
 	}
 
@@ -1668,10 +1697,14 @@ type %s struct {
 			if c.TableName == sqlname {
 				joinName = camelExport(singularize(c.RefTableName))
 			}
+			// dummy created automatically to avoid this duplication
 			// if c.RefTableName == sqlname {
 			// 	joinName = camelExport(singularize(c.TableName))
 			// }
 		default:
+		}
+		if joinName == "" {
+			continue
 		}
 		buf.WriteString(fmt.Sprintf("%s bool\n", joinName))
 	}
@@ -1975,14 +2008,16 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 					if c.TableName == x.SQLName {
 						joinName = prefix + camelExport(singularize(c.RefTableName))
 					}
+					// dummy created automatically to avoid this duplication
 					// if c.RefTableName == x.SQLName {
 					// 	joinName = prefix + camelExport(singularize(c.TableName))
 					// }
 				default:
 				}
-				if joinName != "" {
-					names = append(names, joinName)
+				if joinName == "" {
+					continue
 				}
+				names = append(names, joinName)
 			}
 		case []Field:
 			for _, p := range x {
@@ -2013,10 +2048,14 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 					if c.TableName == x.Table.SQLName {
 						joinName = pref + camelExport(singularize(c.RefTableName))
 					}
+					// dummy created automatically to avoid this duplication
 					// if c.RefTableName == x.Table.SQLName {
 					// 	joinName = pref + camelExport(singularize(c.TableName))
 					// }
 				default:
+				}
+				if joinName == "" {
+					continue
 				}
 				names = append(names, joinName)
 			}
@@ -2383,47 +2422,6 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 
 		// IMPORTANT: automatic O2O generation before constraints to retain correct order
 		var n int
-		for _, tfk := range x.Table.ForeignKeys {
-			if len(tfk.FieldNames) == 1 && len(tfk.RefColumns) == 1 { // generate O2O joins automatically. Reuse O2O logic to generate queries, structs, etc.
-				// IMPORTANT:
-				// TODO instead of duplicating everything everywhere, when we convert constraints and fks from xo.Constraints to our own,
-				// create dummy O2O constraints with necessary info and dont touch anything.
-				fmt.Printf("x.Table.SQLName: %v --- tfk: %+v\n", x.Table.SQLName, tfk)
-				joinStmts := &bytes.Buffer{}
-				selectStmts := &bytes.Buffer{}
-				params := make(map[string]interface{})
-				fmt.Fprintf(joinStmts, "-- automatic join generated from foreign key on %q", tfk.FieldNames[0])
-
-				params["Nth"] = f.nth(n)
-				params["ClashSuffix"] = ""
-
-				joinTpl := O2OJoin
-				selectTpl := O2OSelect
-				params["JoinColumn"] = tfk.RefColumns[0]
-				params["JoinTable"] = tfk.RefTable
-				params["JoinRefColumn"] = tfk.FieldNames[0]
-				params["CurrentTable"] = x.Table.SQLName
-
-				t := template.Must(template.New("").Funcs(funcs).Parse(joinTpl))
-				if err := t.Execute(joinStmts, params); err != nil {
-					panic(fmt.Sprintf("could not execute join template: %s", err))
-				}
-
-				t = template.Must(template.New("").Funcs(funcs).Parse(selectTpl))
-				if err := t.Execute(selectStmts, params); err != nil {
-					panic(fmt.Sprintf("could not execute select template: %s", err))
-				}
-
-				if joinStmts.String() == "" || selectStmts.String() == "" {
-					continue
-				}
-
-				fields = append(fields, selectStmts.String())
-				joins = append(joins, joinStmts.String())
-				n++
-			}
-		}
-
 		for _, c := range tableConstraints {
 			joinStmts, selectStmts := createJoinStatement(tables, c, x, funcs, f.nth, n)
 			if joinStmts.String() == "" || selectStmts.String() == "" {
@@ -2586,9 +2584,10 @@ func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.Fu
 			break
 		}
 
+		// dummy created automatically to avoid this duplication
 		// if c.RefTableName == x.Table.SQLName {
-		// joinTpl = O2OJoin
-		// selectTpl = O2OSelect
+		// 	joinTpl = O2OJoin
+		// 	selectTpl = O2OSelect
 		// 	params["JoinColumn"] = c.ColumnName
 		// 	params["JoinTable"] = c.TableName
 		// 	params["JoinRefColumn"] = c.RefColumnName
@@ -2860,16 +2859,16 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 	/**
 	 * TODO generate FK joins here regardless of constraints, instead of generating FK*** functions
 	 */
-	for _, tfk := range t.ForeignKeys {
-		fmt.Printf("tfk: %v\n", tfk)
-		if len(tfk.FieldNames) == 1 { // generate O2O joins automatically. Reuse O2O logic to generate queries, structs, etc.
-			lookupName := tfk.RefTable
-			goName = camelExport(singularize(strings.TrimSuffix(tfk.FieldNames[0], "_id")))
-			typ = camelExport(singularize(lookupName))
-			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", lookupName)
-			buf.WriteString(fmt.Sprintf("\t%sJoin *%s %s // %s field FK \n", goName, typ, tag, goName))
-		}
-	}
+	// for _, tfk := range t.ForeignKeys {
+	// 	fmt.Printf("tfk: %v\n", tfk)
+	// 	if len(tfk.FieldNames) == 1 { // generate O2O joins automatically. Reuse O2O logic to generate queries, structs, etc.
+	// 		lookupName := tfk.RefTable
+	// 		goName = camelExport(singularize(strings.TrimSuffix(tfk.FieldNames[0], "_id")))
+	// 		typ = camelExport(singularize(lookupName))
+	// 		tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", lookupName)
+	// 		buf.WriteString(fmt.Sprintf("\t%sJoin *%s %s // %s field FK \n", goName, typ, tag, goName))
+	// 	}
+	// }
 
 	if len(constraints) > 0 {
 		f.loadConstraints(constraints, t.SQLName)
@@ -2921,9 +2920,16 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				goName = camelExport(singularize(c.RefTableName))
 				typ = goName
 				goName = goName + "Join"
+
+				var notes string
+				if c.IsGeneratedO2O {
+					notes = " (inferred O2O - modify via `cardinality:` column comment)"
+				}
+
 				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Singularize(c.RefTableName))
-				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, c.Cardinality))
+				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 			}
+			// dummy created automatically to avoid this duplication
 			// if c.RefTableName == t.SQLName {
 			// 	goName = camelExport(singularize(c.TableName))
 			// 	typ = goName
@@ -3400,6 +3406,7 @@ type Constraint struct {
 	LookupColumn    string // (M2M) lookup table column
 	LookupRefColumn string // (M2M) referenced PK by LookupColumn
 	JoinTableClash  bool   // Whether other constraints join against the same table (not necessarily )
+	IsGeneratedO2O  bool   // Whether this constraint has been generated or altered automatically
 }
 
 // Field is a field template.

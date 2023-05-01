@@ -23,6 +23,7 @@ type KanbanStep struct {
 	Color         string `json:"color" db:"color" required:"true"`                  // color
 	TimeTrackable bool   `json:"timeTrackable" db:"time_trackable" required:"true"` // time_trackable
 
+	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
 	// xo fields
 	_exists, _deleted bool
 }
@@ -66,6 +67,7 @@ type KanbanStepOrderBy = string
 const ()
 
 type KanbanStepJoins struct {
+	WorkItem bool
 }
 
 // WithKanbanStepJoin joins with the given tables.
@@ -210,17 +212,17 @@ kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
+(case when $1::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = kanban_steps.project_id` +
+		`-- O2O join generated from "work_items_kanban_step_id_fkey"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.kanban_step_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, kanbanStepID)
-	rows, err := db.Query(ctx, sqlstr, kanbanStepID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, kanbanStepID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByKanbanStepID/db.Query: %w", err))
 	}
@@ -252,17 +254,17 @@ kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
+(case when $1::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = kanban_steps.project_id` +
+		`-- O2O join generated from "work_items_kanban_step_id_fkey"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $2 AND (step_order IS NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, projectID)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -295,17 +297,17 @@ kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
+(case when $1::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = kanban_steps.project_id` +
+		`-- O2O join generated from "work_items_kanban_step_id_fkey"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $2 AND kanban_steps.name = $3 AND (step_order IS NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID, name)
-	rows, err := db.Query(ctx, sqlstr, projectID, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, projectID, name)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDName/db.Query: %w", err))
 	}
@@ -337,17 +339,17 @@ kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
+(case when $1::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = kanban_steps.project_id` +
+		`-- O2O join generated from "work_items_kanban_step_id_fkey"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.name = $2 AND (step_order IS NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, name)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -380,17 +382,17 @@ kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
+(case when $1::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = kanban_steps.project_id` +
+		`-- O2O join generated from "work_items_kanban_step_id_fkey"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $2 AND kanban_steps.name = $3 AND kanban_steps.step_order = $4 AND (step_order IS NOT NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID, name, stepOrder)
-	rows, err := db.Query(ctx, sqlstr, projectID, name, stepOrder)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, projectID, name, stepOrder)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDNameStepOrder/db.Query: %w", err))
 	}
@@ -422,17 +424,17 @@ kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
+(case when $1::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = kanban_steps.project_id` +
+		`-- O2O join generated from "work_items_kanban_step_id_fkey"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $2 AND (step_order IS NOT NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, projectID)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -465,17 +467,17 @@ kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
+(case when $1::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = kanban_steps.project_id` +
+		`-- O2O join generated from "work_items_kanban_step_id_fkey"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.name = $2 AND (step_order IS NOT NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, name)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -508,17 +510,17 @@ kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
+(case when $1::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = kanban_steps.project_id` +
+		`-- O2O join generated from "work_items_kanban_step_id_fkey"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.step_order = $2 AND (step_order IS NOT NULL) `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, stepOrder)
-	rows, err := db.Query(ctx, sqlstr, stepOrder)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, stepOrder)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -551,17 +553,17 @@ kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
+(case when $1::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = kanban_steps.project_id` +
+		`-- O2O join generated from "work_items_kanban_step_id_fkey"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $2 AND kanban_steps.step_order = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID, stepOrder)
-	rows, err := db.Query(ctx, sqlstr, projectID, stepOrder)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, projectID, stepOrder)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDStepOrder/db.Query: %w", err))
 	}
@@ -593,17 +595,17 @@ kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
+(case when $1::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = kanban_steps.project_id` +
+		`-- O2O join generated from "work_items_kanban_step_id_fkey"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, projectID)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -636,17 +638,17 @@ kanban_steps.name,
 kanban_steps.description,
 kanban_steps.color,
 kanban_steps.time_trackable,
-(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project ` +
+(case when $1::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- automatic join generated from foreign key on "project_id"
-left join projects on projects.project_id = kanban_steps.project_id` +
+		`-- O2O join generated from "work_items_kanban_step_id_fkey"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.step_order = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, stepOrder)
-	rows, err := db.Query(ctx, sqlstr, stepOrder)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, stepOrder)
 	if err != nil {
 		return nil, logerror(err)
 	}
