@@ -27,11 +27,14 @@ type UserTeamCreateParams struct {
 	UserID uuid.UUID `json:"userID"` // user_id
 }
 
-func NewUserTeam(params *UserTeamCreateParams) *UserTeam {
-	return &UserTeam{
+// CreateUserTeam creates a new UserTeam in the database with the given params.
+func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*UserTeam, error) {
+	ut := &UserTeam{
 		TeamID: params.TeamID,
 		UserID: params.UserID,
 	}
+
+	return ut.Insert(ctx, db)
 }
 
 // UserTeamUpdateParams represents update params for 'public.user_team'
@@ -40,6 +43,7 @@ type UserTeamUpdateParams struct {
 	UserID *uuid.UUID `json:"userID"` // user_id
 }
 
+// SetUpdateParams updates public.user_team struct fields with the specified params.
 func (ut *UserTeam) SetUpdateParams(params *UserTeamUpdateParams) {
 	if params.TeamID != nil {
 		ut.TeamID = *params.TeamID

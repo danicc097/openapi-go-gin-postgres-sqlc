@@ -27,20 +27,9 @@ func (u *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db
 }
 
 func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoWorkItemCreateParams) (*db.DemoWorkItem, error) {
-	workItem := &db.WorkItem{
-		Title:          params.Base.Title,
-		Description:    params.Base.Description,
-		WorkItemTypeID: params.Base.WorkItemTypeID,
-		Metadata:       params.Base.Metadata,
-		TeamID:         params.Base.TeamID,
-		KanbanStepID:   params.Base.KanbanStepID,
-		Closed:         params.Base.Closed,
-		TargetDate:     params.Base.TargetDate,
-	}
-
-	workItem, err := workItem.Insert(ctx, d)
+	workItem, err := db.CreateWorkItem(ctx, d, &params.Base)
 	if err != nil {
-		return nil, fmt.Errorf("could not save workItem: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not create workItem: %w", parseErrorDetail(err))
 	}
 
 	dwicp := &db.DemoWorkItemCreateParams{
@@ -51,11 +40,9 @@ func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoW
 		Reopened:      params.DemoProject.Reopened,
 	}
 
-	demoWorkItem := db.NewDemoWorkItem(dwicp)
-
-	demoWorkItem, err = demoWorkItem.Insert(ctx, d)
+	demoWorkItem, err := db.CreateDemoWorkItem(ctx, d, dwicp)
 	if err != nil {
-		return nil, fmt.Errorf("could not save demoWorkItem: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not create workItem: %w", parseErrorDetail(err))
 	}
 
 	demoWorkItem.WorkItemJoin = workItem

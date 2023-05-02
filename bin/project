@@ -1529,6 +1529,7 @@ cache-gen() {
   mkdir -p "$CACHE_GEN"
   mkdir -p "$CACHE_FRONTEND_GEN"
   mkdir -p "$CACHE_PG_REPO_GEN"
+  backup_gen_files internal "$CACHE_GEN"
 
   cp "$SPEC" "$CACHE_GEN"
   rsync -a --delete "$FRONTEND_GEN/" "$CACHE_FRONTEND_GEN"
@@ -1548,6 +1549,26 @@ cache-gen.restore() {
   mv "$CACHE_GEN/$SPEC" "$SPEC"
   rsync -a --delete "$CACHE_PG_REPO_GEN/" "$PG_REPO_GEN/"
   rsync -a --delete "$CACHE_FRONTEND_GEN/" "$FRONTEND_GEN/"
+  restore_gen_files "$CACHE_GEN" internal
+}
+
+backup_gen_files() {
+  src_dir=$1
+  backup_dir=$2
+
+  mkdir -p "$backup_dir"
+
+  find "$src_dir" -name "*.gen.go" -type f -print0 | tar czvf "$backup_dir/backup_gen_files.tar.gz" --null -T -
+
+  # Note: the -print0 and --null options are used to handle file names with spaces
+}
+
+restore_gen_files() {
+  backup_dir=$1
+  dest_dir=$2
+
+  # -C changes cwd to dir before extracting
+  tar xzvf "$backup_dir/backup_gen_files.tar.gz" -C "$dest_dir"
 }
 
 usage() {

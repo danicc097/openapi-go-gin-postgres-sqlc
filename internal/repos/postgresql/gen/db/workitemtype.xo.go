@@ -34,13 +34,16 @@ type WorkItemTypeCreateParams struct {
 	Color       string `json:"color"`       // color
 }
 
-func NewWorkItemType(params *WorkItemTypeCreateParams) *WorkItemType {
-	return &WorkItemType{
+// CreateWorkItemType creates a new WorkItemType in the database with the given params.
+func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreateParams) (*WorkItemType, error) {
+	wit := &WorkItemType{
 		ProjectID:   params.ProjectID,
 		Name:        params.Name,
 		Description: params.Description,
 		Color:       params.Color,
 	}
+
+	return wit.Insert(ctx, db)
 }
 
 // WorkItemTypeUpdateParams represents update params for 'public.work_item_types'
@@ -51,6 +54,7 @@ type WorkItemTypeUpdateParams struct {
 	Color       *string `json:"color"`       // color
 }
 
+// SetUpdateParams updates public.work_item_types struct fields with the specified params.
 func (wit *WorkItemType) SetUpdateParams(params *WorkItemTypeUpdateParams) {
 	if params.ProjectID != nil {
 		wit.ProjectID = *params.ProjectID

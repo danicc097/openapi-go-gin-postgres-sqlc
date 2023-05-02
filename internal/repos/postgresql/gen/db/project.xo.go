@@ -42,13 +42,16 @@ type ProjectCreateParams struct {
 	BoardConfig        models.ProjectConfig `json:"boardConfig"` // board_config
 }
 
-func NewProject(params *ProjectCreateParams) *Project {
-	return &Project{
+// CreateProject creates a new Project in the database with the given params.
+func CreateProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Project, error) {
+	p := &Project{
 		Name:               params.Name,
 		Description:        params.Description,
 		WorkItemsTableName: params.WorkItemsTableName,
 		BoardConfig:        params.BoardConfig,
 	}
+
+	return p.Insert(ctx, db)
 }
 
 // ProjectUpdateParams represents update params for 'public.projects'
@@ -59,6 +62,7 @@ type ProjectUpdateParams struct {
 	BoardConfig        *models.ProjectConfig `json:"boardConfig"` // board_config
 }
 
+// SetUpdateParams updates public.projects struct fields with the specified params.
 func (p *Project) SetUpdateParams(params *ProjectUpdateParams) {
 	if params.Name != nil {
 		p.Name = *params.Name

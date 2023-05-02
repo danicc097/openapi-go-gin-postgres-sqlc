@@ -51,8 +51,9 @@ type WorkItemCreateParams struct {
 	TargetDate     time.Time  `json:"targetDate"`     // target_date
 }
 
-func NewWorkItem(params *WorkItemCreateParams) *WorkItem {
-	return &WorkItem{
+// CreateWorkItem creates a new WorkItem in the database with the given params.
+func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
+	wi := &WorkItem{
 		Title:          params.Title,
 		Description:    params.Description,
 		WorkItemTypeID: params.WorkItemTypeID,
@@ -62,6 +63,8 @@ func NewWorkItem(params *WorkItemCreateParams) *WorkItem {
 		Closed:         params.Closed,
 		TargetDate:     params.TargetDate,
 	}
+
+	return wi.Insert(ctx, db)
 }
 
 // WorkItemUpdateParams represents update params for 'public.work_items'
@@ -76,6 +79,7 @@ type WorkItemUpdateParams struct {
 	TargetDate     *time.Time  `json:"targetDate"`     // target_date
 }
 
+// SetUpdateParams updates public.work_items struct fields with the specified params.
 func (wi *WorkItem) SetUpdateParams(params *WorkItemUpdateParams) {
 	if params.Title != nil {
 		wi.Title = *params.Title

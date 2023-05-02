@@ -30,11 +30,14 @@ type DemoTwoWorkItemCreateParams struct {
 	CustomDateForProject2 *time.Time `json:"customDateForProject2"` // custom_date_for_project_2
 }
 
-func NewDemoTwoWorkItem(params *DemoTwoWorkItemCreateParams) *DemoTwoWorkItem {
-	return &DemoTwoWorkItem{
+// CreateDemoTwoWorkItem creates a new DemoTwoWorkItem in the database with the given params.
+func CreateDemoTwoWorkItem(ctx context.Context, db DB, params *DemoTwoWorkItemCreateParams) (*DemoTwoWorkItem, error) {
+	dtwi := &DemoTwoWorkItem{
 		WorkItemID:            params.WorkItemID,
 		CustomDateForProject2: params.CustomDateForProject2,
 	}
+
+	return dtwi.Insert(ctx, db)
 }
 
 // DemoTwoWorkItemUpdateParams represents update params for 'public.demo_two_work_items'
@@ -42,6 +45,7 @@ type DemoTwoWorkItemUpdateParams struct {
 	CustomDateForProject2 **time.Time `json:"customDateForProject2"` // custom_date_for_project_2
 }
 
+// SetUpdateParams updates public.demo_two_work_items struct fields with the specified params.
 func (dtwi *DemoTwoWorkItem) SetUpdateParams(params *DemoTwoWorkItemUpdateParams) {
 	if params.CustomDateForProject2 != nil {
 		dtwi.CustomDateForProject2 = *params.CustomDateForProject2

@@ -28,10 +28,13 @@ type UserCreateParams struct {
 	Name string `json:"name"` // name
 }
 
-func NewUser(params *UserCreateParams) *User {
-	return &User{
+// CreateUser creates a new User in the database with the given params.
+func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
+	u := &User{
 		Name: params.Name,
 	}
+
+	return u.Insert(ctx, db)
 }
 
 // UserUpdateParams represents update params for 'public.users'
@@ -39,6 +42,7 @@ type UserUpdateParams struct {
 	Name *string `json:"name"` // name
 }
 
+// SetUpdateParams updates public.users struct fields with the specified params.
 func (u *User) SetUpdateParams(params *UserUpdateParams) {
 	if params.Name != nil {
 		u.Name = *params.Name

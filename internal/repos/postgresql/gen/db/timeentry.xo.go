@@ -45,8 +45,9 @@ type TimeEntryCreateParams struct {
 	DurationMinutes *int      `json:"durationMinutes"` // duration_minutes
 }
 
-func NewTimeEntry(params *TimeEntryCreateParams) *TimeEntry {
-	return &TimeEntry{
+// CreateTimeEntry creates a new TimeEntry in the database with the given params.
+func CreateTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) (*TimeEntry, error) {
+	te := &TimeEntry{
 		WorkItemID:      params.WorkItemID,
 		ActivityID:      params.ActivityID,
 		TeamID:          params.TeamID,
@@ -55,6 +56,8 @@ func NewTimeEntry(params *TimeEntryCreateParams) *TimeEntry {
 		Start:           params.Start,
 		DurationMinutes: params.DurationMinutes,
 	}
+
+	return te.Insert(ctx, db)
 }
 
 // TimeEntryUpdateParams represents update params for 'public.time_entries'
@@ -68,6 +71,7 @@ type TimeEntryUpdateParams struct {
 	DurationMinutes **int      `json:"durationMinutes"` // duration_minutes
 }
 
+// SetUpdateParams updates public.time_entries struct fields with the specified params.
 func (te *TimeEntry) SetUpdateParams(params *TimeEntryUpdateParams) {
 	if params.WorkItemID != nil {
 		te.WorkItemID = *params.WorkItemID

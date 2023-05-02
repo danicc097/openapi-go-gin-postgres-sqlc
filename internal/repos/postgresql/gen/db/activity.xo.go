@@ -34,13 +34,16 @@ type ActivityCreateParams struct {
 	IsProductive bool   `json:"isProductive"` // is_productive
 }
 
-func NewActivity(params *ActivityCreateParams) *Activity {
-	return &Activity{
+// CreateActivity creates a new Activity in the database with the given params.
+func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*Activity, error) {
+	a := &Activity{
 		ProjectID:    params.ProjectID,
 		Name:         params.Name,
 		Description:  params.Description,
 		IsProductive: params.IsProductive,
 	}
+
+	return a.Insert(ctx, db)
 }
 
 // ActivityUpdateParams represents update params for 'public.activities'
@@ -51,6 +54,7 @@ type ActivityUpdateParams struct {
 	IsProductive *bool   `json:"isProductive"` // is_productive
 }
 
+// SetUpdateParams updates public.activities struct fields with the specified params.
 func (a *Activity) SetUpdateParams(params *ActivityUpdateParams) {
 	if params.ProjectID != nil {
 		a.ProjectID = *params.ProjectID

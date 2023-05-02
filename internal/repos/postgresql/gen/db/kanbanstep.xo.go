@@ -38,8 +38,9 @@ type KanbanStepCreateParams struct {
 	TimeTrackable bool   `json:"timeTrackable"` // time_trackable
 }
 
-func NewKanbanStep(params *KanbanStepCreateParams) *KanbanStep {
-	return &KanbanStep{
+// CreateKanbanStep creates a new KanbanStep in the database with the given params.
+func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams) (*KanbanStep, error) {
+	ks := &KanbanStep{
 		ProjectID:     params.ProjectID,
 		StepOrder:     params.StepOrder,
 		Name:          params.Name,
@@ -47,6 +48,8 @@ func NewKanbanStep(params *KanbanStepCreateParams) *KanbanStep {
 		Color:         params.Color,
 		TimeTrackable: params.TimeTrackable,
 	}
+
+	return ks.Insert(ctx, db)
 }
 
 // KanbanStepUpdateParams represents update params for 'public.kanban_steps'
@@ -59,6 +62,7 @@ type KanbanStepUpdateParams struct {
 	TimeTrackable *bool   `json:"timeTrackable"` // time_trackable
 }
 
+// SetUpdateParams updates public.kanban_steps struct fields with the specified params.
 func (ks *KanbanStep) SetUpdateParams(params *KanbanStepUpdateParams) {
 	if params.ProjectID != nil {
 		ks.ProjectID = *params.ProjectID

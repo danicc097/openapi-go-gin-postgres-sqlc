@@ -33,12 +33,15 @@ type UserNotificationCreateParams struct {
 	UserID         uuid.UUID `json:"userID"`         // user_id
 }
 
-func NewUserNotification(params *UserNotificationCreateParams) *UserNotification {
-	return &UserNotification{
+// CreateUserNotification creates a new UserNotification in the database with the given params.
+func CreateUserNotification(ctx context.Context, db DB, params *UserNotificationCreateParams) (*UserNotification, error) {
+	un := &UserNotification{
 		NotificationID: params.NotificationID,
 		Read:           params.Read,
 		UserID:         params.UserID,
 	}
+
+	return un.Insert(ctx, db)
 }
 
 // UserNotificationUpdateParams represents update params for 'public.user_notifications'
@@ -48,6 +51,7 @@ type UserNotificationUpdateParams struct {
 	UserID         *uuid.UUID `json:"userID"`         // user_id
 }
 
+// SetUpdateParams updates public.user_notifications struct fields with the specified params.
 func (un *UserNotification) SetUpdateParams(params *UserNotificationUpdateParams) {
 	if params.NotificationID != nil {
 		un.NotificationID = *params.NotificationID

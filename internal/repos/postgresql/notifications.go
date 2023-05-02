@@ -77,10 +77,9 @@ func (u *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, p
 }
 
 func (u *Notification) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (*db.Notification, error) {
-	notification := db.NewNotification(params)
-
-	if _, err := notification.Insert(ctx, d); err != nil {
-		return nil, err
+	notification, err := db.CreateNotification(ctx, d, params)
+	if err != nil {
+		return nil, fmt.Errorf("could not create notification: %w", parseErrorDetail(err))
 	}
 
 	return notification, nil

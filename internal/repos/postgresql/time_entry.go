@@ -23,10 +23,9 @@ func NewTimeEntry() *TimeEntry {
 var _ repos.TimeEntry = (*TimeEntry)(nil)
 
 func (wit *TimeEntry) Create(ctx context.Context, d db.DBTX, params *db.TimeEntryCreateParams) (*db.TimeEntry, error) {
-	timeEntry := db.NewTimeEntry(params)
-
-	if _, err := timeEntry.Insert(ctx, d); err != nil {
-		return nil, err
+	timeEntry, err := db.CreateTimeEntry(ctx, d, params)
+	if err != nil {
+		return nil, fmt.Errorf("could not create time entry: %w", parseErrorDetail(err))
 	}
 
 	return timeEntry, nil

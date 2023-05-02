@@ -27,10 +27,13 @@ type BookCreateParams struct {
 	Name string `json:"name"` // name
 }
 
-func NewBook(params *BookCreateParams) *Book {
-	return &Book{
+// CreateBook creates a new Book in the database with the given params.
+func CreateBook(ctx context.Context, db DB, params *BookCreateParams) (*Book, error) {
+	b := &Book{
 		Name: params.Name,
 	}
+
+	return b.Insert(ctx, db)
 }
 
 // BookUpdateParams represents update params for 'public.books'
@@ -38,6 +41,7 @@ type BookUpdateParams struct {
 	Name *string `json:"name"` // name
 }
 
+// SetUpdateParams updates public.books struct fields with the specified params.
 func (b *Book) SetUpdateParams(params *BookUpdateParams) {
 	if params.Name != nil {
 		b.Name = *params.Name

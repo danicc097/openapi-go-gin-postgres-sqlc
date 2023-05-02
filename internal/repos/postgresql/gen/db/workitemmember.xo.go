@@ -29,12 +29,15 @@ type WorkItemMemberCreateParams struct {
 	Role       WorkItemRole `json:"role"`       // role
 }
 
-func NewWorkItemMember(params *WorkItemMemberCreateParams) *WorkItemMember {
-	return &WorkItemMember{
+// CreateWorkItemMember creates a new WorkItemMember in the database with the given params.
+func CreateWorkItemMember(ctx context.Context, db DB, params *WorkItemMemberCreateParams) (*WorkItemMember, error) {
+	wim := &WorkItemMember{
 		WorkItemID: params.WorkItemID,
 		Member:     params.Member,
 		Role:       params.Role,
 	}
+
+	return wim.Insert(ctx, db)
 }
 
 // WorkItemMemberUpdateParams represents update params for 'public.work_item_member'
@@ -44,6 +47,7 @@ type WorkItemMemberUpdateParams struct {
 	Role       *WorkItemRole `json:"role"`       // role
 }
 
+// SetUpdateParams updates public.work_item_member struct fields with the specified params.
 func (wim *WorkItemMember) SetUpdateParams(params *WorkItemMemberUpdateParams) {
 	if params.WorkItemID != nil {
 		wim.WorkItemID = *params.WorkItemID

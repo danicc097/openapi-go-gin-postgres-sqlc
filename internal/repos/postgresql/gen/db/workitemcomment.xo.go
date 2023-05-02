@@ -37,12 +37,15 @@ type WorkItemCommentCreateParams struct {
 	Message    string    `json:"message"`    // message
 }
 
-func NewWorkItemComment(params *WorkItemCommentCreateParams) *WorkItemComment {
-	return &WorkItemComment{
+// CreateWorkItemComment creates a new WorkItemComment in the database with the given params.
+func CreateWorkItemComment(ctx context.Context, db DB, params *WorkItemCommentCreateParams) (*WorkItemComment, error) {
+	wic := &WorkItemComment{
 		WorkItemID: params.WorkItemID,
 		UserID:     params.UserID,
 		Message:    params.Message,
 	}
+
+	return wic.Insert(ctx, db)
 }
 
 // WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'
@@ -52,6 +55,7 @@ type WorkItemCommentUpdateParams struct {
 	Message    *string    `json:"message"`    // message
 }
 
+// SetUpdateParams updates public.work_item_comments struct fields with the specified params.
 func (wic *WorkItemComment) SetUpdateParams(params *WorkItemCommentUpdateParams) {
 	if params.WorkItemID != nil {
 		wic.WorkItemID = *params.WorkItemID

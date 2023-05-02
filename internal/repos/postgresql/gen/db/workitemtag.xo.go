@@ -34,13 +34,16 @@ type WorkItemTagCreateParams struct {
 	Color       string `json:"color"`       // color
 }
 
-func NewWorkItemTag(params *WorkItemTagCreateParams) *WorkItemTag {
-	return &WorkItemTag{
+// CreateWorkItemTag creates a new WorkItemTag in the database with the given params.
+func CreateWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreateParams) (*WorkItemTag, error) {
+	wit := &WorkItemTag{
 		ProjectID:   params.ProjectID,
 		Name:        params.Name,
 		Description: params.Description,
 		Color:       params.Color,
 	}
+
+	return wit.Insert(ctx, db)
 }
 
 // WorkItemTagUpdateParams represents update params for 'public.work_item_tags'
@@ -51,6 +54,7 @@ type WorkItemTagUpdateParams struct {
 	Color       *string `json:"color"`       // color
 }
 
+// SetUpdateParams updates public.work_item_tags struct fields with the specified params.
 func (wit *WorkItemTag) SetUpdateParams(params *WorkItemTagUpdateParams) {
 	if params.ProjectID != nil {
 		wit.ProjectID = *params.ProjectID

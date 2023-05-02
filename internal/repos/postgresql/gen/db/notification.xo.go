@@ -47,8 +47,9 @@ type NotificationCreateParams struct {
 	NotificationType NotificationType `json:"notificationType"` // notification_type
 }
 
-func NewNotification(params *NotificationCreateParams) *Notification {
-	return &Notification{
+// CreateNotification creates a new Notification in the database with the given params.
+func CreateNotification(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {
+	n := &Notification{
 		ReceiverRank:     params.ReceiverRank,
 		Title:            params.Title,
 		Body:             params.Body,
@@ -58,6 +59,8 @@ func NewNotification(params *NotificationCreateParams) *Notification {
 		Receiver:         params.Receiver,
 		NotificationType: params.NotificationType,
 	}
+
+	return n.Insert(ctx, db)
 }
 
 // NotificationUpdateParams represents update params for 'public.notifications'
@@ -72,6 +75,7 @@ type NotificationUpdateParams struct {
 	NotificationType *NotificationType `json:"notificationType"` // notification_type
 }
 
+// SetUpdateParams updates public.notifications struct fields with the specified params.
 func (n *Notification) SetUpdateParams(params *NotificationUpdateParams) {
 	if params.ReceiverRank != nil {
 		n.ReceiverRank = *params.ReceiverRank

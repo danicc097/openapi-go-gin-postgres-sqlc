@@ -28,10 +28,9 @@ var _ repos.User = (*User)(nil)
 
 func (u *User) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParams) (*db.User, error) {
 	params.Scopes = slices.Unique(params.Scopes)
-	user := db.NewUser(params)
-
-	if _, err := user.Insert(ctx, d); err != nil {
-		return nil, err
+	user, err := db.CreateUser(ctx, d, params)
+	if err != nil {
+		return nil, fmt.Errorf("could not create user: %w", parseErrorDetail(err))
 	}
 
 	return user, nil

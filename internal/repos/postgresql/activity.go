@@ -23,10 +23,9 @@ func NewActivity() *Activity {
 var _ repos.Activity = (*Activity)(nil)
 
 func (a *Activity) Create(ctx context.Context, d db.DBTX, params *db.ActivityCreateParams) (*db.Activity, error) {
-	activity := db.NewActivity(params)
-
-	if _, err := activity.Insert(ctx, d); err != nil {
-		return nil, err
+	activity, err := db.CreateActivity(ctx, d, params)
+	if err != nil {
+		return nil, fmt.Errorf("could not create activity: %w", parseErrorDetail(err))
 	}
 
 	return activity, nil

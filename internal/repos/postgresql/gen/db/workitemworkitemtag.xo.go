@@ -26,11 +26,14 @@ type WorkItemWorkItemTagCreateParams struct {
 	WorkItemID    int64 `json:"workItemID"`    // work_item_id
 }
 
-func NewWorkItemWorkItemTag(params *WorkItemWorkItemTagCreateParams) *WorkItemWorkItemTag {
-	return &WorkItemWorkItemTag{
+// CreateWorkItemWorkItemTag creates a new WorkItemWorkItemTag in the database with the given params.
+func CreateWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkItemTagCreateParams) (*WorkItemWorkItemTag, error) {
+	wiwit := &WorkItemWorkItemTag{
 		WorkItemTagID: params.WorkItemTagID,
 		WorkItemID:    params.WorkItemID,
 	}
+
+	return wiwit.Insert(ctx, db)
 }
 
 // WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'
@@ -39,6 +42,7 @@ type WorkItemWorkItemTagUpdateParams struct {
 	WorkItemID    *int64 `json:"workItemID"`    // work_item_id
 }
 
+// SetUpdateParams updates public.work_item_work_item_tag struct fields with the specified params.
 func (wiwit *WorkItemWorkItemTag) SetUpdateParams(params *WorkItemWorkItemTagUpdateParams) {
 	if params.WorkItemTagID != nil {
 		wiwit.WorkItemTagID = *params.WorkItemTagID

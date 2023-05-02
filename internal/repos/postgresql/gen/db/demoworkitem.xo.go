@@ -36,14 +36,17 @@ type DemoWorkItemCreateParams struct {
 	Reopened      bool      `json:"reopened"`      // reopened
 }
 
-func NewDemoWorkItem(params *DemoWorkItemCreateParams) *DemoWorkItem {
-	return &DemoWorkItem{
+// CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.
+func CreateDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreateParams) (*DemoWorkItem, error) {
+	dwi := &DemoWorkItem{
 		WorkItemID:    params.WorkItemID,
 		Ref:           params.Ref,
 		Line:          params.Line,
 		LastMessageAt: params.LastMessageAt,
 		Reopened:      params.Reopened,
 	}
+
+	return dwi.Insert(ctx, db)
 }
 
 // DemoWorkItemUpdateParams represents update params for 'public.demo_work_items'
@@ -54,6 +57,7 @@ type DemoWorkItemUpdateParams struct {
 	Reopened      *bool      `json:"reopened"`      // reopened
 }
 
+// SetUpdateParams updates public.demo_work_items struct fields with the specified params.
 func (dwi *DemoWorkItem) SetUpdateParams(params *DemoWorkItemUpdateParams) {
 	if params.Ref != nil {
 		dwi.Ref = *params.Ref

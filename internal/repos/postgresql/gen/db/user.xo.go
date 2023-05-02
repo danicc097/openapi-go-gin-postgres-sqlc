@@ -61,8 +61,9 @@ type UserCreateParams struct {
 	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`   // has_global_notifications
 }
 
-func NewUser(params *UserCreateParams) *User {
-	return &User{
+// CreateUser creates a new User in the database with the given params.
+func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
+	u := &User{
 		Username:                 params.Username,
 		Email:                    params.Email,
 		FirstName:                params.FirstName,
@@ -74,6 +75,8 @@ func NewUser(params *UserCreateParams) *User {
 		HasPersonalNotifications: params.HasPersonalNotifications,
 		HasGlobalNotifications:   params.HasGlobalNotifications,
 	}
+
+	return u.Insert(ctx, db)
 }
 
 // UserUpdateParams represents update params for 'public.users'
@@ -90,6 +93,7 @@ type UserUpdateParams struct {
 	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications"`   // has_global_notifications
 }
 
+// SetUpdateParams updates public.users struct fields with the specified params.
 func (u *User) SetUpdateParams(params *UserUpdateParams) {
 	if params.Username != nil {
 		u.Username = *params.Username

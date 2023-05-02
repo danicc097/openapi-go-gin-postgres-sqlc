@@ -23,10 +23,9 @@ func NewTeam() *Team {
 var _ repos.Team = (*Team)(nil)
 
 func (t *Team) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParams) (*db.Team, error) {
-	team := db.NewTeam(params)
-
-	if _, err := team.Insert(ctx, d); err != nil {
-		return nil, err
+	team, err := db.CreateTeam(ctx, d, params)
+	if err != nil {
+		return nil, fmt.Errorf("could not create team: %w", parseErrorDetail(err))
 	}
 
 	return team, nil

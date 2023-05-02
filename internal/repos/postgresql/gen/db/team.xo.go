@@ -38,12 +38,15 @@ type TeamCreateParams struct {
 	Description string `json:"description"` // description
 }
 
-func NewTeam(params *TeamCreateParams) *Team {
-	return &Team{
+// CreateTeam creates a new Team in the database with the given params.
+func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, error) {
+	t := &Team{
 		ProjectID:   params.ProjectID,
 		Name:        params.Name,
 		Description: params.Description,
 	}
+
+	return t.Insert(ctx, db)
 }
 
 // TeamUpdateParams represents update params for 'public.teams'
@@ -53,6 +56,7 @@ type TeamUpdateParams struct {
 	Description *string `json:"description"` // description
 }
 
+// SetUpdateParams updates public.teams struct fields with the specified params.
 func (t *Team) SetUpdateParams(params *TeamUpdateParams) {
 	if params.ProjectID != nil {
 		t.ProjectID = *params.ProjectID

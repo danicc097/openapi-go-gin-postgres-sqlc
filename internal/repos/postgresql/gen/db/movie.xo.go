@@ -29,12 +29,15 @@ type MovieCreateParams struct {
 	Synopsis string `json:"synopsis"` // synopsis
 }
 
-func NewMovie(params *MovieCreateParams) *Movie {
-	return &Movie{
+// CreateMovie creates a new Movie in the database with the given params.
+func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie, error) {
+	m := &Movie{
 		Title:    params.Title,
 		Year:     params.Year,
 		Synopsis: params.Synopsis,
 	}
+
+	return m.Insert(ctx, db)
 }
 
 // MovieUpdateParams represents update params for 'public.movies'
@@ -44,6 +47,7 @@ type MovieUpdateParams struct {
 	Synopsis *string `json:"synopsis"` // synopsis
 }
 
+// SetUpdateParams updates public.movies struct fields with the specified params.
 func (m *Movie) SetUpdateParams(params *MovieUpdateParams) {
 	if params.Title != nil {
 		m.Title = *params.Title
