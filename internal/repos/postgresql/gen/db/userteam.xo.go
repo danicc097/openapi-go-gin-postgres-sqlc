@@ -27,10 +27,26 @@ type UserTeamCreateParams struct {
 	UserID uuid.UUID `json:"userID"` // user_id
 }
 
+func (ut *UserTeam) SetCreateParams(params *UserTeamCreateParams) {
+	ut.TeamID = params.TeamID
+	ut.UserID = params.UserID
+}
+
 // UserTeamUpdateParams represents update params for 'public.user_team'
 type UserTeamUpdateParams struct {
 	TeamID *int       `json:"teamID"` // team_id
 	UserID *uuid.UUID `json:"userID"` // user_id
+}
+
+func (ut *UserTeam) SetUpdateParams(params *UserTeamUpdateParams) {
+
+	if params.TeamID != nil {
+		ut.TeamID = *params.TeamID
+	}
+
+	if params.UserID != nil {
+		ut.UserID = *params.UserID
+	}
 }
 
 type UserTeamSelectConfig struct {

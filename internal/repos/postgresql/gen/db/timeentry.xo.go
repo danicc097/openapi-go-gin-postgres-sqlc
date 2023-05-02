@@ -45,6 +45,16 @@ type TimeEntryCreateParams struct {
 	DurationMinutes *int      `json:"durationMinutes"` // duration_minutes
 }
 
+func (te *TimeEntry) SetCreateParams(params *TimeEntryCreateParams) {
+	te.WorkItemID = params.WorkItemID
+	te.ActivityID = params.ActivityID
+	te.TeamID = params.TeamID
+	te.UserID = params.UserID
+	te.Comment = params.Comment
+	te.Start = params.Start
+	te.DurationMinutes = params.DurationMinutes
+}
+
 // TimeEntryUpdateParams represents update params for 'public.time_entries'
 type TimeEntryUpdateParams struct {
 	WorkItemID      **int64    `json:"workItemID"`      // work_item_id
@@ -54,6 +64,37 @@ type TimeEntryUpdateParams struct {
 	Comment         *string    `json:"comment"`         // comment
 	Start           *time.Time `json:"start"`           // start
 	DurationMinutes **int      `json:"durationMinutes"` // duration_minutes
+}
+
+func (te *TimeEntry) SetUpdateParams(params *TimeEntryUpdateParams) {
+
+	if params.WorkItemID != nil {
+		te.WorkItemID = *params.WorkItemID
+	}
+
+	if params.ActivityID != nil {
+		te.ActivityID = *params.ActivityID
+	}
+
+	if params.TeamID != nil {
+		te.TeamID = *params.TeamID
+	}
+
+	if params.UserID != nil {
+		te.UserID = *params.UserID
+	}
+
+	if params.Comment != nil {
+		te.Comment = *params.Comment
+	}
+
+	if params.Start != nil {
+		te.Start = *params.Start
+	}
+
+	if params.DurationMinutes != nil {
+		te.DurationMinutes = *params.DurationMinutes
+	}
 }
 
 type TimeEntrySelectConfig struct {

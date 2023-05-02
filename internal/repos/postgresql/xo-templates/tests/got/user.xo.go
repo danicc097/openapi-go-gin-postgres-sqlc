@@ -28,9 +28,19 @@ type UserCreateParams struct {
 	Name string `json:"name"` // name
 }
 
+func (u *User) SetCreateParams(params *UserCreateParams) {
+	u.Name = params.Name
+}
+
 // UserUpdateParams represents update params for 'public.users'
 type UserUpdateParams struct {
 	Name *string `json:"name"` // name
+}
+
+func (u *User) SetUpdateParams(params *UserUpdateParams) {
+	if params.Name != nil {
+		u.Name = *params.Name
+	}
 }
 
 type UserSelectConfig struct {

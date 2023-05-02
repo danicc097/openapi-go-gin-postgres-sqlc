@@ -21,6 +21,7 @@ func updateEntityWithParams(entity any, params any) {
 		paramName := paramsType.Field(i).Name
 		paramValue := paramsValue.Field(i)
 
+		// "<Entity>UpdateParams" struct are all pointers to values or other pointers
 		if paramValue.Kind() == reflect.Ptr && paramValue.IsNil() {
 			continue
 		}

@@ -1293,6 +1293,7 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"zero":         f.zero,
 		"type":         f.typefn,
 		"field":        f.field,
+		"set_field":    f.set_field,
 		"fieldmapping": f.fieldmapping,
 		"join_fields":  f.join_fields,
 		"short":        f.short,
@@ -2515,7 +2516,6 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 		// (unless a explicit name index is created obviously)
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
 			filters = append(filters, after)
-			fmt.Printf("filters: %v\n", filters)
 		}
 
 		lines := []string{
@@ -2859,17 +2859,7 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
 	var skipExtraTags bool
 	isPrivate := contains(field.Properties, privateFieldProperty)
-	var isSingleFK bool
-	for _, tfk := range table.ForeignKeys {
-		if len(tfk.FieldNames) == 1 && tfk.FieldNames[0] == field.SQLName {
-			isSingleFK = true
-			break
-		}
-	}
-	var isSinglePK bool
-	if len(table.PrimaryKeys) == 1 && table.PrimaryKeys[0].SQLName == field.SQLName {
-		isSinglePK = true
-	}
+	isSingleFK, isSinglePK := analyzeField(table, field)
 	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
 
 	switch typ {
@@ -2908,6 +2898,52 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	}
 
 	return fmt.Sprintf("\t%s %s%s // %s\n", field.GoName, fieldType, tag, field.SQLName), nil
+}
+
+// set_field generates an assignment to a struct field.
+func (f *Funcs) set_field(field Field, typ string, table Table) (string, error) {
+	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
+	if skipField {
+		return "", nil
+	}
+
+	isSingleFK, isSinglePK := analyzeField(table, field)
+	switch typ {
+	case "CreateParams":
+	case "UpdateParams":
+		if isSingleFK && isSinglePK { // e.g. workitemid in project tables. don't ever want to update it.
+			fmt.Printf("UpdateParams: skipping %q: is a single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
+			return "", nil
+		}
+	}
+
+	switch typ {
+	case "CreateParams":
+		return fmt.Sprintf("\t%s.%[2]s = params.%[2]s\n", f.short(table), field.GoName), nil
+	case "UpdateParams":
+		return fmt.Sprintf(`
+if params.%[2]s != nil {
+	%[1]s.%[2]s = *params.%[2]s
+}
+`, f.short(table), field.GoName), nil
+	}
+
+	return "", fmt.Errorf("invalid typ: %s", typ)
+}
+
+func analyzeField(table Table, field Field) (bool, bool) {
+	var isSingleFK bool
+	for _, tfk := range table.ForeignKeys {
+		if len(tfk.FieldNames) == 1 && tfk.FieldNames[0] == field.SQLName {
+			isSingleFK = true
+			break
+		}
+	}
+	var isSinglePK bool
+	if len(table.PrimaryKeys) == 1 && table.PrimaryKeys[0].SQLName == field.SQLName {
+		isSinglePK = true
+	}
+	return isSingleFK, isSinglePK
 }
 
 // fieldmapping generates field mappings from a struct to another.

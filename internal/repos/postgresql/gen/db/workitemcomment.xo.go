@@ -37,11 +37,32 @@ type WorkItemCommentCreateParams struct {
 	Message    string    `json:"message"`    // message
 }
 
+func (wic *WorkItemComment) SetCreateParams(params *WorkItemCommentCreateParams) {
+	wic.WorkItemID = params.WorkItemID
+	wic.UserID = params.UserID
+	wic.Message = params.Message
+}
+
 // WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'
 type WorkItemCommentUpdateParams struct {
 	WorkItemID *int64     `json:"workItemID"` // work_item_id
 	UserID     *uuid.UUID `json:"userID"`     // user_id
 	Message    *string    `json:"message"`    // message
+}
+
+func (wic *WorkItemComment) SetUpdateParams(params *WorkItemCommentUpdateParams) {
+
+	if params.WorkItemID != nil {
+		wic.WorkItemID = *params.WorkItemID
+	}
+
+	if params.UserID != nil {
+		wic.UserID = *params.UserID
+	}
+
+	if params.Message != nil {
+		wic.Message = *params.Message
+	}
 }
 
 type WorkItemCommentSelectConfig struct {

@@ -33,11 +33,32 @@ type UserNotificationCreateParams struct {
 	UserID         uuid.UUID `json:"userID"`         // user_id
 }
 
+func (un *UserNotification) setCreateParams(params *UserNotificationCreateParams) {
+	un.NotificationID = params.NotificationID
+	un.Read = params.Read
+	un.UserID = params.UserID
+}
+
 // UserNotificationUpdateParams represents update params for 'public.user_notifications'
 type UserNotificationUpdateParams struct {
 	NotificationID *int       `json:"notificationID"` // notification_id
 	Read           *bool      `json:"read"`           // read
 	UserID         *uuid.UUID `json:"userID"`         // user_id
+}
+
+func (un *UserNotification) setUpdateParams(params *UserNotificationUpdateParams) {
+
+	if params.NotificationID != nil {
+		un.NotificationID = *params.NotificationID
+	}
+
+	if params.Read != nil {
+		un.Read = *params.Read
+	}
+
+	if params.UserID != nil {
+		un.UserID = *params.UserID
+	}
 }
 
 type UserNotificationSelectConfig struct {

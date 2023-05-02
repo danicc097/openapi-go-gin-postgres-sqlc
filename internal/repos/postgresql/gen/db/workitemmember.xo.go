@@ -29,11 +29,32 @@ type WorkItemMemberCreateParams struct {
 	Role       WorkItemRole `json:"role"`       // role
 }
 
+func (wim *WorkItemMember) SetCreateParams(params *WorkItemMemberCreateParams) {
+	wim.WorkItemID = params.WorkItemID
+	wim.Member = params.Member
+	wim.Role = params.Role
+}
+
 // WorkItemMemberUpdateParams represents update params for 'public.work_item_member'
 type WorkItemMemberUpdateParams struct {
 	WorkItemID *int64        `json:"workItemID"` // work_item_id
 	Member     *uuid.UUID    `json:"member"`     // member
 	Role       *WorkItemRole `json:"role"`       // role
+}
+
+func (wim *WorkItemMember) SetUpdateParams(params *WorkItemMemberUpdateParams) {
+
+	if params.WorkItemID != nil {
+		wim.WorkItemID = *params.WorkItemID
+	}
+
+	if params.Member != nil {
+		wim.Member = *params.Member
+	}
+
+	if params.Role != nil {
+		wim.Role = *params.Role
+	}
 }
 
 type WorkItemMemberSelectConfig struct {

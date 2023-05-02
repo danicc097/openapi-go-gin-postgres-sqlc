@@ -27,9 +27,19 @@ type BookCreateParams struct {
 	Name string `json:"name"` // name
 }
 
+func (b *Book) SetCreateParams(params *BookCreateParams) {
+	b.Name = params.Name
+}
+
 // BookUpdateParams represents update params for 'public.books'
 type BookUpdateParams struct {
 	Name *string `json:"name"` // name
+}
+
+func (b *Book) SetUpdateParams(params *BookUpdateParams) {
+	if params.Name != nil {
+		b.Name = *params.Name
+	}
 }
 
 type BookSelectConfig struct {

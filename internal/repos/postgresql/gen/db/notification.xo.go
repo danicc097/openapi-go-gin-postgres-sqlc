@@ -47,6 +47,17 @@ type NotificationCreateParams struct {
 	NotificationType NotificationType `json:"notificationType"` // notification_type
 }
 
+func (n *Notification) setCreateParams(params *NotificationCreateParams) {
+	n.ReceiverRank = params.ReceiverRank
+	n.Title = params.Title
+	n.Body = params.Body
+	n.Label = params.Label
+	n.Link = params.Link
+	n.Sender = params.Sender
+	n.Receiver = params.Receiver
+	n.NotificationType = params.NotificationType
+}
+
 // NotificationUpdateParams represents update params for 'public.notifications'
 type NotificationUpdateParams struct {
 	ReceiverRank     **int16           `json:"receiverRank"`     // receiver_rank
@@ -57,6 +68,41 @@ type NotificationUpdateParams struct {
 	Sender           *uuid.UUID        `json:"sender"`           // sender
 	Receiver         **uuid.UUID       `json:"receiver"`         // receiver
 	NotificationType *NotificationType `json:"notificationType"` // notification_type
+}
+
+func (n *Notification) setUpdateParams(params *NotificationUpdateParams) {
+
+	if params.ReceiverRank != nil {
+		n.ReceiverRank = *params.ReceiverRank
+	}
+
+	if params.Title != nil {
+		n.Title = *params.Title
+	}
+
+	if params.Body != nil {
+		n.Body = *params.Body
+	}
+
+	if params.Label != nil {
+		n.Label = *params.Label
+	}
+
+	if params.Link != nil {
+		n.Link = *params.Link
+	}
+
+	if params.Sender != nil {
+		n.Sender = *params.Sender
+	}
+
+	if params.Receiver != nil {
+		n.Receiver = *params.Receiver
+	}
+
+	if params.NotificationType != nil {
+		n.NotificationType = *params.NotificationType
+	}
 }
 
 type NotificationSelectConfig struct {

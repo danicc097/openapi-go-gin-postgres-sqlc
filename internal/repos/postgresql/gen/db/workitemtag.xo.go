@@ -34,12 +34,38 @@ type WorkItemTagCreateParams struct {
 	Color       string `json:"color"`       // color
 }
 
+func (wit *WorkItemTag) SetCreateParams(params *WorkItemTagCreateParams) {
+	wit.ProjectID = params.ProjectID
+	wit.Name = params.Name
+	wit.Description = params.Description
+	wit.Color = params.Color
+}
+
 // WorkItemTagUpdateParams represents update params for 'public.work_item_tags'
 type WorkItemTagUpdateParams struct {
 	ProjectID   *int    `json:"projectID"`   // project_id
 	Name        *string `json:"name"`        // name
 	Description *string `json:"description"` // description
 	Color       *string `json:"color"`       // color
+}
+
+func (wit *WorkItemTag) SetUpdateParams(params *WorkItemTagUpdateParams) {
+
+	if params.ProjectID != nil {
+		wit.ProjectID = *params.ProjectID
+	}
+
+	if params.Name != nil {
+		wit.Name = *params.Name
+	}
+
+	if params.Description != nil {
+		wit.Description = *params.Description
+	}
+
+	if params.Color != nil {
+		wit.Color = *params.Color
+	}
 }
 
 type WorkItemTagSelectConfig struct {

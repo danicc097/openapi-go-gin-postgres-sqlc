@@ -61,6 +61,19 @@ type UserCreateParams struct {
 	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`   // has_global_notifications
 }
 
+func (u *User) setCreateParams(params *UserCreateParams) {
+	u.Username = params.Username
+	u.Email = params.Email
+	u.FirstName = params.FirstName
+	u.LastName = params.LastName
+	u.ExternalID = params.ExternalID
+	u.APIKeyID = params.APIKeyID
+	u.Scopes = params.Scopes
+	u.RoleRank = params.RoleRank
+	u.HasPersonalNotifications = params.HasPersonalNotifications
+	u.HasGlobalNotifications = params.HasGlobalNotifications
+}
+
 // UserUpdateParams represents update params for 'public.users'
 type UserUpdateParams struct {
 	Username                 *string        `json:"username"`                 // username
@@ -73,6 +86,49 @@ type UserUpdateParams struct {
 	RoleRank                 *int16         `json:"-"`                        // role_rank
 	HasPersonalNotifications *bool          `json:"hasPersonalNotifications"` // has_personal_notifications
 	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications"`   // has_global_notifications
+}
+
+func (u *User) setUpdateParams(params *UserUpdateParams) {
+
+	if params.Username != nil {
+		u.Username = *params.Username
+	}
+
+	if params.Email != nil {
+		u.Email = *params.Email
+	}
+
+	if params.FirstName != nil {
+		u.FirstName = *params.FirstName
+	}
+
+	if params.LastName != nil {
+		u.LastName = *params.LastName
+	}
+
+	if params.ExternalID != nil {
+		u.ExternalID = *params.ExternalID
+	}
+
+	if params.APIKeyID != nil {
+		u.APIKeyID = *params.APIKeyID
+	}
+
+	if params.Scopes != nil {
+		u.Scopes = *params.Scopes
+	}
+
+	if params.RoleRank != nil {
+		u.RoleRank = *params.RoleRank
+	}
+
+	if params.HasPersonalNotifications != nil {
+		u.HasPersonalNotifications = *params.HasPersonalNotifications
+	}
+
+	if params.HasGlobalNotifications != nil {
+		u.HasGlobalNotifications = *params.HasGlobalNotifications
+	}
 }
 
 type UserSelectConfig struct {

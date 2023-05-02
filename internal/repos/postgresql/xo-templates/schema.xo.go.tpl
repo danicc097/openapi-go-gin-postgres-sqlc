@@ -226,10 +226,23 @@ type {{ $t.GoName }}CreateParams struct {
 {{ end -}}
 }
 
+func ({{ short $t }} *{{ $t.GoName }}) SetCreateParams(params *{{ $t.GoName }}CreateParams) {
+{{ range $t.Fields -}}
+	{{ set_field . "CreateParams" $t -}}
+{{ end -}}
+}
+
+
 // {{ $t.GoName }}UpdateParams represents update params for '{{ schema $t.SQLName }}'
 type {{ $t.GoName }}UpdateParams struct {
 {{ range $t.Fields -}}
 	{{ field . "UpdateParams" $t -}}
+{{ end -}}
+}
+
+func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}UpdateParams) {
+{{ range $t.Fields -}}
+	{{ set_field . "UpdateParams" $t -}}
 {{ end -}}
 }
 

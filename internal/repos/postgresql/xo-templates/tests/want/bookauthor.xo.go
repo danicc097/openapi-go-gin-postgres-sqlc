@@ -26,10 +26,25 @@ type BookAuthorCreateParams struct {
 	AuthorID uuid.UUID `json:"authorID"` // author_id
 }
 
+func (ba *BookAuthor) SetCreateParams(params *BookAuthorCreateParams) {
+	ba.BookID = params.BookID
+	ba.AuthorID = params.AuthorID
+}
+
 // BookAuthorUpdateParams represents update params for 'public.book_authors'
 type BookAuthorUpdateParams struct {
 	BookID   *int       `json:"bookID"`   // book_id
 	AuthorID *uuid.UUID `json:"authorID"` // author_id
+}
+
+func (ba *BookAuthor) SetUpdateParams(params *BookAuthorUpdateParams) {
+	if params.BookID != nil {
+		ba.BookID = *params.BookID
+	}
+
+	if params.AuthorID != nil {
+		ba.AuthorID = *params.AuthorID
+	}
 }
 
 type BookAuthorSelectConfig struct {

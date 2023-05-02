@@ -34,12 +34,38 @@ type ActivityCreateParams struct {
 	IsProductive bool   `json:"isProductive"` // is_productive
 }
 
+func (a *Activity) SetCreateParams(params *ActivityCreateParams) {
+	a.ProjectID = params.ProjectID
+	a.Name = params.Name
+	a.Description = params.Description
+	a.IsProductive = params.IsProductive
+}
+
 // ActivityUpdateParams represents update params for 'public.activities'
 type ActivityUpdateParams struct {
 	ProjectID    *int    `json:"projectID"`    // project_id
 	Name         *string `json:"name"`         // name
 	Description  *string `json:"description"`  // description
 	IsProductive *bool   `json:"isProductive"` // is_productive
+}
+
+func (a *Activity) SetUpdateParams(params *ActivityUpdateParams) {
+
+	if params.ProjectID != nil {
+		a.ProjectID = *params.ProjectID
+	}
+
+	if params.Name != nil {
+		a.Name = *params.Name
+	}
+
+	if params.Description != nil {
+		a.Description = *params.Description
+	}
+
+	if params.IsProductive != nil {
+		a.IsProductive = *params.IsProductive
+	}
 }
 
 type ActivitySelectConfig struct {

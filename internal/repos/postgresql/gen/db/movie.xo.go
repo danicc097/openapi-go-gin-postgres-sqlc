@@ -29,11 +29,32 @@ type MovieCreateParams struct {
 	Synopsis string `json:"synopsis"` // synopsis
 }
 
+func (m *Movie) SetCreateParams(params *MovieCreateParams) {
+	m.Title = params.Title
+	m.Year = params.Year
+	m.Synopsis = params.Synopsis
+}
+
 // MovieUpdateParams represents update params for 'public.movies'
 type MovieUpdateParams struct {
 	Title    *string `json:"title"`    // title
 	Year     *int    `json:"year"`     // year
 	Synopsis *string `json:"synopsis"` // synopsis
+}
+
+func (m *Movie) SetUpdateParams(params *MovieUpdateParams) {
+
+	if params.Title != nil {
+		m.Title = *params.Title
+	}
+
+	if params.Year != nil {
+		m.Year = *params.Year
+	}
+
+	if params.Synopsis != nil {
+		m.Synopsis = *params.Synopsis
+	}
 }
 
 type MovieSelectConfig struct {

@@ -42,12 +42,38 @@ type ProjectCreateParams struct {
 	BoardConfig        models.ProjectConfig `json:"boardConfig"` // board_config
 }
 
+func (p *Project) SetCreateParams(params *ProjectCreateParams) {
+	p.Name = params.Name
+	p.Description = params.Description
+	p.WorkItemsTableName = params.WorkItemsTableName
+	p.BoardConfig = params.BoardConfig
+}
+
 // ProjectUpdateParams represents update params for 'public.projects'
 type ProjectUpdateParams struct {
 	Name               *models.Project       `json:"name"`        // name
 	Description        *string               `json:"description"` // description
 	WorkItemsTableName *string               `json:"-"`           // work_items_table_name
 	BoardConfig        *models.ProjectConfig `json:"boardConfig"` // board_config
+}
+
+func (p *Project) SetUpdateParams(params *ProjectUpdateParams) {
+
+	if params.Name != nil {
+		p.Name = *params.Name
+	}
+
+	if params.Description != nil {
+		p.Description = *params.Description
+	}
+
+	if params.WorkItemsTableName != nil {
+		p.WorkItemsTableName = *params.WorkItemsTableName
+	}
+
+	if params.BoardConfig != nil {
+		p.BoardConfig = *params.BoardConfig
+	}
 }
 
 type ProjectSelectConfig struct {
