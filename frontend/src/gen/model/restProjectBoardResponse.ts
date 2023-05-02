@@ -6,20 +6,16 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { DbActivity } from './dbActivity'
-import type { ProjectConfig } from './projectConfig'
 import type { DbKanbanStep } from './dbKanbanStep'
-import type { Project } from './project'
 import type { DbTeam } from './dbTeam'
 import type { DbWorkItemTag } from './dbWorkItemTag'
 import type { DbWorkItemType } from './dbWorkItemType'
 
 export interface RestProjectBoardResponse {
   activities: DbActivity[] | null
-  boardConfig: ProjectConfig
   createdAt: Date
   description: string
   kanbanSteps: DbKanbanStep[] | null
-  name: Project
   projectID: number
   teams: DbTeam[] | null
   updatedAt: Date

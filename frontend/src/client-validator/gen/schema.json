@@ -73,18 +73,12 @@
     },
     "DbProject": {
       "properties": {
-        "boardConfig": {
-          "$ref": "#/definitions/ProjectConfig"
-        },
         "createdAt": {
           "format": "date-time",
           "type": "string"
         },
         "description": {
           "type": "string"
-        },
-        "name": {
-          "$ref": "#/definitions/Project"
         },
         "projectID": {
           "type": "integer"
@@ -96,9 +90,7 @@
       },
       "required": [
         "projectID",
-        "name",
         "description",
-        "boardConfig",
         "createdAt",
         "updatedAt"
       ],
@@ -291,9 +283,6 @@
             "null"
           ]
         },
-        "scopes": {
-          "$ref": "#/definitions/Scopes"
-        },
         "userID": {
           "$ref": "#/definitions/UuidUUID"
         },
@@ -308,7 +297,6 @@
         "firstName",
         "lastName",
         "fullName",
-        "scopes",
         "hasPersonalNotifications",
         "hasGlobalNotifications",
         "createdAt",
@@ -620,9 +608,6 @@
             "null"
           ]
         },
-        "boardConfig": {
-          "$ref": "#/definitions/ProjectConfig"
-        },
         "createdAt": {
           "format": "date-time",
           "type": "string"
@@ -638,9 +623,6 @@
             "array",
             "null"
           ]
-        },
-        "name": {
-          "$ref": "#/definitions/Project"
         },
         "projectID": {
           "type": "integer"
@@ -679,9 +661,7 @@
       },
       "required": [
         "projectID",
-        "name",
         "description",
-        "boardConfig",
         "createdAt",
         "updatedAt",
         "activities",
@@ -746,12 +726,6 @@
             "null"
           ]
         },
-        "role": {
-          "$ref": "#/definitions/Role"
-        },
-        "scopes": {
-          "$ref": "#/definitions/Scopes"
-        },
         "teams": {
           "items": {
             "$ref": "#/definitions/DbTeam"
@@ -775,12 +749,10 @@
         "firstName",
         "lastName",
         "fullName",
-        "scopes",
         "hasPersonalNotifications",
         "hasGlobalNotifications",
         "createdAt",
-        "deletedAt",
-        "role"
+        "deletedAt"
       ],
       "type": "object",
       "x-postgen-struct": "RestUserResponse",
@@ -1142,14 +1114,6 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "ModelsProject": {
-      "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ModelsRole": {
-      "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "DbWorkItemRole": {
       "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -1196,10 +1160,6 @@
         "Received"
       ],
       "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ModelsScope": {
-      "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Demo2WorkItemTypes": {
@@ -1249,6 +1209,10 @@
       "x-generated": "-",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
+    "ModelsProject": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "ModelsProjectConfig": {
       "properties": {
         "fields": {
@@ -1292,6 +1256,14 @@
         }
       },
       "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsRole": {
+      "type": "string",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsScope": {
+      "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
@@ -1404,12 +1376,6 @@
     "DbWorkItemTypeCreateParams": {
       "$ref": "#/definitions/DbWorkItemTypeCreateParams"
     },
-    "ModelsProject": {
-      "$ref": "#/definitions/ModelsProject"
-    },
-    "ModelsRole": {
-      "$ref": "#/definitions/ModelsRole"
-    },
     "DbWorkItemRole": {
       "$ref": "#/definitions/DbWorkItemRole"
     },
@@ -1424,9 +1390,6 @@
     },
     "DemoProject2KanbanSteps": {
       "$ref": "#/definitions/DemoProject2KanbanSteps"
-    },
-    "ModelsScope": {
-      "$ref": "#/definitions/ModelsScope"
     },
     "Demo2WorkItemTypes": {
       "$ref": "#/definitions/Demo2WorkItemTypes"
@@ -1443,11 +1406,20 @@
     "DemoWorkItemTypes": {
       "$ref": "#/definitions/DemoWorkItemTypes"
     },
+    "ModelsProject": {
+      "$ref": "#/definitions/ModelsProject"
+    },
     "ModelsProjectConfig": {
       "$ref": "#/definitions/ModelsProjectConfig"
     },
     "ModelsProjectConfigField": {
       "$ref": "#/definitions/ModelsProjectConfigField"
+    },
+    "ModelsRole": {
+      "$ref": "#/definitions/ModelsRole"
+    },
+    "ModelsScope": {
+      "$ref": "#/definitions/ModelsScope"
     }
   }
 }

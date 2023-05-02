@@ -7,7 +7,6 @@
  */
 import { rest } from 'msw'
 import { faker } from '@faker-js/faker'
-import { Project, Role, Scope } from '.././model'
 
 export const getGetCurrentUserMock = () => ({
   apiKey: { apiKey: faker.random.word(), expiresOn: (() => faker.date.past())(), userID: faker.random.word() },
@@ -20,26 +19,11 @@ export const getGetCurrentUserMock = () => ({
   hasPersonalNotifications: faker.datatype.boolean(),
   lastName: faker.helpers.arrayElement([faker.random.word(), null]),
   projects: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    boardConfig: {
-      fields: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-        isEditable: faker.datatype.boolean(),
-        isVisible: faker.datatype.boolean(),
-        name: faker.random.word(),
-        path: faker.random.word(),
-        showCollapsed: faker.datatype.boolean(),
-      })),
-      header: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-        faker.random.word(),
-      ),
-    },
     createdAt: (() => faker.date.past())(),
     description: faker.random.word(),
-    name: faker.helpers.arrayElement(Object.values(Project)),
     projectID: faker.datatype.number({ min: undefined, max: undefined }),
     updatedAt: (() => faker.date.past())(),
   })),
-  role: faker.helpers.arrayElement(Object.values(Role)),
-  scopes: faker.helpers.arrayElements(Object.values(Scope)),
   teams: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     createdAt: (() => faker.date.past())(),
     description: faker.random.word(),
@@ -63,26 +47,11 @@ export const getUpdateUserMock = () => ({
   hasPersonalNotifications: faker.datatype.boolean(),
   lastName: faker.helpers.arrayElement([faker.random.word(), null]),
   projects: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    boardConfig: {
-      fields: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-        isEditable: faker.datatype.boolean(),
-        isVisible: faker.datatype.boolean(),
-        name: faker.random.word(),
-        path: faker.random.word(),
-        showCollapsed: faker.datatype.boolean(),
-      })),
-      header: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-        faker.random.word(),
-      ),
-    },
     createdAt: (() => faker.date.past())(),
     description: faker.random.word(),
-    name: faker.helpers.arrayElement(Object.values(Project)),
     projectID: faker.datatype.number({ min: undefined, max: undefined }),
     updatedAt: (() => faker.date.past())(),
   })),
-  role: faker.helpers.arrayElement(Object.values(Role)),
-  scopes: faker.helpers.arrayElements(Object.values(Scope)),
   teams: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     createdAt: (() => faker.date.past())(),
     description: faker.random.word(),

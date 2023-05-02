@@ -1342,6 +1342,8 @@ generate_structs_map() {
   find_go_enums enums "$REPOS/models"
   find_deleted_pkg_schemas structs enums Models
   for struct in ${structs[@]}; do
+    # openapi-go uses last dir name by default.
+    # we can intercept and generate based on t.PkgPath()
     map_fields+=("\"Models$struct\": repomodels.$struct{},")
   done
 

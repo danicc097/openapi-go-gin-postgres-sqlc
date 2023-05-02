@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -44,7 +45,8 @@ func main() {
 		// default name comes from package directory, not the given import alias
 		// e.g. repomodels -/-> Repomodels, its the last dir (models)
 
-		// fmt.Fprintf(os.Stderr, "defaultDefName: %s", defaultDefName)
+		// can intercept generated name full package path
+		// fmt.Fprintf(os.Stderr, "t.PkgPath(): %v\n", t.PkgPath())
 
 		return defaultDefName
 	})
@@ -55,14 +57,20 @@ func main() {
 			if params.Field.Tag.Get("openapi-go") == "ignore" {
 				return jsonschema.ErrSkipProperty
 			}
+			if shouldSkipType(params.Field.Type) {
+				fmt.Fprintf(os.Stderr, "skipping schema: %s", params.Name)
+
+				return jsonschema.ErrSkipProperty
+			}
 
 			return nil
 		}),
-		jsonschema.InterceptType(func(v reflect.Value, s *jsonschema.Schema) (stop bool, err error) {
-			if s.ReflectType == reflect.TypeOf(uuid.New()) {
-				s.Type = &jsonschema.Type{SimpleTypes: pointers.New(jsonschema.String)}
-				s.Items = &jsonschema.Items{}
+		jsonschema.InterceptSchema(func(params jsonschema.InterceptSchemaParams) (stop bool, err error) {
+			if params.Schema.ReflectType == reflect.TypeOf(uuid.New()) {
+				params.Schema.Type = &jsonschema.Type{SimpleTypes: pointers.New(jsonschema.String)}
+				params.Schema.Items = &jsonschema.Items{}
 			}
+
 			return false, nil
 		}),
 	)
@@ -142,4 +150,22 @@ func filterIgnoredFields(t reflect.Type) []reflect.StructField {
 	}
 
 	return filteredFields
+}
+
+func shouldSkipType(typ reflect.Type) bool {
+	if typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
+	if typ.Kind() == reflect.Array || typ.Kind() == reflect.Slice {
+		return shouldSkipType(typ.Elem())
+	}
+
+	// FIXME these have to be generated, they're part of db models.
+	// somehow ModelsProjectConfig, etc. are being generated from db models though
+	// without clear reason, since ref is set on those fields. openapi-go
+	// is generating with a default name of pkg path + type, even when they have no references
+	// in the spec.
+	// return strings.HasSuffix(typ.PkgPath(), "/internal/models")
+
+	return false
 }

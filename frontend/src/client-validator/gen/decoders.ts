@@ -44,21 +44,21 @@ import {
   DbTeamCreateParams,
   DbWorkItemTagCreateParams,
   DbWorkItemTypeCreateParams,
-  ModelsProject,
-  ModelsRole,
   DbWorkItemRole,
   DbWorkItem_Member,
   NotificationType,
   DemoProjectKanbanSteps,
   DemoProject2KanbanSteps,
-  ModelsScope,
   Demo2WorkItemTypes,
   DemoKanbanSteps,
   DemoTwoKanbanSteps,
   DemoTwoWorkItemTypes,
   DemoWorkItemTypes,
+  ModelsProject,
   ModelsProjectConfig,
   ModelsProjectConfigField,
+  ModelsRole,
+  ModelsScope,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -499,30 +499,6 @@ export const DbWorkItemTypeCreateParamsDecoder: Decoder<DbWorkItemTypeCreatePara
     return validateJson(json, schema, DbWorkItemTypeCreateParamsDecoder.definitionName)
   },
 }
-export const ModelsProjectDecoder: Decoder<ModelsProject> = {
-  definitionName: 'ModelsProject',
-  schemaRef: '#/definitions/ModelsProject',
-
-  decode(json: unknown): ModelsProject {
-    const schema = ajv.getSchema(ModelsProjectDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsProjectDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsProjectDecoder.definitionName)
-  },
-}
-export const ModelsRoleDecoder: Decoder<ModelsRole> = {
-  definitionName: 'ModelsRole',
-  schemaRef: '#/definitions/ModelsRole',
-
-  decode(json: unknown): ModelsRole {
-    const schema = ajv.getSchema(ModelsRoleDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsRoleDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsRoleDecoder.definitionName)
-  },
-}
 export const DbWorkItemRoleDecoder: Decoder<DbWorkItemRole> = {
   definitionName: 'DbWorkItemRole',
   schemaRef: '#/definitions/DbWorkItemRole',
@@ -581,18 +557,6 @@ export const DemoProject2KanbanStepsDecoder: Decoder<DemoProject2KanbanSteps> = 
       throw new Error(`Schema ${DemoProject2KanbanStepsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DemoProject2KanbanStepsDecoder.definitionName)
-  },
-}
-export const ModelsScopeDecoder: Decoder<ModelsScope> = {
-  definitionName: 'ModelsScope',
-  schemaRef: '#/definitions/ModelsScope',
-
-  decode(json: unknown): ModelsScope {
-    const schema = ajv.getSchema(ModelsScopeDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsScopeDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsScopeDecoder.definitionName)
   },
 }
 export const Demo2WorkItemTypesDecoder: Decoder<Demo2WorkItemTypes> = {
@@ -655,6 +619,18 @@ export const DemoWorkItemTypesDecoder: Decoder<DemoWorkItemTypes> = {
     return validateJson(json, schema, DemoWorkItemTypesDecoder.definitionName)
   },
 }
+export const ModelsProjectDecoder: Decoder<ModelsProject> = {
+  definitionName: 'ModelsProject',
+  schemaRef: '#/definitions/ModelsProject',
+
+  decode(json: unknown): ModelsProject {
+    const schema = ajv.getSchema(ModelsProjectDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ModelsProjectDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ModelsProjectDecoder.definitionName)
+  },
+}
 export const ModelsProjectConfigDecoder: Decoder<ModelsProjectConfig> = {
   definitionName: 'ModelsProjectConfig',
   schemaRef: '#/definitions/ModelsProjectConfig',
@@ -677,5 +653,29 @@ export const ModelsProjectConfigFieldDecoder: Decoder<ModelsProjectConfigField> 
       throw new Error(`Schema ${ModelsProjectConfigFieldDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ModelsProjectConfigFieldDecoder.definitionName)
+  },
+}
+export const ModelsRoleDecoder: Decoder<ModelsRole> = {
+  definitionName: 'ModelsRole',
+  schemaRef: '#/definitions/ModelsRole',
+
+  decode(json: unknown): ModelsRole {
+    const schema = ajv.getSchema(ModelsRoleDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ModelsRoleDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ModelsRoleDecoder.definitionName)
+  },
+}
+export const ModelsScopeDecoder: Decoder<ModelsScope> = {
+  definitionName: 'ModelsScope',
+  schemaRef: '#/definitions/ModelsScope',
+
+  decode(json: unknown): ModelsScope {
+    const schema = ajv.getSchema(ModelsScopeDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ModelsScopeDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ModelsScopeDecoder.definitionName)
   },
 }

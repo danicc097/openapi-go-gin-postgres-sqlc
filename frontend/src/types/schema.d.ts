@@ -94,11 +94,9 @@ export interface components {
       timeTrackable: boolean;
     };
     DbProject: {
-      boardConfig: components["schemas"]["ProjectConfig"];
       /** Format: date-time */
       createdAt: string;
       description: string;
-      name: components["schemas"]["Project"];
       projectID: number;
       /** Format: date-time */
       updatedAt: string;
@@ -152,7 +150,6 @@ export interface components {
       hasGlobalNotifications: boolean;
       hasPersonalNotifications: boolean;
       lastName: string | null;
-      scopes: components["schemas"]["Scopes"];
       userID: components["schemas"]["UuidUUID"];
       username: string;
     };
@@ -221,12 +218,10 @@ export interface components {
     };
     RestProjectBoardResponse: {
       activities: (components["schemas"]["DbActivity"])[] | null;
-      boardConfig: components["schemas"]["ProjectConfig"];
       /** Format: date-time */
       createdAt: string;
       description: string;
       kanbanSteps: (components["schemas"]["DbKanbanStep"])[] | null;
-      name: components["schemas"]["Project"];
       projectID: number;
       teams: (components["schemas"]["DbTeam"])[] | null;
       /** Format: date-time */
@@ -247,8 +242,6 @@ export interface components {
       hasPersonalNotifications: boolean;
       lastName: string | null;
       projects?: (components["schemas"]["DbProject"])[] | null;
-      role: components["schemas"]["Role"];
-      scopes: components["schemas"]["Scopes"];
       teams?: (components["schemas"]["DbTeam"])[] | null;
       userID: components["schemas"]["UuidUUID"];
       username: string;
@@ -388,8 +381,6 @@ export interface components {
       name?: string;
       projectID?: number;
     };
-    ModelsProject: string;
-    ModelsRole: string;
     DbWorkItemRole: string;
     DbWorkItem_Member: {
       role: components["schemas"]["WorkItemRole"];
@@ -404,7 +395,6 @@ export interface components {
     DemoProjectKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
     /** @enum {string} */
     DemoProject2KanbanSteps: "Received";
-    ModelsScope: string;
     /** @enum {string} */
     Demo2WorkItemTypes: "Type 1" | "Type 2" | "Another type";
     /** @enum {string} */
@@ -415,6 +405,7 @@ export interface components {
     DemoTwoWorkItemTypes: "Type 1" | "Type 2" | "Another type";
     /** @enum {string} */
     DemoWorkItemTypes: "Type 1";
+    ModelsProject: string;
     ModelsProjectConfig: {
       fields?: (components["schemas"]["ModelsProjectConfigField"])[] | null;
       header?: (string)[] | null;
@@ -426,6 +417,8 @@ export interface components {
       path?: string;
       showCollapsed?: boolean;
     };
+    ModelsRole: string;
+    ModelsScope: string;
   };
   responses: never;
   parameters: {
