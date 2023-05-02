@@ -950,37 +950,9 @@ cc_label:
 			}
 		}
 
-		// var isSingleFK, isSinglePK bool
-		// for i, t := range tables {
-
-		// 	for _, tfk := range table.ForeignKeys {
-		// 		if len(tfk.FieldNames) == 1 && tfk.FieldNames[0] == field.SQLName {
-		// 			isSingleFK = true
-		// 			break
-		// 		}
-		// 	}
-		// 	if len(table.PrimaryKeys) == 1 && table.PrimaryKeys[0].SQLName == field.SQLName {
-		// 		isSinglePK = true
-		// 	}
-		// }
-
-		// FIXME M2O being skipped and existing one not adding proper suffix, see notification.xo.go
-		// UserJoin      *User       `json:"-" db:"user" openapi-go:"ignore"`
-		//-- O2O join generated from "notifications_receiver_fkey (Generated from O2M|M2O)"
-		// left join users on users.user_id = notifications.receiver
-		// But the other one is skipped. We need to
-		// do the same check as in M2M:
-		// if c.ColumnName != c.RefColumnName
-		// differs from actual column, e.g. having member UUID in lookup instead of user_id
-		// 	// prevent name clashing
-		// 	typ = camelExport(singularize(t.SQLName)) + "_" + camelExport(singularize(lookupName))
-		// }
-		// for O2O we will possibly need the same thing at some point.
-
 		// assume it's O2O. Can be overridden at any time
 		if constraint.Type == "foreign_key" && constraint.Cardinality == "" {
-			// dummy constraint to automatically create join in
-			//  (TODO need to do this only if fk fields len = 1)
+			// TODO need to do this only if fk fields len = 1
 			// and check if field is unique or not
 			// ignore duplicate joins generated for partitioned columns to new tables, joined by helper keys, e.g. api_key_id
 			for _, seenConstraint := range cc {
@@ -995,6 +967,7 @@ cc_label:
 				}
 			}
 
+			// dummy constraint to automatically create join
 			cc = append(cc, Constraint{
 				Type:           constraint.Type,
 				Cardinality:    O2O,
@@ -1006,19 +979,6 @@ cc_label:
 				JoinTableClash: joinTableClash,
 				IsGeneratedO2O: true,
 			})
-
-			// not needed
-			// cc = append(cc, Constraint{
-			// 	Type:           constraint.Type,
-			// 	Cardinality:    O2O,
-			// 	Name:           constraint.Name + "(2)",
-			// 	TableName:      constraint.TableName,
-			// 	RefTableName:   constraint.RefTableName,
-			// 	ColumnName:     constraint.ColumnName,
-			// 	RefColumnName:  constraint.RefColumnName,
-			// 	JoinTableClash: joinTableClash,
-			// 	IsGeneratedO2O: true,
-			// })
 
 			continue
 		}
@@ -1793,6 +1753,9 @@ type %s struct {
 		case O2O:
 			if c.TableName == sqlname {
 				joinName = camelExport(singularize(c.RefTableName))
+				if c.JoinTableClash {
+					joinName = joinName + camelExport(c.ColumnName)
+				}
 			}
 			// dummy created automatically to avoid this duplication
 			// if c.RefTableName == sqlname {
@@ -2107,6 +2070,9 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				case O2O:
 					if c.TableName == x.SQLName {
 						joinName = prefix + camelExport(singularize(c.RefTableName))
+						if c.JoinTableClash {
+							joinName = joinName + camelExport(c.ColumnName)
+						}
 					}
 					// dummy created automatically to avoid this duplication
 					// if c.RefTableName == x.SQLName {
@@ -2152,6 +2118,9 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				case O2O:
 					if c.TableName == x.Table.SQLName {
 						joinName = pref + camelExport(singularize(c.RefTableName))
+						if c.JoinTableClash {
+							joinName = joinName + camelExport(c.ColumnName)
+						}
 					}
 					// dummy created automatically to avoid this duplication
 					// if c.RefTableName == x.Table.SQLName {
@@ -2692,6 +2661,9 @@ func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.Fu
 			params["JoinTable"] = c.RefTableName
 			params["JoinRefColumn"] = c.ColumnName
 			params["CurrentTable"] = x.Table.SQLName
+			if c.JoinTableClash {
+				params["ClashSuffix"] = "_" + c.ColumnName
+			}
 			break
 		}
 
@@ -3051,7 +3023,13 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 					notes = " (inferred)"
 				}
 
-				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Singularize(c.RefTableName))
+				joinName := inflector.Singularize(c.RefTableName)
+				if c.JoinTableClash {
+					joinName = joinName + "_" + c.ColumnName
+					goName = goName + camelExport(c.ColumnName)
+				}
+
+				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
 				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 			}
 			// dummy created automatically to avoid this duplication
@@ -3530,7 +3508,7 @@ type Constraint struct {
 	RefColumnName   string // RefTableName column FK references
 	LookupColumn    string // (M2M) lookup table column
 	LookupRefColumn string // (M2M) referenced PK by LookupColumn
-	JoinTableClash  bool   // Whether other constraints join against the same table (not necessarily )
+	JoinTableClash  bool   // Whether other constraints join against the same table
 	IsGeneratedO2O  bool   // Whether this constraint has been generated or altered automatically
 	IsGeneratedO2M  bool   // Whether this constraint has been generated or altered automatically
 }

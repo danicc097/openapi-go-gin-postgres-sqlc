@@ -29,8 +29,8 @@ type Notification struct {
 	Receiver         *uuid.UUID       `json:"receiver" db:"receiver" required:"true"`                                                              // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
 
-	UserJoin              *User               `json:"-" db:"user" openapi-go:"ignore"`               // O2O
-	UserJoin              *User               `json:"-" db:"user" openapi-go:"ignore"`               // O2O
+	UserJoinReceiver      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O
+	UserJoinSender        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O
 	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O
 	// xo fields
 	_exists, _deleted bool
@@ -96,8 +96,8 @@ func WithNotificationOrderBy(rows ...NotificationOrderBy) NotificationSelectConf
 }
 
 type NotificationJoins struct {
-	User              bool
-	User              bool
+	UserReceiver      bool
+	UserSender        bool
 	UserNotifications bool
 }
 
@@ -269,7 +269,7 @@ left join (
 
 	// run
 	// logf(sqlstr, notificationID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.User, c.joins.UserNotifications, notificationID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, c.joins.UserNotifications, notificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", err))
 	}
@@ -327,7 +327,7 @@ left join (
 
 	// run
 	// logf(sqlstr, receiverRank, notificationType, createdAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.User, c.joins.UserNotifications, receiverRank, notificationType, createdAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.UserReceiver, c.joins.UserSender, c.joins.UserNotifications, receiverRank, notificationType, createdAt)
 	if err != nil {
 		return nil, logerror(err)
 	}
