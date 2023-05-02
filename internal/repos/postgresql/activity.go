@@ -23,8 +23,7 @@ func NewActivity() *Activity {
 var _ repos.Activity = (*Activity)(nil)
 
 func (a *Activity) Create(ctx context.Context, d db.DBTX, params *db.ActivityCreateParams) (*db.Activity, error) {
-	activity := &db.Activity{}
-	activity.SetCreateParams(params)
+	activity := db.NewActivity(params)
 
 	if _, err := activity.Insert(ctx, d); err != nil {
 		return nil, err

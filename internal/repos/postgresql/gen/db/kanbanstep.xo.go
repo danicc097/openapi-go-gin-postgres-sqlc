@@ -38,13 +38,15 @@ type KanbanStepCreateParams struct {
 	TimeTrackable bool   `json:"timeTrackable"` // time_trackable
 }
 
-func (ks *KanbanStep) SetCreateParams(params *KanbanStepCreateParams) {
-	ks.ProjectID = params.ProjectID
-	ks.StepOrder = params.StepOrder
-	ks.Name = params.Name
-	ks.Description = params.Description
-	ks.Color = params.Color
-	ks.TimeTrackable = params.TimeTrackable
+func NewKanbanStep(params *KanbanStepCreateParams) *KanbanStep {
+	return &KanbanStep{
+		ProjectID:     params.ProjectID,
+		StepOrder:     params.StepOrder,
+		Name:          params.Name,
+		Description:   params.Description,
+		Color:         params.Color,
+		TimeTrackable: params.TimeTrackable,
+	}
 }
 
 // KanbanStepUpdateParams represents update params for 'public.kanban_steps'
@@ -58,27 +60,21 @@ type KanbanStepUpdateParams struct {
 }
 
 func (ks *KanbanStep) SetUpdateParams(params *KanbanStepUpdateParams) {
-
 	if params.ProjectID != nil {
 		ks.ProjectID = *params.ProjectID
 	}
-
 	if params.StepOrder != nil {
 		ks.StepOrder = *params.StepOrder
 	}
-
 	if params.Name != nil {
 		ks.Name = *params.Name
 	}
-
 	if params.Description != nil {
 		ks.Description = *params.Description
 	}
-
 	if params.Color != nil {
 		ks.Color = *params.Color
 	}
-
 	if params.TimeTrackable != nil {
 		ks.TimeTrackable = *params.TimeTrackable
 	}

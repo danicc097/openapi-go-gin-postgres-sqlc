@@ -30,9 +30,11 @@ type DemoTwoWorkItemCreateParams struct {
 	CustomDateForProject2 *time.Time `json:"customDateForProject2"` // custom_date_for_project_2
 }
 
-func (dtwi *DemoTwoWorkItem) SetCreateParams(params *DemoTwoWorkItemCreateParams) {
-	dtwi.WorkItemID = params.WorkItemID
-	dtwi.CustomDateForProject2 = params.CustomDateForProject2
+func NewDemoTwoWorkItem(params *DemoTwoWorkItemCreateParams) *DemoTwoWorkItem {
+	return &DemoTwoWorkItem{
+		WorkItemID:            params.WorkItemID,
+		CustomDateForProject2: params.CustomDateForProject2,
+	}
 }
 
 // DemoTwoWorkItemUpdateParams represents update params for 'public.demo_two_work_items'
@@ -41,7 +43,6 @@ type DemoTwoWorkItemUpdateParams struct {
 }
 
 func (dtwi *DemoTwoWorkItem) SetUpdateParams(params *DemoTwoWorkItemUpdateParams) {
-
 	if params.CustomDateForProject2 != nil {
 		dtwi.CustomDateForProject2 = *params.CustomDateForProject2
 	}

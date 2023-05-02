@@ -50,8 +50,8 @@ func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoW
 		LastMessageAt: params.DemoProject.LastMessageAt,
 		Reopened:      params.DemoProject.Reopened,
 	}
-	demoWorkItem := &db.DemoWorkItem{}
-	demoWorkItem.SetCreateParams(dwicp)
+
+	demoWorkItem := db.NewDemoWorkItem(dwicp)
 
 	demoWorkItem, err = demoWorkItem.Insert(ctx, d)
 	if err != nil {
@@ -69,7 +69,6 @@ func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params r
 		return nil, fmt.Errorf("could not get demoWorkItem by id: %w", parseErrorDetail(err))
 	}
 	workItem := demoWorkItem.WorkItemJoin
-	fmt.Printf("workItem: %v\n", workItem)
 
 	if params.Base != nil {
 		workItem.SetUpdateParams(params.Base)

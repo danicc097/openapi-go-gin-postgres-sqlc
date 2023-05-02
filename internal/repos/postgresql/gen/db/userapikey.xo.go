@@ -34,10 +34,12 @@ type UserAPIKeyCreateParams struct {
 	UserID    uuid.UUID `json:"userID"`    // user_id
 }
 
-func (uak *UserAPIKey) SetCreateParams(params *UserAPIKeyCreateParams) {
-	uak.APIKey = params.APIKey
-	uak.ExpiresOn = params.ExpiresOn
-	uak.UserID = params.UserID
+func NewUserAPIKey(params *UserAPIKeyCreateParams) *UserAPIKey {
+	return &UserAPIKey{
+		APIKey:    params.APIKey,
+		ExpiresOn: params.ExpiresOn,
+		UserID:    params.UserID,
+	}
 }
 
 // UserAPIKeyUpdateParams represents update params for 'public.user_api_keys'
@@ -48,15 +50,12 @@ type UserAPIKeyUpdateParams struct {
 }
 
 func (uak *UserAPIKey) SetUpdateParams(params *UserAPIKeyUpdateParams) {
-
 	if params.APIKey != nil {
 		uak.APIKey = *params.APIKey
 	}
-
 	if params.ExpiresOn != nil {
 		uak.ExpiresOn = *params.ExpiresOn
 	}
-
 	if params.UserID != nil {
 		uak.UserID = *params.UserID
 	}

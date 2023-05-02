@@ -226,10 +226,12 @@ type {{ $t.GoName }}CreateParams struct {
 {{ end -}}
 }
 
-func ({{ short $t }} *{{ $t.GoName }}) SetCreateParams(params *{{ $t.GoName }}CreateParams) {
+func New{{ $t.GoName }}(params *{{ $t.GoName }}CreateParams) *{{ $t.GoName }} {
+  return &{{ $t.GoName }}{
 {{ range $t.Fields -}}
 	{{ set_field . "CreateParams" $t -}}
 {{ end -}}
+  }
 }
 
 

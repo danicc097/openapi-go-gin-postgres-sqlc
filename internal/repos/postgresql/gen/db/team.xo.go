@@ -38,10 +38,12 @@ type TeamCreateParams struct {
 	Description string `json:"description"` // description
 }
 
-func (t *Team) SetCreateParams(params *TeamCreateParams) {
-	t.ProjectID = params.ProjectID
-	t.Name = params.Name
-	t.Description = params.Description
+func NewTeam(params *TeamCreateParams) *Team {
+	return &Team{
+		ProjectID:   params.ProjectID,
+		Name:        params.Name,
+		Description: params.Description,
+	}
 }
 
 // TeamUpdateParams represents update params for 'public.teams'
@@ -52,15 +54,12 @@ type TeamUpdateParams struct {
 }
 
 func (t *Team) SetUpdateParams(params *TeamUpdateParams) {
-
 	if params.ProjectID != nil {
 		t.ProjectID = *params.ProjectID
 	}
-
 	if params.Name != nil {
 		t.Name = *params.Name
 	}
-
 	if params.Description != nil {
 		t.Description = *params.Description
 	}

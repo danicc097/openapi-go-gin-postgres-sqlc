@@ -51,15 +51,17 @@ type WorkItemCreateParams struct {
 	TargetDate     time.Time  `json:"targetDate"`     // target_date
 }
 
-func (wi *WorkItem) SetCreateParams(params *WorkItemCreateParams) {
-	wi.Title = params.Title
-	wi.Description = params.Description
-	wi.WorkItemTypeID = params.WorkItemTypeID
-	wi.Metadata = params.Metadata
-	wi.TeamID = params.TeamID
-	wi.KanbanStepID = params.KanbanStepID
-	wi.Closed = params.Closed
-	wi.TargetDate = params.TargetDate
+func NewWorkItem(params *WorkItemCreateParams) *WorkItem {
+	return &WorkItem{
+		Title:          params.Title,
+		Description:    params.Description,
+		WorkItemTypeID: params.WorkItemTypeID,
+		Metadata:       params.Metadata,
+		TeamID:         params.TeamID,
+		KanbanStepID:   params.KanbanStepID,
+		Closed:         params.Closed,
+		TargetDate:     params.TargetDate,
+	}
 }
 
 // WorkItemUpdateParams represents update params for 'public.work_items'
@@ -75,35 +77,27 @@ type WorkItemUpdateParams struct {
 }
 
 func (wi *WorkItem) SetUpdateParams(params *WorkItemUpdateParams) {
-
 	if params.Title != nil {
 		wi.Title = *params.Title
 	}
-
 	if params.Description != nil {
 		wi.Description = *params.Description
 	}
-
 	if params.WorkItemTypeID != nil {
 		wi.WorkItemTypeID = *params.WorkItemTypeID
 	}
-
 	if params.Metadata != nil {
 		wi.Metadata = *params.Metadata
 	}
-
 	if params.TeamID != nil {
 		wi.TeamID = *params.TeamID
 	}
-
 	if params.KanbanStepID != nil {
 		wi.KanbanStepID = *params.KanbanStepID
 	}
-
 	if params.Closed != nil {
 		wi.Closed = *params.Closed
 	}
-
 	if params.TargetDate != nil {
 		wi.TargetDate = *params.TargetDate
 	}

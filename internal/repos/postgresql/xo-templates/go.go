@@ -2857,11 +2857,11 @@ func (f *Funcs) typefn(typ string) string {
 // field generates a field definition for a struct.
 func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
-	var skipExtraTags bool
 	isPrivate := contains(field.Properties, privateFieldProperty)
 	isSingleFK, isSinglePK := analyzeField(table, field)
 	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
 
+	var skipExtraTags bool
 	switch typ {
 	case "CreateParams":
 		if skipField {
@@ -2919,10 +2919,9 @@ func (f *Funcs) set_field(field Field, typ string, table Table) (string, error) 
 
 	switch typ {
 	case "CreateParams":
-		return fmt.Sprintf("\t%s.%[2]s = params.%[2]s\n", f.short(table), field.GoName), nil
+		return fmt.Sprintf("\t%[1]s: params.%[1]s,\n", field.GoName), nil
 	case "UpdateParams":
-		return fmt.Sprintf(`
-if params.%[2]s != nil {
+		return fmt.Sprintf(`if params.%[2]s != nil {
 	%[1]s.%[2]s = *params.%[2]s
 }
 `, f.short(table), field.GoName), nil

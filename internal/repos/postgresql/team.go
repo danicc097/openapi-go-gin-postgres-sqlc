@@ -23,8 +23,8 @@ func NewTeam() *Team {
 var _ repos.Team = (*Team)(nil)
 
 func (t *Team) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParams) (*db.Team, error) {
-	team := &db.Team{}
-	team.SetCreateParams(params)
+	team := db.NewTeam(params)
+
 	if _, err := team.Insert(ctx, d); err != nil {
 		return nil, err
 	}

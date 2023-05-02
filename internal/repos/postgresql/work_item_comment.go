@@ -23,8 +23,7 @@ func NewWorkItemComment() *WorkItemComment {
 var _ repos.WorkItemComment = (*WorkItemComment)(nil)
 
 func (wit *WorkItemComment) Create(ctx context.Context, d db.DBTX, params *db.WorkItemCommentCreateParams) (*db.WorkItemComment, error) {
-	workItemComment := &db.WorkItemComment{}
-	workItemComment.SetCreateParams(params)
+	workItemComment := db.NewWorkItemComment(params)
 
 	if _, err := workItemComment.Insert(ctx, d); err != nil {
 		return nil, err

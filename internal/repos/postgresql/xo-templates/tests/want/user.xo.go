@@ -28,8 +28,10 @@ type UserCreateParams struct {
 	Name string `json:"name"` // name
 }
 
-func (u *User) SetCreateParams(params *UserCreateParams) {
-	u.Name = params.Name
+func NewUser(params *UserCreateParams) *User {
+	return &User{
+		Name: params.Name,
+	}
 }
 
 // UserUpdateParams represents update params for 'public.users'

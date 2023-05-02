@@ -30,9 +30,11 @@ type BookReviewCreateParams struct {
 	Reviewer uuid.UUID `json:"reviewer"` // reviewer
 }
 
-func (br *BookReview) SetCreateParams(params *BookReviewCreateParams) {
-	br.BookID = params.BookID
-	br.Reviewer = params.Reviewer
+func NewBookReview(params *BookReviewCreateParams) *BookReview {
+	return &BookReview{
+		BookID:   params.BookID,
+		Reviewer: params.Reviewer,
+	}
 }
 
 // BookReviewUpdateParams represents update params for 'public.book_reviews'
@@ -45,7 +47,6 @@ func (br *BookReview) SetUpdateParams(params *BookReviewUpdateParams) {
 	if params.BookID != nil {
 		br.BookID = *params.BookID
 	}
-
 	if params.Reviewer != nil {
 		br.Reviewer = *params.Reviewer
 	}

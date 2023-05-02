@@ -26,9 +26,11 @@ type WorkItemWorkItemTagCreateParams struct {
 	WorkItemID    int64 `json:"workItemID"`    // work_item_id
 }
 
-func (wiwit *WorkItemWorkItemTag) SetCreateParams(params *WorkItemWorkItemTagCreateParams) {
-	wiwit.WorkItemTagID = params.WorkItemTagID
-	wiwit.WorkItemID = params.WorkItemID
+func NewWorkItemWorkItemTag(params *WorkItemWorkItemTagCreateParams) *WorkItemWorkItemTag {
+	return &WorkItemWorkItemTag{
+		WorkItemTagID: params.WorkItemTagID,
+		WorkItemID:    params.WorkItemID,
+	}
 }
 
 // WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'
@@ -38,11 +40,9 @@ type WorkItemWorkItemTagUpdateParams struct {
 }
 
 func (wiwit *WorkItemWorkItemTag) SetUpdateParams(params *WorkItemWorkItemTagUpdateParams) {
-
 	if params.WorkItemTagID != nil {
 		wiwit.WorkItemTagID = *params.WorkItemTagID
 	}
-
 	if params.WorkItemID != nil {
 		wiwit.WorkItemID = *params.WorkItemID
 	}

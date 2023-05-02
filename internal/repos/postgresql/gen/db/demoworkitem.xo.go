@@ -36,12 +36,14 @@ type DemoWorkItemCreateParams struct {
 	Reopened      bool      `json:"reopened"`      // reopened
 }
 
-func (dwi *DemoWorkItem) SetCreateParams(params *DemoWorkItemCreateParams) {
-	dwi.WorkItemID = params.WorkItemID
-	dwi.Ref = params.Ref
-	dwi.Line = params.Line
-	dwi.LastMessageAt = params.LastMessageAt
-	dwi.Reopened = params.Reopened
+func NewDemoWorkItem(params *DemoWorkItemCreateParams) *DemoWorkItem {
+	return &DemoWorkItem{
+		WorkItemID:    params.WorkItemID,
+		Ref:           params.Ref,
+		Line:          params.Line,
+		LastMessageAt: params.LastMessageAt,
+		Reopened:      params.Reopened,
+	}
 }
 
 // DemoWorkItemUpdateParams represents update params for 'public.demo_work_items'
@@ -53,19 +55,15 @@ type DemoWorkItemUpdateParams struct {
 }
 
 func (dwi *DemoWorkItem) SetUpdateParams(params *DemoWorkItemUpdateParams) {
-
 	if params.Ref != nil {
 		dwi.Ref = *params.Ref
 	}
-
 	if params.Line != nil {
 		dwi.Line = *params.Line
 	}
-
 	if params.LastMessageAt != nil {
 		dwi.LastMessageAt = *params.LastMessageAt
 	}
-
 	if params.Reopened != nil {
 		dwi.Reopened = *params.Reopened
 	}

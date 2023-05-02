@@ -23,8 +23,7 @@ func NewWorkItemTag() *WorkItemTag {
 var _ repos.WorkItemTag = (*WorkItemTag)(nil)
 
 func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params *db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
-	activity := &db.WorkItemTag{}
-	activity.SetCreateParams(params)
+	activity := db.NewWorkItemTag(params)
 
 	if _, err := activity.Insert(ctx, d); err != nil {
 		return nil, err

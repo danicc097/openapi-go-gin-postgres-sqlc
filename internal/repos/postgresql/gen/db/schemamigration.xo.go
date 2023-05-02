@@ -26,9 +26,11 @@ type SchemaMigrationCreateParams struct {
 	Dirty   bool  `json:"dirty"`   // dirty
 }
 
-func (sm *SchemaMigration) SetCreateParams(params *SchemaMigrationCreateParams) {
-	sm.Version = params.Version
-	sm.Dirty = params.Dirty
+func NewSchemaMigration(params *SchemaMigrationCreateParams) *SchemaMigration {
+	return &SchemaMigration{
+		Version: params.Version,
+		Dirty:   params.Dirty,
+	}
 }
 
 // SchemaMigrationUpdateParams represents update params for 'public.schema_migrations'
@@ -38,11 +40,9 @@ type SchemaMigrationUpdateParams struct {
 }
 
 func (sm *SchemaMigration) SetUpdateParams(params *SchemaMigrationUpdateParams) {
-
 	if params.Version != nil {
 		sm.Version = *params.Version
 	}
-
 	if params.Dirty != nil {
 		sm.Dirty = *params.Dirty
 	}

@@ -34,11 +34,13 @@ type WorkItemTypeCreateParams struct {
 	Color       string `json:"color"`       // color
 }
 
-func (wit *WorkItemType) SetCreateParams(params *WorkItemTypeCreateParams) {
-	wit.ProjectID = params.ProjectID
-	wit.Name = params.Name
-	wit.Description = params.Description
-	wit.Color = params.Color
+func NewWorkItemType(params *WorkItemTypeCreateParams) *WorkItemType {
+	return &WorkItemType{
+		ProjectID:   params.ProjectID,
+		Name:        params.Name,
+		Description: params.Description,
+		Color:       params.Color,
+	}
 }
 
 // WorkItemTypeUpdateParams represents update params for 'public.work_item_types'
@@ -50,19 +52,15 @@ type WorkItemTypeUpdateParams struct {
 }
 
 func (wit *WorkItemType) SetUpdateParams(params *WorkItemTypeUpdateParams) {
-
 	if params.ProjectID != nil {
 		wit.ProjectID = *params.ProjectID
 	}
-
 	if params.Name != nil {
 		wit.Name = *params.Name
 	}
-
 	if params.Description != nil {
 		wit.Description = *params.Description
 	}
-
 	if params.Color != nil {
 		wit.Color = *params.Color
 	}

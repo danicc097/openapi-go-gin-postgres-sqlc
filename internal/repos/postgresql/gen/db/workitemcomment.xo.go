@@ -37,10 +37,12 @@ type WorkItemCommentCreateParams struct {
 	Message    string    `json:"message"`    // message
 }
 
-func (wic *WorkItemComment) SetCreateParams(params *WorkItemCommentCreateParams) {
-	wic.WorkItemID = params.WorkItemID
-	wic.UserID = params.UserID
-	wic.Message = params.Message
+func NewWorkItemComment(params *WorkItemCommentCreateParams) *WorkItemComment {
+	return &WorkItemComment{
+		WorkItemID: params.WorkItemID,
+		UserID:     params.UserID,
+		Message:    params.Message,
+	}
 }
 
 // WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'
@@ -51,15 +53,12 @@ type WorkItemCommentUpdateParams struct {
 }
 
 func (wic *WorkItemComment) SetUpdateParams(params *WorkItemCommentUpdateParams) {
-
 	if params.WorkItemID != nil {
 		wic.WorkItemID = *params.WorkItemID
 	}
-
 	if params.UserID != nil {
 		wic.UserID = *params.UserID
 	}
-
 	if params.Message != nil {
 		wic.Message = *params.Message
 	}

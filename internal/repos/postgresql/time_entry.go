@@ -23,8 +23,7 @@ func NewTimeEntry() *TimeEntry {
 var _ repos.TimeEntry = (*TimeEntry)(nil)
 
 func (wit *TimeEntry) Create(ctx context.Context, d db.DBTX, params *db.TimeEntryCreateParams) (*db.TimeEntry, error) {
-	timeEntry := &db.TimeEntry{}
-	timeEntry.SetCreateParams(params)
+	timeEntry := db.NewTimeEntry(params)
 
 	if _, err := timeEntry.Insert(ctx, d); err != nil {
 		return nil, err
