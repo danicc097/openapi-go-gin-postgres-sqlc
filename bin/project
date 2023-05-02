@@ -1310,7 +1310,7 @@ run_shared_services() {
 
 # generate db structs for use with swaggest/openapi-go.
 # no need for ast parsing since all code is predictable
-# type grouping not supported
+# type grouping not supported.
 generate_structs_map() {
   local structs=()
   local enums=()
@@ -1417,14 +1417,20 @@ replace_enum_in_spec() {
 find_go_structs() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
+  mapfile -t __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec sed -ne 's/[\s]*type\(.*\)struct.*/\1/p' {} \; | grep -vE '^\s*(//|/\*)' || exit 1)
+  if [[ ${#__arr[@]} -eq 0 ]]; then
+    err "No structs found in package $pkg"
+  fi
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
 }
 
 find_go_enums() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec sed -n 's/.*type[[:space:]]\+\([^=[:space:]]\+\)[[:space:]]\+string.*/\1/p' {} \;)
+  mapfile -t __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec sed -ne 's/.*type[[:space:]]\+\([^=[:space:]]\+\)[[:space:]]\+string.*/\1/p' {} \; | grep -vE '^\s*(//|/\*)' || exit 1)
+  if [[ ${#__arr[@]} -eq 0 ]]; then
+    echo "No enums found in package $pkg"
+  fi
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
 }
 
@@ -1558,9 +1564,9 @@ backup_gen_files() {
 
   mkdir -p "$backup_dir"
 
+  # -print0 alongside --null handle file names with spaces
   find "$src_dir" -name "*.gen.go" -type f -print0 | tar czvf "$backup_dir/backup_gen_files.tar.gz" --null -T - &>/dev/null
 
-  # Note: the -print0 and --null options are used to handle file names with spaces
 }
 
 restore_gen_files() {
@@ -1568,7 +1574,7 @@ restore_gen_files() {
   dest_dir=$2
 
   # -C changes cwd to dir before extracting
-  tar xzvf "$backup_dir/backup_gen_files.tar.gz" -C "$dest_dir" --strip-components=1 &>/dev/null
+  tar xzvf "$backup_dir/backup_gen_files.tar.gz" -C "$dest_dir" --overwrite --strip-components=1 &>/dev/null
 }
 
 usage() {

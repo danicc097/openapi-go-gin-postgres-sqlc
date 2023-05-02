@@ -1191,6 +1191,32 @@ components:
       enum:
         - Type 1
       x-generated: '-'
+    ModelsProjectConfig: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        fields:
+          items:
+            $ref: '#/components/schemas/ModelsProjectConfigField'
+          nullable: true
+          type: array
+        header:
+          items:
+            type: string
+          nullable: true
+          type: array
+      type: object
+    ModelsProjectConfigField: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        isEditable:
+          type: boolean
+        isVisible:
+          type: boolean
+        name:
+          type: string
+        path:
+          type: string
+        showCollapsed:
+          type: boolean
+      type: object
   examples:
     User:
       value:

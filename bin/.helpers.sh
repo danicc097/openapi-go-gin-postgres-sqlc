@@ -77,7 +77,7 @@ list_descendants() {
 
 # waits for parallel processes to finish sucessfully, signalling SIGUSR1 otherwise.
 wait_without_error() {
-  declare -i err=0 werr=0
+  local -i err=0 werr=0
   while
     wait -fn || werr=$?
     ((werr != 127)) # 127: not found
