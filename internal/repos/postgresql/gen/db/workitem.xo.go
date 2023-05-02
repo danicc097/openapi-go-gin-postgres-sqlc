@@ -324,9 +324,9 @@ work_items.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(1)"
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey(1)"
+-- O2O join generated from "demo_work_items_work_item_id_fkey"
 left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
 -- M2O join generated from "time_entries_work_item_id_fkey"
 left join (
@@ -419,9 +419,9 @@ work_items.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(1)"
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey(1)"
+-- O2O join generated from "demo_work_items_work_item_id_fkey"
 left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
 -- M2O join generated from "time_entries_work_item_id_fkey"
 left join (
@@ -513,9 +513,9 @@ work_items.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(1)"
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey(1)"
+-- O2O join generated from "demo_work_items_work_item_id_fkey"
 left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
 -- M2O join generated from "time_entries_work_item_id_fkey"
 left join (

@@ -2903,7 +2903,7 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 			return "", nil
 		}
 		if isSingleFK && isSinglePK { // e.g. workitemid in project tables. don't ever want to update it.
-			fmt.Printf("skipping %q: single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
+			fmt.Printf("UpdateParams: skipping %q: is a single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
 			return "", nil
 		}
 		skipExtraTags = true

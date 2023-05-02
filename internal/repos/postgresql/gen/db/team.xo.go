@@ -238,7 +238,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
-		`-- O2O join generated from "teams_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "teams_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -259,7 +259,7 @@ left join (
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
--- O2O join generated from "work_items_team_id_fkey(1)"
+-- O2O join generated from "work_items_team_id_fkey"
 left join work_items on work_items.team_id = teams.team_id` +
 		` WHERE teams.name = $5 AND teams.project_id = $6 `
 	sqlstr += c.orderBy
@@ -303,7 +303,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
-		`-- O2O join generated from "teams_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "teams_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -324,7 +324,7 @@ left join (
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
--- O2O join generated from "work_items_team_id_fkey(1)"
+-- O2O join generated from "work_items_team_id_fkey"
 left join work_items on work_items.team_id = teams.team_id` +
 		` WHERE teams.name = $5 `
 	sqlstr += c.orderBy
@@ -369,7 +369,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
-		`-- O2O join generated from "teams_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "teams_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -390,7 +390,7 @@ left join (
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
--- O2O join generated from "work_items_team_id_fkey(1)"
+-- O2O join generated from "work_items_team_id_fkey"
 left join work_items on work_items.team_id = teams.team_id` +
 		` WHERE teams.project_id = $5 `
 	sqlstr += c.orderBy
@@ -435,7 +435,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
-		`-- O2O join generated from "teams_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "teams_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -456,7 +456,7 @@ left join (
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
--- O2O join generated from "work_items_team_id_fkey(1)"
+-- O2O join generated from "work_items_team_id_fkey"
 left join work_items on work_items.team_id = teams.team_id` +
 		` WHERE teams.team_id = $5 `
 	sqlstr += c.orderBy

@@ -233,9 +233,9 @@ work_item_comments.updated_at,
 (case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $2::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_comments ` +
-		`-- O2O join generated from "work_item_comments_user_id_fkey(TEST 2)"
+		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from O2M|M2O)"
 left join users on users.user_id = work_item_comments.user_id
--- O2O join generated from "work_item_comments_work_item_id_fkey(TEST 2)"
+-- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from O2M|M2O)"
 left join work_items on work_items.work_item_id = work_item_comments.work_item_id` +
 		` WHERE work_item_comments.work_item_comment_id = $3 `
 	sqlstr += c.orderBy
@@ -277,9 +277,9 @@ work_item_comments.updated_at,
 (case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $2::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_comments ` +
-		`-- O2O join generated from "work_item_comments_user_id_fkey(TEST 2)"
+		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from O2M|M2O)"
 left join users on users.user_id = work_item_comments.user_id
--- O2O join generated from "work_item_comments_work_item_id_fkey(TEST 2)"
+-- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from O2M|M2O)"
 left join work_items on work_items.work_item_id = work_item_comments.work_item_id` +
 		` WHERE work_item_comments.work_item_id = $3 `
 	sqlstr += c.orderBy

@@ -209,7 +209,7 @@ activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2O join generated from "activities_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
@@ -259,7 +259,7 @@ activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2O join generated from "activities_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
@@ -310,7 +310,7 @@ activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2O join generated from "activities_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
@@ -361,7 +361,7 @@ activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2O join generated from "activities_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (

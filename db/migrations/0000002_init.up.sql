@@ -96,11 +96,6 @@ alter table user_api_keys
 alter table user_api_keys
   add foreign key (user_id) references users (user_id) on delete cascade;
 
--- circular schema ref. (users' join is ultimately useless, we will start from an apikey
--- and go from there to the user that owns it)
---  generates join in users table
--- comment on column users.api_key_id IS 'cardinality:O2O';
--- comment on column user_api_keys.user_id IS 'cardinality:O2O';
 comment on column user_api_keys.user_api_key_id is 'property:private';
 
 -- -- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
@@ -161,9 +156,8 @@ create table user_notifications (
   , foreign key (notification_id) references notifications (notification_id) on delete cascade
 );
 
--- comment on column user_notifications.notification_id IS 'cardinality:O2O';
--- FIXME
 comment on column user_notifications.user_id is 'cardinality:M2O';
+comment on column user_notifications.notification_id is 'cardinality:M2O'; -- user_notif are fan out
 
 create index on user_notifications (user_id);
 
@@ -326,8 +320,6 @@ create table work_items (
   , foreign key (kanban_step_id) references kanban_steps (kanban_step_id) on delete cascade
 );
 
--- to get join directly instead of having to call xo's generated FK for every single one
--- comment on column work_items.work_item_type_id IS 'cardinality:O2O';
 create index on work_items (team_id);
 
 
@@ -358,6 +350,7 @@ create table demo_two_work_items (
 -- comment on column work_items.work_item_id IS 'cardinality:O2O';
 -- comment on column demo_work_items.work_item_id IS 'cardinality:O2O';
 -- comment on column demo_two_work_items.work_item_id IS 'cardinality:O2O';
+
 -- for finding all deleted work items exclusively
 create index on work_items (deleted_at)
 where (deleted_at is not null);

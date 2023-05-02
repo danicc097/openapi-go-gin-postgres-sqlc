@@ -217,9 +217,9 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
--- O2O join generated from "work_items_kanban_step_id_fkey(1)"
+-- O2O join generated from "work_items_kanban_step_id_fkey"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.kanban_step_id = $3 `
 	sqlstr += c.orderBy
@@ -262,9 +262,9 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
--- O2O join generated from "work_items_kanban_step_id_fkey(1)"
+-- O2O join generated from "work_items_kanban_step_id_fkey"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $3 AND (step_order IS NULL) `
 	sqlstr += c.orderBy
@@ -308,9 +308,9 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
--- O2O join generated from "work_items_kanban_step_id_fkey(1)"
+-- O2O join generated from "work_items_kanban_step_id_fkey"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $3 AND kanban_steps.name = $4 AND (step_order IS NULL) `
 	sqlstr += c.orderBy
@@ -353,9 +353,9 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
--- O2O join generated from "work_items_kanban_step_id_fkey(1)"
+-- O2O join generated from "work_items_kanban_step_id_fkey"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.name = $3 AND (step_order IS NULL) `
 	sqlstr += c.orderBy
@@ -399,9 +399,9 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
--- O2O join generated from "work_items_kanban_step_id_fkey(1)"
+-- O2O join generated from "work_items_kanban_step_id_fkey"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $3 AND kanban_steps.name = $4 AND kanban_steps.step_order = $5 AND (step_order IS NOT NULL) `
 	sqlstr += c.orderBy
@@ -444,9 +444,9 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
--- O2O join generated from "work_items_kanban_step_id_fkey(1)"
+-- O2O join generated from "work_items_kanban_step_id_fkey"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $3 AND (step_order IS NOT NULL) `
 	sqlstr += c.orderBy
@@ -490,9 +490,9 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
--- O2O join generated from "work_items_kanban_step_id_fkey(1)"
+-- O2O join generated from "work_items_kanban_step_id_fkey"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.name = $3 AND (step_order IS NOT NULL) `
 	sqlstr += c.orderBy
@@ -536,9 +536,9 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
--- O2O join generated from "work_items_kanban_step_id_fkey(1)"
+-- O2O join generated from "work_items_kanban_step_id_fkey"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.step_order = $3 AND (step_order IS NOT NULL) `
 	sqlstr += c.orderBy
@@ -582,9 +582,9 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
--- O2O join generated from "work_items_kanban_step_id_fkey(1)"
+-- O2O join generated from "work_items_kanban_step_id_fkey"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $3 AND kanban_steps.step_order = $4 `
 	sqlstr += c.orderBy
@@ -627,9 +627,9 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
--- O2O join generated from "work_items_kanban_step_id_fkey(1)"
+-- O2O join generated from "work_items_kanban_step_id_fkey"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.project_id = $3 `
 	sqlstr += c.orderBy
@@ -673,9 +673,9 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
--- O2O join generated from "work_items_kanban_step_id_fkey(1)"
+-- O2O join generated from "work_items_kanban_step_id_fkey"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
 		` WHERE kanban_steps.step_order = $3 `
 	sqlstr += c.orderBy

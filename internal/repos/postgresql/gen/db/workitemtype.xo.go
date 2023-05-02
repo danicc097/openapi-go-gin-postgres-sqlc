@@ -209,9 +209,9 @@ work_item_types.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey(1)"
+-- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.name = $3 AND work_item_types.project_id = $4 `
 	sqlstr += c.orderBy
@@ -252,9 +252,9 @@ work_item_types.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey(1)"
+-- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.name = $3 `
 	sqlstr += c.orderBy
@@ -296,9 +296,9 @@ work_item_types.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey(1)"
+-- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.project_id = $3 `
 	sqlstr += c.orderBy
@@ -340,9 +340,9 @@ work_item_types.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey(TEST 2)"
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey(1)"
+-- O2O join generated from "work_items_work_item_type_id_fkey"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.work_item_type_id = $3 `
 	sqlstr += c.orderBy
