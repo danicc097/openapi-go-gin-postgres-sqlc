@@ -18,13 +18,13 @@ import (
 //   - "type:<pkg.type>" to override the type annotation.
 //   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type Project struct {
-	ProjectID          int                  `json:"projectID" db:"project_id" required:"true"`                         // project_id
-	Name               models.Project       `json:"name" db:"name" required:"true" ref:"#/components/schemas/Project"` // name
-	Description        string               `json:"description" db:"description" required:"true"`                      // description
-	WorkItemsTableName string               `json:"-" db:"work_items_table_name"`                                      // work_items_table_name
-	BoardConfig        models.ProjectConfig `json:"-" db:"board_config" ref:"#/components/schemas/ProjectConfig"`      // board_config
-	CreatedAt          time.Time            `json:"createdAt" db:"created_at" required:"true"`                         // created_at
-	UpdatedAt          time.Time            `json:"updatedAt" db:"updated_at" required:"true"`                         // updated_at
+	ProjectID          int                  `json:"projectID" db:"project_id" required:"true"`                                              // project_id
+	Name               models.Project       `json:"name" db:"name" required:"true" ref:"#/components/schemas/Project"`                      // name
+	Description        string               `json:"description" db:"description" required:"true"`                                           // description
+	WorkItemsTableName string               `json:"-" db:"work_items_table_name"`                                                           // work_items_table_name
+	BoardConfig        models.ProjectConfig `json:"boardConfig" db:"board_config" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
+	CreatedAt          time.Time            `json:"createdAt" db:"created_at" required:"true"`                                              // created_at
+	UpdatedAt          time.Time            `json:"updatedAt" db:"updated_at" required:"true"`                                              // updated_at
 
 	ActivitiesJoin    *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`      // M2O
 	KanbanStepsJoin   *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`    // M2O
@@ -39,7 +39,7 @@ type ProjectCreateParams struct {
 	Name               models.Project       `json:"name"`        // name
 	Description        string               `json:"description"` // description
 	WorkItemsTableName string               `json:"-"`           // work_items_table_name
-	BoardConfig        models.ProjectConfig `json:"-"`           // board_config
+	BoardConfig        models.ProjectConfig `json:"boardConfig"` // board_config
 }
 
 // ProjectUpdateParams represents update params for 'public.projects'
@@ -47,7 +47,7 @@ type ProjectUpdateParams struct {
 	Name               *models.Project       `json:"name"`        // name
 	Description        *string               `json:"description"` // description
 	WorkItemsTableName *string               `json:"-"`           // work_items_table_name
-	BoardConfig        *models.ProjectConfig `json:"-"`           // board_config
+	BoardConfig        *models.ProjectConfig `json:"boardConfig"` // board_config
 }
 
 type ProjectSelectConfig struct {

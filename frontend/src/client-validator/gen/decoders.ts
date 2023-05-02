@@ -57,6 +57,8 @@ import {
   DemoTwoKanbanSteps,
   DemoTwoWorkItemTypes,
   DemoWorkItemTypes,
+  ModelsProjectConfig,
+  ModelsProjectConfigField,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -651,5 +653,29 @@ export const DemoWorkItemTypesDecoder: Decoder<DemoWorkItemTypes> = {
       throw new Error(`Schema ${DemoWorkItemTypesDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DemoWorkItemTypesDecoder.definitionName)
+  },
+}
+export const ModelsProjectConfigDecoder: Decoder<ModelsProjectConfig> = {
+  definitionName: 'ModelsProjectConfig',
+  schemaRef: '#/definitions/ModelsProjectConfig',
+
+  decode(json: unknown): ModelsProjectConfig {
+    const schema = ajv.getSchema(ModelsProjectConfigDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ModelsProjectConfigDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ModelsProjectConfigDecoder.definitionName)
+  },
+}
+export const ModelsProjectConfigFieldDecoder: Decoder<ModelsProjectConfigField> = {
+  definitionName: 'ModelsProjectConfigField',
+  schemaRef: '#/definitions/ModelsProjectConfigField',
+
+  decode(json: unknown): ModelsProjectConfigField {
+    const schema = ajv.getSchema(ModelsProjectConfigFieldDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ModelsProjectConfigFieldDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ModelsProjectConfigFieldDecoder.definitionName)
   },
 }

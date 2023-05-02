@@ -294,13 +294,12 @@ type DbKanbanStepCreateParams struct {
 
 // DbProject defines the model for DbProject.
 type DbProject struct {
-	CreatedAt   time.Time `json:"createdAt"`
-	Description string    `json:"description"`
-
-	// Name Existing projects
-	Name      Project   `json:"name"`
-	ProjectID int       `json:"projectID"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	BoardConfig ProjectConfig `json:"boardConfig"`
+	CreatedAt   time.Time     `json:"createdAt"`
+	Description string        `json:"description"`
+	Name        Project       `json:"name"`
+	ProjectID   int           `json:"projectID"`
+	UpdatedAt   time.Time     `json:"updatedAt"`
 }
 
 // DbTeam defines the model for DbTeam.
@@ -468,6 +467,21 @@ type InitializeProjectRequest struct {
 // ModelsProject defines the model for ModelsProject.
 type ModelsProject = string
 
+// ModelsProjectConfig defines the model for ModelsProjectConfig.
+type ModelsProjectConfig struct {
+	Fields *[]ModelsProjectConfigField `json:"fields"`
+	Header *[]string                   `json:"header"`
+}
+
+// ModelsProjectConfigField defines the model for ModelsProjectConfigField.
+type ModelsProjectConfigField struct {
+	IsEditable    *bool   `json:"isEditable,omitempty"`
+	IsVisible     *bool   `json:"isVisible,omitempty"`
+	Name          *string `json:"name,omitempty"`
+	Path          *string `json:"path,omitempty"`
+	ShowCollapsed *bool   `json:"showCollapsed,omitempty"`
+}
+
 // ModelsRole defines the model for ModelsRole.
 type ModelsRole = string
 
@@ -480,7 +494,7 @@ type NotificationType string
 // PgtypeJSONB defines the model for PgtypeJSONB.
 type PgtypeJSONB = map[string]interface{}
 
-// Project Existing projects
+// Project defines the model for Project.
 type Project string
 
 // ProjectConfig defines the model for ProjectConfig.
@@ -522,7 +536,17 @@ type RestDemoWorkItemsResponse struct {
 
 // RestProjectBoardResponse defines the model for RestProjectBoardResponse.
 type RestProjectBoardResponse struct {
-	Project *DbProject `json:"project,omitempty"`
+	Activities    *[]DbActivity     `json:"activities"`
+	BoardConfig   ProjectConfig     `json:"boardConfig"`
+	CreatedAt     time.Time         `json:"createdAt"`
+	Description   string            `json:"description"`
+	KanbanSteps   *[]DbKanbanStep   `json:"kanbanSteps"`
+	Name          Project           `json:"name"`
+	ProjectID     int               `json:"projectID"`
+	Teams         *[]DbTeam         `json:"teams"`
+	UpdatedAt     time.Time         `json:"updatedAt"`
+	WorkItemTags  *[]DbWorkItemTag  `json:"workItemTags"`
+	WorkItemTypes *[]DbWorkItemType `json:"workItemTypes"`
 }
 
 // Role defines the model for Role.

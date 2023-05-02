@@ -94,6 +94,7 @@ export interface components {
       timeTrackable: boolean;
     };
     DbProject: {
+      boardConfig: components["schemas"]["ProjectConfig"];
       /** Format: date-time */
       createdAt: string;
       description: string;
@@ -219,7 +220,19 @@ export interface components {
       workItemTags?: (components["schemas"]["DbWorkItemTagCreateParams"])[] | null;
     };
     RestProjectBoardResponse: {
-      project?: components["schemas"]["DbProject"];
+      activities: (components["schemas"]["DbActivity"])[] | null;
+      boardConfig: components["schemas"]["ProjectConfig"];
+      /** Format: date-time */
+      createdAt: string;
+      description: string;
+      kanbanSteps: (components["schemas"]["DbKanbanStep"])[] | null;
+      name: components["schemas"]["Project"];
+      projectID: number;
+      teams: (components["schemas"]["DbTeam"])[] | null;
+      /** Format: date-time */
+      updatedAt: string;
+      workItemTags: (components["schemas"]["DbWorkItemTag"])[] | null;
+      workItemTypes: (components["schemas"]["DbWorkItemType"])[] | null;
     };
     UserResponse: {
       apiKey?: components["schemas"]["DbUserAPIKey"];
@@ -342,10 +355,7 @@ export interface components {
       workItemID: number;
       workItemTypeID: number;
     };
-    /**
-     * @description Existing projects 
-     * @enum {string}
-     */
+    /** @enum {string} */
     Project: "demo" | "demo_two";
     DbActivityCreateParams: {
       description?: string;
@@ -405,6 +415,17 @@ export interface components {
     DemoTwoWorkItemTypes: "Type 1" | "Type 2" | "Another type";
     /** @enum {string} */
     DemoWorkItemTypes: "Type 1";
+    ModelsProjectConfig: {
+      fields?: (components["schemas"]["ModelsProjectConfigField"])[] | null;
+      header?: (string)[] | null;
+    };
+    ModelsProjectConfigField: {
+      isEditable?: boolean;
+      isVisible?: boolean;
+      name?: string;
+      path?: string;
+      showCollapsed?: boolean;
+    };
   };
   responses: never;
   parameters: {
