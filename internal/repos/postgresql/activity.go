@@ -30,7 +30,7 @@ func (a *Activity) Create(ctx context.Context, d db.DBTX, params db.ActivityCrea
 		IsProductive: params.IsProductive,
 	}
 
-	if _, err := activity.Save(ctx, d); err != nil {
+	if _, err := activity.Insert(ctx, d); err != nil {
 		return nil, err
 	}
 

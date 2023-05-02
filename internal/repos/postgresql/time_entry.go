@@ -33,7 +33,7 @@ func (wit *TimeEntry) Create(ctx context.Context, d db.DBTX, params db.TimeEntry
 		DurationMinutes: params.DurationMinutes,
 	}
 
-	if _, err := timeEntry.Save(ctx, d); err != nil {
+	if _, err := timeEntry.Insert(ctx, d); err != nil {
 		return nil, err
 	}
 

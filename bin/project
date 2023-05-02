@@ -476,8 +476,6 @@ x.gen.xo() {
     echo "Running generation"
     # xo schema --help
 
-    x.test.xo
-
     mkdir -p "$PG_REPO_GEN"/db
     xo_schema -o "$PG_REPO_GEN"/db --debug \
       --schema public \
@@ -853,6 +851,8 @@ x.test.backend-setup() {
 # Args: [...]
 x.test() {
   { { {
+    x.test.xo
+
     export POSTGRES_TRACE=false
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
     POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts

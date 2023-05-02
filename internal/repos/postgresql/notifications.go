@@ -87,7 +87,7 @@ func (u *Notification) Create(ctx context.Context, d db.DBTX, params db.Notifica
 		Receiver:         params.Receiver,
 		NotificationType: params.NotificationType,
 	}
-	if _, err := notification.Save(ctx, d); err != nil {
+	if _, err := notification.Insert(ctx, d); err != nil {
 		return nil, err
 	}
 

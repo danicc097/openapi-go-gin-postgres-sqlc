@@ -29,7 +29,7 @@ func (t *Team) Create(ctx context.Context, d db.DBTX, params db.TeamCreateParams
 		ProjectID:   params.ProjectID,
 	}
 
-	if _, err := team.Save(ctx, d); err != nil {
+	if _, err := team.Insert(ctx, d); err != nil {
 		return nil, err
 	}
 

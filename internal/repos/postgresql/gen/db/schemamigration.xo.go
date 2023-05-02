@@ -64,12 +64,6 @@ func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectCo
 
 // Insert inserts the SchemaMigration to the database.
 func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration, error) {
-	switch {
-	case sm._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case sm._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.schema_migrations (` +
 		`version, dirty` +
@@ -87,7 +81,6 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration,
 	if err != nil {
 		return nil, logerror(fmt.Errorf("SchemaMigration/Insert/pgx.CollectOneRow: %w", err))
 	}
-	newsm._exists = true
 	*sm = newsm
 
 	return sm, nil
@@ -95,12 +88,6 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration,
 
 // Update updates a SchemaMigration in the database.
 func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration, error) {
-	switch {
-	case !sm._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case sm._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.schema_migrations SET ` +
 		`dirty = $1 ` +
@@ -117,26 +104,13 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration,
 	if err != nil {
 		return nil, logerror(fmt.Errorf("SchemaMigration/Update/pgx.CollectOneRow: %w", err))
 	}
-	newsm._exists = true
 	*sm = newsm
 
 	return sm, nil
 }
 
-// Save saves the SchemaMigration to the database.
-func (sm *SchemaMigration) Save(ctx context.Context, db DB) (*SchemaMigration, error) {
-	if sm._exists {
-		return sm.Update(ctx, db)
-	}
-	return sm.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for SchemaMigration.
 func (sm *SchemaMigration) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case sm._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.schema_migrations (` +
 		`version, dirty` +
@@ -153,18 +127,11 @@ func (sm *SchemaMigration) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	sm._exists = true
 	return nil
 }
 
 // Delete deletes the SchemaMigration from the database.
 func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !sm._exists: // doesn't exist
-		return nil
-	case sm._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.schema_migrations ` +
 		`WHERE version = $1 `
@@ -172,8 +139,6 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, sm.Version); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	sm._deleted = true
 	return nil
 }
 
@@ -207,7 +172,6 @@ schema_migrations.dirty ` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/pgx.CollectOneRow: %w", err))
 	}
-	sm._exists = true
 
 	return &sm, nil
 }

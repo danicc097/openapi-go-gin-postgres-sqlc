@@ -107,12 +107,6 @@ func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 
 // Insert inserts the Project to the database.
 func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
-	switch {
-	case p._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case p._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.projects (` +
 		`name, description, work_items_table_name, board_config` +
@@ -131,7 +125,6 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 		return nil, logerror(fmt.Errorf("Project/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newp._exists = true
 	*p = newp
 
 	return p, nil
@@ -139,12 +132,6 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 
 // Update updates a Project in the database.
 func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
-	switch {
-	case !p._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case p._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.projects SET ` +
 		`name = $1, description = $2, work_items_table_name = $3, board_config = $4 ` +
@@ -161,26 +148,13 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Update/pgx.CollectOneRow: %w", err))
 	}
-	newp._exists = true
 	*p = newp
 
 	return p, nil
 }
 
-// Save saves the Project to the database.
-func (p *Project) Save(ctx context.Context, db DB) (*Project, error) {
-	if p._exists {
-		return p.Update(ctx, db)
-	}
-	return p.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for Project.
 func (p *Project) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case p._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.projects (` +
 		`project_id, name, description, work_items_table_name, board_config` +
@@ -197,18 +171,11 @@ func (p *Project) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	p._exists = true
 	return nil
 }
 
 // Delete deletes the Project from the database.
 func (p *Project) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !p._exists: // doesn't exist
-		return nil
-	case p._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.projects ` +
 		`WHERE project_id = $1 `
@@ -216,8 +183,6 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, p.ProjectID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	p._deleted = true
 	return nil
 }
 
@@ -305,7 +270,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByName/pgx.CollectOneRow: %w", err))
 	}
-	p._exists = true
 
 	return &p, nil
 }
@@ -394,7 +358,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/pgx.CollectOneRow: %w", err))
 	}
-	p._exists = true
 
 	return &p, nil
 }
@@ -483,7 +446,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByWorkItemsTableName/pgx.CollectOneRow: %w", err))
 	}
-	p._exists = true
 
 	return &p, nil
 }

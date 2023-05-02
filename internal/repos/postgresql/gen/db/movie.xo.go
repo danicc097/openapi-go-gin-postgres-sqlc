@@ -68,12 +68,6 @@ func WithMovieJoin(joins MovieJoins) MovieSelectConfigOption {
 
 // Insert inserts the Movie to the database.
 func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
-	switch {
-	case m._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case m._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.movies (` +
 		`title, year, synopsis` +
@@ -92,7 +86,6 @@ func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 		return nil, logerror(fmt.Errorf("Movie/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newm._exists = true
 	*m = newm
 
 	return m, nil
@@ -100,12 +93,6 @@ func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 
 // Update updates a Movie in the database.
 func (m *Movie) Update(ctx context.Context, db DB) (*Movie, error) {
-	switch {
-	case !m._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case m._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.movies SET ` +
 		`title = $1, year = $2, synopsis = $3 ` +
@@ -122,26 +109,13 @@ func (m *Movie) Update(ctx context.Context, db DB) (*Movie, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Movie/Update/pgx.CollectOneRow: %w", err))
 	}
-	newm._exists = true
 	*m = newm
 
 	return m, nil
 }
 
-// Save saves the Movie to the database.
-func (m *Movie) Save(ctx context.Context, db DB) (*Movie, error) {
-	if m._exists {
-		return m.Update(ctx, db)
-	}
-	return m.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for Movie.
 func (m *Movie) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case m._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.movies (` +
 		`movie_id, title, year, synopsis` +
@@ -158,18 +132,11 @@ func (m *Movie) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	m._exists = true
 	return nil
 }
 
 // Delete deletes the Movie from the database.
 func (m *Movie) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !m._exists: // doesn't exist
-		return nil
-	case m._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.movies ` +
 		`WHERE movie_id = $1 `
@@ -177,8 +144,6 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, m.MovieID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	m._deleted = true
 	return nil
 }
 
@@ -214,7 +179,6 @@ movies.synopsis ` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("movies/MovieByMovieID/pgx.CollectOneRow: %w", err))
 	}
-	m._exists = true
 
 	return &m, nil
 }

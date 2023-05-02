@@ -22,8 +22,6 @@ type BookReview struct {
 
 	BookJoin *Book `json:"-" db:"book" openapi-go:"ignore"` // O2O
 	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O
-	// xo fields
-	_exists, _deleted bool
 }
 
 // BookReviewCreateParams represents insert params for 'public.book_reviews'
@@ -68,12 +66,6 @@ func WithBookReviewJoin(joins BookReviewJoins) BookReviewSelectConfigOption {
 
 // Insert inserts the BookReview to the database.
 func (br *BookReview) Insert(ctx context.Context, db DB) (*BookReview, error) {
-	switch {
-	case br._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case br._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.book_reviews (` +
 		`book_id, reviewer` +
@@ -92,7 +84,6 @@ func (br *BookReview) Insert(ctx context.Context, db DB) (*BookReview, error) {
 		return nil, logerror(fmt.Errorf("BookReview/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newbr._exists = true
 	*br = newbr
 
 	return br, nil
@@ -100,12 +91,6 @@ func (br *BookReview) Insert(ctx context.Context, db DB) (*BookReview, error) {
 
 // Update updates a BookReview in the database.
 func (br *BookReview) Update(ctx context.Context, db DB) (*BookReview, error) {
-	switch {
-	case !br._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case br._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.book_reviews SET ` +
 		`book_id = $1, reviewer = $2 ` +
@@ -122,26 +107,13 @@ func (br *BookReview) Update(ctx context.Context, db DB) (*BookReview, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/Update/pgx.CollectOneRow: %w", err))
 	}
-	newbr._exists = true
 	*br = newbr
 
 	return br, nil
 }
 
-// Save saves the BookReview to the database.
-func (br *BookReview) Save(ctx context.Context, db DB) (*BookReview, error) {
-	if br._exists {
-		return br.Update(ctx, db)
-	}
-	return br.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for BookReview.
 func (br *BookReview) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case br._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.book_reviews (` +
 		`book_review_id, book_id, reviewer` +
@@ -158,18 +130,11 @@ func (br *BookReview) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	br._exists = true
 	return nil
 }
 
 // Delete deletes the BookReview from the database.
 func (br *BookReview) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !br._exists: // doesn't exist
-		return nil
-	case br._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.book_reviews ` +
 		`WHERE book_review_id = $1 `
@@ -177,8 +142,6 @@ func (br *BookReview) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, br.BookReviewID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	br._deleted = true
 	return nil
 }
 
@@ -218,7 +181,6 @@ left join users on users.user_id = book_reviews.reviewer` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByBookReviewID/pgx.CollectOneRow: %w", err))
 	}
-	br._exists = true
 
 	return &br, nil
 }
@@ -259,7 +221,6 @@ left join users on users.user_id = book_reviews.reviewer` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByReviewerBookID/pgx.CollectOneRow: %w", err))
 	}
-	br._exists = true
 
 	return &br, nil
 }
@@ -346,18 +307,4 @@ left join users on users.user_id = book_reviews.reviewer` +
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
-}
-
-// FKBook_BookID returns the Book associated with the BookReview's (BookID).
-//
-// Generated from foreign key 'book_reviews_book_id_fkey'.
-func (br *BookReview) FKBook_BookID(ctx context.Context, db DB) (*Book, error) {
-	return BookByBookID(ctx, db, br.BookID)
-}
-
-// FKUser_Reviewer returns the User associated with the BookReview's (Reviewer).
-//
-// Generated from foreign key 'book_reviews_reviewer_fkey'.
-func (br *BookReview) FKUser_Reviewer(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, br.Reviewer)
 }

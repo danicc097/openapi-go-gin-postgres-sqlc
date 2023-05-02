@@ -64,12 +64,6 @@ func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkIte
 
 // Insert inserts the WorkItemWorkItemTag to the database.
 func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemWorkItemTag, error) {
-	switch {
-	case wiwit._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case wiwit._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.work_item_work_item_tag (` +
 		`work_item_tag_id, work_item_id` +
@@ -87,7 +81,6 @@ func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemW
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Insert/pgx.CollectOneRow: %w", err))
 	}
-	newwiwit._exists = true
 	*wiwit = newwiwit
 
 	return wiwit, nil
@@ -97,12 +90,6 @@ func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemW
 
 // Delete deletes the WorkItemWorkItemTag from the database.
 func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !wiwit._exists: // doesn't exist
-		return nil
-	case wiwit._deleted: // deleted
-		return nil
-	}
 	// delete with composite primary key
 	sqlstr := `DELETE FROM public.work_item_work_item_tag ` +
 		`WHERE work_item_tag_id = $1 AND work_item_id = $2 `
@@ -110,8 +97,6 @@ func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	wiwit._deleted = true
 	return nil
 }
 
@@ -145,7 +130,6 @@ work_item_work_item_tag.work_item_id ` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_work_item_tag/WorkItemWorkItemTagByWorkItemIDWorkItemTagID/pgx.CollectOneRow: %w", err))
 	}
-	wiwit._exists = true
 
 	return &wiwit, nil
 }
@@ -256,18 +240,4 @@ work_item_work_item_tag.work_item_id ` +
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
-}
-
-// FKWorkItem_WorkItemID returns the WorkItem associated with the WorkItemWorkItemTag's (WorkItemID).
-//
-// Generated from foreign key 'work_item_work_item_tag_work_item_id_fkey'.
-func (wiwit *WorkItemWorkItemTag) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
-	return WorkItemByWorkItemID(ctx, db, wiwit.WorkItemID)
-}
-
-// FKWorkItemTag_WorkItemTagID returns the WorkItemTag associated with the WorkItemWorkItemTag's (WorkItemTagID).
-//
-// Generated from foreign key 'work_item_work_item_tag_work_item_tag_id_fkey'.
-func (wiwit *WorkItemWorkItemTag) FKWorkItemTag_WorkItemTagID(ctx context.Context, db DB) (*WorkItemTag, error) {
-	return WorkItemTagByWorkItemTagID(ctx, db, wiwit.WorkItemTagID)
 }

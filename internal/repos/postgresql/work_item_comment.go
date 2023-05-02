@@ -29,7 +29,7 @@ func (wit *WorkItemComment) Create(ctx context.Context, d db.DBTX, params db.Wor
 		Message:    params.Message,
 	}
 
-	if _, err := workItemComment.Save(ctx, d); err != nil {
+	if _, err := workItemComment.Insert(ctx, d); err != nil {
 		return nil, err
 	}
 

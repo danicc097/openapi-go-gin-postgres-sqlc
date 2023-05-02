@@ -146,12 +146,6 @@ type WorkItem_Member struct {
 
 // Insert inserts the WorkItem to the database.
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
-	switch {
-	case wi._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case wi._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_items (` +
 		`title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at` +
@@ -170,7 +164,6 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 		return nil, logerror(fmt.Errorf("WorkItem/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newwi._exists = true
 	*wi = newwi
 
 	return wi, nil
@@ -178,12 +171,6 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 
 // Update updates a WorkItem in the database.
 func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
-	switch {
-	case !wi._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case wi._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_items SET ` +
 		`title = $1, description = $2, work_item_type_id = $3, metadata = $4, team_id = $5, kanban_step_id = $6, closed = $7, target_date = $8, deleted_at = $9 ` +
@@ -200,26 +187,13 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Update/pgx.CollectOneRow: %w", err))
 	}
-	newwi._exists = true
 	*wi = newwi
 
 	return wi, nil
 }
 
-// Save saves the WorkItem to the database.
-func (wi *WorkItem) Save(ctx context.Context, db DB) (*WorkItem, error) {
-	if wi._exists {
-		return wi.Update(ctx, db)
-	}
-	return wi.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for WorkItem.
 func (wi *WorkItem) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case wi._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_items (` +
 		`work_item_id, title, description, work_item_type_id, metadata, team_id, kanban_step_id, closed, target_date, deleted_at` +
@@ -236,18 +210,11 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	wi._exists = true
 	return nil
 }
 
 // Delete deletes the WorkItem from the database.
 func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !wi._exists: // doesn't exist
-		return nil
-	case wi._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.work_items ` +
 		`WHERE work_item_id = $1 `
@@ -255,19 +222,11 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	wi._deleted = true
 	return nil
 }
 
 // SoftDelete soft deletes the WorkItem from the database via 'deleted_at'.
 func (wi *WorkItem) SoftDelete(ctx context.Context, db DB) error {
-	switch {
-	case !wi._exists: // doesn't exist
-		return nil
-	case wi._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `UPDATE public.work_items ` +
 		`SET deleted_at = NOW() ` +
@@ -277,7 +236,6 @@ func (wi *WorkItem) SoftDelete(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set deleted
-	wi._deleted = true
 	wi.DeletedAt = newPointer(time.Now())
 
 	return nil
@@ -477,7 +435,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
 	}
-	wi._exists = true
 
 	return &wi, nil
 }
@@ -575,25 +532,4 @@ left join (
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
-}
-
-// FKKanbanStep_KanbanStepID returns the KanbanStep associated with the WorkItem's (KanbanStepID).
-//
-// Generated from foreign key 'work_items_kanban_step_id_fkey'.
-func (wi *WorkItem) FKKanbanStep_KanbanStepID(ctx context.Context, db DB) (*KanbanStep, error) {
-	return KanbanStepByKanbanStepID(ctx, db, wi.KanbanStepID)
-}
-
-// FKTeam_TeamID returns the Team associated with the WorkItem's (TeamID).
-//
-// Generated from foreign key 'work_items_team_id_fkey'.
-func (wi *WorkItem) FKTeam_TeamID(ctx context.Context, db DB) (*Team, error) {
-	return TeamByTeamID(ctx, db, wi.TeamID)
-}
-
-// FKWorkItemType_WorkItemTypeID returns the WorkItemType associated with the WorkItem's (WorkItemTypeID).
-//
-// Generated from foreign key 'work_items_work_item_type_id_fkey'.
-func (wi *WorkItem) FKWorkItemType_WorkItemTypeID(ctx context.Context, db DB) (*WorkItemType, error) {
-	return WorkItemTypeByWorkItemTypeID(ctx, db, wi.WorkItemTypeID)
 }

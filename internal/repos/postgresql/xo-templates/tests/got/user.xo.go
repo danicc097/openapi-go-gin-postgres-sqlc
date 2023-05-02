@@ -21,8 +21,6 @@ type User struct {
 
 	BooksJoin       *[]Book       `json:"-" db:"books" openapi-go:"ignore"`        // M2M
 	BookReviewsJoin *[]BookReview `json:"-" db:"book_reviews" openapi-go:"ignore"` // M2O
-	// xo fields
-	_exists, _deleted bool
 }
 
 // UserCreateParams represents insert params for 'public.users'
@@ -65,12 +63,6 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 
 // Insert inserts the User to the database.
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
-	switch {
-	case u._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case u._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.users (` +
 		`name` +
@@ -89,7 +81,6 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 		return nil, logerror(fmt.Errorf("User/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newu._exists = true
 	*u = newu
 
 	return u, nil
@@ -97,12 +88,6 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 
 // Update updates a User in the database.
 func (u *User) Update(ctx context.Context, db DB) (*User, error) {
-	switch {
-	case !u._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case u._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.users SET ` +
 		`name = $1 ` +
@@ -119,26 +104,13 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Update/pgx.CollectOneRow: %w", err))
 	}
-	newu._exists = true
 	*u = newu
 
 	return u, nil
 }
 
-// Save saves the User to the database.
-func (u *User) Save(ctx context.Context, db DB) (*User, error) {
-	if u._exists {
-		return u.Update(ctx, db)
-	}
-	return u.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for User.
 func (u *User) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case u._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.users (` +
 		`user_id, name` +
@@ -155,18 +127,11 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	u._exists = true
 	return nil
 }
 
 // Delete deletes the User from the database.
 func (u *User) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !u._exists: // doesn't exist
-		return nil
-	case u._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.users ` +
 		`WHERE user_id = $1 `
@@ -174,8 +139,6 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	u._deleted = true
 	return nil
 }
 
@@ -229,7 +192,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/pgx.CollectOneRow: %w", err))
 	}
-	u._exists = true
 
 	return &u, nil
 }
