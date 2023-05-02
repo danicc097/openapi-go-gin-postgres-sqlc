@@ -964,7 +964,18 @@ cc_label:
 		// 	}
 		// }
 
-		// FIXME O2O generate both sides
+		// FIXME M2O being skipped and existing one not adding proper suffix, see notification.xo.go
+		// UserJoin      *User       `json:"-" db:"user" openapi-go:"ignore"`
+		//-- O2O join generated from "notifications_receiver_fkey (Generated from O2M|M2O)"
+		// left join users on users.user_id = notifications.receiver
+		// But the other one is skipped. We need to
+		// do the same check as in M2M:
+		// if c.ColumnName != c.RefColumnName
+		// differs from actual column, e.g. having member UUID in lookup instead of user_id
+		// 	// prevent name clashing
+		// 	typ = camelExport(singularize(t.SQLName)) + "_" + camelExport(singularize(lookupName))
+		// }
+		// for O2O we will possibly need the same thing at some point.
 
 		if constraint.Type == "foreign_key" && constraint.Cardinality == "" {
 			// dummy constraint to automatically create join in
@@ -2650,7 +2661,6 @@ func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.Fu
 	case O2M, M2O:
 		joinTpl = O2MJoin
 		selectTpl = O2MSelect
-		// TODO properly gen in both sides like with O2O below, differentiating O2M and M2O
 		if c.RefTableName == x.Table.SQLName {
 			params["JoinColumn"] = c.ColumnName
 			params["JoinTable"] = c.TableName
