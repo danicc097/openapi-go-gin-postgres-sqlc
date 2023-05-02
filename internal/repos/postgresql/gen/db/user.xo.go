@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/google/uuid"
 )
 
 // User represents a row from 'public.users'.
