@@ -85,7 +85,7 @@ func (_d WorkItemTagWithTracing) ByName(ctx context.Context, d db.DBTX, name str
 }
 
 // Create implements repos.WorkItemTag
-func (_d WorkItemTagWithTracing) Create(ctx context.Context, d db.DBTX, params db.WorkItemTagCreateParams) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithTracing) Create(ctx context.Context, d db.DBTX, params *db.WorkItemTagCreateParams) (wp1 *db.WorkItemTag, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemTag.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -133,7 +133,7 @@ func (_d WorkItemTagWithTracing) Delete(ctx context.Context, d db.DBTX, id int) 
 }
 
 // Update implements repos.WorkItemTag
-func (_d WorkItemTagWithTracing) Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTagUpdateParams) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithTracing) Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemTagUpdateParams) (wp1 *db.WorkItemTag, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemTag.Update")
 	defer func() {
 		if _d._spanDecorator != nil {

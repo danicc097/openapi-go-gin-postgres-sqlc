@@ -22,9 +22,9 @@ func NewWorkItemTag() *WorkItemTag {
 
 var _ repos.WorkItemTag = (*WorkItemTag)(nil)
 
-func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params *db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
 	activity := &db.WorkItemTag{}
-	activity.SetCreateParams(&params)
+	activity.SetCreateParams(params)
 
 	if _, err := activity.Insert(ctx, d); err != nil {
 		return nil, err
@@ -33,13 +33,13 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params db.WorkIte
 	return activity, nil
 }
 
-func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
 	activity, err := wit.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get activity by id %w", parseErrorDetail(err))
 	}
 
-	activity.SetUpdateParams(&params)
+	activity.SetUpdateParams(params)
 
 	activity, err = activity.Update(ctx, d)
 	if err != nil {

@@ -39,7 +39,7 @@ func NewNotificationWithPrometheus(base repos.Notification, instanceName string)
 }
 
 // Create implements repos.Notification
-func (_d NotificationWithPrometheus) Create(ctx context.Context, d db.DBTX, params db.NotificationCreateParams) (np1 *db.Notification, err error) {
+func (_d NotificationWithPrometheus) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (np1 *db.Notification, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -67,7 +67,7 @@ func (_d NotificationWithPrometheus) Delete(ctx context.Context, d db.DBTX, id i
 }
 
 // LatestUserNotifications implements repos.Notification
-func (_d NotificationWithPrometheus) LatestUserNotifications(ctx context.Context, d db.DBTX, params db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
+func (_d NotificationWithPrometheus) LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

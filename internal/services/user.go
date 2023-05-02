@@ -70,7 +70,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 		Scopes:     params.Scopes,
 	}
 
-	user, err := u.urepo.Create(ctx, d, repoParams)
+	user, err := u.urepo.Create(ctx, d, &repoParams)
 	if err != nil {
 		return nil, fmt.Errorf("urepo.Create: %w", err)
 	}
@@ -117,7 +117,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		repoUpdateParams.LastName = pointers.New(params.LastName)
 	}
 
-	user, err = u.urepo.Update(ctx, d, uid, repoUpdateParams)
+	user, err = u.urepo.Update(ctx, d, uid, &repoUpdateParams)
 	if err != nil {
 		return nil, fmt.Errorf("urepo.Update: %w", err)
 	}
@@ -189,7 +189,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id string
 		params.Scopes = pointers.New(ScopesByRole[*params.Role])
 	}
 
-	user, err = u.urepo.Update(ctx, d, uid, db.UserUpdateParams{
+	user, err = u.urepo.Update(ctx, d, uid, &db.UserUpdateParams{
 		Scopes:   params.Scopes,
 		RoleRank: rank,
 	})

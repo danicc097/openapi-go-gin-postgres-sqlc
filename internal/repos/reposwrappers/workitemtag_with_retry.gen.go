@@ -67,7 +67,7 @@ func (_d WorkItemTagWithRetry) ByName(ctx context.Context, d db.DBTX, name strin
 }
 
 // Create implements repos.WorkItemTag
-func (_d WorkItemTagWithRetry) Create(ctx context.Context, d db.DBTX, params db.WorkItemTagCreateParams) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithRetry) Create(ctx context.Context, d db.DBTX, params *db.WorkItemTagCreateParams) (wp1 *db.WorkItemTag, err error) {
 	wp1, err = _d.WorkItemTag.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -105,7 +105,7 @@ func (_d WorkItemTagWithRetry) Delete(ctx context.Context, d db.DBTX, id int) (w
 }
 
 // Update implements repos.WorkItemTag
-func (_d WorkItemTagWithRetry) Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTagUpdateParams) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithRetry) Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemTagUpdateParams) (wp1 *db.WorkItemTag, err error) {
 	wp1, err = _d.WorkItemTag.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
 		return

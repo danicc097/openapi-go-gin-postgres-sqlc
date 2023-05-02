@@ -98,7 +98,7 @@ func (_d UserWithTimeout) ByUsername(ctx context.Context, d db.DBTX, username st
 }
 
 // Create implements repos.User
-func (_d UserWithTimeout) Create(ctx context.Context, d db.DBTX, params db.UserCreateParams) (up1 *db.User, err error) {
+func (_d UserWithTimeout) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParams) (up1 *db.User, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.CreateTimeout)
@@ -128,7 +128,7 @@ func (_d UserWithTimeout) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (
 }
 
 // Update implements repos.User
-func (_d UserWithTimeout) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.UserUpdateParams) (up1 *db.User, err error) {
+func (_d UserWithTimeout) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params *db.UserUpdateParams) (up1 *db.User, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)

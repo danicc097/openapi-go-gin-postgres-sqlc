@@ -10,12 +10,12 @@ import (
 )
 
 type FakeNotification struct {
-	CreateStub        func(context.Context, db.DBTX, db.NotificationCreateParams) (*db.Notification, error)
+	CreateStub        func(context.Context, db.DBTX, *db.NotificationCreateParams) (*db.Notification, error)
 	createMutex       sync.RWMutex
 	createArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 db.NotificationCreateParams
+		arg3 *db.NotificationCreateParams
 	}
 	createReturns struct {
 		result1 *db.Notification
@@ -40,12 +40,12 @@ type FakeNotification struct {
 		result1 *db.Notification
 		result2 error
 	}
-	LatestUserNotificationsStub        func(context.Context, db.DBTX, db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
+	LatestUserNotificationsStub        func(context.Context, db.DBTX, *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
 	latestUserNotificationsMutex       sync.RWMutex
 	latestUserNotificationsArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 db.GetUserNotificationsParams
+		arg3 *db.GetUserNotificationsParams
 	}
 	latestUserNotificationsReturns struct {
 		result1 []db.GetUserNotificationsRow
@@ -59,13 +59,13 @@ type FakeNotification struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeNotification) Create(arg1 context.Context, arg2 db.DBTX, arg3 db.NotificationCreateParams) (*db.Notification, error) {
+func (fake *FakeNotification) Create(arg1 context.Context, arg2 db.DBTX, arg3 *db.NotificationCreateParams) (*db.Notification, error) {
 	fake.createMutex.Lock()
 	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
 	fake.createArgsForCall = append(fake.createArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 db.NotificationCreateParams
+		arg3 *db.NotificationCreateParams
 	}{arg1, arg2, arg3})
 	stub := fake.CreateStub
 	fakeReturns := fake.createReturns
@@ -86,13 +86,13 @@ func (fake *FakeNotification) CreateCallCount() int {
 	return len(fake.createArgsForCall)
 }
 
-func (fake *FakeNotification) CreateCalls(stub func(context.Context, db.DBTX, db.NotificationCreateParams) (*db.Notification, error)) {
+func (fake *FakeNotification) CreateCalls(stub func(context.Context, db.DBTX, *db.NotificationCreateParams) (*db.Notification, error)) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = stub
 }
 
-func (fake *FakeNotification) CreateArgsForCall(i int) (context.Context, db.DBTX, db.NotificationCreateParams) {
+func (fake *FakeNotification) CreateArgsForCall(i int) (context.Context, db.DBTX, *db.NotificationCreateParams) {
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
 	argsForCall := fake.createArgsForCall[i]
@@ -191,13 +191,13 @@ func (fake *FakeNotification) DeleteReturnsOnCall(i int, result1 *db.Notificatio
 	}{result1, result2}
 }
 
-func (fake *FakeNotification) LatestUserNotifications(arg1 context.Context, arg2 db.DBTX, arg3 db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
+func (fake *FakeNotification) LatestUserNotifications(arg1 context.Context, arg2 db.DBTX, arg3 *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
 	fake.latestUserNotificationsMutex.Lock()
 	ret, specificReturn := fake.latestUserNotificationsReturnsOnCall[len(fake.latestUserNotificationsArgsForCall)]
 	fake.latestUserNotificationsArgsForCall = append(fake.latestUserNotificationsArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 db.GetUserNotificationsParams
+		arg3 *db.GetUserNotificationsParams
 	}{arg1, arg2, arg3})
 	stub := fake.LatestUserNotificationsStub
 	fakeReturns := fake.latestUserNotificationsReturns
@@ -218,13 +218,13 @@ func (fake *FakeNotification) LatestUserNotificationsCallCount() int {
 	return len(fake.latestUserNotificationsArgsForCall)
 }
 
-func (fake *FakeNotification) LatestUserNotificationsCalls(stub func(context.Context, db.DBTX, db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)) {
+func (fake *FakeNotification) LatestUserNotificationsCalls(stub func(context.Context, db.DBTX, *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)) {
 	fake.latestUserNotificationsMutex.Lock()
 	defer fake.latestUserNotificationsMutex.Unlock()
 	fake.LatestUserNotificationsStub = stub
 }
 
-func (fake *FakeNotification) LatestUserNotificationsArgsForCall(i int) (context.Context, db.DBTX, db.GetUserNotificationsParams) {
+func (fake *FakeNotification) LatestUserNotificationsArgsForCall(i int) (context.Context, db.DBTX, *db.GetUserNotificationsParams) {
 	fake.latestUserNotificationsMutex.RLock()
 	defer fake.latestUserNotificationsMutex.RUnlock()
 	argsForCall := fake.latestUserNotificationsArgsForCall[i]

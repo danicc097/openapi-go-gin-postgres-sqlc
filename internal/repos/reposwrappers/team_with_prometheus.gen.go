@@ -67,7 +67,7 @@ func (_d TeamWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string,
 }
 
 // Create implements repos.Team
-func (_d TeamWithPrometheus) Create(ctx context.Context, d db.DBTX, params db.TeamCreateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithPrometheus) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParams) (tp1 *db.Team, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -95,7 +95,7 @@ func (_d TeamWithPrometheus) Delete(ctx context.Context, d db.DBTX, id int) (tp1
 }
 
 // Update implements repos.Team
-func (_d TeamWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params db.TeamUpdateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithPrometheus) Update(ctx context.Context, d db.DBTX, id int, params *db.TeamUpdateParams) (tp1 *db.Team, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

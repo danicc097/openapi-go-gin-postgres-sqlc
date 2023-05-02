@@ -28,10 +28,10 @@ func NewRandomTimeEntry(t *testing.T, pool *pgxpool.Pool, activityID int, userID
 	return te, nil
 }
 
-func RandomTimeEntryCreateParams(t *testing.T, activityID int, userID uuid.UUID, workItemID *int64, teamID *int) db.TimeEntryCreateParams {
+func RandomTimeEntryCreateParams(t *testing.T, activityID int, userID uuid.UUID, workItemID *int64, teamID *int) *db.TimeEntryCreateParams {
 	t.Helper()
 
-	return db.TimeEntryCreateParams{
+	return &db.TimeEntryCreateParams{
 		WorkItemID:      workItemID,
 		ActivityID:      activityID,
 		TeamID:          teamID,

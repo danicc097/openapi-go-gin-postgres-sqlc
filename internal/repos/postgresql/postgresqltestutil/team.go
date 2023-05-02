@@ -26,10 +26,10 @@ func NewRandomTeam(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.Team, e
 	return team, nil
 }
 
-func RandomTeamCreateParams(t *testing.T, projectID int) db.TeamCreateParams {
+func RandomTeamCreateParams(t *testing.T, projectID int) *db.TeamCreateParams {
 	t.Helper()
 
-	return db.TeamCreateParams{
+	return &db.TeamCreateParams{
 		Name:        "Team " + testutil.RandomNameIdentifier(3, "-"),
 		Description: testutil.RandomString(10),
 		ProjectID:   projectID,

@@ -82,14 +82,14 @@ type DemoWorkItem interface {
 // 	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
 // 	ByTeam(ctx context.Context, d db.DBTX, teamID int, closed bool, deleted bool, opts ...db.WorkItemSelectConfigOption) ([]*db.WorkItem, error)
 // 	// params for dedicated workItem require workItemID (FK-as-PK)
-// 	Create(ctx context.Context, d db.DBTX, id int64, params db.WorkItemCreateParams) (*db.WorkItem, error)
+// 	Create(ctx context.Context, d db.DBTX, id int64, params *db.WorkItemCreateParams) (*db.WorkItem, error)
 // 	Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error)
 // }
 
 // Notification defines the datastore/repository handling persisting Notification records.
 type Notification interface {
-	LatestUserNotifications(ctx context.Context, d db.DBTX, params db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
-	Create(ctx context.Context, d db.DBTX, params db.NotificationCreateParams) (*db.Notification, error)
+	LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
+	Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (*db.Notification, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.Notification, error)
 }
 
@@ -100,8 +100,8 @@ type User interface {
 	ByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error)
 	ByExternalID(ctx context.Context, d db.DBTX, extID string) (*db.User, error)
 	ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error)
-	Create(ctx context.Context, d db.DBTX, params db.UserCreateParams) (*db.User, error)
-	Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.UserUpdateParams) (*db.User, error)
+	Create(ctx context.Context, d db.DBTX, params *db.UserCreateParams) (*db.User, error)
+	Update(ctx context.Context, d db.DBTX, id uuid.UUID, params *db.UserUpdateParams) (*db.User, error)
 	Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, error)
 	// CreateAPIKey requires an existing user.
 	CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error)
@@ -119,8 +119,8 @@ type Project interface {
 type Team interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.Team, error)
 	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Team, error)
-	Create(ctx context.Context, d db.DBTX, params db.TeamCreateParams) (*db.Team, error)
-	Update(ctx context.Context, d db.DBTX, id int, params db.TeamUpdateParams) (*db.Team, error)
+	Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParams) (*db.Team, error)
+	Update(ctx context.Context, d db.DBTX, id int, params *db.TeamUpdateParams) (*db.Team, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.Team, error)
 }
 
@@ -142,8 +142,8 @@ type WorkItemType interface {
 // WorkItemComment defines the datastore/repository handling persisting WorkItemComment records.
 type WorkItemComment interface {
 	ByID(ctx context.Context, d db.DBTX, id int64) (*db.WorkItemComment, error)
-	Create(ctx context.Context, d db.DBTX, params db.WorkItemCommentCreateParams) (*db.WorkItemComment, error)
-	Update(ctx context.Context, d db.DBTX, id int64, params db.WorkItemCommentUpdateParams) (*db.WorkItemComment, error)
+	Create(ctx context.Context, d db.DBTX, params *db.WorkItemCommentCreateParams) (*db.WorkItemComment, error)
+	Update(ctx context.Context, d db.DBTX, id int64, params *db.WorkItemCommentUpdateParams) (*db.WorkItemComment, error)
 	Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItemComment, error)
 }
 
@@ -152,8 +152,8 @@ type WorkItemTag interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error)
 	// TODO ByProjectID(ctx context.Context, d db.DBTX, id int) ([]*db.WorkItemTag, error)
 	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.WorkItemTag, error)
-	Create(ctx context.Context, d db.DBTX, params db.WorkItemTagCreateParams) (*db.WorkItemTag, error)
-	Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTagUpdateParams) (*db.WorkItemTag, error)
+	Create(ctx context.Context, d db.DBTX, params *db.WorkItemTagCreateParams) (*db.WorkItemTag, error)
+	Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.WorkItemTag, error)
 }
 
@@ -162,15 +162,15 @@ type Activity interface {
 	ByID(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
 	ByName(ctx context.Context, d db.DBTX, name string, projectID int) (*db.Activity, error)
 	ByProjectID(ctx context.Context, d db.DBTX, projectID int) ([]db.Activity, error)
-	Create(ctx context.Context, d db.DBTX, params db.ActivityCreateParams) (*db.Activity, error)
-	Update(ctx context.Context, d db.DBTX, id int, params db.ActivityUpdateParams) (*db.Activity, error)
+	Create(ctx context.Context, d db.DBTX, params *db.ActivityCreateParams) (*db.Activity, error)
+	Update(ctx context.Context, d db.DBTX, id int, params *db.ActivityUpdateParams) (*db.Activity, error)
 	Delete(ctx context.Context, d db.DBTX, id int) (*db.Activity, error)
 }
 
 // TimeEntry defines the datastore/repository handling persisting TimeEntry records.
 type TimeEntry interface {
 	ByID(ctx context.Context, d db.DBTX, id int64) (*db.TimeEntry, error)
-	Create(ctx context.Context, d db.DBTX, params db.TimeEntryCreateParams) (*db.TimeEntry, error)
-	Update(ctx context.Context, d db.DBTX, id int64, params db.TimeEntryUpdateParams) (*db.TimeEntry, error)
+	Create(ctx context.Context, d db.DBTX, params *db.TimeEntryCreateParams) (*db.TimeEntry, error)
+	Update(ctx context.Context, d db.DBTX, id int64, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error)
 	Delete(ctx context.Context, d db.DBTX, id int64) (*db.TimeEntry, error)
 }

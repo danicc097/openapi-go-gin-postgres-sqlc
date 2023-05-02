@@ -10,10 +10,10 @@ import (
 
 // NOTE: Base work items never created via WorkItem repo, always through specific project struct
 
-func RandomWorkItemCreateParams(t *testing.T, kanbanStepID, workItemTypeID, teamID int) db.WorkItemCreateParams {
+func RandomWorkItemCreateParams(t *testing.T, kanbanStepID, workItemTypeID, teamID int) *db.WorkItemCreateParams {
 	t.Helper()
 
-	return db.WorkItemCreateParams{
+	return &db.WorkItemCreateParams{
 		Title:          testutil.RandomNameIdentifier(3, "-"),
 		Description:    "Description",
 		Metadata:       []byte(fmt.Sprintf(`{"key":"%s"}`, testutil.RandomString(10))),

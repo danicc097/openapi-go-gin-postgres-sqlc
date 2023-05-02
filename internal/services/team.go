@@ -47,7 +47,7 @@ func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID int
 }
 
 // Create creates a new team.
-func (t *Team) Create(ctx context.Context, d db.DBTX, params db.TeamCreateParams) (*db.Team, error) {
+func (t *Team) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParams) (*db.Team, error) {
 	defer newOTELSpan(ctx, "Team.Create").End()
 
 	team, err := t.trepo.Create(ctx, d, params)
@@ -59,7 +59,7 @@ func (t *Team) Create(ctx context.Context, d db.DBTX, params db.TeamCreateParams
 }
 
 // Update updates an existing team.
-func (t *Team) Update(ctx context.Context, d db.DBTX, id int, params db.TeamUpdateParams) (*db.Team, error) {
+func (t *Team) Update(ctx context.Context, d db.DBTX, id int, params *db.TeamUpdateParams) (*db.Team, error) {
 	defer newOTELSpan(ctx, "Team.Update").End()
 
 	team, err := t.trepo.Update(ctx, d, id, params)

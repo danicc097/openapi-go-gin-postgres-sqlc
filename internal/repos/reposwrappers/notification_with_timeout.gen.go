@@ -35,7 +35,7 @@ func NewNotificationWithTimeout(base repos.Notification, config NotificationWith
 }
 
 // Create implements repos.Notification
-func (_d NotificationWithTimeout) Create(ctx context.Context, d db.DBTX, params db.NotificationCreateParams) (np1 *db.Notification, err error) {
+func (_d NotificationWithTimeout) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (np1 *db.Notification, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.CreateTimeout)
@@ -55,7 +55,7 @@ func (_d NotificationWithTimeout) Delete(ctx context.Context, d db.DBTX, id int)
 }
 
 // LatestUserNotifications implements repos.Notification
-func (_d NotificationWithTimeout) LatestUserNotifications(ctx context.Context, d db.DBTX, params db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
+func (_d NotificationWithTimeout) LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
 	var cancelFunc func()
 	if _d.config.LatestUserNotificationsTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.LatestUserNotificationsTimeout)

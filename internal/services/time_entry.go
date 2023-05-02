@@ -35,7 +35,7 @@ func (a *TimeEntry) ByID(ctx context.Context, d db.DBTX, id int64) (*db.TimeEntr
 }
 
 // Create creates a new time entry.
-func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, params db.TimeEntryCreateParams) (*db.TimeEntry, error) {
+func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, params *db.TimeEntryCreateParams) (*db.TimeEntry, error) {
 	defer newOTELSpan(ctx, "TimeEntry.Create").End()
 
 	teObj, err := a.teRepo.Create(ctx, d, params)
@@ -47,7 +47,7 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, params db.TimeEntryCr
 }
 
 // Update updates an existing time entry.
-func (a *TimeEntry) Update(ctx context.Context, d db.DBTX, id int64, params db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
+func (a *TimeEntry) Update(ctx context.Context, d db.DBTX, id int64, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
 	defer newOTELSpan(ctx, "TimeEntry.Update").End()
 
 	teObj, err := a.teRepo.Update(ctx, d, id, params)
