@@ -21,8 +21,7 @@ type DemoTwoWorkItem struct {
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2" required:"true"` // custom_date_for_project_2
 
 	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // DemoTwoWorkItemCreateParams represents insert params for 'public.demo_two_work_items'

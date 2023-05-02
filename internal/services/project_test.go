@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -23,27 +22,25 @@ func Test_MergeConfigFields(t *testing.T) {
 	fakeProjectRepo.ByIDStub = func(ctx context.Context, d db.DBTX, i int) (*db.Project, error) {
 		return &db.Project{
 			Name: internalmodels.ProjectDemo,
-			BoardConfig: []byte(`
-		{
-			"header": ["demoProject.ref", "workItemType"],
-			"fields": [
-				{
-					"isEditable": true,
-					"showCollapsed": true,
-					"isVisible": true,
-					"path": "demoWorkItem",
-					"name": "Demo project"
+			BoardConfig: internalmodels.ProjectConfig{
+				Header: []string{"demoProject.ref", "workItemType"},
+				Fields: []internalmodels.ProjectConfigField{
+					{
+						IsEditable:    true,
+						ShowCollapsed: true,
+						IsVisible:     true,
+						Path:          "demoWorkItem",
+						Name:          "Demo project",
+					},
+					{
+						IsEditable:    true,
+						ShowCollapsed: true,
+						IsVisible:     true,
+						Path:          "demoWorkItem.ref",
+						Name:          "Reference",
+					},
 				},
-				{
-					"isEditable": true,
-					"showCollapsed": true,
-					"isVisible": true,
-					"path": "demoWorkItem.ref",
-					"name": "Reference"
-				}
-			]
-		}
-		`),
+			},
 		}, nil
 	}
 	fakeTeamRepo := &repostesting.FakeTeam{}
@@ -55,7 +52,7 @@ func Test_MergeConfigFields(t *testing.T) {
 	tests := []struct {
 		name  string
 		args  args
-		want  *models.ProjectConfig
+		want  *internalmodels.ProjectConfig
 		error string
 	}{
 		// TODO: expand test cases with different stubs, test bad config in db/update request (no fields key, wrong type of array elements...)
@@ -67,9 +64,9 @@ func Test_MergeConfigFields(t *testing.T) {
 					map[string]any{"path": "inexistent", "name": "inexistent"},
 				}},
 			},
-			want: &models.ProjectConfig{
+			want: &internalmodels.ProjectConfig{
 				Header: []string{"demoProject.ref", "workItemType"},
-				Fields: []models.ProjectConfigField{
+				Fields: []internalmodels.ProjectConfigField{
 					{IsEditable: false, ShowCollapsed: true, IsVisible: true, Path: "workItemTypeID", Name: "Updated"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "description", Name: "description"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "teamID", Name: "teamID"},
@@ -107,6 +104,15 @@ func Test_MergeConfigFields(t *testing.T) {
 
 				return
 			}
+
+			// opts := cmp.Options{
+			// 	cmp.FilterPath(func(p cmp.Path) bool {
+			// 		return p.Last().Type().Kind() == reflect.Slice &&
+			// 			p.Last().Type().Elem().Kind() == reflect.Struct
+			// 	},
+			// 		cmp.Comparer(customSliceComparer),
+			// 	),
+			// }
 
 			sort.SliceStable(tc.want.Fields, func(i, j int) bool {
 				return tc.want.Fields[i].Path < tc.want.Fields[j].Path

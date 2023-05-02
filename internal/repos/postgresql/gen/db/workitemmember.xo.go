@@ -20,8 +20,6 @@ type WorkItemMember struct {
 	Member     uuid.UUID    `json:"member" db:"member" required:"true"`                                     // member
 	Role       WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"` // role
 
-	// xo fields
-	_exists, _deleted bool
 }
 
 // WorkItemMemberCreateParams represents insert params for 'public.work_item_member'

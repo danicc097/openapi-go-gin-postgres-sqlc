@@ -20,8 +20,6 @@ type Movie struct {
 	Year     int    `json:"year" db:"year" required:"true"`         // year
 	Synopsis string `json:"synopsis" db:"synopsis" required:"true"` // synopsis
 
-	// xo fields
-	_exists, _deleted bool
 }
 
 // MovieCreateParams represents insert params for 'public.movies'

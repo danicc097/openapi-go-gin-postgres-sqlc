@@ -24,8 +24,7 @@ type UserAPIKey struct {
 	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true"`       // user_id
 
 	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (inferred)
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // UserAPIKeyCreateParams represents insert params for 'public.user_api_keys'

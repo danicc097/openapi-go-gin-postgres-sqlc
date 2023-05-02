@@ -23,8 +23,7 @@ type WorkItemType struct {
 
 	ProjectJoin  *Project  `json:"-" db:"project" openapi-go:"ignore"`   // O2O
 	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred)
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // WorkItemTypeCreateParams represents insert params for 'public.work_item_types'

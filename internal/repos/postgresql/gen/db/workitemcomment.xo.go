@@ -27,8 +27,7 @@ type WorkItemComment struct {
 
 	UserJoin     *User     `json:"-" db:"user" openapi-go:"ignore"`      // O2O
 	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // WorkItemCommentCreateParams represents insert params for 'public.work_item_comments'

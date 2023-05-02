@@ -25,8 +25,7 @@ type KanbanStep struct {
 
 	ProjectJoin  *Project  `json:"-" db:"project" openapi-go:"ignore"`   // O2O
 	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred)
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // KanbanStepCreateParams represents insert params for 'public.kanban_steps'

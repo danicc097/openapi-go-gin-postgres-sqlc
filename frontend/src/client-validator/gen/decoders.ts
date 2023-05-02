@@ -20,6 +20,7 @@ import {
   DbTimeEntry,
   DbWorkItemComment,
   ProjectConfig,
+  ProjectConfigField,
   RestDemoWorkItemsResponse,
   InitializeProjectRequest,
   RestProjectBoardResponse,
@@ -36,7 +37,6 @@ import {
   HttpErrorType,
   UuidUUID,
   PgtypeJSONB,
-  ModelsProjectConfigField,
   DbWorkItem,
   Project,
   DbActivityCreateParams,
@@ -207,6 +207,18 @@ export const ProjectConfigDecoder: Decoder<ProjectConfig> = {
       throw new Error(`Schema ${ProjectConfigDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ProjectConfigDecoder.definitionName)
+  },
+}
+export const ProjectConfigFieldDecoder: Decoder<ProjectConfigField> = {
+  definitionName: 'ProjectConfigField',
+  schemaRef: '#/definitions/ProjectConfigField',
+
+  decode(json: unknown): ProjectConfigField {
+    const schema = ajv.getSchema(ProjectConfigFieldDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ProjectConfigFieldDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ProjectConfigFieldDecoder.definitionName)
   },
 }
 export const RestDemoWorkItemsResponseDecoder: Decoder<RestDemoWorkItemsResponse> = {
@@ -399,18 +411,6 @@ export const PgtypeJSONBDecoder: Decoder<PgtypeJSONB> = {
       throw new Error(`Schema ${PgtypeJSONBDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, PgtypeJSONBDecoder.definitionName)
-  },
-}
-export const ModelsProjectConfigFieldDecoder: Decoder<ModelsProjectConfigField> = {
-  definitionName: 'ModelsProjectConfigField',
-  schemaRef: '#/definitions/ModelsProjectConfigField',
-
-  decode(json: unknown): ModelsProjectConfigField {
-    const schema = ajv.getSchema(ModelsProjectConfigFieldDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsProjectConfigFieldDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsProjectConfigFieldDecoder.definitionName)
   },
 }
 export const DbWorkItemDecoder: Decoder<DbWorkItem> = {

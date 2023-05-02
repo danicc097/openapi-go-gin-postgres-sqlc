@@ -18,8 +18,6 @@ type SchemaMigration struct {
 	Version int64 `json:"version" db:"version" required:"true"` // version
 	Dirty   bool  `json:"dirty" db:"dirty" required:"true"`     // dirty
 
-	// xo fields
-	_exists, _deleted bool
 }
 
 // SchemaMigrationCreateParams represents insert params for 'public.schema_migrations'

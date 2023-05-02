@@ -23,8 +23,7 @@ type Activity struct {
 
 	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // ActivityCreateParams represents insert params for 'public.activities'

@@ -23,8 +23,7 @@ type WorkItemTag struct {
 
 	ProjectJoin   *Project    `json:"-" db:"project" openapi-go:"ignore"`    // O2O
 	WorkItemsJoin *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // WorkItemTagCreateParams represents insert params for 'public.work_item_tags'

@@ -138,7 +138,5 @@ var PublicStructs = map[string]any{
 
 	//
 
-	"ModelsProjectBoard":       repomodels.ProjectBoard{},
-	"ModelsProjectConfig":      repomodels.ProjectConfig{},
-	"ModelsProjectConfigField": repomodels.ProjectConfigField{},
+	"ModelsProjectBoard": repomodels.ProjectBoard{},
 }

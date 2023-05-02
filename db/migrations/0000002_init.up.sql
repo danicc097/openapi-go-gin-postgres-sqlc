@@ -24,7 +24,7 @@ create table projects (
 
 comment on column projects.work_items_table_name is 'property:private';
 
-comment on column projects.board_config is 'property:private';
+comment on column projects.board_config is 'property:private,type:models.ProjectConfig';
 
 comment on column projects.name is 'type:models.Project';
 

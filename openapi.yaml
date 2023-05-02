@@ -614,23 +614,44 @@ components:
         - updatedAt
       type: object
       x-postgen-struct: DbWorkItemComment
-    ProjectConfig: # Generated from internal structs. DO NOT EDIT.
+    # Not generated from go code in repo models since we can't have repos/models imported by db.
+    # It is not solved by changing repo models pkg location. repo models will always import db so
+    # it can't be imported by db.
+    ProjectConfig:
       properties:
         fields:
           items:
-            $ref: '#/components/schemas/ModelsProjectConfigField'
-          nullable: true
+            $ref: '#/components/schemas/ProjectConfigField'
+          nullable: false
           type: array
         header:
           items:
             type: string
-          nullable: true
+          nullable: false
           type: array
       required:
         - header
         - fields
       type: object
-      x-postgen-struct: ModelsProjectConfig
+    ProjectConfigField:
+      properties:
+        isEditable:
+          type: boolean
+        isVisible:
+          type: boolean
+        name:
+          type: string
+        path:
+          type: string
+        showCollapsed:
+          type: boolean
+      required:
+        - isEditable
+        - showCollapsed
+        - isVisible
+        - path
+        - name
+      type: object
     RestDemoWorkItemsResponse: # Generated from internal structs. DO NOT EDIT.
       properties:
         closed:
@@ -932,25 +953,6 @@ components:
     UuidUUID: # Generated from internal structs. DO NOT EDIT.
       type: string
     PgtypeJSONB: # Generated from internal structs. DO NOT EDIT.
-      type: object
-    ModelsProjectConfigField: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        isEditable:
-          type: boolean
-        isVisible:
-          type: boolean
-        name:
-          type: string
-        path:
-          type: string
-        showCollapsed:
-          type: boolean
-      required:
-        - isEditable
-        - showCollapsed
-        - isVisible
-        - path
-        - name
       type: object
     DbWorkItem: # Generated from internal structs. DO NOT EDIT.
       properties:

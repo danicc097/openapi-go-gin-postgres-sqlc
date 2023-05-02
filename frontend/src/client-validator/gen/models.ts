@@ -151,10 +151,10 @@ export interface DbWorkItemComment {
   workItemID: number
 }
 export interface ProjectConfig {
-  fields: ModelsProjectConfigField[] | null
-  header: string[] | null
+  fields: ProjectConfigField[]
+  header: string[]
 }
-export interface ModelsProjectConfigField {
+export interface ProjectConfigField {
   isEditable: boolean
   isVisible: boolean
   name: string

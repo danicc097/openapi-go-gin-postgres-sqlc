@@ -32,8 +32,7 @@ type Notification struct {
 	UserJoinReceiver      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O
 	UserJoinSender        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O
 	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // NotificationCreateParams represents insert params for 'public.notifications'

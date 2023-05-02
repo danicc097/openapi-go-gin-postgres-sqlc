@@ -44,8 +44,7 @@ type User struct {
 	TeamsJoin                 *[]Team             `json:"-" db:"teams" openapi-go:"ignore"`                  // M2M
 	WorkItemCommentsJoin      *[]WorkItemComment  `json:"-" db:"work_item_comments" openapi-go:"ignore"`     // M2O
 	WorkItemsJoin             *[]WorkItem         `json:"-" db:"work_items" openapi-go:"ignore"`             // M2M
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // UserCreateParams represents insert params for 'public.users'

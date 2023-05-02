@@ -19,8 +19,6 @@ type UserTeam struct {
 	TeamID int       `json:"teamID" db:"team_id" required:"true"` // team_id
 	UserID uuid.UUID `json:"userID" db:"user_id" required:"true"` // user_id
 
-	// xo fields
-	_exists, _deleted bool
 }
 
 // UserTeamCreateParams represents insert params for 'public.user_team'

@@ -36,8 +36,7 @@ type WorkItem struct {
 	WorkItemCommentsJoin *[]WorkItemComment `json:"-" db:"work_item_comments" openapi-go:"ignore"` // M2O
 	MembersJoin          *[]WorkItem_Member `json:"-" db:"members" openapi-go:"ignore"`            // M2M
 	WorkItemTagsJoin     *[]WorkItemTag     `json:"-" db:"work_item_tags" openapi-go:"ignore"`     // M2M
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // WorkItemCreateParams represents insert params for 'public.work_items'

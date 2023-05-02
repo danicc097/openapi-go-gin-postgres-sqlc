@@ -177,8 +177,15 @@ export interface components {
       workItemID: number;
     };
     ProjectConfig: {
-      fields: (components["schemas"]["ModelsProjectConfigField"])[] | null;
-      header: (string)[] | null;
+      fields: (components["schemas"]["ProjectConfigField"])[];
+      header: (string)[];
+    };
+    ProjectConfigField: {
+      isEditable: boolean;
+      isVisible: boolean;
+      name: string;
+      path: string;
+      showCollapsed: boolean;
     };
     RestDemoWorkItemsResponse: {
       /** Format: date-time */
@@ -316,13 +323,6 @@ export interface components {
     HttpErrorType: "response_validation" | "request_validation" | "unknown";
     UuidUUID: string;
     PgtypeJSONB: Record<string, never>;
-    ModelsProjectConfigField: {
-      isEditable: boolean;
-      isVisible: boolean;
-      name: string;
-      path: string;
-      showCollapsed: boolean;
-    };
     DbWorkItem: {
       /** Format: date-time */
       closed: string | null;

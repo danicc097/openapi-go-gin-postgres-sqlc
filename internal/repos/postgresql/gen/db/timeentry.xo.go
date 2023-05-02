@@ -31,8 +31,7 @@ type TimeEntry struct {
 	TeamJoin     *Team     `json:"-" db:"team" openapi-go:"ignore"`      // O2O
 	UserJoin     *User     `json:"-" db:"user" openapi-go:"ignore"`      // O2O
 	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // TimeEntryCreateParams represents insert params for 'public.time_entries'

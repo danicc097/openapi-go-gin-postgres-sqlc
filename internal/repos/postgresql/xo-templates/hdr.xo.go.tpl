@@ -21,6 +21,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
 {{- if driver "postgres" }}
 	"github.com/lib/pq"
 	"github.com/lib/pq/hstore"

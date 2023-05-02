@@ -455,15 +455,6 @@ type InitializeProjectRequest struct {
 // ModelsProject defines the model for ModelsProject.
 type ModelsProject = string
 
-// ModelsProjectConfigField defines the model for ModelsProjectConfigField.
-type ModelsProjectConfigField struct {
-	IsEditable    bool   `json:"isEditable"`
-	IsVisible     bool   `json:"isVisible"`
-	Name          string `json:"name"`
-	Path          string `json:"path"`
-	ShowCollapsed bool   `json:"showCollapsed"`
-}
-
 // ModelsRole defines the model for ModelsRole.
 type ModelsRole = string
 
@@ -481,8 +472,17 @@ type Project string
 
 // ProjectConfig defines the model for ProjectConfig.
 type ProjectConfig struct {
-	Fields *[]ModelsProjectConfigField `json:"fields"`
-	Header *[]string                   `json:"header"`
+	Fields []ProjectConfigField `json:"fields"`
+	Header []string             `json:"header"`
+}
+
+// ProjectConfigField defines the model for ProjectConfigField.
+type ProjectConfigField struct {
+	IsEditable    bool   `json:"isEditable"`
+	IsVisible     bool   `json:"isVisible"`
+	Name          string `json:"name"`
+	Path          string `json:"path"`
+	ShowCollapsed bool   `json:"showCollapsed"`
 }
 
 // RestDemoWorkItemsResponse defines the model for RestDemoWorkItemsResponse.

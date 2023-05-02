@@ -6,7 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export interface ModelsProjectConfigField {
+export interface ProjectConfigField {
   isEditable: boolean
   isVisible: boolean
   name: string
