@@ -1558,7 +1558,7 @@ backup_gen_files() {
 
   mkdir -p "$backup_dir"
 
-  find "$src_dir" -name "*.gen.go" -type f -print0 | tar czvf "$backup_dir/backup_gen_files.tar.gz" --null -T -
+  find "$src_dir" -name "*.gen.go" -type f -print0 | tar czvf "$backup_dir/backup_gen_files.tar.gz" --null -T - &>/dev/null
 
   # Note: the -print0 and --null options are used to handle file names with spaces
 }
@@ -1568,7 +1568,7 @@ restore_gen_files() {
   dest_dir=$2
 
   # -C changes cwd to dir before extracting
-  tar xzvf "$backup_dir/backup_gen_files.tar.gz" -C "$dest_dir"
+  tar xzvf "$backup_dir/backup_gen_files.tar.gz" -C "$dest_dir" --strip-components=1 &>/dev/null
 }
 
 usage() {
