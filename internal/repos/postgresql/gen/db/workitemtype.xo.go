@@ -21,7 +21,8 @@ type WorkItemType struct {
 	Description    string `json:"description" db:"description" required:"true"`          // description
 	Color          string `json:"color" db:"color" required:"true"`                      // color
 
-	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
+	ProjectJoin  *Project  `json:"-" db:"project" openapi-go:"ignore"`   // O2O
+	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred)
 	// xo fields
 	_exists, _deleted bool
 }
@@ -61,6 +62,7 @@ type WorkItemTypeOrderBy = string
 const ()
 
 type WorkItemTypeJoins struct {
+	Project  bool
 	WorkItem bool
 }
 
@@ -204,17 +206,20 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_items_work_item_type_id_fkey"
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
+left join projects on projects.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.name = $2 AND work_item_types.project_id = $3 `
+		` WHERE work_item_types.name = $3 AND work_item_types.project_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, name, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByNameProjectID/db.Query: %w", err))
 	}
@@ -244,17 +249,20 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_items_work_item_type_id_fkey"
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
+left join projects on projects.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.name = $2 `
+		` WHERE work_item_types.name = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, name)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -285,17 +293,20 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_items_work_item_type_id_fkey"
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
+left join projects on projects.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.project_id = $2 `
+		` WHERE work_item_types.project_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, projectID)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -326,17 +337,20 @@ work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
 work_item_types.color,
-(case when $1::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_items_work_item_type_id_fkey"
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
+left join projects on projects.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
-		` WHERE work_item_types.work_item_type_id = $2 `
+		` WHERE work_item_types.work_item_type_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemTypeID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemTypeID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, workItemTypeID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByWorkItemTypeID/db.Query: %w", err))
 	}

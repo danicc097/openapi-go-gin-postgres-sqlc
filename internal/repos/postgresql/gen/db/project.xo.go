@@ -26,11 +26,11 @@ type Project struct {
 	CreatedAt          time.Time      `json:"createdAt" db:"created_at" required:"true"`                         // created_at
 	UpdatedAt          time.Time      `json:"updatedAt" db:"updated_at" required:"true"`                         // updated_at
 
-	ActivitiesJoin    *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`      // O2M
-	KanbanStepsJoin   *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`    // O2M
-	TeamsJoin         *[]Team         `json:"-" db:"teams" openapi-go:"ignore"`           // O2M
-	WorkItemTagsJoin  *[]WorkItemTag  `json:"-" db:"work_item_tags" openapi-go:"ignore"`  // O2M
-	WorkItemTypesJoin *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"` // O2M
+	ActivitiesJoin    *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`      // M2O
+	KanbanStepsJoin   *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`    // M2O
+	TeamsJoin         *[]Team         `json:"-" db:"teams" openapi-go:"ignore"`           // M2O
+	WorkItemTagsJoin  *[]WorkItemTag  `json:"-" db:"work_item_tags" openapi-go:"ignore"`  // M2O
+	WorkItemTypesJoin *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"` // M2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -246,7 +246,7 @@ projects.updated_at,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
 (case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
 		`FROM public.projects ` +
-		`-- O2M join generated from "activities_project_id_fkey"
+		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
   project_id as activities_project_id
@@ -255,7 +255,7 @@ left join (
     activities
   group by
         project_id) joined_activities on joined_activities.activities_project_id = projects.project_id
--- O2M join generated from "kanban_steps_project_id_fkey"
+-- M2O join generated from "kanban_steps_project_id_fkey"
 left join (
   select
   project_id as kanban_steps_project_id
@@ -264,7 +264,7 @@ left join (
     kanban_steps
   group by
         project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
--- O2M join generated from "teams_project_id_fkey"
+-- M2O join generated from "teams_project_id_fkey"
 left join (
   select
   project_id as teams_project_id
@@ -273,7 +273,7 @@ left join (
     teams
   group by
         project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
--- O2M join generated from "work_item_tags_project_id_fkey"
+-- M2O join generated from "work_item_tags_project_id_fkey"
 left join (
   select
   project_id as work_item_tags_project_id
@@ -282,7 +282,7 @@ left join (
     work_item_tags
   group by
         project_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
--- O2M join generated from "work_item_types_project_id_fkey"
+-- M2O join generated from "work_item_types_project_id_fkey"
 left join (
   select
   project_id as work_item_types_project_id
@@ -335,7 +335,7 @@ projects.updated_at,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
 (case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
 		`FROM public.projects ` +
-		`-- O2M join generated from "activities_project_id_fkey"
+		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
   project_id as activities_project_id
@@ -344,7 +344,7 @@ left join (
     activities
   group by
         project_id) joined_activities on joined_activities.activities_project_id = projects.project_id
--- O2M join generated from "kanban_steps_project_id_fkey"
+-- M2O join generated from "kanban_steps_project_id_fkey"
 left join (
   select
   project_id as kanban_steps_project_id
@@ -353,7 +353,7 @@ left join (
     kanban_steps
   group by
         project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
--- O2M join generated from "teams_project_id_fkey"
+-- M2O join generated from "teams_project_id_fkey"
 left join (
   select
   project_id as teams_project_id
@@ -362,7 +362,7 @@ left join (
     teams
   group by
         project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
--- O2M join generated from "work_item_tags_project_id_fkey"
+-- M2O join generated from "work_item_tags_project_id_fkey"
 left join (
   select
   project_id as work_item_tags_project_id
@@ -371,7 +371,7 @@ left join (
     work_item_tags
   group by
         project_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
--- O2M join generated from "work_item_types_project_id_fkey"
+-- M2O join generated from "work_item_types_project_id_fkey"
 left join (
   select
   project_id as work_item_types_project_id
@@ -424,7 +424,7 @@ projects.updated_at,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
 (case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
 		`FROM public.projects ` +
-		`-- O2M join generated from "activities_project_id_fkey"
+		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
   project_id as activities_project_id
@@ -433,7 +433,7 @@ left join (
     activities
   group by
         project_id) joined_activities on joined_activities.activities_project_id = projects.project_id
--- O2M join generated from "kanban_steps_project_id_fkey"
+-- M2O join generated from "kanban_steps_project_id_fkey"
 left join (
   select
   project_id as kanban_steps_project_id
@@ -442,7 +442,7 @@ left join (
     kanban_steps
   group by
         project_id) joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
--- O2M join generated from "teams_project_id_fkey"
+-- M2O join generated from "teams_project_id_fkey"
 left join (
   select
   project_id as teams_project_id
@@ -451,7 +451,7 @@ left join (
     teams
   group by
         project_id) joined_teams on joined_teams.teams_project_id = projects.project_id
--- O2M join generated from "work_item_tags_project_id_fkey"
+-- M2O join generated from "work_item_tags_project_id_fkey"
 left join (
   select
   project_id as work_item_tags_project_id
@@ -460,7 +460,7 @@ left join (
     work_item_tags
   group by
         project_id) joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
--- O2M join generated from "work_item_types_project_id_fkey"
+-- M2O join generated from "work_item_types_project_id_fkey"
 left join (
   select
   project_id as work_item_types_project_id

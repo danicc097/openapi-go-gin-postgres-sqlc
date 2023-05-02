@@ -931,56 +931,47 @@ cc_label:
 			case M2M:
 				if c.ColumnName == constraint.ColumnName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && ccard == M2M {
 					joinTableClash = true
-					fmt.Printf("%-40s| c.ColumnName == constraint.ColumnName: %s == %s\n", c.Name, c.ColumnName, constraint.ColumnName)
+					fmt.Printf("%-48s| c.ColumnName == constraint.ColumnName: %s == %s\n", c.Name, c.ColumnName, constraint.ColumnName)
 					break outer
 				}
 			case O2M, M2O:
 				if c.TableName == constraint.TableName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && (ccard == O2M || ccard == M2O) {
 					joinTableClash = true
-					fmt.Printf("%-40s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
+					fmt.Printf("%-48s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
 					break outer
 				}
 			case O2O:
 				// NOTE: probably needs more checks
 				if c.TableName == constraint.TableName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && ccard == O2O {
 					joinTableClash = true
-					fmt.Printf("%-40s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
+					fmt.Printf("%-48s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
 					break outer
 				}
 			}
 		}
 
-		// var isSingleFK, isSinglePK bool
-		// for i, t := range tables {
-
-		// 	for _, tfk := range table.ForeignKeys {
-		// 		if len(tfk.FieldNames) == 1 && tfk.FieldNames[0] == field.SQLName {
-		// 			isSingleFK = true
-		// 			break
-		// 		}
-		// 	}
-		// 	if len(table.PrimaryKeys) == 1 && table.PrimaryKeys[0].SQLName == field.SQLName {
-		// 		isSinglePK = true
-		// 	}
-		// }
-
+		// assume it's O2O. Can be overridden at any time
 		if constraint.Type == "foreign_key" && constraint.Cardinality == "" {
-			// dummy constraint to automatically create join in
-			//  (TODO need to do this only if fk fields len = 1)
+			// TODO need to do this only if fk fields len = 1
 			// and check if field is unique or not
 			// ignore duplicate joins generated for partitioned columns to new tables, joined by helper keys, e.g. api_key_id
 			for _, seenConstraint := range cc {
 				if seenConstraint.TableName == constraint.TableName &&
 					seenConstraint.RefTableName == constraint.RefTableName &&
-					seenConstraint.Type == constraint.Type {
+					seenConstraint.ColumnName == constraint.ColumnName &&
+					seenConstraint.Type == constraint.Type &&
+					/* card check to generate joins with vertically partitioned tables.
+					 */
+					seenConstraint.Cardinality == cardinality(constraint.Cardinality) {
 					continue cc_label
 				}
 			}
 
+			// dummy constraint to automatically create join
 			cc = append(cc, Constraint{
 				Type:           constraint.Type,
 				Cardinality:    O2O,
-				Name:           constraint.Name,
+				Name:           constraint.Name + "(O2O inferred)",
 				RefTableName:   constraint.TableName,
 				TableName:      constraint.RefTableName,
 				RefColumnName:  constraint.ColumnName,
@@ -988,19 +979,58 @@ cc_label:
 				JoinTableClash: joinTableClash,
 				IsGeneratedO2O: true,
 			})
+
+			continue
+		}
+
+		if constraint.Cardinality == "O2O" {
+			for _, seenConstraint := range cc {
+				if seenConstraint.TableName == constraint.TableName &&
+					seenConstraint.RefTableName == constraint.RefTableName &&
+					seenConstraint.ColumnName == constraint.ColumnName &&
+					seenConstraint.Type == constraint.Type &&
+					seenConstraint.Cardinality == cardinality(constraint.Cardinality) {
+					continue cc_label
+				}
+			}
+			// create a dummy referenced constraint
 			cc = append(cc, Constraint{
 				Type:           constraint.Type,
 				Cardinality:    O2O,
-				Name:           constraint.Name,
+				Name:           constraint.Name + "(O2O reference)",
+				RefTableName:   constraint.TableName,
+				TableName:      constraint.RefTableName,
+				RefColumnName:  constraint.ColumnName,
+				ColumnName:     constraint.RefColumnName,
+				JoinTableClash: joinTableClash,
+			})
+		}
+
+		if constraint.Cardinality == "M2O" || constraint.Cardinality == "O2M" {
+			/**
+			 * TODO will generate O2O dummy constraint on refTable or table
+			 * depending is M2O or O2M
+			 * and create the other constraint accordingly
+			 */
+			for _, seenConstraint := range cc {
+				if seenConstraint.TableName == constraint.TableName &&
+					seenConstraint.RefTableName == constraint.RefTableName &&
+					seenConstraint.ColumnName == constraint.ColumnName &&
+					seenConstraint.Type == constraint.Type && seenConstraint.Cardinality == cardinality(constraint.Cardinality) {
+					continue cc_label
+				}
+			}
+
+			cc = append(cc, Constraint{
+				Type:           constraint.Type,
+				Cardinality:    O2O,
+				Name:           constraint.Name + " (Generated from O2M|M2O)",
 				TableName:      constraint.TableName,
 				RefTableName:   constraint.RefTableName,
 				ColumnName:     constraint.ColumnName,
 				RefColumnName:  constraint.RefColumnName,
 				JoinTableClash: joinTableClash,
-				IsGeneratedO2O: true,
 			})
-
-			continue
 		}
 
 		cc = append(cc, Constraint{
@@ -1013,7 +1043,6 @@ cc_label:
 			RefColumnName:  constraint.RefColumnName,
 			JoinTableClash: joinTableClash,
 		})
-		// fmt.Printf("cc[i]: %+v\n", cc[i])
 	}
 
 	return cc, nil
@@ -1675,7 +1704,7 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 
 			lookupTable := tables[c.TableName]
 			extraCols := getLookupTableRegularFields(lookupTable)
-			fmt.Printf("M2M join: %s extraCols: %v\n", lookupTable.SQLName, extraCols)
+			// fmt.Printf("M2M join: %s extraCols: %v\n", lookupTable.SQLName, extraCols)
 
 			if c.ColumnName != c.RefColumnName {
 				// differs from actual column, e.g. having member UUID in lookup instead of user_id
@@ -1709,16 +1738,24 @@ type %s struct {
 			joinName = camelExport(inflector.Pluralize(lookupName))
 
 		case O2M, M2O:
-			if c.RefTableName != sqlname {
-				continue
+			if c.RefTableName == sqlname {
+				joinName = camelExport(c.TableName)
+				if c.JoinTableClash {
+					joinName = joinName + camelExport(c.ColumnName)
+				}
 			}
-			joinName = camelExport(c.TableName)
-			if c.JoinTableClash {
-				joinName = joinName + camelExport(c.ColumnName)
+			if c.TableName == sqlname {
+				joinName = camelExport(c.RefTableName)
+				if c.JoinTableClash {
+					joinName = joinName + camelExport(c.RefColumnName)
+				}
 			}
 		case O2O:
 			if c.TableName == sqlname {
 				joinName = camelExport(singularize(c.RefTableName))
+				if c.JoinTableClash {
+					joinName = joinName + camelExport(c.ColumnName)
+				}
 			}
 			// dummy created automatically to avoid this duplication
 			// if c.RefTableName == sqlname {
@@ -1751,8 +1788,6 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 }
 
 // TODO low prio put note if it has no index
-
-// TODO custom types based on sql comment : "type:models.Project"
 
 // func_context generates a func signature for v with context determined by the
 // context mode.
@@ -2020,16 +2055,24 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 					joinName = prefix + camelExport(inflector.Pluralize(lookupName))
 				case O2M, M2O:
-					if c.RefTableName != x.SQLName {
-						continue
+					if c.RefTableName == x.SQLName {
+						joinName = prefix + camelExport(c.TableName)
+						if c.JoinTableClash {
+							joinName = joinName + "_" + c.ColumnName
+						}
 					}
-					joinName = prefix + camelExport(c.TableName)
-					if c.JoinTableClash {
-						joinName = joinName + "_" + c.ColumnName
+					if c.TableName == x.SQLName {
+						joinName = prefix + camelExport(c.RefTableName)
+						if c.JoinTableClash {
+							joinName = joinName + "_" + c.RefColumnName
+						}
 					}
 				case O2O:
 					if c.TableName == x.SQLName {
 						joinName = prefix + camelExport(singularize(c.RefTableName))
+						if c.JoinTableClash {
+							joinName = joinName + camelExport(c.ColumnName)
+						}
 					}
 					// dummy created automatically to avoid this duplication
 					// if c.RefTableName == x.SQLName {
@@ -2060,16 +2103,24 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 					joinName = pref + camelExport(inflector.Pluralize(lookupName))
 				case O2M, M2O:
-					if c.RefTableName != x.Table.SQLName {
-						continue
+					if c.RefTableName == x.Table.SQLName {
+						joinName = pref + camelExport(c.TableName)
+						if c.JoinTableClash {
+							joinName = joinName + camelExport(c.ColumnName)
+						}
 					}
-					joinName = pref + camelExport(c.TableName)
-					if c.JoinTableClash {
-						joinName = joinName + camelExport(c.ColumnName)
+					if c.TableName == x.SQLName {
+						joinName = pref + camelExport(c.RefTableName)
+						if c.JoinTableClash {
+							joinName = joinName + camelExport(c.RefColumnName)
+						}
 					}
 				case O2O:
 					if c.TableName == x.Table.SQLName {
 						joinName = pref + camelExport(singularize(c.RefTableName))
+						if c.JoinTableClash {
+							joinName = joinName + camelExport(c.ColumnName)
+						}
 					}
 					// dummy created automatically to avoid this duplication
 					// if c.RefTableName == x.Table.SQLName {
@@ -2373,7 +2424,7 @@ const (
 	M2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}, '{}') end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
 	O2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}{{.ClashSuffix}}`
 	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
-	O2OSelect = `(case when {{.Nth}}::boolean = true and {{.JoinTable}}.{{.JoinRefColumn}} is not null then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}`
+	O2OSelect = `(case when {{.Nth}}::boolean = true and {{.JoinTable}}.{{.JoinColumn}} is not null then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}`
 )
 
 const (
@@ -2508,7 +2559,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 		return // don't duplicate
 	}
 	for _, c := range cc {
-		if c.Cardinality == "" || c.Type != "foreign_key" {
+		if c.Type != "foreign_key" {
 			continue
 		}
 		if c.Cardinality == M2M && c.RefTableName == table {
@@ -2519,9 +2570,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 					f.tableConstraints[table] = append(f.tableConstraints[table], c1)
 				}
 			}
-		} else if c.Cardinality == O2O && c.TableName == table {
-			f.tableConstraints[table] = append(f.tableConstraints[table], c)
-		} else if c.Cardinality == O2O && c.RefTableName == table {
+		} else if c.Cardinality == O2O && (c.TableName == table || c.RefTableName == table) {
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
 		} else if c.RefTableName == table {
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
@@ -2582,19 +2631,27 @@ func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.Fu
 		}
 
 	case O2M, M2O:
-		if c.JoinTableClash {
-			params["ClashSuffix"] = "_" + c.ColumnName
-		}
-
-		// TODO properly gen in both sides like with O2O below, differentiating O2M and M2O
+		joinTpl = O2MJoin
+		selectTpl = O2MSelect
 		if c.RefTableName == x.Table.SQLName {
-			joinTpl = O2MJoin
-			selectTpl = O2MSelect
-
 			params["JoinColumn"] = c.ColumnName
 			params["JoinTable"] = c.TableName
 			params["JoinRefColumn"] = c.RefColumnName
 			params["CurrentTable"] = x.Table.SQLName
+
+			if c.JoinTableClash {
+				params["ClashSuffix"] = "_" + c.ColumnName
+			}
+		}
+		if c.TableName == x.Table.SQLName {
+			params["JoinColumn"] = c.RefColumnName
+			params["JoinTable"] = c.RefTableName
+			params["JoinRefColumn"] = c.ColumnName
+			params["CurrentTable"] = x.Table.SQLName
+
+			if c.JoinTableClash {
+				params["ClashSuffix"] = "_" + c.RefColumnName
+			}
 		}
 	case O2O:
 		if c.TableName == x.Table.SQLName {
@@ -2604,6 +2661,9 @@ func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.Fu
 			params["JoinTable"] = c.RefTableName
 			params["JoinRefColumn"] = c.ColumnName
 			params["CurrentTable"] = x.Table.SQLName
+			if c.JoinTableClash {
+				params["ClashSuffix"] = "_" + c.ColumnName
+			}
 			break
 		}
 
@@ -2837,7 +2897,7 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 			return "", nil
 		}
 		if isSingleFK && isSinglePK { // e.g. workitemid in project tables. don't ever want to update it.
-			fmt.Printf("skipping %q: single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
+			fmt.Printf("UpdateParams: skipping %q: is a single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
 			return "", nil
 		}
 		skipExtraTags = true
@@ -2922,18 +2982,32 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Pluralize(lookupName))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, c.Cardinality))
-			// TODO revisit. O2M and M2O from different viewpoints.
 		case O2M, M2O:
-			if c.RefTableName != t.SQLName {
-				continue
+			var joinName string
+			if c.RefTableName == t.SQLName {
+				goName = camelExport(singularize(c.TableName))
+				typ = goName
+				goName = inflector.Pluralize(goName) + "Join"
+				joinName = inflector.Pluralize(c.TableName)
+				if c.JoinTableClash {
+					joinName = joinName + "_" + c.ColumnName
+					goName = goName + camelExport(c.ColumnName)
+				}
 			}
-			goName = camelExport(singularize(c.TableName))
-			typ = goName
-			goName = inflector.Pluralize(goName) + "Join"
-			joinName := inflector.Pluralize(c.TableName)
-			if c.JoinTableClash {
-				joinName = joinName + "_" + c.ColumnName
-				goName = goName + camelExport(c.ColumnName)
+
+			if c.TableName == t.SQLName {
+				goName = camelExport(singularize(c.RefTableName))
+				typ = goName
+				goName = inflector.Pluralize(goName) + "Join"
+				joinName = inflector.Pluralize(c.RefTableName)
+				if c.JoinTableClash {
+					joinName = joinName + "_" + c.RefColumnName
+					goName = goName + camelExport(c.RefColumnName)
+				}
+			}
+
+			if joinName == "" {
+				continue
 			}
 
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
@@ -2946,10 +3020,16 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 
 				var notes string
 				if c.IsGeneratedO2O {
-					notes = " (inferred O2O - modify via `cardinality:` column comment)"
+					notes = " (inferred)"
 				}
 
-				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Singularize(c.RefTableName))
+				joinName := inflector.Singularize(c.RefTableName)
+				if c.JoinTableClash {
+					joinName = joinName + "_" + c.ColumnName
+					goName = goName + camelExport(c.ColumnName)
+				}
+
+				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
 				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 			}
 			// dummy created automatically to avoid this duplication
@@ -3428,8 +3508,9 @@ type Constraint struct {
 	RefColumnName   string // RefTableName column FK references
 	LookupColumn    string // (M2M) lookup table column
 	LookupRefColumn string // (M2M) referenced PK by LookupColumn
-	JoinTableClash  bool   // Whether other constraints join against the same table (not necessarily )
+	JoinTableClash  bool   // Whether other constraints join against the same table
 	IsGeneratedO2O  bool   // Whether this constraint has been generated or altered automatically
+	IsGeneratedO2M  bool   // Whether this constraint has been generated or altered automatically
 }
 
 // Field is a field template.

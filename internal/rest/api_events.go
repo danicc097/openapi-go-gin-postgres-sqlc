@@ -37,9 +37,12 @@ type PubSub struct {
 	mu sync.RWMutex // preferable if mostly read
 
 	// TODO will need to have nested map for subs per project ( TODO models.Project)
+	// all in all this whole PubSub arch requires more memory usage but provides more flexible notifications.
+	// need to experiment buffered vs unbuffered. see https://eli.thegreenplace.net/2020/pubsub-using-channels-in-go/
 	// we can't have shared topic for every project unless it's GlobalAlerts (degraded performance, maintenance alert)
 	// a user will be subscribed to the current project selected in frontend.
 	// this info needs to be sent when calling /events in a query param
+
 	subs map[models.Topics]subs
 	// e.g. event card moved notifies all card members' userID - attempt to send if clients are connected (i.e. key exists in personalSub)
 	// TODO close and delete entries when client is gone:

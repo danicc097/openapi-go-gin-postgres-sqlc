@@ -12,15 +12,14 @@ import (
 )
 
 func main() {
-	var env, cacheDir, spec, opIDAuthPath string
+	var env, spec, opIDAuthPath string
 	var validateSpecOnly bool
 	var stderr bytes.Buffer
 
 	flag.StringVar(&opIDAuthPath, "op-id-auth", "", "JSON file with authorization information per operation ID")
 	flag.StringVar(&env, "env", ".env", "Environment Variables filename")
-	flag.StringVar(&cacheDir, "cachedir", ".postgen.cache", "Cache dir")
 	flag.StringVar(&spec, "spec", "openapi.yaml", "OpenAPI specification")
-	flag.BoolVar(&validateSpecOnly, "validate-spec-only", false, "OpenAPI specification")
+	flag.BoolVar(&validateSpecOnly, "validate-spec-only", false, "Skip code generation")
 	flag.Parse()
 
 	if err := envvar.Load(env); err != nil {

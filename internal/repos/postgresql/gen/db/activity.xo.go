@@ -21,7 +21,8 @@ type Activity struct {
 	Description  string `json:"description" db:"description" required:"true"`    // description
 	IsProductive bool   `json:"isProductive" db:"is_productive" required:"true"` // is_productive
 
-	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // O2M
+	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -61,6 +62,7 @@ type ActivityOrderBy = string
 const ()
 
 type ActivityJoins struct {
+	Project     bool
 	TimeEntries bool
 }
 
@@ -204,9 +206,12 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2M join generated from "time_entries_activity_id_fkey"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
+left join projects on projects.project_id = activities.project_id
+-- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
@@ -215,13 +220,13 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.name = $2 AND activities.project_id = $3 `
+		` WHERE activities.name = $3 AND activities.project_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, name, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/db.Query: %w", err))
 	}
@@ -251,9 +256,12 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2M join generated from "time_entries_activity_id_fkey"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
+left join projects on projects.project_id = activities.project_id
+-- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
@@ -262,13 +270,13 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.name = $2 `
+		` WHERE activities.name = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, name)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -299,9 +307,12 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2M join generated from "time_entries_activity_id_fkey"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
+left join projects on projects.project_id = activities.project_id
+-- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
@@ -310,13 +321,13 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.project_id = $2 `
+		` WHERE activities.project_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, projectID)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -347,9 +358,12 @@ activities.project_id,
 activities.name,
 activities.description,
 activities.is_productive,
-(case when $1::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2M join generated from "time_entries_activity_id_fkey"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
+left join projects on projects.project_id = activities.project_id
+-- M2O join generated from "time_entries_activity_id_fkey"
 left join (
   select
   activity_id as time_entries_activity_id
@@ -358,13 +372,13 @@ left join (
     time_entries
   group by
         activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
-		` WHERE activities.activity_id = $2 `
+		` WHERE activities.activity_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, activityID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.TimeEntries, activityID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, activityID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/db.Query: %w", err))
 	}

@@ -23,7 +23,7 @@ type UserAPIKey struct {
 	ExpiresOn    time.Time `json:"expiresOn" db:"expires_on" required:"true"` // expires_on
 	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true"`       // user_id
 
-	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
+	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (inferred)
 	// xo fields
 	_exists, _deleted bool
 }
@@ -220,10 +220,10 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+(case when $1::boolean = true and users.api_key_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
-		`-- O2O join generated from "user_api_keys_user_id_fkey"
-left join users on users.user_id = user_api_keys.user_id` +
+		`-- O2O join generated from "users_api_key_id_fkey(O2O inferred)"
+left join users on users.api_key_id = user_api_keys.user_api_key_id` +
 		` WHERE user_api_keys.api_key = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -259,10 +259,10 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+(case when $1::boolean = true and users.api_key_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
-		`-- O2O join generated from "user_api_keys_user_id_fkey"
-left join users on users.user_id = user_api_keys.user_id` +
+		`-- O2O join generated from "users_api_key_id_fkey(O2O inferred)"
+left join users on users.api_key_id = user_api_keys.user_api_key_id` +
 		` WHERE user_api_keys.user_api_key_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -298,10 +298,10 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...Us
 user_api_keys.api_key,
 user_api_keys.expires_on,
 user_api_keys.user_id,
-(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+(case when $1::boolean = true and users.api_key_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
-		`-- O2O join generated from "user_api_keys_user_id_fkey"
-left join users on users.user_id = user_api_keys.user_id` +
+		`-- O2O join generated from "users_api_key_id_fkey(O2O inferred)"
+left join users on users.api_key_id = user_api_keys.user_api_key_id` +
 		` WHERE user_api_keys.user_id = $2 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -8,13 +8,9 @@ echo
 echo Testing for file discrepancies...
 
 for want_file in "$CWD"/want/*; do
-  if [ ! -f "$want_file" ]; then
-    continue
-  fi
-
   got_file="$CWD/got/${want_file##*/want/}"
   if [ ! -f "$got_file" ]; then
-    echo "ERROR: $got_file does not exist"
+    echo "ERROR: $got_file does not exist" >&2
     exit_code=1
   fi
 

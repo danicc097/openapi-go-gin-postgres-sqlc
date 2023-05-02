@@ -23,7 +23,7 @@ type DemoWorkItem struct {
 	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at" required:"true"` // last_message_at
 	Reopened      bool      `json:"reopened" db:"reopened" required:"true"`             // reopened
 
-	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred O2O - modify via `cardinality:` column comment)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }
