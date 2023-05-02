@@ -23,15 +23,8 @@ func NewTimeEntry() *TimeEntry {
 var _ repos.TimeEntry = (*TimeEntry)(nil)
 
 func (wit *TimeEntry) Create(ctx context.Context, d db.DBTX, params db.TimeEntryCreateParams) (*db.TimeEntry, error) {
-	timeEntry := &db.TimeEntry{
-		ActivityID:      params.ActivityID,
-		TeamID:          params.TeamID,
-		WorkItemID:      params.WorkItemID,
-		UserID:          params.UserID,
-		Comment:         params.Comment,
-		Start:           params.Start,
-		DurationMinutes: params.DurationMinutes,
-	}
+	timeEntry := &db.TimeEntry{}
+	timeEntry.SetCreateParams(&params)
 
 	if _, err := timeEntry.Insert(ctx, d); err != nil {
 		return nil, err
@@ -46,7 +39,7 @@ func (wit *TimeEntry) Update(ctx context.Context, d db.DBTX, id int64, params db
 		return nil, fmt.Errorf("could not get timeEntry by id %w", parseErrorDetail(err))
 	}
 
-	updateEntityWithParams(timeEntry, &params)
+	timeEntry.SetUpdateParams(&params)
 
 	timeEntry, err = timeEntry.Update(ctx, d)
 	if err != nil {

@@ -47,7 +47,7 @@ type NotificationCreateParams struct {
 	NotificationType NotificationType `json:"notificationType"` // notification_type
 }
 
-func (n *Notification) setCreateParams(params *NotificationCreateParams) {
+func (n *Notification) SetCreateParams(params *NotificationCreateParams) {
 	n.ReceiverRank = params.ReceiverRank
 	n.Title = params.Title
 	n.Body = params.Body
@@ -70,7 +70,7 @@ type NotificationUpdateParams struct {
 	NotificationType *NotificationType `json:"notificationType"` // notification_type
 }
 
-func (n *Notification) setUpdateParams(params *NotificationUpdateParams) {
+func (n *Notification) SetUpdateParams(params *NotificationUpdateParams) {
 
 	if params.ReceiverRank != nil {
 		n.ReceiverRank = *params.ReceiverRank

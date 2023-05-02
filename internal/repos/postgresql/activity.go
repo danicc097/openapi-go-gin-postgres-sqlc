@@ -23,12 +23,8 @@ func NewActivity() *Activity {
 var _ repos.Activity = (*Activity)(nil)
 
 func (a *Activity) Create(ctx context.Context, d db.DBTX, params db.ActivityCreateParams) (*db.Activity, error) {
-	activity := &db.Activity{
-		Name:         params.Name,
-		Description:  params.Description,
-		ProjectID:    params.ProjectID,
-		IsProductive: params.IsProductive,
-	}
+	activity := &db.Activity{}
+	activity.SetCreateParams(&params)
 
 	if _, err := activity.Insert(ctx, d); err != nil {
 		return nil, err
@@ -43,7 +39,7 @@ func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params db.Acti
 		return nil, fmt.Errorf("could not get activity by id %w", parseErrorDetail(err))
 	}
 
-	updateEntityWithParams(activity, &params)
+	activity.SetUpdateParams(&params)
 
 	activity, err = activity.Update(ctx, d)
 	if err != nil {

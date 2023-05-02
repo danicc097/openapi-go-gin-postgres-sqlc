@@ -33,7 +33,7 @@ type UserNotificationCreateParams struct {
 	UserID         uuid.UUID `json:"userID"`         // user_id
 }
 
-func (un *UserNotification) setCreateParams(params *UserNotificationCreateParams) {
+func (un *UserNotification) SetCreateParams(params *UserNotificationCreateParams) {
 	un.NotificationID = params.NotificationID
 	un.Read = params.Read
 	un.UserID = params.UserID
@@ -46,7 +46,7 @@ type UserNotificationUpdateParams struct {
 	UserID         *uuid.UUID `json:"userID"`         // user_id
 }
 
-func (un *UserNotification) setUpdateParams(params *UserNotificationUpdateParams) {
+func (un *UserNotification) SetUpdateParams(params *UserNotificationUpdateParams) {
 
 	if params.NotificationID != nil {
 		un.NotificationID = *params.NotificationID

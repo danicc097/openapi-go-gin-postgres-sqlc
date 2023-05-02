@@ -23,12 +23,8 @@ func NewTeam() *Team {
 var _ repos.Team = (*Team)(nil)
 
 func (t *Team) Create(ctx context.Context, d db.DBTX, params db.TeamCreateParams) (*db.Team, error) {
-	team := &db.Team{
-		Name:        params.Name,
-		Description: params.Description,
-		ProjectID:   params.ProjectID,
-	}
-
+	team := &db.Team{}
+	team.SetCreateParams(&params)
 	if _, err := team.Insert(ctx, d); err != nil {
 		return nil, err
 	}
@@ -42,7 +38,7 @@ func (t *Team) Update(ctx context.Context, d db.DBTX, id int, params db.TeamUpda
 		return nil, fmt.Errorf("could not get team by id %w", parseErrorDetail(err))
 	}
 
-	updateEntityWithParams(team, &params)
+	team.SetUpdateParams(&params)
 
 	team, err = team.Update(ctx, d)
 	if err != nil {

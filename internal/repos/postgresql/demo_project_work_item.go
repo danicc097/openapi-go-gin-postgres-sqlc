@@ -43,13 +43,15 @@ func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoW
 		return nil, fmt.Errorf("could not save workItem: %w", parseErrorDetail(err))
 	}
 
-	demoWorkItem := &db.DemoWorkItem{
+	dwicp := &db.DemoWorkItemCreateParams{
 		WorkItemID:    workItem.WorkItemID,
 		Ref:           params.DemoProject.Ref,
 		Line:          params.DemoProject.Line,
 		LastMessageAt: params.DemoProject.LastMessageAt,
 		Reopened:      params.DemoProject.Reopened,
 	}
+	demoWorkItem := &db.DemoWorkItem{}
+	demoWorkItem.SetCreateParams(dwicp)
 
 	demoWorkItem, err = demoWorkItem.Insert(ctx, d)
 	if err != nil {
@@ -70,11 +72,11 @@ func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params r
 	fmt.Printf("workItem: %v\n", workItem)
 
 	if params.Base != nil {
-		updateEntityWithParams(workItem, params.Base)
+		workItem.SetUpdateParams(params.Base)
 	}
 
 	if params.DemoProject != nil {
-		updateEntityWithParams(demoWorkItem, params.DemoProject)
+		demoWorkItem.SetUpdateParams(params.DemoProject)
 	}
 
 	workItem, err = workItem.Update(ctx, d)

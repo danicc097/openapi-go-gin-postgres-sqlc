@@ -27,15 +27,9 @@ func NewUser() *User {
 var _ repos.User = (*User)(nil)
 
 func (u *User) Create(ctx context.Context, d db.DBTX, params db.UserCreateParams) (*db.User, error) {
-	user := &db.User{
-		Username:   params.Username,
-		Email:      params.Email,
-		FirstName:  params.FirstName,
-		LastName:   params.LastName,
-		ExternalID: params.ExternalID,
-		RoleRank:   params.RoleRank,
-		Scopes:     slices.Unique(params.Scopes),
-	}
+	user := &db.User{}
+	user.SetCreateParams(&params)
+	user.Scopes = slices.Unique(params.Scopes)
 
 	if _, err := user.Insert(ctx, d); err != nil {
 		return nil, err
@@ -54,7 +48,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.Us
 		*params.Scopes = slices.Unique(*params.Scopes)
 	}
 
-	updateEntityWithParams(user, &params)
+	user.SetUpdateParams(&params)
 
 	user, err = user.Update(ctx, d)
 	if err != nil {

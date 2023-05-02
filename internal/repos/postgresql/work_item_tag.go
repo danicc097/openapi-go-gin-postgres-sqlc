@@ -23,12 +23,8 @@ func NewWorkItemTag() *WorkItemTag {
 var _ repos.WorkItemTag = (*WorkItemTag)(nil)
 
 func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
-	activity := &db.WorkItemTag{
-		Name:        params.Name,
-		Description: params.Description,
-		ProjectID:   params.ProjectID,
-		Color:       params.Color,
-	}
+	activity := &db.WorkItemTag{}
+	activity.SetCreateParams(&params)
 
 	if _, err := activity.Insert(ctx, d); err != nil {
 		return nil, err
@@ -43,7 +39,7 @@ func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params db
 		return nil, fmt.Errorf("could not get activity by id %w", parseErrorDetail(err))
 	}
 
-	updateEntityWithParams(activity, &params)
+	activity.SetUpdateParams(&params)
 
 	activity, err = activity.Update(ctx, d)
 	if err != nil {

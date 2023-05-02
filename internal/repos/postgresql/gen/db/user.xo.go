@@ -61,7 +61,7 @@ type UserCreateParams struct {
 	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`   // has_global_notifications
 }
 
-func (u *User) setCreateParams(params *UserCreateParams) {
+func (u *User) SetCreateParams(params *UserCreateParams) {
 	u.Username = params.Username
 	u.Email = params.Email
 	u.FirstName = params.FirstName
@@ -88,7 +88,7 @@ type UserUpdateParams struct {
 	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications"`   // has_global_notifications
 }
 
-func (u *User) setUpdateParams(params *UserUpdateParams) {
+func (u *User) SetUpdateParams(params *UserUpdateParams) {
 
 	if params.Username != nil {
 		u.Username = *params.Username

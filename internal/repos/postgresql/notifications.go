@@ -77,16 +77,8 @@ func (u *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, p
 }
 
 func (u *Notification) Create(ctx context.Context, d db.DBTX, params db.NotificationCreateParams) (*db.Notification, error) {
-	notification := &db.Notification{
-		Title:            params.Title,
-		Body:             params.Body,
-		Label:            params.Label,
-		Link:             params.Link,
-		ReceiverRank:     params.ReceiverRank,
-		Sender:           params.Sender,
-		Receiver:         params.Receiver,
-		NotificationType: params.NotificationType,
-	}
+	notification := &db.Notification{}
+	notification.SetCreateParams(&params)
 	if _, err := notification.Insert(ctx, d); err != nil {
 		return nil, err
 	}
