@@ -964,10 +964,7 @@ cc_label:
 		// 	}
 		// }
 
-		// FIXME right now with O2M|M2O, we are not generating both sides or taking O2M or M2O
-		// distinction into account. it simply generates on the table referenced by the FK,
-		// not in the table where the column is, always as []*** and nothing is generated on the
-		// table with the FK constraint.
+		// FIXME O2O generate both sides
 
 		if constraint.Type == "foreign_key" && constraint.Cardinality == "" {
 			// dummy constraint to automatically create join in
@@ -1010,6 +1007,27 @@ cc_label:
 			continue
 		}
 
+		if constraint.Cardinality == "O2O" {
+			for _, seenConstraint := range cc {
+				if seenConstraint.TableName == constraint.TableName &&
+					seenConstraint.RefTableName == constraint.RefTableName &&
+					seenConstraint.Type == constraint.Type && seenConstraint.Cardinality == cardinality(constraint.Cardinality) {
+					continue cc_label
+				}
+			}
+			// create a dummy referenced constraint
+			cc = append(cc, Constraint{
+				Type:           constraint.Type,
+				Cardinality:    O2O,
+				Name:           constraint.Name + "(O2O reference)",
+				RefTableName:   constraint.TableName,
+				TableName:      constraint.RefTableName,
+				RefColumnName:  constraint.ColumnName,
+				ColumnName:     constraint.RefColumnName,
+				JoinTableClash: joinTableClash,
+			})
+		}
+
 		if constraint.Cardinality == "M2O" || constraint.Cardinality == "O2M" {
 			/**
 			 * TODO will generate O2O dummy constraint on refTable or table
@@ -1023,19 +1041,6 @@ cc_label:
 					continue cc_label
 				}
 			}
-
-			// cc = append(cc, Constraint{
-			// 	Type:           constraint.Type,
-			// 	Cardinality:    O2O,
-			// 	Name:           constraint.Name + "(TEST)",
-			// 	RefTableName:   constraint.TableName,
-			// 	TableName:      constraint.RefTableName,
-			// 	RefColumnName:  constraint.ColumnName,
-			// 	ColumnName:     constraint.RefColumnName,
-			// 	JoinTableClash: joinTableClash,
-			// })
-
-			// continue
 
 			cc = append(cc, Constraint{
 				Type:           constraint.Type,

@@ -30,8 +30,8 @@ type WorkItem struct {
 	UpdatedAt      time.Time  `json:"updatedAt" db:"updated_at" required:"true"`             // updated_at
 	DeletedAt      *time.Time `json:"deletedAt" db:"deleted_at" required:"true"`             // deleted_at
 
-	DemoTwoWorkItemJoin  *DemoTwoWorkItem   `json:"-" db:"demo_two_work_item" openapi-go:"ignore"` // O2O (inferred)
-	DemoWorkItemJoin     *DemoWorkItem      `json:"-" db:"demo_work_item" openapi-go:"ignore"`     // O2O (inferred)
+	DemoTwoWorkItemJoin  *DemoTwoWorkItem   `json:"-" db:"demo_two_work_item" openapi-go:"ignore"` // O2O
+	DemoWorkItemJoin     *DemoWorkItem      `json:"-" db:"demo_work_item" openapi-go:"ignore"`     // O2O
 	TimeEntriesJoin      *[]TimeEntry       `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O
 	WorkItemCommentsJoin *[]WorkItemComment `json:"-" db:"work_item_comments" openapi-go:"ignore"` // M2O
 	MembersJoin          *[]WorkItem_Member `json:"-" db:"members" openapi-go:"ignore"`            // M2M
@@ -324,9 +324,9 @@ work_items.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O reference)"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey"
+-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O reference)"
 left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
 -- M2O join generated from "time_entries_work_item_id_fkey"
 left join (
@@ -419,9 +419,9 @@ work_items.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O reference)"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey"
+-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O reference)"
 left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
 -- M2O join generated from "time_entries_work_item_id_fkey"
 left join (
@@ -513,9 +513,9 @@ work_items.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_members.__users, '{}') end) as members,
 (case when $6::boolean = true then COALESCE(joined_work_item_tags.__work_item_tags, '{}') end) as work_item_tags `+
 		`FROM public.work_items `+
-		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O reference)"
 left join demo_two_work_items on demo_two_work_items.work_item_id = work_items.work_item_id
--- O2O join generated from "demo_work_items_work_item_id_fkey"
+-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O reference)"
 left join demo_work_items on demo_work_items.work_item_id = work_items.work_item_id
 -- M2O join generated from "time_entries_work_item_id_fkey"
 left join (
