@@ -977,6 +977,7 @@ cc_label:
 		// }
 		// for O2O we will possibly need the same thing at some point.
 
+		// assume it's O2O. Can be overridden at any time
 		if constraint.Type == "foreign_key" && constraint.Cardinality == "" {
 			// dummy constraint to automatically create join in
 			//  (TODO need to do this only if fk fields len = 1)
@@ -985,6 +986,7 @@ cc_label:
 			for _, seenConstraint := range cc {
 				if seenConstraint.TableName == constraint.TableName &&
 					seenConstraint.RefTableName == constraint.RefTableName &&
+					seenConstraint.ColumnName == constraint.ColumnName &&
 					seenConstraint.Type == constraint.Type &&
 					/* card check to generate joins with vertically partitioned tables.
 					 */
@@ -1025,6 +1027,7 @@ cc_label:
 			for _, seenConstraint := range cc {
 				if seenConstraint.TableName == constraint.TableName &&
 					seenConstraint.RefTableName == constraint.RefTableName &&
+					seenConstraint.ColumnName == constraint.ColumnName &&
 					seenConstraint.Type == constraint.Type &&
 					seenConstraint.Cardinality == cardinality(constraint.Cardinality) {
 					continue cc_label
@@ -1052,6 +1055,7 @@ cc_label:
 			for _, seenConstraint := range cc {
 				if seenConstraint.TableName == constraint.TableName &&
 					seenConstraint.RefTableName == constraint.RefTableName &&
+					seenConstraint.ColumnName == constraint.ColumnName &&
 					seenConstraint.Type == constraint.Type && seenConstraint.Cardinality == cardinality(constraint.Cardinality) {
 					continue cc_label
 				}
@@ -1079,7 +1083,6 @@ cc_label:
 			RefColumnName:  constraint.RefColumnName,
 			JoinTableClash: joinTableClash,
 		})
-		// fmt.Printf("cc[i]: %+v\n", cc[i])
 	}
 
 	return cc, nil
