@@ -198,7 +198,7 @@ func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts
 book_reviews.book_id,
 book_reviews.reviewer,
 (case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
-(case when $2::boolean = true and users.reviewer is not null then row(users.*) end) as user ` +
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
 left join books on books.book_id = book_reviews.book_id
@@ -239,7 +239,7 @@ func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, 
 book_reviews.book_id,
 book_reviews.reviewer,
 (case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
-(case when $2::boolean = true and users.reviewer is not null then row(users.*) end) as user ` +
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
 left join books on books.book_id = book_reviews.book_id
@@ -280,7 +280,7 @@ func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts 
 book_reviews.book_id,
 book_reviews.reviewer,
 (case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
-(case when $2::boolean = true and users.reviewer is not null then row(users.*) end) as user ` +
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
 left join books on books.book_id = book_reviews.book_id
@@ -322,7 +322,7 @@ func BookReviewsByBookID(ctx context.Context, db DB, bookID int, opts ...BookRev
 book_reviews.book_id,
 book_reviews.reviewer,
 (case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
-(case when $2::boolean = true and users.reviewer is not null then row(users.*) end) as user ` +
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
 		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
 left join books on books.book_id = book_reviews.book_id

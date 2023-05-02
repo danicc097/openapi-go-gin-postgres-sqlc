@@ -244,7 +244,7 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and users.receiver is not null then row(users.*) end) as user,
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $2::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from O2M|M2O)"
@@ -299,7 +299,7 @@ notifications.created_at,
 notifications.sender,
 notifications.receiver,
 notifications.notification_type,
-(case when $1::boolean = true and users.receiver is not null then row(users.*) end) as user,
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $2::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
 		`-- O2O join generated from "notifications_receiver_fkey (Generated from O2M|M2O)"

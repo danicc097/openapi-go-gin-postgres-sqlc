@@ -347,6 +347,7 @@ create table demo_two_work_items (
   , custom_date_for_project_2 timestamp with time zone
 );
 
+-- FIXME xo cannot properly infer edge case when PK is FK
 comment on column work_items.work_item_id IS 'cardinality:O2O';
 comment on column demo_work_items.work_item_id IS 'cardinality:O2O';
 comment on column demo_two_work_items.work_item_id IS 'cardinality:O2O';

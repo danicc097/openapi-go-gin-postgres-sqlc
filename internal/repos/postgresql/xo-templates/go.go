@@ -931,20 +931,20 @@ cc_label:
 			case M2M:
 				if c.ColumnName == constraint.ColumnName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && ccard == M2M {
 					joinTableClash = true
-					fmt.Printf("%-40s| c.ColumnName == constraint.ColumnName: %s == %s\n", c.Name, c.ColumnName, constraint.ColumnName)
+					fmt.Printf("%-48s| c.ColumnName == constraint.ColumnName: %s == %s\n", c.Name, c.ColumnName, constraint.ColumnName)
 					break outer
 				}
 			case O2M, M2O:
 				if c.TableName == constraint.TableName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && (ccard == O2M || ccard == M2O) {
 					joinTableClash = true
-					fmt.Printf("%-40s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
+					fmt.Printf("%-48s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
 					break outer
 				}
 			case O2O:
 				// NOTE: probably needs more checks
 				if c.TableName == constraint.TableName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && ccard == O2O {
 					joinTableClash = true
-					fmt.Printf("%-40s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
+					fmt.Printf("%-48s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
 					break outer
 				}
 			}
@@ -974,7 +974,10 @@ cc_label:
 			for _, seenConstraint := range cc {
 				if seenConstraint.TableName == constraint.TableName &&
 					seenConstraint.RefTableName == constraint.RefTableName &&
-					seenConstraint.Type == constraint.Type {
+					seenConstraint.Type == constraint.Type &&
+					/* card check to generate joins with vertically partitioned tables.
+					 */
+					seenConstraint.Cardinality == cardinality(constraint.Cardinality) {
 					continue cc_label
 				}
 			}
@@ -1011,7 +1014,8 @@ cc_label:
 			for _, seenConstraint := range cc {
 				if seenConstraint.TableName == constraint.TableName &&
 					seenConstraint.RefTableName == constraint.RefTableName &&
-					seenConstraint.Type == constraint.Type && seenConstraint.Cardinality == cardinality(constraint.Cardinality) {
+					seenConstraint.Type == constraint.Type &&
+					seenConstraint.Cardinality == cardinality(constraint.Cardinality) {
 					continue cc_label
 				}
 			}
@@ -2437,7 +2441,7 @@ const (
 	M2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}, '{}') end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
 	O2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}{{.ClashSuffix}}`
 	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
-	O2OSelect = `(case when {{.Nth}}::boolean = true and {{.JoinTable}}.{{.JoinRefColumn}} is not null then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}`
+	O2OSelect = `(case when {{.Nth}}::boolean = true and {{.JoinTable}}.{{.JoinColumn}} is not null then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}`
 )
 
 const (
