@@ -93,12 +93,12 @@ func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params r
 }
 
 func (u *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.DemoWorkItem, error) {
-	workItem, err := db.WorkItemByWorkItemID(ctx, d, id, db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
+	workItem, err := db.WorkItemByWorkItemID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItem: %w", parseErrorDetail(err))
 	}
 
-	err = workItem.Delete(ctx, d)
+	err = workItem.Delete(ctx, d) // cascades. PK is FK
 	if err != nil {
 		return nil, fmt.Errorf("could not delete workItem: %w", parseErrorDetail(err))
 	}

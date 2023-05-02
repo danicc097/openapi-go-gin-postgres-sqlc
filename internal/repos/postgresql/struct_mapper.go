@@ -12,6 +12,8 @@ import (
 // Example:
 //
 //	updateEntityWithParams(&User{}, &Params{Name: "Jane"})
+//
+// Deprecated: use db entity UpdateWithParams method.
 func updateEntityWithParams(entity any, params any) {
 	entityValue := reflect.ValueOf(entity).Elem()
 	paramsType := reflect.TypeOf(params).Elem()
