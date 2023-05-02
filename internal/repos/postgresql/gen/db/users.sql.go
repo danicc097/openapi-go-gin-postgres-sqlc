@@ -22,7 +22,7 @@ select
   , user_id
   -- case when @get_db_data::boolean then
   --   (user_id)
-  -- end as user_id, -- TODO sqlc.yaml overrides sql.NullInt64
+  -- end as user_id,
 from
   users
 where (email = LOWER($1)::text

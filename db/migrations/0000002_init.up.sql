@@ -140,8 +140,6 @@ create table notifications (
 
 create index on notifications (receiver_rank , notification_type , created_at);
 
--- FIXME generate SenderJoin *User and ReceiverJoin *User in notification.xo.go with O2M, and []*User with M2O
--- it also must be named NotificationsJoin + RefColumnName if name clashes, e.g. NotificationsJoinSender
 comment on column notifications.sender is 'cardinality:M2O';
 
 comment on column notifications.receiver is 'cardinality:M2O';

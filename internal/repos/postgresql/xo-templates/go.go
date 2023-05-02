@@ -376,13 +376,11 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 		Post: func(ctx context.Context, mode string, files map[string][]byte, emit func(string, []byte)) error {
 			for file, content := range files {
 				// Run goimports.
-				fmt.Println("running goimports")
 				buf, err := imports.Process("", content, nil)
 				if err != nil {
 					return fmt.Errorf("%s:%w", file, err)
 				}
 				// Run gofumpt.
-				fmt.Println("running gofumpt")
 				formatted, err := format.Source(buf, format.Options{
 					ExtraRules: true,
 				})
@@ -476,7 +474,7 @@ func emitQuery(ctx context.Context, query xo.Query, emit func(xo.Template)) erro
 			Data: struct {
 				Table       interface{}
 				Constraints interface{}
-			}{Table: table, Constraints: []Constraint{}}, // TODO must not be empty and use current
+			}{Table: table, Constraints: []Constraint{}},
 		})
 	}
 	// build query params
@@ -954,7 +952,7 @@ cc_label:
 
 		// assume it's O2O. Can be overridden at any time
 		if constraint.Type == "foreign_key" && constraint.Cardinality == "" {
-			// TODO need to do this only if fk fields len = 1
+			// FIXME generate constraint only if fk fields len = 1
 			// and check if field is unique or not
 			// ignore duplicate joins generated for partitioned columns to new tables, joined by helper keys, e.g. api_key_id
 			for _, seenConstraint := range cc {
@@ -1789,8 +1787,6 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	return buf.String()
 }
 
-// TODO low prio put note if it has no index
-
 // func_context generates a func signature for v with context determined by the
 // context mode.
 func (f *Funcs) func_context(v interface{}) string {
@@ -1852,17 +1848,8 @@ func (f *Funcs) foreign_key_context(v interface{}) string {
 	switch x := v.(type) {
 	case ForeignKey:
 		name = x.RefFunc
-		// for sqlc compatibility
-		// if f.context_both() {
-		// 	name += "Context"
-		// }
 		// add params
 		p = append(p, "db", f.convertTypes(x))
-		// TODO add opt params for foreign key functions generated from other tables as well
-		// although it's not essential because we can call WorkItemByWorkItemID directly it's a nice-to-have
-		// func (t *Task) WorkItem(ctx context.Context, db DB <, opts ...TaskSelectConfigOption>) (*WorkItem, error) {
-		// 	return WorkItemByWorkItemID(ctx, db, t.WorkItemID <, opts>)
-		// }
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 6: %T ]]", v)
 	}
@@ -2155,7 +2142,6 @@ func (f *Funcs) names_all(prefix string, z ...interface{}) string {
 }
 
 // names_ignore generates a list of all names, ignoring fields that match the value in ignore.
-// TODO use db:"-" instead since pgx v5
 func (f *Funcs) names_ignore(prefix string, v interface{}, ignore ...interface{}) string {
 	m := make(map[string]bool)
 	for _, v := range ignore {
@@ -2513,7 +2499,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 			filters = append(filters, fmt.Sprintf("%s.%s = %s", x.Table.SQLName, f.colname(z), f.nth(n)))
 			n++
 		}
-		// TODO filters if we are generating a subset query from multicol index
+		// generate filters if we are generating a subset query from multicol index
 		// e.g.
 		// 	create unique index on kanban_steps (project_id , name , step_order)
 		// 	where
@@ -2523,15 +2509,13 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 		// 	where
 		// 		step_order is null;
 		//
-		//in this case, func names need to be eg KanbanStepByName_StepOrderNotNull (via first index) and KanbanStepByName_StepOrderNull (2nd) so
+		// in this case, func names need to be eg KanbanStepByName_StepOrderNotNull (via first index) and KanbanStepByName_StepOrderNull (2nd) so
 		// that we dont skip generation due to `emittedIndexes`
-		// KanbanStepByName without index conditions is not generated since it will not use index scan without it.
+		// a hypothetical KanbanStepByName without index conditions will not be generated since it will not use index scan without it
+		// (unless a explicit name index is created obviously)
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
-			// TODO this also needs to have table name prepended.
-			// after : (external_id IS NOT NULL)after : (external_id IS NULL)
-			// hacky solution is to loop through current table columns and if found .Cut() and construct a new string
-			// that simply inserts the table in between
 			filters = append(filters, after)
+			fmt.Printf("filters: %v\n", filters)
 		}
 
 		lines := []string{
@@ -3860,24 +3844,24 @@ func addLegacyFuncs(ctx context.Context, funcs template.FuncMap) {
 	// convext generates the Go conversion for f in order for it to be assignable
 	// to t.
 	//
-	// FIXME: this should be a better name, like "goconversion" or some such.
-	funcs["convext"] = func(prefix string, f *Field, t *Field) string {
-		expr := prefix + "." + f.SQLName
-		if f.Type == t.Type {
-			return expr
-		}
-		ft := f.Type
-		if strings.HasPrefix(ft, "*") {
-			typ := f.Type[:1]
-			// TODO nil checks generate and return err
-			expr = "*" + expr
-			ft = strings.ToLower(typ)
-		}
-		if t.Type != ft {
-			expr = t.Type + "(" + expr + ")"
-		}
-		return expr
-	}
+	//  this should be a better name, like "goconversion" or some such.
+	// funcs["convext"] = func(prefix string, f *Field, t *Field) string {
+	// 	expr := prefix + "." + f.SQLName
+	// 	if f.Type == t.Type {
+	// 		return expr
+	// 	}
+	// 	ft := f.Type
+	// 	if strings.HasPrefix(ft, "*") {
+	// 		typ := f.Type[:1]
+	// 		// pending nil checks generate and return err
+	// 		expr = "*" + expr
+	// 		ft = strings.ToLower(typ)
+	// 	}
+	// 	if t.Type != ft {
+	// 		expr = t.Type + "(" + expr + ")"
+	// 	}
+	// 	return expr
+	// }
 	// getstartcount returns a starting count for numbering columsn in queries
 	funcs["getstartcount"] = func(fields []*Field, pkFields []*Field) int {
 		return len(fields) - len(pkFields)
