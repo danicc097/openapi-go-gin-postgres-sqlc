@@ -25,11 +25,13 @@ comment on column book_authors.author_id is 'cardinality:M2M';
 comment on column book_authors.book_id is 'cardinality:M2M';
 
 create table book_reviews (
-  book_id int
+  book_review_id serial primary key
+  , book_id int not null
   , reviewer uuid not null
   , unique (reviewer , book_id)
   , foreign key (reviewer) references users (user_id) on delete cascade
   , foreign key (book_id) references books (book_id) on delete cascade
 );
 
-comment on column book_reviews.reviewer is 'cardinality:O2M';
+comment on column book_reviews.reviewer is 'cardinality:M2O';
+comment on column book_reviews.book_id is 'cardinality:M2O';

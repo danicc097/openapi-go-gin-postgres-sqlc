@@ -20,7 +20,7 @@ type User struct {
 	Name   string    `json:"name" db:"name" required:"true"`      // name
 
 	BooksJoin       *[]Book       `json:"-" db:"books" openapi-go:"ignore"`        // M2M
-	BookReviewsJoin *[]BookReview `json:"-" db:"book_reviews" openapi-go:"ignore"` // O2M
+	BookReviewsJoin *[]BookReview `json:"-" db:"book_reviews" openapi-go:"ignore"` // M2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -206,7 +206,7 @@ left join (
     group by book_authors_author_id
   ) as joined_books on joined_books.book_authors_author_id = users.user_id
 
--- O2M join generated from "book_reviews_reviewer_fkey"
+-- M2O join generated from "book_reviews_reviewer_fkey"
 left join (
   select
   reviewer as book_reviews_user_id

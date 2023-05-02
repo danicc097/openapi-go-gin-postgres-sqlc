@@ -18,8 +18,8 @@ type Book struct {
 	BookID int    `json:"bookID" db:"book_id" required:"true"` // book_id
 	Name   string `json:"name" db:"name" required:"true"`      // name
 
-	AuthorsJoin    *[]Book_Author `json:"-" db:"authors" openapi-go:"ignore"`     // M2M
-	BookReviewJoin *BookReview    `json:"-" db:"book_review" openapi-go:"ignore"` // O2O (inferred)
+	AuthorsJoin     *[]Book_Author `json:"-" db:"authors" openapi-go:"ignore"`      // M2M
+	BookReviewsJoin *[]BookReview  `json:"-" db:"book_reviews" openapi-go:"ignore"` // M2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -51,8 +51,8 @@ func WithBookLimit(limit int) BookSelectConfigOption {
 type BookOrderBy = string
 
 type BookJoins struct {
-	Authors    bool
-	BookReview bool
+	Authors     bool
+	BookReviews bool
 }
 
 // WithBookJoin joins with the given tables.
@@ -197,7 +197,7 @@ func BookByBookID(ctx context.Context, db DB, bookID int, opts ...BookSelectConf
 		`books.book_id,
 books.name,
 (case when $1::boolean = true then COALESCE(joined_author_ids.__author_ids, '{}') end) as author_ids,
-(case when $2::boolean = true and book_reviews.book_id is not null then row(book_reviews.*) end) as book_review ` +
+(case when $2::boolean = true then COALESCE(joined_book_reviews.book_reviews, '{}') end) as book_reviews ` +
 		`FROM public.books ` +
 		`-- M2M join generated from "book_authors_author_id_fkey"
 left join (
@@ -209,15 +209,22 @@ left join (
     group by book_authors_book_id
   ) as joined_author_ids on joined_author_ids.book_authors_book_id = books.book_id
 
--- O2O join generated from "book_reviews_book_id_fkey"
-left join book_reviews on book_reviews.book_id = books.book_id` +
+-- M2O join generated from "book_reviews_book_id_fkey"
+left join (
+  select
+  book_id as book_reviews_book_id
+    , array_agg(book_reviews.*) as book_reviews
+  from
+    book_reviews
+  group by
+        book_id) joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id` +
 		` WHERE books.book_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Authors, c.joins.BookReview, bookID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Authors, c.joins.BookReviews, bookID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("books/BookByBookID/db.Query: %w", err))
 	}

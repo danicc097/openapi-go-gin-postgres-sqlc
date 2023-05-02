@@ -16,21 +16,25 @@ import (
 //   - "type:<pkg.type>" to override the type annotation.
 //   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type BookReview struct {
-	BookID   *int      `json:"bookID" db:"book_id" required:"true"`    // book_id
-	Reviewer uuid.UUID `json:"reviewer" db:"reviewer" required:"true"` // reviewer
+	BookReviewID int       `json:"bookReviewID" db:"book_review_id" required:"true"` // book_review_id
+	BookID       int       `json:"bookID" db:"book_id" required:"true"`              // book_id
+	Reviewer     uuid.UUID `json:"reviewer" db:"reviewer" required:"true"`           // reviewer
 
-	BookJoin *Book `json:"-" db:"book" openapi-go:"ignore"` // O2O (inferred)
+	BookJoin *Book `json:"-" db:"book" openapi-go:"ignore"` // O2O
+	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O
+	// xo fields
+	_exists, _deleted bool
 }
 
 // BookReviewCreateParams represents insert params for 'public.book_reviews'
 type BookReviewCreateParams struct {
-	BookID   *int      `json:"bookID"`   // book_id
+	BookID   int       `json:"bookID"`   // book_id
 	Reviewer uuid.UUID `json:"reviewer"` // reviewer
 }
 
 // BookReviewUpdateParams represents update params for 'public.book_reviews'
 type BookReviewUpdateParams struct {
-	BookID   **int      `json:"bookID"`   // book_id
+	BookID   *int       `json:"bookID"`   // book_id
 	Reviewer *uuid.UUID `json:"reviewer"` // reviewer
 }
 
@@ -52,6 +56,7 @@ type BookReviewOrderBy = string
 
 type BookReviewJoins struct {
 	Book bool
+	User bool
 }
 
 // WithBookReviewJoin joins with the given tables.
@@ -61,10 +66,126 @@ func WithBookReviewJoin(joins BookReviewJoins) BookReviewSelectConfigOption {
 	}
 }
 
-// BookReviewByReviewerBookID retrieves a row from 'public.book_reviews' as a BookReview.
+// Insert inserts the BookReview to the database.
+func (br *BookReview) Insert(ctx context.Context, db DB) (*BookReview, error) {
+	switch {
+	case br._exists: // already exists
+		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
+	case br._deleted: // deleted
+		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
+	}
+	// insert (primary key generated and returned by database)
+	sqlstr := `INSERT INTO public.book_reviews (` +
+		`book_id, reviewer` +
+		`) VALUES (` +
+		`$1, $2` +
+		`) RETURNING * `
+	// run
+	logf(sqlstr, br.BookID, br.Reviewer)
+
+	rows, err := db.Query(ctx, sqlstr, br.BookID, br.Reviewer)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookReview/Insert/db.Query: %w", err))
+	}
+	newbr, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookReview])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookReview/Insert/pgx.CollectOneRow: %w", err))
+	}
+
+	newbr._exists = true
+	*br = newbr
+
+	return br, nil
+}
+
+// Update updates a BookReview in the database.
+func (br *BookReview) Update(ctx context.Context, db DB) (*BookReview, error) {
+	switch {
+	case !br._exists: // doesn't exist
+		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
+	case br._deleted: // deleted
+		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
+	}
+	// update with composite primary key
+	sqlstr := `UPDATE public.book_reviews SET ` +
+		`book_id = $1, reviewer = $2 ` +
+		`WHERE book_review_id = $3 ` +
+		`RETURNING * `
+	// run
+	logf(sqlstr, br.BookID, br.Reviewer, br.BookReviewID)
+
+	rows, err := db.Query(ctx, sqlstr, br.BookID, br.Reviewer, br.BookReviewID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookReview/Update/db.Query: %w", err))
+	}
+	newbr, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookReview])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookReview/Update/pgx.CollectOneRow: %w", err))
+	}
+	newbr._exists = true
+	*br = newbr
+
+	return br, nil
+}
+
+// Save saves the BookReview to the database.
+func (br *BookReview) Save(ctx context.Context, db DB) (*BookReview, error) {
+	if br._exists {
+		return br.Update(ctx, db)
+	}
+	return br.Insert(ctx, db)
+}
+
+// Upsert performs an upsert for BookReview.
+func (br *BookReview) Upsert(ctx context.Context, db DB) error {
+	switch {
+	case br._deleted: // deleted
+		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
+	}
+	// upsert
+	sqlstr := `INSERT INTO public.book_reviews (` +
+		`book_review_id, book_id, reviewer` +
+		`) VALUES (` +
+		`$1, $2, $3` +
+		`)` +
+		` ON CONFLICT (book_review_id) DO ` +
+		`UPDATE SET ` +
+		`book_id = EXCLUDED.book_id, reviewer = EXCLUDED.reviewer ` +
+		` RETURNING * `
+	// run
+	logf(sqlstr, br.BookReviewID, br.BookID, br.Reviewer)
+	if _, err := db.Exec(ctx, sqlstr, br.BookReviewID, br.BookID, br.Reviewer); err != nil {
+		return logerror(err)
+	}
+	// set exists
+	br._exists = true
+	return nil
+}
+
+// Delete deletes the BookReview from the database.
+func (br *BookReview) Delete(ctx context.Context, db DB) error {
+	switch {
+	case !br._exists: // doesn't exist
+		return nil
+	case br._deleted: // deleted
+		return nil
+	}
+	// delete with single primary key
+	sqlstr := `DELETE FROM public.book_reviews ` +
+		`WHERE book_review_id = $1 `
+	// run
+	if _, err := db.Exec(ctx, sqlstr, br.BookReviewID); err != nil {
+		return logerror(err)
+	}
+	// set deleted
+	br._deleted = true
+	return nil
+}
+
+// BookReviewByBookReviewID retrieves a row from 'public.book_reviews' as a BookReview.
 //
-// Generated from index 'book_reviews_reviewer_book_id_key'.
-func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, bookID *int, opts ...BookReviewSelectConfigOption) (*BookReview, error) {
+// Generated from index 'book_reviews_pkey'.
+func BookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts ...BookReviewSelectConfigOption) (*BookReview, error) {
 	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
 
 	for _, o := range opts {
@@ -73,19 +194,64 @@ func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, 
 
 	// query
 	sqlstr := `SELECT ` +
-		`book_reviews.book_id,
+		`book_reviews.book_review_id,
+book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book ` +
+(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
+(case when $2::boolean = true and users.reviewer is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
-		`-- O2O join generated from "book_reviews_book_id_fkey"
-left join books on books.book_id = book_reviews.book_id` +
-		` WHERE book_reviews.reviewer = $2 AND book_reviews.book_id = $3 `
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
+left join books on books.book_id = book_reviews.book_id
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from O2M|M2O)"
+left join users on users.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.book_review_id = $3 `
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+
+	// run
+	// logf(sqlstr, bookReviewID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookReviewID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByBookReviewID/db.Query: %w", err))
+	}
+	br, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[BookReview])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByBookReviewID/pgx.CollectOneRow: %w", err))
+	}
+	br._exists = true
+
+	return &br, nil
+}
+
+// BookReviewByReviewerBookID retrieves a row from 'public.book_reviews' as a BookReview.
+//
+// Generated from index 'book_reviews_reviewer_book_id_key'.
+func BookReviewByReviewerBookID(ctx context.Context, db DB, reviewer uuid.UUID, bookID int, opts ...BookReviewSelectConfigOption) (*BookReview, error) {
+	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	// query
+	sqlstr := `SELECT ` +
+		`book_reviews.book_review_id,
+book_reviews.book_id,
+book_reviews.reviewer,
+(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
+(case when $2::boolean = true and users.reviewer is not null then row(users.*) end) as user ` +
+		`FROM public.book_reviews ` +
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
+left join books on books.book_id = book_reviews.book_id
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from O2M|M2O)"
+left join users on users.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.reviewer = $3 AND book_reviews.book_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, reviewer, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, reviewer, bookID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, reviewer, bookID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByReviewerBookID/db.Query: %w", err))
 	}
@@ -93,6 +259,7 @@ left join books on books.book_id = book_reviews.book_id` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByReviewerBookID/pgx.CollectOneRow: %w", err))
 	}
+	br._exists = true
 
 	return &br, nil
 }
@@ -109,19 +276,23 @@ func BookReviewsByReviewer(ctx context.Context, db DB, reviewer uuid.UUID, opts 
 
 	// query
 	sqlstr := `SELECT ` +
-		`book_reviews.book_id,
+		`book_reviews.book_review_id,
+book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book ` +
+(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
+(case when $2::boolean = true and users.reviewer is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
-		`-- O2O join generated from "book_reviews_book_id_fkey"
-left join books on books.book_id = book_reviews.book_id` +
-		` WHERE book_reviews.reviewer = $2 `
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
+left join books on books.book_id = book_reviews.book_id
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from O2M|M2O)"
+left join users on users.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.reviewer = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, reviewer)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, reviewer)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, reviewer)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -138,7 +309,7 @@ left join books on books.book_id = book_reviews.book_id` +
 // BookReviewsByBookID retrieves a row from 'public.book_reviews' as a BookReview.
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
-func BookReviewsByBookID(ctx context.Context, db DB, bookID *int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+func BookReviewsByBookID(ctx context.Context, db DB, bookID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
 	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
 
 	for _, o := range opts {
@@ -147,19 +318,23 @@ func BookReviewsByBookID(ctx context.Context, db DB, bookID *int, opts ...BookRe
 
 	// query
 	sqlstr := `SELECT ` +
-		`book_reviews.book_id,
+		`book_reviews.book_review_id,
+book_reviews.book_id,
 book_reviews.reviewer,
-(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book ` +
+(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
+(case when $2::boolean = true and users.reviewer is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
-		`-- O2O join generated from "book_reviews_book_id_fkey"
-left join books on books.book_id = book_reviews.book_id` +
-		` WHERE book_reviews.book_id = $2 `
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
+left join books on books.book_id = book_reviews.book_id
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from O2M|M2O)"
+left join users on users.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.book_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, bookID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookID)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -177,7 +352,7 @@ left join books on books.book_id = book_reviews.book_id` +
 //
 // Generated from foreign key 'book_reviews_book_id_fkey'.
 func (br *BookReview) FKBook_BookID(ctx context.Context, db DB) (*Book, error) {
-	return BookByBookID(ctx, db, *br.BookID)
+	return BookByBookID(ctx, db, br.BookID)
 }
 
 // FKUser_Reviewer returns the User associated with the BookReview's (Reviewer).

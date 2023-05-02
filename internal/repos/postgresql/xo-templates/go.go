@@ -985,7 +985,7 @@ cc_label:
 			cc = append(cc, Constraint{
 				Type:           constraint.Type,
 				Cardinality:    O2O,
-				Name:           constraint.Name + "(1)",
+				Name:           constraint.Name,
 				RefTableName:   constraint.TableName,
 				TableName:      constraint.RefTableName,
 				RefColumnName:  constraint.ColumnName,
@@ -1026,7 +1026,7 @@ cc_label:
 
 			// cc = append(cc, Constraint{
 			// 	Type:           constraint.Type,
-			// 	Cardinality:    M2O,
+			// 	Cardinality:    O2O,
 			// 	Name:           constraint.Name + "(TEST)",
 			// 	RefTableName:   constraint.TableName,
 			// 	TableName:      constraint.RefTableName,
@@ -1037,18 +1037,16 @@ cc_label:
 
 			// continue
 
-			// TBD based on cardin
-			// cc = append(cc, Constraint{
-			// 	Type:           constraint.Type,
-			// 	Cardinality:    M2O,
-			// 	Name:           constraint.Name + "(2)",
-			// 	TableName:      constraint.TableName,
-			// 	RefTableName:   constraint.RefTableName,
-			// 	ColumnName:     constraint.ColumnName,
-			// 	RefColumnName:  constraint.RefColumnName,
-			// 	JoinTableClash: joinTableClash,
-			// })
-			// continue
+			cc = append(cc, Constraint{
+				Type:           constraint.Type,
+				Cardinality:    O2O,
+				Name:           constraint.Name + " (Generated from O2M|M2O)",
+				TableName:      constraint.TableName,
+				RefTableName:   constraint.RefTableName,
+				ColumnName:     constraint.ColumnName,
+				RefColumnName:  constraint.RefColumnName,
+				JoinTableClash: joinTableClash,
+			})
 		}
 
 		cc = append(cc, Constraint{

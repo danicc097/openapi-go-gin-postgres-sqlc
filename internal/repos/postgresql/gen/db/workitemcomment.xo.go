@@ -25,6 +25,8 @@ type WorkItemComment struct {
 	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true"`                   // created_at
 	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at" required:"true"`                   // updated_at
 
+	UserJoin     *User     `json:"-" db:"user" openapi-go:"ignore"`      // O2O
+	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
 	// xo fields
 	_exists, _deleted bool
 }
@@ -83,6 +85,8 @@ func WithWorkItemCommentOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentS
 }
 
 type WorkItemCommentJoins struct {
+	User     bool
+	WorkItem bool
 }
 
 // WithWorkItemCommentJoin joins with the given tables.
@@ -225,16 +229,21 @@ work_item_comments.work_item_id,
 work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
-work_item_comments.updated_at ` +
+work_item_comments.updated_at,
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $2::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_comments ` +
-		`` +
-		` WHERE work_item_comments.work_item_comment_id = $1 `
+		`-- O2O join generated from "work_item_comments_user_id_fkey(TEST 2)"
+left join users on users.user_id = work_item_comments.user_id
+-- O2O join generated from "work_item_comments_work_item_id_fkey(TEST 2)"
+left join work_items on work_items.work_item_id = work_item_comments.work_item_id` +
+		` WHERE work_item_comments.work_item_comment_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemCommentID)
-	rows, err := db.Query(ctx, sqlstr, workItemCommentID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.WorkItem, workItemCommentID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/db.Query: %w", err))
 	}
@@ -264,16 +273,21 @@ work_item_comments.work_item_id,
 work_item_comments.user_id,
 work_item_comments.message,
 work_item_comments.created_at,
-work_item_comments.updated_at ` +
+work_item_comments.updated_at,
+(case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $2::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_comments ` +
-		`` +
-		` WHERE work_item_comments.work_item_id = $1 `
+		`-- O2O join generated from "work_item_comments_user_id_fkey(TEST 2)"
+left join users on users.user_id = work_item_comments.user_id
+-- O2O join generated from "work_item_comments_work_item_id_fkey(TEST 2)"
+left join work_items on work_items.work_item_id = work_item_comments.work_item_id` +
+		` WHERE work_item_comments.work_item_id = $3 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.User, c.joins.WorkItem, workItemID)
 	if err != nil {
 		return nil, logerror(err)
 	}
