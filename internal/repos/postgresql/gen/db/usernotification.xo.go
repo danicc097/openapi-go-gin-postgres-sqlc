@@ -23,8 +23,7 @@ type UserNotification struct {
 
 	NotificationJoin *Notification `json:"-" db:"notification" openapi-go:"ignore"` // O2O
 	UserJoin         *User         `json:"-" db:"user" openapi-go:"ignore"`         // O2O
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // UserNotificationCreateParams represents insert params for 'public.user_notifications'
@@ -73,12 +72,6 @@ func WithUserNotificationJoin(joins UserNotificationJoins) UserNotificationSelec
 
 // Insert inserts the UserNotification to the database.
 func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotification, error) {
-	switch {
-	case un._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case un._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.user_notifications (` +
 		`notification_id, read, user_id` +
@@ -97,7 +90,6 @@ func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotificatio
 		return nil, logerror(fmt.Errorf("UserNotification/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newun._exists = true
 	*un = newun
 
 	return un, nil
@@ -105,12 +97,6 @@ func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotificatio
 
 // Update updates a UserNotification in the database.
 func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotification, error) {
-	switch {
-	case !un._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case un._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.user_notifications SET ` +
 		`notification_id = $1, read = $2, user_id = $3 ` +
@@ -127,26 +113,13 @@ func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotificatio
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/Update/pgx.CollectOneRow: %w", err))
 	}
-	newun._exists = true
 	*un = newun
 
 	return un, nil
 }
 
-// Save saves the UserNotification to the database.
-func (un *UserNotification) Save(ctx context.Context, db DB) (*UserNotification, error) {
-	if un._exists {
-		return un.Update(ctx, db)
-	}
-	return un.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for UserNotification.
 func (un *UserNotification) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case un._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.user_notifications (` +
 		`user_notification_id, notification_id, read, user_id` +
@@ -163,18 +136,11 @@ func (un *UserNotification) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	un._exists = true
 	return nil
 }
 
 // Delete deletes the UserNotification from the database.
 func (un *UserNotification) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !un._exists: // doesn't exist
-		return nil
-	case un._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.user_notifications ` +
 		`WHERE user_notification_id = $1 `
@@ -182,8 +148,6 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, un.UserNotificationID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	un._deleted = true
 	return nil
 }
 
@@ -224,7 +188,6 @@ left join users on users.user_id = user_notifications.user_id` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByNotificationIDUserID/pgx.CollectOneRow: %w", err))
 	}
-	un._exists = true
 
 	return &un, nil
 }
@@ -309,7 +272,6 @@ left join users on users.user_id = user_notifications.user_id` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByUserNotificationID/pgx.CollectOneRow: %w", err))
 	}
-	un._exists = true
 
 	return &un, nil
 }
@@ -355,18 +317,4 @@ left join users on users.user_id = user_notifications.user_id` +
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
-}
-
-// FKNotification_NotificationID returns the Notification associated with the UserNotification's (NotificationID).
-//
-// Generated from foreign key 'user_notifications_notification_id_fkey'.
-func (un *UserNotification) FKNotification_NotificationID(ctx context.Context, db DB) (*Notification, error) {
-	return NotificationByNotificationID(ctx, db, un.NotificationID)
-}
-
-// FKUser_UserID returns the User associated with the UserNotification's (UserID).
-//
-// Generated from foreign key 'user_notifications_user_id_fkey'.
-func (un *UserNotification) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, un.UserID)
 }

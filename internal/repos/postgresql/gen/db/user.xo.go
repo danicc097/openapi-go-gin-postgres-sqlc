@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/google/uuid"
 )
 
 // User represents a row from 'public.users'.
@@ -44,8 +44,7 @@ type User struct {
 	TeamsJoin                 *[]Team             `json:"-" db:"teams" openapi-go:"ignore"`                  // M2M
 	WorkItemCommentsJoin      *[]WorkItemComment  `json:"-" db:"work_item_comments" openapi-go:"ignore"`     // M2O
 	WorkItemsJoin             *[]WorkItem         `json:"-" db:"work_items" openapi-go:"ignore"`             // M2M
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // UserCreateParams represents insert params for 'public.users'
@@ -147,12 +146,6 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 
 // Insert inserts the User to the database.
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
-	switch {
-	case u._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case u._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.users (` +
 		`username, email, first_name, last_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
@@ -171,7 +164,6 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 		return nil, logerror(fmt.Errorf("User/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newu._exists = true
 	*u = newu
 
 	return u, nil
@@ -179,12 +171,6 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 
 // Update updates a User in the database.
 func (u *User) Update(ctx context.Context, db DB) (*User, error) {
-	switch {
-	case !u._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case u._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.users SET ` +
 		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, has_personal_notifications = $9, has_global_notifications = $10, deleted_at = $11 ` +
@@ -201,26 +187,13 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Update/pgx.CollectOneRow: %w", err))
 	}
-	newu._exists = true
 	*u = newu
 
 	return u, nil
 }
 
-// Save saves the User to the database.
-func (u *User) Save(ctx context.Context, db DB) (*User, error) {
-	if u._exists {
-		return u.Update(ctx, db)
-	}
-	return u.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for User.
 func (u *User) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case u._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.users (` +
 		`user_id, username, email, first_name, last_name, full_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
@@ -237,18 +210,11 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	u._exists = true
 	return nil
 }
 
 // Delete deletes the User from the database.
 func (u *User) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !u._exists: // doesn't exist
-		return nil
-	case u._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.users ` +
 		`WHERE user_id = $1 `
@@ -256,19 +222,11 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	u._deleted = true
 	return nil
 }
 
 // SoftDelete soft deletes the User from the database via 'deleted_at'.
 func (u *User) SoftDelete(ctx context.Context, db DB) error {
-	switch {
-	case !u._exists: // doesn't exist
-		return nil
-	case u._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `UPDATE public.users ` +
 		`SET deleted_at = NOW() ` +
@@ -278,7 +236,6 @@ func (u *User) SoftDelete(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set deleted
-	u._deleted = true
 	u.DeletedAt = newPointer(time.Now())
 
 	return nil
@@ -657,7 +614,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByEmail/pgx.CollectOneRow: %w", err))
 	}
-	u._exists = true
 
 	return &u, nil
 }
@@ -779,7 +735,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByExternalID/pgx.CollectOneRow: %w", err))
 	}
-	u._exists = true
 
 	return &u, nil
 }
@@ -901,7 +856,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/pgx.CollectOneRow: %w", err))
 	}
-	u._exists = true
 
 	return &u, nil
 }
@@ -1146,14 +1100,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUsername/pgx.CollectOneRow: %w", err))
 	}
-	u._exists = true
 
 	return &u, nil
-}
-
-// FKUserAPIKey_APIKeyID returns the UserAPIKey associated with the User's (APIKeyID).
-//
-// Generated from foreign key 'users_api_key_id_fkey'.
-func (u *User) FKUserAPIKey_APIKeyID(ctx context.Context, db DB) (*UserAPIKey, error) {
-	return UserAPIKeyByUserAPIKeyID(ctx, db, *u.APIKeyID)
 }

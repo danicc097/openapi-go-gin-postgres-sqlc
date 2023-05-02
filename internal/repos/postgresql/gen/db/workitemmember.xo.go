@@ -20,8 +20,6 @@ type WorkItemMember struct {
 	Member     uuid.UUID    `json:"member" db:"member" required:"true"`                                     // member
 	Role       WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"` // role
 
-	// xo fields
-	_exists, _deleted bool
 }
 
 // WorkItemMemberCreateParams represents insert params for 'public.work_item_member'
@@ -68,12 +66,6 @@ func WithWorkItemMemberJoin(joins WorkItemMemberJoins) WorkItemMemberSelectConfi
 
 // Insert inserts the WorkItemMember to the database.
 func (wim *WorkItemMember) Insert(ctx context.Context, db DB) (*WorkItemMember, error) {
-	switch {
-	case wim._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case wim._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.work_item_member (` +
 		`work_item_id, member, role` +
@@ -91,7 +83,6 @@ func (wim *WorkItemMember) Insert(ctx context.Context, db DB) (*WorkItemMember, 
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemMember/Insert/pgx.CollectOneRow: %w", err))
 	}
-	newwim._exists = true
 	*wim = newwim
 
 	return wim, nil
@@ -99,12 +90,6 @@ func (wim *WorkItemMember) Insert(ctx context.Context, db DB) (*WorkItemMember, 
 
 // Update updates a WorkItemMember in the database.
 func (wim *WorkItemMember) Update(ctx context.Context, db DB) (*WorkItemMember, error) {
-	switch {
-	case !wim._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case wim._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_member SET ` +
 		`role = $1 ` +
@@ -121,26 +106,13 @@ func (wim *WorkItemMember) Update(ctx context.Context, db DB) (*WorkItemMember, 
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemMember/Update/pgx.CollectOneRow: %w", err))
 	}
-	newwim._exists = true
 	*wim = newwim
 
 	return wim, nil
 }
 
-// Save saves the WorkItemMember to the database.
-func (wim *WorkItemMember) Save(ctx context.Context, db DB) (*WorkItemMember, error) {
-	if wim._exists {
-		return wim.Update(ctx, db)
-	}
-	return wim.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for WorkItemMember.
 func (wim *WorkItemMember) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case wim._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_item_member (` +
 		`work_item_id, member, role` +
@@ -157,18 +129,11 @@ func (wim *WorkItemMember) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	wim._exists = true
 	return nil
 }
 
 // Delete deletes the WorkItemMember from the database.
 func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !wim._exists: // doesn't exist
-		return nil
-	case wim._deleted: // deleted
-		return nil
-	}
 	// delete with composite primary key
 	sqlstr := `DELETE FROM public.work_item_member ` +
 		`WHERE work_item_id = $1 AND member = $2 `
@@ -176,8 +141,6 @@ func (wim *WorkItemMember) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, wim.WorkItemID, wim.Member); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	wim._deleted = true
 	return nil
 }
 
@@ -249,7 +212,6 @@ work_item_member.role ` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_member/WorkItemMemberByWorkItemIDMember/pgx.CollectOneRow: %w", err))
 	}
-	wim._exists = true
 
 	return &wim, nil
 }
@@ -326,18 +288,4 @@ work_item_member.role ` +
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
-}
-
-// FKUser_Member returns the User associated with the WorkItemMember's (Member).
-//
-// Generated from foreign key 'work_item_member_member_fkey'.
-func (wim *WorkItemMember) FKUser_Member(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, wim.Member)
-}
-
-// FKWorkItem_WorkItemID returns the WorkItem associated with the WorkItemMember's (WorkItemID).
-//
-// Generated from foreign key 'work_item_member_work_item_id_fkey'.
-func (wim *WorkItemMember) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
-	return WorkItemByWorkItemID(ctx, db, wim.WorkItemID)
 }

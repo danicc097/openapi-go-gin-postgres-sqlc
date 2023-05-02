@@ -23,8 +23,7 @@ type Activity struct {
 
 	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // ActivityCreateParams represents insert params for 'public.activities'
@@ -75,12 +74,6 @@ func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 
 // Insert inserts the Activity to the database.
 func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
-	switch {
-	case a._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case a._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.activities (` +
 		`project_id, name, description, is_productive` +
@@ -99,7 +92,6 @@ func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 		return nil, logerror(fmt.Errorf("Activity/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newa._exists = true
 	*a = newa
 
 	return a, nil
@@ -107,12 +99,6 @@ func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 
 // Update updates a Activity in the database.
 func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
-	switch {
-	case !a._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case a._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.activities SET ` +
 		`project_id = $1, name = $2, description = $3, is_productive = $4 ` +
@@ -129,26 +115,13 @@ func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Update/pgx.CollectOneRow: %w", err))
 	}
-	newa._exists = true
 	*a = newa
 
 	return a, nil
 }
 
-// Save saves the Activity to the database.
-func (a *Activity) Save(ctx context.Context, db DB) (*Activity, error) {
-	if a._exists {
-		return a.Update(ctx, db)
-	}
-	return a.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for Activity.
 func (a *Activity) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case a._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.activities (` +
 		`activity_id, project_id, name, description, is_productive` +
@@ -165,18 +138,11 @@ func (a *Activity) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	a._exists = true
 	return nil
 }
 
 // Delete deletes the Activity from the database.
 func (a *Activity) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !a._exists: // doesn't exist
-		return nil
-	case a._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.activities ` +
 		`WHERE activity_id = $1 `
@@ -184,8 +150,6 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, a.ActivityID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	a._deleted = true
 	return nil
 }
 
@@ -234,7 +198,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
-	a._exists = true
 
 	return &a, nil
 }
@@ -386,14 +349,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/pgx.CollectOneRow: %w", err))
 	}
-	a._exists = true
 
 	return &a, nil
-}
-
-// FKProject_ProjectID returns the Project associated with the Activity's (ProjectID).
-//
-// Generated from foreign key 'activities_project_id_fkey'.
-func (a *Activity) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
-	return ProjectByProjectID(ctx, db, a.ProjectID)
 }

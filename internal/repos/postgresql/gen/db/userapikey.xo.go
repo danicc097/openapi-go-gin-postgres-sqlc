@@ -24,8 +24,7 @@ type UserAPIKey struct {
 	UserID       uuid.UUID `json:"userID" db:"user_id" required:"true"`       // user_id
 
 	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (inferred)
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // UserAPIKeyCreateParams represents insert params for 'public.user_api_keys'
@@ -90,12 +89,6 @@ func WithUserAPIKeyJoin(joins UserAPIKeyJoins) UserAPIKeySelectConfigOption {
 
 // Insert inserts the UserAPIKey to the database.
 func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
-	switch {
-	case uak._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case uak._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.user_api_keys (` +
 		`api_key, expires_on, user_id` +
@@ -114,7 +107,6 @@ func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newuak._exists = true
 	*uak = newuak
 
 	return uak, nil
@@ -122,12 +114,6 @@ func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 
 // Update updates a UserAPIKey in the database.
 func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
-	switch {
-	case !uak._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case uak._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.user_api_keys SET ` +
 		`api_key = $1, expires_on = $2, user_id = $3 ` +
@@ -144,26 +130,13 @@ func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Update/pgx.CollectOneRow: %w", err))
 	}
-	newuak._exists = true
 	*uak = newuak
 
 	return uak, nil
 }
 
-// Save saves the UserAPIKey to the database.
-func (uak *UserAPIKey) Save(ctx context.Context, db DB) (*UserAPIKey, error) {
-	if uak._exists {
-		return uak.Update(ctx, db)
-	}
-	return uak.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for UserAPIKey.
 func (uak *UserAPIKey) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case uak._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.user_api_keys (` +
 		`user_api_key_id, api_key, expires_on, user_id` +
@@ -180,18 +153,11 @@ func (uak *UserAPIKey) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	uak._exists = true
 	return nil
 }
 
 // Delete deletes the UserAPIKey from the database.
 func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !uak._exists: // doesn't exist
-		return nil
-	case uak._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.user_api_keys ` +
 		`WHERE user_api_key_id = $1 `
@@ -199,8 +165,6 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, uak.UserAPIKeyID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	uak._deleted = true
 	return nil
 }
 
@@ -238,7 +202,6 @@ left join users on users.api_key_id = user_api_keys.user_api_key_id` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/pgx.CollectOneRow: %w", err))
 	}
-	uak._exists = true
 
 	return &uak, nil
 }
@@ -277,7 +240,6 @@ left join users on users.api_key_id = user_api_keys.user_api_key_id` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/pgx.CollectOneRow: %w", err))
 	}
-	uak._exists = true
 
 	return &uak, nil
 }
@@ -316,14 +278,6 @@ left join users on users.api_key_id = user_api_keys.user_api_key_id` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/pgx.CollectOneRow: %w", err))
 	}
-	uak._exists = true
 
 	return &uak, nil
-}
-
-// FKUser_UserID returns the User associated with the UserAPIKey's (UserID).
-//
-// Generated from foreign key 'user_api_keys_user_id_fkey'.
-func (uak *UserAPIKey) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, uak.UserID)
 }

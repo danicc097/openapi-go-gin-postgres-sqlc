@@ -11,7 +11,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/structs"
@@ -58,7 +57,7 @@ func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID int) (*db.Proje
 // pathKeys : optional keys to generate the initial config from. obj1 will be merged into this object
 // TODO accepts projectID to get both pathKeys and obj1 every time
 // (we dont know any of those, just projectID)
-func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID int, obj2 map[string]any) (*models.ProjectConfig, error) {
+func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID int, obj2 map[string]any) (*internalmodels.ProjectConfig, error) {
 	project, err := p.projectRepo.ByID(ctx, d, projectID)
 	if err != nil {
 		return nil, internal.NewErrorf(internal.ErrorCodeNotFound, "project not found")
@@ -66,11 +65,7 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 
 	fieldsMap := make(map[string]map[string]any)
 
-	var obj1 models.ProjectConfig
-	err = json.Unmarshal(project.BoardConfig, &obj1)
-	if err != nil {
-		return nil, internal.NewErrorf(internal.ErrorCodeUnknown, "invalid stored board config: %v", err)
-	}
+	obj1 := project.BoardConfig
 
 	// fmt.Printf("project.BoardConfig: %v\n", string(project.BoardConfig.Bytes))
 	fmt.Printf("obj1: %v\n", obj1)
@@ -97,9 +92,9 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 
 	p.mergeFieldsMap(fieldsMap, obj2)
 
-	obj1.Fields = make([]models.ProjectConfigField, 0, len(fieldsMap))
+	obj1.Fields = make([]internalmodels.ProjectConfigField, 0, len(fieldsMap))
 	for _, field := range fieldsMap {
-		var fieldStruct models.ProjectConfigField
+		var fieldStruct internalmodels.ProjectConfigField
 
 		fBlob, _ := json.Marshal(field)
 		_ = json.Unmarshal(fBlob, &fieldStruct)
@@ -111,7 +106,7 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 }
 
 func defaultConfigField(path string) map[string]any {
-	f := models.ProjectConfigField{
+	f := internalmodels.ProjectConfigField{
 		Path:          path,
 		Name:          path[strings.LastIndex(path, ".")+1:],
 		IsVisible:     true,

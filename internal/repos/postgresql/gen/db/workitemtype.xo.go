@@ -23,8 +23,7 @@ type WorkItemType struct {
 
 	ProjectJoin  *Project  `json:"-" db:"project" openapi-go:"ignore"`   // O2O
 	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred)
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // WorkItemTypeCreateParams represents insert params for 'public.work_item_types'
@@ -75,12 +74,6 @@ func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOptio
 
 // Insert inserts the WorkItemType to the database.
 func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, error) {
-	switch {
-	case wit._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case wit._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_types (` +
 		`project_id, name, description, color` +
@@ -99,7 +92,6 @@ func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, erro
 		return nil, logerror(fmt.Errorf("WorkItemType/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newwit._exists = true
 	*wit = newwit
 
 	return wit, nil
@@ -107,12 +99,6 @@ func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, erro
 
 // Update updates a WorkItemType in the database.
 func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, error) {
-	switch {
-	case !wit._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case wit._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_types SET ` +
 		`project_id = $1, name = $2, description = $3, color = $4 ` +
@@ -129,26 +115,13 @@ func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, erro
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Update/pgx.CollectOneRow: %w", err))
 	}
-	newwit._exists = true
 	*wit = newwit
 
 	return wit, nil
 }
 
-// Save saves the WorkItemType to the database.
-func (wit *WorkItemType) Save(ctx context.Context, db DB) (*WorkItemType, error) {
-	if wit._exists {
-		return wit.Update(ctx, db)
-	}
-	return wit.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for WorkItemType.
 func (wit *WorkItemType) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case wit._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_item_types (` +
 		`work_item_type_id, project_id, name, description, color` +
@@ -165,18 +138,11 @@ func (wit *WorkItemType) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	wit._exists = true
 	return nil
 }
 
 // Delete deletes the WorkItemType from the database.
 func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !wit._exists: // doesn't exist
-		return nil
-	case wit._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.work_item_types ` +
 		`WHERE work_item_type_id = $1 `
@@ -184,8 +150,6 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTypeID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	wit._deleted = true
 	return nil
 }
 
@@ -227,7 +191,6 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
-	wit._exists = true
 
 	return &wit, nil
 }
@@ -358,14 +321,6 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByWorkItemTypeID/pgx.CollectOneRow: %w", err))
 	}
-	wit._exists = true
 
 	return &wit, nil
-}
-
-// FKProject_ProjectID returns the Project associated with the WorkItemType's (ProjectID).
-//
-// Generated from foreign key 'work_item_types_project_id_fkey'.
-func (wit *WorkItemType) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
-	return ProjectByProjectID(ctx, db, wit.ProjectID)
 }

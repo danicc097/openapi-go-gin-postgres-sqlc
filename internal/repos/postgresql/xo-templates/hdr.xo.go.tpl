@@ -21,6 +21,10 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+  {{/* only models allowed to prevent circular deps */}}
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+
 {{- if driver "postgres" }}
 	"github.com/lib/pq"
 	"github.com/lib/pq/hstore"

@@ -162,17 +162,3 @@ book_authors.author_id ` +
 	}
 	return res, nil
 }
-
-// FKUser_AuthorID returns the User associated with the BookAuthor's (AuthorID).
-//
-// Generated from foreign key 'book_authors_author_id_fkey'.
-func (ba *BookAuthor) FKUser_AuthorID(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, ba.AuthorID)
-}
-
-// FKBook_BookID returns the Book associated with the BookAuthor's (BookID).
-//
-// Generated from foreign key 'book_authors_book_id_fkey'.
-func (ba *BookAuthor) FKBook_BookID(ctx context.Context, db DB) (*Book, error) {
-	return BookByBookID(ctx, db, ba.BookID)
-}

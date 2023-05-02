@@ -20,8 +20,6 @@ type Book struct {
 
 	AuthorsJoin     *[]Book_Author `json:"-" db:"authors" openapi-go:"ignore"`      // M2M
 	BookReviewsJoin *[]BookReview  `json:"-" db:"book_reviews" openapi-go:"ignore"` // M2O
-	// xo fields
-	_exists, _deleted bool
 }
 
 // BookCreateParams represents insert params for 'public.books'
@@ -68,12 +66,6 @@ type Book_Author struct {
 
 // Insert inserts the Book to the database.
 func (b *Book) Insert(ctx context.Context, db DB) (*Book, error) {
-	switch {
-	case b._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case b._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.books (` +
 		`name` +
@@ -92,7 +84,6 @@ func (b *Book) Insert(ctx context.Context, db DB) (*Book, error) {
 		return nil, logerror(fmt.Errorf("Book/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newb._exists = true
 	*b = newb
 
 	return b, nil
@@ -100,12 +91,6 @@ func (b *Book) Insert(ctx context.Context, db DB) (*Book, error) {
 
 // Update updates a Book in the database.
 func (b *Book) Update(ctx context.Context, db DB) (*Book, error) {
-	switch {
-	case !b._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case b._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.books SET ` +
 		`name = $1 ` +
@@ -122,26 +107,13 @@ func (b *Book) Update(ctx context.Context, db DB) (*Book, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Book/Update/pgx.CollectOneRow: %w", err))
 	}
-	newb._exists = true
 	*b = newb
 
 	return b, nil
 }
 
-// Save saves the Book to the database.
-func (b *Book) Save(ctx context.Context, db DB) (*Book, error) {
-	if b._exists {
-		return b.Update(ctx, db)
-	}
-	return b.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for Book.
 func (b *Book) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case b._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.books (` +
 		`book_id, name` +
@@ -158,18 +130,11 @@ func (b *Book) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	b._exists = true
 	return nil
 }
 
 // Delete deletes the Book from the database.
 func (b *Book) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !b._exists: // doesn't exist
-		return nil
-	case b._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.books ` +
 		`WHERE book_id = $1 `
@@ -177,8 +142,6 @@ func (b *Book) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, b.BookID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	b._deleted = true
 	return nil
 }
 
@@ -232,7 +195,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("books/BookByBookID/pgx.CollectOneRow: %w", err))
 	}
-	b._exists = true
 
 	return &b, nil
 }

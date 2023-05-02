@@ -73,6 +73,9 @@
     },
     "DbProject": {
       "properties": {
+        "boardConfig": {
+          "$ref": "#/definitions/ProjectConfig"
+        },
         "createdAt": {
           "format": "date-time",
           "type": "string"
@@ -95,6 +98,7 @@
         "projectID",
         "name",
         "description",
+        "boardConfig",
         "createdAt",
         "updatedAt"
       ],
@@ -404,21 +408,15 @@
       "properties": {
         "fields": {
           "items": {
-            "$ref": "#/definitions/ModelsProjectConfigField"
+            "$ref": "#/definitions/ProjectConfigField"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         },
         "header": {
           "items": {
             "type": "string"
           },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "array"
         }
       },
       "required": [
@@ -426,7 +424,34 @@
         "fields"
       ],
       "type": "object",
-      "x-postgen-struct": "ModelsProjectConfig",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ProjectConfigField": {
+      "properties": {
+        "isEditable": {
+          "type": "boolean"
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "showCollapsed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "isEditable",
+        "showCollapsed",
+        "isVisible",
+        "path",
+        "name"
+      ],
+      "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "RestDemoWorkItemsResponse": {
@@ -586,10 +611,85 @@
     },
     "RestProjectBoardResponse": {
       "properties": {
-        "project": {
-          "$ref": "#/definitions/DbProject"
+        "activities": {
+          "items": {
+            "$ref": "#/definitions/DbActivity"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "boardConfig": {
+          "$ref": "#/definitions/ProjectConfig"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "kanbanSteps": {
+          "items": {
+            "$ref": "#/definitions/DbKanbanStep"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "name": {
+          "$ref": "#/definitions/Project"
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teams": {
+          "items": {
+            "$ref": "#/definitions/DbTeam"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "workItemTags": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTag"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemTypes": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemType"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
         }
       },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "boardConfig",
+        "createdAt",
+        "updatedAt",
+        "activities",
+        "kanbanSteps",
+        "teams",
+        "workItemTags",
+        "workItemTypes"
+      ],
       "type": "object",
       "x-postgen-struct": "RestProjectBoardResponse",
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -862,34 +962,6 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "ModelsProjectConfigField": {
-      "properties": {
-        "isEditable": {
-          "type": "boolean"
-        },
-        "isVisible": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        },
-        "showCollapsed": {
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "isEditable",
-        "showCollapsed",
-        "isVisible",
-        "path",
-        "name"
-      ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "DbWorkItem": {
       "properties": {
         "closed": {
@@ -971,7 +1043,6 @@
         "demo_two"
       ],
       "type": "string",
-      "description": "Existing projects",
       "x-generated": "-",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -1177,6 +1248,51 @@
       ],
       "x-generated": "-",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsProjectConfig": {
+      "properties": {
+        "fields": {
+          "items": {
+            "$ref": "#/definitions/ModelsProjectConfigField"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "header": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "ModelsProjectConfigField": {
+      "properties": {
+        "isEditable": {
+          "type": "boolean"
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "showCollapsed": {
+          "type": "boolean"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -1215,6 +1331,9 @@
     },
     "ProjectConfig": {
       "$ref": "#/definitions/ProjectConfig"
+    },
+    "ProjectConfigField": {
+      "$ref": "#/definitions/ProjectConfigField"
     },
     "RestDemoWorkItemsResponse": {
       "$ref": "#/definitions/RestDemoWorkItemsResponse"
@@ -1263,9 +1382,6 @@
     },
     "PgtypeJSONB": {
       "$ref": "#/definitions/PgtypeJSONB"
-    },
-    "ModelsProjectConfigField": {
-      "$ref": "#/definitions/ModelsProjectConfigField"
     },
     "DbWorkItem": {
       "$ref": "#/definitions/DbWorkItem"
@@ -1326,6 +1442,12 @@
     },
     "DemoWorkItemTypes": {
       "$ref": "#/definitions/DemoWorkItemTypes"
+    },
+    "ModelsProjectConfig": {
+      "$ref": "#/definitions/ModelsProjectConfig"
+    },
+    "ModelsProjectConfigField": {
+      "$ref": "#/definitions/ModelsProjectConfigField"
     }
   }
 }

@@ -38,7 +38,7 @@ func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoW
 		TargetDate:     params.Base.TargetDate,
 	}
 
-	workItem, err := workItem.Save(ctx, d)
+	workItem, err := workItem.Insert(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not save workItem: %w", parseErrorDetail(err))
 	}
@@ -51,7 +51,7 @@ func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoW
 		Reopened:      params.DemoProject.Reopened,
 	}
 
-	demoWorkItem, err = demoWorkItem.Save(ctx, d)
+	demoWorkItem, err = demoWorkItem.Insert(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not save demoWorkItem: %w", parseErrorDetail(err))
 	}
@@ -62,14 +62,12 @@ func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoW
 }
 
 func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoWorkItemUpdateParams) (*db.DemoWorkItem, error) {
-	demoWorkItem, err := u.ByID(ctx, d, id)
+	demoWorkItem, err := u.ByID(ctx, d, id, db.WithDemoWorkItemJoin(db.DemoWorkItemJoins{WorkItem: true}))
 	if err != nil {
 		return nil, fmt.Errorf("could not get demoWorkItem by id: %w", parseErrorDetail(err))
 	}
-	workItem, err := demoWorkItem.FKWorkItem_WorkItemID(ctx, d)
-	if err != nil {
-		return nil, fmt.Errorf("could not get associated workItem: %w", parseErrorDetail(err))
-	}
+	workItem := demoWorkItem.WorkItemJoin
+	fmt.Printf("workItem: %v\n", workItem)
 
 	if params.Base != nil {
 		updateEntityWithParams(workItem, params.Base)

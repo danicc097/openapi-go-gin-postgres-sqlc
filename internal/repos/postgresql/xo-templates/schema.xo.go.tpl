@@ -77,7 +77,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{/* generated queries from foreign keys */}}
 
 {{ define "foreignkey" }}
-{{- $k := .Data -}}
+{{/* {{- $k := .Data -}}
 // {{ func_name_context $k }} returns the {{ $k.RefTable }} associated with the {{ $k.Table.GoName }}'s ({{ names "" $k.Fields }}).
 //
 // Generated from foreign key '{{ $k.SQLName }}'.
@@ -92,7 +92,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{ recv $k.Table $k }} {
 	return {{ foreign_key $k }}
 }
-{{- end }}
+{{- end }} */}}
 {{ end }}
 
 {{/*
@@ -132,7 +132,6 @@ generated queries from indexes
 	}
 
 	{{- if $i.Table.PrimaryKeys }}
-  {{ short $i.Table }}._exists = true
 	{{ end }}
 
 	return &{{ short $i.Table }}, nil
@@ -218,10 +217,6 @@ type {{ $t.GoName }} struct {
 	{{ field . "Table" $t -}}
 {{ end }}
 {{ join_fields $t $constraints $tables }}
-{{- if $t.PrimaryKeys -}}
-	// xo fields
-	_exists, _deleted bool
-{{ end -}}
 }
 {{/* NOTE: ensure sqlc does not generate clashing names */}}
 // {{ $t.GoName }}CreateParams represents insert params for '{{ schema $t.SQLName }}'
@@ -247,12 +242,6 @@ type {{ $t.GoName }}UpdateParams struct {
 
 // {{ func_name_context "Insert" }} inserts the {{ $t.GoName }} to the database.
 {{ recv_context $t "Insert" }} {
-	switch {
-	case {{ short $t }}._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case {{ short $t }}._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 {{ if and (eq (len $t.Generated) 0) (eq (len $t.Ignored) 0) -}}
 	// insert (manual)
 	{{ sqlstr "insert_manual" $t }}
@@ -281,7 +270,6 @@ type {{ $t.GoName }}UpdateParams struct {
 		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/pgx.CollectOneRow: %w", err))
 	}
 {{ end }}
-	new{{ short $t }}._exists = true
   *{{ short $t }} = new{{ short $t }}
 
 	return {{ short $t }}, nil
@@ -300,12 +288,6 @@ type {{ $t.GoName }}UpdateParams struct {
 {{- else -}}
 // {{ func_name_context "Update" }} updates a {{ $t.GoName }} in the database.
 {{ recv_context $t "Update" }}  {
-	switch {
-	case !{{ short $t }}._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case {{ short $t }}._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with {{ if driver "postgres" }}composite {{ end }}primary key
 	{{ sqlstr "update" $t }}
 	// run
@@ -319,7 +301,6 @@ type {{ $t.GoName }}UpdateParams struct {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Update/pgx.CollectOneRow: %w", err))
 	}
-  new{{ short $t }}._exists = true
   *{{ short $t }} = new{{ short $t }}
 
 	return {{ short $t }}, nil
@@ -332,30 +313,8 @@ type {{ $t.GoName }}UpdateParams struct {
 }
 {{- end }}
 
-// {{ func_name_context "Save" }} saves the {{ $t.GoName }} to the database.
-{{ recv_context $t "Save" }} {
-	if {{ short $t }}._exists {
-		return {{ short $t }}.{{ func_name_context "Update" }}({{ if context }}ctx, {{ end }}db)
-	}
-	return {{ short $t }}.{{ func_name_context "Insert" }}({{ if context }}ctx, {{ end }}db)
-}
-
-{{ if context_both -}}
-// Save saves the {{ $t.GoName }} to the database.
-{{ recv $t "Save" }} {
-	if {{ short $t }}._exists {
-		return {{ short $t }}.UpdateContext(context.Background(), db)
-	}
-	return {{ short $t }}.InsertContext(context.Background(), db)
-}
-{{- end }}
-
 // {{ func_name_context "Upsert" }} performs an upsert for {{ $t.GoName }}.
 {{ recv_context $t "Upsert" }} {
-	switch {
-	case {{ short $t }}._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	{{ sqlstr "upsert" $t }}
 	// run
@@ -364,7 +323,6 @@ type {{ $t.GoName }}UpdateParams struct {
 		return logerror(err)
 	}
 	// set exists
-	{{ short $t }}._exists = true
 	return nil
 }
 
@@ -378,12 +336,6 @@ type {{ $t.GoName }}UpdateParams struct {
 
 // {{ func_name_context "Delete" }} deletes the {{ $t.GoName }} from the database.
 {{ recv_context $t "Delete" }} {
-	switch {
-	case !{{ short $t }}._exists: // doesn't exist
-		return nil
-	case {{ short $t }}._deleted: // deleted
-		return nil
-	}
 {{ if eq (len $t.PrimaryKeys) 1 -}}
 	// delete with single primary key
 	{{ sqlstr "delete" $t }}
@@ -399,8 +351,6 @@ type {{ $t.GoName }}UpdateParams struct {
 		return logerror(err)
 	}
 {{- end }}
-	// set deleted
-	{{ short $t }}._deleted = true
 	return nil
 }
 
@@ -415,12 +365,6 @@ type {{ $t.GoName }}UpdateParams struct {
 {{ if (has_deleted_at $t) }}
 // {{ func_name_context "SoftDelete" }} soft deletes the {{ $t.GoName }} from the database via 'deleted_at'.
 {{ recv_context $t "SoftDelete" }} {
-	switch {
-	case !{{ short $t }}._exists: // doesn't exist
-		return nil
-	case {{ short $t }}._deleted: // deleted
-		return nil
-	}
 	{{ if eq (len $t.PrimaryKeys) 1 -}}
 	// delete with single primary key
 	{{ sqlstr "soft_delete" $t }}
@@ -437,7 +381,6 @@ type {{ $t.GoName }}UpdateParams struct {
 	}
   {{ end }}
 	// set deleted
-	{{ short $t }}._deleted = true
   {{ short $t }}.DeletedAt = newPointer(time.Now())
 
 	return nil

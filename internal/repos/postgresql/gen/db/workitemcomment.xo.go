@@ -27,8 +27,7 @@ type WorkItemComment struct {
 
 	UserJoin     *User     `json:"-" db:"user" openapi-go:"ignore"`      // O2O
 	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // WorkItemCommentCreateParams represents insert params for 'public.work_item_comments'
@@ -98,12 +97,6 @@ func WithWorkItemCommentJoin(joins WorkItemCommentJoins) WorkItemCommentSelectCo
 
 // Insert inserts the WorkItemComment to the database.
 func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment, error) {
-	switch {
-	case wic._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case wic._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_comments (` +
 		`work_item_id, user_id, message` +
@@ -122,7 +115,6 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment
 		return nil, logerror(fmt.Errorf("WorkItemComment/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newwic._exists = true
 	*wic = newwic
 
 	return wic, nil
@@ -130,12 +122,6 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment
 
 // Update updates a WorkItemComment in the database.
 func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment, error) {
-	switch {
-	case !wic._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case wic._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_comments SET ` +
 		`work_item_id = $1, user_id = $2, message = $3 ` +
@@ -152,26 +138,13 @@ func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Update/pgx.CollectOneRow: %w", err))
 	}
-	newwic._exists = true
 	*wic = newwic
 
 	return wic, nil
 }
 
-// Save saves the WorkItemComment to the database.
-func (wic *WorkItemComment) Save(ctx context.Context, db DB) (*WorkItemComment, error) {
-	if wic._exists {
-		return wic.Update(ctx, db)
-	}
-	return wic.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for WorkItemComment.
 func (wic *WorkItemComment) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case wic._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_item_comments (` +
 		`work_item_comment_id, work_item_id, user_id, message` +
@@ -188,18 +161,11 @@ func (wic *WorkItemComment) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	wic._exists = true
 	return nil
 }
 
 // Delete deletes the WorkItemComment from the database.
 func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !wic._exists: // doesn't exist
-		return nil
-	case wic._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.work_item_comments ` +
 		`WHERE work_item_comment_id = $1 `
@@ -207,8 +173,6 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	wic._deleted = true
 	return nil
 }
 
@@ -251,7 +215,6 @@ left join work_items on work_items.work_item_id = work_item_comments.work_item_i
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/pgx.CollectOneRow: %w", err))
 	}
-	wic._exists = true
 
 	return &wic, nil
 }
@@ -299,18 +262,4 @@ left join work_items on work_items.work_item_id = work_item_comments.work_item_i
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
-}
-
-// FKUser_UserID returns the User associated with the WorkItemComment's (UserID).
-//
-// Generated from foreign key 'work_item_comments_user_id_fkey'.
-func (wic *WorkItemComment) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, wic.UserID)
-}
-
-// FKWorkItem_WorkItemID returns the WorkItem associated with the WorkItemComment's (WorkItemID).
-//
-// Generated from foreign key 'work_item_comments_work_item_id_fkey'.
-func (wic *WorkItemComment) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
-	return WorkItemByWorkItemID(ctx, db, wic.WorkItemID)
 }

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -18,37 +18,36 @@ import (
 //   - "type:<pkg.type>" to override the type annotation.
 //   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type Project struct {
-	ProjectID          int            `json:"projectID" db:"project_id" required:"true"`                         // project_id
-	Name               models.Project `json:"name" db:"name" required:"true" ref:"#/components/schemas/Project"` // name
-	Description        string         `json:"description" db:"description" required:"true"`                      // description
-	WorkItemsTableName string         `json:"-" db:"work_items_table_name"`                                      // work_items_table_name
-	BoardConfig        []byte         `json:"-" db:"board_config"`                                               // board_config
-	CreatedAt          time.Time      `json:"createdAt" db:"created_at" required:"true"`                         // created_at
-	UpdatedAt          time.Time      `json:"updatedAt" db:"updated_at" required:"true"`                         // updated_at
+	ProjectID          int                  `json:"projectID" db:"project_id" required:"true"`                                              // project_id
+	Name               models.Project       `json:"name" db:"name" required:"true" ref:"#/components/schemas/Project"`                      // name
+	Description        string               `json:"description" db:"description" required:"true"`                                           // description
+	WorkItemsTableName string               `json:"-" db:"work_items_table_name"`                                                           // work_items_table_name
+	BoardConfig        models.ProjectConfig `json:"boardConfig" db:"board_config" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
+	CreatedAt          time.Time            `json:"createdAt" db:"created_at" required:"true"`                                              // created_at
+	UpdatedAt          time.Time            `json:"updatedAt" db:"updated_at" required:"true"`                                              // updated_at
 
 	ActivitiesJoin    *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`      // M2O
 	KanbanStepsJoin   *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`    // M2O
 	TeamsJoin         *[]Team         `json:"-" db:"teams" openapi-go:"ignore"`           // M2O
 	WorkItemTagsJoin  *[]WorkItemTag  `json:"-" db:"work_item_tags" openapi-go:"ignore"`  // M2O
 	WorkItemTypesJoin *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"` // M2O
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // ProjectCreateParams represents insert params for 'public.projects'
 type ProjectCreateParams struct {
-	Name               models.Project `json:"name"`        // name
-	Description        string         `json:"description"` // description
-	WorkItemsTableName string         `json:"-"`           // work_items_table_name
-	BoardConfig        []byte         `json:"-"`           // board_config
+	Name               models.Project       `json:"name"`        // name
+	Description        string               `json:"description"` // description
+	WorkItemsTableName string               `json:"-"`           // work_items_table_name
+	BoardConfig        models.ProjectConfig `json:"boardConfig"` // board_config
 }
 
 // ProjectUpdateParams represents update params for 'public.projects'
 type ProjectUpdateParams struct {
-	Name               *models.Project `json:"name"`        // name
-	Description        *string         `json:"description"` // description
-	WorkItemsTableName *string         `json:"-"`           // work_items_table_name
-	BoardConfig        *[]byte         `json:"-"`           // board_config
+	Name               *models.Project       `json:"name"`        // name
+	Description        *string               `json:"description"` // description
+	WorkItemsTableName *string               `json:"-"`           // work_items_table_name
+	BoardConfig        *models.ProjectConfig `json:"boardConfig"` // board_config
 }
 
 type ProjectSelectConfig struct {
@@ -107,12 +106,6 @@ func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 
 // Insert inserts the Project to the database.
 func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
-	switch {
-	case p._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case p._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.projects (` +
 		`name, description, work_items_table_name, board_config` +
@@ -131,7 +124,6 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 		return nil, logerror(fmt.Errorf("Project/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newp._exists = true
 	*p = newp
 
 	return p, nil
@@ -139,12 +131,6 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 
 // Update updates a Project in the database.
 func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
-	switch {
-	case !p._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case p._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.projects SET ` +
 		`name = $1, description = $2, work_items_table_name = $3, board_config = $4 ` +
@@ -161,26 +147,13 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Update/pgx.CollectOneRow: %w", err))
 	}
-	newp._exists = true
 	*p = newp
 
 	return p, nil
 }
 
-// Save saves the Project to the database.
-func (p *Project) Save(ctx context.Context, db DB) (*Project, error) {
-	if p._exists {
-		return p.Update(ctx, db)
-	}
-	return p.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for Project.
 func (p *Project) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case p._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.projects (` +
 		`project_id, name, description, work_items_table_name, board_config` +
@@ -197,18 +170,11 @@ func (p *Project) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	p._exists = true
 	return nil
 }
 
 // Delete deletes the Project from the database.
 func (p *Project) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !p._exists: // doesn't exist
-		return nil
-	case p._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.projects ` +
 		`WHERE project_id = $1 `
@@ -216,8 +182,6 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, p.ProjectID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	p._deleted = true
 	return nil
 }
 
@@ -305,7 +269,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByName/pgx.CollectOneRow: %w", err))
 	}
-	p._exists = true
 
 	return &p, nil
 }
@@ -394,7 +357,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/pgx.CollectOneRow: %w", err))
 	}
-	p._exists = true
 
 	return &p, nil
 }
@@ -483,7 +445,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByWorkItemsTableName/pgx.CollectOneRow: %w", err))
 	}
-	p._exists = true
 
 	return &p, nil
 }

@@ -28,8 +28,7 @@ type Team struct {
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
 	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`        // M2M
 	WorkItemJoin    *WorkItem    `json:"-" db:"work_item" openapi-go:"ignore"`    // O2O (inferred)
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // TeamCreateParams represents insert params for 'public.teams'
@@ -101,12 +100,6 @@ func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 
 // Insert inserts the Team to the database.
 func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
-	switch {
-	case t._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case t._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.teams (` +
 		`project_id, name, description` +
@@ -125,7 +118,6 @@ func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 		return nil, logerror(fmt.Errorf("Team/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newt._exists = true
 	*t = newt
 
 	return t, nil
@@ -133,12 +125,6 @@ func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 
 // Update updates a Team in the database.
 func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
-	switch {
-	case !t._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case t._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.teams SET ` +
 		`project_id = $1, name = $2, description = $3 ` +
@@ -155,26 +141,13 @@ func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Update/pgx.CollectOneRow: %w", err))
 	}
-	newt._exists = true
 	*t = newt
 
 	return t, nil
 }
 
-// Save saves the Team to the database.
-func (t *Team) Save(ctx context.Context, db DB) (*Team, error) {
-	if t._exists {
-		return t.Update(ctx, db)
-	}
-	return t.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for Team.
 func (t *Team) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case t._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.teams (` +
 		`team_id, project_id, name, description` +
@@ -191,18 +164,11 @@ func (t *Team) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	t._exists = true
 	return nil
 }
 
 // Delete deletes the Team from the database.
 func (t *Team) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !t._exists: // doesn't exist
-		return nil
-	case t._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.teams ` +
 		`WHERE team_id = $1 `
@@ -210,8 +176,6 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, t.TeamID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	t._deleted = true
 	return nil
 }
 
@@ -275,7 +239,6 @@ left join work_items on work_items.team_id = teams.team_id` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
-	t._exists = true
 
 	return &t, nil
 }
@@ -472,14 +435,6 @@ left join work_items on work_items.team_id = teams.team_id` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/pgx.CollectOneRow: %w", err))
 	}
-	t._exists = true
 
 	return &t, nil
-}
-
-// FKProject_ProjectID returns the Project associated with the Team's (ProjectID).
-//
-// Generated from foreign key 'teams_project_id_fkey'.
-func (t *Team) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
-	return ProjectByProjectID(ctx, db, t.ProjectID)
 }

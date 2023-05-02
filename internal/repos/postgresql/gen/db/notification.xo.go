@@ -32,8 +32,7 @@ type Notification struct {
 	UserJoinReceiver      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O
 	UserJoinSender        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O
 	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // NotificationCreateParams represents insert params for 'public.notifications'
@@ -110,12 +109,6 @@ func WithNotificationJoin(joins NotificationJoins) NotificationSelectConfigOptio
 
 // Insert inserts the Notification to the database.
 func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error) {
-	switch {
-	case n._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case n._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.notifications (` +
 		`receiver_rank, title, body, label, link, sender, receiver, notification_type` +
@@ -134,7 +127,6 @@ func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error)
 		return nil, logerror(fmt.Errorf("Notification/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newn._exists = true
 	*n = newn
 
 	return n, nil
@@ -142,12 +134,6 @@ func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error)
 
 // Update updates a Notification in the database.
 func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error) {
-	switch {
-	case !n._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case n._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.notifications SET ` +
 		`receiver_rank = $1, title = $2, body = $3, label = $4, link = $5, sender = $6, receiver = $7, notification_type = $8 ` +
@@ -164,26 +150,13 @@ func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Update/pgx.CollectOneRow: %w", err))
 	}
-	newn._exists = true
 	*n = newn
 
 	return n, nil
 }
 
-// Save saves the Notification to the database.
-func (n *Notification) Save(ctx context.Context, db DB) (*Notification, error) {
-	if n._exists {
-		return n.Update(ctx, db)
-	}
-	return n.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for Notification.
 func (n *Notification) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case n._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.notifications (` +
 		`notification_id, receiver_rank, title, body, label, link, sender, receiver, notification_type` +
@@ -200,18 +173,11 @@ func (n *Notification) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	n._exists = true
 	return nil
 }
 
 // Delete deletes the Notification from the database.
 func (n *Notification) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !n._exists: // doesn't exist
-		return nil
-	case n._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.notifications ` +
 		`WHERE notification_id = $1 `
@@ -219,8 +185,6 @@ func (n *Notification) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, n.NotificationID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	n._deleted = true
 	return nil
 }
 
@@ -277,7 +241,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/pgx.CollectOneRow: %w", err))
 	}
-	n._exists = true
 
 	return &n, nil
 }
@@ -339,18 +302,4 @@ left join (
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
-}
-
-// FKUser_Receiver returns the User associated with the Notification's (Receiver).
-//
-// Generated from foreign key 'notifications_receiver_fkey'.
-func (n *Notification) FKUser_Receiver(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, *n.Receiver)
-}
-
-// FKUser_Sender returns the User associated with the Notification's (Sender).
-//
-// Generated from foreign key 'notifications_sender_fkey'.
-func (n *Notification) FKUser_Sender(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, n.Sender)
 }

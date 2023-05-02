@@ -16,6 +16,7 @@ import {
   DbTimeEntry,
   DbWorkItemComment,
   ProjectConfig,
+  ProjectConfigField,
   RestDemoWorkItemsResponse,
   InitializeProjectRequest,
   RestProjectBoardResponse,
@@ -32,7 +33,6 @@ import {
   HttpErrorType,
   UuidUUID,
   PgtypeJSONB,
-  ModelsProjectConfigField,
   DbWorkItem,
   Project,
   DbActivityCreateParams,
@@ -53,6 +53,8 @@ import {
   DemoTwoKanbanSteps,
   DemoTwoWorkItemTypes,
   DemoWorkItemTypes,
+  ModelsProjectConfig,
+  ModelsProjectConfigField,
 } from './models'
 
 export const schemaDefinitions = {
@@ -68,6 +70,7 @@ export const schemaDefinitions = {
   DbTimeEntry: info<DbTimeEntry>('DbTimeEntry', '#/definitions/DbTimeEntry'),
   DbWorkItemComment: info<DbWorkItemComment>('DbWorkItemComment', '#/definitions/DbWorkItemComment'),
   ProjectConfig: info<ProjectConfig>('ProjectConfig', '#/definitions/ProjectConfig'),
+  ProjectConfigField: info<ProjectConfigField>('ProjectConfigField', '#/definitions/ProjectConfigField'),
   RestDemoWorkItemsResponse: info<RestDemoWorkItemsResponse>(
     'RestDemoWorkItemsResponse',
     '#/definitions/RestDemoWorkItemsResponse',
@@ -93,10 +96,6 @@ export const schemaDefinitions = {
   HttpErrorType: info<HttpErrorType>('HttpErrorType', '#/definitions/HttpErrorType'),
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
   PgtypeJSONB: info<PgtypeJSONB>('PgtypeJSONB', '#/definitions/PgtypeJSONB'),
-  ModelsProjectConfigField: info<ModelsProjectConfigField>(
-    'ModelsProjectConfigField',
-    '#/definitions/ModelsProjectConfigField',
-  ),
   DbWorkItem: info<DbWorkItem>('DbWorkItem', '#/definitions/DbWorkItem'),
   Project: info<Project>('Project', '#/definitions/Project'),
   DbActivityCreateParams: info<DbActivityCreateParams>(
@@ -135,6 +134,11 @@ export const schemaDefinitions = {
   DemoTwoKanbanSteps: info<DemoTwoKanbanSteps>('DemoTwoKanbanSteps', '#/definitions/DemoTwoKanbanSteps'),
   DemoTwoWorkItemTypes: info<DemoTwoWorkItemTypes>('DemoTwoWorkItemTypes', '#/definitions/DemoTwoWorkItemTypes'),
   DemoWorkItemTypes: info<DemoWorkItemTypes>('DemoWorkItemTypes', '#/definitions/DemoWorkItemTypes'),
+  ModelsProjectConfig: info<ModelsProjectConfig>('ModelsProjectConfig', '#/definitions/ModelsProjectConfig'),
+  ModelsProjectConfigField: info<ModelsProjectConfigField>(
+    'ModelsProjectConfigField',
+    '#/definitions/ModelsProjectConfigField',
+  ),
 }
 
 export interface SchemaInfo<T> {

@@ -6,9 +6,6 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-/**
- * Existing projects
- */
 export type Project = 'demo' | 'demo_two'
 export type UuidUUID = string
 export type Scope =
@@ -79,11 +76,23 @@ export interface DbKanbanStep {
   timeTrackable: boolean
 }
 export interface DbProject {
+  boardConfig: ProjectConfig
   createdAt: string
   description: string
   name: Project
   projectID: number
   updatedAt: string
+}
+export interface ProjectConfig {
+  fields: ProjectConfigField[]
+  header: string[]
+}
+export interface ProjectConfigField {
+  isEditable: boolean
+  isVisible: boolean
+  name: string
+  path: string
+  showCollapsed: boolean
 }
 export interface DbTeam {
   createdAt: string
@@ -150,17 +159,6 @@ export interface DbWorkItemComment {
   workItemCommentID: number
   workItemID: number
 }
-export interface ProjectConfig {
-  fields: ModelsProjectConfigField[] | null
-  header: string[] | null
-}
-export interface ModelsProjectConfigField {
-  isEditable: boolean
-  isVisible: boolean
-  name: string
-  path: string
-  showCollapsed: boolean
-}
 export interface RestDemoWorkItemsResponse {
   closed: string | null
   createdAt: string
@@ -205,7 +203,17 @@ export interface DbWorkItemTagCreateParams {
   projectID?: number
 }
 export interface RestProjectBoardResponse {
-  project?: DbProject
+  activities: DbActivity[] | null
+  boardConfig: ProjectConfig
+  createdAt: string
+  description: string
+  kanbanSteps: DbKanbanStep[] | null
+  name: Project
+  projectID: number
+  teams: DbTeam[] | null
+  updatedAt: string
+  workItemTags: DbWorkItemTag[] | null
+  workItemTypes: DbWorkItemType[] | null
 }
 export interface UserResponse {
   apiKey?: DbUserAPIKey
@@ -295,4 +303,15 @@ export interface DbWorkItemTypeCreateParams {
 export interface DbWorkItem_Member {
   role: WorkItemRole
   user?: DbUser
+}
+export interface ModelsProjectConfig {
+  fields?: ModelsProjectConfigField[] | null
+  header?: string[] | null
+}
+export interface ModelsProjectConfigField {
+  isEditable?: boolean
+  isVisible?: boolean
+  name?: string
+  path?: string
+  showCollapsed?: boolean
 }

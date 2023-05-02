@@ -19,8 +19,6 @@ type UserTeam struct {
 	TeamID int       `json:"teamID" db:"team_id" required:"true"` // team_id
 	UserID uuid.UUID `json:"userID" db:"user_id" required:"true"` // user_id
 
-	// xo fields
-	_exists, _deleted bool
 }
 
 // UserTeamCreateParams represents insert params for 'public.user_team'
@@ -65,12 +63,6 @@ func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 
 // Insert inserts the UserTeam to the database.
 func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
-	switch {
-	case ut._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case ut._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.user_team (` +
 		`team_id, user_id` +
@@ -88,7 +80,6 @@ func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/Insert/pgx.CollectOneRow: %w", err))
 	}
-	newut._exists = true
 	*ut = newut
 
 	return ut, nil
@@ -98,12 +89,6 @@ func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 
 // Delete deletes the UserTeam from the database.
 func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !ut._exists: // doesn't exist
-		return nil
-	case ut._deleted: // deleted
-		return nil
-	}
 	// delete with composite primary key
 	sqlstr := `DELETE FROM public.user_team ` +
 		`WHERE team_id = $1 AND user_id = $2 `
@@ -111,8 +96,6 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, ut.TeamID, ut.UserID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	ut._deleted = true
 	return nil
 }
 
@@ -146,7 +129,6 @@ user_team.user_id ` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_team/UserTeamByUserIDTeamID/pgx.CollectOneRow: %w", err))
 	}
-	ut._exists = true
 
 	return &ut, nil
 }
@@ -257,18 +239,4 @@ user_team.user_id ` +
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
-}
-
-// FKTeam_TeamID returns the Team associated with the UserTeam's (TeamID).
-//
-// Generated from foreign key 'user_team_team_id_fkey'.
-func (ut *UserTeam) FKTeam_TeamID(ctx context.Context, db DB) (*Team, error) {
-	return TeamByTeamID(ctx, db, ut.TeamID)
-}
-
-// FKUser_UserID returns the User associated with the UserTeam's (UserID).
-//
-// Generated from foreign key 'user_team_user_id_fkey'.
-func (ut *UserTeam) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, ut.UserID)
 }

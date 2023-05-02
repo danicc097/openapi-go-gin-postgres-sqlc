@@ -37,7 +37,7 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params db.UserCreateParams
 		Scopes:     slices.Unique(params.Scopes),
 	}
 
-	if _, err := user.Save(ctx, d); err != nil {
+	if _, err := user.Insert(ctx, d); err != nil {
 		return nil, err
 	}
 
@@ -132,7 +132,7 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 		ExpiresOn: time.Now().AddDate(1, 0, 0),
 		UserID:    user.UserID,
 	}
-	if _, err := uak.Save(ctx, d); err != nil {
+	if _, err := uak.Insert(ctx, d); err != nil {
 		return nil, fmt.Errorf("could not save api key: %w", parseErrorDetail(err))
 	}
 

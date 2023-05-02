@@ -21,8 +21,7 @@ type DemoTwoWorkItem struct {
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2" required:"true"` // custom_date_for_project_2
 
 	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // DemoTwoWorkItemCreateParams represents insert params for 'public.demo_two_work_items'
@@ -84,12 +83,6 @@ func WithDemoTwoWorkItemJoin(joins DemoTwoWorkItemJoins) DemoTwoWorkItemSelectCo
 
 // Insert inserts the DemoTwoWorkItem to the database.
 func (dtwi *DemoTwoWorkItem) Insert(ctx context.Context, db DB) (*DemoTwoWorkItem, error) {
-	switch {
-	case dtwi._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case dtwi._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.demo_two_work_items (` +
 		`work_item_id, custom_date_for_project_2` +
@@ -107,7 +100,6 @@ func (dtwi *DemoTwoWorkItem) Insert(ctx context.Context, db DB) (*DemoTwoWorkIte
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Insert/pgx.CollectOneRow: %w", err))
 	}
-	newdtwi._exists = true
 	*dtwi = newdtwi
 
 	return dtwi, nil
@@ -115,12 +107,6 @@ func (dtwi *DemoTwoWorkItem) Insert(ctx context.Context, db DB) (*DemoTwoWorkIte
 
 // Update updates a DemoTwoWorkItem in the database.
 func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkItem, error) {
-	switch {
-	case !dtwi._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case dtwi._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.demo_two_work_items SET ` +
 		`custom_date_for_project_2 = $1 ` +
@@ -137,26 +123,13 @@ func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkIte
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Update/pgx.CollectOneRow: %w", err))
 	}
-	newdtwi._exists = true
 	*dtwi = newdtwi
 
 	return dtwi, nil
 }
 
-// Save saves the DemoTwoWorkItem to the database.
-func (dtwi *DemoTwoWorkItem) Save(ctx context.Context, db DB) (*DemoTwoWorkItem, error) {
-	if dtwi._exists {
-		return dtwi.Update(ctx, db)
-	}
-	return dtwi.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for DemoTwoWorkItem.
 func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case dtwi._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.demo_two_work_items (` +
 		`work_item_id, custom_date_for_project_2` +
@@ -173,18 +146,11 @@ func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	dtwi._exists = true
 	return nil
 }
 
 // Delete deletes the DemoTwoWorkItem from the database.
 func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !dtwi._exists: // doesn't exist
-		return nil
-	case dtwi._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.demo_two_work_items ` +
 		`WHERE work_item_id = $1 `
@@ -192,8 +158,6 @@ func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, dtwi.WorkItemID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	dtwi._deleted = true
 	return nil
 }
 
@@ -229,14 +193,6 @@ left join work_items on work_items.work_item_id = demo_two_work_items.work_item_
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_two_work_items/DemoTwoWorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
 	}
-	dtwi._exists = true
 
 	return &dtwi, nil
-}
-
-// FKWorkItem_WorkItemID returns the WorkItem associated with the DemoTwoWorkItem's (WorkItemID).
-//
-// Generated from foreign key 'demo_two_work_items_work_item_id_fkey'.
-func (dtwi *DemoTwoWorkItem) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
-	return WorkItemByWorkItemID(ctx, db, dtwi.WorkItemID)
 }

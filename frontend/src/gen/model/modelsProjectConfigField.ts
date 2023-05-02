@@ -7,9 +7,9 @@
  */
 
 export interface ModelsProjectConfigField {
-  isEditable: boolean
-  isVisible: boolean
-  name: string
-  path: string
-  showCollapsed: boolean
+  isEditable?: boolean
+  isVisible?: boolean
+  name?: string
+  path?: string
+  showCollapsed?: boolean
 }

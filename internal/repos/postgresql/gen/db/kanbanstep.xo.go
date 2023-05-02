@@ -25,8 +25,7 @@ type KanbanStep struct {
 
 	ProjectJoin  *Project  `json:"-" db:"project" openapi-go:"ignore"`   // O2O
 	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred)
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // KanbanStepCreateParams represents insert params for 'public.kanban_steps'
@@ -81,12 +80,6 @@ func WithKanbanStepJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
 
 // Insert inserts the KanbanStep to the database.
 func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
-	switch {
-	case ks._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case ks._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.kanban_steps (` +
 		`project_id, step_order, name, description, color, time_trackable` +
@@ -105,7 +98,6 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 		return nil, logerror(fmt.Errorf("KanbanStep/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newks._exists = true
 	*ks = newks
 
 	return ks, nil
@@ -113,12 +105,6 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 
 // Update updates a KanbanStep in the database.
 func (ks *KanbanStep) Update(ctx context.Context, db DB) (*KanbanStep, error) {
-	switch {
-	case !ks._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case ks._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.kanban_steps SET ` +
 		`project_id = $1, step_order = $2, name = $3, description = $4, color = $5, time_trackable = $6 ` +
@@ -135,26 +121,13 @@ func (ks *KanbanStep) Update(ctx context.Context, db DB) (*KanbanStep, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Update/pgx.CollectOneRow: %w", err))
 	}
-	newks._exists = true
 	*ks = newks
 
 	return ks, nil
 }
 
-// Save saves the KanbanStep to the database.
-func (ks *KanbanStep) Save(ctx context.Context, db DB) (*KanbanStep, error) {
-	if ks._exists {
-		return ks.Update(ctx, db)
-	}
-	return ks.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for KanbanStep.
 func (ks *KanbanStep) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case ks._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.kanban_steps (` +
 		`kanban_step_id, project_id, step_order, name, description, color, time_trackable` +
@@ -171,18 +144,11 @@ func (ks *KanbanStep) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	ks._exists = true
 	return nil
 }
 
 // Delete deletes the KanbanStep from the database.
 func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !ks._exists: // doesn't exist
-		return nil
-	case ks._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.kanban_steps ` +
 		`WHERE kanban_step_id = $1 `
@@ -190,8 +156,6 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	ks._deleted = true
 	return nil
 }
 
@@ -235,7 +199,6 @@ left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id`
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByKanbanStepID/pgx.CollectOneRow: %w", err))
 	}
-	ks._exists = true
 
 	return &ks, nil
 }
@@ -326,7 +289,6 @@ left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id`
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDName/pgx.CollectOneRow: %w", err))
 	}
-	ks._exists = true
 
 	return &ks, nil
 }
@@ -417,7 +379,6 @@ left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id`
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDNameStepOrder/pgx.CollectOneRow: %w", err))
 	}
-	ks._exists = true
 
 	return &ks, nil
 }
@@ -600,7 +561,6 @@ left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id`
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDStepOrder/pgx.CollectOneRow: %w", err))
 	}
-	ks._exists = true
 
 	return &ks, nil
 }
@@ -695,11 +655,4 @@ left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id`
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
-}
-
-// FKProject_ProjectID returns the Project associated with the KanbanStep's (ProjectID).
-//
-// Generated from foreign key 'kanban_steps_project_id_fkey'.
-func (ks *KanbanStep) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
-	return ProjectByProjectID(ctx, db, ks.ProjectID)
 }

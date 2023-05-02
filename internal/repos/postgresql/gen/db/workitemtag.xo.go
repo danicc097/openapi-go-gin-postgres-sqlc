@@ -23,8 +23,7 @@ type WorkItemTag struct {
 
 	ProjectJoin   *Project    `json:"-" db:"project" openapi-go:"ignore"`    // O2O
 	WorkItemsJoin *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // WorkItemTagCreateParams represents insert params for 'public.work_item_tags'
@@ -75,12 +74,6 @@ func WithWorkItemTagJoin(joins WorkItemTagJoins) WorkItemTagSelectConfigOption {
 
 // Insert inserts the WorkItemTag to the database.
 func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error) {
-	switch {
-	case wit._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case wit._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_tags (` +
 		`project_id, name, description, color` +
@@ -99,7 +92,6 @@ func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error)
 		return nil, logerror(fmt.Errorf("WorkItemTag/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	newwit._exists = true
 	*wit = newwit
 
 	return wit, nil
@@ -107,12 +99,6 @@ func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error)
 
 // Update updates a WorkItemTag in the database.
 func (wit *WorkItemTag) Update(ctx context.Context, db DB) (*WorkItemTag, error) {
-	switch {
-	case !wit._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case wit._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_tags SET ` +
 		`project_id = $1, name = $2, description = $3, color = $4 ` +
@@ -129,26 +115,13 @@ func (wit *WorkItemTag) Update(ctx context.Context, db DB) (*WorkItemTag, error)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Update/pgx.CollectOneRow: %w", err))
 	}
-	newwit._exists = true
 	*wit = newwit
 
 	return wit, nil
 }
 
-// Save saves the WorkItemTag to the database.
-func (wit *WorkItemTag) Save(ctx context.Context, db DB) (*WorkItemTag, error) {
-	if wit._exists {
-		return wit.Update(ctx, db)
-	}
-	return wit.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for WorkItemTag.
 func (wit *WorkItemTag) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case wit._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.work_item_tags (` +
 		`work_item_tag_id, project_id, name, description, color` +
@@ -165,18 +138,11 @@ func (wit *WorkItemTag) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	wit._exists = true
 	return nil
 }
 
 // Delete deletes the WorkItemTag from the database.
 func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !wit._exists: // doesn't exist
-		return nil
-	case wit._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.work_item_tags ` +
 		`WHERE work_item_tag_id = $1 `
@@ -184,8 +150,6 @@ func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTagID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	wit._deleted = true
 	return nil
 }
 
@@ -235,7 +199,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
-	wit._exists = true
 
 	return &wit, nil
 }
@@ -390,14 +353,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByWorkItemTagID/pgx.CollectOneRow: %w", err))
 	}
-	wit._exists = true
 
 	return &wit, nil
-}
-
-// FKProject_ProjectID returns the Project associated with the WorkItemTag's (ProjectID).
-//
-// Generated from foreign key 'work_item_tags_project_id_fkey'.
-func (wit *WorkItemTag) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
-	return ProjectByProjectID(ctx, db, wit.ProjectID)
 }

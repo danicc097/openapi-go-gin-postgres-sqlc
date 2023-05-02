@@ -24,8 +24,7 @@ type DemoWorkItem struct {
 	Reopened      bool      `json:"reopened" db:"reopened" required:"true"`             // reopened
 
 	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
-	// xo fields
-	_exists, _deleted bool
+
 }
 
 // DemoWorkItemCreateParams represents insert params for 'public.demo_work_items'
@@ -93,12 +92,6 @@ func WithDemoWorkItemJoin(joins DemoWorkItemJoins) DemoWorkItemSelectConfigOptio
 
 // Insert inserts the DemoWorkItem to the database.
 func (dwi *DemoWorkItem) Insert(ctx context.Context, db DB) (*DemoWorkItem, error) {
-	switch {
-	case dwi._exists: // already exists
-		return nil, logerror(&ErrInsertFailed{ErrAlreadyExists})
-	case dwi._deleted: // deleted
-		return nil, logerror(&ErrInsertFailed{ErrMarkedForDeletion})
-	}
 	// insert (manual)
 	sqlstr := `INSERT INTO public.demo_work_items (` +
 		`work_item_id, ref, line, last_message_at, reopened` +
@@ -116,7 +109,6 @@ func (dwi *DemoWorkItem) Insert(ctx context.Context, db DB) (*DemoWorkItem, erro
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoWorkItem/Insert/pgx.CollectOneRow: %w", err))
 	}
-	newdwi._exists = true
 	*dwi = newdwi
 
 	return dwi, nil
@@ -124,12 +116,6 @@ func (dwi *DemoWorkItem) Insert(ctx context.Context, db DB) (*DemoWorkItem, erro
 
 // Update updates a DemoWorkItem in the database.
 func (dwi *DemoWorkItem) Update(ctx context.Context, db DB) (*DemoWorkItem, error) {
-	switch {
-	case !dwi._exists: // doesn't exist
-		return nil, logerror(&ErrUpdateFailed{ErrDoesNotExist})
-	case dwi._deleted: // deleted
-		return nil, logerror(&ErrUpdateFailed{ErrMarkedForDeletion})
-	}
 	// update with composite primary key
 	sqlstr := `UPDATE public.demo_work_items SET ` +
 		`ref = $1, line = $2, last_message_at = $3, reopened = $4 ` +
@@ -146,26 +132,13 @@ func (dwi *DemoWorkItem) Update(ctx context.Context, db DB) (*DemoWorkItem, erro
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoWorkItem/Update/pgx.CollectOneRow: %w", err))
 	}
-	newdwi._exists = true
 	*dwi = newdwi
 
 	return dwi, nil
 }
 
-// Save saves the DemoWorkItem to the database.
-func (dwi *DemoWorkItem) Save(ctx context.Context, db DB) (*DemoWorkItem, error) {
-	if dwi._exists {
-		return dwi.Update(ctx, db)
-	}
-	return dwi.Insert(ctx, db)
-}
-
 // Upsert performs an upsert for DemoWorkItem.
 func (dwi *DemoWorkItem) Upsert(ctx context.Context, db DB) error {
-	switch {
-	case dwi._deleted: // deleted
-		return logerror(&ErrUpsertFailed{ErrMarkedForDeletion})
-	}
 	// upsert
 	sqlstr := `INSERT INTO public.demo_work_items (` +
 		`work_item_id, ref, line, last_message_at, reopened` +
@@ -182,18 +155,11 @@ func (dwi *DemoWorkItem) Upsert(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	// set exists
-	dwi._exists = true
 	return nil
 }
 
 // Delete deletes the DemoWorkItem from the database.
 func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
-	switch {
-	case !dwi._exists: // doesn't exist
-		return nil
-	case dwi._deleted: // deleted
-		return nil
-	}
 	// delete with single primary key
 	sqlstr := `DELETE FROM public.demo_work_items ` +
 		`WHERE work_item_id = $1 `
@@ -201,8 +167,6 @@ func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 	if _, err := db.Exec(ctx, sqlstr, dwi.WorkItemID); err != nil {
 		return logerror(err)
 	}
-	// set deleted
-	dwi._deleted = true
 	return nil
 }
 
@@ -241,7 +205,6 @@ left join work_items on work_items.work_item_id = demo_work_items.work_item_id` 
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
 	}
-	dwi._exists = true
 
 	return &dwi, nil
 }
@@ -285,11 +248,4 @@ left join work_items on work_items.work_item_id = demo_work_items.work_item_id` 
 		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
 	}
 	return res, nil
-}
-
-// FKWorkItem_WorkItemID returns the WorkItem associated with the DemoWorkItem's (WorkItemID).
-//
-// Generated from foreign key 'demo_work_items_work_item_id_fkey'.
-func (dwi *DemoWorkItem) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
-	return WorkItemByWorkItemID(ctx, db, dwi.WorkItemID)
 }

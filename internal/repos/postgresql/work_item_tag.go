@@ -30,7 +30,7 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params db.WorkIte
 		Color:       params.Color,
 	}
 
-	if _, err := activity.Save(ctx, d); err != nil {
+	if _, err := activity.Insert(ctx, d); err != nil {
 		return nil, err
 	}
 

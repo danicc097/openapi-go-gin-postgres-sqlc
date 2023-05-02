@@ -376,11 +376,13 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 		Post: func(ctx context.Context, mode string, files map[string][]byte, emit func(string, []byte)) error {
 			for file, content := range files {
 				// Run goimports.
+				fmt.Println("running goimports")
 				buf, err := imports.Process("", content, nil)
 				if err != nil {
 					return fmt.Errorf("%s:%w", file, err)
 				}
 				// Run gofumpt.
+				fmt.Println("running gofumpt")
 				formatted, err := format.Source(buf, format.Options{
 					ExtraRules: true,
 				})
@@ -3306,9 +3308,6 @@ func Imports(ctx context.Context) []string {
 	if s, _ := ctx.Value(UUIDKey).(string); s != "" {
 		imports = append(imports, s)
 	}
-
-	// internal packages
-	imports = append(imports, "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models")
 
 	return imports
 }
