@@ -238,7 +238,7 @@ x.setup.swagger-ui() {
 # Run pre-generation scripts in the internal package.
 x.gen.pregen() {
   cache-gen
-  drop-and-migrate
+  drop-and-migrate-gen-db
   { { {
     POSTGRES_DB="$GEN_POSTGRES_DB"
 
@@ -441,7 +441,7 @@ clean_yq_array() {
 # Run post-generation scripts in the internal package.
 x.gen.postgen() {
   cache-gen
-  drop-and-migrate
+  drop-and-migrate-gen-db
   { { {
     POSTGRES_DB="$GEN_POSTGRES_DB"
 
@@ -459,7 +459,7 @@ x.gen.postgen() {
 # Generate type-safe Go code from SQL.
 x.gen.sqlc() {
   cache-gen
-  drop-and-migrate
+  drop-and-migrate-gen-db
   { { {
     echo "Running generation"
     sqlc generate --experimental -f "$PG_REPO"/sqlc.yaml || err "Failed sqlc generation"
@@ -471,7 +471,7 @@ x.gen.sqlc() {
 # Automatically generate CRUD and index queries with joins based on existing indexes from a Postgres schema.
 x.gen.xo() {
   cache-gen
-  drop-and-migrate
+  drop-and-migrate-gen-db
   { { {
     echo "Running generation"
     # xo schema --help
@@ -530,7 +530,7 @@ WHERE a.attisdropped = false
 # Generate a type-safe SQL builder.
 x.gen.jet() {
   cache-gen
-  drop-and-migrate
+  drop-and-migrate-gen-db
   { { {
     # results may be combined with xo's *Public structs and not reinvent the wheel for jet.
     # should not be hard to generate all adapters at once jet->xo *Public in a new file alongside jet gen.
@@ -1507,7 +1507,7 @@ xo_schema() {
     "$@"
 }
 
-drop-and-migrate() {
+drop-and-migrate-gen-db() {
   test -n "$gen_migrated" && return
 
   gen_migrated="${FUNCNAME[1]}"
