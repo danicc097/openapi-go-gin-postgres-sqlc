@@ -34,4 +34,5 @@ create table book_reviews (
 );
 
 comment on column book_reviews.reviewer is 'cardinality:M2O';
+
 comment on column book_reviews.book_id is 'cardinality:M2O';

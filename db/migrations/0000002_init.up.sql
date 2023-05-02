@@ -157,7 +157,9 @@ create table user_notifications (
 );
 
 comment on column user_notifications.user_id is 'cardinality:M2O';
-comment on column user_notifications.notification_id is 'cardinality:M2O'; -- user_notif are fan out
+
+-- user_notif are fan out
+comment on column user_notifications.notification_id is 'cardinality:M2O';
 
 create index on user_notifications (user_id);
 
@@ -348,9 +350,11 @@ create table demo_two_work_items (
 );
 
 -- FIXME xo cannot properly infer edge case when PK is FK
-comment on column work_items.work_item_id IS 'cardinality:O2O';
-comment on column demo_work_items.work_item_id IS 'cardinality:O2O';
-comment on column demo_two_work_items.work_item_id IS 'cardinality:O2O';
+comment on column work_items.work_item_id is 'cardinality:O2O';
+
+comment on column demo_work_items.work_item_id is 'cardinality:O2O';
+
+comment on column demo_two_work_items.work_item_id is 'cardinality:O2O';
 
 -- for finding all deleted work items exclusively
 create index on work_items (deleted_at)
@@ -368,6 +372,7 @@ create table work_item_comments (
 );
 
 comment on column work_item_comments.work_item_id is 'cardinality:M2O';
+
 comment on column work_item_comments.user_id is 'cardinality:M2O';
 
 create index on work_item_comments (work_item_id);

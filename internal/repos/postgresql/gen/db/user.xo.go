@@ -357,7 +357,7 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey"
+-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
@@ -480,7 +480,7 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey"
+-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
@@ -603,7 +603,7 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey"
+-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
@@ -725,7 +725,7 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey"
+-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
@@ -847,7 +847,7 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey"
+-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
@@ -969,7 +969,7 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey"
+-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (
@@ -1092,7 +1092,7 @@ left join (
     time_entries
   group by
         user_id) joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
--- O2O join generated from "user_api_keys_user_id_fkey"
+-- O2O join generated from "user_api_keys_user_id_fkey(O2O inferred)"
 left join user_api_keys on user_api_keys.user_id = users.user_id
 -- M2O join generated from "user_notifications_user_id_fkey"
 left join (

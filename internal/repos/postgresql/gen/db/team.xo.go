@@ -259,7 +259,7 @@ left join (
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
--- O2O join generated from "work_items_team_id_fkey"
+-- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items on work_items.team_id = teams.team_id` +
 		` WHERE teams.name = $5 AND teams.project_id = $6 `
 	sqlstr += c.orderBy
@@ -324,7 +324,7 @@ left join (
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
--- O2O join generated from "work_items_team_id_fkey"
+-- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items on work_items.team_id = teams.team_id` +
 		` WHERE teams.name = $5 `
 	sqlstr += c.orderBy
@@ -390,7 +390,7 @@ left join (
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
--- O2O join generated from "work_items_team_id_fkey"
+-- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items on work_items.team_id = teams.team_id` +
 		` WHERE teams.project_id = $5 `
 	sqlstr += c.orderBy
@@ -456,7 +456,7 @@ left join (
     group by user_team_team_id
   ) as joined_users on joined_users.user_team_team_id = teams.team_id
 
--- O2O join generated from "work_items_team_id_fkey"
+-- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
 left join work_items on work_items.team_id = teams.team_id` +
 		` WHERE teams.team_id = $5 `
 	sqlstr += c.orderBy

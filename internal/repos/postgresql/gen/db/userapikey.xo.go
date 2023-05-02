@@ -222,7 +222,7 @@ user_api_keys.expires_on,
 user_api_keys.user_id,
 (case when $1::boolean = true and users.api_key_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
-		`-- O2O join generated from "users_api_key_id_fkey"
+		`-- O2O join generated from "users_api_key_id_fkey(O2O inferred)"
 left join users on users.api_key_id = user_api_keys.user_api_key_id` +
 		` WHERE user_api_keys.api_key = $2 `
 	sqlstr += c.orderBy
@@ -261,7 +261,7 @@ user_api_keys.expires_on,
 user_api_keys.user_id,
 (case when $1::boolean = true and users.api_key_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
-		`-- O2O join generated from "users_api_key_id_fkey"
+		`-- O2O join generated from "users_api_key_id_fkey(O2O inferred)"
 left join users on users.api_key_id = user_api_keys.user_api_key_id` +
 		` WHERE user_api_keys.user_api_key_id = $2 `
 	sqlstr += c.orderBy
@@ -300,7 +300,7 @@ user_api_keys.expires_on,
 user_api_keys.user_id,
 (case when $1::boolean = true and users.api_key_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_api_keys ` +
-		`-- O2O join generated from "users_api_key_id_fkey"
+		`-- O2O join generated from "users_api_key_id_fkey(O2O inferred)"
 left join users on users.api_key_id = user_api_keys.user_api_key_id` +
 		` WHERE user_api_keys.user_id = $2 `
 	sqlstr += c.orderBy

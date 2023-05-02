@@ -971,7 +971,7 @@ cc_label:
 			cc = append(cc, Constraint{
 				Type:           constraint.Type,
 				Cardinality:    O2O,
-				Name:           constraint.Name,
+				Name:           constraint.Name + "(O2O inferred)",
 				RefTableName:   constraint.TableName,
 				TableName:      constraint.RefTableName,
 				RefColumnName:  constraint.ColumnName,

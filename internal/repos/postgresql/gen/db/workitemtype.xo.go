@@ -211,7 +211,7 @@ work_item_types.color,
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey"
+-- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.name = $3 AND work_item_types.project_id = $4 `
 	sqlstr += c.orderBy
@@ -254,7 +254,7 @@ work_item_types.color,
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey"
+-- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.name = $3 `
 	sqlstr += c.orderBy
@@ -298,7 +298,7 @@ work_item_types.color,
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey"
+-- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.project_id = $3 `
 	sqlstr += c.orderBy
@@ -342,7 +342,7 @@ work_item_types.color,
 		`FROM public.work_item_types ` +
 		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
 left join projects on projects.project_id = work_item_types.project_id
--- O2O join generated from "work_items_work_item_type_id_fkey"
+-- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
 		` WHERE work_item_types.work_item_type_id = $3 `
 	sqlstr += c.orderBy
