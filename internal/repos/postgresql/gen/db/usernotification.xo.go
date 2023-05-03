@@ -21,8 +21,8 @@ type UserNotification struct {
 	Read               bool      `json:"read" db:"read" required:"true"`                               // read
 	UserID             uuid.UUID `json:"userID" db:"user_id" required:"true"`                          // user_id
 
-	NotificationJoin *Notification `json:"-" db:"notification" openapi-go:"ignore"` // O2O
-	UserJoin         *User         `json:"-" db:"user" openapi-go:"ignore"`         // O2O
+	NotificationJoin *Notification `json:"-" db:"notification" openapi-go:"ignore"` // O2O (generated from M2O)
+	UserJoin         *User         `json:"-" db:"user" openapi-go:"ignore"`         // O2O (generated from M2O)
 
 }
 
@@ -194,9 +194,9 @@ user_notifications.user_id,
 (case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_notifications ` +
-		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
--- O2O join generated from "user_notifications_user_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = user_notifications.user_id` +
 		` WHERE user_notifications.notification_id = $3 AND user_notifications.user_id = $4 `
 	sqlstr += c.orderBy
@@ -235,9 +235,9 @@ user_notifications.user_id,
 (case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_notifications ` +
-		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
--- O2O join generated from "user_notifications_user_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = user_notifications.user_id` +
 		` WHERE user_notifications.notification_id = $3 `
 	sqlstr += c.orderBy
@@ -278,9 +278,9 @@ user_notifications.user_id,
 (case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_notifications ` +
-		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
--- O2O join generated from "user_notifications_user_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = user_notifications.user_id` +
 		` WHERE user_notifications.user_notification_id = $3 `
 	sqlstr += c.orderBy
@@ -319,9 +319,9 @@ user_notifications.user_id,
 (case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.user_notifications ` +
-		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
--- O2O join generated from "user_notifications_user_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = user_notifications.user_id` +
 		` WHERE user_notifications.user_id = $3 `
 	sqlstr += c.orderBy

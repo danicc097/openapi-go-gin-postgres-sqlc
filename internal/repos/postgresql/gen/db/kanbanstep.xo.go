@@ -23,7 +23,7 @@ type KanbanStep struct {
 	Color         string `json:"color" db:"color" required:"true"`                  // color
 	TimeTrackable bool   `json:"timeTrackable" db:"time_trackable" required:"true"` // time_trackable
 
-	ProjectJoin  *Project  `json:"-" db:"project" openapi-go:"ignore"`   // O2O
+	ProjectJoin  *Project  `json:"-" db:"project" openapi-go:"ignore"`   // O2O (generated from M2O)
 	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred)
 
 }
@@ -217,7 +217,7 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
@@ -261,7 +261,7 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
@@ -307,7 +307,7 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
@@ -351,7 +351,7 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
@@ -397,7 +397,7 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
@@ -441,7 +441,7 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
@@ -487,7 +487,7 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
@@ -533,7 +533,7 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
@@ -579,7 +579,7 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
@@ -623,7 +623,7 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
@@ -669,7 +669,7 @@ kanban_steps.time_trackable,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.kanban_steps ` +
-		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = kanban_steps.project_id
 -- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
 left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +

@@ -31,14 +31,13 @@ type cardinality string
 
 const (
 	M2M cardinality = "M2M"
-	O2M cardinality = "O2M"
 	M2O cardinality = "M2O"
 	O2O cardinality = "O2O"
 )
 
 func validCardinality(s string) bool {
 	c := cardinality(s)
-	if c != "" && c != M2M && c != O2M && c != M2O && c != O2O {
+	if c != "" && c != M2M && c != M2O && c != O2O {
 		return false
 	}
 	return true
@@ -713,8 +712,6 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		}
 
 		// emit fkeys
-		// NOTE: do not use these for automatic join generation in replacement of o2o and o2m table comments,
-		// it will also generate joins for m2m lookup tables which pollutes everything
 		for _, fk := range tc.ForeignKeys {
 			fkey, err := convertFKey(ctx, table, fk)
 			if err != nil {
@@ -911,7 +908,6 @@ func convertConstraints(ctx context.Context, constraints []xo.Constraint, tables
 	var cc []Constraint // will create additional dummy constraints for automatic O2O
 cc_label:
 	for _, constraint := range constraints {
-		// fmt.Printf("constraint: %+v\n", constraint)
 		if !validCardinality(constraint.Cardinality) {
 			return []Constraint{}, fmt.Errorf("invalid cardinality: %s", constraint.Cardinality)
 		}
@@ -934,8 +930,8 @@ cc_label:
 					fmt.Printf("%-48s| c.ColumnName == constraint.ColumnName: %s == %s\n", c.Name, c.ColumnName, constraint.ColumnName)
 					break outer
 				}
-			case O2M, M2O:
-				if c.TableName == constraint.TableName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && (ccard == O2M || ccard == M2O) {
+			case M2O:
+				if c.TableName == constraint.TableName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && ccard == M2O {
 					joinTableClash = true
 					fmt.Printf("%-48s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
 					break outer
@@ -977,7 +973,7 @@ cc_label:
 				RefColumnName:  constraint.ColumnName,
 				ColumnName:     constraint.RefColumnName,
 				JoinTableClash: joinTableClash,
-				IsGeneratedO2O: true,
+				IsInferredO2O:  true,
 			})
 
 			continue
@@ -1006,11 +1002,9 @@ cc_label:
 			})
 		}
 
-		if constraint.Cardinality == "M2O" || constraint.Cardinality == "O2M" {
+		if constraint.Cardinality == "M2O" {
 			/**
-			 * TODO will generate O2O dummy constraint on refTable or table
-			 * depending is M2O or O2M
-			 * and create the other constraint accordingly
+			 *
 			 */
 			for _, seenConstraint := range cc {
 				if seenConstraint.TableName == constraint.TableName &&
@@ -1022,14 +1016,15 @@ cc_label:
 			}
 
 			cc = append(cc, Constraint{
-				Type:           constraint.Type,
-				Cardinality:    O2O,
-				Name:           constraint.Name + " (Generated from O2M|M2O)",
-				TableName:      constraint.TableName,
-				RefTableName:   constraint.RefTableName,
-				ColumnName:     constraint.ColumnName,
-				RefColumnName:  constraint.RefColumnName,
-				JoinTableClash: joinTableClash,
+				Type:                  constraint.Type,
+				Cardinality:           O2O,
+				Name:                  constraint.Name + " (Generated from M2O)",
+				TableName:             constraint.TableName,
+				RefTableName:          constraint.RefTableName,
+				ColumnName:            constraint.ColumnName,
+				RefColumnName:         constraint.RefColumnName,
+				JoinTableClash:        joinTableClash,
+				IsGeneratedO2OFromM2O: true,
 			})
 		}
 
@@ -1738,7 +1733,7 @@ type %s struct {
 
 			joinName = camelExport(inflector.Pluralize(lookupName))
 
-		case O2M, M2O:
+		case M2O:
 			if c.RefTableName == sqlname {
 				joinName = camelExport(c.TableName)
 				if c.JoinTableClash {
@@ -2044,7 +2039,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				case M2M:
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 					joinName = prefix + camelExport(inflector.Pluralize(lookupName))
-				case O2M, M2O:
+				case M2O:
 					if c.RefTableName == x.SQLName {
 						joinName = prefix + camelExport(c.TableName)
 						if c.JoinTableClash {
@@ -2092,7 +2087,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				case M2M:
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 					joinName = pref + camelExport(inflector.Pluralize(lookupName))
-				case O2M, M2O:
+				case M2O:
 					if c.RefTableName == x.Table.SQLName {
 						joinName = pref + camelExport(c.TableName)
 						if c.JoinTableClash {
@@ -2411,7 +2406,7 @@ func (f *Funcs) sqlstr_soft_delete(v interface{}) []string {
 
 const (
 	M2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}, '{}') end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
-	O2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}{{.ClashSuffix}}`
+	M2OSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}{{.ClashSuffix}}`
 	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
 	O2OSelect = `(case when {{.Nth}}::boolean = true and {{.JoinTable}}.{{.JoinColumn}} is not null then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}`
 )
@@ -2442,7 +2437,6 @@ left join (
     {{.JoinTable}}
   group by
         {{.JoinColumn}}) joined_{{.JoinTable}}{{.ClashSuffix}} on joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}_{{.JoinRefColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
-	O2MJoin = M2OJoin
 	O2OJoin = `
 left join {{.JoinTable}} on {{.JoinTable}}.{{.JoinColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
 )
@@ -2616,9 +2610,9 @@ func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.Fu
 			}
 		}
 
-	case O2M, M2O:
-		joinTpl = O2MJoin
-		selectTpl = O2MSelect
+	case M2O:
+		joinTpl = M2OJoin
+		selectTpl = M2OSelect
 		if c.RefTableName == x.Table.SQLName {
 			params["JoinColumn"] = c.ColumnName
 			params["JoinTable"] = c.TableName
@@ -2982,6 +2976,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 		return "", nil
 	}
 	for _, c := range cc {
+		var notes string
 		// sync with extratypes
 		switch c.Cardinality {
 		case M2M:
@@ -3003,7 +2998,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Pluralize(lookupName))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, c.Cardinality))
-		case O2M, M2O:
+		case M2O:
 			var joinName string
 			if c.RefTableName == t.SQLName {
 				goName = camelExport(singularize(c.TableName))
@@ -3032,16 +3027,19 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			}
 
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
-			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, c.Cardinality))
+			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 		case O2O:
 			if c.TableName == t.SQLName {
 				goName = camelExport(singularize(c.RefTableName))
 				typ = goName
 				goName = goName + "Join"
 
-				var notes string
-				if c.IsGeneratedO2O {
+				if c.IsInferredO2O {
 					notes = " (inferred)"
+				}
+
+				if c.IsGeneratedO2OFromM2O {
+					notes = " (generated from M2O)"
 				}
 
 				joinName := inflector.Singularize(c.RefTableName)
@@ -3519,16 +3517,16 @@ type Constraint struct {
 	Type        string
 	Cardinality cardinality
 	// Postgres constraint name
-	Name            string
-	TableName       string // table where FK is defined
-	ColumnName      string
-	RefTableName    string // table FK references
-	RefColumnName   string // RefTableName column FK references
-	LookupColumn    string // (M2M) lookup table column
-	LookupRefColumn string // (M2M) referenced PK by LookupColumn
-	JoinTableClash  bool   // Whether other constraints join against the same table
-	IsGeneratedO2O  bool   // Whether this constraint has been generated or altered automatically
-	IsGeneratedO2M  bool   // Whether this constraint has been generated or altered automatically
+	Name                  string
+	TableName             string // table where FK is defined
+	ColumnName            string
+	RefTableName          string // table FK references
+	RefColumnName         string // RefTableName column FK references
+	LookupColumn          string // (M2M) lookup table column
+	LookupRefColumn       string // (M2M) referenced PK by LookupColumn
+	JoinTableClash        bool   // Whether other constraints join against the same table
+	IsInferredO2O         bool   // Whether this constraint has been generated from a foreign key
+	IsGeneratedO2OFromM2O bool
 }
 
 // Field is a field template.

@@ -53,8 +53,13 @@ confirm() {
 
   prompt+=" [y/n]"
 
+  # Always read input from the terminal ignoring pipelines
+  exec </dev/tty
+
   while true; do
-    read -r -p "$prompt " response
+    # output the prompt directly to the terminal ignoring pipelines
+    echo -n "$prompt "
+    read -r response
     case "${response,,}" in
     [y][e][s] | [y])
       return 0

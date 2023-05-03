@@ -21,7 +21,7 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description" required:"true"`        // description
 	Color         string `json:"color" db:"color" required:"true"`                    // color
 
-	ProjectJoin   *Project    `json:"-" db:"project" openapi-go:"ignore"`    // O2O
+	ProjectJoin   *Project    `json:"-" db:"project" openapi-go:"ignore"`    // O2O (generated from M2O)
 	WorkItemsJoin *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
 
 }
@@ -201,7 +201,7 @@ work_item_tags.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
-		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -251,7 +251,7 @@ work_item_tags.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
-		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -303,7 +303,7 @@ work_item_tags.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
-		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -355,7 +355,7 @@ work_item_tags.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
-		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (

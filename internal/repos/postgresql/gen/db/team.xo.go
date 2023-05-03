@@ -24,7 +24,7 @@ type Team struct {
 	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
 	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
-	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O
+	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O (generated from M2O)
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
 	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`        // M2M
 	WorkItemJoin    *WorkItem    `json:"-" db:"work_item" openapi-go:"ignore"`    // O2O (inferred)
@@ -226,7 +226,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
-		`-- O2O join generated from "teams_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -290,7 +290,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
-		`-- O2O join generated from "teams_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -356,7 +356,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
-		`-- O2O join generated from "teams_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -422,7 +422,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
-		`-- O2O join generated from "teams_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (

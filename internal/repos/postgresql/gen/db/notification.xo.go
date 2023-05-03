@@ -29,8 +29,8 @@ type Notification struct {
 	Receiver         *uuid.UUID       `json:"receiver" db:"receiver" required:"true"`                                                              // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
 
-	UserJoinReceiver      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O
-	UserJoinSender        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O
+	UserJoinReceiver      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O (generated from M2O)
+	UserJoinSender        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O (generated from M2O)
 	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O
 
 }
@@ -258,9 +258,9 @@ notifications.notification_type,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
-		`-- O2O join generated from "notifications_receiver_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
 left join users on users.user_id = notifications.receiver
--- O2O join generated from "notifications_sender_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
 left join users on users.user_id = notifications.sender
 -- M2O join generated from "user_notifications_notification_id_fkey"
 left join (
@@ -315,9 +315,9 @@ notifications.notification_type,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
-		`-- O2O join generated from "notifications_receiver_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
 left join users on users.user_id = notifications.receiver
--- O2O join generated from "notifications_sender_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
 left join users on users.user_id = notifications.sender
 -- M2O join generated from "user_notifications_notification_id_fkey"
 left join (

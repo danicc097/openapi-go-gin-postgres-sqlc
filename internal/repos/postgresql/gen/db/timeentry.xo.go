@@ -27,10 +27,10 @@ type TimeEntry struct {
 	Start           time.Time `json:"start" db:"start" required:"true"`                      // start
 	DurationMinutes *int      `json:"durationMinutes" db:"duration_minutes" required:"true"` // duration_minutes
 
-	ActivityJoin *Activity `json:"-" db:"activity" openapi-go:"ignore"`  // O2O
-	TeamJoin     *Team     `json:"-" db:"team" openapi-go:"ignore"`      // O2O
-	UserJoin     *User     `json:"-" db:"user" openapi-go:"ignore"`      // O2O
-	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
+	ActivityJoin *Activity `json:"-" db:"activity" openapi-go:"ignore"`  // O2O (generated from M2O)
+	TeamJoin     *Team     `json:"-" db:"team" openapi-go:"ignore"`      // O2O (generated from M2O)
+	UserJoin     *User     `json:"-" db:"user" openapi-go:"ignore"`      // O2O (generated from M2O)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (generated from M2O)
 
 }
 
@@ -251,13 +251,13 @@ time_entries.duration_minutes,
 (case when $3::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $4::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.time_entries ` +
-		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
 left join activities on activities.activity_id = time_entries.activity_id
--- O2O join generated from "time_entries_team_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
 left join teams on teams.team_id = time_entries.team_id
--- O2O join generated from "time_entries_user_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = time_entries.user_id
--- O2O join generated from "time_entries_work_item_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
 left join work_items on work_items.work_item_id = time_entries.work_item_id` +
 		` WHERE time_entries.time_entry_id = $5 `
 	sqlstr += c.orderBy
@@ -302,13 +302,13 @@ time_entries.duration_minutes,
 (case when $3::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $4::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.time_entries ` +
-		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
 left join activities on activities.activity_id = time_entries.activity_id
--- O2O join generated from "time_entries_team_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
 left join teams on teams.team_id = time_entries.team_id
--- O2O join generated from "time_entries_user_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = time_entries.user_id
--- O2O join generated from "time_entries_work_item_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
 left join work_items on work_items.work_item_id = time_entries.work_item_id` +
 		` WHERE time_entries.user_id = $5 AND time_entries.team_id = $6 `
 	sqlstr += c.orderBy
@@ -355,13 +355,13 @@ time_entries.duration_minutes,
 (case when $3::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $4::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.time_entries ` +
-		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
 left join activities on activities.activity_id = time_entries.activity_id
--- O2O join generated from "time_entries_team_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
 left join teams on teams.team_id = time_entries.team_id
--- O2O join generated from "time_entries_user_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = time_entries.user_id
--- O2O join generated from "time_entries_work_item_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
 left join work_items on work_items.work_item_id = time_entries.work_item_id` +
 		` WHERE time_entries.work_item_id = $5 AND time_entries.team_id = $6 `
 	sqlstr += c.orderBy

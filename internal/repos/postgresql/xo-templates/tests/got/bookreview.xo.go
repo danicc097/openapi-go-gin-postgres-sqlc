@@ -20,8 +20,8 @@ type BookReview struct {
 	BookID       int       `json:"bookID" db:"book_id" required:"true"`              // book_id
 	Reviewer     uuid.UUID `json:"reviewer" db:"reviewer" required:"true"`           // reviewer
 
-	BookJoin *Book `json:"-" db:"book" openapi-go:"ignore"` // O2O
-	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O
+	BookJoin *Book `json:"-" db:"book" openapi-go:"ignore"` // O2O (generated from M2O)
+	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (generated from M2O)
 }
 
 // BookReviewCreateParams represents insert params for 'public.book_reviews'
@@ -183,9 +183,9 @@ book_reviews.reviewer,
 (case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join books on books.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join users on users.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.book_review_id = $3 `
 	sqlstr += c.orderBy
@@ -223,9 +223,9 @@ book_reviews.reviewer,
 (case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join books on books.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join users on users.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.reviewer = $3 AND book_reviews.book_id = $4 `
 	sqlstr += c.orderBy
@@ -263,9 +263,9 @@ book_reviews.reviewer,
 (case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join books on books.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join users on users.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.reviewer = $3 `
 	sqlstr += c.orderBy
@@ -305,9 +305,9 @@ book_reviews.reviewer,
 (case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join books on books.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join users on users.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.book_id = $3 `
 	sqlstr += c.orderBy

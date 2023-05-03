@@ -21,7 +21,7 @@ type Activity struct {
 	Description  string `json:"description" db:"description" required:"true"`    // description
 	IsProductive bool   `json:"isProductive" db:"is_productive" required:"true"` // is_productive
 
-	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O
+	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O (generated from M2O)
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
 
 }
@@ -201,7 +201,7 @@ activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
@@ -250,7 +250,7 @@ activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
@@ -301,7 +301,7 @@ activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
@@ -352,7 +352,7 @@ activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
