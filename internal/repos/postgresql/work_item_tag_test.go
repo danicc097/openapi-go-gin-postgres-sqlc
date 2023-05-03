@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
@@ -19,7 +19,7 @@ func TestWorkItemTag_ByIndexedQueries(t *testing.T) {
 
 	ctx := context.Background()
 
-	project, err := projectRepo.ByName(ctx, testPool, internalmodels.ProjectDemo)
+	project, err := projectRepo.ByName(ctx, testPool, models.ProjectDemo)
 	if err != nil {
 		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
 	}

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
@@ -35,7 +35,6 @@ func NewProject(logger *zap.Logger,
 	}
 }
 
-// addTeam, removeTeam, ByID
 func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID int) (*db.Project, error) {
 	defer newOTELSpan(ctx, "Project.ByID").End()
 
@@ -47,17 +46,27 @@ func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID int) (*db.Proje
 	return project, nil
 }
 
-// TODO accept array of paths to initialize obj with (this will be done at app startup right before running server and update db).
-// therefore config is always up to date in the backend. obj2 will be empty
-// when a user updates the config in UI we use this same function but with empty [] of paths
-// therefore we use db's config untouched as is.
-// merging logic is the same for both scenarios.
+func (p *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*db.Project, error) {
+	defer newOTELSpan(ctx, "Project.ByName").End()
+
+	project, err := p.projectRepo.ByName(ctx, d, name)
+	if err != nil {
+		return nil, internal.NewErrorf(internal.ErrorCodeNotFound, "project not found")
+	}
+
+	return project, nil
+}
+
 // obj1 : required existing database config
-// obj2 : optional user config update request
-// pathKeys : optional keys to generate the initial config from. obj1 will be merged into this object
-// TODO accepts projectID to get both pathKeys and obj1 every time
+// update : config update object
 // (we dont know any of those, just projectID)
-func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID int, obj2 map[string]any) (*internalmodels.ProjectConfig, error) {
+// TODO call this for every project at app startup, therefore config is always up to date in the db. `update` will be empty in this first update.
+// when a user updates the config in UI we use this same function but with empty [] of paths.
+// merging logic is the same for both scenarios.
+// we are not typing the update to save ourselves from manually adding a migration to change projects.board_config
+// when _any_ field changes. we generate a new config the way it must be and merge with whatever was in db's board_config there at app startup.
+// the endpoint to update it will be validated by openapi libs as usual.
+func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID int, update map[string]any) (*models.ProjectConfig, error) {
 	project, err := p.projectRepo.ByID(ctx, d, projectID)
 	if err != nil {
 		return nil, internal.NewErrorf(internal.ErrorCodeNotFound, "project not found")
@@ -65,48 +74,47 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectID in
 
 	fieldsMap := make(map[string]map[string]any)
 
-	obj1 := project.BoardConfig
-
-	// fmt.Printf("project.BoardConfig: %v\n", string(project.BoardConfig.Bytes))
-	fmt.Printf("obj1: %v\n", obj1)
+	fmt.Printf("project.BoardConfig: %v\n", project.BoardConfig)
 
 	var workItem any
-	switch internalmodels.Project(project.Name) {
-	case internalmodels.ProjectDemo:
+	switch project.Name {
+	case models.ProjectDemo:
 		// explicitly initialize what we want to allow an admin to edit in project config ui
-		workItem = &internalmodels.RestDemoWorkItemsResponse{DemoWorkItem: internalmodels.DbDemoWorkItem{}, Closed: pointers.New(time.Now())}
-		// workItem = structs.InitializeFields(reflect.ValueOf(workItem), 1).Interface() //
+		workItem = &models.RestDemoWorkItemsResponse{DemoWorkItem: models.DbDemoWorkItem{}, Closed: pointers.New(time.Now())}
+		// workItem = structs.InitializeFields(reflect.ValueOf(workItem), 1).Interface() // we want very specific fields to be editable in config so it doesn't clutter it
 		fmt.Printf("workItem: %+v\n", workItem)
 	}
 	pathKeys := structs.GetKeys(workItem, "")
 
+	// index ProjectConfig.Fields by path for simpler logic
 	for _, path := range pathKeys {
 		fieldsMap[path] = defaultConfigField(path)
 	}
 
-	var obj1Map map[string]any
-	fj, _ := json.Marshal(obj1)
-	json.Unmarshal(fj, &obj1Map)
+	var boardConfigMap map[string]any
+	fj, _ := json.Marshal(project.BoardConfig)
+	json.Unmarshal(fj, &boardConfigMap)
 
-	p.mergeFieldsMap(fieldsMap, obj1Map)
+	p.mergeFieldsMap(fieldsMap, boardConfigMap)
 
-	p.mergeFieldsMap(fieldsMap, obj2)
+	p.mergeFieldsMap(fieldsMap, update)
 
-	obj1.Fields = make([]internalmodels.ProjectConfigField, 0, len(fieldsMap))
+	project.BoardConfig.Fields = make([]models.ProjectConfigField, 0, len(fieldsMap))
 	for _, field := range fieldsMap {
-		var fieldStruct internalmodels.ProjectConfigField
+		var fieldStruct models.ProjectConfigField
 
 		fBlob, _ := json.Marshal(field)
 		_ = json.Unmarshal(fBlob, &fieldStruct)
 
-		obj1.Fields = append(obj1.Fields, fieldStruct)
+		project.BoardConfig.Fields = append(project.BoardConfig.Fields, fieldStruct)
 	}
 
-	return &obj1, err
+	return &project.BoardConfig, err
 }
 
+// defaultConfigField returns a map version of the ProjectConfig.Fields field.
 func defaultConfigField(path string) map[string]any {
-	f := internalmodels.ProjectConfigField{
+	f := models.ProjectConfigField{
 		Path:          path,
 		Name:          path[strings.LastIndex(path, ".")+1:],
 		IsVisible:     true,
@@ -123,11 +131,13 @@ func defaultConfigField(path string) map[string]any {
 }
 
 // https://github.com/icza/dyno looks promising
-func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, obj map[string]any) {
-	fieldsInterface, ok := obj["fields"]
+func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, update map[string]any) {
+	fieldsInterface, ok := update["fields"]
 	if !ok {
 		return
 	}
+
+	// map version of ProjectConfig.Fields field
 	var fields []map[string]any // can't type assert map values of any when obj comes from unmarshalling
 	fBlob, err := json.Marshal(fieldsInterface)
 	if err != nil {
@@ -140,7 +150,7 @@ func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, obj map[st
 	for _, fieldMap := range fields {
 		path, ok := fieldMap["path"].(string)
 		if !ok {
-			continue
+			continue // unknown config field passed
 		}
 
 		if fm, ok := fieldsMap[path]; ok {
@@ -148,9 +158,8 @@ func (p *Project) mergeFieldsMap(fieldsMap map[string]map[string]any, obj map[st
 
 			for key, value := range fieldMap {
 				if reflect.TypeOf(value) != reflect.TypeOf(newField[key]) {
-					continue
+					continue // our config was changed or a wrong type was provided
 				}
-				// fmt.Printf("value: %v\n", value)
 				newField[key] = value
 			}
 			fieldsMap[path] = newField

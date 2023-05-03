@@ -174,11 +174,6 @@ func shouldSkipType(typ reflect.Type) bool {
 		return shouldSkipType(typ.Elem())
 	}
 
-	// FIXME these have to be generated, they're part of db models.
-	// somehow ModelsProjectConfig, etc. are being generated from db models though
-	// without clear reason, since ref is set on those fields. openapi-go
-	// is generating with a default name of pkg path + type, even when they have no references
-	// in the spec.
 	// return strings.HasSuffix(typ.PkgPath(), "/internal/models")
 
 	return false

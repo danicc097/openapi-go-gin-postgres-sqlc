@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
@@ -19,11 +19,11 @@ import (
 func TestDemoWorkItem_Update(t *testing.T) {
 	t.Parallel()
 
-	projectID := internal.ProjectIDByName[internalmodels.ProjectDemo]
+	projectID := internal.ProjectIDByName[models.ProjectDemo]
 	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, projectID)
 
-	kanbanStepID := internal.DemoKanbanStepsIDByName[internalmodels.DemoKanbanStepsReceived]
-	workItemTypeID := internal.DemoWorkItemTypesIDByName[internalmodels.DemoWorkItemTypesType1]
+	kanbanStepID := internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived]
+	workItemTypeID := internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1]
 	demoWorkItem, _ := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, projectID, kanbanStepID, workItemTypeID, team.TeamID)
 
 	type args struct {
