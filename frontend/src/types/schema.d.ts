@@ -294,6 +294,10 @@ export interface components {
       firstName?: string;
       /** @description originally from auth server but updatable */
       lastName?: string;
+      /** @description originally from auth server but updatable */
+      username?: string;
+      /** @description originally from auth server but updatable */
+      email?: string;
     };
     /**
      * @description represents User authorization data to update 

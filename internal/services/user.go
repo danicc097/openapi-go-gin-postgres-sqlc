@@ -106,15 +106,19 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id string, caller *db.User
 		return nil, internal.NewErrorf(internal.ErrorCodeUnauthorized, "cannot change another user's information")
 	}
 
-	// TODO this could be automated a function based on rest params
-	// since repo update params will all be pointers by default regardless of actual
-	// requirements (given by rest params pointer vs nonpointer)
+	// TODO this could be done automatically with an adaptation of updateEntityWithParams
 	repoUpdateParams := db.UserUpdateParams{}
 	if params.FirstName != nil {
 		repoUpdateParams.FirstName = pointers.New(params.FirstName)
 	}
 	if params.LastName != nil {
 		repoUpdateParams.LastName = pointers.New(params.LastName)
+	}
+	if params.Email != nil {
+		repoUpdateParams.Email = params.Email
+	}
+	if params.Username != nil {
+		repoUpdateParams.Username = params.Username
 	}
 
 	user, err = u.urepo.Update(ctx, d, uid, &repoUpdateParams)
