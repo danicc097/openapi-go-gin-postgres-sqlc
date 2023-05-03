@@ -7,10 +7,24 @@
  */
 import { rest } from 'msw'
 import { faker } from '@faker-js/faker'
+import { Project, Scope } from '.././model'
 
 export const getGetProjectMock = () => ({
+  boardConfig: {
+    fields: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      isEditable: faker.datatype.boolean(),
+      isVisible: faker.datatype.boolean(),
+      name: faker.random.word(),
+      path: faker.random.word(),
+      showCollapsed: faker.datatype.boolean(),
+    })),
+    header: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+      faker.random.word(),
+    ),
+  },
   createdAt: (() => faker.date.past())(),
   description: faker.random.word(),
+  name: faker.helpers.arrayElement(Object.values(Project)),
   projectID: faker.datatype.number({ min: undefined, max: undefined }),
   updatedAt: (() => faker.date.past())(),
 })
@@ -36,6 +50,18 @@ export const getGetProjectBoardMock = () => ({
     name: faker.random.word(),
     projectID: faker.datatype.number({ min: undefined, max: undefined }),
   })),
+  boardConfig: {
+    fields: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      isEditable: faker.datatype.boolean(),
+      isVisible: faker.datatype.boolean(),
+      name: faker.random.word(),
+      path: faker.random.word(),
+      showCollapsed: faker.datatype.boolean(),
+    })),
+    header: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+      faker.random.word(),
+    ),
+  },
   createdAt: (() => faker.date.past())(),
   description: faker.random.word(),
   kanbanSteps: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
@@ -47,6 +73,7 @@ export const getGetProjectBoardMock = () => ({
     stepOrder: faker.helpers.arrayElement([faker.datatype.number({ min: undefined, max: undefined }), null]),
     timeTrackable: faker.datatype.boolean(),
   })),
+  name: faker.helpers.arrayElement(Object.values(Project)),
   projectID: faker.datatype.number({ min: undefined, max: undefined }),
   teams: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     createdAt: (() => faker.date.past())(),
@@ -97,6 +124,7 @@ export const getGetProjectWorkitemsMock = () =>
         hasGlobalNotifications: faker.datatype.boolean(),
         hasPersonalNotifications: faker.datatype.boolean(),
         lastName: faker.helpers.arrayElement([faker.random.word(), null]),
+        scopes: faker.helpers.arrayElements(Object.values(Scope)),
         userID: faker.random.word(),
         username: faker.random.word(),
       })),

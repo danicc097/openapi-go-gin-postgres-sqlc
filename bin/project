@@ -1416,10 +1416,20 @@ replace_enum_in_spec() {
     ($schema_path | key) line_comment=\"Generated from $src_comment. DO NOT EDIT.\"" -i $SPEC
 }
 
+awk_remove_go_comments='
+     /\/\*/ { f=1 } # set flag that is a block comment
+
+     f==0 && !/^\s*(\/\/|\/\*)/ {
+        print  # print non-commented lines
+     }
+     /\*\// { f=0 } # reset flag at end of comment
+'
+
 find_go_structs() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec sed -ne 's/[\s]*type\(.*\)struct.*/\1/p' {} \; | grep -vE '^\s*(//|/\*)' || exit 1)
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
+    sed -ne 's/[\s]*type\(.*\)struct.*/\1/p')
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No structs found in package $pkg"
   fi
@@ -1429,7 +1439,8 @@ find_go_structs() {
 find_go_enums() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec sed -ne 's/.*type[[:space:]]\+\([^=[:space:]]\+\)[[:space:]]\+string.*/\1/p' {} \; | grep -vE '^\s*(//|/\*)' || exit 1)
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
+    sed -ne 's/.*type[[:space:]]\+\([^=[:space:]]\+\)[[:space:]]\+string.*/\1/p')
   if [[ ${#__arr[@]} -eq 0 ]]; then
     echo "No enums found in package $pkg"
   fi

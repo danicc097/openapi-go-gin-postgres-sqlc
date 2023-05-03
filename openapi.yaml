@@ -391,11 +391,15 @@ components:
       x-postgen-struct: DbKanbanStep
     DbProject: # Generated from internal structs. DO NOT EDIT.
       properties:
+        boardConfig:
+          $ref: '#/components/schemas/ProjectConfig'
         createdAt:
           format: date-time
           type: string
         description:
           type: string
+        name:
+          $ref: '#/components/schemas/Project'
         projectID:
           type: integer
         updatedAt:
@@ -535,6 +539,8 @@ components:
         lastName:
           nullable: true
           type: string
+        scopes:
+          $ref: '#/components/schemas/Scopes'
         userID:
           $ref: '#/components/schemas/UuidUUID'
         username:
@@ -754,6 +760,8 @@ components:
             $ref: '#/components/schemas/DbActivity'
           nullable: true
           type: array
+        boardConfig:
+          $ref: '#/components/schemas/ProjectConfig'
         createdAt:
           format: date-time
           type: string
@@ -764,6 +772,8 @@ components:
             $ref: '#/components/schemas/DbKanbanStep'
           nullable: true
           type: array
+        name:
+          $ref: '#/components/schemas/Project'
         projectID:
           type: integer
         teams:
@@ -829,6 +839,10 @@ components:
             $ref: '#/components/schemas/DbProject'
           nullable: true
           type: array
+        role:
+          $ref: '#/components/schemas/Role'
+        scopes:
+          $ref: '#/components/schemas/Scopes'
         teams:
           items:
             $ref: '#/components/schemas/DbTeam'

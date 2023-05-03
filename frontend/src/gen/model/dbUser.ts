@@ -5,6 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { Scopes } from './scopes'
 import type { UuidUUID } from './uuidUUID'
 
 export interface DbUser {
@@ -16,6 +17,7 @@ export interface DbUser {
   hasGlobalNotifications: boolean
   hasPersonalNotifications: boolean
   lastName: string | null
+  scopes: Scopes
   userID: UuidUUID
   username: string
 }

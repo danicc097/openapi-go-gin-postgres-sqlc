@@ -94,9 +94,11 @@ export interface components {
       timeTrackable: boolean;
     };
     DbProject: {
+      boardConfig: components["schemas"]["ProjectConfig"];
       /** Format: date-time */
       createdAt: string;
       description: string;
+      name: components["schemas"]["Project"];
       projectID: number;
       /** Format: date-time */
       updatedAt: string;
@@ -150,6 +152,7 @@ export interface components {
       hasGlobalNotifications: boolean;
       hasPersonalNotifications: boolean;
       lastName: string | null;
+      scopes: components["schemas"]["Scopes"];
       userID: components["schemas"]["UuidUUID"];
       username: string;
     };
@@ -218,10 +221,12 @@ export interface components {
     };
     RestProjectBoardResponse: {
       activities: (components["schemas"]["DbActivity"])[] | null;
+      boardConfig: components["schemas"]["ProjectConfig"];
       /** Format: date-time */
       createdAt: string;
       description: string;
       kanbanSteps: (components["schemas"]["DbKanbanStep"])[] | null;
+      name: components["schemas"]["Project"];
       projectID: number;
       teams: (components["schemas"]["DbTeam"])[] | null;
       /** Format: date-time */
@@ -242,6 +247,8 @@ export interface components {
       hasPersonalNotifications: boolean;
       lastName: string | null;
       projects?: (components["schemas"]["DbProject"])[] | null;
+      role: components["schemas"]["Role"];
+      scopes: components["schemas"]["Scopes"];
       teams?: (components["schemas"]["DbTeam"])[] | null;
       userID: components["schemas"]["UuidUUID"];
       username: string;

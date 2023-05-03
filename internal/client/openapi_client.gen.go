@@ -294,10 +294,12 @@ type DbKanbanStepCreateParams struct {
 
 // DbProject defines the model for DbProject.
 type DbProject struct {
-	CreatedAt   time.Time `json:"createdAt"`
-	Description string    `json:"description"`
-	ProjectID   int       `json:"projectID"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	BoardConfig ProjectConfig `json:"boardConfig"`
+	CreatedAt   time.Time     `json:"createdAt"`
+	Description string        `json:"description"`
+	Name        Project       `json:"name"`
+	ProjectID   int           `json:"projectID"`
+	UpdatedAt   time.Time     `json:"updatedAt"`
 }
 
 // DbTeam defines the model for DbTeam.
@@ -339,6 +341,7 @@ type DbUser struct {
 	HasGlobalNotifications   bool       `json:"hasGlobalNotifications"`
 	HasPersonalNotifications bool       `json:"hasPersonalNotifications"`
 	LastName                 *string    `json:"lastName"`
+	Scopes                   Scopes     `json:"scopes"`
 	UserID                   UuidUUID   `json:"userID"`
 	Username                 string     `json:"username"`
 }
@@ -534,9 +537,11 @@ type RestDemoWorkItemsResponse struct {
 // RestProjectBoardResponse defines the model for RestProjectBoardResponse.
 type RestProjectBoardResponse struct {
 	Activities    *[]DbActivity     `json:"activities"`
+	BoardConfig   ProjectConfig     `json:"boardConfig"`
 	CreatedAt     time.Time         `json:"createdAt"`
 	Description   string            `json:"description"`
 	KanbanSteps   *[]DbKanbanStep   `json:"kanbanSteps"`
+	Name          Project           `json:"name"`
 	ProjectID     int               `json:"projectID"`
 	Teams         *[]DbTeam         `json:"teams"`
 	UpdatedAt     time.Time         `json:"updatedAt"`
@@ -583,6 +588,8 @@ type UserResponse struct {
 	HasPersonalNotifications bool          `json:"hasPersonalNotifications"`
 	LastName                 *string       `json:"lastName"`
 	Projects                 *[]DbProject  `json:"projects"`
+	Role                     Role          `json:"role"`
+	Scopes                   Scopes        `json:"scopes"`
 	Teams                    *[]DbTeam     `json:"teams"`
 	UserID                   UuidUUID      `json:"userID"`
 	Username                 string        `json:"username"`

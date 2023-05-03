@@ -6,7 +6,18 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
+export type Project = 'demo' | 'demo_two'
 export type UuidUUID = string
+export type Scope =
+  | 'test-scope'
+  | 'users:read'
+  | 'users:write'
+  | 'scopes:write'
+  | 'team-settings:write'
+  | 'project-settings:write'
+  | 'work-item:review'
+export type Scopes = Scope[]
+export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 /**
  * location in body path, if any
  */
@@ -28,21 +39,10 @@ export type Messages = string[]
  * string identifiers for SSE event listeners.
  */
 export type Topics = 'GlobalAlerts'
-export type Scope =
-  | 'test-scope'
-  | 'users:read'
-  | 'users:write'
-  | 'scopes:write'
-  | 'team-settings:write'
-  | 'project-settings:write'
-  | 'work-item:review'
-export type Scopes = Scope[]
-export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 /**
  * represents a database 'work_item_role'
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
-export type Project = 'demo' | 'demo_two'
 export type DbWorkItemRole = string
 /**
  * represents a database 'notification_type'
@@ -76,10 +76,23 @@ export interface DbKanbanStep {
   timeTrackable: boolean
 }
 export interface DbProject {
+  boardConfig: ProjectConfig
   createdAt: string
   description: string
+  name: Project
   projectID: number
   updatedAt: string
+}
+export interface ProjectConfig {
+  fields: ProjectConfigField[]
+  header: string[]
+}
+export interface ProjectConfigField {
+  isEditable: boolean
+  isVisible: boolean
+  name: string
+  path: string
+  showCollapsed: boolean
 }
 export interface DbTeam {
   createdAt: string
@@ -124,6 +137,7 @@ export interface DbUser {
   hasGlobalNotifications: boolean
   hasPersonalNotifications: boolean
   lastName: string | null
+  scopes: Scopes
   userID: UuidUUID
   username: string
 }
@@ -144,17 +158,6 @@ export interface DbWorkItemComment {
   userID: UuidUUID
   workItemCommentID: number
   workItemID: number
-}
-export interface ProjectConfig {
-  fields: ProjectConfigField[]
-  header: string[]
-}
-export interface ProjectConfigField {
-  isEditable: boolean
-  isVisible: boolean
-  name: string
-  path: string
-  showCollapsed: boolean
 }
 export interface RestDemoWorkItemsResponse {
   closed: string | null
@@ -201,9 +204,11 @@ export interface DbWorkItemTagCreateParams {
 }
 export interface RestProjectBoardResponse {
   activities: DbActivity[] | null
+  boardConfig: ProjectConfig
   createdAt: string
   description: string
   kanbanSteps: DbKanbanStep[] | null
+  name: Project
   projectID: number
   teams: DbTeam[] | null
   updatedAt: string
@@ -221,6 +226,8 @@ export interface UserResponse {
   hasPersonalNotifications: boolean
   lastName: string | null
   projects?: DbProject[] | null
+  role: Role
+  scopes: Scopes
   teams?: DbTeam[] | null
   userID: UuidUUID
   username: string

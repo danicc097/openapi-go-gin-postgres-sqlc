@@ -73,12 +73,18 @@
     },
     "DbProject": {
       "properties": {
+        "boardConfig": {
+          "$ref": "#/definitions/ProjectConfig"
+        },
         "createdAt": {
           "format": "date-time",
           "type": "string"
         },
         "description": {
           "type": "string"
+        },
+        "name": {
+          "$ref": "#/definitions/Project"
         },
         "projectID": {
           "type": "integer"
@@ -90,7 +96,9 @@
       },
       "required": [
         "projectID",
+        "name",
         "description",
+        "boardConfig",
         "createdAt",
         "updatedAt"
       ],
@@ -283,6 +291,9 @@
             "null"
           ]
         },
+        "scopes": {
+          "$ref": "#/definitions/Scopes"
+        },
         "userID": {
           "$ref": "#/definitions/UuidUUID"
         },
@@ -297,6 +308,7 @@
         "firstName",
         "lastName",
         "fullName",
+        "scopes",
         "hasPersonalNotifications",
         "hasGlobalNotifications",
         "createdAt",
@@ -608,6 +620,9 @@
             "null"
           ]
         },
+        "boardConfig": {
+          "$ref": "#/definitions/ProjectConfig"
+        },
         "createdAt": {
           "format": "date-time",
           "type": "string"
@@ -623,6 +638,9 @@
             "array",
             "null"
           ]
+        },
+        "name": {
+          "$ref": "#/definitions/Project"
         },
         "projectID": {
           "type": "integer"
@@ -661,7 +679,9 @@
       },
       "required": [
         "projectID",
+        "name",
         "description",
+        "boardConfig",
         "createdAt",
         "updatedAt",
         "activities",
@@ -726,6 +746,12 @@
             "null"
           ]
         },
+        "role": {
+          "$ref": "#/definitions/Role"
+        },
+        "scopes": {
+          "$ref": "#/definitions/Scopes"
+        },
         "teams": {
           "items": {
             "$ref": "#/definitions/DbTeam"
@@ -749,10 +775,12 @@
         "firstName",
         "lastName",
         "fullName",
+        "scopes",
         "hasPersonalNotifications",
         "hasGlobalNotifications",
         "createdAt",
-        "deletedAt"
+        "deletedAt",
+        "role"
       ],
       "type": "object",
       "x-postgen-struct": "RestUserResponse",
