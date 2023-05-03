@@ -50,11 +50,6 @@ import {
   DemoTwoKanbanSteps,
   DemoTwoWorkItemTypes,
   DemoWorkItemTypes,
-  ModelsProject,
-  ModelsProjectConfig,
-  ModelsProjectConfigField,
-  ModelsRole,
-  ModelsScope,
 } from './models'
 
 export const schemaDefinitions = {
@@ -131,14 +126,6 @@ export const schemaDefinitions = {
   DemoTwoKanbanSteps: info<DemoTwoKanbanSteps>('DemoTwoKanbanSteps', '#/definitions/DemoTwoKanbanSteps'),
   DemoTwoWorkItemTypes: info<DemoTwoWorkItemTypes>('DemoTwoWorkItemTypes', '#/definitions/DemoTwoWorkItemTypes'),
   DemoWorkItemTypes: info<DemoWorkItemTypes>('DemoWorkItemTypes', '#/definitions/DemoWorkItemTypes'),
-  ModelsProject: info<ModelsProject>('ModelsProject', '#/definitions/ModelsProject'),
-  ModelsProjectConfig: info<ModelsProjectConfig>('ModelsProjectConfig', '#/definitions/ModelsProjectConfig'),
-  ModelsProjectConfigField: info<ModelsProjectConfigField>(
-    'ModelsProjectConfigField',
-    '#/definitions/ModelsProjectConfigField',
-  ),
-  ModelsRole: info<ModelsRole>('ModelsRole', '#/definitions/ModelsRole'),
-  ModelsScope: info<ModelsScope>('ModelsScope', '#/definitions/ModelsScope'),
 }
 
 export interface SchemaInfo<T> {

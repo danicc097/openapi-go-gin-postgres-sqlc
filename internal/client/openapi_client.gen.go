@@ -464,30 +464,6 @@ type InitializeProjectRequest struct {
 	WorkItemTags *[]DbWorkItemTagCreateParams `json:"workItemTags"`
 }
 
-// ModelsProject defines the model for ModelsProject.
-type ModelsProject = string
-
-// ModelsProjectConfig defines the model for ModelsProjectConfig.
-type ModelsProjectConfig struct {
-	Fields *[]ModelsProjectConfigField `json:"fields"`
-	Header *[]string                   `json:"header"`
-}
-
-// ModelsProjectConfigField defines the model for ModelsProjectConfigField.
-type ModelsProjectConfigField struct {
-	IsEditable    *bool   `json:"isEditable,omitempty"`
-	IsVisible     *bool   `json:"isVisible,omitempty"`
-	Name          *string `json:"name,omitempty"`
-	Path          *string `json:"path,omitempty"`
-	ShowCollapsed *bool   `json:"showCollapsed,omitempty"`
-}
-
-// ModelsRole defines the model for ModelsRole.
-type ModelsRole = string
-
-// ModelsScope defines the model for ModelsScope.
-type ModelsScope = string
-
 // NotificationType represents a database 'notification_type'
 type NotificationType string
 

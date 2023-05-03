@@ -412,20 +412,6 @@ export interface components {
     DemoTwoWorkItemTypes: "Type 1" | "Type 2" | "Another type";
     /** @enum {string} */
     DemoWorkItemTypes: "Type 1";
-    ModelsProject: string;
-    ModelsProjectConfig: {
-      fields?: (components["schemas"]["ModelsProjectConfigField"])[] | null;
-      header?: (string)[] | null;
-    };
-    ModelsProjectConfigField: {
-      isEditable?: boolean;
-      isVisible?: boolean;
-      name?: string;
-      path?: string;
-      showCollapsed?: boolean;
-    };
-    ModelsRole: string;
-    ModelsScope: string;
   };
   responses: never;
   parameters: {

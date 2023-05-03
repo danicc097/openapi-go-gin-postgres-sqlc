@@ -55,9 +55,6 @@ export type DemoKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work i
 export type DemoTwoKanbanSteps = 'Received'
 export type DemoTwoWorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
 export type DemoWorkItemTypes = 'Type 1'
-export type ModelsProject = string
-export type ModelsRole = string
-export type ModelsScope = string
 
 export interface DbActivity {
   activityID: number
@@ -303,15 +300,4 @@ export interface DbWorkItemTypeCreateParams {
 export interface DbWorkItem_Member {
   role: WorkItemRole
   user?: DbUser
-}
-export interface ModelsProjectConfig {
-  fields?: ModelsProjectConfigField[] | null
-  header?: string[] | null
-}
-export interface ModelsProjectConfigField {
-  isEditable?: boolean
-  isVisible?: boolean
-  name?: string
-  path?: string
-  showCollapsed?: boolean
 }

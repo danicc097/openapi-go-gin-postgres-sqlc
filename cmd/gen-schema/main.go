@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"reflect"
-	"strconv"
 	"strings"
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
@@ -57,11 +56,25 @@ func main() {
 			if params.Field.Tag.Get("openapi-go") == "ignore" {
 				return jsonschema.ErrSkipProperty
 			}
+
+			// reproduce: gen-schema --struct-names DbProject | yq 'with_entries(select(.key == "components"))'
 			if shouldSkipType(params.Field.Type) {
 				fmt.Fprintf(os.Stderr, "skipping schema: %s", params.Name)
 
 				return jsonschema.ErrSkipProperty
 			}
+
+			// NOTE: forget about this, remove extra schemas manually that are referenced in db models
+			// (which are themselves already generated from the spec, most likely), since
+			// gen-schema doesn't know about external components we can't skip them beforehand.
+			// if params.PropertySchema != nil {
+			// 	if params.PropertySchema.Ref != nil {
+			// 		fmt.Fprintf(os.Stderr, "params.PropertySchema.Ref: %v\n", *params.PropertySchema.Ref)
+			// 		// if we ErrSkipProperty, we don't get the property. we just want to skip
+			// 		// schema generation.
+			// 		// ideally, it would try to generate, and skip if ref already exists
+			// 	}
+			// }
 
 			return nil
 		}),
@@ -75,7 +88,7 @@ func main() {
 		}),
 	)
 
-	for i, sn := range structNames {
+	for _, sn := range structNames {
 		dummyOp := openapi3.Operation{}
 		st, ok := postgen.PublicStructs[sn]
 		if !ok {
@@ -88,7 +101,8 @@ func main() {
 		// st = cloneStructWithoutIgnoredFields(st)
 
 		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
-		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
+		// not really needed
+		// handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
 
 		// IMPORTANT: ensure structs are public
 		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]any{"x-postgen-struct": sn}

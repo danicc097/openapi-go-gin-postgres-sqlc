@@ -1236,63 +1236,6 @@
       ],
       "x-generated": "-",
       "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ModelsProject": {
-      "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ModelsProjectConfig": {
-      "properties": {
-        "fields": {
-          "items": {
-            "$ref": "#/definitions/ModelsProjectConfigField"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "header": {
-          "items": {
-            "type": "string"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        }
-      },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ModelsProjectConfigField": {
-      "properties": {
-        "isEditable": {
-          "type": "boolean"
-        },
-        "isVisible": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        },
-        "showCollapsed": {
-          "type": "boolean"
-        }
-      },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ModelsRole": {
-      "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ModelsScope": {
-      "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -1433,21 +1376,6 @@
     },
     "DemoWorkItemTypes": {
       "$ref": "#/definitions/DemoWorkItemTypes"
-    },
-    "ModelsProject": {
-      "$ref": "#/definitions/ModelsProject"
-    },
-    "ModelsProjectConfig": {
-      "$ref": "#/definitions/ModelsProjectConfig"
-    },
-    "ModelsProjectConfigField": {
-      "$ref": "#/definitions/ModelsProjectConfigField"
-    },
-    "ModelsRole": {
-      "$ref": "#/definitions/ModelsRole"
-    },
-    "ModelsScope": {
-      "$ref": "#/definitions/ModelsScope"
     }
   }
 }
