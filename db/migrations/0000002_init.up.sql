@@ -234,7 +234,7 @@ comment on column user_team.team_id is 'cardinality:M2M';
 create table kanban_steps (
   kanban_step_id serial primary key
   , project_id int not null
-  , step_order int -- null -> disabled
+  , step_order int not null -- 0: disabled
   , name text not null
   , description text not null
   , color text not null
@@ -243,16 +243,17 @@ create table kanban_steps (
   , unique (project_id , step_order)
   , foreign key (project_id) references projects (project_id) on delete cascade
   , check (color ~* '^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
-  , check (step_order > 0)
+  , check (step_order >= 0)
 );
 
-create unique index on kanban_steps (project_id , name , step_order)
-where
-  step_order is not null;
-
-create unique index on kanban_steps (project_id , name)
-where
-  step_order is null;
+-- if it were null as before, unique index would need 2 parts:
+-- create unique index on kanban_steps (project_id , name , step_order)
+-- where
+--   step_order is not null;
+-- create unique index on kanban_steps (project_id , name)
+-- where
+--   step_order is null;
+create unique index on kanban_steps (project_id , name , step_order);
 
 comment on column kanban_steps.project_id is 'cardinality:M2O';
 
@@ -526,7 +527,8 @@ insert into kanban_steps (
   name
   , description
   , project_id
-  , color)
+  , color
+  , step_order)
 values (
   'Disabled'
   , 'This column is disabled'
@@ -536,7 +538,7 @@ values (
     from
       projects
     where
-      name = 'demo') , '#aaaaaa');
+      name = 'demo') , '#aaaaaa' , 0);
 
 insert into kanban_steps (
   name

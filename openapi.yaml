@@ -375,7 +375,6 @@ components:
         projectID:
           type: integer
         stepOrder:
-          nullable: true
           type: integer
         timeTrackable:
           type: boolean

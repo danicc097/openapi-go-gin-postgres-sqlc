@@ -378,6 +378,25 @@ EOF
     [[ ${#kanban_steps_rows[@]} -gt 0 ]] || continue
     prefix="$(to_pascal "$project")KanbanSteps"
     generate_model_mappings_dicts $prefix kanban_steps_rows
+
+    kanban_steps_rows=()
+    mapfile -t kanban_steps_rows < <(dockerdb_psql -d $POSTGRES_DB -c "
+          select kanban_step_id,step_order from kanban_steps where project_id = (
+            select project_id from projects where name = '$project'
+            );" 2>/dev/null)
+    [[ ${#kanban_steps_rows[@]} -gt 0 ]] || continue
+    prefix="$(to_pascal "$project")KanbanSteps"
+    echo "var (
+    ${prefix}StepOrderByID = map[int]int{
+  " >>$model_mappings_path
+    for row in "${kanban_steps_rows[@]}"; do
+      first=$(cut_first "$row" "|") # always safe
+      mapfile -t arr <<<"${first}"
+      local id="${arr[0]}"
+      local kanban_step="${arr[1]}"
+      echo "${id}: ${kanban_step}," >>$model_mappings_path
+    done
+    echo "})" >>$model_mappings_path
   done
 
   for project in ${db_projects[@]}; do

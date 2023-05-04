@@ -265,7 +265,7 @@ type DbKanbanStep struct {
 	KanbanStepID  int    `json:"kanbanStepID"`
 	Name          string `json:"name"`
 	ProjectID     int    `json:"projectID"`
-	StepOrder     *int   `json:"stepOrder"`
+	StepOrder     int    `json:"stepOrder"`
 	TimeTrackable bool   `json:"timeTrackable"`
 }
 

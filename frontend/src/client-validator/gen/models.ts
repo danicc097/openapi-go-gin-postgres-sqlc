@@ -69,7 +69,7 @@ export interface DbKanbanStep {
   kanbanStepID: number
   name: string
   projectID: number
-  stepOrder: number | null
+  stepOrder: number
   timeTrackable: boolean
 }
 export interface DbProject {
