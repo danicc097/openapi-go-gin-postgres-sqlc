@@ -26,25 +26,17 @@ func NewUser() *User {
 
 var _ repos.User = (*User)(nil)
 
-func (u *User) Create(ctx context.Context, d db.DBTX, params db.UserCreateParams) (*db.User, error) {
-	user := &db.User{
-		Username:   params.Username,
-		Email:      params.Email,
-		FirstName:  params.FirstName,
-		LastName:   params.LastName,
-		ExternalID: params.ExternalID,
-		RoleRank:   params.RoleRank,
-		Scopes:     slices.Unique(params.Scopes),
-	}
-
-	if _, err := user.Insert(ctx, d); err != nil {
-		return nil, err
+func (u *User) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParams) (*db.User, error) {
+	params.Scopes = slices.Unique(params.Scopes)
+	user, err := db.CreateUser(ctx, d, params)
+	if err != nil {
+		return nil, fmt.Errorf("could not create user: %w", parseErrorDetail(err))
 	}
 
 	return user, nil
 }
 
-func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.UserUpdateParams) (*db.User, error) {
+func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params *db.UserUpdateParams) (*db.User, error) {
 	user, err := u.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user by id: %w", parseErrorDetail(err))
@@ -54,7 +46,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.Us
 		*params.Scopes = slices.Unique(*params.Scopes)
 	}
 
-	updateEntityWithParams(user, &params)
+	user.SetUpdateParams(params)
 
 	user, err = user.Update(ctx, d)
 	if err != nil {

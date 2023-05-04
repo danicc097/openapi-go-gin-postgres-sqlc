@@ -28,10 +28,10 @@ func NewRandomUser(t *testing.T, pool *pgxpool.Pool) (*db.User, error) {
 	return user, nil
 }
 
-func RandomUserCreateParams(t *testing.T) db.UserCreateParams {
+func RandomUserCreateParams(t *testing.T) *db.UserCreateParams {
 	t.Helper()
 
-	return db.UserCreateParams{
+	return &db.UserCreateParams{
 		Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
 		Email:      testutil.RandomEmail(),
 		FirstName:  pointers.New(testutil.RandomFirstName()),

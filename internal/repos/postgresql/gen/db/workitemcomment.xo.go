@@ -25,23 +25,47 @@ type WorkItemComment struct {
 	CreatedAt         time.Time `json:"createdAt" db:"created_at" required:"true"`                   // created_at
 	UpdatedAt         time.Time `json:"updatedAt" db:"updated_at" required:"true"`                   // updated_at
 
-	UserJoin     *User     `json:"-" db:"user" openapi-go:"ignore"`      // O2O
-	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
+	UserJoin     *User     `json:"-" db:"user" openapi-go:"ignore"`      // O2O (generated from M2O)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (generated from M2O)
 
 }
 
 // WorkItemCommentCreateParams represents insert params for 'public.work_item_comments'
 type WorkItemCommentCreateParams struct {
-	WorkItemID int64     `json:"workItemID"` // work_item_id
-	UserID     uuid.UUID `json:"userID"`     // user_id
-	Message    string    `json:"message"`    // message
+	WorkItemID int64     `json:"workItemID" required:"true"` // work_item_id
+	UserID     uuid.UUID `json:"userID" required:"true"`     // user_id
+	Message    string    `json:"message" required:"true"`    // message
+}
+
+// CreateWorkItemComment creates a new WorkItemComment in the database with the given params.
+func CreateWorkItemComment(ctx context.Context, db DB, params *WorkItemCommentCreateParams) (*WorkItemComment, error) {
+	wic := &WorkItemComment{
+		WorkItemID: params.WorkItemID,
+		UserID:     params.UserID,
+		Message:    params.Message,
+	}
+
+	return wic.Insert(ctx, db)
 }
 
 // WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'
 type WorkItemCommentUpdateParams struct {
-	WorkItemID *int64     `json:"workItemID"` // work_item_id
-	UserID     *uuid.UUID `json:"userID"`     // user_id
-	Message    *string    `json:"message"`    // message
+	WorkItemID *int64     `json:"workItemID" required:"true"` // work_item_id
+	UserID     *uuid.UUID `json:"userID" required:"true"`     // user_id
+	Message    *string    `json:"message" required:"true"`    // message
+}
+
+// SetUpdateParams updates public.work_item_comments struct fields with the specified params.
+func (wic *WorkItemComment) SetUpdateParams(params *WorkItemCommentUpdateParams) {
+	if params.WorkItemID != nil {
+		wic.WorkItemID = *params.WorkItemID
+	}
+	if params.UserID != nil {
+		wic.UserID = *params.UserID
+	}
+	if params.Message != nil {
+		wic.Message = *params.Message
+	}
 }
 
 type WorkItemCommentSelectConfig struct {
@@ -54,7 +78,9 @@ type WorkItemCommentSelectConfigOption func(*WorkItemCommentSelectConfig)
 // WithWorkItemCommentLimit limits row selection.
 func WithWorkItemCommentLimit(limit int) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -74,12 +100,10 @@ const (
 // WithWorkItemCommentOrderBy orders results by the given columns.
 func WithWorkItemCommentOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 
@@ -91,7 +115,11 @@ type WorkItemCommentJoins struct {
 // WithWorkItemCommentJoin joins with the given tables.
 func WithWorkItemCommentJoin(joins WorkItemCommentJoins) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
-		s.joins = joins
+		s.joins = WorkItemCommentJoins{
+
+			User:     s.joins.User || joins.User,
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
+		}
 	}
 }
 
@@ -197,9 +225,9 @@ work_item_comments.updated_at,
 (case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $2::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_comments ` +
-		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = work_item_comments.user_id
--- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
 left join work_items on work_items.work_item_id = work_item_comments.work_item_id` +
 		` WHERE work_item_comments.work_item_comment_id = $3 `
 	sqlstr += c.orderBy
@@ -240,9 +268,9 @@ work_item_comments.updated_at,
 (case when $1::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $2::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_comments ` +
-		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = work_item_comments.user_id
--- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "work_item_comments_work_item_id_fkey (Generated from M2O)"
 left join work_items on work_items.work_item_id = work_item_comments.work_item_id` +
 		` WHERE work_item_comments.work_item_id = $3 `
 	sqlstr += c.orderBy

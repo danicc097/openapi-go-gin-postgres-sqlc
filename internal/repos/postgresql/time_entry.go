@@ -22,31 +22,22 @@ func NewTimeEntry() *TimeEntry {
 
 var _ repos.TimeEntry = (*TimeEntry)(nil)
 
-func (wit *TimeEntry) Create(ctx context.Context, d db.DBTX, params db.TimeEntryCreateParams) (*db.TimeEntry, error) {
-	timeEntry := &db.TimeEntry{
-		ActivityID:      params.ActivityID,
-		TeamID:          params.TeamID,
-		WorkItemID:      params.WorkItemID,
-		UserID:          params.UserID,
-		Comment:         params.Comment,
-		Start:           params.Start,
-		DurationMinutes: params.DurationMinutes,
-	}
-
-	if _, err := timeEntry.Insert(ctx, d); err != nil {
-		return nil, err
+func (wit *TimeEntry) Create(ctx context.Context, d db.DBTX, params *db.TimeEntryCreateParams) (*db.TimeEntry, error) {
+	timeEntry, err := db.CreateTimeEntry(ctx, d, params)
+	if err != nil {
+		return nil, fmt.Errorf("could not create time entry: %w", parseErrorDetail(err))
 	}
 
 	return timeEntry, nil
 }
 
-func (wit *TimeEntry) Update(ctx context.Context, d db.DBTX, id int64, params db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
+func (wit *TimeEntry) Update(ctx context.Context, d db.DBTX, id int64, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
 	timeEntry, err := wit.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get timeEntry by id %w", parseErrorDetail(err))
 	}
 
-	updateEntityWithParams(timeEntry, &params)
+	timeEntry.SetUpdateParams(params)
 
 	timeEntry, err = timeEntry.Update(ctx, d)
 	if err != nil {

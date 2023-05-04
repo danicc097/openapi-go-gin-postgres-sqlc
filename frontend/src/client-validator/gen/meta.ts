@@ -40,21 +40,16 @@ import {
   DbTeamCreateParams,
   DbWorkItemTagCreateParams,
   DbWorkItemTypeCreateParams,
-  ModelsProject,
-  ModelsRole,
   DbWorkItemRole,
   DbWorkItem_Member,
   NotificationType,
   DemoProjectKanbanSteps,
   DemoProject2KanbanSteps,
-  ModelsScope,
   Demo2WorkItemTypes,
   DemoKanbanSteps,
   DemoTwoKanbanSteps,
   DemoTwoWorkItemTypes,
   DemoWorkItemTypes,
-  ModelsProjectConfig,
-  ModelsProjectConfigField,
 } from './models'
 
 export const schemaDefinitions = {
@@ -115,8 +110,6 @@ export const schemaDefinitions = {
     'DbWorkItemTypeCreateParams',
     '#/definitions/DbWorkItemTypeCreateParams',
   ),
-  ModelsProject: info<ModelsProject>('ModelsProject', '#/definitions/ModelsProject'),
-  ModelsRole: info<ModelsRole>('ModelsRole', '#/definitions/ModelsRole'),
   DbWorkItemRole: info<DbWorkItemRole>('DbWorkItemRole', '#/definitions/DbWorkItemRole'),
   DbWorkItem_Member: info<DbWorkItem_Member>('DbWorkItem_Member', '#/definitions/DbWorkItem_Member'),
   NotificationType: info<NotificationType>('NotificationType', '#/definitions/NotificationType'),
@@ -128,17 +121,11 @@ export const schemaDefinitions = {
     'DemoProject2KanbanSteps',
     '#/definitions/DemoProject2KanbanSteps',
   ),
-  ModelsScope: info<ModelsScope>('ModelsScope', '#/definitions/ModelsScope'),
   Demo2WorkItemTypes: info<Demo2WorkItemTypes>('Demo2WorkItemTypes', '#/definitions/Demo2WorkItemTypes'),
   DemoKanbanSteps: info<DemoKanbanSteps>('DemoKanbanSteps', '#/definitions/DemoKanbanSteps'),
   DemoTwoKanbanSteps: info<DemoTwoKanbanSteps>('DemoTwoKanbanSteps', '#/definitions/DemoTwoKanbanSteps'),
   DemoTwoWorkItemTypes: info<DemoTwoWorkItemTypes>('DemoTwoWorkItemTypes', '#/definitions/DemoTwoWorkItemTypes'),
   DemoWorkItemTypes: info<DemoWorkItemTypes>('DemoWorkItemTypes', '#/definitions/DemoWorkItemTypes'),
-  ModelsProjectConfig: info<ModelsProjectConfig>('ModelsProjectConfig', '#/definitions/ModelsProjectConfig'),
-  ModelsProjectConfigField: info<ModelsProjectConfigField>(
-    'ModelsProjectConfigField',
-    '#/definitions/ModelsProjectConfigField',
-  ),
 }
 
 export interface SchemaInfo<T> {

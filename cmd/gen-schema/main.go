@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"reflect"
-	"strconv"
 	"strings"
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3"
@@ -44,7 +44,8 @@ func main() {
 		// default name comes from package directory, not the given import alias
 		// e.g. repomodels -/-> Repomodels, its the last dir (models)
 
-		// fmt.Fprintf(os.Stderr, "defaultDefName: %s", defaultDefName)
+		// can intercept generated name full package path
+		// fmt.Fprintf(os.Stderr, "t.PkgPath(): %v\n", t.PkgPath())
 
 		return defaultDefName
 	})
@@ -56,18 +57,38 @@ func main() {
 				return jsonschema.ErrSkipProperty
 			}
 
+			// reproduce: gen-schema --struct-names DbProject | yq 'with_entries(select(.key == "components"))'
+			if shouldSkipType(params.Field.Type) {
+				fmt.Fprintf(os.Stderr, "skipping schema: %s", params.Name)
+
+				return jsonschema.ErrSkipProperty
+			}
+
+			// NOTE: forget about this, remove extra schemas manually that are referenced in db models
+			// (which are themselves already generated from the spec, most likely), since
+			// gen-schema doesn't know about external components we can't skip them beforehand.
+			// if params.PropertySchema != nil {
+			// 	if params.PropertySchema.Ref != nil {
+			// 		fmt.Fprintf(os.Stderr, "params.PropertySchema.Ref: %v\n", *params.PropertySchema.Ref)
+			// 		// if we ErrSkipProperty, we don't get the property. we just want to skip
+			// 		// schema generation.
+			// 		// ideally, it would try to generate, and skip if ref already exists
+			// 	}
+			// }
+
 			return nil
 		}),
-		jsonschema.InterceptType(func(v reflect.Value, s *jsonschema.Schema) (stop bool, err error) {
-			if s.ReflectType == reflect.TypeOf(uuid.New()) {
-				s.Type = &jsonschema.Type{SimpleTypes: pointers.New(jsonschema.String)}
-				s.Items = &jsonschema.Items{}
+		jsonschema.InterceptSchema(func(params jsonschema.InterceptSchemaParams) (stop bool, err error) {
+			if params.Schema.ReflectType == reflect.TypeOf(uuid.New()) {
+				params.Schema.Type = &jsonschema.Type{SimpleTypes: pointers.New(jsonschema.String)}
+				params.Schema.Items = &jsonschema.Items{}
 			}
+
 			return false, nil
 		}),
 	)
 
-	for i, sn := range structNames {
+	for _, sn := range structNames {
 		dummyOp := openapi3.Operation{}
 		st, ok := postgen.PublicStructs[sn]
 		if !ok {
@@ -80,7 +101,8 @@ func main() {
 		// st = cloneStructWithoutIgnoredFields(st)
 
 		handleError(reflector.SetJSONResponse(&dummyOp, st, http.StatusTeapot))
-		handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
+		// not really needed
+		// handleError(reflector.Spec.AddOperation(http.MethodGet, "/dummy-op-"+strconv.Itoa(i), dummyOp))
 
 		// IMPORTANT: ensure structs are public
 		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[sn].Schema.MapOfAnything = map[string]any{"x-postgen-struct": sn}
@@ -142,4 +164,17 @@ func filterIgnoredFields(t reflect.Type) []reflect.StructField {
 	}
 
 	return filteredFields
+}
+
+func shouldSkipType(typ reflect.Type) bool {
+	if typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
+	if typ.Kind() == reflect.Array || typ.Kind() == reflect.Slice {
+		return shouldSkipType(typ.Elem())
+	}
+
+	// return strings.HasSuffix(typ.PkgPath(), "/internal/models")
+
+	return false
 }

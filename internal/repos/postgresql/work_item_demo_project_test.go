@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
@@ -19,11 +19,11 @@ import (
 func TestDemoWorkItem_Update(t *testing.T) {
 	t.Parallel()
 
-	projectID := internal.ProjectIDByName[internalmodels.ProjectDemo]
+	projectID := internal.ProjectIDByName[models.ProjectDemo]
 	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, projectID)
 
-	kanbanStepID := internal.DemoKanbanStepsIDByName[internalmodels.DemoKanbanStepsReceived]
-	workItemTypeID := internal.DemoWorkItemTypesIDByName[internalmodels.DemoWorkItemTypesType1]
+	kanbanStepID := internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived]
+	workItemTypeID := internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1]
 	demoWorkItem, _ := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, projectID, kanbanStepID, workItemTypeID, team.TeamID)
 
 	type args struct {
@@ -33,7 +33,7 @@ func TestDemoWorkItem_Update(t *testing.T) {
 	type params struct {
 		name    string
 		args    args
-		want    *db.DemoWorkItem
+		want    *db.WorkItem
 		wantErr bool
 	}
 	tests := []params{
@@ -46,10 +46,10 @@ func TestDemoWorkItem_Update(t *testing.T) {
 					DemoProject: &db.DemoWorkItemUpdateParams{Line: pointers.New("new line")},
 				},
 			},
-			want: func() *db.DemoWorkItem {
+			want: func() *db.WorkItem {
 				u := *demoWorkItem
-				u.WorkItemJoin.Description = "new description"
-				u.Line = "new line"
+				u.Description = "new description"
+				u.DemoWorkItemJoin.Line = "new line"
 
 				return &u
 			}(),
@@ -68,7 +68,7 @@ func TestDemoWorkItem_Update(t *testing.T) {
 				return
 			}
 
-			got.WorkItemJoin.UpdatedAt = demoWorkItem.WorkItemJoin.UpdatedAt // ignore
+			got.UpdatedAt = demoWorkItem.UpdatedAt // ignore
 			assert.Equal(t, tc.want, got)
 		})
 	}

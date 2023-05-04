@@ -20,20 +20,40 @@ type BookReview struct {
 	BookID       int       `json:"bookID" db:"book_id" required:"true"`              // book_id
 	Reviewer     uuid.UUID `json:"reviewer" db:"reviewer" required:"true"`           // reviewer
 
-	BookJoin *Book `json:"-" db:"book" openapi-go:"ignore"` // O2O
-	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O
+	BookJoin *Book `json:"-" db:"book" openapi-go:"ignore"` // O2O (generated from M2O)
+	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (generated from M2O)
 }
 
 // BookReviewCreateParams represents insert params for 'public.book_reviews'
 type BookReviewCreateParams struct {
-	BookID   int       `json:"bookID"`   // book_id
-	Reviewer uuid.UUID `json:"reviewer"` // reviewer
+	BookID   int       `json:"bookID" required:"true"`   // book_id
+	Reviewer uuid.UUID `json:"reviewer" required:"true"` // reviewer
+}
+
+// CreateBookReview creates a new BookReview in the database with the given params.
+func CreateBookReview(ctx context.Context, db DB, params *BookReviewCreateParams) (*BookReview, error) {
+	br := &BookReview{
+		BookID:   params.BookID,
+		Reviewer: params.Reviewer,
+	}
+
+	return br.Insert(ctx, db)
 }
 
 // BookReviewUpdateParams represents update params for 'public.book_reviews'
 type BookReviewUpdateParams struct {
-	BookID   *int       `json:"bookID"`   // book_id
-	Reviewer *uuid.UUID `json:"reviewer"` // reviewer
+	BookID   *int       `json:"bookID" required:"true"`   // book_id
+	Reviewer *uuid.UUID `json:"reviewer" required:"true"` // reviewer
+}
+
+// SetUpdateParams updates public.book_reviews struct fields with the specified params.
+func (br *BookReview) SetUpdateParams(params *BookReviewUpdateParams) {
+	if params.BookID != nil {
+		br.BookID = *params.BookID
+	}
+	if params.Reviewer != nil {
+		br.Reviewer = *params.Reviewer
+	}
 }
 
 type BookReviewSelectConfig struct {
@@ -46,7 +66,9 @@ type BookReviewSelectConfigOption func(*BookReviewSelectConfig)
 // WithBookReviewLimit limits row selection.
 func WithBookReviewLimit(limit int) BookReviewSelectConfigOption {
 	return func(s *BookReviewSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -60,7 +82,10 @@ type BookReviewJoins struct {
 // WithBookReviewJoin joins with the given tables.
 func WithBookReviewJoin(joins BookReviewJoins) BookReviewSelectConfigOption {
 	return func(s *BookReviewSelectConfig) {
-		s.joins = joins
+		s.joins = BookReviewJoins{
+			Book: s.joins.Book || joins.Book,
+			User: s.joins.User || joins.User,
+		}
 	}
 }
 
@@ -163,9 +188,9 @@ book_reviews.reviewer,
 (case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join books on books.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join users on users.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.book_review_id = $3 `
 	sqlstr += c.orderBy
@@ -203,9 +228,9 @@ book_reviews.reviewer,
 (case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join books on books.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join users on users.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.reviewer = $3 AND book_reviews.book_id = $4 `
 	sqlstr += c.orderBy
@@ -243,9 +268,9 @@ book_reviews.reviewer,
 (case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join books on books.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join users on users.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.reviewer = $3 `
 	sqlstr += c.orderBy
@@ -285,9 +310,9 @@ book_reviews.reviewer,
 (case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
 		`FROM public.book_reviews ` +
-		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
 left join books on books.book_id = book_reviews.book_id
--- O2O join generated from "book_reviews_reviewer_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
 left join users on users.user_id = book_reviews.reviewer` +
 		` WHERE book_reviews.book_id = $3 `
 	sqlstr += c.orderBy

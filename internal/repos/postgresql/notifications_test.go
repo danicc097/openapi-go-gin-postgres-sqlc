@@ -37,7 +37,7 @@ func TestNotification_Create(t *testing.T) {
 		}
 
 		params := db.GetUserNotificationsParams{UserID: receiver.UserID, NotificationType: db.NotificationTypePersonal}
-		nn, err := notificationRepo.LatestUserNotifications(context.Background(), tx, params)
+		nn, err := notificationRepo.LatestUserNotifications(context.Background(), tx, &params)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
@@ -76,7 +76,7 @@ func TestNotification_Create(t *testing.T) {
 
 		for userID, count := range notificationCount {
 			params := db.GetUserNotificationsParams{UserID: userID, NotificationType: db.NotificationTypeGlobal}
-			nn, err := notificationRepo.LatestUserNotifications(context.Background(), tx, params)
+			nn, err := notificationRepo.LatestUserNotifications(context.Background(), tx, &params)
 			if err != nil {
 				t.Fatalf("unexpected error = %v", err)
 			}

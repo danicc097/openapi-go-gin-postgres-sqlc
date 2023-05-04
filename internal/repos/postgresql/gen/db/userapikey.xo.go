@@ -29,16 +29,40 @@ type UserAPIKey struct {
 
 // UserAPIKeyCreateParams represents insert params for 'public.user_api_keys'
 type UserAPIKeyCreateParams struct {
-	APIKey    string    `json:"apiKey"`    // api_key
-	ExpiresOn time.Time `json:"expiresOn"` // expires_on
-	UserID    uuid.UUID `json:"userID"`    // user_id
+	APIKey    string    `json:"apiKey" required:"true"`    // api_key
+	ExpiresOn time.Time `json:"expiresOn" required:"true"` // expires_on
+	UserID    uuid.UUID `json:"userID" required:"true"`    // user_id
+}
+
+// CreateUserAPIKey creates a new UserAPIKey in the database with the given params.
+func CreateUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams) (*UserAPIKey, error) {
+	uak := &UserAPIKey{
+		APIKey:    params.APIKey,
+		ExpiresOn: params.ExpiresOn,
+		UserID:    params.UserID,
+	}
+
+	return uak.Insert(ctx, db)
 }
 
 // UserAPIKeyUpdateParams represents update params for 'public.user_api_keys'
 type UserAPIKeyUpdateParams struct {
-	APIKey    *string    `json:"apiKey"`    // api_key
-	ExpiresOn *time.Time `json:"expiresOn"` // expires_on
-	UserID    *uuid.UUID `json:"userID"`    // user_id
+	APIKey    *string    `json:"apiKey" required:"true"`    // api_key
+	ExpiresOn *time.Time `json:"expiresOn" required:"true"` // expires_on
+	UserID    *uuid.UUID `json:"userID" required:"true"`    // user_id
+}
+
+// SetUpdateParams updates public.user_api_keys struct fields with the specified params.
+func (uak *UserAPIKey) SetUpdateParams(params *UserAPIKeyUpdateParams) {
+	if params.APIKey != nil {
+		uak.APIKey = *params.APIKey
+	}
+	if params.ExpiresOn != nil {
+		uak.ExpiresOn = *params.ExpiresOn
+	}
+	if params.UserID != nil {
+		uak.UserID = *params.UserID
+	}
 }
 
 type UserAPIKeySelectConfig struct {
@@ -51,7 +75,9 @@ type UserAPIKeySelectConfigOption func(*UserAPIKeySelectConfig)
 // WithUserAPIKeyLimit limits row selection.
 func WithUserAPIKeyLimit(limit int) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -67,12 +93,10 @@ const (
 // WithUserAPIKeyOrderBy orders results by the given columns.
 func WithUserAPIKeyOrderBy(rows ...UserAPIKeyOrderBy) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 
@@ -83,7 +107,10 @@ type UserAPIKeyJoins struct {
 // WithUserAPIKeyJoin joins with the given tables.
 func WithUserAPIKeyJoin(joins UserAPIKeyJoins) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
-		s.joins = joins
+		s.joins = UserAPIKeyJoins{
+
+			User: s.joins.User || joins.User,
+		}
 	}
 }
 

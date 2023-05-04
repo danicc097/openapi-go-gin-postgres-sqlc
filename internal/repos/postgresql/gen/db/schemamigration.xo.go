@@ -22,14 +22,34 @@ type SchemaMigration struct {
 
 // SchemaMigrationCreateParams represents insert params for 'public.schema_migrations'
 type SchemaMigrationCreateParams struct {
-	Version int64 `json:"version"` // version
-	Dirty   bool  `json:"dirty"`   // dirty
+	Version int64 `json:"version" required:"true"` // version
+	Dirty   bool  `json:"dirty" required:"true"`   // dirty
+}
+
+// CreateSchemaMigration creates a new SchemaMigration in the database with the given params.
+func CreateSchemaMigration(ctx context.Context, db DB, params *SchemaMigrationCreateParams) (*SchemaMigration, error) {
+	sm := &SchemaMigration{
+		Version: params.Version,
+		Dirty:   params.Dirty,
+	}
+
+	return sm.Insert(ctx, db)
 }
 
 // SchemaMigrationUpdateParams represents update params for 'public.schema_migrations'
 type SchemaMigrationUpdateParams struct {
-	Version *int64 `json:"version"` // version
-	Dirty   *bool  `json:"dirty"`   // dirty
+	Version *int64 `json:"version" required:"true"` // version
+	Dirty   *bool  `json:"dirty" required:"true"`   // dirty
+}
+
+// SetUpdateParams updates public.schema_migrations struct fields with the specified params.
+func (sm *SchemaMigration) SetUpdateParams(params *SchemaMigrationUpdateParams) {
+	if params.Version != nil {
+		sm.Version = *params.Version
+	}
+	if params.Dirty != nil {
+		sm.Dirty = *params.Dirty
+	}
 }
 
 type SchemaMigrationSelectConfig struct {
@@ -42,7 +62,9 @@ type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
 // WithSchemaMigrationLimit limits row selection.
 func WithSchemaMigrationLimit(limit int) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -56,7 +78,7 @@ type SchemaMigrationJoins struct {
 // WithSchemaMigrationJoin joins with the given tables.
 func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
-		s.joins = joins
+		s.joins = SchemaMigrationJoins{}
 	}
 }
 

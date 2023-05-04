@@ -86,12 +86,12 @@ type FakeUser struct {
 		result1 *db.User
 		result2 error
 	}
-	CreateStub        func(context.Context, db.DBTX, db.UserCreateParams) (*db.User, error)
+	CreateStub        func(context.Context, db.DBTX, *db.UserCreateParams) (*db.User, error)
 	createMutex       sync.RWMutex
 	createArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 db.UserCreateParams
+		arg3 *db.UserCreateParams
 	}
 	createReturns struct {
 		result1 *db.User
@@ -131,13 +131,13 @@ type FakeUser struct {
 		result1 *db.User
 		result2 error
 	}
-	UpdateStub        func(context.Context, db.DBTX, uuid.UUID, db.UserUpdateParams) (*db.User, error)
+	UpdateStub        func(context.Context, db.DBTX, uuid.UUID, *db.UserUpdateParams) (*db.User, error)
 	updateMutex       sync.RWMutex
 	updateArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 uuid.UUID
-		arg4 db.UserUpdateParams
+		arg4 *db.UserUpdateParams
 	}
 	updateReturns struct {
 		result1 *db.User
@@ -481,13 +481,13 @@ func (fake *FakeUser) ByUsernameReturnsOnCall(i int, result1 *db.User, result2 e
 	}{result1, result2}
 }
 
-func (fake *FakeUser) Create(arg1 context.Context, arg2 db.DBTX, arg3 db.UserCreateParams) (*db.User, error) {
+func (fake *FakeUser) Create(arg1 context.Context, arg2 db.DBTX, arg3 *db.UserCreateParams) (*db.User, error) {
 	fake.createMutex.Lock()
 	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
 	fake.createArgsForCall = append(fake.createArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 db.UserCreateParams
+		arg3 *db.UserCreateParams
 	}{arg1, arg2, arg3})
 	stub := fake.CreateStub
 	fakeReturns := fake.createReturns
@@ -508,13 +508,13 @@ func (fake *FakeUser) CreateCallCount() int {
 	return len(fake.createArgsForCall)
 }
 
-func (fake *FakeUser) CreateCalls(stub func(context.Context, db.DBTX, db.UserCreateParams) (*db.User, error)) {
+func (fake *FakeUser) CreateCalls(stub func(context.Context, db.DBTX, *db.UserCreateParams) (*db.User, error)) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = stub
 }
 
-func (fake *FakeUser) CreateArgsForCall(i int) (context.Context, db.DBTX, db.UserCreateParams) {
+func (fake *FakeUser) CreateArgsForCall(i int) (context.Context, db.DBTX, *db.UserCreateParams) {
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
 	argsForCall := fake.createArgsForCall[i]
@@ -679,14 +679,14 @@ func (fake *FakeUser) DeleteReturnsOnCall(i int, result1 *db.User, result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUser) Update(arg1 context.Context, arg2 db.DBTX, arg3 uuid.UUID, arg4 db.UserUpdateParams) (*db.User, error) {
+func (fake *FakeUser) Update(arg1 context.Context, arg2 db.DBTX, arg3 uuid.UUID, arg4 *db.UserUpdateParams) (*db.User, error) {
 	fake.updateMutex.Lock()
 	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
 	fake.updateArgsForCall = append(fake.updateArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
 		arg3 uuid.UUID
-		arg4 db.UserUpdateParams
+		arg4 *db.UserUpdateParams
 	}{arg1, arg2, arg3, arg4})
 	stub := fake.UpdateStub
 	fakeReturns := fake.updateReturns
@@ -707,13 +707,13 @@ func (fake *FakeUser) UpdateCallCount() int {
 	return len(fake.updateArgsForCall)
 }
 
-func (fake *FakeUser) UpdateCalls(stub func(context.Context, db.DBTX, uuid.UUID, db.UserUpdateParams) (*db.User, error)) {
+func (fake *FakeUser) UpdateCalls(stub func(context.Context, db.DBTX, uuid.UUID, *db.UserUpdateParams) (*db.User, error)) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = stub
 }
 
-func (fake *FakeUser) UpdateArgsForCall(i int) (context.Context, db.DBTX, uuid.UUID, db.UserUpdateParams) {
+func (fake *FakeUser) UpdateArgsForCall(i int) (context.Context, db.DBTX, uuid.UUID, *db.UserUpdateParams) {
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
 	argsForCall := fake.updateArgsForCall[i]

@@ -59,7 +59,7 @@ func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID int) ([
 }
 
 // Create creates a new activity.
-func (a *Activity) Create(ctx context.Context, d db.DBTX, params db.ActivityCreateParams) (*db.Activity, error) {
+func (a *Activity) Create(ctx context.Context, d db.DBTX, params *db.ActivityCreateParams) (*db.Activity, error) {
 	defer newOTELSpan(ctx, "Activity.Create").End()
 
 	activity, err := a.aRepo.Create(ctx, d, params)
@@ -71,7 +71,7 @@ func (a *Activity) Create(ctx context.Context, d db.DBTX, params db.ActivityCrea
 }
 
 // Update updates an existing activity.
-func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params db.ActivityUpdateParams) (*db.Activity, error) {
+func (a *Activity) Update(ctx context.Context, d db.DBTX, id int, params *db.ActivityUpdateParams) (*db.Activity, error) {
 	defer newOTELSpan(ctx, "Activity.Update").End()
 
 	activity, err := a.aRepo.Update(ctx, d, id, params)

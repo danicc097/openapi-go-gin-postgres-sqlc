@@ -12,6 +12,8 @@ import (
 // Example:
 //
 //	updateEntityWithParams(&User{}, &Params{Name: "Jane"})
+//
+// Deprecated: use db entity UpdateWithParams method.
 func updateEntityWithParams(entity any, params any) {
 	entityValue := reflect.ValueOf(entity).Elem()
 	paramsType := reflect.TypeOf(params).Elem()
@@ -21,6 +23,7 @@ func updateEntityWithParams(entity any, params any) {
 		paramName := paramsType.Field(i).Name
 		paramValue := paramsValue.Field(i)
 
+		// "<Entity>UpdateParams" struct are all pointers to values or other pointers
 		if paramValue.Kind() == reflect.Ptr && paramValue.IsNil() {
 			continue
 		}

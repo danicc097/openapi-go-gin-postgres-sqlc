@@ -5,7 +5,7 @@ import (
 	"sort"
 	"testing"
 
-	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -21,10 +21,10 @@ func Test_MergeConfigFields(t *testing.T) {
 	fakeProjectRepo := &repostesting.FakeProject{}
 	fakeProjectRepo.ByIDStub = func(ctx context.Context, d db.DBTX, i int) (*db.Project, error) {
 		return &db.Project{
-			Name: internalmodels.ProjectDemo,
-			BoardConfig: internalmodels.ProjectConfig{
+			Name: models.ProjectDemo,
+			BoardConfig: models.ProjectConfig{
 				Header: []string{"demoProject.ref", "workItemType"},
-				Fields: []internalmodels.ProjectConfigField{
+				Fields: []models.ProjectConfigField{
 					{
 						IsEditable:    true,
 						ShowCollapsed: true,
@@ -47,27 +47,28 @@ func Test_MergeConfigFields(t *testing.T) {
 	p := services.NewProject(zaptest.NewLogger(t), fakeProjectRepo, fakeTeamRepo)
 
 	type args struct {
-		obj2 map[string]any
+		update map[string]any
 	}
 	tests := []struct {
 		name  string
 		args  args
-		want  *internalmodels.ProjectConfig
+		want  *models.ProjectConfig
 		error string
 	}{
 		// TODO: expand test cases with different stubs, test bad config in db/update request (no fields key, wrong type of array elements...)
 		{
 			name: "example",
 			args: args{
-				obj2: map[string]any{"fields": []any{ // []any to test proper conversion later on
+				update: map[string]any{"fields": []any{ // []any to test proper conversion later on
 					map[string]any{"path": "workItemTypeID", "name": "Updated", "isEditable": false},
-					map[string]any{"path": "inexistent", "name": "inexistent"},
+					map[string]any{"path": "inexistent", "name": "inexistent"}, // will be ignored
 				}},
 			},
-			want: &internalmodels.ProjectConfig{
+			want: &models.ProjectConfig{
 				Header: []string{"demoProject.ref", "workItemType"},
-				Fields: []internalmodels.ProjectConfigField{
-					{IsEditable: false, ShowCollapsed: true, IsVisible: true, Path: "workItemTypeID", Name: "Updated"},
+				Fields: []models.ProjectConfigField{
+					{IsEditable: false, ShowCollapsed: true, IsVisible: true, Path: "workItemTypeID", Name: "Updated"}, // updated
+
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "description", Name: "description"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "teamID", Name: "teamID"},
 					{IsEditable: true, ShowCollapsed: true, IsVisible: true, Path: "updatedAt", Name: "updatedAt"},
@@ -92,7 +93,7 @@ func Test_MergeConfigFields(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := p.MergeConfigFields(context.Background(), &pgxpool.Pool{}, 1, tc.args.obj2)
+			got, err := p.MergeConfigFields(context.Background(), &pgxpool.Pool{}, 1, tc.args.update)
 			if (err != nil) && tc.error == "" {
 				t.Fatalf("unexpected error = %v", err)
 			}

@@ -125,7 +125,7 @@ func (_d UserWithRetry) ByUsername(ctx context.Context, d db.DBTX, username stri
 }
 
 // Create implements repos.User
-func (_d UserWithRetry) Create(ctx context.Context, d db.DBTX, params db.UserCreateParams) (up1 *db.User, err error) {
+func (_d UserWithRetry) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParams) (up1 *db.User, err error) {
 	up1, err = _d.User.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
 		return
@@ -182,7 +182,7 @@ func (_d UserWithRetry) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (up
 }
 
 // Update implements repos.User
-func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.UserUpdateParams) (up1 *db.User, err error) {
+func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params *db.UserUpdateParams) (up1 *db.User, err error) {
 	up1, err = _d.User.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
 		return

@@ -226,10 +226,29 @@ type {{ $t.GoName }}CreateParams struct {
 {{ end -}}
 }
 
+// Create{{ $t.GoName }} creates a new {{ $t.GoName }} in the database with the given params.
+func Create{{ $t.GoName }}(ctx context.Context, db DB, params *{{ $t.GoName }}CreateParams) (*{{ $t.GoName }}, error) {
+  {{ short $t }} := &{{ $t.GoName }}{
+{{ range $t.Fields -}}
+	{{ set_field . "CreateParams" $t -}}
+{{ end -}}
+  }
+
+  return {{ short $t }}.Insert(ctx, db)
+}
+
+
 // {{ $t.GoName }}UpdateParams represents update params for '{{ schema $t.SQLName }}'
 type {{ $t.GoName }}UpdateParams struct {
 {{ range $t.Fields -}}
 	{{ field . "UpdateParams" $t -}}
+{{ end -}}
+}
+
+// SetUpdateParams updates {{ schema $t.SQLName }} struct fields with the specified params.
+func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}UpdateParams) {
+{{ range $t.Fields -}}
+	{{ set_field . "UpdateParams" $t -}}
 {{ end -}}
 }
 

@@ -378,6 +378,25 @@ EOF
     [[ ${#kanban_steps_rows[@]} -gt 0 ]] || continue
     prefix="$(to_pascal "$project")KanbanSteps"
     generate_model_mappings_dicts $prefix kanban_steps_rows
+
+    kanban_steps_rows=()
+    mapfile -t kanban_steps_rows < <(dockerdb_psql -d $POSTGRES_DB -c "
+          select kanban_step_id,step_order from kanban_steps where project_id = (
+            select project_id from projects where name = '$project'
+            );" 2>/dev/null)
+    [[ ${#kanban_steps_rows[@]} -gt 0 ]] || continue
+    prefix="$(to_pascal "$project")KanbanSteps"
+    echo "var (
+    ${prefix}StepOrderByID = map[int]int{
+  " >>$model_mappings_path
+    for row in "${kanban_steps_rows[@]}"; do
+      first=$(cut_first "$row" "|") # always safe
+      mapfile -t arr <<<"${first}"
+      local id="${arr[0]}"
+      local kanban_step="${arr[1]}"
+      echo "${id}: ${kanban_step}," >>$model_mappings_path
+    done
+    echo "})" >>$model_mappings_path
   done
 
   for project in ${db_projects[@]}; do
@@ -446,10 +465,11 @@ x.gen.postgen() {
     POSTGRES_DB="$GEN_POSTGRES_DB"
 
     echo "Running generation"
-
     generate_structs_map
 
     update_spec_with_structs
+
+    delete_duplicate_schemas
 
     postgen -env=".env.$env"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -599,8 +619,7 @@ x.gen.client-server() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Generate mocks for specified interfaces. Runs are cached to `cachedir`.
-# Args: cachedir
+# Generate mocks for specified interfaces.
 x.gen.counterfeiter() {
   # This shouldn't pose any problems, the interface is the only input to counterfeiter.
   { { {
@@ -704,14 +723,12 @@ export type schemas = components['schemas']
 # Run all codegen and postgen commands for the project.
 x.gen() {
   cache-gen # Modification of vars inside would be local to subshell (caused by pipeline)
+  drop-and-migrate-gen-db
   { { {
     echo "Running code generation"
 
-    POSTGRES_DB="$GEN_POSTGRES_DB" x.db.recreate
-
     x.gen.build-tools # || true (this should not fail compilation anymore, the whole app should be compilable at this point)
 
-    x.gen.pregen
     rm -rf "$PG_REPO_GEN"
 
     # TODO try use gnu parallel and exit when anyone fails
@@ -722,13 +739,12 @@ x.gen() {
     x.gen.gowrap &
     x.gen.sqlc &
     x.gen.proto &
-
-    wait_without_error
-
     x.gen.xo &
     x.gen.jet &
 
     wait_without_error
+
+    x.gen.pregen
 
     x.gen.postgen &
     x.gen.counterfeiter & # delay since it depends on generated output too
@@ -887,7 +903,12 @@ x.test.xo() {
     goimports -w $files
     gofumpt -w $files
 
-    $test_dir/run_tests
+    if ! $test_dir/run_tests; then
+      confirm "Do you want to update test snapshot with current changes?" </dev/tty >/dev/tty && {
+        rm -rf "$test_dir/want"
+        cp -r "$test_dir/got" "$test_dir/want"
+      }
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1310,7 +1331,7 @@ run_shared_services() {
 
 # generate db structs for use with swaggest/openapi-go.
 # no need for ast parsing since all code is predictable
-# type grouping not supported
+# type grouping not supported.
 generate_structs_map() {
   local structs=()
   local enums=()
@@ -1342,6 +1363,8 @@ generate_structs_map() {
   find_go_enums enums "$REPOS/models"
   find_deleted_pkg_schemas structs enums Models
   for struct in ${structs[@]}; do
+    # openapi-go uses last dir name by default.
+    # we can intercept and generate based on t.PkgPath()
     map_fields+=("\"Models$struct\": repomodels.$struct{},")
   done
 
@@ -1414,17 +1437,34 @@ replace_enum_in_spec() {
     ($schema_path | key) line_comment=\"Generated from $src_comment. DO NOT EDIT.\"" -i $SPEC
 }
 
+awk_remove_go_comments='
+     /\/\*/ { f=1 } # set flag that is a block comment
+
+     f==0 && !/^\s*(\/\/|\/\*)/ {
+        print  # print non-commented lines
+     }
+     /\*\// { f=0 } # reset flag at end of comment
+'
+
 find_go_structs() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec sed -n 's/[\s]*type\(.*\)struct.*/\1/p' {} \;)
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
+    sed -ne 's/[\s]*type\(.*\)struct.*/\1/p')
+  if [[ ${#__arr[@]} -eq 0 ]]; then
+    err "No structs found in package $pkg"
+  fi
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
 }
 
 find_go_enums() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec sed -n 's/.*type[[:space:]]\+\([^=[:space:]]\+\)[[:space:]]\+string.*/\1/p' {} \;)
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
+    sed -ne 's/.*type[[:space:]]\+\([^=[:space:]]\+\)[[:space:]]\+string.*/\1/p')
+  if [[ ${#__arr[@]} -eq 0 ]]; then
+    echo "No enums found in package $pkg"
+  fi
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
 }
 
@@ -1433,7 +1473,7 @@ find_deleted_pkg_schemas() {
   local -n __enums="$2"
   local pkg="$3"
   echo "Finding deleted structs or enums from package '$pkg'..."
-  mapfile -t spec_schema < <(yq eval '.components.schemas[] | key' "$SPEC" | grep -E "^${pkg}")
+  mapfile -t spec_schema < <(yq eval '.components.schemas[] | key' "$SPEC" | grep -E "^${pkg}" || true)
 
   local found=0
   for spec_schema in ${spec_schema[*]}; do
@@ -1498,6 +1538,20 @@ update_spec_with_structs() {
   sed -i 's/!!merge //' $SPEC
 }
 
+delete_duplicate_schemas() {
+  # generated by gen-schema,
+  # since it cannot be aware of them beforehand and `ref` tag is not used by openapi-go
+  # (maybe it could...)
+  local keys=("ModelsRole" "ModelsScope" "ModelsProjectConfigField" "ModelsProjectConfig" "ModelsProject")
+  local paths_arr=()
+  for key in "${keys[@]}"; do
+    echo "Deleting ${key} (duplicate)"
+    paths_arr+=(".components.schemas.$key")
+  done
+  local paths=$(join_by "," "${paths_arr[@]}")
+  yq e "del($paths)" -i "$SPEC"
+}
+
 xo_schema() {
   # xo cannot use db files as input, needs an up-to-date schema
   # not recreating db on every gen can lead to plain wrong generation based on an old dev schema.
@@ -1529,6 +1583,7 @@ cache-gen() {
   mkdir -p "$CACHE_GEN"
   mkdir -p "$CACHE_FRONTEND_GEN"
   mkdir -p "$CACHE_PG_REPO_GEN"
+  backup_gen_files internal "$CACHE_GEN"
 
   cp "$SPEC" "$CACHE_GEN"
   rsync -a --delete "$FRONTEND_GEN/" "$CACHE_FRONTEND_GEN"
@@ -1548,6 +1603,26 @@ cache-gen.restore() {
   mv "$CACHE_GEN/$SPEC" "$SPEC"
   rsync -a --delete "$CACHE_PG_REPO_GEN/" "$PG_REPO_GEN/"
   rsync -a --delete "$CACHE_FRONTEND_GEN/" "$FRONTEND_GEN/"
+  restore_gen_files "$CACHE_GEN" internal
+}
+
+backup_gen_files() {
+  src_dir=$1
+  backup_dir=$2
+
+  mkdir -p "$backup_dir"
+
+  # -print0 alongside --null handle file names with spaces
+  find "$src_dir" -name "*.gen.go" -type f -print0 | tar czvf "$backup_dir/backup_gen_files.tar.gz" --null -T - &>/dev/null
+
+}
+
+restore_gen_files() {
+  backup_dir=$1
+  dest_dir=$2
+
+  # -C changes cwd to dir before extracting
+  tar xzvf "$backup_dir/backup_gen_files.tar.gz" -C "$dest_dir" --overwrite --strip-components=1 &>/dev/null
 }
 
 usage() {

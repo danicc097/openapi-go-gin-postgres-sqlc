@@ -24,7 +24,7 @@ type Team struct {
 	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
 	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
-	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O
+	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O (generated from M2O)
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
 	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`        // M2M
 	WorkItemJoin    *WorkItem    `json:"-" db:"work_item" openapi-go:"ignore"`    // O2O (inferred)
@@ -33,16 +33,40 @@ type Team struct {
 
 // TeamCreateParams represents insert params for 'public.teams'
 type TeamCreateParams struct {
-	ProjectID   int    `json:"projectID"`   // project_id
-	Name        string `json:"name"`        // name
-	Description string `json:"description"` // description
+	ProjectID   int    `json:"projectID" required:"true"`   // project_id
+	Name        string `json:"name" required:"true"`        // name
+	Description string `json:"description" required:"true"` // description
+}
+
+// CreateTeam creates a new Team in the database with the given params.
+func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, error) {
+	t := &Team{
+		ProjectID:   params.ProjectID,
+		Name:        params.Name,
+		Description: params.Description,
+	}
+
+	return t.Insert(ctx, db)
 }
 
 // TeamUpdateParams represents update params for 'public.teams'
 type TeamUpdateParams struct {
-	ProjectID   *int    `json:"projectID"`   // project_id
-	Name        *string `json:"name"`        // name
-	Description *string `json:"description"` // description
+	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
+	Name        *string `json:"name" required:"true"`        // name
+	Description *string `json:"description" required:"true"` // description
+}
+
+// SetUpdateParams updates public.teams struct fields with the specified params.
+func (t *Team) SetUpdateParams(params *TeamUpdateParams) {
+	if params.ProjectID != nil {
+		t.ProjectID = *params.ProjectID
+	}
+	if params.Name != nil {
+		t.Name = *params.Name
+	}
+	if params.Description != nil {
+		t.Description = *params.Description
+	}
 }
 
 type TeamSelectConfig struct {
@@ -55,7 +79,9 @@ type TeamSelectConfigOption func(*TeamSelectConfig)
 // WithTeamLimit limits row selection.
 func WithTeamLimit(limit int) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -75,12 +101,10 @@ const (
 // WithTeamOrderBy orders results by the given columns.
 func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 
@@ -94,7 +118,13 @@ type TeamJoins struct {
 // WithTeamJoin joins with the given tables.
 func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
-		s.joins = joins
+		s.joins = TeamJoins{
+
+			Project:     s.joins.Project || joins.Project,
+			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
+			Users:       s.joins.Users || joins.Users,
+			WorkItem:    s.joins.WorkItem || joins.WorkItem,
+		}
 	}
 }
 
@@ -202,7 +232,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
-		`-- O2O join generated from "teams_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -266,7 +296,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
-		`-- O2O join generated from "teams_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -332,7 +362,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
-		`-- O2O join generated from "teams_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -398,7 +428,7 @@ teams.updated_at,
 (case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.teams ` +
-		`-- O2O join generated from "teams_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (

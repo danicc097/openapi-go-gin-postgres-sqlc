@@ -110,7 +110,7 @@ func (_d UserWithPrometheus) ByUsername(ctx context.Context, d db.DBTX, username
 }
 
 // Create implements repos.User
-func (_d UserWithPrometheus) Create(ctx context.Context, d db.DBTX, params db.UserCreateParams) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParams) (up1 *db.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -152,7 +152,7 @@ func (_d UserWithPrometheus) Delete(ctx context.Context, d db.DBTX, id uuid.UUID
 }
 
 // Update implements repos.User
-func (_d UserWithPrometheus) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.UserUpdateParams) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params *db.UserUpdateParams) (up1 *db.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

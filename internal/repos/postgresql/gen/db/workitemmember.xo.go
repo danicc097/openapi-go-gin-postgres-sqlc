@@ -6,8 +6,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgx/v5"
+
+	"github.com/google/uuid"
 )
 
 // WorkItemMember represents a row from 'public.work_item_member'.
@@ -16,24 +18,48 @@ import (
 //   - "type:<pkg.type>" to override the type annotation.
 //   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type WorkItemMember struct {
-	WorkItemID int64        `json:"workItemID" db:"work_item_id" required:"true"`                           // work_item_id
-	Member     uuid.UUID    `json:"member" db:"member" required:"true"`                                     // member
-	Role       WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"` // role
+	WorkItemID int64               `json:"workItemID" db:"work_item_id" required:"true"`                           // work_item_id
+	Member     uuid.UUID           `json:"member" db:"member" required:"true"`                                     // member
+	Role       models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"` // role
 
 }
 
 // WorkItemMemberCreateParams represents insert params for 'public.work_item_member'
 type WorkItemMemberCreateParams struct {
-	WorkItemID int64        `json:"workItemID"` // work_item_id
-	Member     uuid.UUID    `json:"member"`     // member
-	Role       WorkItemRole `json:"role"`       // role
+	WorkItemID int64               `json:"workItemID" required:"true"`                                   // work_item_id
+	Member     uuid.UUID           `json:"member" required:"true"`                                       // member
+	Role       models.WorkItemRole `json:"role" required:"true" ref:"#/components/schemas/WorkItemRole"` // role
+}
+
+// CreateWorkItemMember creates a new WorkItemMember in the database with the given params.
+func CreateWorkItemMember(ctx context.Context, db DB, params *WorkItemMemberCreateParams) (*WorkItemMember, error) {
+	wim := &WorkItemMember{
+		WorkItemID: params.WorkItemID,
+		Member:     params.Member,
+		Role:       params.Role,
+	}
+
+	return wim.Insert(ctx, db)
 }
 
 // WorkItemMemberUpdateParams represents update params for 'public.work_item_member'
 type WorkItemMemberUpdateParams struct {
-	WorkItemID *int64        `json:"workItemID"` // work_item_id
-	Member     *uuid.UUID    `json:"member"`     // member
-	Role       *WorkItemRole `json:"role"`       // role
+	WorkItemID *int64               `json:"workItemID" required:"true"`                                   // work_item_id
+	Member     *uuid.UUID           `json:"member" required:"true"`                                       // member
+	Role       *models.WorkItemRole `json:"role" required:"true" ref:"#/components/schemas/WorkItemRole"` // role
+}
+
+// SetUpdateParams updates public.work_item_member struct fields with the specified params.
+func (wim *WorkItemMember) SetUpdateParams(params *WorkItemMemberUpdateParams) {
+	if params.WorkItemID != nil {
+		wim.WorkItemID = *params.WorkItemID
+	}
+	if params.Member != nil {
+		wim.Member = *params.Member
+	}
+	if params.Role != nil {
+		wim.Role = *params.Role
+	}
 }
 
 type WorkItemMemberSelectConfig struct {
@@ -46,7 +72,9 @@ type WorkItemMemberSelectConfigOption func(*WorkItemMemberSelectConfig)
 // WithWorkItemMemberLimit limits row selection.
 func WithWorkItemMemberLimit(limit int) WorkItemMemberSelectConfigOption {
 	return func(s *WorkItemMemberSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -60,7 +88,7 @@ type WorkItemMemberJoins struct {
 // WithWorkItemMemberJoin joins with the given tables.
 func WithWorkItemMemberJoin(joins WorkItemMemberJoins) WorkItemMemberSelectConfigOption {
 	return func(s *WorkItemMemberSelectConfig) {
-		s.joins = joins
+		s.joins = WorkItemMemberJoins{}
 	}
 }
 

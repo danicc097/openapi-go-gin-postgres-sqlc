@@ -90,7 +90,7 @@ export interface components {
       kanbanStepID: number;
       name: string;
       projectID: number;
-      stepOrder: number | null;
+      stepOrder: number;
       timeTrackable: boolean;
     };
     DbProject: {
@@ -294,6 +294,10 @@ export interface components {
       firstName?: string;
       /** @description originally from auth server but updatable */
       lastName?: string;
+      /** @description originally from auth server but updatable */
+      username?: string;
+      /** @description originally from auth server but updatable */
+      email?: string;
     };
     /**
      * @description represents User authorization data to update 
@@ -358,10 +362,10 @@ export interface components {
     /** @enum {string} */
     Project: "demo" | "demo_two";
     DbActivityCreateParams: {
-      description?: string;
-      isProductive?: boolean;
-      name?: string;
-      projectID?: number;
+      description: string;
+      isProductive: boolean;
+      name: string;
+      projectID: number;
     };
     DbKanbanStepCreateParams: {
       color?: string;
@@ -372,15 +376,15 @@ export interface components {
       timeTrackable?: boolean;
     };
     DbTeamCreateParams: {
-      description?: string;
-      name?: string;
-      projectID?: number;
+      description: string;
+      name: string;
+      projectID: number;
     };
     DbWorkItemTagCreateParams: {
-      color?: string;
-      description?: string;
-      name?: string;
-      projectID?: number;
+      color: string;
+      description: string;
+      name: string;
+      projectID: number;
     };
     DbWorkItemTypeCreateParams: {
       color?: string;
@@ -388,8 +392,6 @@ export interface components {
       name?: string;
       projectID?: number;
     };
-    ModelsProject: string;
-    ModelsRole: string;
     DbWorkItemRole: string;
     DbWorkItem_Member: {
       role: components["schemas"]["WorkItemRole"];
@@ -404,7 +406,6 @@ export interface components {
     DemoProjectKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
     /** @enum {string} */
     DemoProject2KanbanSteps: "Received";
-    ModelsScope: string;
     /** @enum {string} */
     Demo2WorkItemTypes: "Type 1" | "Type 2" | "Another type";
     /** @enum {string} */
@@ -415,17 +416,6 @@ export interface components {
     DemoTwoWorkItemTypes: "Type 1" | "Type 2" | "Another type";
     /** @enum {string} */
     DemoWorkItemTypes: "Type 1";
-    ModelsProjectConfig: {
-      fields?: (components["schemas"]["ModelsProjectConfigField"])[] | null;
-      header?: (string)[] | null;
-    };
-    ModelsProjectConfigField: {
-      isEditable?: boolean;
-      isVisible?: boolean;
-      name?: string;
-      path?: string;
-      showCollapsed?: boolean;
-    };
   };
   responses: never;
   parameters: {

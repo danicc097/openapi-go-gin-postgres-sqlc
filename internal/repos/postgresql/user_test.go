@@ -53,7 +53,7 @@ func TestUser_Update(t *testing.T) {
 			t.Parallel()
 
 			u := postgresql.NewUser()
-			got, err := u.Update(context.Background(), testPool, tc.args.id, tc.args.params)
+			got, err := u.Update(context.Background(), testPool, tc.args.id, &tc.args.params)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("User.Update() error = %v, wantErr %v", err, tc.wantErr)
 
@@ -314,14 +314,14 @@ func TestUser_Create(t *testing.T) {
 
 		want := want{
 			FullName:         pointers.New(*ucp.FirstName + " " + *ucp.LastName),
-			UserCreateParams: ucp,
+			UserCreateParams: *ucp,
 		}
 
 		args := args{
-			params: ucp,
+			params: *ucp,
 		}
 
-		got, err := userRepo.Create(context.Background(), testPool, args.params)
+		got, err := userRepo.Create(context.Background(), testPool, &args.params)
 		if err != nil {
 			t.Fatalf("unexpected error = %v", err)
 		}
@@ -343,12 +343,12 @@ func TestUser_Create(t *testing.T) {
 		ucp.RoleRank = int16(-1)
 
 		args := args{
-			params: ucp,
+			params: *ucp,
 		}
 
 		errContains := errViolatesCheckConstraint
 
-		_, err := userRepo.Create(context.Background(), testPool, args.params)
+		_, err := userRepo.Create(context.Background(), testPool, &args.params)
 		if err == nil {
 			t.Fatalf("expected error = '%v' but got nothing", errContains)
 		}

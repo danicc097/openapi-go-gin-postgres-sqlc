@@ -49,30 +49,82 @@ type User struct {
 
 // UserCreateParams represents insert params for 'public.users'
 type UserCreateParams struct {
-	Username                 string        `json:"username"`                 // username
-	Email                    string        `json:"email"`                    // email
-	FirstName                *string       `json:"firstName"`                // first_name
-	LastName                 *string       `json:"lastName"`                 // last_name
-	ExternalID               string        `json:"-"`                        // external_id
-	APIKeyID                 *int          `json:"-"`                        // api_key_id
-	Scopes                   models.Scopes `json:"scopes"`                   // scopes
-	RoleRank                 int16         `json:"-"`                        // role_rank
-	HasPersonalNotifications bool          `json:"hasPersonalNotifications"` // has_personal_notifications
-	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`   // has_global_notifications
+	Username                 string        `json:"username" required:"true"`                                 // username
+	Email                    string        `json:"email" required:"true"`                                    // email
+	FirstName                *string       `json:"firstName" required:"true"`                                // first_name
+	LastName                 *string       `json:"lastName" required:"true"`                                 // last_name
+	ExternalID               string        `json:"-"`                                                        // external_id
+	APIKeyID                 *int          `json:"-"`                                                        // api_key_id
+	Scopes                   models.Scopes `json:"scopes" required:"true" ref:"#/components/schemas/Scopes"` // scopes
+	RoleRank                 int16         `json:"-"`                                                        // role_rank
+	HasPersonalNotifications bool          `json:"hasPersonalNotifications" required:"true"`                 // has_personal_notifications
+	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" required:"true"`                   // has_global_notifications
+}
+
+// CreateUser creates a new User in the database with the given params.
+func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
+	u := &User{
+		Username:                 params.Username,
+		Email:                    params.Email,
+		FirstName:                params.FirstName,
+		LastName:                 params.LastName,
+		ExternalID:               params.ExternalID,
+		APIKeyID:                 params.APIKeyID,
+		Scopes:                   params.Scopes,
+		RoleRank:                 params.RoleRank,
+		HasPersonalNotifications: params.HasPersonalNotifications,
+		HasGlobalNotifications:   params.HasGlobalNotifications,
+	}
+
+	return u.Insert(ctx, db)
 }
 
 // UserUpdateParams represents update params for 'public.users'
 type UserUpdateParams struct {
-	Username                 *string        `json:"username"`                 // username
-	Email                    *string        `json:"email"`                    // email
-	FirstName                **string       `json:"firstName"`                // first_name
-	LastName                 **string       `json:"lastName"`                 // last_name
-	ExternalID               *string        `json:"-"`                        // external_id
-	APIKeyID                 **int          `json:"-"`                        // api_key_id
-	Scopes                   *models.Scopes `json:"scopes"`                   // scopes
-	RoleRank                 *int16         `json:"-"`                        // role_rank
-	HasPersonalNotifications *bool          `json:"hasPersonalNotifications"` // has_personal_notifications
-	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications"`   // has_global_notifications
+	Username                 *string        `json:"username" required:"true"`                                 // username
+	Email                    *string        `json:"email" required:"true"`                                    // email
+	FirstName                **string       `json:"firstName" required:"true"`                                // first_name
+	LastName                 **string       `json:"lastName" required:"true"`                                 // last_name
+	ExternalID               *string        `json:"-"`                                                        // external_id
+	APIKeyID                 **int          `json:"-"`                                                        // api_key_id
+	Scopes                   *models.Scopes `json:"scopes" required:"true" ref:"#/components/schemas/Scopes"` // scopes
+	RoleRank                 *int16         `json:"-"`                                                        // role_rank
+	HasPersonalNotifications *bool          `json:"hasPersonalNotifications" required:"true"`                 // has_personal_notifications
+	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications" required:"true"`                   // has_global_notifications
+}
+
+// SetUpdateParams updates public.users struct fields with the specified params.
+func (u *User) SetUpdateParams(params *UserUpdateParams) {
+	if params.Username != nil {
+		u.Username = *params.Username
+	}
+	if params.Email != nil {
+		u.Email = *params.Email
+	}
+	if params.FirstName != nil {
+		u.FirstName = *params.FirstName
+	}
+	if params.LastName != nil {
+		u.LastName = *params.LastName
+	}
+	if params.ExternalID != nil {
+		u.ExternalID = *params.ExternalID
+	}
+	if params.APIKeyID != nil {
+		u.APIKeyID = *params.APIKeyID
+	}
+	if params.Scopes != nil {
+		u.Scopes = *params.Scopes
+	}
+	if params.RoleRank != nil {
+		u.RoleRank = *params.RoleRank
+	}
+	if params.HasPersonalNotifications != nil {
+		u.HasPersonalNotifications = *params.HasPersonalNotifications
+	}
+	if params.HasGlobalNotifications != nil {
+		u.HasGlobalNotifications = *params.HasGlobalNotifications
+	}
 }
 
 type UserSelectConfig struct {
@@ -86,7 +138,9 @@ type UserSelectConfigOption func(*UserSelectConfig)
 // WithUserLimit limits row selection.
 func WithUserLimit(limit int) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -117,12 +171,10 @@ const (
 // WithUserOrderBy orders results by the given columns.
 func WithUserOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 
@@ -140,7 +192,17 @@ type UserJoins struct {
 // WithUserJoin joins with the given tables.
 func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.joins = joins
+		s.joins = UserJoins{
+
+			NotificationsReceiver: s.joins.NotificationsReceiver || joins.NotificationsReceiver,
+			NotificationsSender:   s.joins.NotificationsSender || joins.NotificationsSender,
+			TimeEntries:           s.joins.TimeEntries || joins.TimeEntries,
+			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
+			UserNotifications:     s.joins.UserNotifications || joins.UserNotifications,
+			Teams:                 s.joins.Teams || joins.Teams,
+			WorkItemComments:      s.joins.WorkItemComments || joins.WorkItemComments,
+			WorkItems:             s.joins.WorkItems || joins.WorkItems,
+		}
 	}
 }
 

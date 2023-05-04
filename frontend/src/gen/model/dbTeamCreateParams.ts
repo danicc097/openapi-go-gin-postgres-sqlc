@@ -7,7 +7,7 @@
  */
 
 export interface DbTeamCreateParams {
-  description?: string
-  name?: string
-  projectID?: number
+  description: string
+  name: string
+  projectID: number
 }

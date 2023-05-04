@@ -29,19 +29,48 @@ type DemoWorkItem struct {
 
 // DemoWorkItemCreateParams represents insert params for 'public.demo_work_items'
 type DemoWorkItemCreateParams struct {
-	WorkItemID    int64     `json:"workItemID"`    // work_item_id
-	Ref           string    `json:"ref"`           // ref
-	Line          string    `json:"line"`          // line
-	LastMessageAt time.Time `json:"lastMessageAt"` // last_message_at
-	Reopened      bool      `json:"reopened"`      // reopened
+	WorkItemID    int64     `json:"workItemID" required:"true"`    // work_item_id
+	Ref           string    `json:"ref" required:"true"`           // ref
+	Line          string    `json:"line" required:"true"`          // line
+	LastMessageAt time.Time `json:"lastMessageAt" required:"true"` // last_message_at
+	Reopened      bool      `json:"reopened" required:"true"`      // reopened
+}
+
+// CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.
+func CreateDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreateParams) (*DemoWorkItem, error) {
+	dwi := &DemoWorkItem{
+		WorkItemID:    params.WorkItemID,
+		Ref:           params.Ref,
+		Line:          params.Line,
+		LastMessageAt: params.LastMessageAt,
+		Reopened:      params.Reopened,
+	}
+
+	return dwi.Insert(ctx, db)
 }
 
 // DemoWorkItemUpdateParams represents update params for 'public.demo_work_items'
 type DemoWorkItemUpdateParams struct {
-	Ref           *string    `json:"ref"`           // ref
-	Line          *string    `json:"line"`          // line
-	LastMessageAt *time.Time `json:"lastMessageAt"` // last_message_at
-	Reopened      *bool      `json:"reopened"`      // reopened
+	Ref           *string    `json:"ref" required:"true"`           // ref
+	Line          *string    `json:"line" required:"true"`          // line
+	LastMessageAt *time.Time `json:"lastMessageAt" required:"true"` // last_message_at
+	Reopened      *bool      `json:"reopened" required:"true"`      // reopened
+}
+
+// SetUpdateParams updates public.demo_work_items struct fields with the specified params.
+func (dwi *DemoWorkItem) SetUpdateParams(params *DemoWorkItemUpdateParams) {
+	if params.Ref != nil {
+		dwi.Ref = *params.Ref
+	}
+	if params.Line != nil {
+		dwi.Line = *params.Line
+	}
+	if params.LastMessageAt != nil {
+		dwi.LastMessageAt = *params.LastMessageAt
+	}
+	if params.Reopened != nil {
+		dwi.Reopened = *params.Reopened
+	}
 }
 
 type DemoWorkItemSelectConfig struct {
@@ -54,7 +83,9 @@ type DemoWorkItemSelectConfigOption func(*DemoWorkItemSelectConfig)
 // WithDemoWorkItemLimit limits row selection.
 func WithDemoWorkItemLimit(limit int) DemoWorkItemSelectConfigOption {
 	return func(s *DemoWorkItemSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -70,12 +101,10 @@ const (
 // WithDemoWorkItemOrderBy orders results by the given columns.
 func WithDemoWorkItemOrderBy(rows ...DemoWorkItemOrderBy) DemoWorkItemSelectConfigOption {
 	return func(s *DemoWorkItemSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 
@@ -86,7 +115,10 @@ type DemoWorkItemJoins struct {
 // WithDemoWorkItemJoin joins with the given tables.
 func WithDemoWorkItemJoin(joins DemoWorkItemJoins) DemoWorkItemSelectConfigOption {
 	return func(s *DemoWorkItemSelectConfig) {
-		s.joins = joins
+		s.joins = DemoWorkItemJoins{
+
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
+		}
 	}
 }
 

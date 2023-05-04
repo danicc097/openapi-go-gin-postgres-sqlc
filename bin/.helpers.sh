@@ -43,6 +43,7 @@ Current directory: $PWD"
 }
 
 # Prompt the user for confirmation.
+# NOTE: at least VSCode terminal can mess buffers up on occassion and require a new session.
 confirm() {
   test -n "$NO_CONFIRMATION" && return
 
@@ -53,8 +54,13 @@ confirm() {
 
   prompt+=" [y/n]"
 
+  # Always read input from the terminal ignoring pipelines
+  exec </dev/tty
+
   while true; do
-    read -r -p "$prompt " response
+    # output the prompt directly to the terminal ignoring pipelines
+    echo "$prompt "
+    read -r response
     case "${response,,}" in
     [y][e][s] | [y])
       return 0
@@ -77,7 +83,7 @@ list_descendants() {
 
 # waits for parallel processes to finish sucessfully, signalling SIGUSR1 otherwise.
 wait_without_error() {
-  declare -i err=0 werr=0
+  local -i err=0 werr=0
   while
     wait -fn || werr=$?
     ((werr != 127)) # 127: not found

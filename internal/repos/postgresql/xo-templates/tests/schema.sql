@@ -15,7 +15,7 @@ create table books (
 create table book_authors (
   book_id int not null
   , author_id uuid not null
-  , unique (book_id , author_id)
+  , primary key (book_id , author_id)
   , foreign key (author_id) references users (user_id) on delete cascade
   , foreign key (book_id) references books (book_id) on delete cascade
 );

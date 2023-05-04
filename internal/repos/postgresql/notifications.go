@@ -67,8 +67,8 @@ var _ repos.Notification = (*Notification)(nil)
 // 	return nn, nil
 // }
 
-func (u *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, params db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
-	nn, err := u.q.GetUserNotifications(ctx, d, params)
+func (u *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
+	nn, err := u.q.GetUserNotifications(ctx, d, *params)
 	if err != nil {
 		return nil, fmt.Errorf("could not get notifications for user: %w", parseErrorDetail(err))
 	}
@@ -76,19 +76,10 @@ func (u *Notification) LatestUserNotifications(ctx context.Context, d db.DBTX, p
 	return nn, nil
 }
 
-func (u *Notification) Create(ctx context.Context, d db.DBTX, params db.NotificationCreateParams) (*db.Notification, error) {
-	notification := &db.Notification{
-		Title:            params.Title,
-		Body:             params.Body,
-		Label:            params.Label,
-		Link:             params.Link,
-		ReceiverRank:     params.ReceiverRank,
-		Sender:           params.Sender,
-		Receiver:         params.Receiver,
-		NotificationType: params.NotificationType,
-	}
-	if _, err := notification.Insert(ctx, d); err != nil {
-		return nil, err
+func (u *Notification) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (*db.Notification, error) {
+	notification, err := db.CreateNotification(ctx, d, params)
+	if err != nil {
+		return nil, fmt.Errorf("could not create notification: %w", parseErrorDetail(err))
 	}
 
 	return notification, nil

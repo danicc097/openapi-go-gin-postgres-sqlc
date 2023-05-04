@@ -70,7 +70,7 @@ export const getGetProjectBoardMock = () => ({
     kanbanStepID: faker.datatype.number({ min: undefined, max: undefined }),
     name: faker.random.word(),
     projectID: faker.datatype.number({ min: undefined, max: undefined }),
-    stepOrder: faker.helpers.arrayElement([faker.datatype.number({ min: undefined, max: undefined }), null]),
+    stepOrder: faker.datatype.number({ min: undefined, max: undefined }),
     timeTrackable: faker.datatype.boolean(),
   })),
   name: faker.helpers.arrayElement(Object.values(Project)),

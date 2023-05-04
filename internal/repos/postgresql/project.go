@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
@@ -27,7 +27,7 @@ func (u *Project) ByID(ctx context.Context, d db.DBTX, id int) (*db.Project, err
 	return db.ProjectByProjectID(ctx, d, id)
 }
 
-func (u *Project) ByName(ctx context.Context, d db.DBTX, name internalmodels.Project) (*db.Project, error) {
+func (u *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*db.Project, error) {
 	project, err := db.ProjectByName(ctx, d, name)
 	if err != nil {
 		return nil, fmt.Errorf("could not get project: %w", parseErrorDetail(err))

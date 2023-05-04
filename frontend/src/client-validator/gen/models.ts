@@ -43,8 +43,6 @@ export type Topics = 'GlobalAlerts'
  * represents a database 'work_item_role'
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
-export type ModelsProject = string
-export type ModelsRole = string
 export type DbWorkItemRole = string
 /**
  * represents a database 'notification_type'
@@ -52,7 +50,6 @@ export type DbWorkItemRole = string
 export type NotificationType = 'personal' | 'global'
 export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 export type DemoProject2KanbanSteps = 'Received'
-export type ModelsScope = string
 export type Demo2WorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
 export type DemoKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 export type DemoTwoKanbanSteps = 'Received'
@@ -72,7 +69,7 @@ export interface DbKanbanStep {
   kanbanStepID: number
   name: string
   projectID: number
-  stepOrder: number | null
+  stepOrder: number
   timeTrackable: boolean
 }
 export interface DbProject {
@@ -186,21 +183,21 @@ export interface InitializeProjectRequest {
   workItemTags?: DbWorkItemTagCreateParams[] | null
 }
 export interface DbActivityCreateParams {
-  description?: string
-  isProductive?: boolean
-  name?: string
-  projectID?: number
+  description: string
+  isProductive: boolean
+  name: string
+  projectID: number
 }
 export interface DbTeamCreateParams {
-  description?: string
-  name?: string
-  projectID?: number
+  description: string
+  name: string
+  projectID: number
 }
 export interface DbWorkItemTagCreateParams {
-  color?: string
-  description?: string
-  name?: string
-  projectID?: number
+  color: string
+  description: string
+  name: string
+  projectID: number
 }
 export interface RestProjectBoardResponse {
   activities: DbActivity[] | null
@@ -263,6 +260,14 @@ export interface UpdateUserRequest {
    * originally from auth server but updatable
    */
   lastName?: string
+  /**
+   * originally from auth server but updatable
+   */
+  username?: string
+  /**
+   * originally from auth server but updatable
+   */
+  email?: string
 }
 /**
  * represents User authorization data to update
@@ -303,15 +308,4 @@ export interface DbWorkItemTypeCreateParams {
 export interface DbWorkItem_Member {
   role: WorkItemRole
   user?: DbUser
-}
-export interface ModelsProjectConfig {
-  fields?: ModelsProjectConfigField[] | null
-  header?: string[] | null
-}
-export interface ModelsProjectConfigField {
-  isEditable?: boolean
-  isVisible?: boolean
-  name?: string
-  path?: string
-  showCollapsed?: boolean
 }

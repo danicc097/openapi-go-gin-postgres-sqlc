@@ -27,33 +27,73 @@ type TimeEntry struct {
 	Start           time.Time `json:"start" db:"start" required:"true"`                      // start
 	DurationMinutes *int      `json:"durationMinutes" db:"duration_minutes" required:"true"` // duration_minutes
 
-	ActivityJoin *Activity `json:"-" db:"activity" openapi-go:"ignore"`  // O2O
-	TeamJoin     *Team     `json:"-" db:"team" openapi-go:"ignore"`      // O2O
-	UserJoin     *User     `json:"-" db:"user" openapi-go:"ignore"`      // O2O
-	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
+	ActivityJoin *Activity `json:"-" db:"activity" openapi-go:"ignore"`  // O2O (generated from M2O)
+	TeamJoin     *Team     `json:"-" db:"team" openapi-go:"ignore"`      // O2O (generated from M2O)
+	UserJoin     *User     `json:"-" db:"user" openapi-go:"ignore"`      // O2O (generated from M2O)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (generated from M2O)
 
 }
 
 // TimeEntryCreateParams represents insert params for 'public.time_entries'
 type TimeEntryCreateParams struct {
-	WorkItemID      *int64    `json:"workItemID"`      // work_item_id
-	ActivityID      int       `json:"activityID"`      // activity_id
-	TeamID          *int      `json:"teamID"`          // team_id
-	UserID          uuid.UUID `json:"userID"`          // user_id
-	Comment         string    `json:"comment"`         // comment
-	Start           time.Time `json:"start"`           // start
-	DurationMinutes *int      `json:"durationMinutes"` // duration_minutes
+	WorkItemID      *int64    `json:"workItemID" required:"true"`      // work_item_id
+	ActivityID      int       `json:"activityID" required:"true"`      // activity_id
+	TeamID          *int      `json:"teamID" required:"true"`          // team_id
+	UserID          uuid.UUID `json:"userID" required:"true"`          // user_id
+	Comment         string    `json:"comment" required:"true"`         // comment
+	Start           time.Time `json:"start" required:"true"`           // start
+	DurationMinutes *int      `json:"durationMinutes" required:"true"` // duration_minutes
+}
+
+// CreateTimeEntry creates a new TimeEntry in the database with the given params.
+func CreateTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) (*TimeEntry, error) {
+	te := &TimeEntry{
+		WorkItemID:      params.WorkItemID,
+		ActivityID:      params.ActivityID,
+		TeamID:          params.TeamID,
+		UserID:          params.UserID,
+		Comment:         params.Comment,
+		Start:           params.Start,
+		DurationMinutes: params.DurationMinutes,
+	}
+
+	return te.Insert(ctx, db)
 }
 
 // TimeEntryUpdateParams represents update params for 'public.time_entries'
 type TimeEntryUpdateParams struct {
-	WorkItemID      **int64    `json:"workItemID"`      // work_item_id
-	ActivityID      *int       `json:"activityID"`      // activity_id
-	TeamID          **int      `json:"teamID"`          // team_id
-	UserID          *uuid.UUID `json:"userID"`          // user_id
-	Comment         *string    `json:"comment"`         // comment
-	Start           *time.Time `json:"start"`           // start
-	DurationMinutes **int      `json:"durationMinutes"` // duration_minutes
+	WorkItemID      **int64    `json:"workItemID" required:"true"`      // work_item_id
+	ActivityID      *int       `json:"activityID" required:"true"`      // activity_id
+	TeamID          **int      `json:"teamID" required:"true"`          // team_id
+	UserID          *uuid.UUID `json:"userID" required:"true"`          // user_id
+	Comment         *string    `json:"comment" required:"true"`         // comment
+	Start           *time.Time `json:"start" required:"true"`           // start
+	DurationMinutes **int      `json:"durationMinutes" required:"true"` // duration_minutes
+}
+
+// SetUpdateParams updates public.time_entries struct fields with the specified params.
+func (te *TimeEntry) SetUpdateParams(params *TimeEntryUpdateParams) {
+	if params.WorkItemID != nil {
+		te.WorkItemID = *params.WorkItemID
+	}
+	if params.ActivityID != nil {
+		te.ActivityID = *params.ActivityID
+	}
+	if params.TeamID != nil {
+		te.TeamID = *params.TeamID
+	}
+	if params.UserID != nil {
+		te.UserID = *params.UserID
+	}
+	if params.Comment != nil {
+		te.Comment = *params.Comment
+	}
+	if params.Start != nil {
+		te.Start = *params.Start
+	}
+	if params.DurationMinutes != nil {
+		te.DurationMinutes = *params.DurationMinutes
+	}
 }
 
 type TimeEntrySelectConfig struct {
@@ -66,7 +106,9 @@ type TimeEntrySelectConfigOption func(*TimeEntrySelectConfig)
 // WithTimeEntryLimit limits row selection.
 func WithTimeEntryLimit(limit int) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -82,12 +124,10 @@ const (
 // WithTimeEntryOrderBy orders results by the given columns.
 func WithTimeEntryOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 
@@ -101,7 +141,13 @@ type TimeEntryJoins struct {
 // WithTimeEntryJoin joins with the given tables.
 func WithTimeEntryJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
-		s.joins = joins
+		s.joins = TimeEntryJoins{
+
+			Activity: s.joins.Activity || joins.Activity,
+			Team:     s.joins.Team || joins.Team,
+			User:     s.joins.User || joins.User,
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
+		}
 	}
 }
 
@@ -211,13 +257,13 @@ time_entries.duration_minutes,
 (case when $3::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $4::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.time_entries ` +
-		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
 left join activities on activities.activity_id = time_entries.activity_id
--- O2O join generated from "time_entries_team_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
 left join teams on teams.team_id = time_entries.team_id
--- O2O join generated from "time_entries_user_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = time_entries.user_id
--- O2O join generated from "time_entries_work_item_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
 left join work_items on work_items.work_item_id = time_entries.work_item_id` +
 		` WHERE time_entries.time_entry_id = $5 `
 	sqlstr += c.orderBy
@@ -262,13 +308,13 @@ time_entries.duration_minutes,
 (case when $3::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $4::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.time_entries ` +
-		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
 left join activities on activities.activity_id = time_entries.activity_id
--- O2O join generated from "time_entries_team_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
 left join teams on teams.team_id = time_entries.team_id
--- O2O join generated from "time_entries_user_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = time_entries.user_id
--- O2O join generated from "time_entries_work_item_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
 left join work_items on work_items.work_item_id = time_entries.work_item_id` +
 		` WHERE time_entries.user_id = $5 AND time_entries.team_id = $6 `
 	sqlstr += c.orderBy
@@ -315,13 +361,13 @@ time_entries.duration_minutes,
 (case when $3::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $4::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.time_entries ` +
-		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
 left join activities on activities.activity_id = time_entries.activity_id
--- O2O join generated from "time_entries_team_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
 left join teams on teams.team_id = time_entries.team_id
--- O2O join generated from "time_entries_user_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = time_entries.user_id
--- O2O join generated from "time_entries_work_item_id_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
 left join work_items on work_items.work_item_id = time_entries.work_item_id` +
 		` WHERE time_entries.work_item_id = $5 AND time_entries.team_id = $6 `
 	sqlstr += c.orderBy

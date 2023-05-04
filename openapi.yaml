@@ -375,7 +375,6 @@ components:
         projectID:
           type: integer
         stepOrder:
-          nullable: true
           type: integer
         timeTrackable:
           type: boolean
@@ -941,11 +940,20 @@ components:
         firstName:
           description: originally from auth server but updatable
           type: string
-          pattern: ^[ a-zA-Z0-9_-]+$
+          pattern: ^[\p{L} '-]+$
         lastName:
           description: originally from auth server but updatable
           type: string
-          pattern: ^[ a-zA-Z0-9_-]+$
+          pattern: ^[\p{L} '-]+$
+        username:
+          description: originally from auth server but updatable
+          type: string
+          pattern: ^[\.a-zA-Z0-9_-]+$
+        email:
+          description: originally from auth server but updatable
+          type: string
+          # format: email # bad oapi-codegen type
+          pattern: ^[a-zA-Z0-9._%+-]+@(mydomain\.com|anotherdomain\.com)$
       type: object
     UpdateUserAuthRequest:
       description: represents User authorization data to update
@@ -1074,6 +1082,11 @@ components:
           type: string
         projectID:
           type: integer
+      required:
+        - projectID
+        - name
+        - description
+        - isProductive
       type: object
     DbKanbanStepCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -1099,6 +1112,10 @@ components:
           type: string
         projectID:
           type: integer
+      required:
+        - projectID
+        - name
+        - description
       type: object
     DbWorkItemTagCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -1110,6 +1127,11 @@ components:
           type: string
         projectID:
           type: integer
+      required:
+        - projectID
+        - name
+        - description
+        - color
       type: object
     DbWorkItemTypeCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -1122,10 +1144,6 @@ components:
         projectID:
           type: integer
       type: object
-    ModelsProject: # Generated from internal structs. DO NOT EDIT.
-      type: string
-    ModelsRole: # Generated from internal structs. DO NOT EDIT.
-      type: string
     DbWorkItemRole: # Generated from internal structs. DO NOT EDIT.
       type: string
     DbWorkItem_Member: # Generated from internal structs. DO NOT EDIT.
@@ -1157,8 +1175,6 @@ components:
       enum:
         - Received
       x-generated: '-'
-    ModelsScope: # Generated from internal structs. DO NOT EDIT.
-      type: string
     Demo2WorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
       type: string
       enum:
@@ -1191,32 +1207,6 @@ components:
       enum:
         - Type 1
       x-generated: '-'
-    ModelsProjectConfig: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        fields:
-          items:
-            $ref: '#/components/schemas/ModelsProjectConfigField'
-          nullable: true
-          type: array
-        header:
-          items:
-            type: string
-          nullable: true
-          type: array
-      type: object
-    ModelsProjectConfigField: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        isEditable:
-          type: boolean
-        isVisible:
-          type: boolean
-        name:
-          type: string
-        path:
-          type: string
-        showCollapsed:
-          type: boolean
-      type: object
   examples:
     User:
       value:

@@ -21,25 +21,53 @@ type Activity struct {
 	Description  string `json:"description" db:"description" required:"true"`    // description
 	IsProductive bool   `json:"isProductive" db:"is_productive" required:"true"` // is_productive
 
-	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O
+	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O (generated from M2O)
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
 
 }
 
 // ActivityCreateParams represents insert params for 'public.activities'
 type ActivityCreateParams struct {
-	ProjectID    int    `json:"projectID"`    // project_id
-	Name         string `json:"name"`         // name
-	Description  string `json:"description"`  // description
-	IsProductive bool   `json:"isProductive"` // is_productive
+	ProjectID    int    `json:"projectID" required:"true"`    // project_id
+	Name         string `json:"name" required:"true"`         // name
+	Description  string `json:"description" required:"true"`  // description
+	IsProductive bool   `json:"isProductive" required:"true"` // is_productive
+}
+
+// CreateActivity creates a new Activity in the database with the given params.
+func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*Activity, error) {
+	a := &Activity{
+		ProjectID:    params.ProjectID,
+		Name:         params.Name,
+		Description:  params.Description,
+		IsProductive: params.IsProductive,
+	}
+
+	return a.Insert(ctx, db)
 }
 
 // ActivityUpdateParams represents update params for 'public.activities'
 type ActivityUpdateParams struct {
-	ProjectID    *int    `json:"projectID"`    // project_id
-	Name         *string `json:"name"`         // name
-	Description  *string `json:"description"`  // description
-	IsProductive *bool   `json:"isProductive"` // is_productive
+	ProjectID    *int    `json:"projectID" required:"true"`    // project_id
+	Name         *string `json:"name" required:"true"`         // name
+	Description  *string `json:"description" required:"true"`  // description
+	IsProductive *bool   `json:"isProductive" required:"true"` // is_productive
+}
+
+// SetUpdateParams updates public.activities struct fields with the specified params.
+func (a *Activity) SetUpdateParams(params *ActivityUpdateParams) {
+	if params.ProjectID != nil {
+		a.ProjectID = *params.ProjectID
+	}
+	if params.Name != nil {
+		a.Name = *params.Name
+	}
+	if params.Description != nil {
+		a.Description = *params.Description
+	}
+	if params.IsProductive != nil {
+		a.IsProductive = *params.IsProductive
+	}
 }
 
 type ActivitySelectConfig struct {
@@ -52,7 +80,9 @@ type ActivitySelectConfigOption func(*ActivitySelectConfig)
 // WithActivityLimit limits row selection.
 func WithActivityLimit(limit int) ActivitySelectConfigOption {
 	return func(s *ActivitySelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -68,7 +98,11 @@ type ActivityJoins struct {
 // WithActivityJoin joins with the given tables.
 func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 	return func(s *ActivitySelectConfig) {
-		s.joins = joins
+		s.joins = ActivityJoins{
+
+			Project:     s.joins.Project || joins.Project,
+			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
+		}
 	}
 }
 
@@ -173,7 +207,7 @@ activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
@@ -222,7 +256,7 @@ activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
@@ -273,7 +307,7 @@ activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (
@@ -324,7 +358,7 @@ activities.is_productive,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
 		`FROM public.activities ` +
-		`-- O2O join generated from "activities_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = activities.project_id
 -- M2O join generated from "time_entries_activity_id_fkey"
 left join (

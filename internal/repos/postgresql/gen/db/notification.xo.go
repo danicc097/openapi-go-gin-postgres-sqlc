@@ -29,34 +29,78 @@ type Notification struct {
 	Receiver         *uuid.UUID       `json:"receiver" db:"receiver" required:"true"`                                                              // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
 
-	UserJoinReceiver      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O
-	UserJoinSender        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O
+	UserJoinReceiver      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O (generated from M2O)
+	UserJoinSender        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O (generated from M2O)
 	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O
 
 }
 
 // NotificationCreateParams represents insert params for 'public.notifications'
 type NotificationCreateParams struct {
-	ReceiverRank     *int16           `json:"receiverRank"`     // receiver_rank
-	Title            string           `json:"title"`            // title
-	Body             string           `json:"body"`             // body
-	Label            string           `json:"label"`            // label
-	Link             *string          `json:"link"`             // link
-	Sender           uuid.UUID        `json:"sender"`           // sender
-	Receiver         *uuid.UUID       `json:"receiver"`         // receiver
-	NotificationType NotificationType `json:"notificationType"` // notification_type
+	ReceiverRank     *int16           `json:"receiverRank" required:"true"`                                                 // receiver_rank
+	Title            string           `json:"title" required:"true"`                                                        // title
+	Body             string           `json:"body" required:"true"`                                                         // body
+	Label            string           `json:"label" required:"true"`                                                        // label
+	Link             *string          `json:"link" required:"true"`                                                         // link
+	Sender           uuid.UUID        `json:"sender" required:"true"`                                                       // sender
+	Receiver         *uuid.UUID       `json:"receiver" required:"true"`                                                     // receiver
+	NotificationType NotificationType `json:"notificationType" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
+}
+
+// CreateNotification creates a new Notification in the database with the given params.
+func CreateNotification(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {
+	n := &Notification{
+		ReceiverRank:     params.ReceiverRank,
+		Title:            params.Title,
+		Body:             params.Body,
+		Label:            params.Label,
+		Link:             params.Link,
+		Sender:           params.Sender,
+		Receiver:         params.Receiver,
+		NotificationType: params.NotificationType,
+	}
+
+	return n.Insert(ctx, db)
 }
 
 // NotificationUpdateParams represents update params for 'public.notifications'
 type NotificationUpdateParams struct {
-	ReceiverRank     **int16           `json:"receiverRank"`     // receiver_rank
-	Title            *string           `json:"title"`            // title
-	Body             *string           `json:"body"`             // body
-	Label            *string           `json:"label"`            // label
-	Link             **string          `json:"link"`             // link
-	Sender           *uuid.UUID        `json:"sender"`           // sender
-	Receiver         **uuid.UUID       `json:"receiver"`         // receiver
-	NotificationType *NotificationType `json:"notificationType"` // notification_type
+	ReceiverRank     **int16           `json:"receiverRank" required:"true"`                                                 // receiver_rank
+	Title            *string           `json:"title" required:"true"`                                                        // title
+	Body             *string           `json:"body" required:"true"`                                                         // body
+	Label            *string           `json:"label" required:"true"`                                                        // label
+	Link             **string          `json:"link" required:"true"`                                                         // link
+	Sender           *uuid.UUID        `json:"sender" required:"true"`                                                       // sender
+	Receiver         **uuid.UUID       `json:"receiver" required:"true"`                                                     // receiver
+	NotificationType *NotificationType `json:"notificationType" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
+}
+
+// SetUpdateParams updates public.notifications struct fields with the specified params.
+func (n *Notification) SetUpdateParams(params *NotificationUpdateParams) {
+	if params.ReceiverRank != nil {
+		n.ReceiverRank = *params.ReceiverRank
+	}
+	if params.Title != nil {
+		n.Title = *params.Title
+	}
+	if params.Body != nil {
+		n.Body = *params.Body
+	}
+	if params.Label != nil {
+		n.Label = *params.Label
+	}
+	if params.Link != nil {
+		n.Link = *params.Link
+	}
+	if params.Sender != nil {
+		n.Sender = *params.Sender
+	}
+	if params.Receiver != nil {
+		n.Receiver = *params.Receiver
+	}
+	if params.NotificationType != nil {
+		n.NotificationType = *params.NotificationType
+	}
 }
 
 type NotificationSelectConfig struct {
@@ -69,7 +113,9 @@ type NotificationSelectConfigOption func(*NotificationSelectConfig)
 // WithNotificationLimit limits row selection.
 func WithNotificationLimit(limit int) NotificationSelectConfigOption {
 	return func(s *NotificationSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -85,12 +131,10 @@ const (
 // WithNotificationOrderBy orders results by the given columns.
 func WithNotificationOrderBy(rows ...NotificationOrderBy) NotificationSelectConfigOption {
 	return func(s *NotificationSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 
@@ -103,7 +147,12 @@ type NotificationJoins struct {
 // WithNotificationJoin joins with the given tables.
 func WithNotificationJoin(joins NotificationJoins) NotificationSelectConfigOption {
 	return func(s *NotificationSelectConfig) {
-		s.joins = joins
+		s.joins = NotificationJoins{
+
+			UserReceiver:      s.joins.UserReceiver || joins.UserReceiver,
+			UserSender:        s.joins.UserSender || joins.UserSender,
+			UserNotifications: s.joins.UserNotifications || joins.UserNotifications,
+		}
 	}
 }
 
@@ -214,9 +263,9 @@ notifications.notification_type,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
-		`-- O2O join generated from "notifications_receiver_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
 left join users on users.user_id = notifications.receiver
--- O2O join generated from "notifications_sender_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
 left join users on users.user_id = notifications.sender
 -- M2O join generated from "user_notifications_notification_id_fkey"
 left join (
@@ -271,9 +320,9 @@ notifications.notification_type,
 (case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user,
 (case when $3::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
 		`FROM public.notifications ` +
-		`-- O2O join generated from "notifications_receiver_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "notifications_receiver_fkey (Generated from M2O)"
 left join users on users.user_id = notifications.receiver
--- O2O join generated from "notifications_sender_fkey (Generated from O2M|M2O)"
+-- O2O join generated from "notifications_sender_fkey (Generated from M2O)"
 left join users on users.user_id = notifications.sender
 -- M2O join generated from "user_notifications_notification_id_fkey"
 left join (

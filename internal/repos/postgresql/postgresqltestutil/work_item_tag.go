@@ -26,10 +26,10 @@ func NewRandomWorkItemTag(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.
 	return wit, nil
 }
 
-func RandomWorkItemTagCreateParams(t *testing.T, projectID int) db.WorkItemTagCreateParams {
+func RandomWorkItemTagCreateParams(t *testing.T, projectID int) *db.WorkItemTagCreateParams {
 	t.Helper()
 
-	return db.WorkItemTagCreateParams{
+	return &db.WorkItemTagCreateParams{
 		Name:        "WorkItemTag " + testutil.RandomNameIdentifier(3, "-"),
 		Description: testutil.RandomString(10),
 		ProjectID:   projectID,

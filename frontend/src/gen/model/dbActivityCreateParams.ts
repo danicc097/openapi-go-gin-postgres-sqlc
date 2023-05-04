@@ -7,8 +7,8 @@
  */
 
 export interface DbActivityCreateParams {
-  description?: string
-  isProductive?: boolean
-  name?: string
-  projectID?: number
+  description: string
+  isProductive: boolean
+  name: string
+  projectID: number
 }

@@ -36,18 +36,46 @@ type Project struct {
 
 // ProjectCreateParams represents insert params for 'public.projects'
 type ProjectCreateParams struct {
-	Name               models.Project       `json:"name"`        // name
-	Description        string               `json:"description"` // description
-	WorkItemsTableName string               `json:"-"`           // work_items_table_name
-	BoardConfig        models.ProjectConfig `json:"boardConfig"` // board_config
+	Name               models.Project       `json:"name" required:"true" ref:"#/components/schemas/Project"`              // name
+	Description        string               `json:"description" required:"true"`                                          // description
+	WorkItemsTableName string               `json:"-"`                                                                    // work_items_table_name
+	BoardConfig        models.ProjectConfig `json:"boardConfig" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
+}
+
+// CreateProject creates a new Project in the database with the given params.
+func CreateProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Project, error) {
+	p := &Project{
+		Name:               params.Name,
+		Description:        params.Description,
+		WorkItemsTableName: params.WorkItemsTableName,
+		BoardConfig:        params.BoardConfig,
+	}
+
+	return p.Insert(ctx, db)
 }
 
 // ProjectUpdateParams represents update params for 'public.projects'
 type ProjectUpdateParams struct {
-	Name               *models.Project       `json:"name"`        // name
-	Description        *string               `json:"description"` // description
-	WorkItemsTableName *string               `json:"-"`           // work_items_table_name
-	BoardConfig        *models.ProjectConfig `json:"boardConfig"` // board_config
+	Name               *models.Project       `json:"name" required:"true" ref:"#/components/schemas/Project"`              // name
+	Description        *string               `json:"description" required:"true"`                                          // description
+	WorkItemsTableName *string               `json:"-"`                                                                    // work_items_table_name
+	BoardConfig        *models.ProjectConfig `json:"boardConfig" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
+}
+
+// SetUpdateParams updates public.projects struct fields with the specified params.
+func (p *Project) SetUpdateParams(params *ProjectUpdateParams) {
+	if params.Name != nil {
+		p.Name = *params.Name
+	}
+	if params.Description != nil {
+		p.Description = *params.Description
+	}
+	if params.WorkItemsTableName != nil {
+		p.WorkItemsTableName = *params.WorkItemsTableName
+	}
+	if params.BoardConfig != nil {
+		p.BoardConfig = *params.BoardConfig
+	}
 }
 
 type ProjectSelectConfig struct {
@@ -60,7 +88,9 @@ type ProjectSelectConfigOption func(*ProjectSelectConfig)
 // WithProjectLimit limits row selection.
 func WithProjectLimit(limit int) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -80,12 +110,10 @@ const (
 // WithProjectOrderBy orders results by the given columns.
 func WithProjectOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 
@@ -100,7 +128,14 @@ type ProjectJoins struct {
 // WithProjectJoin joins with the given tables.
 func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
-		s.joins = joins
+		s.joins = ProjectJoins{
+
+			Activities:    s.joins.Activities || joins.Activities,
+			KanbanSteps:   s.joins.KanbanSteps || joins.KanbanSteps,
+			Teams:         s.joins.Teams || joins.Teams,
+			WorkItemTags:  s.joins.WorkItemTags || joins.WorkItemTags,
+			WorkItemTypes: s.joins.WorkItemTypes || joins.WorkItemTypes,
+		}
 	}
 }
 

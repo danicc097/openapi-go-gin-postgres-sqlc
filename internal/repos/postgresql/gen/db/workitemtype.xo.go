@@ -21,25 +21,53 @@ type WorkItemType struct {
 	Description    string `json:"description" db:"description" required:"true"`          // description
 	Color          string `json:"color" db:"color" required:"true"`                      // color
 
-	ProjectJoin  *Project  `json:"-" db:"project" openapi-go:"ignore"`   // O2O
+	ProjectJoin  *Project  `json:"-" db:"project" openapi-go:"ignore"`   // O2O (generated from M2O)
 	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred)
 
 }
 
 // WorkItemTypeCreateParams represents insert params for 'public.work_item_types'
 type WorkItemTypeCreateParams struct {
-	ProjectID   int    `json:"projectID"`   // project_id
-	Name        string `json:"name"`        // name
-	Description string `json:"description"` // description
-	Color       string `json:"color"`       // color
+	ProjectID   int    `json:"projectID" required:"true"`   // project_id
+	Name        string `json:"name" required:"true"`        // name
+	Description string `json:"description" required:"true"` // description
+	Color       string `json:"color" required:"true"`       // color
+}
+
+// CreateWorkItemType creates a new WorkItemType in the database with the given params.
+func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreateParams) (*WorkItemType, error) {
+	wit := &WorkItemType{
+		ProjectID:   params.ProjectID,
+		Name:        params.Name,
+		Description: params.Description,
+		Color:       params.Color,
+	}
+
+	return wit.Insert(ctx, db)
 }
 
 // WorkItemTypeUpdateParams represents update params for 'public.work_item_types'
 type WorkItemTypeUpdateParams struct {
-	ProjectID   *int    `json:"projectID"`   // project_id
-	Name        *string `json:"name"`        // name
-	Description *string `json:"description"` // description
-	Color       *string `json:"color"`       // color
+	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
+	Name        *string `json:"name" required:"true"`        // name
+	Description *string `json:"description" required:"true"` // description
+	Color       *string `json:"color" required:"true"`       // color
+}
+
+// SetUpdateParams updates public.work_item_types struct fields with the specified params.
+func (wit *WorkItemType) SetUpdateParams(params *WorkItemTypeUpdateParams) {
+	if params.ProjectID != nil {
+		wit.ProjectID = *params.ProjectID
+	}
+	if params.Name != nil {
+		wit.Name = *params.Name
+	}
+	if params.Description != nil {
+		wit.Description = *params.Description
+	}
+	if params.Color != nil {
+		wit.Color = *params.Color
+	}
 }
 
 type WorkItemTypeSelectConfig struct {
@@ -52,7 +80,9 @@ type WorkItemTypeSelectConfigOption func(*WorkItemTypeSelectConfig)
 // WithWorkItemTypeLimit limits row selection.
 func WithWorkItemTypeLimit(limit int) WorkItemTypeSelectConfigOption {
 	return func(s *WorkItemTypeSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -68,7 +98,11 @@ type WorkItemTypeJoins struct {
 // WithWorkItemTypeJoin joins with the given tables.
 func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOption {
 	return func(s *WorkItemTypeSelectConfig) {
-		s.joins = joins
+		s.joins = WorkItemTypeJoins{
+
+			Project:  s.joins.Project || joins.Project,
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
+		}
 	}
 }
 
@@ -173,7 +207,7 @@ work_item_types.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
@@ -215,7 +249,7 @@ work_item_types.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
@@ -259,7 +293,7 @@ work_item_types.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
@@ -303,7 +337,7 @@ work_item_types.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
 		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +

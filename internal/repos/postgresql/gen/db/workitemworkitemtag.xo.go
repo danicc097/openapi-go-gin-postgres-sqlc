@@ -22,14 +22,34 @@ type WorkItemWorkItemTag struct {
 
 // WorkItemWorkItemTagCreateParams represents insert params for 'public.work_item_work_item_tag'
 type WorkItemWorkItemTagCreateParams struct {
-	WorkItemTagID int   `json:"workItemTagID"` // work_item_tag_id
-	WorkItemID    int64 `json:"workItemID"`    // work_item_id
+	WorkItemTagID int   `json:"workItemTagID" required:"true"` // work_item_tag_id
+	WorkItemID    int64 `json:"workItemID" required:"true"`    // work_item_id
+}
+
+// CreateWorkItemWorkItemTag creates a new WorkItemWorkItemTag in the database with the given params.
+func CreateWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkItemTagCreateParams) (*WorkItemWorkItemTag, error) {
+	wiwit := &WorkItemWorkItemTag{
+		WorkItemTagID: params.WorkItemTagID,
+		WorkItemID:    params.WorkItemID,
+	}
+
+	return wiwit.Insert(ctx, db)
 }
 
 // WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'
 type WorkItemWorkItemTagUpdateParams struct {
-	WorkItemTagID *int   `json:"workItemTagID"` // work_item_tag_id
-	WorkItemID    *int64 `json:"workItemID"`    // work_item_id
+	WorkItemTagID *int   `json:"workItemTagID" required:"true"` // work_item_tag_id
+	WorkItemID    *int64 `json:"workItemID" required:"true"`    // work_item_id
+}
+
+// SetUpdateParams updates public.work_item_work_item_tag struct fields with the specified params.
+func (wiwit *WorkItemWorkItemTag) SetUpdateParams(params *WorkItemWorkItemTagUpdateParams) {
+	if params.WorkItemTagID != nil {
+		wiwit.WorkItemTagID = *params.WorkItemTagID
+	}
+	if params.WorkItemID != nil {
+		wiwit.WorkItemID = *params.WorkItemID
+	}
 }
 
 type WorkItemWorkItemTagSelectConfig struct {
@@ -42,7 +62,9 @@ type WorkItemWorkItemTagSelectConfigOption func(*WorkItemWorkItemTagSelectConfig
 // WithWorkItemWorkItemTagLimit limits row selection.
 func WithWorkItemWorkItemTagLimit(limit int) WorkItemWorkItemTagSelectConfigOption {
 	return func(s *WorkItemWorkItemTagSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -56,7 +78,7 @@ type WorkItemWorkItemTagJoins struct {
 // WithWorkItemWorkItemTagJoin joins with the given tables.
 func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
 	return func(s *WorkItemWorkItemTagSelectConfig) {
-		s.joins = joins
+		s.joins = WorkItemWorkItemTagJoins{}
 	}
 }
 

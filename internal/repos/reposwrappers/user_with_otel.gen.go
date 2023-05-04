@@ -157,7 +157,7 @@ func (_d UserWithTracing) ByUsername(ctx context.Context, d db.DBTX, username st
 }
 
 // Create implements repos.User
-func (_d UserWithTracing) Create(ctx context.Context, d db.DBTX, params db.UserCreateParams) (up1 *db.User, err error) {
+func (_d UserWithTracing) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParams) (up1 *db.User, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.User.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -229,7 +229,7 @@ func (_d UserWithTracing) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (
 }
 
 // Update implements repos.User
-func (_d UserWithTracing) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params db.UserUpdateParams) (up1 *db.User, err error) {
+func (_d UserWithTracing) Update(ctx context.Context, d db.DBTX, id uuid.UUID, params *db.UserUpdateParams) (up1 *db.User, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.User.Update")
 	defer func() {
 		if _d._spanDecorator != nil {

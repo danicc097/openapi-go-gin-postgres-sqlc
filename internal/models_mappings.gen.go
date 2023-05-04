@@ -30,6 +30,13 @@ var (
 	}
 )
 
+var DemoKanbanStepsStepOrderByID = map[int]int{
+	1: 0,
+	2: 1,
+	3: 2,
+	4: 3,
+}
+
 var (
 	DemoTwoKanbanStepsNameByID = map[int]models.DemoTwoKanbanSteps{
 		5: models.DemoTwoKanbanStepsReceived,
@@ -38,6 +45,10 @@ var (
 		models.DemoTwoKanbanStepsReceived: 5,
 	}
 )
+
+var DemoTwoKanbanStepsStepOrderByID = map[int]int{
+	5: 1,
+}
 
 var (
 	DemoWorkItemTypesNameByID = map[int]models.DemoWorkItemTypes{

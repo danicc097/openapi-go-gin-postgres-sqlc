@@ -24,16 +24,40 @@ type Movie struct {
 
 // MovieCreateParams represents insert params for 'public.movies'
 type MovieCreateParams struct {
-	Title    string `json:"title"`    // title
-	Year     int    `json:"year"`     // year
-	Synopsis string `json:"synopsis"` // synopsis
+	Title    string `json:"title" required:"true"`    // title
+	Year     int    `json:"year" required:"true"`     // year
+	Synopsis string `json:"synopsis" required:"true"` // synopsis
+}
+
+// CreateMovie creates a new Movie in the database with the given params.
+func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie, error) {
+	m := &Movie{
+		Title:    params.Title,
+		Year:     params.Year,
+		Synopsis: params.Synopsis,
+	}
+
+	return m.Insert(ctx, db)
 }
 
 // MovieUpdateParams represents update params for 'public.movies'
 type MovieUpdateParams struct {
-	Title    *string `json:"title"`    // title
-	Year     *int    `json:"year"`     // year
-	Synopsis *string `json:"synopsis"` // synopsis
+	Title    *string `json:"title" required:"true"`    // title
+	Year     *int    `json:"year" required:"true"`     // year
+	Synopsis *string `json:"synopsis" required:"true"` // synopsis
+}
+
+// SetUpdateParams updates public.movies struct fields with the specified params.
+func (m *Movie) SetUpdateParams(params *MovieUpdateParams) {
+	if params.Title != nil {
+		m.Title = *params.Title
+	}
+	if params.Year != nil {
+		m.Year = *params.Year
+	}
+	if params.Synopsis != nil {
+		m.Synopsis = *params.Synopsis
+	}
 }
 
 type MovieSelectConfig struct {
@@ -46,7 +70,9 @@ type MovieSelectConfigOption func(*MovieSelectConfig)
 // WithMovieLimit limits row selection.
 func WithMovieLimit(limit int) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -60,7 +86,7 @@ type MovieJoins struct {
 // WithMovieJoin joins with the given tables.
 func WithMovieJoin(joins MovieJoins) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
-		s.joins = joins
+		s.joins = MovieJoins{}
 	}
 }
 

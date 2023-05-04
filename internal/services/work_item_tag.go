@@ -47,7 +47,7 @@ func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, proj
 }
 
 // Create creates a new work item tag.
-func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params *db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
 	defer newOTELSpan(ctx, "WorkItemTag.Create").End()
 
 	witObj, err := wit.witRepo.Create(ctx, d, params)
@@ -59,7 +59,7 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, params db.WorkIte
 }
 
 // Update updates an existing work item tag.
-func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, id int, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
 	defer newOTELSpan(ctx, "WorkItemTag.Update").End()
 
 	witObj, err := wit.witRepo.Update(ctx, d, id, params)

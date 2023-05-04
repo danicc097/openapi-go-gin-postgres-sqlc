@@ -24,12 +24,28 @@ type Book struct {
 
 // BookCreateParams represents insert params for 'public.books'
 type BookCreateParams struct {
-	Name string `json:"name"` // name
+	Name string `json:"name" required:"true"` // name
+}
+
+// CreateBook creates a new Book in the database with the given params.
+func CreateBook(ctx context.Context, db DB, params *BookCreateParams) (*Book, error) {
+	b := &Book{
+		Name: params.Name,
+	}
+
+	return b.Insert(ctx, db)
 }
 
 // BookUpdateParams represents update params for 'public.books'
 type BookUpdateParams struct {
-	Name *string `json:"name"` // name
+	Name *string `json:"name" required:"true"` // name
+}
+
+// SetUpdateParams updates public.books struct fields with the specified params.
+func (b *Book) SetUpdateParams(params *BookUpdateParams) {
+	if params.Name != nil {
+		b.Name = *params.Name
+	}
 }
 
 type BookSelectConfig struct {
@@ -42,7 +58,9 @@ type BookSelectConfigOption func(*BookSelectConfig)
 // WithBookLimit limits row selection.
 func WithBookLimit(limit int) BookSelectConfigOption {
 	return func(s *BookSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -56,7 +74,10 @@ type BookJoins struct {
 // WithBookJoin joins with the given tables.
 func WithBookJoin(joins BookJoins) BookSelectConfigOption {
 	return func(s *BookSelectConfig) {
-		s.joins = joins
+		s.joins = BookJoins{
+			Authors:     s.joins.Authors || joins.Authors,
+			BookReviews: s.joins.BookReviews || joins.BookReviews,
+		}
 	}
 }
 

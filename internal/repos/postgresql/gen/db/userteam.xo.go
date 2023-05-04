@@ -23,14 +23,34 @@ type UserTeam struct {
 
 // UserTeamCreateParams represents insert params for 'public.user_team'
 type UserTeamCreateParams struct {
-	TeamID int       `json:"teamID"` // team_id
-	UserID uuid.UUID `json:"userID"` // user_id
+	TeamID int       `json:"teamID" required:"true"` // team_id
+	UserID uuid.UUID `json:"userID" required:"true"` // user_id
+}
+
+// CreateUserTeam creates a new UserTeam in the database with the given params.
+func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*UserTeam, error) {
+	ut := &UserTeam{
+		TeamID: params.TeamID,
+		UserID: params.UserID,
+	}
+
+	return ut.Insert(ctx, db)
 }
 
 // UserTeamUpdateParams represents update params for 'public.user_team'
 type UserTeamUpdateParams struct {
-	TeamID *int       `json:"teamID"` // team_id
-	UserID *uuid.UUID `json:"userID"` // user_id
+	TeamID *int       `json:"teamID" required:"true"` // team_id
+	UserID *uuid.UUID `json:"userID" required:"true"` // user_id
+}
+
+// SetUpdateParams updates public.user_team struct fields with the specified params.
+func (ut *UserTeam) SetUpdateParams(params *UserTeamUpdateParams) {
+	if params.TeamID != nil {
+		ut.TeamID = *params.TeamID
+	}
+	if params.UserID != nil {
+		ut.UserID = *params.UserID
+	}
 }
 
 type UserTeamSelectConfig struct {
@@ -43,7 +63,9 @@ type UserTeamSelectConfigOption func(*UserTeamSelectConfig)
 // WithUserTeamLimit limits row selection.
 func WithUserTeamLimit(limit int) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -57,7 +79,7 @@ type UserTeamJoins struct {
 // WithUserTeamJoin joins with the given tables.
 func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
-		s.joins = joins
+		s.joins = UserTeamJoins{}
 	}
 }
 

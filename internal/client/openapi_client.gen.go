@@ -256,10 +256,10 @@ type DbActivity struct {
 
 // DbActivityCreateParams defines the model for DbActivityCreateParams.
 type DbActivityCreateParams struct {
-	Description  *string `json:"description,omitempty"`
-	IsProductive *bool   `json:"isProductive,omitempty"`
-	Name         *string `json:"name,omitempty"`
-	ProjectID    *int    `json:"projectID,omitempty"`
+	Description  string `json:"description"`
+	IsProductive bool   `json:"isProductive"`
+	Name         string `json:"name"`
+	ProjectID    int    `json:"projectID"`
 }
 
 // DbDemoWorkItem defines the model for DbDemoWorkItem.
@@ -278,7 +278,7 @@ type DbKanbanStep struct {
 	KanbanStepID  int    `json:"kanbanStepID"`
 	Name          string `json:"name"`
 	ProjectID     int    `json:"projectID"`
-	StepOrder     *int   `json:"stepOrder"`
+	StepOrder     int    `json:"stepOrder"`
 	TimeTrackable bool   `json:"timeTrackable"`
 }
 
@@ -314,9 +314,9 @@ type DbTeam struct {
 
 // DbTeamCreateParams defines the model for DbTeamCreateParams.
 type DbTeamCreateParams struct {
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-	ProjectID   *int    `json:"projectID,omitempty"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+	ProjectID   int    `json:"projectID"`
 }
 
 // DbTimeEntry defines the model for DbTimeEntry.
@@ -393,10 +393,10 @@ type DbWorkItemTag struct {
 
 // DbWorkItemTagCreateParams defines the model for DbWorkItemTagCreateParams.
 type DbWorkItemTagCreateParams struct {
-	Color       *string `json:"color,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-	ProjectID   *int    `json:"projectID,omitempty"`
+	Color       string `json:"color"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+	ProjectID   int    `json:"projectID"`
 }
 
 // DbWorkItemType defines the model for DbWorkItemType.
@@ -463,30 +463,6 @@ type InitializeProjectRequest struct {
 	Teams        *[]DbTeamCreateParams        `json:"teams"`
 	WorkItemTags *[]DbWorkItemTagCreateParams `json:"workItemTags"`
 }
-
-// ModelsProject defines the model for ModelsProject.
-type ModelsProject = string
-
-// ModelsProjectConfig defines the model for ModelsProjectConfig.
-type ModelsProjectConfig struct {
-	Fields *[]ModelsProjectConfigField `json:"fields"`
-	Header *[]string                   `json:"header"`
-}
-
-// ModelsProjectConfigField defines the model for ModelsProjectConfigField.
-type ModelsProjectConfigField struct {
-	IsEditable    *bool   `json:"isEditable,omitempty"`
-	IsVisible     *bool   `json:"isVisible,omitempty"`
-	Name          *string `json:"name,omitempty"`
-	Path          *string `json:"path,omitempty"`
-	ShowCollapsed *bool   `json:"showCollapsed,omitempty"`
-}
-
-// ModelsRole defines the model for ModelsRole.
-type ModelsRole = string
-
-// ModelsScope defines the model for ModelsScope.
-type ModelsScope = string
 
 // NotificationType represents a database 'notification_type'
 type NotificationType string
@@ -569,11 +545,17 @@ type UpdateUserAuthRequest struct {
 
 // UpdateUserRequest represents User data to update
 type UpdateUserRequest struct {
+	// Email originally from auth server but updatable
+	Email *string `json:"email,omitempty"`
+
 	// FirstName originally from auth server but updatable
 	FirstName *string `json:"firstName,omitempty"`
 
 	// LastName originally from auth server but updatable
 	LastName *string `json:"lastName,omitempty"`
+
+	// Username originally from auth server but updatable
+	Username *string `json:"username,omitempty"`
 }
 
 // UserResponse defines the model for UserResponse.

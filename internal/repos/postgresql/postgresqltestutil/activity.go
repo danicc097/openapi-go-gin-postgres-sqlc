@@ -26,10 +26,10 @@ func NewRandomActivity(t *testing.T, pool *pgxpool.Pool, projectID int) (*db.Act
 	return activity, nil
 }
 
-func RandomActivityCreateParams(t *testing.T, projectID int) db.ActivityCreateParams {
+func RandomActivityCreateParams(t *testing.T, projectID int) *db.ActivityCreateParams {
 	t.Helper()
 
-	return db.ActivityCreateParams{
+	return &db.ActivityCreateParams{
 		Name:         "Activity " + testutil.RandomNameIdentifier(3, "-"),
 		Description:  testutil.RandomString(10),
 		ProjectID:    projectID,

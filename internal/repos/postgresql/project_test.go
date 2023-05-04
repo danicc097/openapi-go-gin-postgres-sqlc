@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/stretchr/testify/assert"
@@ -19,8 +19,8 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 	projectID := 1
 
 	type argsString struct {
-		filter internalmodels.Project
-		fn     func(context.Context, db.DBTX, internalmodels.Project) (*db.Project, error)
+		filter models.Project
+		fn     func(context.Context, db.DBTX, models.Project) (*db.Project, error)
 	}
 
 	testString := []struct {
@@ -30,7 +30,7 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 		{
 			name: "name",
 			args: argsString{
-				filter: internalmodels.ProjectDemo,
+				filter: models.ProjectDemo,
 				fn:     (projectRepo.ByName),
 			},
 		},
@@ -52,7 +52,7 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 
 			errContains := errNoRows
 
-			filter := internalmodels.Project("inexistent project")
+			filter := models.Project("inexistent project")
 
 			_, err := tc.args.fn(context.Background(), testPool, filter)
 			if err == nil {

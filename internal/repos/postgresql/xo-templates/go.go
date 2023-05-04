@@ -31,14 +31,13 @@ type cardinality string
 
 const (
 	M2M cardinality = "M2M"
-	O2M cardinality = "O2M"
 	M2O cardinality = "M2O"
 	O2O cardinality = "O2O"
 )
 
 func validCardinality(s string) bool {
 	c := cardinality(s)
-	if c != "" && c != M2M && c != O2M && c != M2O && c != O2O {
+	if c != "" && c != M2M && c != M2O && c != O2O {
 		return false
 	}
 	return true
@@ -225,10 +224,10 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Short:      "g",
 				Default: `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}"
 {{- if not .skipExtraTags }} db:"{{ .field.SQLName -}}"
+{{- end }}
 {{- if not .ignoreJSON }} required:"true"
 {{- end }}
 {{- if .field.OpenAPISchema }} ref:"#/components/schemas/{{ .field.OpenAPISchema }}"
-{{- end }}
 {{- end }}`,
 			},
 			{
@@ -376,13 +375,11 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 		Post: func(ctx context.Context, mode string, files map[string][]byte, emit func(string, []byte)) error {
 			for file, content := range files {
 				// Run goimports.
-				fmt.Println("running goimports")
 				buf, err := imports.Process("", content, nil)
 				if err != nil {
 					return fmt.Errorf("%s:%w", file, err)
 				}
 				// Run gofumpt.
-				fmt.Println("running gofumpt")
 				formatted, err := format.Source(buf, format.Options{
 					ExtraRules: true,
 				})
@@ -476,7 +473,7 @@ func emitQuery(ctx context.Context, query xo.Query, emit func(xo.Template)) erro
 			Data: struct {
 				Table       interface{}
 				Constraints interface{}
-			}{Table: table, Constraints: []Constraint{}}, // TODO must not be empty and use current
+			}{Table: table, Constraints: []Constraint{}},
 		})
 	}
 	// build query params
@@ -715,8 +712,6 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		}
 
 		// emit fkeys
-		// NOTE: do not use these for automatic join generation in replacement of o2o and o2m table comments,
-		// it will also generate joins for m2m lookup tables which pollutes everything
 		for _, fk := range tc.ForeignKeys {
 			fkey, err := convertFKey(ctx, table, fk)
 			if err != nil {
@@ -913,7 +908,6 @@ func convertConstraints(ctx context.Context, constraints []xo.Constraint, tables
 	var cc []Constraint // will create additional dummy constraints for automatic O2O
 cc_label:
 	for _, constraint := range constraints {
-		// fmt.Printf("constraint: %+v\n", constraint)
 		if !validCardinality(constraint.Cardinality) {
 			return []Constraint{}, fmt.Errorf("invalid cardinality: %s", constraint.Cardinality)
 		}
@@ -936,8 +930,8 @@ cc_label:
 					fmt.Printf("%-48s| c.ColumnName == constraint.ColumnName: %s == %s\n", c.Name, c.ColumnName, constraint.ColumnName)
 					break outer
 				}
-			case O2M, M2O:
-				if c.TableName == constraint.TableName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && (ccard == O2M || ccard == M2O) {
+			case M2O:
+				if c.TableName == constraint.TableName && c.RefTableName == constraint.RefTableName && c.RefColumnName == constraint.RefColumnName && ccard == M2O {
 					joinTableClash = true
 					fmt.Printf("%-48s| c.TableName == constraint.TableName: %s == %s\n", c.Name, c.TableName, constraint.TableName)
 					break outer
@@ -954,7 +948,7 @@ cc_label:
 
 		// assume it's O2O. Can be overridden at any time
 		if constraint.Type == "foreign_key" && constraint.Cardinality == "" {
-			// TODO need to do this only if fk fields len = 1
+			// FIXME generate constraint only if fk fields len = 1
 			// and check if field is unique or not
 			// ignore duplicate joins generated for partitioned columns to new tables, joined by helper keys, e.g. api_key_id
 			for _, seenConstraint := range cc {
@@ -979,7 +973,7 @@ cc_label:
 				RefColumnName:  constraint.ColumnName,
 				ColumnName:     constraint.RefColumnName,
 				JoinTableClash: joinTableClash,
-				IsGeneratedO2O: true,
+				IsInferredO2O:  true,
 			})
 
 			continue
@@ -1008,11 +1002,9 @@ cc_label:
 			})
 		}
 
-		if constraint.Cardinality == "M2O" || constraint.Cardinality == "O2M" {
+		if constraint.Cardinality == "M2O" {
 			/**
-			 * TODO will generate O2O dummy constraint on refTable or table
-			 * depending is M2O or O2M
-			 * and create the other constraint accordingly
+			 *
 			 */
 			for _, seenConstraint := range cc {
 				if seenConstraint.TableName == constraint.TableName &&
@@ -1024,14 +1016,15 @@ cc_label:
 			}
 
 			cc = append(cc, Constraint{
-				Type:           constraint.Type,
-				Cardinality:    O2O,
-				Name:           constraint.Name + " (Generated from O2M|M2O)",
-				TableName:      constraint.TableName,
-				RefTableName:   constraint.RefTableName,
-				ColumnName:     constraint.ColumnName,
-				RefColumnName:  constraint.RefColumnName,
-				JoinTableClash: joinTableClash,
+				Type:                  constraint.Type,
+				Cardinality:           O2O,
+				Name:                  constraint.Name + " (Generated from M2O)",
+				TableName:             constraint.TableName,
+				RefTableName:          constraint.RefTableName,
+				ColumnName:            constraint.ColumnName,
+				RefColumnName:         constraint.RefColumnName,
+				JoinTableClash:        joinTableClash,
+				IsGeneratedO2OFromM2O: true,
 			})
 		}
 
@@ -1295,6 +1288,7 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"zero":         f.zero,
 		"type":         f.typefn,
 		"field":        f.field,
+		"set_field":    f.set_field,
 		"fieldmapping": f.fieldmapping,
 		"join_fields":  f.join_fields,
 		"short":        f.short,
@@ -1633,6 +1627,26 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints []Constraint
 
 	var buf strings.Builder
 
+	/**
+		 *
+		 * TODO:
+		 *
+	func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
+		return func(s *WorkItemSelectConfig) {
+			if len(rows) == 0 {
+				s.orderBy = ""
+			} else {
+				var orderBy []string
+				for _, r := range rows {
+					orderBy = append(orderBy, string(r))
+				}
+				s.orderBy = " order by " + strings.Join(orderBy, ", ")
+			}
+		}
+	}
+
+	*/
+
 	buf.WriteString(fmt.Sprintf(`
 	type %[1]sSelectConfig struct {
 		limit       string
@@ -1650,7 +1664,9 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints []Constraint
 	// With%[1]sLimit limits row selection.
 	func With%[1]sLimit(limit int) %[1]sSelectConfigOption {
 		return func(s *%[1]sSelectConfig) {
-			s.limit = fmt.Sprintf(" limit %%d ", limit)
+			if limit > 0 {
+				s.limit = fmt.Sprintf(" limit %%d ", limit)
+			}
 		}
 	}`, name))
 
@@ -1683,12 +1699,10 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints []Constraint
 	// With%[1]sOrderBy orders results by the given columns.
 func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 	`, name))
@@ -1697,6 +1711,8 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	var extraStructs []string
 
 	buf.WriteString(fmt.Sprintf("type %sJoins struct {\n", name))
+
+	var joinNames []string
 
 	for _, c := range cc {
 		var joinName string
@@ -1739,7 +1755,7 @@ type %s struct {
 
 			joinName = camelExport(inflector.Pluralize(lookupName))
 
-		case O2M, M2O:
+		case M2O:
 			if c.RefTableName == sqlname {
 				joinName = camelExport(c.TableName)
 				if c.JoinTableClash {
@@ -1768,6 +1784,7 @@ type %s struct {
 		if joinName == "" {
 			continue
 		}
+		joinNames = append(joinNames, joinName)
 		buf.WriteString(fmt.Sprintf("%s bool\n", joinName))
 	}
 	buf.WriteString("}\n")
@@ -1777,10 +1794,17 @@ type %s struct {
 	// With%[1]sJoin joins with the given tables.
 func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
-		s.joins = joins
-	}
-}
+		s.joins = %[1]sJoins{
+
 	`, name))
+
+	for _, j := range joinNames {
+		buf.WriteString(fmt.Sprintf("\t\t%[1]s:  s.joins.%[1]s || joins.%[1]s,\n", j))
+	}
+	buf.WriteString(`
+		}
+	}
+}`)
 
 	for _, stt := range extraStructs {
 		buf.WriteString(stt)
@@ -1788,8 +1812,6 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 
 	return buf.String()
 }
-
-// TODO low prio put note if it has no index
 
 // func_context generates a func signature for v with context determined by the
 // context mode.
@@ -1852,17 +1874,8 @@ func (f *Funcs) foreign_key_context(v interface{}) string {
 	switch x := v.(type) {
 	case ForeignKey:
 		name = x.RefFunc
-		// for sqlc compatibility
-		// if f.context_both() {
-		// 	name += "Context"
-		// }
 		// add params
 		p = append(p, "db", f.convertTypes(x))
-		// TODO add opt params for foreign key functions generated from other tables as well
-		// although it's not essential because we can call WorkItemByWorkItemID directly it's a nice-to-have
-		// func (t *Task) WorkItem(ctx context.Context, db DB <, opts ...TaskSelectConfigOption>) (*WorkItem, error) {
-		// 	return WorkItemByWorkItemID(ctx, db, t.WorkItemID <, opts>)
-		// }
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 6: %T ]]", v)
 	}
@@ -2056,7 +2069,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				case M2M:
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 					joinName = prefix + camelExport(inflector.Pluralize(lookupName))
-				case O2M, M2O:
+				case M2O:
 					if c.RefTableName == x.SQLName {
 						joinName = prefix + camelExport(c.TableName)
 						if c.JoinTableClash {
@@ -2104,7 +2117,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 				case M2M:
 					lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 					joinName = pref + camelExport(inflector.Pluralize(lookupName))
-				case O2M, M2O:
+				case M2O:
 					if c.RefTableName == x.Table.SQLName {
 						joinName = pref + camelExport(c.TableName)
 						if c.JoinTableClash {
@@ -2155,7 +2168,6 @@ func (f *Funcs) names_all(prefix string, z ...interface{}) string {
 }
 
 // names_ignore generates a list of all names, ignoring fields that match the value in ignore.
-// TODO use db:"-" instead since pgx v5
 func (f *Funcs) names_ignore(prefix string, v interface{}, ignore ...interface{}) string {
 	m := make(map[string]bool)
 	for _, v := range ignore {
@@ -2424,7 +2436,7 @@ func (f *Funcs) sqlstr_soft_delete(v interface{}) []string {
 
 const (
 	M2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}, '{}') end) as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
-	O2MSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}{{.ClashSuffix}}`
+	M2OSelect = `(case when {{.Nth}}::boolean = true then COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') end) as {{.JoinTable}}{{.ClashSuffix}}`
 	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
 	O2OSelect = `(case when {{.Nth}}::boolean = true and {{.JoinTable}}.{{.JoinColumn}} is not null then row({{.JoinTable}}.*) end) as {{ singularize .JoinTable}}`
 )
@@ -2455,7 +2467,6 @@ left join (
     {{.JoinTable}}
   group by
         {{.JoinColumn}}) joined_{{.JoinTable}}{{.ClashSuffix}} on joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}_{{.JoinRefColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
-	O2MJoin = M2OJoin
 	O2OJoin = `
 left join {{.JoinTable}} on {{.JoinTable}}.{{.JoinColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}`
 )
@@ -2513,7 +2524,7 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 			filters = append(filters, fmt.Sprintf("%s.%s = %s", x.Table.SQLName, f.colname(z), f.nth(n)))
 			n++
 		}
-		// TODO filters if we are generating a subset query from multicol index
+		// generate filters if we are generating a subset query from multicol index
 		// e.g.
 		// 	create unique index on kanban_steps (project_id , name , step_order)
 		// 	where
@@ -2523,14 +2534,11 @@ func (f *Funcs) sqlstr_index(v interface{}, constraints interface{}, tables Tabl
 		// 	where
 		// 		step_order is null;
 		//
-		//in this case, func names need to be eg KanbanStepByName_StepOrderNotNull (via first index) and KanbanStepByName_StepOrderNull (2nd) so
+		// in this case, func names need to be eg KanbanStepByName_StepOrderNotNull (via first index) and KanbanStepByName_StepOrderNull (2nd) so
 		// that we dont skip generation due to `emittedIndexes`
-		// KanbanStepByName without index conditions is not generated since it will not use index scan without it.
+		// a hypothetical KanbanStepByName without index conditions will not be generated since it will not use index scan without it
+		// (unless a explicit name index is created obviously)
 		if _, after, ok := strings.Cut(x.Definition, " WHERE "); ok { // index def is normalized in db
-			// TODO this also needs to have table name prepended.
-			// after : (external_id IS NOT NULL)after : (external_id IS NULL)
-			// hacky solution is to loop through current table columns and if found .Cut() and construct a new string
-			// that simply inserts the table in between
 			filters = append(filters, after)
 		}
 
@@ -2632,9 +2640,9 @@ func createJoinStatement(tables Tables, c Constraint, x Index, funcs template.Fu
 			}
 		}
 
-	case O2M, M2O:
-		joinTpl = O2MJoin
-		selectTpl = O2MSelect
+	case M2O:
+		joinTpl = M2OJoin
+		selectTpl = M2OSelect
 		if c.RefTableName == x.Table.SQLName {
 			params["JoinColumn"] = c.ColumnName
 			params["JoinTable"] = c.TableName
@@ -2873,21 +2881,11 @@ func (f *Funcs) typefn(typ string) string {
 // field generates a field definition for a struct.
 func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
-	var skipExtraTags bool
 	isPrivate := contains(field.Properties, privateFieldProperty)
-	var isSingleFK bool
-	for _, tfk := range table.ForeignKeys {
-		if len(tfk.FieldNames) == 1 && tfk.FieldNames[0] == field.SQLName {
-			isSingleFK = true
-			break
-		}
-	}
-	var isSinglePK bool
-	if len(table.PrimaryKeys) == 1 && table.PrimaryKeys[0].SQLName == field.SQLName {
-		isSinglePK = true
-	}
+	isSingleFK, isSinglePK := analyzeField(table, field)
 	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
 
+	var skipExtraTags bool
 	switch typ {
 	case "CreateParams":
 		if skipField {
@@ -2924,6 +2922,51 @@ func (f *Funcs) field(field Field, typ string, table Table) (string, error) {
 	}
 
 	return fmt.Sprintf("\t%s %s%s // %s\n", field.GoName, fieldType, tag, field.SQLName), nil
+}
+
+// set_field generates an assignment to a struct field.
+func (f *Funcs) set_field(field Field, typ string, table Table) (string, error) {
+	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
+	if skipField {
+		return "", nil
+	}
+
+	isSingleFK, isSinglePK := analyzeField(table, field)
+	switch typ {
+	case "CreateParams":
+	case "UpdateParams":
+		if isSingleFK && isSinglePK { // e.g. workitemid in project tables. don't ever want to update it.
+			fmt.Printf("UpdateParams: skipping %q: is a single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
+			return "", nil
+		}
+	}
+
+	switch typ {
+	case "CreateParams":
+		return fmt.Sprintf("\t%[1]s: params.%[1]s,\n", field.GoName), nil
+	case "UpdateParams":
+		return fmt.Sprintf(`if params.%[2]s != nil {
+	%[1]s.%[2]s = *params.%[2]s
+}
+`, f.short(table), field.GoName), nil
+	}
+
+	return "", fmt.Errorf("invalid typ: %s", typ)
+}
+
+func analyzeField(table Table, field Field) (bool, bool) {
+	var isSingleFK bool
+	for _, tfk := range table.ForeignKeys {
+		if len(tfk.FieldNames) == 1 && tfk.FieldNames[0] == field.SQLName {
+			isSingleFK = true
+			break
+		}
+	}
+	var isSinglePK bool
+	if len(table.PrimaryKeys) == 1 && table.PrimaryKeys[0].SQLName == field.SQLName {
+		isSinglePK = true
+	}
+	return isSingleFK, isSinglePK
 }
 
 // fieldmapping generates field mappings from a struct to another.
@@ -2963,6 +3006,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 		return "", nil
 	}
 	for _, c := range cc {
+		var notes string
 		// sync with extratypes
 		switch c.Cardinality {
 		case M2M:
@@ -2984,7 +3028,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", inflector.Pluralize(lookupName))
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, c.Cardinality))
-		case O2M, M2O:
+		case M2O:
 			var joinName string
 			if c.RefTableName == t.SQLName {
 				goName = camelExport(singularize(c.TableName))
@@ -3013,16 +3057,19 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			}
 
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
-			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, c.Cardinality))
+			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 		case O2O:
 			if c.TableName == t.SQLName {
 				goName = camelExport(singularize(c.RefTableName))
 				typ = goName
 				goName = goName + "Join"
 
-				var notes string
-				if c.IsGeneratedO2O {
+				if c.IsInferredO2O {
 					notes = " (inferred)"
+				}
+
+				if c.IsGeneratedO2OFromM2O {
+					notes = " (generated from M2O)"
 				}
 
 				joinName := inflector.Singularize(c.RefTableName)
@@ -3500,16 +3547,16 @@ type Constraint struct {
 	Type        string
 	Cardinality cardinality
 	// Postgres constraint name
-	Name            string
-	TableName       string // table where FK is defined
-	ColumnName      string
-	RefTableName    string // table FK references
-	RefColumnName   string // RefTableName column FK references
-	LookupColumn    string // (M2M) lookup table column
-	LookupRefColumn string // (M2M) referenced PK by LookupColumn
-	JoinTableClash  bool   // Whether other constraints join against the same table
-	IsGeneratedO2O  bool   // Whether this constraint has been generated or altered automatically
-	IsGeneratedO2M  bool   // Whether this constraint has been generated or altered automatically
+	Name                  string
+	TableName             string // table where FK is defined
+	ColumnName            string
+	RefTableName          string // table FK references
+	RefColumnName         string // RefTableName column FK references
+	LookupColumn          string // (M2M) lookup table column
+	LookupRefColumn       string // (M2M) referenced PK by LookupColumn
+	JoinTableClash        bool   // Whether other constraints join against the same table
+	IsInferredO2O         bool   // Whether this constraint has been generated from a foreign key
+	IsGeneratedO2OFromM2O bool
 }
 
 // Field is a field template.
@@ -3860,24 +3907,24 @@ func addLegacyFuncs(ctx context.Context, funcs template.FuncMap) {
 	// convext generates the Go conversion for f in order for it to be assignable
 	// to t.
 	//
-	// FIXME: this should be a better name, like "goconversion" or some such.
-	funcs["convext"] = func(prefix string, f *Field, t *Field) string {
-		expr := prefix + "." + f.SQLName
-		if f.Type == t.Type {
-			return expr
-		}
-		ft := f.Type
-		if strings.HasPrefix(ft, "*") {
-			typ := f.Type[:1]
-			// TODO nil checks generate and return err
-			expr = "*" + expr
-			ft = strings.ToLower(typ)
-		}
-		if t.Type != ft {
-			expr = t.Type + "(" + expr + ")"
-		}
-		return expr
-	}
+	//  this should be a better name, like "goconversion" or some such.
+	// funcs["convext"] = func(prefix string, f *Field, t *Field) string {
+	// 	expr := prefix + "." + f.SQLName
+	// 	if f.Type == t.Type {
+	// 		return expr
+	// 	}
+	// 	ft := f.Type
+	// 	if strings.HasPrefix(ft, "*") {
+	// 		typ := f.Type[:1]
+	// 		// pending nil checks generate and return err
+	// 		expr = "*" + expr
+	// 		ft = strings.ToLower(typ)
+	// 	}
+	// 	if t.Type != ft {
+	// 		expr = t.Type + "(" + expr + ")"
+	// 	}
+	// 	return expr
+	// }
 	// getstartcount returns a starting count for numbering columsn in queries
 	funcs["getstartcount"] = func(fields []*Field, pkFields []*Field) int {
 		return len(fields) - len(pkFields)

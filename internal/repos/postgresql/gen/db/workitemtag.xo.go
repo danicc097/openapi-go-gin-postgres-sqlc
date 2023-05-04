@@ -21,25 +21,53 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description" required:"true"`        // description
 	Color         string `json:"color" db:"color" required:"true"`                    // color
 
-	ProjectJoin   *Project    `json:"-" db:"project" openapi-go:"ignore"`    // O2O
+	ProjectJoin   *Project    `json:"-" db:"project" openapi-go:"ignore"`    // O2O (generated from M2O)
 	WorkItemsJoin *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
 
 }
 
 // WorkItemTagCreateParams represents insert params for 'public.work_item_tags'
 type WorkItemTagCreateParams struct {
-	ProjectID   int    `json:"projectID"`   // project_id
-	Name        string `json:"name"`        // name
-	Description string `json:"description"` // description
-	Color       string `json:"color"`       // color
+	ProjectID   int    `json:"projectID" required:"true"`   // project_id
+	Name        string `json:"name" required:"true"`        // name
+	Description string `json:"description" required:"true"` // description
+	Color       string `json:"color" required:"true"`       // color
+}
+
+// CreateWorkItemTag creates a new WorkItemTag in the database with the given params.
+func CreateWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreateParams) (*WorkItemTag, error) {
+	wit := &WorkItemTag{
+		ProjectID:   params.ProjectID,
+		Name:        params.Name,
+		Description: params.Description,
+		Color:       params.Color,
+	}
+
+	return wit.Insert(ctx, db)
 }
 
 // WorkItemTagUpdateParams represents update params for 'public.work_item_tags'
 type WorkItemTagUpdateParams struct {
-	ProjectID   *int    `json:"projectID"`   // project_id
-	Name        *string `json:"name"`        // name
-	Description *string `json:"description"` // description
-	Color       *string `json:"color"`       // color
+	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
+	Name        *string `json:"name" required:"true"`        // name
+	Description *string `json:"description" required:"true"` // description
+	Color       *string `json:"color" required:"true"`       // color
+}
+
+// SetUpdateParams updates public.work_item_tags struct fields with the specified params.
+func (wit *WorkItemTag) SetUpdateParams(params *WorkItemTagUpdateParams) {
+	if params.ProjectID != nil {
+		wit.ProjectID = *params.ProjectID
+	}
+	if params.Name != nil {
+		wit.Name = *params.Name
+	}
+	if params.Description != nil {
+		wit.Description = *params.Description
+	}
+	if params.Color != nil {
+		wit.Color = *params.Color
+	}
 }
 
 type WorkItemTagSelectConfig struct {
@@ -52,7 +80,9 @@ type WorkItemTagSelectConfigOption func(*WorkItemTagSelectConfig)
 // WithWorkItemTagLimit limits row selection.
 func WithWorkItemTagLimit(limit int) WorkItemTagSelectConfigOption {
 	return func(s *WorkItemTagSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -68,7 +98,11 @@ type WorkItemTagJoins struct {
 // WithWorkItemTagJoin joins with the given tables.
 func WithWorkItemTagJoin(joins WorkItemTagJoins) WorkItemTagSelectConfigOption {
 	return func(s *WorkItemTagSelectConfig) {
-		s.joins = joins
+		s.joins = WorkItemTagJoins{
+
+			Project:   s.joins.Project || joins.Project,
+			WorkItems: s.joins.WorkItems || joins.WorkItems,
+		}
 	}
 }
 
@@ -173,7 +207,7 @@ work_item_tags.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
-		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -223,7 +257,7 @@ work_item_tags.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
-		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -275,7 +309,7 @@ work_item_tags.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
-		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
@@ -327,7 +361,7 @@ work_item_tags.color,
 (case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
 (case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
 		`FROM public.work_item_tags ` +
-		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from O2M|M2O)"
+		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_tags.project_id
 -- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (

@@ -49,10 +49,7 @@
           "type": "integer"
         },
         "stepOrder": {
-          "type": [
-            "integer",
-            "null"
-          ]
+          "type": "integer"
         },
         "timeTrackable": {
           "type": "boolean"
@@ -871,12 +868,22 @@
         "firstName": {
           "description": "originally from auth server but updatable",
           "type": "string",
-          "pattern": "^[ a-zA-Z0-9_-]+$"
+          "pattern": "^[\\p{L} '-]+$"
         },
         "lastName": {
           "description": "originally from auth server but updatable",
           "type": "string",
-          "pattern": "^[ a-zA-Z0-9_-]+$"
+          "pattern": "^[\\p{L} '-]+$"
+        },
+        "username": {
+          "description": "originally from auth server but updatable",
+          "type": "string",
+          "pattern": "^[\\.a-zA-Z0-9_-]+$"
+        },
+        "email": {
+          "description": "originally from auth server but updatable",
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9._%+-]+@(mydomain\\.com|anotherdomain\\.com)$"
         }
       },
       "type": "object",
@@ -1061,6 +1068,12 @@
           "type": "integer"
         }
       },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -1103,6 +1116,11 @@
           "type": "integer"
         }
       },
+      "required": [
+        "projectID",
+        "name",
+        "description"
+      ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -1121,6 +1139,12 @@
           "type": "integer"
         }
       },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -1140,14 +1164,6 @@
         }
       },
       "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ModelsProject": {
-      "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ModelsRole": {
-      "type": "string",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemRole": {
@@ -1198,10 +1214,6 @@
       "x-generated": "-",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "ModelsScope": {
-      "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "Demo2WorkItemTypes": {
       "type": "string",
       "enum": [
@@ -1247,51 +1259,6 @@
         "Type 1"
       ],
       "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ModelsProjectConfig": {
-      "properties": {
-        "fields": {
-          "items": {
-            "$ref": "#/definitions/ModelsProjectConfigField"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "header": {
-          "items": {
-            "type": "string"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        }
-      },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "ModelsProjectConfigField": {
-      "properties": {
-        "isEditable": {
-          "type": "boolean"
-        },
-        "isVisible": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        },
-        "showCollapsed": {
-          "type": "boolean"
-        }
-      },
-      "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
@@ -1404,12 +1371,6 @@
     "DbWorkItemTypeCreateParams": {
       "$ref": "#/definitions/DbWorkItemTypeCreateParams"
     },
-    "ModelsProject": {
-      "$ref": "#/definitions/ModelsProject"
-    },
-    "ModelsRole": {
-      "$ref": "#/definitions/ModelsRole"
-    },
     "DbWorkItemRole": {
       "$ref": "#/definitions/DbWorkItemRole"
     },
@@ -1425,9 +1386,6 @@
     "DemoProject2KanbanSteps": {
       "$ref": "#/definitions/DemoProject2KanbanSteps"
     },
-    "ModelsScope": {
-      "$ref": "#/definitions/ModelsScope"
-    },
     "Demo2WorkItemTypes": {
       "$ref": "#/definitions/Demo2WorkItemTypes"
     },
@@ -1442,12 +1400,6 @@
     },
     "DemoWorkItemTypes": {
       "$ref": "#/definitions/DemoWorkItemTypes"
-    },
-    "ModelsProjectConfig": {
-      "$ref": "#/definitions/ModelsProjectConfig"
-    },
-    "ModelsProjectConfigField": {
-      "$ref": "#/definitions/ModelsProjectConfigField"
     }
   }
 }
