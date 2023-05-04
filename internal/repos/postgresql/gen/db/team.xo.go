@@ -79,7 +79,9 @@ type TeamSelectConfigOption func(*TeamSelectConfig)
 // WithTeamLimit limits row selection.
 func WithTeamLimit(limit int) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -99,12 +101,10 @@ const (
 // WithTeamOrderBy orders results by the given columns.
 func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 

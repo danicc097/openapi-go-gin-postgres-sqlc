@@ -106,7 +106,9 @@ type TimeEntrySelectConfigOption func(*TimeEntrySelectConfig)
 // WithTimeEntryLimit limits row selection.
 func WithTimeEntryLimit(limit int) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -122,12 +124,10 @@ const (
 // WithTimeEntryOrderBy orders results by the given columns.
 func WithTimeEntryOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 

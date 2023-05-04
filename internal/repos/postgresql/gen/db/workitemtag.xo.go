@@ -80,7 +80,9 @@ type WorkItemTagSelectConfigOption func(*WorkItemTagSelectConfig)
 // WithWorkItemTagLimit limits row selection.
 func WithWorkItemTagLimit(limit int) WorkItemTagSelectConfigOption {
 	return func(s *WorkItemTagSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 

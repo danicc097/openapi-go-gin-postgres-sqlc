@@ -78,7 +78,9 @@ type WorkItemCommentSelectConfigOption func(*WorkItemCommentSelectConfig)
 // WithWorkItemCommentLimit limits row selection.
 func WithWorkItemCommentLimit(limit int) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -98,12 +100,10 @@ const (
 // WithWorkItemCommentOrderBy orders results by the given columns.
 func WithWorkItemCommentOrderBy(rows ...WorkItemCommentOrderBy) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 

@@ -119,7 +119,9 @@ type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
 // WithWorkItemLimit limits row selection.
 func WithWorkItemLimit(limit int) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -158,12 +160,10 @@ const (
 // WithWorkItemOrderBy orders results by the given columns.
 func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 

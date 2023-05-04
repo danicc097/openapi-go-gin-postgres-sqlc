@@ -75,7 +75,9 @@ type UserAPIKeySelectConfigOption func(*UserAPIKeySelectConfig)
 // WithUserAPIKeyLimit limits row selection.
 func WithUserAPIKeyLimit(limit int) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -91,12 +93,10 @@ const (
 // WithUserAPIKeyOrderBy orders results by the given columns.
 func WithUserAPIKeyOrderBy(rows ...UserAPIKeyOrderBy) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 

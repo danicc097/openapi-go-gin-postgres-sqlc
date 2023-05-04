@@ -88,7 +88,9 @@ type ProjectSelectConfigOption func(*ProjectSelectConfig)
 // WithProjectLimit limits row selection.
 func WithProjectLimit(limit int) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -108,12 +110,10 @@ const (
 // WithProjectOrderBy orders results by the given columns.
 func WithProjectOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 

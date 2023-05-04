@@ -80,7 +80,9 @@ type ActivitySelectConfigOption func(*ActivitySelectConfig)
 // WithActivityLimit limits row selection.
 func WithActivityLimit(limit int) ActivitySelectConfigOption {
 	return func(s *ActivitySelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 

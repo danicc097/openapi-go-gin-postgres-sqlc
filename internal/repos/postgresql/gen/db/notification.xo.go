@@ -113,7 +113,9 @@ type NotificationSelectConfigOption func(*NotificationSelectConfig)
 // WithNotificationLimit limits row selection.
 func WithNotificationLimit(limit int) NotificationSelectConfigOption {
 	return func(s *NotificationSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -129,12 +131,10 @@ const (
 // WithNotificationOrderBy orders results by the given columns.
 func WithNotificationOrderBy(rows ...NotificationOrderBy) NotificationSelectConfigOption {
 	return func(s *NotificationSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 

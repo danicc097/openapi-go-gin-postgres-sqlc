@@ -63,7 +63,9 @@ type UserTeamSelectConfigOption func(*UserTeamSelectConfig)
 // WithUserTeamLimit limits row selection.
 func WithUserTeamLimit(limit int) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 

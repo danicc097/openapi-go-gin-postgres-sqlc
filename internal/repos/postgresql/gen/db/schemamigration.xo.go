@@ -62,7 +62,9 @@ type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
 // WithSchemaMigrationLimit limits row selection.
 func WithSchemaMigrationLimit(limit int) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 

@@ -138,7 +138,9 @@ type UserSelectConfigOption func(*UserSelectConfig)
 // WithUserLimit limits row selection.
 func WithUserLimit(limit int) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -169,12 +171,10 @@ const (
 // WithUserOrderBy orders results by the given columns.
 func WithUserOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 

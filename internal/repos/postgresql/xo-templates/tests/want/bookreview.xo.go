@@ -66,7 +66,9 @@ type BookReviewSelectConfigOption func(*BookReviewSelectConfig)
 // WithBookReviewLimit limits row selection.
 func WithBookReviewLimit(limit int) BookReviewSelectConfigOption {
 	return func(s *BookReviewSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 

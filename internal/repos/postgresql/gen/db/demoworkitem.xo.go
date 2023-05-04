@@ -83,7 +83,9 @@ type DemoWorkItemSelectConfigOption func(*DemoWorkItemSelectConfig)
 // WithDemoWorkItemLimit limits row selection.
 func WithDemoWorkItemLimit(limit int) DemoWorkItemSelectConfigOption {
 	return func(s *DemoWorkItemSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 
@@ -99,12 +101,10 @@ const (
 // WithDemoWorkItemOrderBy orders results by the given columns.
 func WithDemoWorkItemOrderBy(rows ...DemoWorkItemOrderBy) DemoWorkItemSelectConfigOption {
 	return func(s *DemoWorkItemSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 

@@ -74,7 +74,9 @@ type UserNotificationSelectConfigOption func(*UserNotificationSelectConfig)
 // WithUserNotificationLimit limits row selection.
 func WithUserNotificationLimit(limit int) UserNotificationSelectConfigOption {
 	return func(s *UserNotificationSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 

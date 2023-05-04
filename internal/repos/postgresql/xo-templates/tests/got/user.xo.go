@@ -59,7 +59,9 @@ type UserSelectConfigOption func(*UserSelectConfig)
 // WithUserLimit limits row selection.
 func WithUserLimit(limit int) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 

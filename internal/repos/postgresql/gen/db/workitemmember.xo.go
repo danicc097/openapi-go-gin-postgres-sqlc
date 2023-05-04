@@ -72,7 +72,9 @@ type WorkItemMemberSelectConfigOption func(*WorkItemMemberSelectConfig)
 // WithWorkItemMemberLimit limits row selection.
 func WithWorkItemMemberLimit(limit int) WorkItemMemberSelectConfigOption {
 	return func(s *WorkItemMemberSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 

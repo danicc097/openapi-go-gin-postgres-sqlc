@@ -94,7 +94,9 @@ type KanbanStepSelectConfigOption func(*KanbanStepSelectConfig)
 // WithKanbanStepLimit limits row selection.
 func WithKanbanStepLimit(limit int) KanbanStepSelectConfigOption {
 	return func(s *KanbanStepSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 

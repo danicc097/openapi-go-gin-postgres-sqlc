@@ -70,7 +70,9 @@ type MovieSelectConfigOption func(*MovieSelectConfig)
 // WithMovieLimit limits row selection.
 func WithMovieLimit(limit int) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
-		s.limit = fmt.Sprintf(" limit %d ", limit)
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
 	}
 }
 

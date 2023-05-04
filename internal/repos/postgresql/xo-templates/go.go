@@ -1627,6 +1627,26 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints []Constraint
 
 	var buf strings.Builder
 
+	/**
+		 *
+		 * TODO:
+		 *
+	func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
+		return func(s *WorkItemSelectConfig) {
+			if len(rows) == 0 {
+				s.orderBy = ""
+			} else {
+				var orderBy []string
+				for _, r := range rows {
+					orderBy = append(orderBy, string(r))
+				}
+				s.orderBy = " order by " + strings.Join(orderBy, ", ")
+			}
+		}
+	}
+
+	*/
+
 	buf.WriteString(fmt.Sprintf(`
 	type %[1]sSelectConfig struct {
 		limit       string
@@ -1644,7 +1664,9 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints []Constraint
 	// With%[1]sLimit limits row selection.
 	func With%[1]sLimit(limit int) %[1]sSelectConfigOption {
 		return func(s *%[1]sSelectConfig) {
-			s.limit = fmt.Sprintf(" limit %%d ", limit)
+			if limit > 0 {
+				s.limit = fmt.Sprintf(" limit %%d ", limit)
+			}
 		}
 	}`, name))
 
@@ -1677,12 +1699,10 @@ func (f *Funcs) extratypes(name string, sqlname string, constraints []Constraint
 	// With%[1]sOrderBy orders results by the given columns.
 func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
-		if len(rows) == 0 {
-			s.orderBy = ""
-			return
+		if len(rows) > 0 {
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(rows, ", ")
 		}
-		s.orderBy = " order by "
-		s.orderBy += strings.Join(rows, ", ")
 	}
 }
 	`, name))
