@@ -48,13 +48,13 @@ type ProjectBoard interface {
 }
 
 type DemoWorkItemUpdateParams struct {
-	DemoProject *db.DemoWorkItemUpdateParams
-	Base        *db.WorkItemUpdateParams
+	DemoProject *db.DemoWorkItemUpdateParams `json:"demoProject"`
+	Base        *db.WorkItemUpdateParams     `json:"base"`
 }
 
 type DemoWorkItemCreateParams struct {
-	DemoProject db.DemoWorkItemCreateParams
-	Base        db.WorkItemCreateParams
+	DemoProject db.DemoWorkItemCreateParams `json:"demoProject" required:"true"`
+	Base        db.WorkItemCreateParams     `json:"base" required:"true"`
 }
 
 // DemoWorkItem defines the datastore/repository handling persisting DemoWorkItem records.

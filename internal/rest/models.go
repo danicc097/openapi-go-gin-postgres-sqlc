@@ -54,3 +54,7 @@ type TeamUpdateRequest struct {
 type UserCreateRequest struct {
 	services.UserRegisterParams
 }
+
+type DemoWorkItemCreateRequest struct {
+	services.DemoWorkItemCreateParams
+}
