@@ -619,8 +619,7 @@ x.gen.client-server() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Generate mocks for specified interfaces. Runs are cached to `cachedir`.
-# Args: cachedir
+# Generate mocks for specified interfaces.
 x.gen.counterfeiter() {
   # This shouldn't pose any problems, the interface is the only input to counterfeiter.
   { { {
@@ -724,14 +723,12 @@ export type schemas = components['schemas']
 # Run all codegen and postgen commands for the project.
 x.gen() {
   cache-gen # Modification of vars inside would be local to subshell (caused by pipeline)
+  drop-and-migrate-gen-db
   { { {
     echo "Running code generation"
 
-    POSTGRES_DB="$GEN_POSTGRES_DB" x.db.recreate
-
     x.gen.build-tools # || true (this should not fail compilation anymore, the whole app should be compilable at this point)
 
-    x.gen.pregen
     rm -rf "$PG_REPO_GEN"
 
     # TODO try use gnu parallel and exit when anyone fails
@@ -742,13 +739,12 @@ x.gen() {
     x.gen.gowrap &
     x.gen.sqlc &
     x.gen.proto &
-
-    wait_without_error
-
     x.gen.xo &
     x.gen.jet &
 
     wait_without_error
+
+    x.gen.pregen
 
     x.gen.postgen &
     x.gen.counterfeiter & # delay since it depends on generated output too
