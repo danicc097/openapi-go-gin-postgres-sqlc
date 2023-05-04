@@ -60,31 +60,11 @@ type DemoWorkItemCreateParams struct {
 // DemoWorkItem defines the datastore/repository handling persisting DemoWorkItem records.
 type DemoWorkItem interface {
 	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.DemoWorkItemSelectConfigOption) (*db.DemoWorkItem, error)
-	// params for dedicated workItem require workItemID (FK-as-PK)
+	// params for dedicated workItem only require workItemID (FK-as-PK)
 	Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.DemoWorkItem, error)
 	Update(ctx context.Context, d db.DBTX, id int64, params DemoWorkItemUpdateParams) (*db.DemoWorkItem, error)
 	Delete(ctx context.Context, d db.DBTX, id int64) (*db.DemoWorkItem, error)
-	// repo has Update only, then service has Close() (Update with closed=True), Move() (Update with kanban step change), ...)
-	// params for dedicated workItem require workItemID (FK-as-PK)
-	// TBD if useful: ByTag, ByType (for closed workitem searches. open ones simply return everything and filter in client)
 }
-
-// WorkItem defines the datastore/repository handling persisting WorkItem records.
-/**
- * TODO:
- * instead pass `, project repomodels.Project` and do appropiate joins in workitem.xo.go depending on it.
- * in case we need specific indexes from {project}workitem.xo.go we can do e.g. DemoWorkItemsByRefLine with no workitem join
- * and then just loop over those and filter by ID taking the performance hit. it will be rare to use those filters anyway.
- * If not we can always go back to sqlc or use jet + reuse the xo model
- *
- */
-// type WorkItem interface {
-// 	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
-// 	ByTeam(ctx context.Context, d db.DBTX, teamID int, closed bool, deleted bool, opts ...db.WorkItemSelectConfigOption) ([]*db.WorkItem, error)
-// 	// params for dedicated workItem require workItemID (FK-as-PK)
-// 	Create(ctx context.Context, d db.DBTX, id int64, params *db.WorkItemCreateParams) (*db.WorkItem, error)
-// 	Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error)
-// }
 
 // Notification defines the datastore/repository handling persisting Notification records.
 type Notification interface {

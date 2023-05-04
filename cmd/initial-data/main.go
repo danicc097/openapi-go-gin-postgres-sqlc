@@ -7,10 +7,12 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -47,9 +49,8 @@ func main() {
 	userRepo := postgresql.NewUser()
 	activityRepo := postgresql.NewActivity()
 	teamRepo := postgresql.NewTeam()
-	projectRepo := postgresql.NewProject()
 	teRepo := postgresql.NewTimeEntry()
-	wiTypeRepo := postgresql.NewWorkItemType()
+	demoWiRepo := postgresql.NewDemoWorkItem()
 	wiTagRepo := postgresql.NewWorkItemTag()
 
 	authzSvc, err := services.NewAuthorization(logger, scopePolicyPath, rolePolicyPath)
@@ -57,12 +58,11 @@ func main() {
 
 	userSvc := services.NewUser(logger, userRepo, notifRepo, authzSvc)
 	authnSvc := services.NewAuthentication(logger, userSvc, pool)
-	/*activitySvc :=*/ _ = services.NewActivity(logger, activityRepo)
+	activitySvc := services.NewActivity(logger, activityRepo)
 	teamSvc := services.NewTeam(logger, teamRepo)
-	/*projectSvc :=*/ _ = services.NewProject(logger, projectRepo, teamRepo)
-	/*teSvc :=*/ _ = services.NewTimeEntry(logger, teRepo)
-	/*wiTypeSvc :=*/ _ = services.NewWorkItemType(logger, wiTypeRepo)
-	/*wiTagSvc :=*/ _ = services.NewWorkItemTag(logger, wiTagRepo)
+	teSvc := services.NewTimeEntry(logger, teRepo)
+	demoWiSvc := services.NewDemoWorkItem(logger, demoWiRepo)
+	wiTagSvc := services.NewWorkItemTag(logger, wiTagRepo)
 
 	ctx := context.Background()
 
@@ -126,14 +126,126 @@ func main() {
 	 *
 	 **/
 
-	t1, err := teamSvc.Create(ctx, pool, &db.TeamCreateParams{
+	team1, err := teamSvc.Create(ctx, pool, &db.TeamCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Team 1",
 		Description: "Team 1 description",
 	})
 	handleError(err)
-	fmt.Printf("t1: %v\n", t1)
-	// TODO usvc.AssignTeam(userIDs[0], t1.TeamID)
+
+	for _, id := range userIDs {
+		err = userSvc.AssignTeam(ctx, pool, id, team1.TeamID)
+		handleError(err)
+	}
+
+	/**
+	 *
+	 * ACTIVITIES
+	 *
+	 **/
+
+	activity1, err := activitySvc.Create(ctx, pool, &db.ActivityCreateParams{
+		ProjectID:    internal.ProjectIDByName[models.ProjectDemo],
+		Name:         "Activity 1",
+		Description:  "Activity 1 description",
+		IsProductive: true,
+	})
+	handleError(err)
+	logger.Sugar().Info("Created activity ", activity1.Name)
+	activity2, err := activitySvc.Create(ctx, pool, &db.ActivityCreateParams{
+		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
+		Name:        "Activity 2",
+		Description: "Activity 2 description",
+	})
+	handleError(err)
+	logger.Sugar().Info("Created activity ", activity2.Name)
+	activity3, err := activitySvc.Create(ctx, pool, &db.ActivityCreateParams{
+		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
+		Name:        "Activity 3",
+		Description: "Activity 3 description",
+	})
+	handleError(err)
+	logger.Sugar().Info("Created activity ", activity3.Name)
+
+	/**
+	 *
+	 * WORK ITEM TAGS
+	 *
+	 **/
+
+	wiTag1, err := wiTagSvc.Create(ctx, pool, &db.WorkItemTagCreateParams{
+		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
+		Name:        "Tag 1",
+		Description: "Tag 1 description",
+		Color:       "#be6cc4",
+	})
+	handleError(err)
+	logger.Sugar().Info("Created tag ", wiTag1.Name)
+
+	wiTag2, err := wiTagSvc.Create(ctx, pool, &db.WorkItemTagCreateParams{
+		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
+		Name:        "Tag 2",
+		Description: "Tag 2 description",
+		Color:       "#29b8db",
+	})
+	handleError(err)
+	logger.Sugar().Info("Created tag ", wiTag2.Name)
+
+	/**
+	 *
+	 * WORK ITEMS
+	 *
+	 **/
+
+	demowi1, err := demoWiSvc.Create(ctx, pool, repos.DemoWorkItemCreateParams{
+		// TODO create service params struct that accept workItemTagIDs []int and repos.DemoWorkItemCreateParams
+		//  so that workitem service (not repo) handles
+		// creating tags with db.CreateWorkItemWorkItemTag().
+		// workitem repo shouldnt deal with lookups, like user repo doesnt deal with team assignment
+
+		Base: db.WorkItemCreateParams{
+			TeamID:         team1.TeamID,
+			Title:          "A new work item",
+			Description:    "Description for a new work item",
+			WorkItemTypeID: internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1],
+			// TODO if not passed then query where step order = 0 for a given project and use that
+			// steporder could also be generated just like idByName and viceversa
+			KanbanStepID: internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived],
+			TargetDate:   time.Now().Add(1 * time.Hour),
+			Metadata:     []byte(`{}`),
+		},
+		DemoProject: db.DemoWorkItemCreateParams{
+			LastMessageAt: time.Now().Add(-30 * 24 * time.Hour),
+		},
+	})
+	handleError(err)
+	logger.Sugar().Info("Created work item with title: ", demowi1.WorkItemJoin.Title)
+
+	/**
+	 *
+	 * TIME ENTRIES
+	 *
+	 **/
+
+	timeEntry1, err := teSvc.Create(ctx, pool, &db.TimeEntryCreateParams{
+		WorkItemID: &demowi1.WorkItemID,
+		ActivityID: activity1.ActivityID,
+		UserID:     userIDs[0],
+		Comment:    "Doing really important stuff as part of a work item",
+		Start:      time.Now(),
+	})
+	handleError(err)
+	logger.Sugar().Info("Created time entry: ", timeEntry1.Comment)
+
+	timeEntry2, err := teSvc.Create(ctx, pool, &db.TimeEntryCreateParams{
+		ActivityID: activity2.ActivityID,
+		UserID:     userIDs[0],
+		TeamID:     &team1.TeamID,
+		Comment:    "Doing really important stuff for the team",
+		Start:      time.Now(),
+	})
+	handleError(err)
+	logger.Sugar().Info("Created time entry: ", timeEntry2.Comment)
 }
 
 func errAndExit(out []byte, err error) {

@@ -276,7 +276,7 @@ func (u *User) Delete(ctx context.Context, d db.DBTX, id uuid.UUID) (*db.User, e
 }
 
 // TODO
-func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userID string) ([]db.UserNotification, error) {
+func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userID uuid.UUID) ([]db.UserNotification, error) {
 	// this will also set user.has_new_personal_notifications to false in the same tx
 	return []db.UserNotification{}, nil
 
@@ -296,7 +296,21 @@ func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userI
 }
 
 // TODO
-func (u *User) LatestGlobalNotifications(ctx context.Context, d db.DBTX, userID string) ([]db.GetUserNotificationsRow, error) {
+func (u *User) LatestGlobalNotifications(ctx context.Context, d db.DBTX, userID uuid.UUID) ([]db.GetUserNotificationsRow, error) {
 	// this will also set user.has_new_global_notifications to false in the same tx
 	return []db.GetUserNotificationsRow{}, nil
+}
+
+func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID uuid.UUID, teamID int) error {
+	defer newOTELSpan(ctx, "User.AssignTeam").End()
+
+	_, err := db.CreateUserTeam(ctx, d, &db.UserTeamCreateParams{
+		TeamID: teamID,
+		UserID: userID,
+	})
+	if err != nil {
+		return fmt.Errorf("db.CreateUserTeam: %w", err)
+	}
+
+	return nil
 }
