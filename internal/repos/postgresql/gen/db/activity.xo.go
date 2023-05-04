@@ -28,10 +28,10 @@ type Activity struct {
 
 // ActivityCreateParams represents insert params for 'public.activities'
 type ActivityCreateParams struct {
-	ProjectID    int    `json:"projectID"`    // project_id
-	Name         string `json:"name"`         // name
-	Description  string `json:"description"`  // description
-	IsProductive bool   `json:"isProductive"` // is_productive
+	ProjectID    int    `json:"projectID" required:"true"`    // project_id
+	Name         string `json:"name" required:"true"`         // name
+	Description  string `json:"description" required:"true"`  // description
+	IsProductive bool   `json:"isProductive" required:"true"` // is_productive
 }
 
 // CreateActivity creates a new Activity in the database with the given params.
@@ -48,10 +48,10 @@ func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*
 
 // ActivityUpdateParams represents update params for 'public.activities'
 type ActivityUpdateParams struct {
-	ProjectID    *int    `json:"projectID"`    // project_id
-	Name         *string `json:"name"`         // name
-	Description  *string `json:"description"`  // description
-	IsProductive *bool   `json:"isProductive"` // is_productive
+	ProjectID    *int    `json:"projectID" required:"true"`    // project_id
+	Name         *string `json:"name" required:"true"`         // name
+	Description  *string `json:"description" required:"true"`  // description
+	IsProductive *bool   `json:"isProductive" required:"true"` // is_productive
 }
 
 // SetUpdateParams updates public.activities struct fields with the specified params.
@@ -96,7 +96,11 @@ type ActivityJoins struct {
 // WithActivityJoin joins with the given tables.
 func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 	return func(s *ActivitySelectConfig) {
-		s.joins = joins
+		s.joins = ActivityJoins{
+
+			Project:     s.joins.Project || joins.Project,
+			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
+		}
 	}
 }
 

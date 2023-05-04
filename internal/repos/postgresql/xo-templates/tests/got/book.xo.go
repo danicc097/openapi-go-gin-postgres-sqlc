@@ -24,7 +24,7 @@ type Book struct {
 
 // BookCreateParams represents insert params for 'public.books'
 type BookCreateParams struct {
-	Name string `json:"name"` // name
+	Name string `json:"name" required:"true"` // name
 }
 
 // CreateBook creates a new Book in the database with the given params.
@@ -38,7 +38,7 @@ func CreateBook(ctx context.Context, db DB, params *BookCreateParams) (*Book, er
 
 // BookUpdateParams represents update params for 'public.books'
 type BookUpdateParams struct {
-	Name *string `json:"name"` // name
+	Name *string `json:"name" required:"true"` // name
 }
 
 // SetUpdateParams updates public.books struct fields with the specified params.
@@ -72,7 +72,10 @@ type BookJoins struct {
 // WithBookJoin joins with the given tables.
 func WithBookJoin(joins BookJoins) BookSelectConfigOption {
 	return func(s *BookSelectConfig) {
-		s.joins = joins
+		s.joins = BookJoins{
+			Authors:     s.joins.Authors || joins.Authors,
+			BookReviews: s.joins.BookReviews || joins.BookReviews,
+		}
 	}
 }
 

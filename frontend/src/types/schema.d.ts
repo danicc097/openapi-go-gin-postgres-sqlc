@@ -362,10 +362,10 @@ export interface components {
     /** @enum {string} */
     Project: "demo" | "demo_two";
     DbActivityCreateParams: {
-      description?: string;
-      isProductive?: boolean;
-      name?: string;
-      projectID?: number;
+      description: string;
+      isProductive: boolean;
+      name: string;
+      projectID: number;
     };
     DbKanbanStepCreateParams: {
       color?: string;
@@ -376,15 +376,15 @@ export interface components {
       timeTrackable?: boolean;
     };
     DbTeamCreateParams: {
-      description?: string;
-      name?: string;
-      projectID?: number;
+      description: string;
+      name: string;
+      projectID: number;
     };
     DbWorkItemTagCreateParams: {
-      color?: string;
-      description?: string;
-      name?: string;
-      projectID?: number;
+      color: string;
+      description: string;
+      name: string;
+      projectID: number;
     };
     DbWorkItemTypeCreateParams: {
       color?: string;

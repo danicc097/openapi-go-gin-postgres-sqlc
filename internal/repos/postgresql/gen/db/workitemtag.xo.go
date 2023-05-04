@@ -28,10 +28,10 @@ type WorkItemTag struct {
 
 // WorkItemTagCreateParams represents insert params for 'public.work_item_tags'
 type WorkItemTagCreateParams struct {
-	ProjectID   int    `json:"projectID"`   // project_id
-	Name        string `json:"name"`        // name
-	Description string `json:"description"` // description
-	Color       string `json:"color"`       // color
+	ProjectID   int    `json:"projectID" required:"true"`   // project_id
+	Name        string `json:"name" required:"true"`        // name
+	Description string `json:"description" required:"true"` // description
+	Color       string `json:"color" required:"true"`       // color
 }
 
 // CreateWorkItemTag creates a new WorkItemTag in the database with the given params.
@@ -48,10 +48,10 @@ func CreateWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreatePara
 
 // WorkItemTagUpdateParams represents update params for 'public.work_item_tags'
 type WorkItemTagUpdateParams struct {
-	ProjectID   *int    `json:"projectID"`   // project_id
-	Name        *string `json:"name"`        // name
-	Description *string `json:"description"` // description
-	Color       *string `json:"color"`       // color
+	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
+	Name        *string `json:"name" required:"true"`        // name
+	Description *string `json:"description" required:"true"` // description
+	Color       *string `json:"color" required:"true"`       // color
 }
 
 // SetUpdateParams updates public.work_item_tags struct fields with the specified params.
@@ -96,7 +96,11 @@ type WorkItemTagJoins struct {
 // WithWorkItemTagJoin joins with the given tables.
 func WithWorkItemTagJoin(joins WorkItemTagJoins) WorkItemTagSelectConfigOption {
 	return func(s *WorkItemTagSelectConfig) {
-		s.joins = joins
+		s.joins = WorkItemTagJoins{
+
+			Project:   s.joins.Project || joins.Project,
+			WorkItems: s.joins.WorkItems || joins.WorkItems,
+		}
 	}
 }
 

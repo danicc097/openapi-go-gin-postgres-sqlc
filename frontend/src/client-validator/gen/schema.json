@@ -1071,6 +1071,12 @@
           "type": "integer"
         }
       },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -1113,6 +1119,11 @@
           "type": "integer"
         }
       },
+      "required": [
+        "projectID",
+        "name",
+        "description"
+      ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
@@ -1131,6 +1142,12 @@
           "type": "integer"
         }
       },
+      "required": [
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },

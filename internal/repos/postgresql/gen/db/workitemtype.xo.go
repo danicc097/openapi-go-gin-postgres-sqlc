@@ -28,10 +28,10 @@ type WorkItemType struct {
 
 // WorkItemTypeCreateParams represents insert params for 'public.work_item_types'
 type WorkItemTypeCreateParams struct {
-	ProjectID   int    `json:"projectID"`   // project_id
-	Name        string `json:"name"`        // name
-	Description string `json:"description"` // description
-	Color       string `json:"color"`       // color
+	ProjectID   int    `json:"projectID" required:"true"`   // project_id
+	Name        string `json:"name" required:"true"`        // name
+	Description string `json:"description" required:"true"` // description
+	Color       string `json:"color" required:"true"`       // color
 }
 
 // CreateWorkItemType creates a new WorkItemType in the database with the given params.
@@ -48,10 +48,10 @@ func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreatePa
 
 // WorkItemTypeUpdateParams represents update params for 'public.work_item_types'
 type WorkItemTypeUpdateParams struct {
-	ProjectID   *int    `json:"projectID"`   // project_id
-	Name        *string `json:"name"`        // name
-	Description *string `json:"description"` // description
-	Color       *string `json:"color"`       // color
+	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
+	Name        *string `json:"name" required:"true"`        // name
+	Description *string `json:"description" required:"true"` // description
+	Color       *string `json:"color" required:"true"`       // color
 }
 
 // SetUpdateParams updates public.work_item_types struct fields with the specified params.
@@ -96,7 +96,11 @@ type WorkItemTypeJoins struct {
 // WithWorkItemTypeJoin joins with the given tables.
 func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOption {
 	return func(s *WorkItemTypeSelectConfig) {
-		s.joins = joins
+		s.joins = WorkItemTypeJoins{
+
+			Project:  s.joins.Project || joins.Project,
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
+		}
 	}
 }
 

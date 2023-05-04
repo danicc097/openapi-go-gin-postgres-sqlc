@@ -197,29 +197,31 @@ func main() {
 	 *
 	 **/
 
-	demowi1, err := demoWiSvc.Create(ctx, pool, repos.DemoWorkItemCreateParams{
-		// TODO create service params struct that accept workItemTagIDs []int and repos.DemoWorkItemCreateParams
-		//  so that workitem service (not repo) handles
-		// creating tags with db.CreateWorkItemWorkItemTag().
-		// workitem repo shouldnt deal with lookups, like user repo doesnt deal with team assignment
-
-		Base: db.WorkItemCreateParams{
-			TeamID:         team1.TeamID,
-			Title:          "A new work item",
-			Description:    "Description for a new work item",
-			WorkItemTypeID: internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1],
-			// TODO if not passed then query where step order = 0 for a given project and use that
-			// steporder could also be generated just like idByName and viceversa
-			KanbanStepID: internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived],
-			TargetDate:   time.Now().Add(1 * time.Hour),
-			Metadata:     []byte(`{}`),
+	demowi1, err := demoWiSvc.Create(ctx, pool, services.DemoWorkItemCreateParams{
+		DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
+			Base: db.WorkItemCreateParams{
+				TeamID:         team1.TeamID,
+				Title:          "A new work item",
+				Description:    "Description for a new work item",
+				WorkItemTypeID: internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1],
+				// TODO if not passed then query where step order = 0 for a given project and use that
+				// steporder could also be generated just like idByName and viceversa
+				KanbanStepID: internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived],
+				TargetDate:   time.Now().Add(1 * time.Hour),
+				Metadata:     []byte(`{}`),
+			},
+			DemoProject: db.DemoWorkItemCreateParams{
+				LastMessageAt: time.Now().Add(-30 * 24 * time.Hour),
+			},
 		},
-		DemoProject: db.DemoWorkItemCreateParams{
-			LastMessageAt: time.Now().Add(-30 * 24 * time.Hour),
+		TagIDs: []int{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
+		Members: []services.Member{
+			{UserID: userIDs[0], Role: models.WorkItemRolePreparer},
+			{UserID: userIDs[1], Role: models.WorkItemRoleReviewer},
 		},
 	})
 	handleError(err)
-	logger.Sugar().Info("Created work item with title: ", demowi1.WorkItemJoin.Title)
+	logger.Sugar().Info("Created work item with title: ", demowi1.Title)
 
 	/**
 	 *

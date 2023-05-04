@@ -28,9 +28,9 @@ type UserNotification struct {
 
 // UserNotificationCreateParams represents insert params for 'public.user_notifications'
 type UserNotificationCreateParams struct {
-	NotificationID int       `json:"notificationID"` // notification_id
-	Read           bool      `json:"read"`           // read
-	UserID         uuid.UUID `json:"userID"`         // user_id
+	NotificationID int       `json:"notificationID" required:"true"` // notification_id
+	Read           bool      `json:"read" required:"true"`           // read
+	UserID         uuid.UUID `json:"userID" required:"true"`         // user_id
 }
 
 // CreateUserNotification creates a new UserNotification in the database with the given params.
@@ -46,9 +46,9 @@ func CreateUserNotification(ctx context.Context, db DB, params *UserNotification
 
 // UserNotificationUpdateParams represents update params for 'public.user_notifications'
 type UserNotificationUpdateParams struct {
-	NotificationID *int       `json:"notificationID"` // notification_id
-	Read           *bool      `json:"read"`           // read
-	UserID         *uuid.UUID `json:"userID"`         // user_id
+	NotificationID *int       `json:"notificationID" required:"true"` // notification_id
+	Read           *bool      `json:"read" required:"true"`           // read
+	UserID         *uuid.UUID `json:"userID" required:"true"`         // user_id
 }
 
 // SetUpdateParams updates public.user_notifications struct fields with the specified params.
@@ -90,7 +90,11 @@ type UserNotificationJoins struct {
 // WithUserNotificationJoin joins with the given tables.
 func WithUserNotificationJoin(joins UserNotificationJoins) UserNotificationSelectConfigOption {
 	return func(s *UserNotificationSelectConfig) {
-		s.joins = joins
+		s.joins = UserNotificationJoins{
+
+			Notification: s.joins.Notification || joins.Notification,
+			User:         s.joins.User || joins.User,
+		}
 	}
 }
 

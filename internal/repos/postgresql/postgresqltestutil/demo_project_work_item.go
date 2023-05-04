@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewRandomDemoWorkItem(t *testing.T, pool *pgxpool.Pool, projectID, kanbanStepID, workItemTypeID, teamID int) (*db.DemoWorkItem, error) {
+func NewRandomDemoWorkItem(t *testing.T, pool *pgxpool.Pool, projectID, kanbanStepID, workItemTypeID, teamID int) (*db.WorkItem, error) {
 	t.Helper()
 
 	dpwiRepo := postgresql.NewDemoWorkItem()

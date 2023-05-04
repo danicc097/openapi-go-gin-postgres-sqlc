@@ -33,9 +33,9 @@ type Team struct {
 
 // TeamCreateParams represents insert params for 'public.teams'
 type TeamCreateParams struct {
-	ProjectID   int    `json:"projectID"`   // project_id
-	Name        string `json:"name"`        // name
-	Description string `json:"description"` // description
+	ProjectID   int    `json:"projectID" required:"true"`   // project_id
+	Name        string `json:"name" required:"true"`        // name
+	Description string `json:"description" required:"true"` // description
 }
 
 // CreateTeam creates a new Team in the database with the given params.
@@ -51,9 +51,9 @@ func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, er
 
 // TeamUpdateParams represents update params for 'public.teams'
 type TeamUpdateParams struct {
-	ProjectID   *int    `json:"projectID"`   // project_id
-	Name        *string `json:"name"`        // name
-	Description *string `json:"description"` // description
+	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
+	Name        *string `json:"name" required:"true"`        // name
+	Description *string `json:"description" required:"true"` // description
 }
 
 // SetUpdateParams updates public.teams struct fields with the specified params.
@@ -118,7 +118,13 @@ type TeamJoins struct {
 // WithTeamJoin joins with the given tables.
 func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
-		s.joins = joins
+		s.joins = TeamJoins{
+
+			Project:     s.joins.Project || joins.Project,
+			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
+			Users:       s.joins.Users || joins.Users,
+			WorkItem:    s.joins.WorkItem || joins.WorkItem,
+		}
 	}
 }
 

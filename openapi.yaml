@@ -1083,6 +1083,11 @@ components:
           type: string
         projectID:
           type: integer
+      required:
+        - projectID
+        - name
+        - description
+        - isProductive
       type: object
     DbKanbanStepCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -1108,6 +1113,10 @@ components:
           type: string
         projectID:
           type: integer
+      required:
+        - projectID
+        - name
+        - description
       type: object
     DbWorkItemTagCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -1119,6 +1128,11 @@ components:
           type: string
         projectID:
           type: integer
+      required:
+        - projectID
+        - name
+        - description
+        - color
       type: object
     DbWorkItemTypeCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:

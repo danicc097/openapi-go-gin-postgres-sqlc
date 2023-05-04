@@ -32,9 +32,9 @@ type WorkItemComment struct {
 
 // WorkItemCommentCreateParams represents insert params for 'public.work_item_comments'
 type WorkItemCommentCreateParams struct {
-	WorkItemID int64     `json:"workItemID"` // work_item_id
-	UserID     uuid.UUID `json:"userID"`     // user_id
-	Message    string    `json:"message"`    // message
+	WorkItemID int64     `json:"workItemID" required:"true"` // work_item_id
+	UserID     uuid.UUID `json:"userID" required:"true"`     // user_id
+	Message    string    `json:"message" required:"true"`    // message
 }
 
 // CreateWorkItemComment creates a new WorkItemComment in the database with the given params.
@@ -50,9 +50,9 @@ func CreateWorkItemComment(ctx context.Context, db DB, params *WorkItemCommentCr
 
 // WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'
 type WorkItemCommentUpdateParams struct {
-	WorkItemID *int64     `json:"workItemID"` // work_item_id
-	UserID     *uuid.UUID `json:"userID"`     // user_id
-	Message    *string    `json:"message"`    // message
+	WorkItemID *int64     `json:"workItemID" required:"true"` // work_item_id
+	UserID     *uuid.UUID `json:"userID" required:"true"`     // user_id
+	Message    *string    `json:"message" required:"true"`    // message
 }
 
 // SetUpdateParams updates public.work_item_comments struct fields with the specified params.
@@ -115,7 +115,11 @@ type WorkItemCommentJoins struct {
 // WithWorkItemCommentJoin joins with the given tables.
 func WithWorkItemCommentJoin(joins WorkItemCommentJoins) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
-		s.joins = joins
+		s.joins = WorkItemCommentJoins{
+
+			User:     s.joins.User || joins.User,
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
+		}
 	}
 }
 

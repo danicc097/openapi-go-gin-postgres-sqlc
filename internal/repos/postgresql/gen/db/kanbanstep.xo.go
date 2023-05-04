@@ -30,12 +30,12 @@ type KanbanStep struct {
 
 // KanbanStepCreateParams represents insert params for 'public.kanban_steps'
 type KanbanStepCreateParams struct {
-	ProjectID     int    `json:"projectID"`     // project_id
-	StepOrder     *int   `json:"stepOrder"`     // step_order
-	Name          string `json:"name"`          // name
-	Description   string `json:"description"`   // description
-	Color         string `json:"color"`         // color
-	TimeTrackable bool   `json:"timeTrackable"` // time_trackable
+	ProjectID     int    `json:"projectID" required:"true"`     // project_id
+	StepOrder     *int   `json:"stepOrder" required:"true"`     // step_order
+	Name          string `json:"name" required:"true"`          // name
+	Description   string `json:"description" required:"true"`   // description
+	Color         string `json:"color" required:"true"`         // color
+	TimeTrackable bool   `json:"timeTrackable" required:"true"` // time_trackable
 }
 
 // CreateKanbanStep creates a new KanbanStep in the database with the given params.
@@ -54,12 +54,12 @@ func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams
 
 // KanbanStepUpdateParams represents update params for 'public.kanban_steps'
 type KanbanStepUpdateParams struct {
-	ProjectID     *int    `json:"projectID"`     // project_id
-	StepOrder     **int   `json:"stepOrder"`     // step_order
-	Name          *string `json:"name"`          // name
-	Description   *string `json:"description"`   // description
-	Color         *string `json:"color"`         // color
-	TimeTrackable *bool   `json:"timeTrackable"` // time_trackable
+	ProjectID     *int    `json:"projectID" required:"true"`     // project_id
+	StepOrder     **int   `json:"stepOrder" required:"true"`     // step_order
+	Name          *string `json:"name" required:"true"`          // name
+	Description   *string `json:"description" required:"true"`   // description
+	Color         *string `json:"color" required:"true"`         // color
+	TimeTrackable *bool   `json:"timeTrackable" required:"true"` // time_trackable
 }
 
 // SetUpdateParams updates public.kanban_steps struct fields with the specified params.
@@ -110,7 +110,11 @@ type KanbanStepJoins struct {
 // WithKanbanStepJoin joins with the given tables.
 func WithKanbanStepJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
 	return func(s *KanbanStepSelectConfig) {
-		s.joins = joins
+		s.joins = KanbanStepJoins{
+
+			Project:  s.joins.Project || joins.Project,
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
+		}
 	}
 }
 

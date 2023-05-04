@@ -22,40 +22,34 @@ func NewDemoWorkItem() *DemoWorkItem {
 
 var _ repos.DemoWorkItem = (*DemoWorkItem)(nil)
 
-func (u *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.DemoWorkItemSelectConfigOption) (*db.DemoWorkItem, error) {
-	return db.DemoWorkItemByWorkItemID(ctx, d, id, opts...)
+func (u *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error) {
+	extraOpts := db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true})
+	return db.WorkItemByWorkItemID(ctx, d, id, (append(opts, extraOpts))...)
 }
 
-func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoWorkItemCreateParams) (*db.DemoWorkItem, error) {
+func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoWorkItemCreateParams) (*db.WorkItem, error) {
 	workItem, err := db.CreateWorkItem(ctx, d, &params.Base)
 	if err != nil {
 		return nil, fmt.Errorf("could not create workItem: %w", parseErrorDetail(err))
 	}
 
-	dwicp := &db.DemoWorkItemCreateParams{
-		WorkItemID:    workItem.WorkItemID,
-		Ref:           params.DemoProject.Ref,
-		Line:          params.DemoProject.Line,
-		LastMessageAt: params.DemoProject.LastMessageAt,
-		Reopened:      params.DemoProject.Reopened,
-	}
-
-	demoWorkItem, err := db.CreateDemoWorkItem(ctx, d, dwicp)
+	params.DemoProject.WorkItemID = workItem.WorkItemID
+	demoWorkItem, err := db.CreateDemoWorkItem(ctx, d, &params.DemoProject)
 	if err != nil {
 		return nil, fmt.Errorf("could not create workItem: %w", parseErrorDetail(err))
 	}
 
-	demoWorkItem.WorkItemJoin = workItem
+	workItem.DemoWorkItemJoin = demoWorkItem
 
-	return demoWorkItem, nil
+	return workItem, nil
 }
 
-func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoWorkItemUpdateParams) (*db.DemoWorkItem, error) {
-	demoWorkItem, err := u.ByID(ctx, d, id, db.WithDemoWorkItemJoin(db.DemoWorkItemJoins{WorkItem: true}))
+func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params repos.DemoWorkItemUpdateParams) (*db.WorkItem, error) {
+	workItem, err := u.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get demoWorkItem by id: %w", parseErrorDetail(err))
+		return nil, fmt.Errorf("could not get workItem by id: %w", parseErrorDetail(err))
 	}
-	workItem := demoWorkItem.WorkItemJoin
+	demoWorkItem := workItem.DemoWorkItemJoin
 
 	if params.Base != nil {
 		workItem.SetUpdateParams(params.Base)
@@ -74,13 +68,13 @@ func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id int64, params r
 		return nil, fmt.Errorf("could not update demoWorkItem: %w", parseErrorDetail(err))
 	}
 
-	demoWorkItem.WorkItemJoin = workItem
+	workItem.DemoWorkItemJoin = demoWorkItem
 
-	return demoWorkItem, err
+	return workItem, err
 }
 
-func (u *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.DemoWorkItem, error) {
-	workItem, err := db.WorkItemByWorkItemID(ctx, d, id)
+func (u *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error) {
+	workItem, err := u.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItem: %w", parseErrorDetail(err))
 	}
@@ -90,5 +84,5 @@ func (u *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id int64) (*db.Dem
 		return nil, fmt.Errorf("could not delete workItem: %w", parseErrorDetail(err))
 	}
 
-	return workItem.DemoWorkItemJoin, err
+	return workItem, err
 }

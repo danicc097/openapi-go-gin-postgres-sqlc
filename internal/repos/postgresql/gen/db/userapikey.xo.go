@@ -29,9 +29,9 @@ type UserAPIKey struct {
 
 // UserAPIKeyCreateParams represents insert params for 'public.user_api_keys'
 type UserAPIKeyCreateParams struct {
-	APIKey    string    `json:"apiKey"`    // api_key
-	ExpiresOn time.Time `json:"expiresOn"` // expires_on
-	UserID    uuid.UUID `json:"userID"`    // user_id
+	APIKey    string    `json:"apiKey" required:"true"`    // api_key
+	ExpiresOn time.Time `json:"expiresOn" required:"true"` // expires_on
+	UserID    uuid.UUID `json:"userID" required:"true"`    // user_id
 }
 
 // CreateUserAPIKey creates a new UserAPIKey in the database with the given params.
@@ -47,9 +47,9 @@ func CreateUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams
 
 // UserAPIKeyUpdateParams represents update params for 'public.user_api_keys'
 type UserAPIKeyUpdateParams struct {
-	APIKey    *string    `json:"apiKey"`    // api_key
-	ExpiresOn *time.Time `json:"expiresOn"` // expires_on
-	UserID    *uuid.UUID `json:"userID"`    // user_id
+	APIKey    *string    `json:"apiKey" required:"true"`    // api_key
+	ExpiresOn *time.Time `json:"expiresOn" required:"true"` // expires_on
+	UserID    *uuid.UUID `json:"userID" required:"true"`    // user_id
 }
 
 // SetUpdateParams updates public.user_api_keys struct fields with the specified params.
@@ -107,7 +107,10 @@ type UserAPIKeyJoins struct {
 // WithUserAPIKeyJoin joins with the given tables.
 func WithUserAPIKeyJoin(joins UserAPIKeyJoins) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
-		s.joins = joins
+		s.joins = UserAPIKeyJoins{
+
+			User: s.joins.User || joins.User,
+		}
 	}
 }
 

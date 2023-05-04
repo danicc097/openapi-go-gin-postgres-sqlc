@@ -224,10 +224,10 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Short:      "g",
 				Default: `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}"
 {{- if not .skipExtraTags }} db:"{{ .field.SQLName -}}"
+{{- end }}
 {{- if not .ignoreJSON }} required:"true"
 {{- end }}
 {{- if .field.OpenAPISchema }} ref:"#/components/schemas/{{ .field.OpenAPISchema }}"
-{{- end }}
 {{- end }}`,
 			},
 			{
@@ -1692,6 +1692,8 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 
 	buf.WriteString(fmt.Sprintf("type %sJoins struct {\n", name))
 
+	var joinNames []string
+
 	for _, c := range cc {
 		var joinName string
 		switch c.Cardinality {
@@ -1762,6 +1764,7 @@ type %s struct {
 		if joinName == "" {
 			continue
 		}
+		joinNames = append(joinNames, joinName)
 		buf.WriteString(fmt.Sprintf("%s bool\n", joinName))
 	}
 	buf.WriteString("}\n")
@@ -1771,10 +1774,17 @@ type %s struct {
 	// With%[1]sJoin joins with the given tables.
 func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
-		s.joins = joins
-	}
-}
+		s.joins = %[1]sJoins{
+
 	`, name))
+
+	for _, j := range joinNames {
+		buf.WriteString(fmt.Sprintf("\t\t%[1]s:  s.joins.%[1]s || joins.%[1]s,\n", j))
+	}
+	buf.WriteString(`
+		}
+	}
+}`)
 
 	for _, stt := range extraStructs {
 		buf.WriteString(stt)

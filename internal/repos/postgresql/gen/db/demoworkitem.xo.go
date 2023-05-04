@@ -29,11 +29,11 @@ type DemoWorkItem struct {
 
 // DemoWorkItemCreateParams represents insert params for 'public.demo_work_items'
 type DemoWorkItemCreateParams struct {
-	WorkItemID    int64     `json:"workItemID"`    // work_item_id
-	Ref           string    `json:"ref"`           // ref
-	Line          string    `json:"line"`          // line
-	LastMessageAt time.Time `json:"lastMessageAt"` // last_message_at
-	Reopened      bool      `json:"reopened"`      // reopened
+	WorkItemID    int64     `json:"workItemID" required:"true"`    // work_item_id
+	Ref           string    `json:"ref" required:"true"`           // ref
+	Line          string    `json:"line" required:"true"`          // line
+	LastMessageAt time.Time `json:"lastMessageAt" required:"true"` // last_message_at
+	Reopened      bool      `json:"reopened" required:"true"`      // reopened
 }
 
 // CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.
@@ -51,10 +51,10 @@ func CreateDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreatePa
 
 // DemoWorkItemUpdateParams represents update params for 'public.demo_work_items'
 type DemoWorkItemUpdateParams struct {
-	Ref           *string    `json:"ref"`           // ref
-	Line          *string    `json:"line"`          // line
-	LastMessageAt *time.Time `json:"lastMessageAt"` // last_message_at
-	Reopened      *bool      `json:"reopened"`      // reopened
+	Ref           *string    `json:"ref" required:"true"`           // ref
+	Line          *string    `json:"line" required:"true"`          // line
+	LastMessageAt *time.Time `json:"lastMessageAt" required:"true"` // last_message_at
+	Reopened      *bool      `json:"reopened" required:"true"`      // reopened
 }
 
 // SetUpdateParams updates public.demo_work_items struct fields with the specified params.
@@ -115,7 +115,10 @@ type DemoWorkItemJoins struct {
 // WithDemoWorkItemJoin joins with the given tables.
 func WithDemoWorkItemJoin(joins DemoWorkItemJoins) DemoWorkItemSelectConfigOption {
 	return func(s *DemoWorkItemSelectConfig) {
-		s.joins = joins
+		s.joins = DemoWorkItemJoins{
+
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
+		}
 	}
 }
 

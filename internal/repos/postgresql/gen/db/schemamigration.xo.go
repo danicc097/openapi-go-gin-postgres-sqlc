@@ -22,8 +22,8 @@ type SchemaMigration struct {
 
 // SchemaMigrationCreateParams represents insert params for 'public.schema_migrations'
 type SchemaMigrationCreateParams struct {
-	Version int64 `json:"version"` // version
-	Dirty   bool  `json:"dirty"`   // dirty
+	Version int64 `json:"version" required:"true"` // version
+	Dirty   bool  `json:"dirty" required:"true"`   // dirty
 }
 
 // CreateSchemaMigration creates a new SchemaMigration in the database with the given params.
@@ -38,8 +38,8 @@ func CreateSchemaMigration(ctx context.Context, db DB, params *SchemaMigrationCr
 
 // SchemaMigrationUpdateParams represents update params for 'public.schema_migrations'
 type SchemaMigrationUpdateParams struct {
-	Version *int64 `json:"version"` // version
-	Dirty   *bool  `json:"dirty"`   // dirty
+	Version *int64 `json:"version" required:"true"` // version
+	Dirty   *bool  `json:"dirty" required:"true"`   // dirty
 }
 
 // SetUpdateParams updates public.schema_migrations struct fields with the specified params.
@@ -76,7 +76,7 @@ type SchemaMigrationJoins struct {
 // WithSchemaMigrationJoin joins with the given tables.
 func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
-		s.joins = joins
+		s.joins = SchemaMigrationJoins{}
 	}
 }
 

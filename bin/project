@@ -889,10 +889,10 @@ x.test.xo() {
     gofumpt -w $files
 
     if ! $test_dir/run_tests; then
-      { confirm >&3 "Do you want to update test snapshot with current changes?" && {
+      confirm "Do you want to update test snapshot with current changes?" </dev/tty >/dev/tty && {
         rm -rf "$test_dir/want"
         cp -r "$test_dir/got" "$test_dir/want"
-      }; } </dev/tty >/dev/tty
+      }
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }

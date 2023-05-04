@@ -23,8 +23,8 @@ type UserTeam struct {
 
 // UserTeamCreateParams represents insert params for 'public.user_team'
 type UserTeamCreateParams struct {
-	TeamID int       `json:"teamID"` // team_id
-	UserID uuid.UUID `json:"userID"` // user_id
+	TeamID int       `json:"teamID" required:"true"` // team_id
+	UserID uuid.UUID `json:"userID" required:"true"` // user_id
 }
 
 // CreateUserTeam creates a new UserTeam in the database with the given params.
@@ -39,8 +39,8 @@ func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*
 
 // UserTeamUpdateParams represents update params for 'public.user_team'
 type UserTeamUpdateParams struct {
-	TeamID *int       `json:"teamID"` // team_id
-	UserID *uuid.UUID `json:"userID"` // user_id
+	TeamID *int       `json:"teamID" required:"true"` // team_id
+	UserID *uuid.UUID `json:"userID" required:"true"` // user_id
 }
 
 // SetUpdateParams updates public.user_team struct fields with the specified params.
@@ -77,7 +77,7 @@ type UserTeamJoins struct {
 // WithUserTeamJoin joins with the given tables.
 func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
-		s.joins = joins
+		s.joins = UserTeamJoins{}
 	}
 }
 

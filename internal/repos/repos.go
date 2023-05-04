@@ -58,12 +58,13 @@ type DemoWorkItemCreateParams struct {
 }
 
 // DemoWorkItem defines the datastore/repository handling persisting DemoWorkItem records.
+// Returns a generic WorkItem with project-specific fields joined.
 type DemoWorkItem interface {
-	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.DemoWorkItemSelectConfigOption) (*db.DemoWorkItem, error)
+	ByID(ctx context.Context, d db.DBTX, id int64, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
 	// params for dedicated workItem only require workItemID (FK-as-PK)
-	Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.DemoWorkItem, error)
-	Update(ctx context.Context, d db.DBTX, id int64, params DemoWorkItemUpdateParams) (*db.DemoWorkItem, error)
-	Delete(ctx context.Context, d db.DBTX, id int64) (*db.DemoWorkItem, error)
+	Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.WorkItem, error)
+	Update(ctx context.Context, d db.DBTX, id int64, params DemoWorkItemUpdateParams) (*db.WorkItem, error)
+	Delete(ctx context.Context, d db.DBTX, id int64) (*db.WorkItem, error)
 }
 
 // Notification defines the datastore/repository handling persisting Notification records.

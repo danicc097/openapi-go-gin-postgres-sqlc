@@ -36,13 +36,13 @@ type TimeEntry struct {
 
 // TimeEntryCreateParams represents insert params for 'public.time_entries'
 type TimeEntryCreateParams struct {
-	WorkItemID      *int64    `json:"workItemID"`      // work_item_id
-	ActivityID      int       `json:"activityID"`      // activity_id
-	TeamID          *int      `json:"teamID"`          // team_id
-	UserID          uuid.UUID `json:"userID"`          // user_id
-	Comment         string    `json:"comment"`         // comment
-	Start           time.Time `json:"start"`           // start
-	DurationMinutes *int      `json:"durationMinutes"` // duration_minutes
+	WorkItemID      *int64    `json:"workItemID" required:"true"`      // work_item_id
+	ActivityID      int       `json:"activityID" required:"true"`      // activity_id
+	TeamID          *int      `json:"teamID" required:"true"`          // team_id
+	UserID          uuid.UUID `json:"userID" required:"true"`          // user_id
+	Comment         string    `json:"comment" required:"true"`         // comment
+	Start           time.Time `json:"start" required:"true"`           // start
+	DurationMinutes *int      `json:"durationMinutes" required:"true"` // duration_minutes
 }
 
 // CreateTimeEntry creates a new TimeEntry in the database with the given params.
@@ -62,13 +62,13 @@ func CreateTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) 
 
 // TimeEntryUpdateParams represents update params for 'public.time_entries'
 type TimeEntryUpdateParams struct {
-	WorkItemID      **int64    `json:"workItemID"`      // work_item_id
-	ActivityID      *int       `json:"activityID"`      // activity_id
-	TeamID          **int      `json:"teamID"`          // team_id
-	UserID          *uuid.UUID `json:"userID"`          // user_id
-	Comment         *string    `json:"comment"`         // comment
-	Start           *time.Time `json:"start"`           // start
-	DurationMinutes **int      `json:"durationMinutes"` // duration_minutes
+	WorkItemID      **int64    `json:"workItemID" required:"true"`      // work_item_id
+	ActivityID      *int       `json:"activityID" required:"true"`      // activity_id
+	TeamID          **int      `json:"teamID" required:"true"`          // team_id
+	UserID          *uuid.UUID `json:"userID" required:"true"`          // user_id
+	Comment         *string    `json:"comment" required:"true"`         // comment
+	Start           *time.Time `json:"start" required:"true"`           // start
+	DurationMinutes **int      `json:"durationMinutes" required:"true"` // duration_minutes
 }
 
 // SetUpdateParams updates public.time_entries struct fields with the specified params.
@@ -141,7 +141,13 @@ type TimeEntryJoins struct {
 // WithTimeEntryJoin joins with the given tables.
 func WithTimeEntryJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
-		s.joins = joins
+		s.joins = TimeEntryJoins{
+
+			Activity: s.joins.Activity || joins.Activity,
+			Team:     s.joins.Team || joins.Team,
+			User:     s.joins.User || joins.User,
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
+		}
 	}
 }
 

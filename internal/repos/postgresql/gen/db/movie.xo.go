@@ -24,9 +24,9 @@ type Movie struct {
 
 // MovieCreateParams represents insert params for 'public.movies'
 type MovieCreateParams struct {
-	Title    string `json:"title"`    // title
-	Year     int    `json:"year"`     // year
-	Synopsis string `json:"synopsis"` // synopsis
+	Title    string `json:"title" required:"true"`    // title
+	Year     int    `json:"year" required:"true"`     // year
+	Synopsis string `json:"synopsis" required:"true"` // synopsis
 }
 
 // CreateMovie creates a new Movie in the database with the given params.
@@ -42,9 +42,9 @@ func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie,
 
 // MovieUpdateParams represents update params for 'public.movies'
 type MovieUpdateParams struct {
-	Title    *string `json:"title"`    // title
-	Year     *int    `json:"year"`     // year
-	Synopsis *string `json:"synopsis"` // synopsis
+	Title    *string `json:"title" required:"true"`    // title
+	Year     *int    `json:"year" required:"true"`     // year
+	Synopsis *string `json:"synopsis" required:"true"` // synopsis
 }
 
 // SetUpdateParams updates public.movies struct fields with the specified params.
@@ -84,7 +84,7 @@ type MovieJoins struct {
 // WithMovieJoin joins with the given tables.
 func WithMovieJoin(joins MovieJoins) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
-		s.joins = joins
+		s.joins = MovieJoins{}
 	}
 }
 

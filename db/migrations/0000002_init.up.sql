@@ -419,6 +419,8 @@ create table work_item_member (
 
 create index on work_item_member (member , work_item_id);
 
+comment on column work_item_member.role is 'type:models.WorkItemRole';
+
 comment on column work_item_member.work_item_id is 'cardinality:M2M';
 
 comment on column work_item_member.member is 'cardinality:M2M';

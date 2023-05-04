@@ -37,14 +37,14 @@ type Notification struct {
 
 // NotificationCreateParams represents insert params for 'public.notifications'
 type NotificationCreateParams struct {
-	ReceiverRank     *int16           `json:"receiverRank"`     // receiver_rank
-	Title            string           `json:"title"`            // title
-	Body             string           `json:"body"`             // body
-	Label            string           `json:"label"`            // label
-	Link             *string          `json:"link"`             // link
-	Sender           uuid.UUID        `json:"sender"`           // sender
-	Receiver         *uuid.UUID       `json:"receiver"`         // receiver
-	NotificationType NotificationType `json:"notificationType"` // notification_type
+	ReceiverRank     *int16           `json:"receiverRank" required:"true"`                                                 // receiver_rank
+	Title            string           `json:"title" required:"true"`                                                        // title
+	Body             string           `json:"body" required:"true"`                                                         // body
+	Label            string           `json:"label" required:"true"`                                                        // label
+	Link             *string          `json:"link" required:"true"`                                                         // link
+	Sender           uuid.UUID        `json:"sender" required:"true"`                                                       // sender
+	Receiver         *uuid.UUID       `json:"receiver" required:"true"`                                                     // receiver
+	NotificationType NotificationType `json:"notificationType" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
 }
 
 // CreateNotification creates a new Notification in the database with the given params.
@@ -65,14 +65,14 @@ func CreateNotification(ctx context.Context, db DB, params *NotificationCreatePa
 
 // NotificationUpdateParams represents update params for 'public.notifications'
 type NotificationUpdateParams struct {
-	ReceiverRank     **int16           `json:"receiverRank"`     // receiver_rank
-	Title            *string           `json:"title"`            // title
-	Body             *string           `json:"body"`             // body
-	Label            *string           `json:"label"`            // label
-	Link             **string          `json:"link"`             // link
-	Sender           *uuid.UUID        `json:"sender"`           // sender
-	Receiver         **uuid.UUID       `json:"receiver"`         // receiver
-	NotificationType *NotificationType `json:"notificationType"` // notification_type
+	ReceiverRank     **int16           `json:"receiverRank" required:"true"`                                                 // receiver_rank
+	Title            *string           `json:"title" required:"true"`                                                        // title
+	Body             *string           `json:"body" required:"true"`                                                         // body
+	Label            *string           `json:"label" required:"true"`                                                        // label
+	Link             **string          `json:"link" required:"true"`                                                         // link
+	Sender           *uuid.UUID        `json:"sender" required:"true"`                                                       // sender
+	Receiver         **uuid.UUID       `json:"receiver" required:"true"`                                                     // receiver
+	NotificationType *NotificationType `json:"notificationType" required:"true" ref:"#/components/schemas/NotificationType"` // notification_type
 }
 
 // SetUpdateParams updates public.notifications struct fields with the specified params.
@@ -147,7 +147,12 @@ type NotificationJoins struct {
 // WithNotificationJoin joins with the given tables.
 func WithNotificationJoin(joins NotificationJoins) NotificationSelectConfigOption {
 	return func(s *NotificationSelectConfig) {
-		s.joins = joins
+		s.joins = NotificationJoins{
+
+			UserReceiver:      s.joins.UserReceiver || joins.UserReceiver,
+			UserSender:        s.joins.UserSender || joins.UserSender,
+			UserNotifications: s.joins.UserNotifications || joins.UserNotifications,
+		}
 	}
 }
 

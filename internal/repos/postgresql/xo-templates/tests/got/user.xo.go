@@ -25,7 +25,7 @@ type User struct {
 
 // UserCreateParams represents insert params for 'public.users'
 type UserCreateParams struct {
-	Name string `json:"name"` // name
+	Name string `json:"name" required:"true"` // name
 }
 
 // CreateUser creates a new User in the database with the given params.
@@ -39,7 +39,7 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 
 // UserUpdateParams represents update params for 'public.users'
 type UserUpdateParams struct {
-	Name *string `json:"name"` // name
+	Name *string `json:"name" required:"true"` // name
 }
 
 // SetUpdateParams updates public.users struct fields with the specified params.
@@ -73,7 +73,10 @@ type UserJoins struct {
 // WithUserJoin joins with the given tables.
 func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		s.joins = joins
+		s.joins = UserJoins{
+			Books:       s.joins.Books || joins.Books,
+			BookReviews: s.joins.BookReviews || joins.BookReviews,
+		}
 	}
 }
 

@@ -22,8 +22,8 @@ type BookAuthor struct {
 
 // BookAuthorCreateParams represents insert params for 'public.book_authors'
 type BookAuthorCreateParams struct {
-	BookID   int       `json:"bookID"`   // book_id
-	AuthorID uuid.UUID `json:"authorID"` // author_id
+	BookID   int       `json:"bookID" required:"true"`   // book_id
+	AuthorID uuid.UUID `json:"authorID" required:"true"` // author_id
 }
 
 // CreateBookAuthor creates a new BookAuthor in the database with the given params.
@@ -38,8 +38,8 @@ func CreateBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams
 
 // BookAuthorUpdateParams represents update params for 'public.book_authors'
 type BookAuthorUpdateParams struct {
-	BookID   *int       `json:"bookID"`   // book_id
-	AuthorID *uuid.UUID `json:"authorID"` // author_id
+	BookID   *int       `json:"bookID" required:"true"`   // book_id
+	AuthorID *uuid.UUID `json:"authorID" required:"true"` // author_id
 }
 
 // SetUpdateParams updates public.book_authors struct fields with the specified params.
@@ -73,7 +73,7 @@ type BookAuthorJoins struct{}
 // WithBookAuthorJoin joins with the given tables.
 func WithBookAuthorJoin(joins BookAuthorJoins) BookAuthorSelectConfigOption {
 	return func(s *BookAuthorSelectConfig) {
-		s.joins = joins
+		s.joins = BookAuthorJoins{}
 	}
 }
 

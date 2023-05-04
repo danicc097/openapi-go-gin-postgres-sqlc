@@ -256,10 +256,10 @@ type DbActivity struct {
 
 // DbActivityCreateParams defines the model for DbActivityCreateParams.
 type DbActivityCreateParams struct {
-	Description  *string `json:"description,omitempty"`
-	IsProductive *bool   `json:"isProductive,omitempty"`
-	Name         *string `json:"name,omitempty"`
-	ProjectID    *int    `json:"projectID,omitempty"`
+	Description  string `json:"description"`
+	IsProductive bool   `json:"isProductive"`
+	Name         string `json:"name"`
+	ProjectID    int    `json:"projectID"`
 }
 
 // DbDemoWorkItem defines the model for DbDemoWorkItem.
@@ -314,9 +314,9 @@ type DbTeam struct {
 
 // DbTeamCreateParams defines the model for DbTeamCreateParams.
 type DbTeamCreateParams struct {
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-	ProjectID   *int    `json:"projectID,omitempty"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+	ProjectID   int    `json:"projectID"`
 }
 
 // DbTimeEntry defines the model for DbTimeEntry.
@@ -393,10 +393,10 @@ type DbWorkItemTag struct {
 
 // DbWorkItemTagCreateParams defines the model for DbWorkItemTagCreateParams.
 type DbWorkItemTagCreateParams struct {
-	Color       *string `json:"color,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-	ProjectID   *int    `json:"projectID,omitempty"`
+	Color       string `json:"color"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+	ProjectID   int    `json:"projectID"`
 }
 
 // DbWorkItemType defines the model for DbWorkItemType.

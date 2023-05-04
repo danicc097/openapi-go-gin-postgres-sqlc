@@ -183,21 +183,21 @@ export interface InitializeProjectRequest {
   workItemTags?: DbWorkItemTagCreateParams[] | null
 }
 export interface DbActivityCreateParams {
-  description?: string
-  isProductive?: boolean
-  name?: string
-  projectID?: number
+  description: string
+  isProductive: boolean
+  name: string
+  projectID: number
 }
 export interface DbTeamCreateParams {
-  description?: string
-  name?: string
-  projectID?: number
+  description: string
+  name: string
+  projectID: number
 }
 export interface DbWorkItemTagCreateParams {
-  color?: string
-  description?: string
-  name?: string
-  projectID?: number
+  color: string
+  description: string
+  name: string
+  projectID: number
 }
 export interface RestProjectBoardResponse {
   activities: DbActivity[] | null

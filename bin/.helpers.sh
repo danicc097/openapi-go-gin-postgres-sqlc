@@ -43,6 +43,7 @@ Current directory: $PWD"
 }
 
 # Prompt the user for confirmation.
+# NOTE: at least VSCode terminal can mess buffers up on occassion and require a new session.
 confirm() {
   test -n "$NO_CONFIRMATION" && return
 
@@ -58,7 +59,7 @@ confirm() {
 
   while true; do
     # output the prompt directly to the terminal ignoring pipelines
-    echo -n "$prompt "
+    echo "$prompt "
     read -r response
     case "${response,,}" in
     [y][e][s] | [y])

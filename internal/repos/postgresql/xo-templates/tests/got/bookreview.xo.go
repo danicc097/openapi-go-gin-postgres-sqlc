@@ -26,8 +26,8 @@ type BookReview struct {
 
 // BookReviewCreateParams represents insert params for 'public.book_reviews'
 type BookReviewCreateParams struct {
-	BookID   int       `json:"bookID"`   // book_id
-	Reviewer uuid.UUID `json:"reviewer"` // reviewer
+	BookID   int       `json:"bookID" required:"true"`   // book_id
+	Reviewer uuid.UUID `json:"reviewer" required:"true"` // reviewer
 }
 
 // CreateBookReview creates a new BookReview in the database with the given params.
@@ -42,8 +42,8 @@ func CreateBookReview(ctx context.Context, db DB, params *BookReviewCreateParams
 
 // BookReviewUpdateParams represents update params for 'public.book_reviews'
 type BookReviewUpdateParams struct {
-	BookID   *int       `json:"bookID"`   // book_id
-	Reviewer *uuid.UUID `json:"reviewer"` // reviewer
+	BookID   *int       `json:"bookID" required:"true"`   // book_id
+	Reviewer *uuid.UUID `json:"reviewer" required:"true"` // reviewer
 }
 
 // SetUpdateParams updates public.book_reviews struct fields with the specified params.
@@ -80,7 +80,10 @@ type BookReviewJoins struct {
 // WithBookReviewJoin joins with the given tables.
 func WithBookReviewJoin(joins BookReviewJoins) BookReviewSelectConfigOption {
 	return func(s *BookReviewSelectConfig) {
-		s.joins = joins
+		s.joins = BookReviewJoins{
+			Book: s.joins.Book || joins.Book,
+			User: s.joins.User || joins.User,
+		}
 	}
 }
 

@@ -26,8 +26,8 @@ type DemoTwoWorkItem struct {
 
 // DemoTwoWorkItemCreateParams represents insert params for 'public.demo_two_work_items'
 type DemoTwoWorkItemCreateParams struct {
-	WorkItemID            int64      `json:"workItemID"`            // work_item_id
-	CustomDateForProject2 *time.Time `json:"customDateForProject2"` // custom_date_for_project_2
+	WorkItemID            int64      `json:"workItemID" required:"true"`            // work_item_id
+	CustomDateForProject2 *time.Time `json:"customDateForProject2" required:"true"` // custom_date_for_project_2
 }
 
 // CreateDemoTwoWorkItem creates a new DemoTwoWorkItem in the database with the given params.
@@ -42,7 +42,7 @@ func CreateDemoTwoWorkItem(ctx context.Context, db DB, params *DemoTwoWorkItemCr
 
 // DemoTwoWorkItemUpdateParams represents update params for 'public.demo_two_work_items'
 type DemoTwoWorkItemUpdateParams struct {
-	CustomDateForProject2 **time.Time `json:"customDateForProject2"` // custom_date_for_project_2
+	CustomDateForProject2 **time.Time `json:"customDateForProject2" required:"true"` // custom_date_for_project_2
 }
 
 // SetUpdateParams updates public.demo_two_work_items struct fields with the specified params.
@@ -94,7 +94,10 @@ type DemoTwoWorkItemJoins struct {
 // WithDemoTwoWorkItemJoin joins with the given tables.
 func WithDemoTwoWorkItemJoin(joins DemoTwoWorkItemJoins) DemoTwoWorkItemSelectConfigOption {
 	return func(s *DemoTwoWorkItemSelectConfig) {
-		s.joins = joins
+		s.joins = DemoTwoWorkItemJoins{
+
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
+		}
 	}
 }
 

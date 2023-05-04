@@ -33,7 +33,7 @@ func TestDemoWorkItem_Update(t *testing.T) {
 	type params struct {
 		name    string
 		args    args
-		want    *db.DemoWorkItem
+		want    *db.WorkItem
 		wantErr bool
 	}
 	tests := []params{
@@ -46,10 +46,10 @@ func TestDemoWorkItem_Update(t *testing.T) {
 					DemoProject: &db.DemoWorkItemUpdateParams{Line: pointers.New("new line")},
 				},
 			},
-			want: func() *db.DemoWorkItem {
+			want: func() *db.WorkItem {
 				u := *demoWorkItem
-				u.WorkItemJoin.Description = "new description"
-				u.Line = "new line"
+				u.Description = "new description"
+				u.DemoWorkItemJoin.Line = "new line"
 
 				return &u
 			}(),
@@ -68,7 +68,7 @@ func TestDemoWorkItem_Update(t *testing.T) {
 				return
 			}
 
-			got.WorkItemJoin.UpdatedAt = demoWorkItem.WorkItemJoin.UpdatedAt // ignore
+			got.UpdatedAt = demoWorkItem.UpdatedAt // ignore
 			assert.Equal(t, tc.want, got)
 		})
 	}

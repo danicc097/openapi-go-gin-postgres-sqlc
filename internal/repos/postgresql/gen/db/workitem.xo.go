@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -41,14 +42,14 @@ type WorkItem struct {
 
 // WorkItemCreateParams represents insert params for 'public.work_items'
 type WorkItemCreateParams struct {
-	Title          string     `json:"title"`          // title
-	Description    string     `json:"description"`    // description
-	WorkItemTypeID int        `json:"workItemTypeID"` // work_item_type_id
-	Metadata       []byte     `json:"metadata"`       // metadata
-	TeamID         int        `json:"teamID"`         // team_id
-	KanbanStepID   int        `json:"kanbanStepID"`   // kanban_step_id
-	Closed         *time.Time `json:"closed"`         // closed
-	TargetDate     time.Time  `json:"targetDate"`     // target_date
+	Title          string     `json:"title" required:"true"`          // title
+	Description    string     `json:"description" required:"true"`    // description
+	WorkItemTypeID int        `json:"workItemTypeID" required:"true"` // work_item_type_id
+	Metadata       []byte     `json:"metadata" required:"true"`       // metadata
+	TeamID         int        `json:"teamID" required:"true"`         // team_id
+	KanbanStepID   int        `json:"kanbanStepID" required:"true"`   // kanban_step_id
+	Closed         *time.Time `json:"closed" required:"true"`         // closed
+	TargetDate     time.Time  `json:"targetDate" required:"true"`     // target_date
 }
 
 // CreateWorkItem creates a new WorkItem in the database with the given params.
@@ -69,14 +70,14 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 
 // WorkItemUpdateParams represents update params for 'public.work_items'
 type WorkItemUpdateParams struct {
-	Title          *string     `json:"title"`          // title
-	Description    *string     `json:"description"`    // description
-	WorkItemTypeID *int        `json:"workItemTypeID"` // work_item_type_id
-	Metadata       *[]byte     `json:"metadata"`       // metadata
-	TeamID         *int        `json:"teamID"`         // team_id
-	KanbanStepID   *int        `json:"kanbanStepID"`   // kanban_step_id
-	Closed         **time.Time `json:"closed"`         // closed
-	TargetDate     *time.Time  `json:"targetDate"`     // target_date
+	Title          *string     `json:"title" required:"true"`          // title
+	Description    *string     `json:"description" required:"true"`    // description
+	WorkItemTypeID *int        `json:"workItemTypeID" required:"true"` // work_item_type_id
+	Metadata       *[]byte     `json:"metadata" required:"true"`       // metadata
+	TeamID         *int        `json:"teamID" required:"true"`         // team_id
+	KanbanStepID   *int        `json:"kanbanStepID" required:"true"`   // kanban_step_id
+	Closed         **time.Time `json:"closed" required:"true"`         // closed
+	TargetDate     *time.Time  `json:"targetDate" required:"true"`     // target_date
 }
 
 // SetUpdateParams updates public.work_items struct fields with the specified params.
@@ -178,13 +179,21 @@ type WorkItemJoins struct {
 // WithWorkItemJoin joins with the given tables.
 func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
-		s.joins = joins
+		s.joins = WorkItemJoins{
+
+			DemoTwoWorkItem:  s.joins.DemoTwoWorkItem || joins.DemoTwoWorkItem,
+			DemoWorkItem:     s.joins.DemoWorkItem || joins.DemoWorkItem,
+			TimeEntries:      s.joins.TimeEntries || joins.TimeEntries,
+			WorkItemComments: s.joins.WorkItemComments || joins.WorkItemComments,
+			Members:          s.joins.Members || joins.Members,
+			WorkItemTags:     s.joins.WorkItemTags || joins.WorkItemTags,
+		}
 	}
 }
 
 type WorkItem_Member struct {
-	User User         `json:"user" db:"users"`
-	Role WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
+	User User                `json:"user" db:"users"`
+	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole"`
 }
 
 // Insert inserts the WorkItem to the database.
