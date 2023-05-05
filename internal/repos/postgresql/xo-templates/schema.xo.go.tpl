@@ -77,26 +77,20 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{/* generated queries from foreign keys */}}
 
 {{ define "foreignkey" }}
-{{/* {{- $k := .Data -}}
+{{/*
+NOTE: instead using inferred O2O joins now
+{{- $k := .Data -}}
 // {{ func_name_context $k }} returns the {{ $k.RefTable }} associated with the {{ $k.Table.GoName }}'s ({{ names "" $k.Fields }}).
 //
 // Generated from foreign key '{{ $k.SQLName }}'.
 {{ recv_context $k.Table $k }} {
 	return {{ foreign_key_context $k }}
 }
-{{- if context_both }}
-
-// {{ func_name $k }} returns the {{ $k.RefTable }} associated with the {{ $k.Table }}'s ({{ names "" $k.Fields }}).
-//
-// Generated from foreign key '{{ $k.SQLName }}'.
-{{ recv $k.Table $k }} {
-	return {{ foreign_key $k }}
-}
-{{- end }} */}}
+*/}}
 {{ end }}
 
 {{/*
-generated queries from indexes
+  generated queries from indexes
 */}}
 
 {{ define "index" }}
@@ -294,13 +288,6 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	return {{ short $t }}, nil
 }
 
-{{ if context_both -}}
-// Insert inserts the {{ $t.GoName }} to the database.
-{{ recv $t "Insert" }} {
-	return {{ short $t }}.InsertContext(context.Background(), db)
-}
-{{- end }}
-
 
 {{ if not_updatable $t.Fields -}}
 // ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
@@ -325,12 +312,6 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	return {{ short $t }}, nil
 }
 
-{{ if context_both -}}
-// Update updates a {{ $t.GoName }} in the database.
-{{ recv $t "Update" }} {
-	return {{ short $t }}.UpdateContext(context.Background(), db)
-}
-{{- end }}
 
 // {{ func_name_context "Upsert" }} performs an upsert for {{ $t.GoName }}.
 {{ recv_context $t "Upsert" }} {
@@ -345,12 +326,6 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	return nil
 }
 
-{{ if context_both -}}
-// Upsert performs an upsert for {{ $t.GoName }}.
-{{ recv $t "Upsert" }} {
-	return {{ short $t }}.UpsertContext(context.Background(), db)
-}
-{{- end -}}
 {{- end }}
 
 // {{ func_name_context "Delete" }} deletes the {{ $t.GoName }} from the database.
@@ -373,12 +348,6 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	return nil
 }
 
-{{ if context_both -}}
-// Delete deletes the {{ $t.GoName }} from the database.
-{{ recv $t "Delete" }} {
-	return {{ short $t }}.DeleteContext(context.Background(), db)
-}
-{{- end -}}
 {{- end }}
 
 {{ if (has_deleted_at $t) }}
