@@ -248,6 +248,12 @@ func main() {
 	})
 	handleError(err)
 	logger.Sugar().Info("Created time entry: ", timeEntry2.Comment)
+
+	/**
+	 *
+	 * NOTIFICATIONS
+	 *
+	 **/
 }
 
 func errAndExit(out []byte, err error) {
