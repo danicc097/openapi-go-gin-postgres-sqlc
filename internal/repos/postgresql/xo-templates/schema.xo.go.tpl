@@ -389,7 +389,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 {{ range cursor_columns $t $constraints $tables }}
 {{ $suffix := print "PaginatedBy" (fields_to_goname . "") }}
 // {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{ $t.GoName }}.
-{{ func_context $t $suffix "" }} {
+{{ func_context $t $suffix . }} {
 	{{ initial_opts $t }}
 
 	for _, o := range opts {

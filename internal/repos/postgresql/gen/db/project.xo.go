@@ -4,121 +4,110 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"database/sql/driver"
-	"encoding/csv"
-	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"regexp"
 	"strings"
 	"time"
 
-  
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/lib/pq"
-	"github.com/lib/pq/hstore"
-
-	"github.com/google/uuid"
-
+	"github.com/jackc/pgx/v5"
 )
+
 // Project represents a row from 'public.projects'.
 // Change properties via SQL column comments, joined with ",":
-//     - "property:private" to exclude a field from JSON.
-//     - "type:<pkg.type>" to override the type annotation.
-//     - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type Project struct {
-	ProjectID int `json:"projectID" db:"project_id" required:"true"` // project_id
-	Name models.Project `json:"name" db:"name" required:"true" ref:"#/components/schemas/Project"` // name
-	Description string `json:"description" db:"description" required:"true"` // description
-	WorkItemsTableName string `json:"-" db:"work_items_table_name"` // work_items_table_name
-	BoardConfig models.ProjectConfig `json:"boardConfig" db:"board_config" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
-	CreatedAt time.Time `json:"createdAt" db:"created_at" required:"true"` // created_at
-	UpdatedAt time.Time `json:"updatedAt" db:"updated_at" required:"true"` // updated_at
+	ProjectID          int                  `json:"projectID" db:"project_id" required:"true"`                                              // project_id
+	Name               models.Project       `json:"name" db:"name" required:"true" ref:"#/components/schemas/Project"`                      // name
+	Description        string               `json:"description" db:"description" required:"true"`                                           // description
+	WorkItemsTableName string               `json:"-" db:"work_items_table_name"`                                                           // work_items_table_name
+	BoardConfig        models.ProjectConfig `json:"boardConfig" db:"board_config" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
+	CreatedAt          time.Time            `json:"createdAt" db:"created_at" required:"true"`                                              // created_at
+	UpdatedAt          time.Time            `json:"updatedAt" db:"updated_at" required:"true"`                                              // updated_at
 
-	ActivitiesJoin *[]Activity `json:"-" db:"activities" openapi-go:"ignore"` // M2O
-	KanbanStepsJoin *[]KanbanStep `json:"-" db:"kanban_steps" openapi-go:"ignore"` // M2O
-	TeamsJoin *[]Team `json:"-" db:"teams" openapi-go:"ignore"` // M2O
-	WorkItemTagsJoin *[]WorkItemTag `json:"-" db:"work_item_tags" openapi-go:"ignore"` // M2O
+	ActivitiesJoin    *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`      // M2O
+	KanbanStepsJoin   *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`    // M2O
+	TeamsJoin         *[]Team         `json:"-" db:"teams" openapi-go:"ignore"`           // M2O
+	WorkItemTagsJoin  *[]WorkItemTag  `json:"-" db:"work_item_tags" openapi-go:"ignore"`  // M2O
 	WorkItemTypesJoin *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"` // M2O
 
 }
 
 // ProjectCreateParams represents insert params for 'public.projects'
 type ProjectCreateParams struct {
-	Name models.Project `json:"name" required:"true" ref:"#/components/schemas/Project"` // name
-	Description string `json:"description" required:"true"` // description
-	WorkItemsTableName string `json:"-"` // work_items_table_name
-	BoardConfig models.ProjectConfig `json:"boardConfig" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
+	Name               models.Project       `json:"name" required:"true" ref:"#/components/schemas/Project"`              // name
+	Description        string               `json:"description" required:"true"`                                          // description
+	WorkItemsTableName string               `json:"-"`                                                                    // work_items_table_name
+	BoardConfig        models.ProjectConfig `json:"boardConfig" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
 }
 
 // CreateProject creates a new Project in the database with the given params.
 func CreateProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Project, error) {
-  p := &Project{
-	Name: params.Name,
-	Description: params.Description,
-	WorkItemsTableName: params.WorkItemsTableName,
-	BoardConfig: params.BoardConfig,
-}
+	p := &Project{
+		Name:               params.Name,
+		Description:        params.Description,
+		WorkItemsTableName: params.WorkItemsTableName,
+		BoardConfig:        params.BoardConfig,
+	}
 
-  return p.Insert(ctx, db)
+	return p.Insert(ctx, db)
 }
-
 
 // ProjectUpdateParams represents update params for 'public.projects'
 type ProjectUpdateParams struct {
-	Name *models.Project `json:"name" required:"true" ref:"#/components/schemas/Project"` // name
-	Description *string `json:"description" required:"true"` // description
-	WorkItemsTableName *string `json:"-"` // work_items_table_name
-	BoardConfig *models.ProjectConfig `json:"boardConfig" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
+	Name               *models.Project       `json:"name" required:"true" ref:"#/components/schemas/Project"`              // name
+	Description        *string               `json:"description" required:"true"`                                          // description
+	WorkItemsTableName *string               `json:"-"`                                                                    // work_items_table_name
+	BoardConfig        *models.ProjectConfig `json:"boardConfig" required:"true" ref:"#/components/schemas/ProjectConfig"` // board_config
 }
 
 // SetUpdateParams updates public.projects struct fields with the specified params.
 func (p *Project) SetUpdateParams(params *ProjectUpdateParams) {
-if params.Name != nil {
-	p.Name = *params.Name
-}
-if params.Description != nil {
-	p.Description = *params.Description
-}
-if params.WorkItemsTableName != nil {
-	p.WorkItemsTableName = *params.WorkItemsTableName
-}
-if params.BoardConfig != nil {
-	p.BoardConfig = *params.BoardConfig
-}
-}
-
-
-	type ProjectSelectConfig struct {
-		limit       string
-		orderBy     string
-		joins  ProjectJoins
+	if params.Name != nil {
+		p.Name = *params.Name
 	}
-	type ProjectSelectConfigOption func(*ProjectSelectConfig)
+	if params.Description != nil {
+		p.Description = *params.Description
+	}
+	if params.WorkItemsTableName != nil {
+		p.WorkItemsTableName = *params.WorkItemsTableName
+	}
+	if params.BoardConfig != nil {
+		p.BoardConfig = *params.BoardConfig
+	}
+}
 
-	// WithProjectLimit limits row selection.
-	func WithProjectLimit(limit int) ProjectSelectConfigOption {
-		return func(s *ProjectSelectConfig) {
-			if limit > 0 {
-				s.limit = fmt.Sprintf(" limit %d ", limit)
-			}
+type ProjectSelectConfig struct {
+	limit   string
+	orderBy string
+	joins   ProjectJoins
+}
+type ProjectSelectConfigOption func(*ProjectSelectConfig)
+
+// WithProjectLimit limits row selection.
+func WithProjectLimit(limit int) ProjectSelectConfigOption {
+	return func(s *ProjectSelectConfig) {
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
 		}
 	}
-	type ProjectOrderBy = string
-	const (
-	ProjectCreatedAtDescNullsFirst ProjectOrderBy = " created_at DESC NULLS FIRST "
-			ProjectCreatedAtDescNullsLast ProjectOrderBy = " created_at DESC NULLS LAST "
-			ProjectCreatedAtAscNullsFirst ProjectOrderBy = " created_at ASC NULLS FIRST "
-			ProjectCreatedAtAscNullsLast ProjectOrderBy = " created_at ASC NULLS LAST "
-			ProjectUpdatedAtDescNullsFirst ProjectOrderBy = " updated_at DESC NULLS FIRST "
-			ProjectUpdatedAtDescNullsLast ProjectOrderBy = " updated_at DESC NULLS LAST "
-			ProjectUpdatedAtAscNullsFirst ProjectOrderBy = " updated_at ASC NULLS FIRST "
-			ProjectUpdatedAtAscNullsLast ProjectOrderBy = " updated_at ASC NULLS LAST "
-			)
+}
 
-	// WithProjectOrderBy orders results by the given columns.
+type ProjectOrderBy = string
+
+const (
+	ProjectCreatedAtDescNullsFirst ProjectOrderBy = " created_at DESC NULLS FIRST "
+	ProjectCreatedAtDescNullsLast  ProjectOrderBy = " created_at DESC NULLS LAST "
+	ProjectCreatedAtAscNullsFirst  ProjectOrderBy = " created_at ASC NULLS FIRST "
+	ProjectCreatedAtAscNullsLast   ProjectOrderBy = " created_at ASC NULLS LAST "
+	ProjectUpdatedAtDescNullsFirst ProjectOrderBy = " updated_at DESC NULLS FIRST "
+	ProjectUpdatedAtDescNullsLast  ProjectOrderBy = " updated_at DESC NULLS LAST "
+	ProjectUpdatedAtAscNullsFirst  ProjectOrderBy = " updated_at ASC NULLS FIRST "
+	ProjectUpdatedAtAscNullsLast   ProjectOrderBy = " updated_at ASC NULLS LAST "
+)
+
+// WithProjectOrderBy orders results by the given columns.
 func WithProjectOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		if len(rows) > 0 {
@@ -127,39 +116,37 @@ func WithProjectOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 		}
 	}
 }
-	type ProjectJoins struct {
-Activities bool
-KanbanSteps bool
-Teams bool
-WorkItemTags bool
-WorkItemTypes bool
+
+type ProjectJoins struct {
+	Activities    bool
+	KanbanSteps   bool
+	Teams         bool
+	WorkItemTags  bool
+	WorkItemTypes bool
 }
 
-	// WithProjectJoin joins with the given tables.
+// WithProjectJoin joins with the given tables.
 func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		s.joins = ProjectJoins{
 
-			Activities:  s.joins.Activities || joins.Activities,
-		KanbanSteps:  s.joins.KanbanSteps || joins.KanbanSteps,
-		Teams:  s.joins.Teams || joins.Teams,
-		WorkItemTags:  s.joins.WorkItemTags || joins.WorkItemTags,
-		WorkItemTypes:  s.joins.WorkItemTypes || joins.WorkItemTypes,
-
+			Activities:    s.joins.Activities || joins.Activities,
+			KanbanSteps:   s.joins.KanbanSteps || joins.KanbanSteps,
+			Teams:         s.joins.Teams || joins.Teams,
+			WorkItemTags:  s.joins.WorkItemTags || joins.WorkItemTags,
+			WorkItemTypes: s.joins.WorkItemTypes || joins.WorkItemTypes,
 		}
 	}
 }
 
-
-
 // Insert inserts the Project to the database.
 func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
-// insert (primary key generated and returned by database)
+	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.projects (` +
-	 `name, description, work_items_table_name, board_config` +
-	 `) VALUES (` +
-	 `$1, $2, $3, $4` +
-	 `) RETURNING * `
+		`name, description, work_items_table_name, board_config` +
+		`) VALUES (` +
+		`$1, $2, $3, $4` +
+		`) RETURNING * `
 	// run
 	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig)
 
@@ -172,23 +159,22 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 		return nil, logerror(fmt.Errorf("Project/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-  *p = newp
+	*p = newp
 
 	return p, nil
 }
 
-
 // Update updates a Project in the database.
-func (p *Project) Update(ctx context.Context, db DB) (*Project, error)  {
+func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.projects SET ` +
-	 `name = $1, description = $2, work_items_table_name = $3, board_config = $4 ` +
-	 `WHERE project_id = $5 ` +
-	 `RETURNING * `
+		`name = $1, description = $2, work_items_table_name = $3, board_config = $4 ` +
+		`WHERE project_id = $5 ` +
+		`RETURNING * `
 	// run
 	logf(sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig, p.CreatedAt, p.UpdatedAt, p.ProjectID)
 
-  rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig, p.ProjectID)
+	rows, err := db.Query(ctx, sqlstr, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig, p.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Update/db.Query: %w", err))
 	}
@@ -196,24 +182,23 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error)  {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Update/pgx.CollectOneRow: %w", err))
 	}
-  *p = newp
+	*p = newp
 
 	return p, nil
 }
 
-
 // Upsert performs an upsert for Project.
-func (p *Project) Upsert(ctx context.Context, db DB) (error) {
+func (p *Project) Upsert(ctx context.Context, db DB) error {
 	// upsert
 	sqlstr := `INSERT INTO public.projects (` +
-	 `project_id, name, description, work_items_table_name, board_config` +
-	 `) VALUES (` +
-	 `$1, $2, $3, $4, $5` +
-	 `)` +
-	 ` ON CONFLICT (project_id) DO ` +
-	 `UPDATE SET ` +
-	 `name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, board_config = EXCLUDED.board_config ` +
-	 ` RETURNING * `
+		`project_id, name, description, work_items_table_name, board_config` +
+		`) VALUES (` +
+		`$1, $2, $3, $4, $5` +
+		`)` +
+		` ON CONFLICT (project_id) DO ` +
+		`UPDATE SET ` +
+		`name = EXCLUDED.name, description = EXCLUDED.description, work_items_table_name = EXCLUDED.work_items_table_name, board_config = EXCLUDED.board_config ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig)
 	if _, err := db.Exec(ctx, sqlstr, p.ProjectID, p.Name, p.Description, p.WorkItemsTableName, p.BoardConfig); err != nil {
@@ -224,10 +209,10 @@ func (p *Project) Upsert(ctx context.Context, db DB) (error) {
 }
 
 // Delete deletes the Project from the database.
-func (p *Project) Delete(ctx context.Context, db DB) (error) {
-// delete with single primary key
+func (p *Project) Delete(ctx context.Context, db DB) error {
+	// delete with single primary key
 	sqlstr := `DELETE FROM public.projects ` +
-	 `WHERE project_id = $1 `
+		`WHERE project_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, p.ProjectID); err != nil {
 		return logerror(err)
@@ -235,21 +220,16 @@ func (p *Project) Delete(ctx context.Context, db DB) (error) {
 	return nil
 }
 
-
-
-
-
 // ProjectPaginatedByProjectID returns a cursor-paginated list of Project.
-func ProjectPaginatedByProjectID(ctx context.Context, db DB, , opts ...ProjectSelectConfigOption) ([]Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{},
-}
+func ProjectPaginatedByProjectID(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) ([]Project, error) {
+	c := &ProjectSelectConfig{joins: ProjectJoins{}}
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	sqlstr := `SELECT ` +
-	 `projects.project_id,
+		`projects.project_id,
 projects.name,
 projects.description,
 projects.work_items_table_name,
@@ -261,8 +241,8 @@ projects.updated_at,
 (case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
 (case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-	 `FROM public.projects ` +
-	 `-- M2O join generated from "activities_project_id_fkey"
+		`FROM public.projects ` +
+		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
   project_id as activities_project_id
@@ -307,13 +287,13 @@ left join (
     work_item_types
   group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-	 ` WHERE projects.project_id > $6 `
+		` WHERE projects.project_id > $6 `
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, p.ProjectID)
+	rows, err := db.Query(ctx, sqlstr, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Paginated/db.Query: %w", err))
 	}
@@ -324,13 +304,11 @@ left join (
 	return res, nil
 }
 
-
 // ProjectByName retrieves a row from 'public.projects' as a Project.
 //
 // Generated from index 'projects_name_key'.
 func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{},
-  }
+	c := &ProjectSelectConfig{joins: ProjectJoins{}}
 
 	for _, o := range opts {
 		o(c)
@@ -338,7 +316,7 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 
 	// query
 	sqlstr := `SELECT ` +
-	 `projects.project_id,
+		`projects.project_id,
 projects.name,
 projects.description,
 projects.work_items_table_name,
@@ -350,8 +328,8 @@ projects.updated_at,
 (case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
 (case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-	 `FROM public.projects ` +
-	 `-- M2O join generated from "activities_project_id_fkey"
+		`FROM public.projects ` +
+		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
   project_id as activities_project_id
@@ -396,13 +374,13 @@ left join (
     work_item_types
   group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-	 ` WHERE projects.name = $6 `
+		` WHERE projects.name = $6 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name)
-  rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, name)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByName/db.Query: %w", err))
 	}
@@ -410,7 +388,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByName/pgx.CollectOneRow: %w", err))
 	}
-	
 
 	return &p, nil
 }
@@ -419,8 +396,7 @@ left join (
 //
 // Generated from index 'projects_pkey'.
 func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{},
-  }
+	c := &ProjectSelectConfig{joins: ProjectJoins{}}
 
 	for _, o := range opts {
 		o(c)
@@ -428,7 +404,7 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID int, opts ...Proje
 
 	// query
 	sqlstr := `SELECT ` +
-	 `projects.project_id,
+		`projects.project_id,
 projects.name,
 projects.description,
 projects.work_items_table_name,
@@ -440,8 +416,8 @@ projects.updated_at,
 (case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
 (case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-	 `FROM public.projects ` +
-	 `-- M2O join generated from "activities_project_id_fkey"
+		`FROM public.projects ` +
+		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
   project_id as activities_project_id
@@ -486,13 +462,13 @@ left join (
     work_item_types
   group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-	 ` WHERE projects.project_id = $6 `
+		` WHERE projects.project_id = $6 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, projectID)
-  rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/db.Query: %w", err))
 	}
@@ -500,7 +476,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/pgx.CollectOneRow: %w", err))
 	}
-	
 
 	return &p, nil
 }
@@ -509,8 +484,7 @@ left join (
 //
 // Generated from index 'projects_work_items_table_name_key'.
 func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName string, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{},
-  }
+	c := &ProjectSelectConfig{joins: ProjectJoins{}}
 
 	for _, o := range opts {
 		o(c)
@@ -518,7 +492,7 @@ func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName 
 
 	// query
 	sqlstr := `SELECT ` +
-	 `projects.project_id,
+		`projects.project_id,
 projects.name,
 projects.description,
 projects.work_items_table_name,
@@ -530,8 +504,8 @@ projects.updated_at,
 (case when $3::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams,
 (case when $4::boolean = true then COALESCE(joined_work_item_tags.work_item_tags, '{}') end) as work_item_tags,
 (case when $5::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-	 `FROM public.projects ` +
-	 `-- M2O join generated from "activities_project_id_fkey"
+		`FROM public.projects ` +
+		`-- M2O join generated from "activities_project_id_fkey"
 left join (
   select
   project_id as activities_project_id
@@ -576,13 +550,13 @@ left join (
     work_item_types
   group by
         project_id) joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id` +
-	 ` WHERE projects.work_items_table_name = $6 `
+		` WHERE projects.work_items_table_name = $6 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemsTableName)
-  rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, workItemsTableName)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Activities, c.joins.KanbanSteps, c.joins.Teams, c.joins.WorkItemTags, c.joins.WorkItemTypes, workItemsTableName)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByWorkItemsTableName/db.Query: %w", err))
 	}
@@ -590,8 +564,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByWorkItemsTableName/pgx.CollectOneRow: %w", err))
 	}
-	
 
 	return &p, nil
 }
-

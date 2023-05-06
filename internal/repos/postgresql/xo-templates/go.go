@@ -1540,6 +1540,7 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}, columns []Field
 		}
 		returns = append(returns, rt)
 	case Table: // Paginated query
+		fmt.Printf("columns: %v\n", columns)
 		params = append(params, f.params(columns, true))
 		params = append(params, "opts ..."+x.GoName+"SelectConfigOption")
 		rt := "[]" + x.GoName
@@ -2023,13 +2024,10 @@ func (f *Funcs) db_update(name string, v interface{}) string {
 // orderby desc is the default
 func (f *Funcs) db_paginated(name string, v interface{}, columns []Field) string {
 	var p []string
-	switch x := v.(type) {
-	case Table:
-		prefix := f.short(x.GoName) + "."
-		fmt.Printf("columns: %v\n", columns)
-		p = append(p, f.names(prefix, columns))
-	default:
-		return fmt.Sprintf("[[ UNSUPPORTED TYPE 9: %T ]]", v)
+	prefix := ""
+	p = append(p, f.names(prefix, columns))
+	for i, param := range p {
+		p[i] = camel(param)
 	}
 	return f.db(name, strings.Join(p, ", "))
 }
@@ -2175,6 +2173,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 			for _, p := range x {
 				names = append(names, prefix+checkName(p.GoName))
 			}
+			fmt.Printf("names: %v\n", names)
 		case Proc:
 			if params := f.params(x.Params, false); params != "" {
 				names = append(names, params)

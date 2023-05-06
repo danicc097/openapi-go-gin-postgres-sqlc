@@ -4,35 +4,23 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"database/sql/driver"
-	"encoding/csv"
-	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"regexp"
 	"strings"
 	"time"
 
-  
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/lib/pq"
-	"github.com/lib/pq/hstore"
-
-	"github.com/google/uuid"
-
+	"github.com/jackc/pgx/v5"
 )
+
 // DemoTwoWorkItem represents a row from 'public.demo_two_work_items'.
 // Change properties via SQL column comments, joined with ",":
-//     - "property:private" to exclude a field from JSON.
-//     - "type:<pkg.type>" to override the type annotation.
-//     - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type DemoTwoWorkItem struct {
-	WorkItemID int64 `json:"workItemID" db:"work_item_id" required:"true"` // work_item_id
+	WorkItemID            int64      `json:"workItemID" db:"work_item_id" required:"true"`                         // work_item_id
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2" required:"true"` // custom_date_for_project_2
 
-	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
+	WorkItemJoin        *WorkItem        `json:"-" db:"work_item" openapi-go:"ignore"`          // O2O
 	DemoTwoWorkItemJoin *DemoTwoWorkItem `json:"-" db:"demo_two_work_item" openapi-go:"ignore"` // O2O
 	DemoTwoWorkItemJoin *DemoTwoWorkItem `json:"-" db:"demo_two_work_item" openapi-go:"ignore"` // O2O
 
@@ -40,20 +28,19 @@ type DemoTwoWorkItem struct {
 
 // DemoTwoWorkItemCreateParams represents insert params for 'public.demo_two_work_items'
 type DemoTwoWorkItemCreateParams struct {
-	WorkItemID int64 `json:"workItemID" required:"true"` // work_item_id
+	WorkItemID            int64      `json:"workItemID" required:"true"`            // work_item_id
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" required:"true"` // custom_date_for_project_2
 }
 
 // CreateDemoTwoWorkItem creates a new DemoTwoWorkItem in the database with the given params.
 func CreateDemoTwoWorkItem(ctx context.Context, db DB, params *DemoTwoWorkItemCreateParams) (*DemoTwoWorkItem, error) {
-  dtwi := &DemoTwoWorkItem{
-	WorkItemID: params.WorkItemID,
-	CustomDateForProject2: params.CustomDateForProject2,
-}
+	dtwi := &DemoTwoWorkItem{
+		WorkItemID:            params.WorkItemID,
+		CustomDateForProject2: params.CustomDateForProject2,
+	}
 
-  return dtwi.Insert(ctx, db)
+	return dtwi.Insert(ctx, db)
 }
-
 
 // DemoTwoWorkItemUpdateParams represents update params for 'public.demo_two_work_items'
 type DemoTwoWorkItemUpdateParams struct {
@@ -62,36 +49,37 @@ type DemoTwoWorkItemUpdateParams struct {
 
 // SetUpdateParams updates public.demo_two_work_items struct fields with the specified params.
 func (dtwi *DemoTwoWorkItem) SetUpdateParams(params *DemoTwoWorkItemUpdateParams) {
-if params.CustomDateForProject2 != nil {
-	dtwi.CustomDateForProject2 = *params.CustomDateForProject2
-}
-}
-
-
-	type DemoTwoWorkItemSelectConfig struct {
-		limit       string
-		orderBy     string
-		joins  DemoTwoWorkItemJoins
+	if params.CustomDateForProject2 != nil {
+		dtwi.CustomDateForProject2 = *params.CustomDateForProject2
 	}
-	type DemoTwoWorkItemSelectConfigOption func(*DemoTwoWorkItemSelectConfig)
+}
 
-	// WithDemoTwoWorkItemLimit limits row selection.
-	func WithDemoTwoWorkItemLimit(limit int) DemoTwoWorkItemSelectConfigOption {
-		return func(s *DemoTwoWorkItemSelectConfig) {
-			if limit > 0 {
-				s.limit = fmt.Sprintf(" limit %d ", limit)
-			}
+type DemoTwoWorkItemSelectConfig struct {
+	limit   string
+	orderBy string
+	joins   DemoTwoWorkItemJoins
+}
+type DemoTwoWorkItemSelectConfigOption func(*DemoTwoWorkItemSelectConfig)
+
+// WithDemoTwoWorkItemLimit limits row selection.
+func WithDemoTwoWorkItemLimit(limit int) DemoTwoWorkItemSelectConfigOption {
+	return func(s *DemoTwoWorkItemSelectConfig) {
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
 		}
 	}
-	type DemoTwoWorkItemOrderBy = string
-	const (
-	DemoTwoWorkItemCustomDateForProject2DescNullsFirst DemoTwoWorkItemOrderBy = " custom_date_for_project_2 DESC NULLS FIRST "
-			DemoTwoWorkItemCustomDateForProject2DescNullsLast DemoTwoWorkItemOrderBy = " custom_date_for_project_2 DESC NULLS LAST "
-			DemoTwoWorkItemCustomDateForProject2AscNullsFirst DemoTwoWorkItemOrderBy = " custom_date_for_project_2 ASC NULLS FIRST "
-			DemoTwoWorkItemCustomDateForProject2AscNullsLast DemoTwoWorkItemOrderBy = " custom_date_for_project_2 ASC NULLS LAST "
-			)
+}
 
-	// WithDemoTwoWorkItemOrderBy orders results by the given columns.
+type DemoTwoWorkItemOrderBy = string
+
+const (
+	DemoTwoWorkItemCustomDateForProject2DescNullsFirst DemoTwoWorkItemOrderBy = " custom_date_for_project_2 DESC NULLS FIRST "
+	DemoTwoWorkItemCustomDateForProject2DescNullsLast  DemoTwoWorkItemOrderBy = " custom_date_for_project_2 DESC NULLS LAST "
+	DemoTwoWorkItemCustomDateForProject2AscNullsFirst  DemoTwoWorkItemOrderBy = " custom_date_for_project_2 ASC NULLS FIRST "
+	DemoTwoWorkItemCustomDateForProject2AscNullsLast   DemoTwoWorkItemOrderBy = " custom_date_for_project_2 ASC NULLS LAST "
+)
+
+// WithDemoTwoWorkItemOrderBy orders results by the given columns.
 func WithDemoTwoWorkItemOrderBy(rows ...DemoTwoWorkItemOrderBy) DemoTwoWorkItemSelectConfigOption {
 	return func(s *DemoTwoWorkItemSelectConfig) {
 		if len(rows) > 0 {
@@ -100,36 +88,34 @@ func WithDemoTwoWorkItemOrderBy(rows ...DemoTwoWorkItemOrderBy) DemoTwoWorkItemS
 		}
 	}
 }
-	type DemoTwoWorkItemJoins struct {
-WorkItem bool
-DemoTwoWorkItem bool
-DemoTwoWorkItem bool
+
+type DemoTwoWorkItemJoins struct {
+	WorkItem        bool
+	DemoTwoWorkItem bool
+	DemoTwoWorkItem bool
 }
 
-	// WithDemoTwoWorkItemJoin joins with the given tables.
+// WithDemoTwoWorkItemJoin joins with the given tables.
 func WithDemoTwoWorkItemJoin(joins DemoTwoWorkItemJoins) DemoTwoWorkItemSelectConfigOption {
 	return func(s *DemoTwoWorkItemSelectConfig) {
 		s.joins = DemoTwoWorkItemJoins{
 
-			WorkItem:  s.joins.WorkItem || joins.WorkItem,
-		DemoTwoWorkItem:  s.joins.DemoTwoWorkItem || joins.DemoTwoWorkItem,
-		DemoTwoWorkItem:  s.joins.DemoTwoWorkItem || joins.DemoTwoWorkItem,
-
+			WorkItem:        s.joins.WorkItem || joins.WorkItem,
+			DemoTwoWorkItem: s.joins.DemoTwoWorkItem || joins.DemoTwoWorkItem,
+			DemoTwoWorkItem: s.joins.DemoTwoWorkItem || joins.DemoTwoWorkItem,
 		}
 	}
 }
 
-
-
 // Insert inserts the DemoTwoWorkItem to the database.
 func (dtwi *DemoTwoWorkItem) Insert(ctx context.Context, db DB) (*DemoTwoWorkItem, error) {
-// insert (manual)
+	// insert (manual)
 	sqlstr := `INSERT INTO public.demo_two_work_items (` +
-	 `work_item_id, custom_date_for_project_2` +
-	 `) VALUES (` +
-	 `$1, $2` +
-	 `)` +
-	 ` RETURNING * `
+		`work_item_id, custom_date_for_project_2` +
+		`) VALUES (` +
+		`$1, $2` +
+		`)` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, dtwi.WorkItemID, dtwi.CustomDateForProject2)
 	rows, err := db.Query(ctx, sqlstr, dtwi.WorkItemID, dtwi.CustomDateForProject2)
@@ -140,23 +126,22 @@ func (dtwi *DemoTwoWorkItem) Insert(ctx context.Context, db DB) (*DemoTwoWorkIte
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Insert/pgx.CollectOneRow: %w", err))
 	}
-  *dtwi = newdtwi
+	*dtwi = newdtwi
 
 	return dtwi, nil
 }
 
-
 // Update updates a DemoTwoWorkItem in the database.
-func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkItem, error)  {
+func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkItem, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.demo_two_work_items SET ` +
-	 `custom_date_for_project_2 = $1 ` +
-	 `WHERE work_item_id = $2 ` +
-	 `RETURNING * `
+		`custom_date_for_project_2 = $1 ` +
+		`WHERE work_item_id = $2 ` +
+		`RETURNING * `
 	// run
 	logf(sqlstr, dtwi.CustomDateForProject2, dtwi.WorkItemID)
 
-  rows, err := db.Query(ctx, sqlstr, dtwi.CustomDateForProject2, dtwi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, dtwi.CustomDateForProject2, dtwi.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Update/db.Query: %w", err))
 	}
@@ -164,24 +149,23 @@ func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkIte
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Update/pgx.CollectOneRow: %w", err))
 	}
-  *dtwi = newdtwi
+	*dtwi = newdtwi
 
 	return dtwi, nil
 }
 
-
 // Upsert performs an upsert for DemoTwoWorkItem.
-func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB) (error) {
+func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB) error {
 	// upsert
 	sqlstr := `INSERT INTO public.demo_two_work_items (` +
-	 `work_item_id, custom_date_for_project_2` +
-	 `) VALUES (` +
-	 `$1, $2` +
-	 `)` +
-	 ` ON CONFLICT (work_item_id) DO ` +
-	 `UPDATE SET ` +
-	 `custom_date_for_project_2 = EXCLUDED.custom_date_for_project_2 ` +
-	 ` RETURNING * `
+		`work_item_id, custom_date_for_project_2` +
+		`) VALUES (` +
+		`$1, $2` +
+		`)` +
+		` ON CONFLICT (work_item_id) DO ` +
+		`UPDATE SET ` +
+		`custom_date_for_project_2 = EXCLUDED.custom_date_for_project_2 ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, dtwi.WorkItemID, dtwi.CustomDateForProject2)
 	if _, err := db.Exec(ctx, sqlstr, dtwi.WorkItemID, dtwi.CustomDateForProject2); err != nil {
@@ -192,10 +176,10 @@ func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB) (error) {
 }
 
 // Delete deletes the DemoTwoWorkItem from the database.
-func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) (error) {
-// delete with single primary key
+func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
+	// delete with single primary key
 	sqlstr := `DELETE FROM public.demo_two_work_items ` +
-	 `WHERE work_item_id = $1 `
+		`WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, dtwi.WorkItemID); err != nil {
 		return logerror(err)
@@ -203,39 +187,34 @@ func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) (error) {
 	return nil
 }
 
-
-
-
-
 // DemoTwoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of DemoTwoWorkItem.
-func DemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, , opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
-	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{},
-}
+func DemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
+	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}}
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	sqlstr := `SELECT ` +
-	 `demo_two_work_items.work_item_id,
+		`demo_two_work_items.work_item_id,
 demo_two_work_items.custom_date_for_project_2,
 (case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
 (case when $2::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
 (case when $3::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item ` +
-	 `FROM public.demo_two_work_items ` +
-	 `-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
+		`FROM public.demo_two_work_items ` +
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = demo_two_work_items.work_item_id
 -- O2O join generated from "demo_two_work_items_pkey(O2O reference)"
 left join demo_two_work_items on demo_two_work_items.work_item_id = demo_two_work_items.work_item_id
 -- O2O join generated from "demo_two_work_items_pkey"
 left join demo_two_work_items on demo_two_work_items.work_item_id = demo_two_work_items.work_item_id` +
-	 ` WHERE demo_two_work_items.work_item_id > $4 `
+		` WHERE demo_two_work_items.work_item_id > $4 `
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, dtwi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Paginated/db.Query: %w", err))
 	}
@@ -246,13 +225,11 @@ left join demo_two_work_items on demo_two_work_items.work_item_id = demo_two_wor
 	return res, nil
 }
 
-
 // DemoTwoWorkItemByWorkItemID retrieves a row from 'public.demo_two_work_items' as a DemoTwoWorkItem.
 //
 // Generated from index 'demo_two_work_items_pkey'.
 func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...DemoTwoWorkItemSelectConfigOption) (*DemoTwoWorkItem, error) {
-	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{},
-  }
+	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}}
 
 	for _, o := range opts {
 		o(c)
@@ -260,25 +237,25 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int64, o
 
 	// query
 	sqlstr := `SELECT ` +
-	 `demo_two_work_items.work_item_id,
+		`demo_two_work_items.work_item_id,
 demo_two_work_items.custom_date_for_project_2,
 (case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item,
 (case when $2::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item,
 (case when $3::boolean = true and demo_two_work_items.work_item_id is not null then row(demo_two_work_items.*) end) as demo_two_work_item ` +
-	 `FROM public.demo_two_work_items ` +
-	 `-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
+		`FROM public.demo_two_work_items ` +
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
 left join work_items on work_items.work_item_id = demo_two_work_items.work_item_id
 -- O2O join generated from "demo_two_work_items_pkey(O2O reference)"
 left join demo_two_work_items on demo_two_work_items.work_item_id = demo_two_work_items.work_item_id
 -- O2O join generated from "demo_two_work_items_pkey"
 left join demo_two_work_items on demo_two_work_items.work_item_id = demo_two_work_items.work_item_id` +
-	 ` WHERE demo_two_work_items.work_item_id = $4 `
+		` WHERE demo_two_work_items.work_item_id = $4 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemID)
-  rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, c.joins.DemoTwoWorkItem, c.joins.DemoTwoWorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, c.joins.DemoTwoWorkItem, c.joins.DemoTwoWorkItem, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_two_work_items/DemoTwoWorkItemByWorkItemID/db.Query: %w", err))
 	}
@@ -286,10 +263,6 @@ left join demo_two_work_items on demo_two_work_items.work_item_id = demo_two_wor
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_two_work_items/DemoTwoWorkItemByWorkItemID/pgx.CollectOneRow: %w", err))
 	}
-	
 
 	return &dtwi, nil
 }
-
-
-

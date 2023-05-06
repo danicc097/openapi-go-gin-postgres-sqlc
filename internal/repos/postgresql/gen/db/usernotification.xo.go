@@ -4,138 +4,122 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"database/sql/driver"
-	"encoding/csv"
-	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"regexp"
-	"strings"
-	"time"
-
-  
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/lib/pq"
-	"github.com/lib/pq/hstore"
 
 	"github.com/google/uuid"
-
+	"github.com/jackc/pgx/v5"
 )
+
 // UserNotification represents a row from 'public.user_notifications'.
 // Change properties via SQL column comments, joined with ",":
-//     - "property:private" to exclude a field from JSON.
-//     - "type:<pkg.type>" to override the type annotation.
-//     - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type UserNotification struct {
-	UserNotificationID int64 `json:"userNotificationID" db:"user_notification_id" required:"true"` // user_notification_id
-	NotificationID int `json:"notificationID" db:"notification_id" required:"true"` // notification_id
-	Read bool `json:"read" db:"read" required:"true"` // read
-	UserID uuid.UUID `json:"userID" db:"user_id" required:"true"` // user_id
+	UserNotificationID int64     `json:"userNotificationID" db:"user_notification_id" required:"true"` // user_notification_id
+	NotificationID     int       `json:"notificationID" db:"notification_id" required:"true"`          // notification_id
+	Read               bool      `json:"read" db:"read" required:"true"`                               // read
+	UserID             uuid.UUID `json:"userID" db:"user_id" required:"true"`                          // user_id
 
-	NotificationJoin *Notification `json:"-" db:"notification" openapi-go:"ignore"` // O2O (generated from M2O)
-	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (generated from M2O)
-	UserNotificationJoin *UserNotification `json:"-" db:"user_notification" openapi-go:"ignore"` // O2O (generated from M2O)
+	NotificationJoin      *Notification       `json:"-" db:"notification" openapi-go:"ignore"`       // O2O (generated from M2O)
+	UserJoin              *User               `json:"-" db:"user" openapi-go:"ignore"`               // O2O (generated from M2O)
+	UserNotificationJoin  *UserNotification   `json:"-" db:"user_notification" openapi-go:"ignore"`  // O2O (generated from M2O)
 	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O
-	UserNotificationJoin *UserNotification `json:"-" db:"user_notification" openapi-go:"ignore"` // O2O (generated from M2O)
+	UserNotificationJoin  *UserNotification   `json:"-" db:"user_notification" openapi-go:"ignore"`  // O2O (generated from M2O)
 	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O
 
 }
 
 // UserNotificationCreateParams represents insert params for 'public.user_notifications'
 type UserNotificationCreateParams struct {
-	NotificationID int `json:"notificationID" required:"true"` // notification_id
-	Read bool `json:"read" required:"true"` // read
-	UserID uuid.UUID `json:"userID" required:"true"` // user_id
+	NotificationID int       `json:"notificationID" required:"true"` // notification_id
+	Read           bool      `json:"read" required:"true"`           // read
+	UserID         uuid.UUID `json:"userID" required:"true"`         // user_id
 }
 
 // CreateUserNotification creates a new UserNotification in the database with the given params.
 func CreateUserNotification(ctx context.Context, db DB, params *UserNotificationCreateParams) (*UserNotification, error) {
-  un := &UserNotification{
-	NotificationID: params.NotificationID,
-	Read: params.Read,
-	UserID: params.UserID,
-}
+	un := &UserNotification{
+		NotificationID: params.NotificationID,
+		Read:           params.Read,
+		UserID:         params.UserID,
+	}
 
-  return un.Insert(ctx, db)
+	return un.Insert(ctx, db)
 }
-
 
 // UserNotificationUpdateParams represents update params for 'public.user_notifications'
 type UserNotificationUpdateParams struct {
-	NotificationID *int `json:"notificationID" required:"true"` // notification_id
-	Read *bool `json:"read" required:"true"` // read
-	UserID *uuid.UUID `json:"userID" required:"true"` // user_id
+	NotificationID *int       `json:"notificationID" required:"true"` // notification_id
+	Read           *bool      `json:"read" required:"true"`           // read
+	UserID         *uuid.UUID `json:"userID" required:"true"`         // user_id
 }
 
 // SetUpdateParams updates public.user_notifications struct fields with the specified params.
 func (un *UserNotification) SetUpdateParams(params *UserNotificationUpdateParams) {
-if params.NotificationID != nil {
-	un.NotificationID = *params.NotificationID
-}
-if params.Read != nil {
-	un.Read = *params.Read
-}
-if params.UserID != nil {
-	un.UserID = *params.UserID
-}
-}
-
-
-	type UserNotificationSelectConfig struct {
-		limit       string
-		orderBy     string
-		joins  UserNotificationJoins
+	if params.NotificationID != nil {
+		un.NotificationID = *params.NotificationID
 	}
-	type UserNotificationSelectConfigOption func(*UserNotificationSelectConfig)
+	if params.Read != nil {
+		un.Read = *params.Read
+	}
+	if params.UserID != nil {
+		un.UserID = *params.UserID
+	}
+}
 
-	// WithUserNotificationLimit limits row selection.
-	func WithUserNotificationLimit(limit int) UserNotificationSelectConfigOption {
-		return func(s *UserNotificationSelectConfig) {
-			if limit > 0 {
-				s.limit = fmt.Sprintf(" limit %d ", limit)
-			}
+type UserNotificationSelectConfig struct {
+	limit   string
+	orderBy string
+	joins   UserNotificationJoins
+}
+type UserNotificationSelectConfigOption func(*UserNotificationSelectConfig)
+
+// WithUserNotificationLimit limits row selection.
+func WithUserNotificationLimit(limit int) UserNotificationSelectConfigOption {
+	return func(s *UserNotificationSelectConfig) {
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
 		}
 	}
-	type UserNotificationOrderBy = string
-	const (
-	)
-type UserNotificationJoins struct {
-Notification bool
-User bool
-UserNotification bool
-UserNotifications bool
-UserNotification bool
-UserNotifications bool
 }
 
-	// WithUserNotificationJoin joins with the given tables.
+type UserNotificationOrderBy = string
+
+const ()
+
+type UserNotificationJoins struct {
+	Notification      bool
+	User              bool
+	UserNotification  bool
+	UserNotifications bool
+	UserNotification  bool
+	UserNotifications bool
+}
+
+// WithUserNotificationJoin joins with the given tables.
 func WithUserNotificationJoin(joins UserNotificationJoins) UserNotificationSelectConfigOption {
 	return func(s *UserNotificationSelectConfig) {
 		s.joins = UserNotificationJoins{
 
-			Notification:  s.joins.Notification || joins.Notification,
-		User:  s.joins.User || joins.User,
-		UserNotification:  s.joins.UserNotification || joins.UserNotification,
-		UserNotifications:  s.joins.UserNotifications || joins.UserNotifications,
-		UserNotification:  s.joins.UserNotification || joins.UserNotification,
-		UserNotifications:  s.joins.UserNotifications || joins.UserNotifications,
-
+			Notification:      s.joins.Notification || joins.Notification,
+			User:              s.joins.User || joins.User,
+			UserNotification:  s.joins.UserNotification || joins.UserNotification,
+			UserNotifications: s.joins.UserNotifications || joins.UserNotifications,
+			UserNotification:  s.joins.UserNotification || joins.UserNotification,
+			UserNotifications: s.joins.UserNotifications || joins.UserNotifications,
 		}
 	}
 }
 
-
-
 // Insert inserts the UserNotification to the database.
 func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotification, error) {
-// insert (primary key generated and returned by database)
+	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.user_notifications (` +
-	 `notification_id, read, user_id` +
-	 `) VALUES (` +
-	 `$1, $2, $3` +
-	 `) RETURNING * `
+		`notification_id, read, user_id` +
+		`) VALUES (` +
+		`$1, $2, $3` +
+		`) RETURNING * `
 	// run
 	logf(sqlstr, un.NotificationID, un.Read, un.UserID)
 
@@ -148,23 +132,22 @@ func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotificatio
 		return nil, logerror(fmt.Errorf("UserNotification/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-  *un = newun
+	*un = newun
 
 	return un, nil
 }
 
-
 // Update updates a UserNotification in the database.
-func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotification, error)  {
+func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotification, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.user_notifications SET ` +
-	 `notification_id = $1, read = $2, user_id = $3 ` +
-	 `WHERE user_notification_id = $4 ` +
-	 `RETURNING * `
+		`notification_id = $1, read = $2, user_id = $3 ` +
+		`WHERE user_notification_id = $4 ` +
+		`RETURNING * `
 	// run
 	logf(sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
 
-  rows, err := db.Query(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
+	rows, err := db.Query(ctx, sqlstr, un.NotificationID, un.Read, un.UserID, un.UserNotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/Update/db.Query: %w", err))
 	}
@@ -172,24 +155,23 @@ func (un *UserNotification) Update(ctx context.Context, db DB) (*UserNotificatio
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/Update/pgx.CollectOneRow: %w", err))
 	}
-  *un = newun
+	*un = newun
 
 	return un, nil
 }
 
-
 // Upsert performs an upsert for UserNotification.
-func (un *UserNotification) Upsert(ctx context.Context, db DB) (error) {
+func (un *UserNotification) Upsert(ctx context.Context, db DB) error {
 	// upsert
 	sqlstr := `INSERT INTO public.user_notifications (` +
-	 `user_notification_id, notification_id, read, user_id` +
-	 `) VALUES (` +
-	 `$1, $2, $3, $4` +
-	 `)` +
-	 ` ON CONFLICT (user_notification_id) DO ` +
-	 `UPDATE SET ` +
-	 `notification_id = EXCLUDED.notification_id, read = EXCLUDED.read, user_id = EXCLUDED.user_id ` +
-	 ` RETURNING * `
+		`user_notification_id, notification_id, read, user_id` +
+		`) VALUES (` +
+		`$1, $2, $3, $4` +
+		`)` +
+		` ON CONFLICT (user_notification_id) DO ` +
+		`UPDATE SET ` +
+		`notification_id = EXCLUDED.notification_id, read = EXCLUDED.read, user_id = EXCLUDED.user_id ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID)
 	if _, err := db.Exec(ctx, sqlstr, un.UserNotificationID, un.NotificationID, un.Read, un.UserID); err != nil {
@@ -200,10 +182,10 @@ func (un *UserNotification) Upsert(ctx context.Context, db DB) (error) {
 }
 
 // Delete deletes the UserNotification from the database.
-func (un *UserNotification) Delete(ctx context.Context, db DB) (error) {
-// delete with single primary key
+func (un *UserNotification) Delete(ctx context.Context, db DB) error {
+	// delete with single primary key
 	sqlstr := `DELETE FROM public.user_notifications ` +
-	 `WHERE user_notification_id = $1 `
+		`WHERE user_notification_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, un.UserNotificationID); err != nil {
 		return logerror(err)
@@ -211,21 +193,16 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) (error) {
 	return nil
 }
 
-
-
-
-
 // UserNotificationPaginatedByUserNotificationID returns a cursor-paginated list of UserNotification.
-func UserNotificationPaginatedByUserNotificationID(ctx context.Context, db DB, , opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{},
-}
+func UserNotificationPaginatedByUserNotificationID(ctx context.Context, db DB, userNotificationID int64, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	sqlstr := `SELECT ` +
-	 `user_notifications.user_notification_id,
+		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
@@ -235,8 +212,8 @@ user_notifications.user_id,
 (case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
 (case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
-	 `FROM public.user_notifications ` +
-	 `-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = user_notifications.user_id
@@ -262,13 +239,13 @@ left join (
     user_notifications
   group by
         user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
-	 ` WHERE user_notifications.user_notification_id > $7 `
+		` WHERE user_notifications.user_notification_id > $7 `
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, un.UserNotificationID)
+	rows, err := db.Query(ctx, sqlstr, userNotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
 	}
@@ -278,19 +255,17 @@ left join (
 	}
 	return res, nil
 }
-
 
 // UserNotificationPaginatedByNotificationID returns a cursor-paginated list of UserNotification.
-func UserNotificationPaginatedByNotificationID(ctx context.Context, db DB, , opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{},
-}
+func UserNotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	sqlstr := `SELECT ` +
-	 `user_notifications.user_notification_id,
+		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
@@ -300,8 +275,8 @@ user_notifications.user_id,
 (case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
 (case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
-	 `FROM public.user_notifications ` +
-	 `-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = user_notifications.user_id
@@ -327,13 +302,13 @@ left join (
     user_notifications
   group by
         user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
-	 ` WHERE user_notifications.notification_id > $7 `
+		` WHERE user_notifications.notification_id > $7 `
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, un.NotificationID)
+	rows, err := db.Query(ctx, sqlstr, notificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
 	}
@@ -343,19 +318,17 @@ left join (
 	}
 	return res, nil
 }
-
 
 // UserNotificationPaginatedByNotificationID returns a cursor-paginated list of UserNotification.
-func UserNotificationPaginatedByNotificationID(ctx context.Context, db DB, , opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{},
-}
+func UserNotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	sqlstr := `SELECT ` +
-	 `user_notifications.user_notification_id,
+		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
@@ -365,8 +338,8 @@ user_notifications.user_id,
 (case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
 (case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
-	 `FROM public.user_notifications ` +
-	 `-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = user_notifications.user_id
@@ -392,13 +365,13 @@ left join (
     user_notifications
   group by
         user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
-	 ` WHERE user_notifications.notification_id > $7 `
+		` WHERE user_notifications.notification_id > $7 `
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, un.NotificationID)
+	rows, err := db.Query(ctx, sqlstr, notificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
 	}
@@ -408,14 +381,12 @@ left join (
 	}
 	return res, nil
 }
-
 
 // UserNotificationByNotificationIDUserID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_notification_id_user_id_key'.
 func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notificationID int, userID uuid.UUID, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{},
-  }
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
 		o(c)
@@ -423,7 +394,7 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 
 	// query
 	sqlstr := `SELECT ` +
-	 `user_notifications.user_notification_id,
+		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
@@ -433,8 +404,8 @@ user_notifications.user_id,
 (case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
 (case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
-	 `FROM public.user_notifications ` +
-	 `-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = user_notifications.user_id
@@ -460,13 +431,13 @@ left join (
     user_notifications
   group by
         user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
-	 ` WHERE user_notifications.notification_id = $7 AND user_notifications.user_id = $8 `
+		` WHERE user_notifications.notification_id = $7 AND user_notifications.user_id = $8 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, notificationID, userID)
-  rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, c.joins.UserNotification, c.joins.UserNotifications, c.joins.UserNotification, c.joins.UserNotifications, notificationID, userID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, c.joins.UserNotification, c.joins.UserNotifications, c.joins.UserNotification, c.joins.UserNotifications, notificationID, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByNotificationIDUserID/db.Query: %w", err))
 	}
@@ -474,7 +445,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByNotificationIDUserID/pgx.CollectOneRow: %w", err))
 	}
-	
 
 	return &un, nil
 }
@@ -483,8 +453,7 @@ left join (
 //
 // Generated from index 'user_notifications_notification_id_user_id_key'.
 func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{},
-  }
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
 		o(c)
@@ -492,7 +461,7 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 
 	// query
 	sqlstr := `SELECT ` +
-	 `user_notifications.user_notification_id,
+		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
@@ -502,8 +471,8 @@ user_notifications.user_id,
 (case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
 (case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
-	 `FROM public.user_notifications ` +
-	 `-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = user_notifications.user_id
@@ -529,7 +498,7 @@ left join (
     user_notifications
   group by
         user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
-	 ` WHERE user_notifications.notification_id = $7 `
+		` WHERE user_notifications.notification_id = $7 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -541,7 +510,7 @@ left join (
 	}
 	defer rows.Close()
 	// process
-  
+
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationByNotificationIDUserID/pgx.CollectRows: %w", err))
@@ -553,8 +522,7 @@ left join (
 //
 // Generated from index 'user_notifications_pkey'.
 func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotificationID int64, opts ...UserNotificationSelectConfigOption) (*UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{},
-  }
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
 		o(c)
@@ -562,7 +530,7 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 
 	// query
 	sqlstr := `SELECT ` +
-	 `user_notifications.user_notification_id,
+		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
@@ -572,8 +540,8 @@ user_notifications.user_id,
 (case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
 (case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
-	 `FROM public.user_notifications ` +
-	 `-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = user_notifications.user_id
@@ -599,13 +567,13 @@ left join (
     user_notifications
   group by
         user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
-	 ` WHERE user_notifications.user_notification_id = $7 `
+		` WHERE user_notifications.user_notification_id = $7 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userNotificationID)
-  rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, c.joins.UserNotification, c.joins.UserNotifications, c.joins.UserNotification, c.joins.UserNotifications, userNotificationID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, c.joins.UserNotification, c.joins.UserNotifications, c.joins.UserNotification, c.joins.UserNotifications, userNotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByUserNotificationID/db.Query: %w", err))
 	}
@@ -613,7 +581,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByUserNotificationID/pgx.CollectOneRow: %w", err))
 	}
-	
 
 	return &un, nil
 }
@@ -622,8 +589,7 @@ left join (
 //
 // Generated from index 'user_notifications_user_id_idx'.
 func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{},
-  }
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
 
 	for _, o := range opts {
 		o(c)
@@ -631,7 +597,7 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID uuid.UUID, opt
 
 	// query
 	sqlstr := `SELECT ` +
-	 `user_notifications.user_notification_id,
+		`user_notifications.user_notification_id,
 user_notifications.notification_id,
 user_notifications.read,
 user_notifications.user_id,
@@ -641,8 +607,8 @@ user_notifications.user_id,
 (case when $4::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $5::boolean = true and user_notifications.user_id is not null then row(user_notifications.*) end) as user_notification,
 (case when $6::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications ` +
-	 `FROM public.user_notifications ` +
-	 `-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
 left join notifications on notifications.notification_id = user_notifications.notification_id
 -- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
 left join users on users.user_id = user_notifications.user_id
@@ -668,7 +634,7 @@ left join (
     user_notifications
   group by
         user_id) joined_user_notifications on joined_user_notifications.user_notifications_user_id = user_notifications.user_id` +
-	 ` WHERE user_notifications.user_id = $7 `
+		` WHERE user_notifications.user_id = $7 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -680,15 +646,10 @@ left join (
 	}
 	defer rows.Close()
 	// process
-  
+
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationsByUserID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
-
-
-
-
-

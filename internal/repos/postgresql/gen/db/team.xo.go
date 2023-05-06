@@ -4,115 +4,103 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"database/sql/driver"
-	"encoding/csv"
-	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"regexp"
 	"strings"
 	"time"
 
-  
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/lib/pq"
-	"github.com/lib/pq/hstore"
-
-	"github.com/google/uuid"
-
+	"github.com/jackc/pgx/v5"
 )
+
 // Team represents a row from 'public.teams'.
 // Change properties via SQL column comments, joined with ",":
-//     - "property:private" to exclude a field from JSON.
-//     - "type:<pkg.type>" to override the type annotation.
-//     - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "property:private" to exclude a field from JSON.
+//   - "type:<pkg.type>" to override the type annotation.
+//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type Team struct {
-	TeamID int `json:"teamID" db:"team_id" required:"true"` // team_id
-	ProjectID int `json:"projectID" db:"project_id" required:"true"` // project_id
-	Name string `json:"name" db:"name" required:"true"` // name
-	Description string `json:"description" db:"description" required:"true"` // description
-	CreatedAt time.Time `json:"createdAt" db:"created_at" required:"true"` // created_at
-	UpdatedAt time.Time `json:"updatedAt" db:"updated_at" required:"true"` // updated_at
+	TeamID      int       `json:"teamID" db:"team_id" required:"true"`          // team_id
+	ProjectID   int       `json:"projectID" db:"project_id" required:"true"`    // project_id
+	Name        string    `json:"name" db:"name" required:"true"`               // name
+	Description string    `json:"description" db:"description" required:"true"` // description
+	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true"`    // created_at
+	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true"`    // updated_at
 
-	ProjectJoin *Project `json:"-" db:"project" openapi-go:"ignore"` // O2O (generated from M2O)
+	ProjectJoin     *Project     `json:"-" db:"project" openapi-go:"ignore"`      // O2O (generated from M2O)
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
-	UsersJoin *[]User `json:"-" db:"users" openapi-go:"ignore"` // M2M
-	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred)
-	TeamJoin *Team `json:"-" db:"team" openapi-go:"ignore"` // O2O (generated from M2O)
-	TeamsJoin *[]Team `json:"-" db:"teams" openapi-go:"ignore"` // M2O
+	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`        // M2M
+	WorkItemJoin    *WorkItem    `json:"-" db:"work_item" openapi-go:"ignore"`    // O2O (inferred)
+	TeamJoin        *Team        `json:"-" db:"team" openapi-go:"ignore"`         // O2O (generated from M2O)
+	TeamsJoin       *[]Team      `json:"-" db:"teams" openapi-go:"ignore"`        // M2O
 
 }
 
 // TeamCreateParams represents insert params for 'public.teams'
 type TeamCreateParams struct {
-	ProjectID int `json:"projectID" required:"true"` // project_id
-	Name string `json:"name" required:"true"` // name
+	ProjectID   int    `json:"projectID" required:"true"`   // project_id
+	Name        string `json:"name" required:"true"`        // name
 	Description string `json:"description" required:"true"` // description
 }
 
 // CreateTeam creates a new Team in the database with the given params.
 func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, error) {
-  t := &Team{
-	ProjectID: params.ProjectID,
-	Name: params.Name,
-	Description: params.Description,
-}
+	t := &Team{
+		ProjectID:   params.ProjectID,
+		Name:        params.Name,
+		Description: params.Description,
+	}
 
-  return t.Insert(ctx, db)
+	return t.Insert(ctx, db)
 }
-
 
 // TeamUpdateParams represents update params for 'public.teams'
 type TeamUpdateParams struct {
-	ProjectID *int `json:"projectID" required:"true"` // project_id
-	Name *string `json:"name" required:"true"` // name
+	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
+	Name        *string `json:"name" required:"true"`        // name
 	Description *string `json:"description" required:"true"` // description
 }
 
 // SetUpdateParams updates public.teams struct fields with the specified params.
 func (t *Team) SetUpdateParams(params *TeamUpdateParams) {
-if params.ProjectID != nil {
-	t.ProjectID = *params.ProjectID
-}
-if params.Name != nil {
-	t.Name = *params.Name
-}
-if params.Description != nil {
-	t.Description = *params.Description
-}
-}
-
-
-	type TeamSelectConfig struct {
-		limit       string
-		orderBy     string
-		joins  TeamJoins
+	if params.ProjectID != nil {
+		t.ProjectID = *params.ProjectID
 	}
-	type TeamSelectConfigOption func(*TeamSelectConfig)
+	if params.Name != nil {
+		t.Name = *params.Name
+	}
+	if params.Description != nil {
+		t.Description = *params.Description
+	}
+}
 
-	// WithTeamLimit limits row selection.
-	func WithTeamLimit(limit int) TeamSelectConfigOption {
-		return func(s *TeamSelectConfig) {
-			if limit > 0 {
-				s.limit = fmt.Sprintf(" limit %d ", limit)
-			}
+type TeamSelectConfig struct {
+	limit   string
+	orderBy string
+	joins   TeamJoins
+}
+type TeamSelectConfigOption func(*TeamSelectConfig)
+
+// WithTeamLimit limits row selection.
+func WithTeamLimit(limit int) TeamSelectConfigOption {
+	return func(s *TeamSelectConfig) {
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
 		}
 	}
-	type TeamOrderBy = string
-	const (
-	TeamCreatedAtDescNullsFirst TeamOrderBy = " created_at DESC NULLS FIRST "
-			TeamCreatedAtDescNullsLast TeamOrderBy = " created_at DESC NULLS LAST "
-			TeamCreatedAtAscNullsFirst TeamOrderBy = " created_at ASC NULLS FIRST "
-			TeamCreatedAtAscNullsLast TeamOrderBy = " created_at ASC NULLS LAST "
-			TeamUpdatedAtDescNullsFirst TeamOrderBy = " updated_at DESC NULLS FIRST "
-			TeamUpdatedAtDescNullsLast TeamOrderBy = " updated_at DESC NULLS LAST "
-			TeamUpdatedAtAscNullsFirst TeamOrderBy = " updated_at ASC NULLS FIRST "
-			TeamUpdatedAtAscNullsLast TeamOrderBy = " updated_at ASC NULLS LAST "
-			)
+}
 
-	// WithTeamOrderBy orders results by the given columns.
+type TeamOrderBy = string
+
+const (
+	TeamCreatedAtDescNullsFirst TeamOrderBy = " created_at DESC NULLS FIRST "
+	TeamCreatedAtDescNullsLast  TeamOrderBy = " created_at DESC NULLS LAST "
+	TeamCreatedAtAscNullsFirst  TeamOrderBy = " created_at ASC NULLS FIRST "
+	TeamCreatedAtAscNullsLast   TeamOrderBy = " created_at ASC NULLS LAST "
+	TeamUpdatedAtDescNullsFirst TeamOrderBy = " updated_at DESC NULLS FIRST "
+	TeamUpdatedAtDescNullsLast  TeamOrderBy = " updated_at DESC NULLS LAST "
+	TeamUpdatedAtAscNullsFirst  TeamOrderBy = " updated_at ASC NULLS FIRST "
+	TeamUpdatedAtAscNullsLast   TeamOrderBy = " updated_at ASC NULLS LAST "
+)
+
+// WithTeamOrderBy orders results by the given columns.
 func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
 		if len(rows) > 0 {
@@ -121,41 +109,39 @@ func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 		}
 	}
 }
-	type TeamJoins struct {
-Project bool
-TimeEntries bool
-Users bool
-WorkItem bool
-Team bool
-Teams bool
+
+type TeamJoins struct {
+	Project     bool
+	TimeEntries bool
+	Users       bool
+	WorkItem    bool
+	Team        bool
+	Teams       bool
 }
 
-	// WithTeamJoin joins with the given tables.
+// WithTeamJoin joins with the given tables.
 func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
 		s.joins = TeamJoins{
 
-			Project:  s.joins.Project || joins.Project,
-		TimeEntries:  s.joins.TimeEntries || joins.TimeEntries,
-		Users:  s.joins.Users || joins.Users,
-		WorkItem:  s.joins.WorkItem || joins.WorkItem,
-		Team:  s.joins.Team || joins.Team,
-		Teams:  s.joins.Teams || joins.Teams,
-
+			Project:     s.joins.Project || joins.Project,
+			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
+			Users:       s.joins.Users || joins.Users,
+			WorkItem:    s.joins.WorkItem || joins.WorkItem,
+			Team:        s.joins.Team || joins.Team,
+			Teams:       s.joins.Teams || joins.Teams,
 		}
 	}
 }
 
-
-
 // Insert inserts the Team to the database.
 func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
-// insert (primary key generated and returned by database)
+	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.teams (` +
-	 `project_id, name, description` +
-	 `) VALUES (` +
-	 `$1, $2, $3` +
-	 `) RETURNING * `
+		`project_id, name, description` +
+		`) VALUES (` +
+		`$1, $2, $3` +
+		`) RETURNING * `
 	// run
 	logf(sqlstr, t.ProjectID, t.Name, t.Description)
 
@@ -168,23 +154,22 @@ func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 		return nil, logerror(fmt.Errorf("Team/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-  *t = newt
+	*t = newt
 
 	return t, nil
 }
 
-
 // Update updates a Team in the database.
-func (t *Team) Update(ctx context.Context, db DB) (*Team, error)  {
+func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.teams SET ` +
-	 `project_id = $1, name = $2, description = $3 ` +
-	 `WHERE team_id = $4 ` +
-	 `RETURNING * `
+		`project_id = $1, name = $2, description = $3 ` +
+		`WHERE team_id = $4 ` +
+		`RETURNING * `
 	// run
 	logf(sqlstr, t.ProjectID, t.Name, t.Description, t.CreatedAt, t.UpdatedAt, t.TeamID)
 
-  rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.TeamID)
+	rows, err := db.Query(ctx, sqlstr, t.ProjectID, t.Name, t.Description, t.TeamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Update/db.Query: %w", err))
 	}
@@ -192,24 +177,23 @@ func (t *Team) Update(ctx context.Context, db DB) (*Team, error)  {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Update/pgx.CollectOneRow: %w", err))
 	}
-  *t = newt
+	*t = newt
 
 	return t, nil
 }
 
-
 // Upsert performs an upsert for Team.
-func (t *Team) Upsert(ctx context.Context, db DB) (error) {
+func (t *Team) Upsert(ctx context.Context, db DB) error {
 	// upsert
 	sqlstr := `INSERT INTO public.teams (` +
-	 `team_id, project_id, name, description` +
-	 `) VALUES (` +
-	 `$1, $2, $3, $4` +
-	 `)` +
-	 ` ON CONFLICT (team_id) DO ` +
-	 `UPDATE SET ` +
-	 `project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description ` +
-	 ` RETURNING * `
+		`team_id, project_id, name, description` +
+		`) VALUES (` +
+		`$1, $2, $3, $4` +
+		`)` +
+		` ON CONFLICT (team_id) DO ` +
+		`UPDATE SET ` +
+		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description ` +
+		` RETURNING * `
 	// run
 	logf(sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description)
 	if _, err := db.Exec(ctx, sqlstr, t.TeamID, t.ProjectID, t.Name, t.Description); err != nil {
@@ -220,10 +204,10 @@ func (t *Team) Upsert(ctx context.Context, db DB) (error) {
 }
 
 // Delete deletes the Team from the database.
-func (t *Team) Delete(ctx context.Context, db DB) (error) {
-// delete with single primary key
+func (t *Team) Delete(ctx context.Context, db DB) error {
+	// delete with single primary key
 	sqlstr := `DELETE FROM public.teams ` +
-	 `WHERE team_id = $1 `
+		`WHERE team_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, t.TeamID); err != nil {
 		return logerror(err)
@@ -231,21 +215,16 @@ func (t *Team) Delete(ctx context.Context, db DB) (error) {
 	return nil
 }
 
-
-
-
-
 // TeamPaginatedByTeamID returns a cursor-paginated list of Team.
-func TeamPaginatedByTeamID(ctx context.Context, db DB, , opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{},
-}
+func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) ([]Team, error) {
+	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	sqlstr := `SELECT ` +
-	 `teams.team_id,
+		`teams.team_id,
 teams.project_id,
 teams.name,
 teams.description,
@@ -257,8 +236,8 @@ teams.updated_at,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item,
 (case when $5::boolean = true and teams.name is not null then row(teams.*) end) as team,
 (case when $6::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams ` +
-	 `FROM public.teams ` +
-	 `-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
+		`FROM public.teams ` +
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -292,13 +271,13 @@ left join (
     teams
   group by
         name) joined_teams on joined_teams.teams_project_id = teams.project_id` +
-	 ` WHERE teams.team_id > $7 `
+		` WHERE teams.team_id > $7 `
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, t.TeamID)
+	rows, err := db.Query(ctx, sqlstr, teamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/db.Query: %w", err))
 	}
@@ -308,19 +287,17 @@ left join (
 	}
 	return res, nil
 }
-
 
 // TeamPaginatedByProjectID returns a cursor-paginated list of Team.
-func TeamPaginatedByProjectID(ctx context.Context, db DB, , opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{},
-}
+func TeamPaginatedByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]Team, error) {
+	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	sqlstr := `SELECT ` +
-	 `teams.team_id,
+		`teams.team_id,
 teams.project_id,
 teams.name,
 teams.description,
@@ -332,8 +309,8 @@ teams.updated_at,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item,
 (case when $5::boolean = true and teams.name is not null then row(teams.*) end) as team,
 (case when $6::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams ` +
-	 `FROM public.teams ` +
-	 `-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
+		`FROM public.teams ` +
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -367,13 +344,13 @@ left join (
     teams
   group by
         name) joined_teams on joined_teams.teams_project_id = teams.project_id` +
-	 ` WHERE teams.project_id > $7 `
+		` WHERE teams.project_id > $7 `
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, t.ProjectID)
+	rows, err := db.Query(ctx, sqlstr, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/db.Query: %w", err))
 	}
@@ -383,19 +360,17 @@ left join (
 	}
 	return res, nil
 }
-
 
 // TeamPaginatedByProjectID returns a cursor-paginated list of Team.
-func TeamPaginatedByProjectID(ctx context.Context, db DB, , opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{},
-}
+func TeamPaginatedByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]Team, error) {
+	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	sqlstr := `SELECT ` +
-	 `teams.team_id,
+		`teams.team_id,
 teams.project_id,
 teams.name,
 teams.description,
@@ -407,8 +382,8 @@ teams.updated_at,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item,
 (case when $5::boolean = true and teams.name is not null then row(teams.*) end) as team,
 (case when $6::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams ` +
-	 `FROM public.teams ` +
-	 `-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
+		`FROM public.teams ` +
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -442,13 +417,13 @@ left join (
     teams
   group by
         name) joined_teams on joined_teams.teams_project_id = teams.project_id` +
-	 ` WHERE teams.project_id > $7 `
+		` WHERE teams.project_id > $7 `
 	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
 	sqlstr += c.limit
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, t.ProjectID)
+	rows, err := db.Query(ctx, sqlstr, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/db.Query: %w", err))
 	}
@@ -458,14 +433,12 @@ left join (
 	}
 	return res, nil
 }
-
 
 // TeamByNameProjectID retrieves a row from 'public.teams' as a Team.
 //
 // Generated from index 'teams_name_project_id_key'.
 func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...TeamSelectConfigOption) (*Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{},
-  }
+	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {
 		o(c)
@@ -473,7 +446,7 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID int,
 
 	// query
 	sqlstr := `SELECT ` +
-	 `teams.team_id,
+		`teams.team_id,
 teams.project_id,
 teams.name,
 teams.description,
@@ -485,8 +458,8 @@ teams.updated_at,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item,
 (case when $5::boolean = true and teams.name is not null then row(teams.*) end) as team,
 (case when $6::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams ` +
-	 `FROM public.teams ` +
-	 `-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
+		`FROM public.teams ` +
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -520,13 +493,13 @@ left join (
     teams
   group by
         name) joined_teams on joined_teams.teams_project_id = teams.project_id` +
-	 ` WHERE teams.name = $7 AND teams.project_id = $8 `
+		` WHERE teams.name = $7 AND teams.project_id = $8 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name, projectID)
-  rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, c.joins.Team, c.joins.Teams, name, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, c.joins.Team, c.joins.Teams, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/db.Query: %w", err))
 	}
@@ -534,7 +507,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
-	
 
 	return &t, nil
 }
@@ -543,8 +515,7 @@ left join (
 //
 // Generated from index 'teams_name_project_id_key'.
 func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{},
-  }
+	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {
 		o(c)
@@ -552,7 +523,7 @@ func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConf
 
 	// query
 	sqlstr := `SELECT ` +
-	 `teams.team_id,
+		`teams.team_id,
 teams.project_id,
 teams.name,
 teams.description,
@@ -564,8 +535,8 @@ teams.updated_at,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item,
 (case when $5::boolean = true and teams.name is not null then row(teams.*) end) as team,
 (case when $6::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams ` +
-	 `FROM public.teams ` +
-	 `-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
+		`FROM public.teams ` +
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -599,7 +570,7 @@ left join (
     teams
   group by
         name) joined_teams on joined_teams.teams_project_id = teams.project_id` +
-	 ` WHERE teams.name = $7 `
+		` WHERE teams.name = $7 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -611,7 +582,7 @@ left join (
 	}
 	defer rows.Close()
 	// process
-  
+
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Team])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/pgx.CollectRows: %w", err))
@@ -623,8 +594,7 @@ left join (
 //
 // Generated from index 'teams_name_project_id_key'.
 func TeamsByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{},
-  }
+	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {
 		o(c)
@@ -632,7 +602,7 @@ func TeamsByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSel
 
 	// query
 	sqlstr := `SELECT ` +
-	 `teams.team_id,
+		`teams.team_id,
 teams.project_id,
 teams.name,
 teams.description,
@@ -644,8 +614,8 @@ teams.updated_at,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item,
 (case when $5::boolean = true and teams.name is not null then row(teams.*) end) as team,
 (case when $6::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams ` +
-	 `FROM public.teams ` +
-	 `-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
+		`FROM public.teams ` +
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -679,7 +649,7 @@ left join (
     teams
   group by
         name) joined_teams on joined_teams.teams_project_id = teams.project_id` +
-	 ` WHERE teams.project_id = $7 `
+		` WHERE teams.project_id = $7 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -691,7 +661,7 @@ left join (
 	}
 	defer rows.Close()
 	// process
-  
+
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Team])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/pgx.CollectRows: %w", err))
@@ -703,8 +673,7 @@ left join (
 //
 // Generated from index 'teams_pkey'.
 func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) (*Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{},
-  }
+	c := &TeamSelectConfig{joins: TeamJoins{}}
 
 	for _, o := range opts {
 		o(c)
@@ -712,7 +681,7 @@ func TeamByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConf
 
 	// query
 	sqlstr := `SELECT ` +
-	 `teams.team_id,
+		`teams.team_id,
 teams.project_id,
 teams.name,
 teams.description,
@@ -724,8 +693,8 @@ teams.updated_at,
 (case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item,
 (case when $5::boolean = true and teams.name is not null then row(teams.*) end) as team,
 (case when $6::boolean = true then COALESCE(joined_teams.teams, '{}') end) as teams ` +
-	 `FROM public.teams ` +
-	 `-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
+		`FROM public.teams ` +
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = teams.project_id
 -- M2O join generated from "time_entries_team_id_fkey"
 left join (
@@ -759,13 +728,13 @@ left join (
     teams
   group by
         name) joined_teams on joined_teams.teams_project_id = teams.project_id` +
-	 ` WHERE teams.team_id = $7 `
+		` WHERE teams.team_id = $7 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, teamID)
-  rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, c.joins.Team, c.joins.Teams, teamID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, c.joins.Team, c.joins.Teams, teamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/db.Query: %w", err))
 	}
@@ -773,10 +742,6 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/pgx.CollectOneRow: %w", err))
 	}
-	
 
 	return &t, nil
 }
-
-
-
