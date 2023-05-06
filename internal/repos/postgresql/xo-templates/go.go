@@ -1458,9 +1458,9 @@ func (f *Funcs) func_name_context(v interface{}, suffix string) string {
 	case string:
 		return x + suffix
 	case Query:
-		return x.Name
+		return x.Name + suffix
 	case Table:
-		return x.GoName
+		return x.GoName + suffix
 	case ForeignKey:
 		var fields []string
 		for _, f := range x.Fields {
@@ -1499,7 +1499,7 @@ func (f *Funcs) func_name_context(v interface{}, suffix string) string {
 }
 
 // funcfn builds a func definition.
-func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
+func (f *Funcs) funcfn(name string, context bool, v interface{}, columns []Field) string {
 	var params, returns []string
 	if context {
 		params = append(params, "ctx context.Context")
@@ -1538,6 +1538,12 @@ func (f *Funcs) funcfn(name string, context bool, v interface{}) string {
 		} else {
 			rt = "*" + rt
 		}
+		returns = append(returns, rt)
+	case Table: // Paginated query
+		params = append(params, f.params(columns, true))
+		params = append(params, "opts ..."+x.GoName+"SelectConfigOption")
+		rt := "[]" + x.GoName
+
 		returns = append(returns, rt)
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 3: %T ]]", v)
@@ -1821,13 +1827,31 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 
 // func_context generates a func signature for v with context determined by the
 // context mode.
-func (f *Funcs) func_context(v interface{}) string {
-	return f.funcfn(f.func_name_context(v, ""), f.contextfn(), v)
+func (f *Funcs) func_context(v interface{}, suffix string, columns any) string {
+	var cc []Field
+	switch x := columns.(type) {
+	case []Field:
+		cc = x
+	case string:
+		cc = []Field{}
+	default:
+		return fmt.Sprintf("[[ UNSUPPORTED TYPE columns: %T ]]", x)
+	}
+	return f.funcfn(f.func_name_context(v, suffix), f.contextfn(), v, cc)
 }
 
 // func_none genarates a func signature for v without context.
-func (f *Funcs) func_none(v interface{}) string {
-	return f.funcfn(f.func_name_none(v), false, v)
+func (f *Funcs) func_none(v interface{}, columns any) string {
+	var cc []Field
+	switch x := columns.(type) {
+	case []Field:
+		cc = x
+	case string:
+		cc = []Field{}
+	default:
+		return fmt.Sprintf("[[ UNSUPPORTED TYPE columns: %T ]]", x)
+	}
+	return f.funcfn(f.func_name_none(v), false, v, cc)
 }
 
 // recv builds a receiver func definition.
@@ -1998,12 +2022,12 @@ func (f *Funcs) db_update(name string, v interface{}) string {
 // deleted_at from opts remains.
 // orderby desc is the default
 func (f *Funcs) db_paginated(name string, v interface{}, columns []Field) string {
-	var ignore []interface{}
 	var p []string
 	switch x := v.(type) {
 	case Table:
 		prefix := f.short(x.GoName) + "."
-		p = append(p, f.names_ignore(prefix, x, ignore...), f.names(prefix, columns))
+		fmt.Printf("columns: %v\n", columns)
+		p = append(p, f.names(prefix, columns))
 	default:
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 9: %T ]]", v)
 	}

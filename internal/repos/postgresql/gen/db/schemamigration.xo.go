@@ -4,93 +4,113 @@ package db
 
 import (
 	"context"
+	"database/sql"
+	"database/sql/driver"
+	"encoding/csv"
+	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"regexp"
+	"strings"
+	"time"
 
-	"github.com/jackc/pgx/v5"
+  
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/lib/pq"
+	"github.com/lib/pq/hstore"
+
+	"github.com/google/uuid"
+
 )
-
 // SchemaMigration represents a row from 'public.schema_migrations'.
 // Change properties via SQL column comments, joined with ",":
-//   - "property:private" to exclude a field from JSON.
-//   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//     - "property:private" to exclude a field from JSON.
+//     - "type:<pkg.type>" to override the type annotation.
+//     - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type SchemaMigration struct {
 	Version int64 `json:"version" db:"version" required:"true"` // version
-	Dirty   bool  `json:"dirty" db:"dirty" required:"true"`     // dirty
+	Dirty bool `json:"dirty" db:"dirty" required:"true"` // dirty
+
 
 }
 
 // SchemaMigrationCreateParams represents insert params for 'public.schema_migrations'
 type SchemaMigrationCreateParams struct {
 	Version int64 `json:"version" required:"true"` // version
-	Dirty   bool  `json:"dirty" required:"true"`   // dirty
+	Dirty bool `json:"dirty" required:"true"` // dirty
 }
 
 // CreateSchemaMigration creates a new SchemaMigration in the database with the given params.
 func CreateSchemaMigration(ctx context.Context, db DB, params *SchemaMigrationCreateParams) (*SchemaMigration, error) {
-	sm := &SchemaMigration{
-		Version: params.Version,
-		Dirty:   params.Dirty,
-	}
-
-	return sm.Insert(ctx, db)
+  sm := &SchemaMigration{
+	Version: params.Version,
+	Dirty: params.Dirty,
 }
+
+  return sm.Insert(ctx, db)
+}
+
 
 // SchemaMigrationUpdateParams represents update params for 'public.schema_migrations'
 type SchemaMigrationUpdateParams struct {
 	Version *int64 `json:"version" required:"true"` // version
-	Dirty   *bool  `json:"dirty" required:"true"`   // dirty
+	Dirty *bool `json:"dirty" required:"true"` // dirty
 }
 
 // SetUpdateParams updates public.schema_migrations struct fields with the specified params.
 func (sm *SchemaMigration) SetUpdateParams(params *SchemaMigrationUpdateParams) {
-	if params.Version != nil {
-		sm.Version = *params.Version
-	}
-	if params.Dirty != nil {
-		sm.Dirty = *params.Dirty
-	}
+if params.Version != nil {
+	sm.Version = *params.Version
+}
+if params.Dirty != nil {
+	sm.Dirty = *params.Dirty
+}
 }
 
-type SchemaMigrationSelectConfig struct {
-	limit   string
-	orderBy string
-	joins   SchemaMigrationJoins
-}
-type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
 
-// WithSchemaMigrationLimit limits row selection.
-func WithSchemaMigrationLimit(limit int) SchemaMigrationSelectConfigOption {
+	type SchemaMigrationSelectConfig struct {
+		limit       string
+		orderBy     string
+		joins  SchemaMigrationJoins
+	}
+	type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
+
+	// WithSchemaMigrationLimit limits row selection.
+	func WithSchemaMigrationLimit(limit int) SchemaMigrationSelectConfigOption {
+		return func(s *SchemaMigrationSelectConfig) {
+			if limit > 0 {
+				s.limit = fmt.Sprintf(" limit %d ", limit)
+			}
+		}
+	}
+	type SchemaMigrationOrderBy = string
+	const (
+	)
+type SchemaMigrationJoins struct {
+}
+
+	// WithSchemaMigrationJoin joins with the given tables.
+func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
-		if limit > 0 {
-			s.limit = fmt.Sprintf(" limit %d ", limit)
+		s.joins = SchemaMigrationJoins{
+
+	
 		}
 	}
 }
 
-type SchemaMigrationOrderBy = string
 
-const ()
-
-type SchemaMigrationJoins struct {
-}
-
-// WithSchemaMigrationJoin joins with the given tables.
-func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectConfigOption {
-	return func(s *SchemaMigrationSelectConfig) {
-		s.joins = SchemaMigrationJoins{}
-	}
-}
 
 // Insert inserts the SchemaMigration to the database.
 func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration, error) {
-	// insert (manual)
+// insert (manual)
 	sqlstr := `INSERT INTO public.schema_migrations (` +
-		`version, dirty` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` RETURNING * `
+	 `version, dirty` +
+	 `) VALUES (` +
+	 `$1, $2` +
+	 `)` +
+	 ` RETURNING * `
 	// run
 	logf(sqlstr, sm.Version, sm.Dirty)
 	rows, err := db.Query(ctx, sqlstr, sm.Version, sm.Dirty)
@@ -101,22 +121,23 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration,
 	if err != nil {
 		return nil, logerror(fmt.Errorf("SchemaMigration/Insert/pgx.CollectOneRow: %w", err))
 	}
-	*sm = newsm
+  *sm = newsm
 
 	return sm, nil
 }
 
+
 // Update updates a SchemaMigration in the database.
-func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration, error) {
+func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration, error)  {
 	// update with composite primary key
 	sqlstr := `UPDATE public.schema_migrations SET ` +
-		`dirty = $1 ` +
-		`WHERE version = $2 ` +
-		`RETURNING * `
+	 `dirty = $1 ` +
+	 `WHERE version = $2 ` +
+	 `RETURNING * `
 	// run
 	logf(sqlstr, sm.Dirty, sm.Version)
 
-	rows, err := db.Query(ctx, sqlstr, sm.Dirty, sm.Version)
+  rows, err := db.Query(ctx, sqlstr, sm.Dirty, sm.Version)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("SchemaMigration/Update/db.Query: %w", err))
 	}
@@ -124,23 +145,24 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration,
 	if err != nil {
 		return nil, logerror(fmt.Errorf("SchemaMigration/Update/pgx.CollectOneRow: %w", err))
 	}
-	*sm = newsm
+  *sm = newsm
 
 	return sm, nil
 }
 
+
 // Upsert performs an upsert for SchemaMigration.
-func (sm *SchemaMigration) Upsert(ctx context.Context, db DB) error {
+func (sm *SchemaMigration) Upsert(ctx context.Context, db DB) (error) {
 	// upsert
 	sqlstr := `INSERT INTO public.schema_migrations (` +
-		`version, dirty` +
-		`) VALUES (` +
-		`$1, $2` +
-		`)` +
-		` ON CONFLICT (version) DO ` +
-		`UPDATE SET ` +
-		`dirty = EXCLUDED.dirty ` +
-		` RETURNING * `
+	 `version, dirty` +
+	 `) VALUES (` +
+	 `$1, $2` +
+	 `)` +
+	 ` ON CONFLICT (version) DO ` +
+	 `UPDATE SET ` +
+	 `dirty = EXCLUDED.dirty ` +
+	 ` RETURNING * `
 	// run
 	logf(sqlstr, sm.Version, sm.Dirty)
 	if _, err := db.Exec(ctx, sqlstr, sm.Version, sm.Dirty); err != nil {
@@ -151,10 +173,10 @@ func (sm *SchemaMigration) Upsert(ctx context.Context, db DB) error {
 }
 
 // Delete deletes the SchemaMigration from the database.
-func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
-	// delete with single primary key
+func (sm *SchemaMigration) Delete(ctx context.Context, db DB) (error) {
+// delete with single primary key
 	sqlstr := `DELETE FROM public.schema_migrations ` +
-		`WHERE version = $1 `
+	 `WHERE version = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, sm.Version); err != nil {
 		return logerror(err)
@@ -162,23 +184,31 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// PaginatedSchemaMigrationByVersion returns a cursor-paginated list of SchemaMigration.
-func (sm *SchemaMigration) PaginatedSchemaMigrationByVersion(ctx context.Context, db DB) ([]SchemaMigration, error) {
-	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}}
+
+
+
+
+// SchemaMigrationPaginatedByVersion returns a cursor-paginated list of SchemaMigration.
+func SchemaMigrationPaginatedByVersion(ctx context.Context, db DB, , opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
+	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{},
+}
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	sqlstr := `SELECT ` +
-		`schema_migrations.version,
+	 `schema_migrations.version,
 schema_migrations.dirty ` +
-		`FROM public.schema_migrations ` +
-		`` +
-		` WHERE schema_migrations.version > $1 `
+	 `FROM public.schema_migrations ` +
+	 `` +
+	 ` WHERE schema_migrations.version > $1 `
+	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+	sqlstr += c.limit
+
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, sm.Version, sm.Dirty, sm.Version)
+	rows, err := db.Query(ctx, sqlstr, sm.Version)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/db.Query: %w", err))
 	}
@@ -189,11 +219,13 @@ schema_migrations.dirty ` +
 	return res, nil
 }
 
+
 // SchemaMigrationByVersion retrieves a row from 'public.schema_migrations' as a SchemaMigration.
 //
 // Generated from index 'schema_migrations_pkey'.
 func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ...SchemaMigrationSelectConfigOption) (*SchemaMigration, error) {
-	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}}
+	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
@@ -201,17 +233,17 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version int64, opts ..
 
 	// query
 	sqlstr := `SELECT ` +
-		`schema_migrations.version,
+	 `schema_migrations.version,
 schema_migrations.dirty ` +
-		`FROM public.schema_migrations ` +
-		`` +
-		` WHERE schema_migrations.version = $1 `
+	 `FROM public.schema_migrations ` +
+	 `` +
+	 ` WHERE schema_migrations.version = $1 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, version)
-	rows, err := db.Query(ctx, sqlstr, version)
+  rows, err := db.Query(ctx, sqlstr, version)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/db.Query: %w", err))
 	}
@@ -219,6 +251,8 @@ schema_migrations.dirty ` +
 	if err != nil {
 		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/pgx.CollectOneRow: %w", err))
 	}
+	
 
 	return &sm, nil
 }
+

@@ -4,171 +4,179 @@ package db
 
 import (
 	"context"
+	"database/sql"
+	"database/sql/driver"
+	"encoding/csv"
+	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"regexp"
 	"strings"
 	"time"
 
+  
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/jackc/pgx/v5"
+	"github.com/lib/pq"
+	"github.com/lib/pq/hstore"
 
 	"github.com/google/uuid"
-)
 
+)
 // User represents a row from 'public.users'.
 // Change properties via SQL column comments, joined with ",":
-//   - "property:private" to exclude a field from JSON.
-//   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//     - "property:private" to exclude a field from JSON.
+//     - "type:<pkg.type>" to override the type annotation.
+//     - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type User struct {
-	UserID                   uuid.UUID     `json:"userID" db:"user_id" required:"true"`                                      // user_id
-	Username                 string        `json:"username" db:"username" required:"true"`                                   // username
-	Email                    string        `json:"email" db:"email" required:"true"`                                         // email
-	FirstName                *string       `json:"firstName" db:"first_name" required:"true"`                                // first_name
-	LastName                 *string       `json:"lastName" db:"last_name" required:"true"`                                  // last_name
-	FullName                 *string       `json:"fullName" db:"full_name" required:"true"`                                  // full_name
-	ExternalID               string        `json:"-" db:"external_id"`                                                       // external_id
-	APIKeyID                 *int          `json:"-" db:"api_key_id"`                                                        // api_key_id
-	Scopes                   models.Scopes `json:"scopes" db:"scopes" required:"true" ref:"#/components/schemas/Scopes"`     // scopes
-	RoleRank                 int16         `json:"-" db:"role_rank"`                                                         // role_rank
-	HasPersonalNotifications bool          `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true"` // has_personal_notifications
-	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true"`     // has_global_notifications
-	CreatedAt                time.Time     `json:"createdAt" db:"created_at" required:"true"`                                // created_at
-	UpdatedAt                time.Time     `json:"-" db:"updated_at"`                                                        // updated_at
-	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at" required:"true"`                                // deleted_at
+	UserID uuid.UUID `json:"userID" db:"user_id" required:"true"` // user_id
+	Username string `json:"username" db:"username" required:"true"` // username
+	Email string `json:"email" db:"email" required:"true"` // email
+	FirstName *string `json:"firstName" db:"first_name" required:"true"` // first_name
+	LastName *string `json:"lastName" db:"last_name" required:"true"` // last_name
+	FullName *string `json:"fullName" db:"full_name" required:"true"` // full_name
+	ExternalID string `json:"-" db:"external_id"` // external_id
+	APIKeyID *int `json:"-" db:"api_key_id"` // api_key_id
+	Scopes models.Scopes `json:"scopes" db:"scopes" required:"true" ref:"#/components/schemas/Scopes"` // scopes
+	RoleRank int16 `json:"-" db:"role_rank"` // role_rank
+	HasPersonalNotifications bool `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true"` // has_personal_notifications
+	HasGlobalNotifications bool `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true"` // has_global_notifications
+	CreatedAt time.Time `json:"createdAt" db:"created_at" required:"true"` // created_at
+	UpdatedAt time.Time `json:"-" db:"updated_at"` // updated_at
+	DeletedAt *time.Time `json:"deletedAt" db:"deleted_at" required:"true"` // deleted_at
 
-	NotificationsJoinReceiver *[]Notification     `json:"-" db:"notifications_receiver" openapi-go:"ignore"` // M2O
-	NotificationsJoinSender   *[]Notification     `json:"-" db:"notifications_sender" openapi-go:"ignore"`   // M2O
-	TimeEntriesJoin           *[]TimeEntry        `json:"-" db:"time_entries" openapi-go:"ignore"`           // M2O
-	UserAPIKeyJoin            *UserAPIKey         `json:"-" db:"user_api_key" openapi-go:"ignore"`           // O2O (inferred)
-	UserNotificationsJoin     *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"`     // M2O
-	TeamsJoin                 *[]Team             `json:"-" db:"teams" openapi-go:"ignore"`                  // M2M
-	WorkItemCommentsJoin      *[]WorkItemComment  `json:"-" db:"work_item_comments" openapi-go:"ignore"`     // M2O
-	WorkItemsJoin             *[]WorkItem         `json:"-" db:"work_items" openapi-go:"ignore"`             // M2M
+	NotificationsJoinReceiver *[]Notification `json:"-" db:"notifications_receiver" openapi-go:"ignore"` // M2O
+	NotificationsJoinSender *[]Notification `json:"-" db:"notifications_sender" openapi-go:"ignore"` // M2O
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
+	UserAPIKeyJoin *UserAPIKey `json:"-" db:"user_api_key" openapi-go:"ignore"` // O2O (inferred)
+	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O
+	TeamsJoin *[]Team `json:"-" db:"teams" openapi-go:"ignore"` // M2M
+	WorkItemCommentsJoin *[]WorkItemComment `json:"-" db:"work_item_comments" openapi-go:"ignore"` // M2O
+	WorkItemsJoin *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
 
 }
 
 // UserCreateParams represents insert params for 'public.users'
 type UserCreateParams struct {
-	Username                 string        `json:"username" required:"true"`                                 // username
-	Email                    string        `json:"email" required:"true"`                                    // email
-	FirstName                *string       `json:"firstName" required:"true"`                                // first_name
-	LastName                 *string       `json:"lastName" required:"true"`                                 // last_name
-	ExternalID               string        `json:"-"`                                                        // external_id
-	APIKeyID                 *int          `json:"-"`                                                        // api_key_id
-	Scopes                   models.Scopes `json:"scopes" required:"true" ref:"#/components/schemas/Scopes"` // scopes
-	RoleRank                 int16         `json:"-"`                                                        // role_rank
-	HasPersonalNotifications bool          `json:"hasPersonalNotifications" required:"true"`                 // has_personal_notifications
-	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" required:"true"`                   // has_global_notifications
+	Username string `json:"username" required:"true"` // username
+	Email string `json:"email" required:"true"` // email
+	FirstName *string `json:"firstName" required:"true"` // first_name
+	LastName *string `json:"lastName" required:"true"` // last_name
+	ExternalID string `json:"-"` // external_id
+	APIKeyID *int `json:"-"` // api_key_id
+	Scopes models.Scopes `json:"scopes" required:"true" ref:"#/components/schemas/Scopes"` // scopes
+	RoleRank int16 `json:"-"` // role_rank
+	HasPersonalNotifications bool `json:"hasPersonalNotifications" required:"true"` // has_personal_notifications
+	HasGlobalNotifications bool `json:"hasGlobalNotifications" required:"true"` // has_global_notifications
 }
 
 // CreateUser creates a new User in the database with the given params.
 func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
-	u := &User{
-		Username:                 params.Username,
-		Email:                    params.Email,
-		FirstName:                params.FirstName,
-		LastName:                 params.LastName,
-		ExternalID:               params.ExternalID,
-		APIKeyID:                 params.APIKeyID,
-		Scopes:                   params.Scopes,
-		RoleRank:                 params.RoleRank,
-		HasPersonalNotifications: params.HasPersonalNotifications,
-		HasGlobalNotifications:   params.HasGlobalNotifications,
-	}
-
-	return u.Insert(ctx, db)
+  u := &User{
+	Username: params.Username,
+	Email: params.Email,
+	FirstName: params.FirstName,
+	LastName: params.LastName,
+	ExternalID: params.ExternalID,
+	APIKeyID: params.APIKeyID,
+	Scopes: params.Scopes,
+	RoleRank: params.RoleRank,
+	HasPersonalNotifications: params.HasPersonalNotifications,
+	HasGlobalNotifications: params.HasGlobalNotifications,
 }
+
+  return u.Insert(ctx, db)
+}
+
 
 // UserUpdateParams represents update params for 'public.users'
 type UserUpdateParams struct {
-	Username                 *string        `json:"username" required:"true"`                                 // username
-	Email                    *string        `json:"email" required:"true"`                                    // email
-	FirstName                **string       `json:"firstName" required:"true"`                                // first_name
-	LastName                 **string       `json:"lastName" required:"true"`                                 // last_name
-	ExternalID               *string        `json:"-"`                                                        // external_id
-	APIKeyID                 **int          `json:"-"`                                                        // api_key_id
-	Scopes                   *models.Scopes `json:"scopes" required:"true" ref:"#/components/schemas/Scopes"` // scopes
-	RoleRank                 *int16         `json:"-"`                                                        // role_rank
-	HasPersonalNotifications *bool          `json:"hasPersonalNotifications" required:"true"`                 // has_personal_notifications
-	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications" required:"true"`                   // has_global_notifications
+	Username *string `json:"username" required:"true"` // username
+	Email *string `json:"email" required:"true"` // email
+	FirstName **string `json:"firstName" required:"true"` // first_name
+	LastName **string `json:"lastName" required:"true"` // last_name
+	ExternalID *string `json:"-"` // external_id
+	APIKeyID **int `json:"-"` // api_key_id
+	Scopes *models.Scopes `json:"scopes" required:"true" ref:"#/components/schemas/Scopes"` // scopes
+	RoleRank *int16 `json:"-"` // role_rank
+	HasPersonalNotifications *bool `json:"hasPersonalNotifications" required:"true"` // has_personal_notifications
+	HasGlobalNotifications *bool `json:"hasGlobalNotifications" required:"true"` // has_global_notifications
 }
 
 // SetUpdateParams updates public.users struct fields with the specified params.
 func (u *User) SetUpdateParams(params *UserUpdateParams) {
-	if params.Username != nil {
-		u.Username = *params.Username
-	}
-	if params.Email != nil {
-		u.Email = *params.Email
-	}
-	if params.FirstName != nil {
-		u.FirstName = *params.FirstName
-	}
-	if params.LastName != nil {
-		u.LastName = *params.LastName
-	}
-	if params.ExternalID != nil {
-		u.ExternalID = *params.ExternalID
-	}
-	if params.APIKeyID != nil {
-		u.APIKeyID = *params.APIKeyID
-	}
-	if params.Scopes != nil {
-		u.Scopes = *params.Scopes
-	}
-	if params.RoleRank != nil {
-		u.RoleRank = *params.RoleRank
-	}
-	if params.HasPersonalNotifications != nil {
-		u.HasPersonalNotifications = *params.HasPersonalNotifications
-	}
-	if params.HasGlobalNotifications != nil {
-		u.HasGlobalNotifications = *params.HasGlobalNotifications
-	}
+if params.Username != nil {
+	u.Username = *params.Username
+}
+if params.Email != nil {
+	u.Email = *params.Email
+}
+if params.FirstName != nil {
+	u.FirstName = *params.FirstName
+}
+if params.LastName != nil {
+	u.LastName = *params.LastName
+}
+if params.ExternalID != nil {
+	u.ExternalID = *params.ExternalID
+}
+if params.APIKeyID != nil {
+	u.APIKeyID = *params.APIKeyID
+}
+if params.Scopes != nil {
+	u.Scopes = *params.Scopes
+}
+if params.RoleRank != nil {
+	u.RoleRank = *params.RoleRank
+}
+if params.HasPersonalNotifications != nil {
+	u.HasPersonalNotifications = *params.HasPersonalNotifications
+}
+if params.HasGlobalNotifications != nil {
+	u.HasGlobalNotifications = *params.HasGlobalNotifications
+}
 }
 
-type UserSelectConfig struct {
-	limit     string
-	orderBy   string
-	joins     UserJoins
-	deletedAt string
-}
-type UserSelectConfigOption func(*UserSelectConfig)
 
-// WithUserLimit limits row selection.
-func WithUserLimit(limit int) UserSelectConfigOption {
-	return func(s *UserSelectConfig) {
-		if limit > 0 {
-			s.limit = fmt.Sprintf(" limit %d ", limit)
+	type UserSelectConfig struct {
+		limit       string
+		orderBy     string
+		joins  UserJoins
+			deletedAt   string
+	}
+	type UserSelectConfigOption func(*UserSelectConfig)
+
+	// WithUserLimit limits row selection.
+	func WithUserLimit(limit int) UserSelectConfigOption {
+		return func(s *UserSelectConfig) {
+			if limit > 0 {
+				s.limit = fmt.Sprintf(" limit %d ", limit)
+			}
 		}
 	}
-}
-
-// WithDeletedUserOnly limits result to records marked as deleted.
-func WithDeletedUserOnly() UserSelectConfigOption {
-	return func(s *UserSelectConfig) {
-		s.deletedAt = " not null "
+	// WithDeletedUserOnly limits result to records marked as deleted.
+	func WithDeletedUserOnly() UserSelectConfigOption {
+		return func(s *UserSelectConfig) {
+			s.deletedAt = " not null "
+		}
 	}
-}
-
-type UserOrderBy = string
-
-const (
+	type UserOrderBy = string
+	const (
 	UserCreatedAtDescNullsFirst UserOrderBy = " created_at DESC NULLS FIRST "
-	UserCreatedAtDescNullsLast  UserOrderBy = " created_at DESC NULLS LAST "
-	UserCreatedAtAscNullsFirst  UserOrderBy = " created_at ASC NULLS FIRST "
-	UserCreatedAtAscNullsLast   UserOrderBy = " created_at ASC NULLS LAST "
-	UserUpdatedAtDescNullsFirst UserOrderBy = " updated_at DESC NULLS FIRST "
-	UserUpdatedAtDescNullsLast  UserOrderBy = " updated_at DESC NULLS LAST "
-	UserUpdatedAtAscNullsFirst  UserOrderBy = " updated_at ASC NULLS FIRST "
-	UserUpdatedAtAscNullsLast   UserOrderBy = " updated_at ASC NULLS LAST "
-	UserDeletedAtDescNullsFirst UserOrderBy = " deleted_at DESC NULLS FIRST "
-	UserDeletedAtDescNullsLast  UserOrderBy = " deleted_at DESC NULLS LAST "
-	UserDeletedAtAscNullsFirst  UserOrderBy = " deleted_at ASC NULLS FIRST "
-	UserDeletedAtAscNullsLast   UserOrderBy = " deleted_at ASC NULLS LAST "
-)
+			UserCreatedAtDescNullsLast UserOrderBy = " created_at DESC NULLS LAST "
+			UserCreatedAtAscNullsFirst UserOrderBy = " created_at ASC NULLS FIRST "
+			UserCreatedAtAscNullsLast UserOrderBy = " created_at ASC NULLS LAST "
+			UserUpdatedAtDescNullsFirst UserOrderBy = " updated_at DESC NULLS FIRST "
+			UserUpdatedAtDescNullsLast UserOrderBy = " updated_at DESC NULLS LAST "
+			UserUpdatedAtAscNullsFirst UserOrderBy = " updated_at ASC NULLS FIRST "
+			UserUpdatedAtAscNullsLast UserOrderBy = " updated_at ASC NULLS LAST "
+			UserDeletedAtDescNullsFirst UserOrderBy = " deleted_at DESC NULLS FIRST "
+			UserDeletedAtDescNullsLast UserOrderBy = " deleted_at DESC NULLS LAST "
+			UserDeletedAtAscNullsFirst UserOrderBy = " deleted_at ASC NULLS FIRST "
+			UserDeletedAtAscNullsLast UserOrderBy = " deleted_at ASC NULLS LAST "
+			)
 
-// WithUserOrderBy orders results by the given columns.
+	// WithUserOrderBy orders results by the given columns.
 func WithUserOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		if len(rows) > 0 {
@@ -177,43 +185,45 @@ func WithUserOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 		}
 	}
 }
-
-type UserJoins struct {
-	NotificationsReceiver bool
-	NotificationsSender   bool
-	TimeEntries           bool
-	UserAPIKey            bool
-	UserNotifications     bool
-	Teams                 bool
-	WorkItemComments      bool
-	WorkItems             bool
+	type UserJoins struct {
+NotificationsReceiver bool
+NotificationsSender bool
+TimeEntries bool
+UserAPIKey bool
+UserNotifications bool
+Teams bool
+WorkItemComments bool
+WorkItems bool
 }
 
-// WithUserJoin joins with the given tables.
+	// WithUserJoin joins with the given tables.
 func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		s.joins = UserJoins{
 
-			NotificationsReceiver: s.joins.NotificationsReceiver || joins.NotificationsReceiver,
-			NotificationsSender:   s.joins.NotificationsSender || joins.NotificationsSender,
-			TimeEntries:           s.joins.TimeEntries || joins.TimeEntries,
-			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
-			UserNotifications:     s.joins.UserNotifications || joins.UserNotifications,
-			Teams:                 s.joins.Teams || joins.Teams,
-			WorkItemComments:      s.joins.WorkItemComments || joins.WorkItemComments,
-			WorkItems:             s.joins.WorkItems || joins.WorkItems,
+			NotificationsReceiver:  s.joins.NotificationsReceiver || joins.NotificationsReceiver,
+		NotificationsSender:  s.joins.NotificationsSender || joins.NotificationsSender,
+		TimeEntries:  s.joins.TimeEntries || joins.TimeEntries,
+		UserAPIKey:  s.joins.UserAPIKey || joins.UserAPIKey,
+		UserNotifications:  s.joins.UserNotifications || joins.UserNotifications,
+		Teams:  s.joins.Teams || joins.Teams,
+		WorkItemComments:  s.joins.WorkItemComments || joins.WorkItemComments,
+		WorkItems:  s.joins.WorkItems || joins.WorkItems,
+
 		}
 	}
 }
 
+
+
 // Insert inserts the User to the database.
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
-	// insert (primary key generated and returned by database)
+// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.users (` +
-		`username, email, first_name, last_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11` +
-		`) RETURNING * `
+	 `username, email, first_name, last_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
+	 `) VALUES (` +
+	 `$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11` +
+	 `) RETURNING * `
 	// run
 	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
 
@@ -226,22 +236,23 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 		return nil, logerror(fmt.Errorf("User/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	*u = newu
+  *u = newu
 
 	return u, nil
 }
 
+
 // Update updates a User in the database.
-func (u *User) Update(ctx context.Context, db DB) (*User, error) {
+func (u *User) Update(ctx context.Context, db DB) (*User, error)  {
 	// update with composite primary key
 	sqlstr := `UPDATE public.users SET ` +
-		`username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, has_personal_notifications = $9, has_global_notifications = $10, deleted_at = $11 ` +
-		`WHERE user_id = $12 ` +
-		`RETURNING * `
+	 `username = $1, email = $2, first_name = $3, last_name = $4, external_id = $5, api_key_id = $6, scopes = $7, role_rank = $8, has_personal_notifications = $9, has_global_notifications = $10, deleted_at = $11 ` +
+	 `WHERE user_id = $12 ` +
+	 `RETURNING * `
 	// run
 	logf(sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
 
-	rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt, u.UserID)
+  rows, err := db.Query(ctx, sqlstr, u.Username, u.Email, u.FirstName, u.LastName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt, u.UserID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Update/db.Query: %w", err))
 	}
@@ -249,23 +260,24 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Update/pgx.CollectOneRow: %w", err))
 	}
-	*u = newu
+  *u = newu
 
 	return u, nil
 }
 
+
 // Upsert performs an upsert for User.
-func (u *User) Upsert(ctx context.Context, db DB) error {
+func (u *User) Upsert(ctx context.Context, db DB) (error) {
 	// upsert
 	sqlstr := `INSERT INTO public.users (` +
-		`user_id, username, email, first_name, last_name, full_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13` +
-		`)` +
-		` ON CONFLICT (user_id) DO ` +
-		`UPDATE SET ` +
-		`username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, deleted_at = EXCLUDED.deleted_at ` +
-		` RETURNING * `
+	 `user_id, username, email, first_name, last_name, full_name, external_id, api_key_id, scopes, role_rank, has_personal_notifications, has_global_notifications, deleted_at` +
+	 `) VALUES (` +
+	 `$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13` +
+	 `)` +
+	 ` ON CONFLICT (user_id) DO ` +
+	 `UPDATE SET ` +
+	 `username = EXCLUDED.username, email = EXCLUDED.email, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, external_id = EXCLUDED.external_id, api_key_id = EXCLUDED.api_key_id, scopes = EXCLUDED.scopes, role_rank = EXCLUDED.role_rank, has_personal_notifications = EXCLUDED.has_personal_notifications, has_global_notifications = EXCLUDED.has_global_notifications, deleted_at = EXCLUDED.deleted_at ` +
+	 ` RETURNING * `
 	// run
 	logf(sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt)
 	if _, err := db.Exec(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.DeletedAt); err != nil {
@@ -276,10 +288,10 @@ func (u *User) Upsert(ctx context.Context, db DB) error {
 }
 
 // Delete deletes the User from the database.
-func (u *User) Delete(ctx context.Context, db DB) error {
-	// delete with single primary key
+func (u *User) Delete(ctx context.Context, db DB) (error) {
+// delete with single primary key
 	sqlstr := `DELETE FROM public.users ` +
-		`WHERE user_id = $1 `
+	 `WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
 		return logerror(err)
@@ -287,18 +299,19 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+
 // SoftDelete soft deletes the User from the database via 'deleted_at'.
-func (u *User) SoftDelete(ctx context.Context, db DB) error {
+func (u *User) SoftDelete(ctx context.Context, db DB) (error) {
 	// delete with single primary key
 	sqlstr := `UPDATE public.users ` +
-		`SET deleted_at = NOW() ` +
-		`WHERE user_id = $1 `
+	 `SET deleted_at = NOW() ` +
+	 `WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
 		return logerror(err)
 	}
 	// set deleted
-	u.DeletedAt = newPointer(time.Now())
+  u.DeletedAt = newPointer(time.Now())
 
 	return nil
 }
@@ -306,23 +319,28 @@ func (u *User) SoftDelete(ctx context.Context, db DB) error {
 // Restore restores a soft deleted User from the database.
 func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 	u.DeletedAt = nil
-	newu, err := u.Update(ctx, db)
+	newu, err:= u.Update(ctx,db)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Restore/pgx.CollectRows: %w", err))
 	}
 	return newu, nil
 }
 
-// PaginatedUserByUserID returns a cursor-paginated list of User.
-func (u *User) PaginatedUserByUserID(ctx context.Context, db DB) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
+
+
+
+// UserPaginatedByUserID returns a cursor-paginated list of User.
+func UserPaginatedByUserID(ctx context.Context, db DB, , opts ...UserSelectConfigOption) ([]User, error) {
+	c := &UserSelectConfig{deletedAt: " null ",joins: UserJoins{},
+}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`users.user_id,
+	sqlstr := fmt.Sprintf(`SELECT ` +
+	 `users.user_id,
 users.username,
 users.email,
 users.first_name,
@@ -344,9 +362,9 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
+(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.users ` +
+	 `-- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
   receiver as notifications_user_id
@@ -412,11 +430,14 @@ left join (
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
-`+
-		` WHERE users.user_id > $9  AND users.deleted_at is %s `, c.deletedAt)
+` +
+	 ` WHERE users.user_id > $9  AND users.deleted_at is %s `, c.deletedAt)
+	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+	sqlstr += c.limit
+
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.UserID)
+	rows, err := db.Query(ctx, sqlstr, u.UserID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", err))
 	}
@@ -427,16 +448,18 @@ left join (
 	return res, nil
 }
 
-// PaginatedUserByCreatedAt returns a cursor-paginated list of User.
-func (u *User) PaginatedUserByCreatedAt(ctx context.Context, db DB) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+
+// UserPaginatedByCreatedAt returns a cursor-paginated list of User.
+func UserPaginatedByCreatedAt(ctx context.Context, db DB, , opts ...UserSelectConfigOption) ([]User, error) {
+	c := &UserSelectConfig{deletedAt: " null ",joins: UserJoins{},
+}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`users.user_id,
+	sqlstr := fmt.Sprintf(`SELECT ` +
+	 `users.user_id,
 users.username,
 users.email,
 users.first_name,
@@ -458,9 +481,9 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
+(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.users ` +
+	 `-- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
   receiver as notifications_user_id
@@ -526,11 +549,14 @@ left join (
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
-`+
-		` WHERE users.created_at > $9  AND users.deleted_at is %s `, c.deletedAt)
+` +
+	 ` WHERE users.created_at > $9  AND users.deleted_at is %s `, c.deletedAt)
+	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+	sqlstr += c.limit
+
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.FullName, u.ExternalID, u.APIKeyID, u.Scopes, u.RoleRank, u.HasPersonalNotifications, u.HasGlobalNotifications, u.CreatedAt, u.UpdatedAt, u.DeletedAt, u.CreatedAt)
+	rows, err := db.Query(ctx, sqlstr, u.CreatedAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", err))
 	}
@@ -540,20 +566,22 @@ left join (
 	}
 	return res, nil
 }
+
 
 // UsersByCreatedAt retrieves a row from 'public.users' as a User.
 //
 // Generated from index 'users_created_at_idx'.
 func UsersByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ",joins: UserJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`users.user_id,
+	sqlstr := fmt.Sprintf(`SELECT ` +
+	 `users.user_id,
 users.username,
 users.email,
 users.first_name,
@@ -575,9 +603,9 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
+(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.users ` +
+	 `-- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
   receiver as notifications_user_id
@@ -643,8 +671,8 @@ left join (
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
-`+
-		` WHERE users.created_at = $9  AND users.deleted_at is %s `, c.deletedAt)
+` +
+	 ` WHERE users.created_at = $9  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -656,7 +684,7 @@ left join (
 	}
 	defer rows.Close()
 	// process
-
+  
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByCreatedAt/pgx.CollectRows: %w", err))
@@ -668,15 +696,16 @@ left join (
 //
 // Generated from index 'users_created_at_key'.
 func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ",joins: UserJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`users.user_id,
+	sqlstr := fmt.Sprintf(`SELECT ` +
+	 `users.user_id,
 users.username,
 users.email,
 users.first_name,
@@ -698,9 +727,9 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
+(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.users ` +
+	 `-- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
   receiver as notifications_user_id
@@ -766,14 +795,14 @@ left join (
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
-`+
-		` WHERE users.created_at = $9  AND users.deleted_at is %s `, c.deletedAt)
+` +
+	 ` WHERE users.created_at = $9  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.Teams, c.joins.WorkItemComments, c.joins.WorkItems, createdAt)
+  rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.Teams, c.joins.WorkItemComments, c.joins.WorkItems, createdAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", err))
 	}
@@ -781,6 +810,7 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/pgx.CollectOneRow: %w", err))
 	}
+	
 
 	return &u, nil
 }
@@ -789,15 +819,16 @@ left join (
 //
 // Generated from index 'users_deleted_at_idx'.
 func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " not null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " not null ",joins: UserJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`users.user_id,
+	sqlstr := fmt.Sprintf(`SELECT ` +
+	 `users.user_id,
 users.username,
 users.email,
 users.first_name,
@@ -819,9 +850,9 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
+(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.users ` +
+	 `-- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
   receiver as notifications_user_id
@@ -887,8 +918,8 @@ left join (
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
-`+
-		` WHERE users.deleted_at = $9 AND (deleted_at IS NOT NULL)  AND users.deleted_at is %s `, c.deletedAt)
+` +
+	 ` WHERE users.deleted_at = $9 AND (deleted_at IS NOT NULL)  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -900,7 +931,7 @@ left join (
 	}
 	defer rows.Close()
 	// process
-
+  
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByDeletedAt/pgx.CollectRows: %w", err))
@@ -912,15 +943,16 @@ left join (
 //
 // Generated from index 'users_email_key'.
 func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ",joins: UserJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`users.user_id,
+	sqlstr := fmt.Sprintf(`SELECT ` +
+	 `users.user_id,
 users.username,
 users.email,
 users.first_name,
@@ -942,9 +974,9 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
+(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.users ` +
+	 `-- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
   receiver as notifications_user_id
@@ -1010,14 +1042,14 @@ left join (
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
-`+
-		` WHERE users.email = $9  AND users.deleted_at is %s `, c.deletedAt)
+` +
+	 ` WHERE users.email = $9  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, email)
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.Teams, c.joins.WorkItemComments, c.joins.WorkItems, email)
+  rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.Teams, c.joins.WorkItemComments, c.joins.WorkItems, email)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByEmail/db.Query: %w", err))
 	}
@@ -1025,6 +1057,7 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByEmail/pgx.CollectOneRow: %w", err))
 	}
+	
 
 	return &u, nil
 }
@@ -1033,15 +1066,16 @@ left join (
 //
 // Generated from index 'users_external_id_key'.
 func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ",joins: UserJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`users.user_id,
+	sqlstr := fmt.Sprintf(`SELECT ` +
+	 `users.user_id,
 users.username,
 users.email,
 users.first_name,
@@ -1063,9 +1097,9 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
+(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.users ` +
+	 `-- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
   receiver as notifications_user_id
@@ -1131,14 +1165,14 @@ left join (
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
-`+
-		` WHERE users.external_id = $9  AND users.deleted_at is %s `, c.deletedAt)
+` +
+	 ` WHERE users.external_id = $9  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, externalID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.Teams, c.joins.WorkItemComments, c.joins.WorkItems, externalID)
+  rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.Teams, c.joins.WorkItemComments, c.joins.WorkItems, externalID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByExternalID/db.Query: %w", err))
 	}
@@ -1146,6 +1180,7 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByExternalID/pgx.CollectOneRow: %w", err))
 	}
+	
 
 	return &u, nil
 }
@@ -1154,15 +1189,16 @@ left join (
 //
 // Generated from index 'users_pkey'.
 func UserByUserID(ctx context.Context, db DB, userID uuid.UUID, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ",joins: UserJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`users.user_id,
+	sqlstr := fmt.Sprintf(`SELECT ` +
+	 `users.user_id,
 users.username,
 users.email,
 users.first_name,
@@ -1184,9 +1220,9 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
+(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.users ` +
+	 `-- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
   receiver as notifications_user_id
@@ -1252,14 +1288,14 @@ left join (
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
-`+
-		` WHERE users.user_id = $9  AND users.deleted_at is %s `, c.deletedAt)
+` +
+	 ` WHERE users.user_id = $9  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.Teams, c.joins.WorkItemComments, c.joins.WorkItems, userID)
+  rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.Teams, c.joins.WorkItemComments, c.joins.WorkItems, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", err))
 	}
@@ -1267,6 +1303,7 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/pgx.CollectOneRow: %w", err))
 	}
+	
 
 	return &u, nil
 }
@@ -1275,15 +1312,16 @@ left join (
 //
 // Generated from index 'users_updated_at_idx'.
 func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ",joins: UserJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`users.user_id,
+	sqlstr := fmt.Sprintf(`SELECT ` +
+	 `users.user_id,
 users.username,
 users.email,
 users.first_name,
@@ -1305,9 +1343,9 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
+(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.users ` +
+	 `-- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
   receiver as notifications_user_id
@@ -1373,8 +1411,8 @@ left join (
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
-`+
-		` WHERE users.updated_at = $9  AND users.deleted_at is %s `, c.deletedAt)
+` +
+	 ` WHERE users.updated_at = $9  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -1386,7 +1424,7 @@ left join (
 	}
 	defer rows.Close()
 	// process
-
+  
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByUpdatedAt/pgx.CollectRows: %w", err))
@@ -1398,15 +1436,16 @@ left join (
 //
 // Generated from index 'users_username_key'.
 func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}}
+	c := &UserSelectConfig{deletedAt: " null ",joins: UserJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	// query
-	sqlstr := fmt.Sprintf(`SELECT `+
-		`users.user_id,
+	sqlstr := fmt.Sprintf(`SELECT ` +
+	 `users.user_id,
 users.username,
 users.email,
 users.first_name,
@@ -1428,9 +1467,9 @@ users.deleted_at,
 (case when $5::boolean = true then COALESCE(joined_user_notifications.user_notifications, '{}') end) as user_notifications,
 (case when $6::boolean = true then COALESCE(joined_teams.__teams, '{}') end) as teams,
 (case when $7::boolean = true then COALESCE(joined_work_item_comments.work_item_comments, '{}') end) as work_item_comments,
-(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items `+
-		`FROM public.users `+
-		`-- M2O join generated from "notifications_receiver_fkey"
+(case when $8::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+	 `FROM public.users ` +
+	 `-- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
   receiver as notifications_user_id
@@ -1496,14 +1535,14 @@ left join (
     	join work_items on work_items.work_item_id = work_item_member.work_item_id
     group by work_item_member_member
   ) as joined_work_items on joined_work_items.work_item_member_member = users.user_id
-`+
-		` WHERE users.username = $9  AND users.deleted_at is %s `, c.deletedAt)
+` +
+	 ` WHERE users.username = $9  AND users.deleted_at is %s `, c.deletedAt)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, username)
-	rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.Teams, c.joins.WorkItemComments, c.joins.WorkItems, username)
+  rows, err := db.Query(ctx, sqlstr, c.joins.NotificationsReceiver, c.joins.NotificationsSender, c.joins.TimeEntries, c.joins.UserAPIKey, c.joins.UserNotifications, c.joins.Teams, c.joins.WorkItemComments, c.joins.WorkItems, username)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUsername/db.Query: %w", err))
 	}
@@ -1511,6 +1550,10 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUsername/pgx.CollectOneRow: %w", err))
 	}
+	
 
 	return &u, nil
 }
+
+
+

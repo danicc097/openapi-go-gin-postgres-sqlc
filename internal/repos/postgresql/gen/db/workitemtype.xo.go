@@ -4,122 +4,139 @@ package db
 
 import (
 	"context"
+	"database/sql"
+	"database/sql/driver"
+	"encoding/csv"
+	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"regexp"
+	"strings"
+	"time"
 
-	"github.com/jackc/pgx/v5"
+  
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/lib/pq"
+	"github.com/lib/pq/hstore"
+
+	"github.com/google/uuid"
+
 )
-
 // WorkItemType represents a row from 'public.work_item_types'.
 // Change properties via SQL column comments, joined with ",":
-//   - "property:private" to exclude a field from JSON.
-//   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//     - "property:private" to exclude a field from JSON.
+//     - "type:<pkg.type>" to override the type annotation.
+//     - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
 type WorkItemType struct {
-	WorkItemTypeID int    `json:"workItemTypeID" db:"work_item_type_id" required:"true"` // work_item_type_id
-	ProjectID      int    `json:"projectID" db:"project_id" required:"true"`             // project_id
-	Name           string `json:"name" db:"name" required:"true"`                        // name
-	Description    string `json:"description" db:"description" required:"true"`          // description
-	Color          string `json:"color" db:"color" required:"true"`                      // color
+	WorkItemTypeID int `json:"workItemTypeID" db:"work_item_type_id" required:"true"` // work_item_type_id
+	ProjectID int `json:"projectID" db:"project_id" required:"true"` // project_id
+	Name string `json:"name" db:"name" required:"true"` // name
+	Description string `json:"description" db:"description" required:"true"` // description
+	Color string `json:"color" db:"color" required:"true"` // color
 
-	ProjectJoin       *Project        `json:"-" db:"project" openapi-go:"ignore"`         // O2O (generated from M2O)
-	WorkItemJoin      *WorkItem       `json:"-" db:"work_item" openapi-go:"ignore"`       // O2O (inferred)
-	WorkItemTypeJoin  *WorkItemType   `json:"-" db:"work_item_type" openapi-go:"ignore"`  // O2O (generated from M2O)
+	ProjectJoin *Project `json:"-" db:"project" openapi-go:"ignore"` // O2O (generated from M2O)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred)
+	WorkItemTypeJoin *WorkItemType `json:"-" db:"work_item_type" openapi-go:"ignore"` // O2O (generated from M2O)
 	WorkItemTypesJoin *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"` // M2O
 
 }
 
 // WorkItemTypeCreateParams represents insert params for 'public.work_item_types'
 type WorkItemTypeCreateParams struct {
-	ProjectID   int    `json:"projectID" required:"true"`   // project_id
-	Name        string `json:"name" required:"true"`        // name
+	ProjectID int `json:"projectID" required:"true"` // project_id
+	Name string `json:"name" required:"true"` // name
 	Description string `json:"description" required:"true"` // description
-	Color       string `json:"color" required:"true"`       // color
+	Color string `json:"color" required:"true"` // color
 }
 
 // CreateWorkItemType creates a new WorkItemType in the database with the given params.
 func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreateParams) (*WorkItemType, error) {
-	wit := &WorkItemType{
-		ProjectID:   params.ProjectID,
-		Name:        params.Name,
-		Description: params.Description,
-		Color:       params.Color,
-	}
-
-	return wit.Insert(ctx, db)
+  wit := &WorkItemType{
+	ProjectID: params.ProjectID,
+	Name: params.Name,
+	Description: params.Description,
+	Color: params.Color,
 }
+
+  return wit.Insert(ctx, db)
+}
+
 
 // WorkItemTypeUpdateParams represents update params for 'public.work_item_types'
 type WorkItemTypeUpdateParams struct {
-	ProjectID   *int    `json:"projectID" required:"true"`   // project_id
-	Name        *string `json:"name" required:"true"`        // name
+	ProjectID *int `json:"projectID" required:"true"` // project_id
+	Name *string `json:"name" required:"true"` // name
 	Description *string `json:"description" required:"true"` // description
-	Color       *string `json:"color" required:"true"`       // color
+	Color *string `json:"color" required:"true"` // color
 }
 
 // SetUpdateParams updates public.work_item_types struct fields with the specified params.
 func (wit *WorkItemType) SetUpdateParams(params *WorkItemTypeUpdateParams) {
-	if params.ProjectID != nil {
-		wit.ProjectID = *params.ProjectID
-	}
-	if params.Name != nil {
-		wit.Name = *params.Name
-	}
-	if params.Description != nil {
-		wit.Description = *params.Description
-	}
-	if params.Color != nil {
-		wit.Color = *params.Color
-	}
+if params.ProjectID != nil {
+	wit.ProjectID = *params.ProjectID
+}
+if params.Name != nil {
+	wit.Name = *params.Name
+}
+if params.Description != nil {
+	wit.Description = *params.Description
+}
+if params.Color != nil {
+	wit.Color = *params.Color
+}
 }
 
-type WorkItemTypeSelectConfig struct {
-	limit   string
-	orderBy string
-	joins   WorkItemTypeJoins
-}
-type WorkItemTypeSelectConfigOption func(*WorkItemTypeSelectConfig)
 
-// WithWorkItemTypeLimit limits row selection.
-func WithWorkItemTypeLimit(limit int) WorkItemTypeSelectConfigOption {
-	return func(s *WorkItemTypeSelectConfig) {
-		if limit > 0 {
-			s.limit = fmt.Sprintf(" limit %d ", limit)
+	type WorkItemTypeSelectConfig struct {
+		limit       string
+		orderBy     string
+		joins  WorkItemTypeJoins
+	}
+	type WorkItemTypeSelectConfigOption func(*WorkItemTypeSelectConfig)
+
+	// WithWorkItemTypeLimit limits row selection.
+	func WithWorkItemTypeLimit(limit int) WorkItemTypeSelectConfigOption {
+		return func(s *WorkItemTypeSelectConfig) {
+			if limit > 0 {
+				s.limit = fmt.Sprintf(" limit %d ", limit)
+			}
 		}
 	}
-}
-
-type WorkItemTypeOrderBy = string
-
-const ()
-
+	type WorkItemTypeOrderBy = string
+	const (
+	)
 type WorkItemTypeJoins struct {
-	Project       bool
-	WorkItem      bool
-	WorkItemType  bool
-	WorkItemTypes bool
+Project bool
+WorkItem bool
+WorkItemType bool
+WorkItemTypes bool
 }
 
-// WithWorkItemTypeJoin joins with the given tables.
+	// WithWorkItemTypeJoin joins with the given tables.
 func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOption {
 	return func(s *WorkItemTypeSelectConfig) {
 		s.joins = WorkItemTypeJoins{
 
-			Project:       s.joins.Project || joins.Project,
-			WorkItem:      s.joins.WorkItem || joins.WorkItem,
-			WorkItemType:  s.joins.WorkItemType || joins.WorkItemType,
-			WorkItemTypes: s.joins.WorkItemTypes || joins.WorkItemTypes,
+			Project:  s.joins.Project || joins.Project,
+		WorkItem:  s.joins.WorkItem || joins.WorkItem,
+		WorkItemType:  s.joins.WorkItemType || joins.WorkItemType,
+		WorkItemTypes:  s.joins.WorkItemTypes || joins.WorkItemTypes,
+
 		}
 	}
 }
 
+
+
 // Insert inserts the WorkItemType to the database.
 func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, error) {
-	// insert (primary key generated and returned by database)
+// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_types (` +
-		`project_id, name, description, color` +
-		`) VALUES (` +
-		`$1, $2, $3, $4` +
-		`) RETURNING * `
+	 `project_id, name, description, color` +
+	 `) VALUES (` +
+	 `$1, $2, $3, $4` +
+	 `) RETURNING * `
 	// run
 	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color)
 
@@ -132,22 +149,23 @@ func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, erro
 		return nil, logerror(fmt.Errorf("WorkItemType/Insert/pgx.CollectOneRow: %w", err))
 	}
 
-	*wit = newwit
+  *wit = newwit
 
 	return wit, nil
 }
 
+
 // Update updates a WorkItemType in the database.
-func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, error) {
+func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, error)  {
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_types SET ` +
-		`project_id = $1, name = $2, description = $3, color = $4 ` +
-		`WHERE work_item_type_id = $5 ` +
-		`RETURNING * `
+	 `project_id = $1, name = $2, description = $3, color = $4 ` +
+	 `WHERE work_item_type_id = $5 ` +
+	 `RETURNING * `
 	// run
 	logf(sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
 
-	rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
+  rows, err := db.Query(ctx, sqlstr, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Update/db.Query: %w", err))
 	}
@@ -155,23 +173,24 @@ func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, erro
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Update/pgx.CollectOneRow: %w", err))
 	}
-	*wit = newwit
+  *wit = newwit
 
 	return wit, nil
 }
 
+
 // Upsert performs an upsert for WorkItemType.
-func (wit *WorkItemType) Upsert(ctx context.Context, db DB) error {
+func (wit *WorkItemType) Upsert(ctx context.Context, db DB) (error) {
 	// upsert
 	sqlstr := `INSERT INTO public.work_item_types (` +
-		`work_item_type_id, project_id, name, description, color` +
-		`) VALUES (` +
-		`$1, $2, $3, $4, $5` +
-		`)` +
-		` ON CONFLICT (work_item_type_id) DO ` +
-		`UPDATE SET ` +
-		`project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color ` +
-		` RETURNING * `
+	 `work_item_type_id, project_id, name, description, color` +
+	 `) VALUES (` +
+	 `$1, $2, $3, $4, $5` +
+	 `)` +
+	 ` ON CONFLICT (work_item_type_id) DO ` +
+	 `UPDATE SET ` +
+	 `project_id = EXCLUDED.project_id, name = EXCLUDED.name, description = EXCLUDED.description, color = EXCLUDED.color ` +
+	 ` RETURNING * `
 	// run
 	logf(sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color)
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color); err != nil {
@@ -182,10 +201,10 @@ func (wit *WorkItemType) Upsert(ctx context.Context, db DB) error {
 }
 
 // Delete deletes the WorkItemType from the database.
-func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
-	// delete with single primary key
+func (wit *WorkItemType) Delete(ctx context.Context, db DB) (error) {
+// delete with single primary key
 	sqlstr := `DELETE FROM public.work_item_types ` +
-		`WHERE work_item_type_id = $1 `
+	 `WHERE work_item_type_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTypeID); err != nil {
 		return logerror(err)
@@ -193,16 +212,21 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// PaginatedWorkItemTypeByWorkItemTypeID returns a cursor-paginated list of WorkItemType.
-func (wit *WorkItemType) PaginatedWorkItemTypeByWorkItemTypeID(ctx context.Context, db DB) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+
+
+
+
+// WorkItemTypePaginatedByWorkItemTypeID returns a cursor-paginated list of WorkItemType.
+func WorkItemTypePaginatedByWorkItemTypeID(ctx context.Context, db DB, , opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{},
+}
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	sqlstr := `SELECT ` +
-		`work_item_types.work_item_type_id,
+	 `work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
@@ -211,8 +235,8 @@ work_item_types.color,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
 (case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
 (case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
+	 `FROM public.work_item_types ` +
+	 `-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
@@ -227,10 +251,13 @@ left join (
     work_item_types
   group by
         name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
-		` WHERE work_item_types.work_item_type_id > $5 `
+	 ` WHERE work_item_types.work_item_type_id > $5 `
+	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+	sqlstr += c.limit
+
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.WorkItemTypeID)
+	rows, err := db.Query(ctx, sqlstr, wit.WorkItemTypeID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/db.Query: %w", err))
 	}
@@ -241,16 +268,18 @@ left join (
 	return res, nil
 }
 
-// PaginatedWorkItemTypeByProjectID returns a cursor-paginated list of WorkItemType.
-func (wit *WorkItemType) PaginatedWorkItemTypeByProjectID(ctx context.Context, db DB) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+
+// WorkItemTypePaginatedByProjectID returns a cursor-paginated list of WorkItemType.
+func WorkItemTypePaginatedByProjectID(ctx context.Context, db DB, , opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{},
+}
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	sqlstr := `SELECT ` +
-		`work_item_types.work_item_type_id,
+	 `work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
@@ -259,8 +288,8 @@ work_item_types.color,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
 (case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
 (case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
+	 `FROM public.work_item_types ` +
+	 `-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
@@ -275,10 +304,13 @@ left join (
     work_item_types
   group by
         name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
-		` WHERE work_item_types.project_id > $5 `
+	 ` WHERE work_item_types.project_id > $5 `
+	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+	sqlstr += c.limit
+
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.ProjectID)
+	rows, err := db.Query(ctx, sqlstr, wit.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/db.Query: %w", err))
 	}
@@ -289,16 +321,18 @@ left join (
 	return res, nil
 }
 
-// PaginatedWorkItemTypeByProjectID returns a cursor-paginated list of WorkItemType.
-func (wit *WorkItemType) PaginatedWorkItemTypeByProjectID(ctx context.Context, db DB) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+
+// WorkItemTypePaginatedByProjectID returns a cursor-paginated list of WorkItemType.
+func WorkItemTypePaginatedByProjectID(ctx context.Context, db DB, , opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{},
+}
 
 	for _, o := range opts {
 		o(c)
 	}
 
 	sqlstr := `SELECT ` +
-		`work_item_types.work_item_type_id,
+	 `work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
@@ -307,8 +341,8 @@ work_item_types.color,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
 (case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
 (case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
+	 `FROM public.work_item_types ` +
+	 `-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
@@ -323,10 +357,13 @@ left join (
     work_item_types
   group by
         name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
-		` WHERE work_item_types.project_id > $5 `
+	 ` WHERE work_item_types.project_id > $5 `
+	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+	sqlstr += c.limit
+
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, wit.WorkItemTypeID, wit.ProjectID, wit.Name, wit.Description, wit.Color, wit.ProjectID)
+	rows, err := db.Query(ctx, sqlstr, wit.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/db.Query: %w", err))
 	}
@@ -336,12 +373,14 @@ left join (
 	}
 	return res, nil
 }
+
 
 // WorkItemTypeByNameProjectID retrieves a row from 'public.work_item_types' as a WorkItemType.
 //
 // Generated from index 'work_item_types_name_project_id_key'.
 func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projectID int, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
@@ -349,7 +388,7 @@ func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projec
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_types.work_item_type_id,
+	 `work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
@@ -358,8 +397,8 @@ work_item_types.color,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
 (case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
 (case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
+	 `FROM public.work_item_types ` +
+	 `-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
@@ -374,13 +413,13 @@ left join (
     work_item_types
   group by
         name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
-		` WHERE work_item_types.name = $5 AND work_item_types.project_id = $6 `
+	 ` WHERE work_item_types.name = $5 AND work_item_types.project_id = $6 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.WorkItemType, c.joins.WorkItemTypes, name, projectID)
+  rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.WorkItemType, c.joins.WorkItemTypes, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByNameProjectID/db.Query: %w", err))
 	}
@@ -388,6 +427,7 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByNameProjectID/pgx.CollectOneRow: %w", err))
 	}
+	
 
 	return &wit, nil
 }
@@ -396,7 +436,8 @@ left join (
 //
 // Generated from index 'work_item_types_name_project_id_key'.
 func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
@@ -404,7 +445,7 @@ func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkIt
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_types.work_item_type_id,
+	 `work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
@@ -413,8 +454,8 @@ work_item_types.color,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
 (case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
 (case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
+	 `FROM public.work_item_types ` +
+	 `-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
@@ -429,7 +470,7 @@ left join (
     work_item_types
   group by
         name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
-		` WHERE work_item_types.name = $5 `
+	 ` WHERE work_item_types.name = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -441,7 +482,7 @@ left join (
 	}
 	defer rows.Close()
 	// process
-
+  
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemType])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/pgx.CollectRows: %w", err))
@@ -453,7 +494,8 @@ left join (
 //
 // Generated from index 'work_item_types_name_project_id_key'.
 func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
@@ -461,7 +503,7 @@ func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID int, opts ..
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_types.work_item_type_id,
+	 `work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
@@ -470,8 +512,8 @@ work_item_types.color,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
 (case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
 (case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
+	 `FROM public.work_item_types ` +
+	 `-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
@@ -486,7 +528,7 @@ left join (
     work_item_types
   group by
         name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
-		` WHERE work_item_types.project_id = $5 `
+	 ` WHERE work_item_types.project_id = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
@@ -498,7 +540,7 @@ left join (
 	}
 	defer rows.Close()
 	// process
-
+  
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemType])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/pgx.CollectRows: %w", err))
@@ -510,7 +552,8 @@ left join (
 //
 // Generated from index 'work_item_types_pkey'.
 func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID int, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{},
+  }
 
 	for _, o := range opts {
 		o(c)
@@ -518,7 +561,7 @@ func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID int
 
 	// query
 	sqlstr := `SELECT ` +
-		`work_item_types.work_item_type_id,
+	 `work_item_types.work_item_type_id,
 work_item_types.project_id,
 work_item_types.name,
 work_item_types.description,
@@ -527,8 +570,8 @@ work_item_types.color,
 (case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item,
 (case when $3::boolean = true and work_item_types.name is not null then row(work_item_types.*) end) as work_item_type,
 (case when $4::boolean = true then COALESCE(joined_work_item_types.work_item_types, '{}') end) as work_item_types ` +
-		`FROM public.work_item_types ` +
-		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
+	 `FROM public.work_item_types ` +
+	 `-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects on projects.project_id = work_item_types.project_id
 -- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
 left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id
@@ -543,13 +586,13 @@ left join (
     work_item_types
   group by
         name) joined_work_item_types on joined_work_item_types.work_item_types_project_id = work_item_types.project_id` +
-		` WHERE work_item_types.work_item_type_id = $5 `
+	 ` WHERE work_item_types.work_item_type_id = $5 `
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 
 	// run
 	// logf(sqlstr, workItemTypeID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.WorkItemType, c.joins.WorkItemTypes, workItemTypeID)
+  rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.WorkItemType, c.joins.WorkItemTypes, workItemTypeID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByWorkItemTypeID/db.Query: %w", err))
 	}
@@ -557,6 +600,10 @@ left join (
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByWorkItemTypeID/pgx.CollectOneRow: %w", err))
 	}
+	
 
 	return &wit, nil
 }
+
+
+

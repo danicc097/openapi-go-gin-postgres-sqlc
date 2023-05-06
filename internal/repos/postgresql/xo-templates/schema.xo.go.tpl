@@ -100,7 +100,7 @@ NOTE: instead using inferred O2O joins now
 // {{ func_name_context $i "" }} retrieves a row from '{{ schema $i.Table.SQLName }}' as a {{ $i.Table.GoName }}.
 //
 // Generated from index '{{ $i.SQLName }}'.
-{{ func_context $i }} {
+{{ func_context $i "" "" }} {
 	{{ initial_opts $i }}
 
 	for _, o := range opts {
@@ -153,7 +153,7 @@ NOTE: instead using inferred O2O joins now
 {{- $ps := .Data -}}
 {{- range $p := $ps -}}
 // {{ func_name_context $p "" }} calls the stored {{ $p.Type }} '{{ $p.Signature }}' on db.
-{{ func_context $p }} {
+{{ func_context $p "" "" }} {
 {{- if and (driver "mysql") (eq $p.Type "procedure") (not $p.Void) }}
 	// At the moment, the Go MySQL driver does not support stored procedures
 	// with out parameters
@@ -387,9 +387,9 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 {{ end }}
 
 {{ range cursor_columns $t $constraints $tables }}
-{{ $suffix := print $t.GoName "By" (fields_to_goname . "") }}
-// {{ func_name_context_suffixed "Paginated" $suffix }} returns a cursor-paginated list of {{ $t.GoName }}.
-{{ recv_context_suffixed $t "Paginated" $suffix }} {
+{{ $suffix := print "PaginatedBy" (fields_to_goname . "") }}
+// {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{ $t.GoName }}.
+{{ func_context $t $suffix "" }} {
 	{{ initial_opts $t }}
 
 	for _, o := range opts {
@@ -397,6 +397,9 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	}
 
 	{{ sqlstr_paginated $t $constraints $tables . }}
+	// TODO order by hardcoded default desc, if specific index  found generate reversed where ... < $i order by ... asc
+	sqlstr += c.limit
+
 	// run
 
 	rows, err := {{ db_paginated "Query" $t . }}
