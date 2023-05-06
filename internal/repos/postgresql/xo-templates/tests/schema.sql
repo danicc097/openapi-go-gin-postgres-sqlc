@@ -1,7 +1,5 @@
 create schema if not exists extensions;
 
-create extension if not exists "uuid-ossp" schema extensions;
-
 create table users (
   user_id uuid default gen_random_uuid () primary key
   , name text not null

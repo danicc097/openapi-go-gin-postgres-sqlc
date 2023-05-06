@@ -26,8 +26,6 @@ set search_path = public , extensions;
 -- Namespace to "audit"
 create schema if not exists audit;
 
-create extension if not exists "uuid-ossp" schema extensions;
-
 create extension if not exists plpgsql_check schema extensions;
 
 -- Create enum type for SQL operations to reduce disk/memory usage vs text
@@ -125,11 +123,11 @@ create or replace function audit.to_record_id (entity_oid oid , pkey_cols text[]
     case when rec is null then
       null
     when pkey_cols = array[]::text[] then
-      uuid_generate_v4 ()
+      gen_random_uuid ()
     else
       (
         select
-          uuid_generate_v5 ('fd62bc3d-8d6e-43c2-919c-802ba3762271' , (JSONB_BUILD_ARRAY(to_jsonb ($1)) || JSONB_AGG($3 ->> key_))::text)
+          MD5('fd62bc3d-8d6e-43c2-919c-802ba3762271' || (JSONB_BUILD_ARRAY(to_jsonb ($1)) || JSONB_AGG($3 ->> key_))::text)::uuid
         from
           UNNEST($2) x (key_))
     end
@@ -139,7 +137,7 @@ create or replace function audit.insert_update_delete_trigger ()
   returns trigger
   security definer
   -- can not use search_path = '' here because audit.to_record_id requires
-  -- uuid_generate_v4, which may be installed in a user-defined schema
+  -- gen_random_uuid, which may be installed in a user-defined schema
   language plpgsql
   as $$
 declare
