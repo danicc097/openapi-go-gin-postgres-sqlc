@@ -18,7 +18,7 @@ func main() {
 	// in this example it will be handled in-memory
 	storage := storage.NewStorage(storage.NewUserStore())
 
-	port := "10001"
+	port := "10001" // exposed on OIDC_SERVER_PORT
 
 	issuer := os.Getenv("OIDC_ISSUER")
 	router := exampleop.SetupServer(ctx, issuer, storage)

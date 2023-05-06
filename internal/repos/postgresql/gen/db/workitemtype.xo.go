@@ -99,7 +99,6 @@ type WorkItemTypeJoins struct {
 func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOption {
 	return func(s *WorkItemTypeSelectConfig) {
 		s.joins = WorkItemTypeJoins{
-
 			Project:  s.joins.Project || joins.Project,
 			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
@@ -187,6 +186,84 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// WorkItemTypePaginatedByWorkItemTypeID returns a cursor-paginated list of WorkItemType.
+func WorkItemTypePaginatedByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`work_item_types.work_item_type_id,
+work_item_types.project_id,
+work_item_types.name,
+work_item_types.description,
+work_item_types.color,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
+		`FROM public.work_item_types ` +
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
+left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
+		` WHERE work_item_types.work_item_type_id > $3` +
+		` ORDER BY 
+		work_item_type_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, workItemTypeID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemType])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemTypePaginatedByProjectID returns a cursor-paginated list of WorkItemType.
+func WorkItemTypePaginatedByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`work_item_types.work_item_type_id,
+work_item_types.project_id,
+work_item_types.name,
+work_item_types.description,
+work_item_types.color,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.work_item_type_id is not null then row(work_items.*) end) as work_item ` +
+		`FROM public.work_item_types ` +
+		`-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = work_item_types.project_id
+-- O2O join generated from "work_items_work_item_type_id_fkey(O2O inferred)"
+left join work_items on work_items.work_item_type_id = work_item_types.work_item_type_id` +
+		` WHERE work_item_types.project_id > $3` +
+		` ORDER BY 
+		project_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, projectID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemType])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // WorkItemTypeByNameProjectID retrieves a row from 'public.work_item_types' as a WorkItemType.
 //
 // Generated from index 'work_item_types_name_project_id_key'.
@@ -261,14 +338,14 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, name)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemType])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -305,14 +382,14 @@ left join work_items on work_items.work_item_type_id = work_item_types.work_item
 	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, projectID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemType])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

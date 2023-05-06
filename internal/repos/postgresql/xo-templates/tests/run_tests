@@ -5,7 +5,7 @@ exit_code=0
 CWD="$(dirname -- "$0")"
 
 echo
-echo Testing for file discrepancies...
+echo "Testing for file discrepancies..."
 
 for want_file in "$CWD"/want/*; do
   got_file="$CWD/got/${want_file##*/want/}"

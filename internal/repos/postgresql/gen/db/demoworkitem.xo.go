@@ -116,7 +116,6 @@ type DemoWorkItemJoins struct {
 func WithDemoWorkItemJoin(joins DemoWorkItemJoins) DemoWorkItemSelectConfigOption {
 	return func(s *DemoWorkItemSelectConfig) {
 		s.joins = DemoWorkItemJoins{
-
 			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
 	}
@@ -202,6 +201,42 @@ func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// DemoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of DemoWorkItem.
+func DemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
+	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`demo_work_items.work_item_id,
+demo_work_items.ref,
+demo_work_items.line,
+demo_work_items.last_message_at,
+demo_work_items.reopened,
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
+		`FROM public.demo_work_items ` +
+		`-- O2O join generated from "demo_work_items_work_item_id_fkey"
+left join work_items on work_items.work_item_id = demo_work_items.work_item_id` +
+		` WHERE demo_work_items.work_item_id > $2` +
+		` ORDER BY 
+		work_item_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, workItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // DemoWorkItemByWorkItemID retrieves a row from 'public.demo_work_items' as a DemoWorkItem.
 //
 // Generated from index 'demo_work_items_pkey'.
@@ -270,14 +305,14 @@ left join work_items on work_items.work_item_id = demo_work_items.work_item_id` 
 	// logf(sqlstr, ref, line)
 	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, ref, line)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("DemoWorkItem/DemoWorkItemsByRefLine/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/DemoWorkItemsByRefLine/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

@@ -99,7 +99,6 @@ type ActivityJoins struct {
 func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 	return func(s *ActivitySelectConfig) {
 		s.joins = ActivityJoins{
-
 			Project:     s.joins.Project || joins.Project,
 			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
 		}
@@ -185,6 +184,98 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	return nil
+}
+
+// ActivityPaginatedByActivityID returns a cursor-paginated list of Activity.
+func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`activities.activity_id,
+activities.project_id,
+activities.name,
+activities.description,
+activities.is_productive,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
+		`FROM public.activities ` +
+		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = activities.project_id
+-- M2O join generated from "time_entries_activity_id_fkey"
+left join (
+  select
+  activity_id as time_entries_activity_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
+		` WHERE activities.activity_id > $3` +
+		` ORDER BY 
+		activity_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, activityID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// ActivityPaginatedByProjectID returns a cursor-paginated list of Activity.
+func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID int, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+	c := &ActivitySelectConfig{joins: ActivityJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`activities.activity_id,
+activities.project_id,
+activities.name,
+activities.description,
+activities.is_productive,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries ` +
+		`FROM public.activities ` +
+		`-- O2O join generated from "activities_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = activities.project_id
+-- M2O join generated from "time_entries_activity_id_fkey"
+left join (
+  select
+  activity_id as time_entries_activity_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        activity_id) joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id` +
+		` WHERE activities.project_id > $3` +
+		` ORDER BY 
+		project_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, projectID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
 }
 
 // ActivityByNameProjectID retrieves a row from 'public.activities' as a Activity.
@@ -275,14 +366,14 @@ left join (
 	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, name)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -326,14 +417,14 @@ left join (
 	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, projectID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

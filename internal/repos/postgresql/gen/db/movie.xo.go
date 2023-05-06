@@ -171,6 +171,39 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// MoviePaginatedByMovieID returns a cursor-paginated list of Movie.
+func MoviePaginatedByMovieID(ctx context.Context, db DB, movieID int, opts ...MovieSelectConfigOption) ([]Movie, error) {
+	c := &MovieSelectConfig{joins: MovieJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`movies.movie_id,
+movies.title,
+movies.year,
+movies.synopsis ` +
+		`FROM public.movies ` +
+		`` +
+		` WHERE movies.movie_id > $1` +
+		` ORDER BY 
+		movie_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, movieID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Movie/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Movie])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Movie/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // MovieByMovieID retrieves a row from 'public.movies' as a Movie.
 //
 // Generated from index 'movies_pkey'.

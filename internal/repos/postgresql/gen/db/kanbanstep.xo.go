@@ -113,7 +113,6 @@ type KanbanStepJoins struct {
 func WithKanbanStepJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
 	return func(s *KanbanStepSelectConfig) {
 		s.joins = KanbanStepJoins{
-
 			Project:  s.joins.Project || joins.Project,
 			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
@@ -199,6 +198,129 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	return nil
+}
+
+// KanbanStepPaginatedByKanbanStepID returns a cursor-paginated list of KanbanStep.
+func KanbanStepPaginatedByKanbanStepID(ctx context.Context, db DB, kanbanStepID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`kanban_steps.kanban_step_id,
+kanban_steps.project_id,
+kanban_steps.step_order,
+kanban_steps.name,
+kanban_steps.description,
+kanban_steps.color,
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
+		`FROM public.kanban_steps ` +
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = kanban_steps.project_id
+-- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
+		` WHERE kanban_steps.kanban_step_id > $3` +
+		` ORDER BY 
+		kanban_step_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, kanbanStepID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// KanbanStepPaginatedByProjectID returns a cursor-paginated list of KanbanStep.
+func KanbanStepPaginatedByProjectID(ctx context.Context, db DB, projectID int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`kanban_steps.kanban_step_id,
+kanban_steps.project_id,
+kanban_steps.step_order,
+kanban_steps.name,
+kanban_steps.description,
+kanban_steps.color,
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
+		`FROM public.kanban_steps ` +
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = kanban_steps.project_id
+-- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
+		` WHERE kanban_steps.project_id > $3` +
+		` ORDER BY 
+		project_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, projectID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// KanbanStepPaginatedByStepOrder returns a cursor-paginated list of KanbanStep.
+func KanbanStepPaginatedByStepOrder(ctx context.Context, db DB, stepOrder int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`kanban_steps.kanban_step_id,
+kanban_steps.project_id,
+kanban_steps.step_order,
+kanban_steps.name,
+kanban_steps.description,
+kanban_steps.color,
+kanban_steps.time_trackable,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true and work_items.kanban_step_id is not null then row(work_items.*) end) as work_item ` +
+		`FROM public.kanban_steps ` +
+		`-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = kanban_steps.project_id
+-- O2O join generated from "work_items_kanban_step_id_fkey(O2O inferred)"
+left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id` +
+		` WHERE kanban_steps.step_order > $3` +
+		` ORDER BY 
+		step_order DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, stepOrder)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
 }
 
 // KanbanStepByKanbanStepID retrieves a row from 'public.kanban_steps' as a KanbanStep.
@@ -323,14 +445,14 @@ left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id`
 	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, projectID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -369,14 +491,14 @@ left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id`
 	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, name)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -415,14 +537,14 @@ left join work_items on work_items.kanban_step_id = kanban_steps.kanban_step_id`
 	// logf(sqlstr, stepOrder)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, stepOrder)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[KanbanStep])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

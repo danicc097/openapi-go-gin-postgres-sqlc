@@ -22,7 +22,7 @@ func NewNotification() *Notification {
 
 var _ repos.Notification = (*Notification)(nil)
 
-// TODO see internal/repos/postgresql/TODO.md
+// TODO see internal/repos/postgresql/TODO.md to have xo generate paginated queries
 // using created_at > @last_notification_created_at is all we need at the very least. add more parameters
 // to ensure uniqueness in more complex cases
 // TODO database sql not needed with jet. we generate raw sql and parameters from jet and then call pgx.

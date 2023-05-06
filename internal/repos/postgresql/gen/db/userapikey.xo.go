@@ -108,7 +108,6 @@ type UserAPIKeyJoins struct {
 func WithUserAPIKeyJoin(joins UserAPIKeyJoins) UserAPIKeySelectConfigOption {
 	return func(s *UserAPIKeySelectConfig) {
 		s.joins = UserAPIKeyJoins{
-
 			User: s.joins.User || joins.User,
 		}
 	}
@@ -193,6 +192,41 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	return nil
+}
+
+// UserAPIKeyPaginatedByUserAPIKeyID returns a cursor-paginated list of UserAPIKey.
+func UserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID int, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
+	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`user_api_keys.user_api_key_id,
+user_api_keys.api_key,
+user_api_keys.expires_on,
+user_api_keys.user_id,
+(case when $1::boolean = true and users.api_key_id is not null then row(users.*) end) as user ` +
+		`FROM public.user_api_keys ` +
+		`-- O2O join generated from "users_api_key_id_fkey(O2O inferred)"
+left join users on users.api_key_id = user_api_keys.user_api_key_id` +
+		` WHERE user_api_keys.user_api_key_id > $2` +
+		` ORDER BY 
+		user_api_key_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, userAPIKeyID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
 }
 
 // UserAPIKeyByAPIKey retrieves a row from 'public.user_api_keys' as a UserAPIKey.

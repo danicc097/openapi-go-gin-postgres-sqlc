@@ -77,36 +77,30 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{/* generated queries from foreign keys */}}
 
 {{ define "foreignkey" }}
-{{/* {{- $k := .Data -}}
+{{/*
+NOTE: instead using inferred O2O joins now
+{{- $k := .Data -}}
 // {{ func_name_context $k }} returns the {{ $k.RefTable }} associated with the {{ $k.Table.GoName }}'s ({{ names "" $k.Fields }}).
 //
 // Generated from foreign key '{{ $k.SQLName }}'.
 {{ recv_context $k.Table $k }} {
 	return {{ foreign_key_context $k }}
 }
-{{- if context_both }}
-
-// {{ func_name $k }} returns the {{ $k.RefTable }} associated with the {{ $k.Table }}'s ({{ names "" $k.Fields }}).
-//
-// Generated from foreign key '{{ $k.SQLName }}'.
-{{ recv $k.Table $k }} {
-	return {{ foreign_key $k }}
-}
-{{- end }} */}}
+*/}}
 {{ end }}
 
 {{/*
-generated queries from indexes
+  generated queries from indexes
 */}}
 
 {{ define "index" }}
 {{- $i := .Data.Index -}}
 {{- $tables := .Data.Tables -}}
 {{- $constraints := .Data.Constraints -}}
-// {{ func_name_context $i }} retrieves a row from '{{ schema $i.Table.SQLName }}' as a {{ $i.Table.GoName }}.
+// {{ func_name_context $i "" }} retrieves a row from '{{ schema $i.Table.SQLName }}' as a {{ $i.Table.GoName }}.
 //
 // Generated from index '{{ $i.SQLName }}'.
-{{ func_context $i }} {
+{{ func_context $i "" "" }} {
 	{{ initial_opts $i }}
 
 	for _, o := range opts {
@@ -138,14 +132,14 @@ generated queries from indexes
 {{- else }}
 	rows, err := {{ db "Query" $i }}
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("{{ $i.Table.GoName }}/{{ $i.Func }}/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
   {{/* might need to use non pointer []<st> in return if we get a NumField of non-struct type*/}}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[{{$i.Table.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("{{ $i.Table.GoName }}/{{ $i.Func }}/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 {{- end }}
@@ -158,8 +152,8 @@ generated queries from indexes
 {{ define "procs" }}
 {{- $ps := .Data -}}
 {{- range $p := $ps -}}
-// {{ func_name_context $p }} calls the stored {{ $p.Type }} '{{ $p.Signature }}' on db.
-{{ func_context $p }} {
+// {{ func_name_context $p "" }} calls the stored {{ $p.Type }} '{{ $p.Signature }}' on db.
+{{ func_context $p "" "" }} {
 {{- if and (driver "mysql") (eq $p.Type "procedure") (not $p.Void) }}
 	// At the moment, the Go MySQL driver does not support stored procedures
 	// with out parameters
@@ -259,8 +253,8 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
 {{ if $t.PrimaryKeys -}}
 
-// {{ func_name_context "Insert" }} inserts the {{ $t.GoName }} to the database.
-{{ recv_context $t "Insert" }} {
+// {{ func_name_context "Insert" "" }} inserts the {{ $t.GoName }} to the database.
+{{ recv_context $t "Insert" "" }} {
 {{ if and (eq (len $t.Generated) 0) (eq (len $t.Ignored) 0) -}}
 	// insert (manual)
 	{{ sqlstr "insert_manual" $t }}
@@ -294,19 +288,12 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	return {{ short $t }}, nil
 }
 
-{{ if context_both -}}
-// Insert inserts the {{ $t.GoName }} to the database.
-{{ recv $t "Insert" }} {
-	return {{ short $t }}.InsertContext(context.Background(), db)
-}
-{{- end }}
-
 
 {{ if not_updatable $t.Fields -}}
 // ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
 {{- else -}}
-// {{ func_name_context "Update" }} updates a {{ $t.GoName }} in the database.
-{{ recv_context $t "Update" }}  {
+// {{ func_name_context "Update" "" }} updates a {{ $t.GoName }} in the database.
+{{ recv_context $t "Update" "" }}  {
 	// update with {{ if driver "postgres" }}composite {{ end }}primary key
 	{{ sqlstr "update" $t }}
 	// run
@@ -325,15 +312,9 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	return {{ short $t }}, nil
 }
 
-{{ if context_both -}}
-// Update updates a {{ $t.GoName }} in the database.
-{{ recv $t "Update" }} {
-	return {{ short $t }}.UpdateContext(context.Background(), db)
-}
-{{- end }}
 
-// {{ func_name_context "Upsert" }} performs an upsert for {{ $t.GoName }}.
-{{ recv_context $t "Upsert" }} {
+// {{ func_name_context "Upsert" "" }} performs an upsert for {{ $t.GoName }}.
+{{ recv_context $t "Upsert" "" }} {
 	// upsert
 	{{ sqlstr "upsert" $t }}
 	// run
@@ -345,16 +326,10 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	return nil
 }
 
-{{ if context_both -}}
-// Upsert performs an upsert for {{ $t.GoName }}.
-{{ recv $t "Upsert" }} {
-	return {{ short $t }}.UpsertContext(context.Background(), db)
-}
-{{- end -}}
 {{- end }}
 
-// {{ func_name_context "Delete" }} deletes the {{ $t.GoName }} from the database.
-{{ recv_context $t "Delete" }} {
+// {{ func_name_context "Delete" "" }} deletes the {{ $t.GoName }} from the database.
+{{ recv_context $t "Delete" "" }} {
 {{ if eq (len $t.PrimaryKeys) 1 -}}
 	// delete with single primary key
 	{{ sqlstr "delete" $t }}
@@ -373,17 +348,11 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	return nil
 }
 
-{{ if context_both -}}
-// Delete deletes the {{ $t.GoName }} from the database.
-{{ recv $t "Delete" }} {
-	return {{ short $t }}.DeleteContext(context.Background(), db)
-}
-{{- end -}}
 {{- end }}
 
 {{ if (has_deleted_at $t) }}
-// {{ func_name_context "SoftDelete" }} soft deletes the {{ $t.GoName }} from the database via 'deleted_at'.
-{{ recv_context $t "SoftDelete" }} {
+// {{ func_name_context "SoftDelete" "" }} soft deletes the {{ $t.GoName }} from the database via 'deleted_at'.
+{{ recv_context $t "SoftDelete" "" }} {
 	{{ if eq (len $t.PrimaryKeys) 1 -}}
 	// delete with single primary key
 	{{ sqlstr "soft_delete" $t }}
@@ -405,16 +374,43 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	return nil
 }
 
-// {{ func_name_context "Restore" }} restores a soft deleted {{ $t.GoName }} from the database.
-{{ recv_context $t "Restore" }} {
+// {{ func_name_context "Restore" "" }} restores a soft deleted {{ $t.GoName }} from the database.
+{{ recv_context $t "Restore" "" }} {
 	{{ short $t }}.DeletedAt = nil
 	new{{ short $t }}, err:= {{ short $t }}.Update(ctx,db)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Restore/pgx.CollectRows: %w", err))
 	}
 	return new{{ short $t }}, nil
 }
 
+{{ end }}
+
+{{ range cursor_columns $t $constraints $tables }}
+{{ $suffix := print "PaginatedBy" (fields_to_goname . "") }}
+// {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{ $t.GoName }}.
+{{ func_context $t $suffix . }} {
+	{{ initial_opts $t }}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	{{ sqlstr_paginated $t $constraints $tables . }}
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := {{ db_paginated "Query" $t . }}
+	if err != nil {
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
 {{ end }}
 
 {{ end }}

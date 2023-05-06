@@ -10,12 +10,8 @@ export PROC=$$
 
 source "${BASH_SOURCE%/*}/.helpers.sh"
 source "${BASH_SOURCE%/*}/.project.dependencies.sh"
-# source "${BASH_SOURCE%/*}/lib/oo-bootstrap/oo-bootstrap.sh"
 
 ensure_pwd_is_top_level
-
-# breaks ci when there's an error
-# import util/log util/exception util/tryCatch util/namedParameters
 
 set -Eeo pipefail
 set -o errtrace
@@ -773,7 +769,7 @@ x.gen.build-tools() {
 
     mkdir -p $out_dir
     for cmd in pregen postgen gen-schema oapi-codegen jet; do
-      echo Building $cmd...
+      echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go ||
         echo "${YELLOW}[WARNING] Could not rebuild $cmd. If you made changes to it, build it with a compilable app state${OFF}" >&2; } &
     done
@@ -806,8 +802,8 @@ x.lint.go() {
       -not -path "**/*.gen.*" \
       -name "*.go")
 
-    goimports -w $files || echo Linting failed
-    gofumpt -w $files || echo Linting failed
+    goimports -w $files || echo "Linting failed"
+    gofumpt -w $files || echo "Linting failed"
 
     echo "Success"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

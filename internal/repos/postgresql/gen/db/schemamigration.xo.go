@@ -162,6 +162,37 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// SchemaMigrationPaginatedByVersion returns a cursor-paginated list of SchemaMigration.
+func SchemaMigrationPaginatedByVersion(ctx context.Context, db DB, version int64, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
+	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`schema_migrations.version,
+schema_migrations.dirty ` +
+		`FROM public.schema_migrations ` +
+		`` +
+		` WHERE schema_migrations.version > $1` +
+		` ORDER BY 
+		version DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, version)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[SchemaMigration])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // SchemaMigrationByVersion retrieves a row from 'public.schema_migrations' as a SchemaMigration.
 //
 // Generated from index 'schema_migrations_pkey'.

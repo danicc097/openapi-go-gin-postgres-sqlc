@@ -170,6 +170,80 @@ func (br *BookReview) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// BookReviewPaginatedByBookReviewID returns a cursor-paginated list of BookReview.
+func BookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookReviewID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`book_reviews.book_review_id,
+book_reviews.book_id,
+book_reviews.reviewer,
+(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+		`FROM public.book_reviews ` +
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
+left join books on books.book_id = book_reviews.book_id
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
+left join users on users.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.book_review_id > $3` +
+		` ORDER BY 
+		book_review_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, bookReviewID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookReview])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// BookReviewPaginatedByBookID returns a cursor-paginated list of BookReview.
+func BookReviewPaginatedByBookID(ctx context.Context, db DB, bookID int, opts ...BookReviewSelectConfigOption) ([]BookReview, error) {
+	c := &BookReviewSelectConfig{joins: BookReviewJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`book_reviews.book_review_id,
+book_reviews.book_id,
+book_reviews.reviewer,
+(case when $1::boolean = true and books.book_id is not null then row(books.*) end) as book,
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+		`FROM public.book_reviews ` +
+		`-- O2O join generated from "book_reviews_book_id_fkey (Generated from M2O)"
+left join books on books.book_id = book_reviews.book_id
+-- O2O join generated from "book_reviews_reviewer_fkey (Generated from M2O)"
+left join users on users.user_id = book_reviews.reviewer` +
+		` WHERE book_reviews.book_id > $3` +
+		` ORDER BY 
+		book_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, bookID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookReview])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("BookReview/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // BookReviewByBookReviewID retrieves a row from 'public.book_reviews' as a BookReview.
 //
 // Generated from index 'book_reviews_pkey'.
@@ -280,14 +354,14 @@ left join users on users.user_id = book_reviews.reviewer` +
 	// logf(sqlstr, reviewer)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, reviewer)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookReview])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -322,14 +396,14 @@ left join users on users.user_id = book_reviews.reviewer` +
 	// logf(sqlstr, bookID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[BookReview])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

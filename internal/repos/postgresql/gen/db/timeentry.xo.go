@@ -142,7 +142,6 @@ type TimeEntryJoins struct {
 func WithTimeEntryJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
 		s.joins = TimeEntryJoins{
-
 			Activity: s.joins.Activity || joins.Activity,
 			Team:     s.joins.Team || joins.Team,
 			User:     s.joins.User || joins.User,
@@ -230,6 +229,54 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	return nil
+}
+
+// TimeEntryPaginatedByTimeEntryID returns a cursor-paginated list of TimeEntry.
+func TimeEntryPaginatedByTimeEntryID(ctx context.Context, db DB, timeEntryID int64, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
+	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`time_entries.time_entry_id,
+time_entries.work_item_id,
+time_entries.activity_id,
+time_entries.team_id,
+time_entries.user_id,
+time_entries.comment,
+time_entries.start,
+time_entries.duration_minutes,
+(case when $1::boolean = true and activities.activity_id is not null then row(activities.*) end) as activity,
+(case when $2::boolean = true and teams.team_id is not null then row(teams.*) end) as team,
+(case when $3::boolean = true and users.user_id is not null then row(users.*) end) as user,
+(case when $4::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
+		`FROM public.time_entries ` +
+		`-- O2O join generated from "time_entries_activity_id_fkey (Generated from M2O)"
+left join activities on activities.activity_id = time_entries.activity_id
+-- O2O join generated from "time_entries_team_id_fkey (Generated from M2O)"
+left join teams on teams.team_id = time_entries.team_id
+-- O2O join generated from "time_entries_user_id_fkey (Generated from M2O)"
+left join users on users.user_id = time_entries.user_id
+-- O2O join generated from "time_entries_work_item_id_fkey (Generated from M2O)"
+left join work_items on work_items.work_item_id = time_entries.work_item_id` +
+		` WHERE time_entries.time_entry_id > $5` +
+		` ORDER BY 
+		time_entry_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, timeEntryID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[TimeEntry])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
 }
 
 // TimeEntryByTimeEntryID retrieves a row from 'public.time_entries' as a TimeEntry.
@@ -324,14 +371,14 @@ left join work_items on work_items.work_item_id = time_entries.work_item_id` +
 	// logf(sqlstr, userID, teamID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Activity, c.joins.Team, c.joins.User, c.joins.WorkItem, userID, teamID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByUserIDTeamID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByUserIDTeamID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -377,14 +424,14 @@ left join work_items on work_items.work_item_id = time_entries.work_item_id` +
 	// logf(sqlstr, workItemID, teamID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Activity, c.joins.Team, c.joins.User, c.joins.WorkItem, workItemID, teamID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByWorkItemIDTeamID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByWorkItemIDTeamID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

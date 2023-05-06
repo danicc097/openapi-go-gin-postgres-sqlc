@@ -95,7 +95,6 @@ type DemoTwoWorkItemJoins struct {
 func WithDemoTwoWorkItemJoin(joins DemoTwoWorkItemJoins) DemoTwoWorkItemSelectConfigOption {
 	return func(s *DemoTwoWorkItemSelectConfig) {
 		s.joins = DemoTwoWorkItemJoins{
-
 			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
 	}
@@ -179,6 +178,39 @@ func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	return nil
+}
+
+// DemoTwoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of DemoTwoWorkItem.
+func DemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID int64, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
+	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`demo_two_work_items.work_item_id,
+demo_two_work_items.custom_date_for_project_2,
+(case when $1::boolean = true and work_items.work_item_id is not null then row(work_items.*) end) as work_item ` +
+		`FROM public.demo_two_work_items ` +
+		`-- O2O join generated from "demo_two_work_items_work_item_id_fkey"
+left join work_items on work_items.work_item_id = demo_two_work_items.work_item_id` +
+		` WHERE demo_two_work_items.work_item_id > $2` +
+		` ORDER BY 
+		work_item_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, workItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoTwoWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
 }
 
 // DemoTwoWorkItemByWorkItemID retrieves a row from 'public.demo_two_work_items' as a DemoTwoWorkItem.

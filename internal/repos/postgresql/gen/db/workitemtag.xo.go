@@ -99,7 +99,6 @@ type WorkItemTagJoins struct {
 func WithWorkItemTagJoin(joins WorkItemTagJoins) WorkItemTagSelectConfigOption {
 	return func(s *WorkItemTagSelectConfig) {
 		s.joins = WorkItemTagJoins{
-
 			Project:   s.joins.Project || joins.Project,
 			WorkItems: s.joins.WorkItems || joins.WorkItems,
 		}
@@ -185,6 +184,100 @@ func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	return nil
+}
+
+// WorkItemTagPaginatedByWorkItemTagID returns a cursor-paginated list of WorkItemTag.
+func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTagID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`work_item_tags.work_item_tag_id,
+work_item_tags.project_id,
+work_item_tags.name,
+work_item_tags.description,
+work_item_tags.color,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+		`FROM public.work_item_tags ` +
+		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = work_item_tags.project_id
+-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+		from work_item_work_item_tag
+    	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+    group by work_item_work_item_tag_work_item_tag_id
+  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
+` +
+		` WHERE work_item_tags.work_item_tag_id > $3` +
+		` ORDER BY 
+		work_item_tag_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, workItemTagID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// WorkItemTagPaginatedByProjectID returns a cursor-paginated list of WorkItemTag.
+func WorkItemTagPaginatedByProjectID(ctx context.Context, db DB, projectID int, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
+	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`work_item_tags.work_item_tag_id,
+work_item_tags.project_id,
+work_item_tags.name,
+work_item_tags.description,
+work_item_tags.color,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_work_items.__work_items, '{}') end) as work_items ` +
+		`FROM public.work_item_tags ` +
+		`-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = work_item_tags.project_id
+-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+left join (
+	select
+			work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
+			, array_agg(work_items.*) filter (where work_items.* is not null) as __work_items
+		from work_item_work_item_tag
+    	join work_items on work_items.work_item_id = work_item_work_item_tag.work_item_id
+    group by work_item_work_item_tag_work_item_tag_id
+  ) as joined_work_items on joined_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
+` +
+		` WHERE work_item_tags.project_id > $3` +
+		` ORDER BY 
+		project_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, projectID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
 }
 
 // WorkItemTagByNameProjectID retrieves a row from 'public.work_item_tags' as a WorkItemTag.
@@ -277,14 +370,14 @@ left join (
 	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItems, name)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -329,14 +422,14 @@ left join (
 	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItems, projectID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

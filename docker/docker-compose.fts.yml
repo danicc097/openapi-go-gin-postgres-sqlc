@@ -35,6 +35,7 @@ services:
   #   restart: unless-stopped
   #   logging: *default-logging
 
+  # TODO see https://github.com/deviantony/docker-elk
   elastic:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.5.2
     container_name: elastic-${PROJECT_PREFIX}
@@ -47,6 +48,8 @@ services:
     deploy:
       resources:
        # hard limits. always respected
+       # may need to adapt if using:
+       # https://github.com/elastic/elasticsearch-mapper-attachments#indexed-characters
         limits:
           cpus: "0.5"
           memory: 500M

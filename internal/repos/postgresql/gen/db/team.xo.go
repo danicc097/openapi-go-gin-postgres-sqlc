@@ -119,7 +119,6 @@ type TeamJoins struct {
 func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
 		s.joins = TeamJoins{
-
 			Project:     s.joins.Project || joins.Project,
 			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
 			Users:       s.joins.Users || joins.Users,
@@ -207,6 +206,128 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	return nil
+}
+
+// TeamPaginatedByTeamID returns a cursor-paginated list of Team.
+func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID int, opts ...TeamSelectConfigOption) ([]Team, error) {
+	c := &TeamSelectConfig{joins: TeamJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`teams.team_id,
+teams.project_id,
+teams.name,
+teams.description,
+teams.created_at,
+teams.updated_at,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
+(case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
+		`FROM public.teams ` +
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = teams.project_id
+-- M2O join generated from "time_entries_team_id_fkey"
+left join (
+  select
+  team_id as time_entries_team_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
+-- M2M join generated from "user_team_user_id_fkey"
+left join (
+	select
+			user_team.team_id as user_team_team_id
+			, array_agg(users.*) filter (where users.* is not null) as __users
+		from user_team
+    	join users on users.user_id = user_team.user_id
+    group by user_team_team_id
+  ) as joined_users on joined_users.user_team_team_id = teams.team_id
+
+-- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
+left join work_items on work_items.team_id = teams.team_id` +
+		` WHERE teams.team_id > $5` +
+		` ORDER BY 
+		team_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, teamID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Team/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Team])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Team/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// TeamPaginatedByProjectID returns a cursor-paginated list of Team.
+func TeamPaginatedByProjectID(ctx context.Context, db DB, projectID int, opts ...TeamSelectConfigOption) ([]Team, error) {
+	c := &TeamSelectConfig{joins: TeamJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`teams.team_id,
+teams.project_id,
+teams.name,
+teams.description,
+teams.created_at,
+teams.updated_at,
+(case when $1::boolean = true and projects.project_id is not null then row(projects.*) end) as project,
+(case when $2::boolean = true then COALESCE(joined_time_entries.time_entries, '{}') end) as time_entries,
+(case when $3::boolean = true then COALESCE(joined_users.__users, '{}') end) as users,
+(case when $4::boolean = true and work_items.team_id is not null then row(work_items.*) end) as work_item ` +
+		`FROM public.teams ` +
+		`-- O2O join generated from "teams_project_id_fkey (Generated from M2O)"
+left join projects on projects.project_id = teams.project_id
+-- M2O join generated from "time_entries_team_id_fkey"
+left join (
+  select
+  team_id as time_entries_team_id
+    , array_agg(time_entries.*) as time_entries
+  from
+    time_entries
+  group by
+        team_id) joined_time_entries on joined_time_entries.time_entries_team_id = teams.team_id
+-- M2M join generated from "user_team_user_id_fkey"
+left join (
+	select
+			user_team.team_id as user_team_team_id
+			, array_agg(users.*) filter (where users.* is not null) as __users
+		from user_team
+    	join users on users.user_id = user_team.user_id
+    group by user_team_team_id
+  ) as joined_users on joined_users.user_team_team_id = teams.team_id
+
+-- O2O join generated from "work_items_team_id_fkey(O2O inferred)"
+left join work_items on work_items.team_id = teams.team_id` +
+		` WHERE teams.project_id > $5` +
+		` ORDER BY 
+		project_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, projectID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Team/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Team])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Team/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
 }
 
 // TeamByNameProjectID retrieves a row from 'public.teams' as a Team.
@@ -327,14 +448,14 @@ left join work_items on work_items.team_id = teams.team_id` +
 	// logf(sqlstr, name)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, name)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Team])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -393,14 +514,14 @@ left join work_items on work_items.team_id = teams.team_id` +
 	// logf(sqlstr, projectID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, projectID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Team])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

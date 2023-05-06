@@ -93,7 +93,6 @@ type UserNotificationJoins struct {
 func WithUserNotificationJoin(joins UserNotificationJoins) UserNotificationSelectConfigOption {
 	return func(s *UserNotificationSelectConfig) {
 		s.joins = UserNotificationJoins{
-
 			Notification: s.joins.Notification || joins.Notification,
 			User:         s.joins.User || joins.User,
 		}
@@ -181,6 +180,82 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// UserNotificationPaginatedByUserNotificationID returns a cursor-paginated list of UserNotification.
+func UserNotificationPaginatedByUserNotificationID(ctx context.Context, db DB, userNotificationID int64, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`user_notifications.user_notification_id,
+user_notifications.notification_id,
+user_notifications.read,
+user_notifications.user_id,
+(case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
+left join notifications on notifications.notification_id = user_notifications.notification_id
+-- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
+left join users on users.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.user_notification_id > $3` +
+		` ORDER BY 
+		user_notification_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, userNotificationID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
+// UserNotificationPaginatedByNotificationID returns a cursor-paginated list of UserNotification.
+func UserNotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID int, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	sqlstr := `SELECT ` +
+		`user_notifications.user_notification_id,
+user_notifications.notification_id,
+user_notifications.read,
+user_notifications.user_id,
+(case when $1::boolean = true and notifications.notification_id is not null then row(notifications.*) end) as notification,
+(case when $2::boolean = true and users.user_id is not null then row(users.*) end) as user ` +
+		`FROM public.user_notifications ` +
+		`-- O2O join generated from "user_notifications_notification_id_fkey (Generated from M2O)"
+left join notifications on notifications.notification_id = user_notifications.notification_id
+-- O2O join generated from "user_notifications_user_id_fkey (Generated from M2O)"
+left join users on users.user_id = user_notifications.user_id` +
+		` WHERE user_notifications.notification_id > $3` +
+		` ORDER BY 
+		notification_id DESC `
+	sqlstr += c.limit
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, notificationID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/db.Query: %w", err))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserNotification/Paginated/pgx.CollectRows: %w", err))
+	}
+	return res, nil
+}
+
 // UserNotificationByNotificationIDUserID retrieves a row from 'public.user_notifications' as a UserNotification.
 //
 // Generated from index 'user_notifications_notification_id_user_id_key'.
@@ -253,14 +328,14 @@ left join users on users.user_id = user_notifications.user_id` +
 	// logf(sqlstr, notificationID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, notificationID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationByNotificationIDUserID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationByNotificationIDUserID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }
@@ -337,14 +412,14 @@ left join users on users.user_id = user_notifications.user_id` +
 	// logf(sqlstr, userID)
 	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, userID)
 	if err != nil {
-		return nil, logerror(err)
+		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationsByUserID/Query: %w", err))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserNotification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("pgx.CollectRows: %w", err))
+		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationsByUserID/pgx.CollectRows: %w", err))
 	}
 	return res, nil
 }

@@ -74,7 +74,7 @@ create table users (
   , role_rank smallint default 1 not null check (role_rank > 0)
   , has_personal_notifications boolean default false not null
   , has_global_notifications boolean default false not null
-  , created_at timestamp with time zone default current_timestamp not null
+  , created_at timestamp with time zone default current_timestamp not null unique
   , updated_at timestamp with time zone default current_timestamp not null
   , deleted_at timestamp with time zone
   , foreign key (api_key_id) references user_api_keys (user_api_key_id) on delete cascade
