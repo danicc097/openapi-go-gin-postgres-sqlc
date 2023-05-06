@@ -20,12 +20,8 @@ type BookReview struct {
 	BookID       int       `json:"bookID" db:"book_id" required:"true"`              // book_id
 	Reviewer     uuid.UUID `json:"reviewer" db:"reviewer" required:"true"`           // reviewer
 
-	BookJoin        *Book         `json:"-" db:"book" openapi-go:"ignore"`         // O2O (generated from M2O)
-	UserJoin        *User         `json:"-" db:"user" openapi-go:"ignore"`         // O2O (generated from M2O)
-	BookReviewJoin  *BookReview   `json:"-" db:"book_review" openapi-go:"ignore"`  // O2O (generated from M2O)
-	BookReviewsJoin *[]BookReview `json:"-" db:"book_reviews" openapi-go:"ignore"` // M2O
-	BookReviewJoin  *BookReview   `json:"-" db:"book_review" openapi-go:"ignore"`  // O2O (generated from M2O)
-	BookReviewsJoin *[]BookReview `json:"-" db:"book_reviews" openapi-go:"ignore"` // M2O
+	BookJoin *Book `json:"-" db:"book" openapi-go:"ignore"` // O2O (generated from M2O)
+	UserJoin *User `json:"-" db:"user" openapi-go:"ignore"` // O2O (generated from M2O)
 }
 
 // BookReviewCreateParams represents insert params for 'public.book_reviews'
@@ -79,24 +75,16 @@ func WithBookReviewLimit(limit int) BookReviewSelectConfigOption {
 type BookReviewOrderBy = string
 
 type BookReviewJoins struct {
-	Book        bool
-	User        bool
-	BookReview  bool
-	BookReviews bool
-	BookReview  bool
-	BookReviews bool
+	Book bool
+	User bool
 }
 
 // WithBookReviewJoin joins with the given tables.
 func WithBookReviewJoin(joins BookReviewJoins) BookReviewSelectConfigOption {
 	return func(s *BookReviewSelectConfig) {
 		s.joins = BookReviewJoins{
-			Book:        s.joins.Book || joins.Book,
-			User:        s.joins.User || joins.User,
-			BookReview:  s.joins.BookReview || joins.BookReview,
-			BookReviews: s.joins.BookReviews || joins.BookReviews,
-			BookReview:  s.joins.BookReview || joins.BookReview,
-			BookReviews: s.joins.BookReviews || joins.BookReviews,
+			Book: s.joins.Book || joins.Book,
+			User: s.joins.User || joins.User,
 		}
 	}
 }
@@ -360,7 +348,7 @@ left join (
 
 	// run
 	// logf(sqlstr, bookReviewID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, c.joins.BookReview, c.joins.BookReviews, c.joins.BookReview, c.joins.BookReviews, bookReviewID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookReviewID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByBookReviewID/db.Query: %w", err))
 	}
@@ -426,7 +414,7 @@ left join (
 
 	// run
 	// logf(sqlstr, reviewer, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, c.joins.BookReview, c.joins.BookReviews, c.joins.BookReview, c.joins.BookReviews, reviewer, bookID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, reviewer, bookID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByReviewerBookID/db.Query: %w", err))
 	}
@@ -492,7 +480,7 @@ left join (
 
 	// run
 	// logf(sqlstr, reviewer)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, c.joins.BookReview, c.joins.BookReviews, c.joins.BookReview, c.joins.BookReviews, reviewer)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, reviewer)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/Query: %w", err))
 	}
@@ -560,7 +548,7 @@ left join (
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, c.joins.BookReview, c.joins.BookReviews, c.joins.BookReview, c.joins.BookReviews, bookID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Book, c.joins.User, bookID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("BookReview/BookReviewByReviewerBookID/Query: %w", err))
 	}

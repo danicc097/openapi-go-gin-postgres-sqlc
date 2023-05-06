@@ -28,8 +28,6 @@ type Team struct {
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"` // M2O
 	UsersJoin       *[]User      `json:"-" db:"users" openapi-go:"ignore"`        // M2M
 	WorkItemJoin    *WorkItem    `json:"-" db:"work_item" openapi-go:"ignore"`    // O2O (inferred)
-	TeamJoin        *Team        `json:"-" db:"team" openapi-go:"ignore"`         // O2O (generated from M2O)
-	TeamsJoin       *[]Team      `json:"-" db:"teams" openapi-go:"ignore"`        // M2O
 
 }
 
@@ -115,8 +113,6 @@ type TeamJoins struct {
 	TimeEntries bool
 	Users       bool
 	WorkItem    bool
-	Team        bool
-	Teams       bool
 }
 
 // WithTeamJoin joins with the given tables.
@@ -128,8 +124,6 @@ func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
 			Users:       s.joins.Users || joins.Users,
 			WorkItem:    s.joins.WorkItem || joins.WorkItem,
-			Team:        s.joins.Team || joins.Team,
-			Teams:       s.joins.Teams || joins.Teams,
 		}
 	}
 }
@@ -426,7 +420,7 @@ left join (
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, c.joins.Team, c.joins.Teams, name, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/db.Query: %w", err))
 	}
@@ -503,7 +497,7 @@ left join (
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, c.joins.Team, c.joins.Teams, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, name)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/Query: %w", err))
 	}
@@ -582,7 +576,7 @@ left join (
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, c.joins.Team, c.joins.Teams, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/Query: %w", err))
 	}
@@ -661,7 +655,7 @@ left join (
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, c.joins.Team, c.joins.Teams, teamID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.TimeEntries, c.joins.Users, c.joins.WorkItem, teamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/db.Query: %w", err))
 	}

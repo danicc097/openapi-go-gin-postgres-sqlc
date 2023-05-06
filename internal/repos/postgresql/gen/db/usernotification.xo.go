@@ -21,12 +21,8 @@ type UserNotification struct {
 	Read               bool      `json:"read" db:"read" required:"true"`                               // read
 	UserID             uuid.UUID `json:"userID" db:"user_id" required:"true"`                          // user_id
 
-	NotificationJoin      *Notification       `json:"-" db:"notification" openapi-go:"ignore"`       // O2O (generated from M2O)
-	UserJoin              *User               `json:"-" db:"user" openapi-go:"ignore"`               // O2O (generated from M2O)
-	UserNotificationJoin  *UserNotification   `json:"-" db:"user_notification" openapi-go:"ignore"`  // O2O (generated from M2O)
-	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O
-	UserNotificationJoin  *UserNotification   `json:"-" db:"user_notification" openapi-go:"ignore"`  // O2O (generated from M2O)
-	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O
+	NotificationJoin *Notification `json:"-" db:"notification" openapi-go:"ignore"` // O2O (generated from M2O)
+	UserJoin         *User         `json:"-" db:"user" openapi-go:"ignore"`         // O2O (generated from M2O)
 
 }
 
@@ -89,12 +85,8 @@ type UserNotificationOrderBy = string
 const ()
 
 type UserNotificationJoins struct {
-	Notification      bool
-	User              bool
-	UserNotification  bool
-	UserNotifications bool
-	UserNotification  bool
-	UserNotifications bool
+	Notification bool
+	User         bool
 }
 
 // WithUserNotificationJoin joins with the given tables.
@@ -102,12 +94,8 @@ func WithUserNotificationJoin(joins UserNotificationJoins) UserNotificationSelec
 	return func(s *UserNotificationSelectConfig) {
 		s.joins = UserNotificationJoins{
 
-			Notification:      s.joins.Notification || joins.Notification,
-			User:              s.joins.User || joins.User,
-			UserNotification:  s.joins.UserNotification || joins.UserNotification,
-			UserNotifications: s.joins.UserNotifications || joins.UserNotifications,
-			UserNotification:  s.joins.UserNotification || joins.UserNotification,
-			UserNotifications: s.joins.UserNotifications || joins.UserNotifications,
+			Notification: s.joins.Notification || joins.Notification,
+			User:         s.joins.User || joins.User,
 		}
 	}
 }
@@ -374,7 +362,7 @@ left join (
 
 	// run
 	// logf(sqlstr, notificationID, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, c.joins.UserNotification, c.joins.UserNotifications, c.joins.UserNotification, c.joins.UserNotifications, notificationID, userID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, notificationID, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByNotificationIDUserID/db.Query: %w", err))
 	}
@@ -441,7 +429,7 @@ left join (
 
 	// run
 	// logf(sqlstr, notificationID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, c.joins.UserNotification, c.joins.UserNotifications, c.joins.UserNotification, c.joins.UserNotifications, notificationID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, notificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationByNotificationIDUserID/Query: %w", err))
 	}
@@ -510,7 +498,7 @@ left join (
 
 	// run
 	// logf(sqlstr, userNotificationID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, c.joins.UserNotification, c.joins.UserNotifications, c.joins.UserNotification, c.joins.UserNotifications, userNotificationID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, userNotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_notifications/UserNotificationByUserNotificationID/db.Query: %w", err))
 	}
@@ -577,7 +565,7 @@ left join (
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, c.joins.UserNotification, c.joins.UserNotifications, c.joins.UserNotification, c.joins.UserNotifications, userID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Notification, c.joins.User, userID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserNotification/UserNotificationsByUserID/Query: %w", err))
 	}

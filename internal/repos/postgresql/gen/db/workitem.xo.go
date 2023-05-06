@@ -37,8 +37,6 @@ type WorkItem struct {
 	WorkItemCommentsJoin *[]WorkItemComment `json:"-" db:"work_item_comments" openapi-go:"ignore"` // M2O
 	MembersJoin          *[]WorkItem_Member `json:"-" db:"members" openapi-go:"ignore"`            // M2M
 	WorkItemTagsJoin     *[]WorkItemTag     `json:"-" db:"work_item_tags" openapi-go:"ignore"`     // M2M
-	WorkItemJoin         *WorkItem          `json:"-" db:"work_item" openapi-go:"ignore"`          // O2O
-	WorkItemJoin         *WorkItem          `json:"-" db:"work_item" openapi-go:"ignore"`          // O2O
 
 }
 
@@ -176,8 +174,6 @@ type WorkItemJoins struct {
 	WorkItemComments bool
 	Members          bool
 	WorkItemTags     bool
-	WorkItem         bool
-	WorkItem         bool
 }
 
 // WithWorkItemJoin joins with the given tables.
@@ -191,8 +187,6 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 			WorkItemComments: s.joins.WorkItemComments || joins.WorkItemComments,
 			Members:          s.joins.Members || joins.Members,
 			WorkItemTags:     s.joins.WorkItemTags || joins.WorkItemTags,
-			WorkItem:         s.joins.WorkItem || joins.WorkItem,
-			WorkItem:         s.joins.WorkItem || joins.WorkItem,
 		}
 	}
 }
@@ -491,7 +485,7 @@ left join work_items on work_items.work_item_id = work_items.work_item_id`+
 
 	// run
 	// logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItem, c.joins.WorkItem, deletedAt)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, deletedAt)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDeletedAt/Query: %w", err))
 	}
@@ -592,7 +586,7 @@ left join work_items on work_items.work_item_id = work_items.work_item_id`+
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItem, c.joins.WorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", err))
 	}
@@ -691,7 +685,7 @@ left join work_items on work_items.work_item_id = work_items.work_item_id`+
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, c.joins.WorkItem, c.joins.WorkItem, teamID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.DemoTwoWorkItem, c.joins.DemoWorkItem, c.joins.TimeEntries, c.joins.WorkItemComments, c.joins.Members, c.joins.WorkItemTags, teamID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTeamID/Query: %w", err))
 	}

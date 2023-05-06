@@ -918,6 +918,9 @@ cc_label:
 		 */
 		var joinTableClash bool
 		for _, c := range constraints {
+			if c.Type != "foreign_key" {
+				continue
+			}
 			if c.Name == constraint.Name {
 				continue // itself
 			}
@@ -1728,6 +1731,9 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 	var joinNames []string
 
 	for _, c := range cc {
+		if c.Type != "foreign_key" {
+			continue
+		}
 		var joinName string
 		switch c.Cardinality {
 		case M2M:
@@ -1833,10 +1839,8 @@ func (f *Funcs) func_context(v interface{}, suffix string, columns any) string {
 	switch x := columns.(type) {
 	case []Field:
 		cc = x
-	case string:
-		cc = []Field{}
 	default:
-		return fmt.Sprintf("[[ UNSUPPORTED TYPE columns: %T ]]", x)
+		cc = []Field{}
 	}
 	return f.funcfn(f.func_name_context(v, suffix), f.contextfn(), v, cc)
 }
@@ -1847,10 +1851,8 @@ func (f *Funcs) func_none(v interface{}, columns any) string {
 	switch x := columns.(type) {
 	case []Field:
 		cc = x
-	case string:
-		cc = []Field{}
 	default:
-		return fmt.Sprintf("[[ UNSUPPORTED TYPE columns: %T ]]", x)
+		cc = []Field{}
 	}
 	return f.funcfn(f.func_name_none(v), false, v, cc)
 }
@@ -2133,6 +2135,9 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 			}
 			// append joins
 			for _, c := range f.tableConstraints[x.SQLName] {
+				if c.Type != "foreign_key" {
+					continue
+				}
 				var joinName string
 				switch c.Cardinality {
 				case M2M:
@@ -2182,6 +2187,9 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...interface{}) string {
 			// first thing will always be boolean parameters for joins
 			pref := "c.joins."
 			for _, c := range f.tableConstraints[x.Table.SQLName] {
+				if c.Type != "foreign_key" {
+					continue
+				}
 				var joinName string
 				switch c.Cardinality {
 				case M2M:
@@ -2750,6 +2758,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 		return // don't duplicate
 	}
 	for _, c := range cc {
+		// we need unique constraints for paginated query generation. instead do this check when generating joins only
 		// if c.Type != "foreign_key" {
 		// 	continue
 		// }
@@ -3187,6 +3196,9 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 		return "", nil
 	}
 	for _, c := range cc {
+		if c.Type != "foreign_key" {
+			continue
+		}
 		var notes string
 		// sync with extratypes
 		switch c.Cardinality {

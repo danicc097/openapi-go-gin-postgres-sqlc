@@ -21,10 +21,8 @@ type WorkItemTag struct {
 	Description   string `json:"description" db:"description" required:"true"`        // description
 	Color         string `json:"color" db:"color" required:"true"`                    // color
 
-	ProjectJoin      *Project       `json:"-" db:"project" openapi-go:"ignore"`        // O2O (generated from M2O)
-	WorkItemsJoin    *[]WorkItem    `json:"-" db:"work_items" openapi-go:"ignore"`     // M2M
-	WorkItemTagJoin  *WorkItemTag   `json:"-" db:"work_item_tag" openapi-go:"ignore"`  // O2O (generated from M2O)
-	WorkItemTagsJoin *[]WorkItemTag `json:"-" db:"work_item_tags" openapi-go:"ignore"` // M2O
+	ProjectJoin   *Project    `json:"-" db:"project" openapi-go:"ignore"`    // O2O (generated from M2O)
+	WorkItemsJoin *[]WorkItem `json:"-" db:"work_items" openapi-go:"ignore"` // M2M
 
 }
 
@@ -93,10 +91,8 @@ type WorkItemTagOrderBy = string
 const ()
 
 type WorkItemTagJoins struct {
-	Project      bool
-	WorkItems    bool
-	WorkItemTag  bool
-	WorkItemTags bool
+	Project   bool
+	WorkItems bool
 }
 
 // WithWorkItemTagJoin joins with the given tables.
@@ -104,10 +100,8 @@ func WithWorkItemTagJoin(joins WorkItemTagJoins) WorkItemTagSelectConfigOption {
 	return func(s *WorkItemTagSelectConfig) {
 		s.joins = WorkItemTagJoins{
 
-			Project:      s.joins.Project || joins.Project,
-			WorkItems:    s.joins.WorkItems || joins.WorkItems,
-			WorkItemTag:  s.joins.WorkItemTag || joins.WorkItemTag,
-			WorkItemTags: s.joins.WorkItemTags || joins.WorkItemTags,
+			Project:   s.joins.Project || joins.Project,
+			WorkItems: s.joins.WorkItems || joins.WorkItems,
 		}
 	}
 }
@@ -362,7 +356,7 @@ left join (
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItems, c.joins.WorkItemTag, c.joins.WorkItemTags, name, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItems, name, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByNameProjectID/db.Query: %w", err))
 	}
@@ -425,7 +419,7 @@ left join (
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItems, c.joins.WorkItemTag, c.joins.WorkItemTags, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItems, name)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/Query: %w", err))
 	}
@@ -490,7 +484,7 @@ left join (
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItems, c.joins.WorkItemTag, c.joins.WorkItemTags, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItems, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/Query: %w", err))
 	}
@@ -555,7 +549,7 @@ left join (
 
 	// run
 	// logf(sqlstr, workItemTagID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItems, c.joins.WorkItemTag, c.joins.WorkItemTags, workItemTagID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItems, workItemTagID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByWorkItemTagID/db.Query: %w", err))
 	}

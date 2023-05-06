@@ -23,10 +23,8 @@ type KanbanStep struct {
 	Color         string `json:"color" db:"color" required:"true"`                  // color
 	TimeTrackable bool   `json:"timeTrackable" db:"time_trackable" required:"true"` // time_trackable
 
-	ProjectJoin     *Project      `json:"-" db:"project" openapi-go:"ignore"`      // O2O (generated from M2O)
-	WorkItemJoin    *WorkItem     `json:"-" db:"work_item" openapi-go:"ignore"`    // O2O (inferred)
-	KanbanStepJoin  *KanbanStep   `json:"-" db:"kanban_step" openapi-go:"ignore"`  // O2O (generated from M2O)
-	KanbanStepsJoin *[]KanbanStep `json:"-" db:"kanban_steps" openapi-go:"ignore"` // M2O
+	ProjectJoin  *Project  `json:"-" db:"project" openapi-go:"ignore"`   // O2O (generated from M2O)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O (inferred)
 
 }
 
@@ -107,10 +105,8 @@ type KanbanStepOrderBy = string
 const ()
 
 type KanbanStepJoins struct {
-	Project     bool
-	WorkItem    bool
-	KanbanStep  bool
-	KanbanSteps bool
+	Project  bool
+	WorkItem bool
 }
 
 // WithKanbanStepJoin joins with the given tables.
@@ -118,10 +114,8 @@ func WithKanbanStepJoin(joins KanbanStepJoins) KanbanStepSelectConfigOption {
 	return func(s *KanbanStepSelectConfig) {
 		s.joins = KanbanStepJoins{
 
-			Project:     s.joins.Project || joins.Project,
-			WorkItem:    s.joins.WorkItem || joins.WorkItem,
-			KanbanStep:  s.joins.KanbanStep || joins.KanbanStep,
-			KanbanSteps: s.joins.KanbanSteps || joins.KanbanSteps,
+			Project:  s.joins.Project || joins.Project,
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
 	}
 }
@@ -411,7 +405,7 @@ left join (
 
 	// run
 	// logf(sqlstr, kanbanStepID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.KanbanStep, c.joins.KanbanSteps, kanbanStepID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, kanbanStepID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByKanbanStepID/db.Query: %w", err))
 	}
@@ -468,7 +462,7 @@ left join (
 
 	// run
 	// logf(sqlstr, projectID, name, stepOrder)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.KanbanStep, c.joins.KanbanSteps, projectID, name, stepOrder)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, projectID, name, stepOrder)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDNameStepOrder/db.Query: %w", err))
 	}
@@ -525,7 +519,7 @@ left join (
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.KanbanStep, c.joins.KanbanSteps, projectID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, projectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", err))
 	}
@@ -584,7 +578,7 @@ left join (
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.KanbanStep, c.joins.KanbanSteps, name)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, name)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", err))
 	}
@@ -643,7 +637,7 @@ left join (
 
 	// run
 	// logf(sqlstr, stepOrder)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.KanbanStep, c.joins.KanbanSteps, stepOrder)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, stepOrder)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", err))
 	}
@@ -702,7 +696,7 @@ left join (
 
 	// run
 	// logf(sqlstr, projectID, stepOrder)
-	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, c.joins.KanbanStep, c.joins.KanbanSteps, projectID, stepOrder)
+	rows, err := db.Query(ctx, sqlstr, c.joins.Project, c.joins.WorkItem, projectID, stepOrder)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDStepOrder/db.Query: %w", err))
 	}

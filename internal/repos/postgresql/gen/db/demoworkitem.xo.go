@@ -23,9 +23,7 @@ type DemoWorkItem struct {
 	LastMessageAt time.Time `json:"lastMessageAt" db:"last_message_at" required:"true"` // last_message_at
 	Reopened      bool      `json:"reopened" db:"reopened" required:"true"`             // reopened
 
-	WorkItemJoin     *WorkItem     `json:"-" db:"work_item" openapi-go:"ignore"`      // O2O
-	DemoWorkItemJoin *DemoWorkItem `json:"-" db:"demo_work_item" openapi-go:"ignore"` // O2O
-	DemoWorkItemJoin *DemoWorkItem `json:"-" db:"demo_work_item" openapi-go:"ignore"` // O2O
+	WorkItemJoin *WorkItem `json:"-" db:"work_item" openapi-go:"ignore"` // O2O
 
 }
 
@@ -111,9 +109,7 @@ func WithDemoWorkItemOrderBy(rows ...DemoWorkItemOrderBy) DemoWorkItemSelectConf
 }
 
 type DemoWorkItemJoins struct {
-	WorkItem     bool
-	DemoWorkItem bool
-	DemoWorkItem bool
+	WorkItem bool
 }
 
 // WithDemoWorkItemJoin joins with the given tables.
@@ -121,9 +117,7 @@ func WithDemoWorkItemJoin(joins DemoWorkItemJoins) DemoWorkItemSelectConfigOptio
 	return func(s *DemoWorkItemSelectConfig) {
 		s.joins = DemoWorkItemJoins{
 
-			WorkItem:     s.joins.WorkItem || joins.WorkItem,
-			DemoWorkItem: s.joins.DemoWorkItem || joins.DemoWorkItem,
-			DemoWorkItem: s.joins.DemoWorkItem || joins.DemoWorkItem,
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
 	}
 }
@@ -282,7 +276,7 @@ left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, c.joins.DemoWorkItem, c.joins.DemoWorkItem, workItemID)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, workItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/db.Query: %w", err))
 	}
@@ -327,7 +321,7 @@ left join demo_work_items on demo_work_items.work_item_id = demo_work_items.work
 
 	// run
 	// logf(sqlstr, ref, line)
-	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, c.joins.DemoWorkItem, c.joins.DemoWorkItem, ref, line)
+	rows, err := db.Query(ctx, sqlstr, c.joins.WorkItem, ref, line)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoWorkItem/DemoWorkItemsByRefLine/Query: %w", err))
 	}
