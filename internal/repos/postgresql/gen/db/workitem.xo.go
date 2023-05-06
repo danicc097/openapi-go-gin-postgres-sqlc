@@ -19,7 +19,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type WorkItem struct {
 	WorkItemID     int64      `json:"workItemID" db:"work_item_id" required:"true"`          // work_item_id
 	Title          string     `json:"title" db:"title" required:"true"`                      // title
@@ -43,7 +43,7 @@ type WorkItem struct {
 
 }
 
-// WorkItemCreateParams represents insert params for 'public.work_items'
+// WorkItemCreateParams represents insert params for 'public.work_items'.
 type WorkItemCreateParams struct {
 	Title          string     `json:"title" required:"true"`          // title
 	Description    string     `json:"description" required:"true"`    // description
@@ -69,37 +69,6 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 	}
 
 	return wi.Insert(ctx, db)
-}
-
-// UpsertWorkItem upserts a WorkItem in the database with the given params.
-func UpsertWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
-	var err error
-	wi := &WorkItem{
-		Title:          params.Title,
-		Description:    params.Description,
-		WorkItemTypeID: params.WorkItemTypeID,
-		Metadata:       params.Metadata,
-		TeamID:         params.TeamID,
-		KanbanStepID:   params.KanbanStepID,
-		Closed:         params.Closed,
-		TargetDate:     params.TargetDate,
-	}
-
-	wi, err = wi.Insert(ctx, db)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
-			}
-			wi, err = wi.Update(ctx, db)
-			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
-			}
-		}
-	}
-
-	return wi, nil
 }
 
 // WorkItemUpdateParams represents update params for 'public.work_items'
@@ -275,6 +244,37 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	*wi = newwi
 
 	return wi, nil
+}
+
+// Upsert upserts a WorkItem in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
+	var err error
+
+	wi.Title = params.Title
+	wi.Description = params.Description
+	wi.WorkItemTypeID = params.WorkItemTypeID
+	wi.Metadata = params.Metadata
+	wi.TeamID = params.TeamID
+	wi.KanbanStepID = params.KanbanStepID
+	wi.Closed = params.Closed
+	wi.TargetDate = params.TargetDate
+
+	wi, err = wi.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			wi, err = wi.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return wi, err
 }
 
 // Delete deletes the WorkItem from the database.

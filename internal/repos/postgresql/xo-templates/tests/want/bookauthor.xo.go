@@ -4,7 +4,6 @@ package got
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -15,7 +14,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type BookAuthor struct {
 	BookID   int       `json:"bookID" db:"book_id" required:"true"`     // book_id
 	AuthorID uuid.UUID `json:"authorID" db:"author_id" required:"true"` // author_id
@@ -24,7 +23,7 @@ type BookAuthor struct {
 	AuthorsJoin *[]BookAuthor_Author `json:"-" db:"authors" openapi-go:"ignore"` // M2M
 }
 
-// BookAuthorCreateParams represents insert params for 'public.book_authors'
+// BookAuthorCreateParams represents insert params for 'public.book_authors'.
 type BookAuthorCreateParams struct {
 	BookID   int       `json:"bookID" required:"true"`   // book_id
 	AuthorID uuid.UUID `json:"authorID" required:"true"` // author_id
@@ -38,11 +37,6 @@ func CreateBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams
 	}
 
 	return ba.Insert(ctx, db)
-}
-
-// UpsertBookAuthor upserts a BookAuthor in the database with the given params.
-func UpsertBookAuthor(ctx context.Context, db DB, params *BookAuthorCreateParams) (*BookAuthor, error) {
-	return nil, errors.New("BookAuthor is not updatable")
 }
 
 // BookAuthorUpdateParams represents update params for 'public.book_authors'

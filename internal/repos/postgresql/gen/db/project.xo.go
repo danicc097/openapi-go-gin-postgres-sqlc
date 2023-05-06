@@ -19,7 +19,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type Project struct {
 	ProjectID          int                  `json:"projectID" db:"project_id" required:"true"`                                              // project_id
 	Name               models.Project       `json:"name" db:"name" required:"true" ref:"#/components/schemas/Project"`                      // name
@@ -37,7 +37,7 @@ type Project struct {
 
 }
 
-// ProjectCreateParams represents insert params for 'public.projects'
+// ProjectCreateParams represents insert params for 'public.projects'.
 type ProjectCreateParams struct {
 	Name               models.Project       `json:"name" required:"true" ref:"#/components/schemas/Project"`              // name
 	Description        string               `json:"description" required:"true"`                                          // description
@@ -55,33 +55,6 @@ func CreateProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Pr
 	}
 
 	return p.Insert(ctx, db)
-}
-
-// UpsertProject upserts a Project in the database with the given params.
-func UpsertProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Project, error) {
-	var err error
-	p := &Project{
-		Name:               params.Name,
-		Description:        params.Description,
-		WorkItemsTableName: params.WorkItemsTableName,
-		BoardConfig:        params.BoardConfig,
-	}
-
-	p, err = p.Insert(ctx, db)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
-			}
-			p, err = p.Update(ctx, db)
-			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
-			}
-		}
-	}
-
-	return p, nil
 }
 
 // ProjectUpdateParams represents update params for 'public.projects'
@@ -214,6 +187,33 @@ func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 	*p = newp
 
 	return p, nil
+}
+
+// Upsert upserts a Project in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (p *Project) Upsert(ctx context.Context, db DB, params *ProjectCreateParams) (*Project, error) {
+	var err error
+
+	p.Name = params.Name
+	p.Description = params.Description
+	p.WorkItemsTableName = params.WorkItemsTableName
+	p.BoardConfig = params.BoardConfig
+
+	p, err = p.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			p, err = p.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return p, err
 }
 
 // Delete deletes the Project from the database.

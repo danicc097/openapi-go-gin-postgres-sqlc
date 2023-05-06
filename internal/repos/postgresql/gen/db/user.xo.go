@@ -21,7 +21,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type User struct {
 	UserID                   uuid.UUID     `json:"userID" db:"user_id" required:"true"`                                      // user_id
 	Username                 string        `json:"username" db:"username" required:"true"`                                   // username
@@ -50,7 +50,7 @@ type User struct {
 
 }
 
-// UserCreateParams represents insert params for 'public.users'
+// UserCreateParams represents insert params for 'public.users'.
 type UserCreateParams struct {
 	Username                 string        `json:"username" required:"true"`                                 // username
 	Email                    string        `json:"email" required:"true"`                                    // email
@@ -80,39 +80,6 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 	}
 
 	return u.Insert(ctx, db)
-}
-
-// UpsertUser upserts a User in the database with the given params.
-func UpsertUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
-	var err error
-	u := &User{
-		Username:                 params.Username,
-		Email:                    params.Email,
-		FirstName:                params.FirstName,
-		LastName:                 params.LastName,
-		ExternalID:               params.ExternalID,
-		APIKeyID:                 params.APIKeyID,
-		Scopes:                   params.Scopes,
-		RoleRank:                 params.RoleRank,
-		HasPersonalNotifications: params.HasPersonalNotifications,
-		HasGlobalNotifications:   params.HasGlobalNotifications,
-	}
-
-	u, err = u.Insert(ctx, db)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
-			}
-			u, err = u.Update(ctx, db)
-			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
-			}
-		}
-	}
-
-	return u, nil
 }
 
 // UserUpdateParams represents update params for 'public.users'
@@ -287,6 +254,39 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	*u = newu
 
 	return u, nil
+}
+
+// Upsert upserts a User in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
+	var err error
+
+	u.Username = params.Username
+	u.Email = params.Email
+	u.FirstName = params.FirstName
+	u.LastName = params.LastName
+	u.ExternalID = params.ExternalID
+	u.APIKeyID = params.APIKeyID
+	u.Scopes = params.Scopes
+	u.RoleRank = params.RoleRank
+	u.HasPersonalNotifications = params.HasPersonalNotifications
+	u.HasGlobalNotifications = params.HasGlobalNotifications
+
+	u, err = u.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			u, err = u.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return u, err
 }
 
 // Delete deletes the User from the database.

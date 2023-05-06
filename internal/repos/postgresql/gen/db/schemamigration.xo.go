@@ -16,14 +16,14 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type SchemaMigration struct {
 	Version int64 `json:"version" db:"version" required:"true"` // version
 	Dirty   bool  `json:"dirty" db:"dirty" required:"true"`     // dirty
 
 }
 
-// SchemaMigrationCreateParams represents insert params for 'public.schema_migrations'
+// SchemaMigrationCreateParams represents insert params for 'public.schema_migrations'.
 type SchemaMigrationCreateParams struct {
 	Version int64 `json:"version" required:"true"` // version
 	Dirty   bool  `json:"dirty" required:"true"`   // dirty
@@ -37,31 +37,6 @@ func CreateSchemaMigration(ctx context.Context, db DB, params *SchemaMigrationCr
 	}
 
 	return sm.Insert(ctx, db)
-}
-
-// UpsertSchemaMigration upserts a SchemaMigration in the database with the given params.
-func UpsertSchemaMigration(ctx context.Context, db DB, params *SchemaMigrationCreateParams) (*SchemaMigration, error) {
-	var err error
-	sm := &SchemaMigration{
-		Version: params.Version,
-		Dirty:   params.Dirty,
-	}
-
-	sm, err = sm.Insert(ctx, db)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
-			}
-			sm, err = sm.Update(ctx, db)
-			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
-			}
-		}
-	}
-
-	return sm, nil
 }
 
 // SchemaMigrationUpdateParams represents update params for 'public.schema_migrations'
@@ -155,6 +130,31 @@ func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration,
 	*sm = newsm
 
 	return sm, nil
+}
+
+// Upsert upserts a SchemaMigration in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (sm *SchemaMigration) Upsert(ctx context.Context, db DB, params *SchemaMigrationCreateParams) (*SchemaMigration, error) {
+	var err error
+
+	sm.Version = params.Version
+	sm.Dirty = params.Dirty
+
+	sm, err = sm.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			sm, err = sm.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return sm, err
 }
 
 // Delete deletes the SchemaMigration from the database.

@@ -16,7 +16,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type Activity struct {
 	ActivityID   int    `json:"activityID" db:"activity_id" required:"true"`     // activity_id
 	ProjectID    int    `json:"projectID" db:"project_id" required:"true"`       // project_id
@@ -29,7 +29,7 @@ type Activity struct {
 
 }
 
-// ActivityCreateParams represents insert params for 'public.activities'
+// ActivityCreateParams represents insert params for 'public.activities'.
 type ActivityCreateParams struct {
 	ProjectID    int    `json:"projectID" required:"true"`    // project_id
 	Name         string `json:"name" required:"true"`         // name
@@ -47,33 +47,6 @@ func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*
 	}
 
 	return a.Insert(ctx, db)
-}
-
-// UpsertActivity upserts a Activity in the database with the given params.
-func UpsertActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*Activity, error) {
-	var err error
-	a := &Activity{
-		ProjectID:    params.ProjectID,
-		Name:         params.Name,
-		Description:  params.Description,
-		IsProductive: params.IsProductive,
-	}
-
-	a, err = a.Insert(ctx, db)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
-			}
-			a, err = a.Update(ctx, db)
-			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
-			}
-		}
-	}
-
-	return a, nil
 }
 
 // ActivityUpdateParams represents update params for 'public.activities'
@@ -181,6 +154,33 @@ func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 	*a = newa
 
 	return a, nil
+}
+
+// Upsert upserts a Activity in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (a *Activity) Upsert(ctx context.Context, db DB, params *ActivityCreateParams) (*Activity, error) {
+	var err error
+
+	a.ProjectID = params.ProjectID
+	a.Name = params.Name
+	a.Description = params.Description
+	a.IsProductive = params.IsProductive
+
+	a, err = a.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			a, err = a.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return a, err
 }
 
 // Delete deletes the Activity from the database.

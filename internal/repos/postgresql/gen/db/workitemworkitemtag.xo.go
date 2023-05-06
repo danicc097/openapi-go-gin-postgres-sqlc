@@ -4,7 +4,6 @@ package db
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
@@ -14,7 +13,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type WorkItemWorkItemTag struct {
 	WorkItemTagID int   `json:"workItemTagID" db:"work_item_tag_id" required:"true"` // work_item_tag_id
 	WorkItemID    int64 `json:"workItemID" db:"work_item_id" required:"true"`        // work_item_id
@@ -24,7 +23,7 @@ type WorkItemWorkItemTag struct {
 
 }
 
-// WorkItemWorkItemTagCreateParams represents insert params for 'public.work_item_work_item_tag'
+// WorkItemWorkItemTagCreateParams represents insert params for 'public.work_item_work_item_tag'.
 type WorkItemWorkItemTagCreateParams struct {
 	WorkItemTagID int   `json:"workItemTagID" required:"true"` // work_item_tag_id
 	WorkItemID    int64 `json:"workItemID" required:"true"`    // work_item_id
@@ -38,11 +37,6 @@ func CreateWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkI
 	}
 
 	return wiwit.Insert(ctx, db)
-}
-
-// UpsertWorkItemWorkItemTag upserts a WorkItemWorkItemTag in the database with the given params.
-func UpsertWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkItemTagCreateParams) (*WorkItemWorkItemTag, error) {
-	return nil, errors.New("WorkItemWorkItemTag is not updatable")
 }
 
 // WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'

@@ -16,7 +16,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type Book struct {
 	BookID int    `json:"bookID" db:"book_id" required:"true"` // book_id
 	Name   string `json:"name" db:"name" required:"true"`      // name
@@ -25,7 +25,7 @@ type Book struct {
 	BookReviewsJoin *[]BookReview  `json:"-" db:"book_reviews" openapi-go:"ignore"` // M2O
 }
 
-// BookCreateParams represents insert params for 'public.books'
+// BookCreateParams represents insert params for 'public.books'.
 type BookCreateParams struct {
 	Name string `json:"name" required:"true"` // name
 }
@@ -37,30 +37,6 @@ func CreateBook(ctx context.Context, db DB, params *BookCreateParams) (*Book, er
 	}
 
 	return b.Insert(ctx, db)
-}
-
-// UpsertBook upserts a Book in the database with the given params.
-func UpsertBook(ctx context.Context, db DB, params *BookCreateParams) (*Book, error) {
-	var err error
-	b := &Book{
-		Name: params.Name,
-	}
-
-	b, err = b.Insert(ctx, db)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
-			}
-			b, err = b.Update(ctx, db)
-			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
-			}
-		}
-	}
-
-	return b, nil
 }
 
 // BookUpdateParams represents update params for 'public.books'
@@ -158,6 +134,30 @@ func (b *Book) Update(ctx context.Context, db DB) (*Book, error) {
 	*b = newb
 
 	return b, nil
+}
+
+// Upsert upserts a Book in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (b *Book) Upsert(ctx context.Context, db DB, params *BookCreateParams) (*Book, error) {
+	var err error
+
+	b.Name = params.Name
+
+	b, err = b.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			b, err = b.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return b, err
 }
 
 // Delete deletes the Book from the database.

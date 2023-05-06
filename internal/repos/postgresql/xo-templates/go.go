@@ -1868,10 +1868,15 @@ func (f *Funcs) recv(name string, context bool, t Table, v interface{}) string {
 	case ForeignKey:
 		r = append(r, "*"+x.RefTable)
 	case string:
-		if x == "Upsert" || x == "Delete" || x == "SoftDelete" { // upsert and delete only exec
+		if x == "Delete" || x == "SoftDelete" { // only exec
 			break
 		}
-		if x == "Paginated" { // upsert and delete only exec
+		if x == "Upsert" {
+			p = append(p, fmt.Sprintf("params *%sCreateParams", t.GoName))
+			r = append(r, "*"+t.GoName)
+			break
+		}
+		if x == "Paginated" {
 			r = append(r, "[]"+t.GoName)
 			break
 		}
@@ -3134,6 +3139,7 @@ func (f *Funcs) set_field(field Field, typ string, table Table) (string, error) 
 	isSingleFK, isSinglePK := analyzeField(table, field)
 	switch typ {
 	case "CreateParams":
+	case "UpsertParams":
 	case "UpdateParams":
 		if isSingleFK && isSinglePK { // e.g. workitemid in project tables. don't ever want to update it.
 			fmt.Printf("UpdateParams: skipping %q: is a single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
@@ -3142,6 +3148,8 @@ func (f *Funcs) set_field(field Field, typ string, table Table) (string, error) 
 	}
 
 	switch typ {
+	case "UpsertParams":
+		return fmt.Sprintf("\t%[1]s.%[2]s = params.%[2]s\n", f.short(table), field.GoName), nil
 	case "CreateParams":
 		return fmt.Sprintf("\t%[1]s: params.%[1]s,\n", field.GoName), nil
 	case "UpdateParams":

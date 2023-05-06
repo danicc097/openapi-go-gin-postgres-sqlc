@@ -19,7 +19,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type WorkItemMember struct {
 	WorkItemID int64               `json:"workItemID" db:"work_item_id" required:"true"`                           // work_item_id
 	Member     uuid.UUID           `json:"member" db:"member" required:"true"`                                     // member
@@ -30,7 +30,7 @@ type WorkItemMember struct {
 
 }
 
-// WorkItemMemberCreateParams represents insert params for 'public.work_item_member'
+// WorkItemMemberCreateParams represents insert params for 'public.work_item_member'.
 type WorkItemMemberCreateParams struct {
 	WorkItemID int64               `json:"workItemID" required:"true"`                                   // work_item_id
 	Member     uuid.UUID           `json:"member" required:"true"`                                       // member
@@ -46,32 +46,6 @@ func CreateWorkItemMember(ctx context.Context, db DB, params *WorkItemMemberCrea
 	}
 
 	return wim.Insert(ctx, db)
-}
-
-// UpsertWorkItemMember upserts a WorkItemMember in the database with the given params.
-func UpsertWorkItemMember(ctx context.Context, db DB, params *WorkItemMemberCreateParams) (*WorkItemMember, error) {
-	var err error
-	wim := &WorkItemMember{
-		WorkItemID: params.WorkItemID,
-		Member:     params.Member,
-		Role:       params.Role,
-	}
-
-	wim, err = wim.Insert(ctx, db)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
-			}
-			wim, err = wim.Update(ctx, db)
-			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
-			}
-		}
-	}
-
-	return wim, nil
 }
 
 // WorkItemMemberUpdateParams represents update params for 'public.work_item_member'
@@ -179,6 +153,32 @@ func (wim *WorkItemMember) Update(ctx context.Context, db DB) (*WorkItemMember, 
 	*wim = newwim
 
 	return wim, nil
+}
+
+// Upsert upserts a WorkItemMember in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (wim *WorkItemMember) Upsert(ctx context.Context, db DB, params *WorkItemMemberCreateParams) (*WorkItemMember, error) {
+	var err error
+
+	wim.WorkItemID = params.WorkItemID
+	wim.Member = params.Member
+	wim.Role = params.Role
+
+	wim, err = wim.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			wim, err = wim.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return wim, err
 }
 
 // Delete deletes the WorkItemMember from the database.

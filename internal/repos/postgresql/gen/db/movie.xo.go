@@ -16,7 +16,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type Movie struct {
 	MovieID  int    `json:"movieID" db:"movie_id" required:"true"`  // movie_id
 	Title    string `json:"title" db:"title" required:"true"`       // title
@@ -25,7 +25,7 @@ type Movie struct {
 
 }
 
-// MovieCreateParams represents insert params for 'public.movies'
+// MovieCreateParams represents insert params for 'public.movies'.
 type MovieCreateParams struct {
 	Title    string `json:"title" required:"true"`    // title
 	Year     int    `json:"year" required:"true"`     // year
@@ -41,32 +41,6 @@ func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie,
 	}
 
 	return m.Insert(ctx, db)
-}
-
-// UpsertMovie upserts a Movie in the database with the given params.
-func UpsertMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie, error) {
-	var err error
-	m := &Movie{
-		Title:    params.Title,
-		Year:     params.Year,
-		Synopsis: params.Synopsis,
-	}
-
-	m, err = m.Insert(ctx, db)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
-			}
-			m, err = m.Update(ctx, db)
-			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
-			}
-		}
-	}
-
-	return m, nil
 }
 
 // MovieUpdateParams represents update params for 'public.movies'
@@ -165,6 +139,32 @@ func (m *Movie) Update(ctx context.Context, db DB) (*Movie, error) {
 	*m = newm
 
 	return m, nil
+}
+
+// Upsert upserts a Movie in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (m *Movie) Upsert(ctx context.Context, db DB, params *MovieCreateParams) (*Movie, error) {
+	var err error
+
+	m.Title = params.Title
+	m.Year = params.Year
+	m.Synopsis = params.Synopsis
+
+	m, err = m.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			m, err = m.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return m, err
 }
 
 // Delete deletes the Movie from the database.

@@ -18,7 +18,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type DemoTwoWorkItem struct {
 	WorkItemID            int64      `json:"workItemID" db:"work_item_id" required:"true"`                         // work_item_id
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2" required:"true"` // custom_date_for_project_2
@@ -27,7 +27,7 @@ type DemoTwoWorkItem struct {
 
 }
 
-// DemoTwoWorkItemCreateParams represents insert params for 'public.demo_two_work_items'
+// DemoTwoWorkItemCreateParams represents insert params for 'public.demo_two_work_items'.
 type DemoTwoWorkItemCreateParams struct {
 	WorkItemID            int64      `json:"workItemID" required:"true"`            // work_item_id
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" required:"true"` // custom_date_for_project_2
@@ -41,31 +41,6 @@ func CreateDemoTwoWorkItem(ctx context.Context, db DB, params *DemoTwoWorkItemCr
 	}
 
 	return dtwi.Insert(ctx, db)
-}
-
-// UpsertDemoTwoWorkItem upserts a DemoTwoWorkItem in the database with the given params.
-func UpsertDemoTwoWorkItem(ctx context.Context, db DB, params *DemoTwoWorkItemCreateParams) (*DemoTwoWorkItem, error) {
-	var err error
-	dtwi := &DemoTwoWorkItem{
-		WorkItemID:            params.WorkItemID,
-		CustomDateForProject2: params.CustomDateForProject2,
-	}
-
-	dtwi, err = dtwi.Insert(ctx, db)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
-			}
-			dtwi, err = dtwi.Update(ctx, db)
-			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
-			}
-		}
-	}
-
-	return dtwi, nil
 }
 
 // DemoTwoWorkItemUpdateParams represents update params for 'public.demo_two_work_items'
@@ -173,6 +148,31 @@ func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkIte
 	*dtwi = newdtwi
 
 	return dtwi, nil
+}
+
+// Upsert upserts a DemoTwoWorkItem in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB, params *DemoTwoWorkItemCreateParams) (*DemoTwoWorkItem, error) {
+	var err error
+
+	dtwi.WorkItemID = params.WorkItemID
+	dtwi.CustomDateForProject2 = params.CustomDateForProject2
+
+	dtwi, err = dtwi.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			dtwi, err = dtwi.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return dtwi, err
 }
 
 // Delete deletes the DemoTwoWorkItem from the database.

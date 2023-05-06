@@ -19,7 +19,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type TimeEntry struct {
 	TimeEntryID     int64     `json:"timeEntryID" db:"time_entry_id" required:"true"`        // time_entry_id
 	WorkItemID      *int64    `json:"workItemID" db:"work_item_id" required:"true"`          // work_item_id
@@ -37,7 +37,7 @@ type TimeEntry struct {
 
 }
 
-// TimeEntryCreateParams represents insert params for 'public.time_entries'
+// TimeEntryCreateParams represents insert params for 'public.time_entries'.
 type TimeEntryCreateParams struct {
 	WorkItemID      *int64    `json:"workItemID" required:"true"`      // work_item_id
 	ActivityID      int       `json:"activityID" required:"true"`      // activity_id
@@ -61,36 +61,6 @@ func CreateTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) 
 	}
 
 	return te.Insert(ctx, db)
-}
-
-// UpsertTimeEntry upserts a TimeEntry in the database with the given params.
-func UpsertTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) (*TimeEntry, error) {
-	var err error
-	te := &TimeEntry{
-		WorkItemID:      params.WorkItemID,
-		ActivityID:      params.ActivityID,
-		TeamID:          params.TeamID,
-		UserID:          params.UserID,
-		Comment:         params.Comment,
-		Start:           params.Start,
-		DurationMinutes: params.DurationMinutes,
-	}
-
-	te, err = te.Insert(ctx, db)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
-			}
-			te, err = te.Update(ctx, db)
-			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
-			}
-		}
-	}
-
-	return te, nil
 }
 
 // TimeEntryUpdateParams represents update params for 'public.time_entries'
@@ -229,6 +199,36 @@ func (te *TimeEntry) Update(ctx context.Context, db DB) (*TimeEntry, error) {
 	*te = newte
 
 	return te, nil
+}
+
+// Upsert upserts a TimeEntry in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (te *TimeEntry) Upsert(ctx context.Context, db DB, params *TimeEntryCreateParams) (*TimeEntry, error) {
+	var err error
+
+	te.WorkItemID = params.WorkItemID
+	te.ActivityID = params.ActivityID
+	te.TeamID = params.TeamID
+	te.UserID = params.UserID
+	te.Comment = params.Comment
+	te.Start = params.Start
+	te.DurationMinutes = params.DurationMinutes
+
+	te, err = te.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			te, err = te.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return te, err
 }
 
 // Delete deletes the TimeEntry from the database.

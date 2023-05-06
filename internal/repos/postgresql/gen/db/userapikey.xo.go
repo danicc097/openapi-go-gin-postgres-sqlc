@@ -19,7 +19,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type UserAPIKey struct {
 	UserAPIKeyID int       `json:"-" db:"user_api_key_id"`                    // user_api_key_id
 	APIKey       string    `json:"apiKey" db:"api_key" required:"true"`       // api_key
@@ -30,7 +30,7 @@ type UserAPIKey struct {
 
 }
 
-// UserAPIKeyCreateParams represents insert params for 'public.user_api_keys'
+// UserAPIKeyCreateParams represents insert params for 'public.user_api_keys'.
 type UserAPIKeyCreateParams struct {
 	APIKey    string    `json:"apiKey" required:"true"`    // api_key
 	ExpiresOn time.Time `json:"expiresOn" required:"true"` // expires_on
@@ -46,32 +46,6 @@ func CreateUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams
 	}
 
 	return uak.Insert(ctx, db)
-}
-
-// UpsertUserAPIKey upserts a UserAPIKey in the database with the given params.
-func UpsertUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams) (*UserAPIKey, error) {
-	var err error
-	uak := &UserAPIKey{
-		APIKey:    params.APIKey,
-		ExpiresOn: params.ExpiresOn,
-		UserID:    params.UserID,
-	}
-
-	uak, err = uak.Insert(ctx, db)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
-			}
-			uak, err = uak.Update(ctx, db)
-			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
-			}
-		}
-	}
-
-	return uak, nil
 }
 
 // UserAPIKeyUpdateParams represents update params for 'public.user_api_keys'
@@ -188,6 +162,32 @@ func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
 	*uak = newuak
 
 	return uak, nil
+}
+
+// Upsert upserts a UserAPIKey in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (uak *UserAPIKey) Upsert(ctx context.Context, db DB, params *UserAPIKeyCreateParams) (*UserAPIKey, error) {
+	var err error
+
+	uak.APIKey = params.APIKey
+	uak.ExpiresOn = params.ExpiresOn
+	uak.UserID = params.UserID
+
+	uak, err = uak.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			uak, err = uak.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return uak, err
 }
 
 // Delete deletes the UserAPIKey from the database.

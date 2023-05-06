@@ -18,7 +18,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type Team struct {
 	TeamID      int       `json:"teamID" db:"team_id" required:"true"`          // team_id
 	ProjectID   int       `json:"projectID" db:"project_id" required:"true"`    // project_id
@@ -34,7 +34,7 @@ type Team struct {
 
 }
 
-// TeamCreateParams represents insert params for 'public.teams'
+// TeamCreateParams represents insert params for 'public.teams'.
 type TeamCreateParams struct {
 	ProjectID   int    `json:"projectID" required:"true"`   // project_id
 	Name        string `json:"name" required:"true"`        // name
@@ -50,32 +50,6 @@ func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, er
 	}
 
 	return t.Insert(ctx, db)
-}
-
-// UpsertTeam upserts a Team in the database with the given params.
-func UpsertTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, error) {
-	var err error
-	t := &Team{
-		ProjectID:   params.ProjectID,
-		Name:        params.Name,
-		Description: params.Description,
-	}
-
-	t, err = t.Insert(ctx, db)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
-			}
-			t, err = t.Update(ctx, db)
-			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
-			}
-		}
-	}
-
-	return t, nil
 }
 
 // TeamUpdateParams represents update params for 'public.teams'
@@ -202,6 +176,32 @@ func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 	*t = newt
 
 	return t, nil
+}
+
+// Upsert upserts a Team in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (t *Team) Upsert(ctx context.Context, db DB, params *TeamCreateParams) (*Team, error) {
+	var err error
+
+	t.ProjectID = params.ProjectID
+	t.Name = params.Name
+	t.Description = params.Description
+
+	t, err = t.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			t, err = t.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return t, err
 }
 
 // Delete deletes the Team from the database.

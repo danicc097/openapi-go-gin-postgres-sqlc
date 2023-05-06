@@ -19,7 +19,7 @@ import (
 // Change properties via SQL column comments, joined with ",":
 //   - "property:private" to exclude a field from JSON.
 //   - "type:<pkg.type>" to override the type annotation.
-//   - "cardinality:O2O|O2M|M2O|M2M" to generate joins (not executed by default).
+//   - "cardinality:O2O|M2O|M2M" to generate joins (not executed by default).
 type Notification struct {
 	NotificationID   int              `json:"notificationID" db:"notification_id" required:"true"`                                                 // notification_id
 	ReceiverRank     *int16           `json:"receiverRank" db:"receiver_rank" required:"true"`                                                     // receiver_rank
@@ -38,7 +38,7 @@ type Notification struct {
 
 }
 
-// NotificationCreateParams represents insert params for 'public.notifications'
+// NotificationCreateParams represents insert params for 'public.notifications'.
 type NotificationCreateParams struct {
 	ReceiverRank     *int16           `json:"receiverRank" required:"true"`                                                 // receiver_rank
 	Title            string           `json:"title" required:"true"`                                                        // title
@@ -64,37 +64,6 @@ func CreateNotification(ctx context.Context, db DB, params *NotificationCreatePa
 	}
 
 	return n.Insert(ctx, db)
-}
-
-// UpsertNotification upserts a Notification in the database with the given params.
-func UpsertNotification(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {
-	var err error
-	n := &Notification{
-		ReceiverRank:     params.ReceiverRank,
-		Title:            params.Title,
-		Body:             params.Body,
-		Label:            params.Label,
-		Link:             params.Link,
-		Sender:           params.Sender,
-		Receiver:         params.Receiver,
-		NotificationType: params.NotificationType,
-	}
-
-	n, err = n.Insert(ctx, db)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
-			}
-			n, err = n.Update(ctx, db)
-			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
-			}
-		}
-	}
-
-	return n, nil
 }
 
 // NotificationUpdateParams represents update params for 'public.notifications'
@@ -235,6 +204,37 @@ func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error)
 	*n = newn
 
 	return n, nil
+}
+
+// Upsert upserts a Notification in the database.
+// Requires appropiate PK(s) to be set beforehand.
+func (n *Notification) Upsert(ctx context.Context, db DB, params *NotificationCreateParams) (*Notification, error) {
+	var err error
+
+	n.ReceiverRank = params.ReceiverRank
+	n.Title = params.Title
+	n.Body = params.Body
+	n.Label = params.Label
+	n.Link = params.Link
+	n.Sender = params.Sender
+	n.Receiver = params.Receiver
+	n.NotificationType = params.NotificationType
+
+	n, err = n.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", err)
+			}
+			n, err = n.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", err)
+			}
+		}
+	}
+
+	return n, err
 }
 
 // Delete deletes the Notification from the database.
