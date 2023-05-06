@@ -14,7 +14,7 @@ import (
 var errorDetailRegex = regexp.MustCompile(`\((.*)\)=\((.*)\)`)
 
 func parseErrorDetail(err error) error {
-	newErr := internal.NewErrorf(internal.ErrorCodeUnknown, err.Error())
+	newErr := internal.WrapErrorf(err, internal.ErrorCodeUnknown, err.Error())
 
 	var column, value string
 	var pgErr *pgconn.PgError
@@ -26,9 +26,9 @@ func parseErrorDetail(err error) error {
 				break
 			}
 			column, value = matches[1], matches[2]
-			newErr = internal.NewErrorf(internal.ErrorCodeAlreadyExists, fmt.Sprintf("%s %q already exists", column, value))
+			newErr = internal.WrapErrorf(err, internal.ErrorCodeAlreadyExists, fmt.Sprintf("%s %q already exists", column, value))
 		default:
-			newErr = internal.NewErrorf(internal.ErrorCodeUnknown, fmt.Sprintf("%s | %s", pgErr.Detail, pgErr.Message))
+			newErr = internal.WrapErrorf(err, internal.ErrorCodeUnknown, fmt.Sprintf("%s | %s", pgErr.Detail, pgErr.Message))
 		}
 	}
 
